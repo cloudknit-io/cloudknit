@@ -1,0 +1,8 @@
+name: terraform-config
+
+module:
+  source:
+
+variables:
+
+outputs:
