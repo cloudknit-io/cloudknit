@@ -3,5 +3,4 @@ kind: TerraformConfig
 metadata:
   name: networking-terraformconfig
 spec:
-  # Add fields here
-  foo: bar
+  isInSync: true
