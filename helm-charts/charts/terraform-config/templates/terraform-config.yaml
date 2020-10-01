@@ -4,3 +4,4 @@ metadata:
   name: networking-terraformconfig
 spec:
   isInSync: true
+  applyWorkflowStarted: false
