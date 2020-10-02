@@ -3,5 +3,9 @@ kind: TerraformConfig
 metadata:
   name: networking-terraformconfig
 spec:
+  module:
+    source: {{$.Values.module.source}}
+  variables:
+    {{$.Values.variables}}
   isInSync: true
   applyWorkflowStarted: false
