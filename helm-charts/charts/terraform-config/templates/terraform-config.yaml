@@ -6,6 +6,6 @@ spec:
   module:
     source: {{$.Values.module.source}}
   variables:
-    {{toYaml .Values.variables | nindent 4}}
+    {{$.Values.variables | nindent 4}}
   isInSync: true
   applyWorkflowStarted: false
