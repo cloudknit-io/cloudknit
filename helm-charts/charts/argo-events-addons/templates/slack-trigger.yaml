@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: webhook
+spec:
+  template:
+    serviceAccountName: argo-events-sa
+  dependencies:
+    - name: webhook-dep
+      eventSourceName: webhook
+      eventName: terraform-diff
+  triggers:
+    - template:
+        name: slack-trigger
+        slack:
+          channel: slack-notification
+          message: hello world
+          slackToken:
+            key: token
+            name: slack-secret
+      parameters:
+        - src:
+            dependencyName: webhook-dep
+            dataKey: body.channel
+          dest: slack.channel
+        - src:
+            dependencyName: webhook-dep
+            dataKey: body.message
+          dest: slack.message
