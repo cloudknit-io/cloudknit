@@ -1,4 +1,9 @@
-cd ../infra-deploy-platform/k8s-addons
+argocd app delete dev
+#argocd cluster rm arn:aws:eks:us-east-1:413422438110:cluster/0-sandbox-eks
+argocd repo rm git@github.com:CompuZest/infra-deploy-terraform-config.git
+argocd repo rm git@github.com:CompuZest/helm-charts.git
+
+cd ../../infra-deploy-platform/k8s-addons
 terraform init
 terraform workspace select 0-sandbox
 terraform init

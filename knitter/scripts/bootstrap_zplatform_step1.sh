@@ -1,4 +1,4 @@
-cd ../infra-deploy-networking/aws-vpc
+cd ../../infra-deploy-networking/aws-vpc
 terraform workspace select 0-sandbox
 terraform apply -auto-approve -var-file tfvars/sandbox.tfvars
 
@@ -17,3 +17,9 @@ terraform init
 terraform workspace select 0-sandbox
 terraform init
 terraform apply -auto-approve -var-file tfvars/sandbox.tfvars
+
+cd ../../terraform-k8s-operator
+make generate
+make install
+make docker-build docker-push IMG=shahadarsh/terraform-k8s-operator:latest
+make deploy IMG=shahadarsh/terraform-k8s-operator:latest
