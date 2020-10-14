@@ -26,10 +26,10 @@ spec:
             template: plan
         - - name: approve
             template: approve
-            when: "{{steps.plan.outputs.parameters.planCode}} == 2"
+            when: "{{` {{steps.plan.outputs.parameters.planCode}} == 2 `}}"
         - - name: apply
             template: apply
-            when: "{{steps.plan.outputs.parameters.planCode}} == 2"
+            when: "{{` {{steps.plan.outputs.parameters.planCode}} == 2 `}}"
 
     - name: plan
       inputs:
