@@ -5,9 +5,5 @@ metadata:
 spec:
   module:
     source: {{$.Values.module.source}}
-{{- if .Values.variables }}
-  variables:
-    {{$.Values.variables | nindent 4}}
-{{- end }}
   isInSync: true
   applyWorkflowStarted: false
