@@ -1,0 +1,178 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: terraform-config-networking-
+  namespace: argo
+  annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/instance: 1-dev-terraform-config-networking
+  labels:
+    argocd.argoproj.io/instance: 1-dev-terraform-config-networking
+    workflows.argoproj.io/completed: 'false'
+spec:
+  entrypoint: update
+  volumes:
+    - name: github-ssh-key-mount
+      secret:
+        secretName: github-ssh-key
+        defaultMode: 384
+
+  templates:
+    - name: update
+      steps:
+        - - name: plan
+            template: plan
+        - - name: approve
+            template: approve
+            when: "{{steps.plan.outputs.parameters.planCode}} == 2"
+        - - name: apply
+            template: apply
+            when: "{{steps.plan.outputs.parameters.planCode}} == 2"
+
+    - name: plan
+      inputs:
+        artifacts:
+          - name: terraform-config
+            path: "/home"
+            git:
+              repo: git@github.com:CompuZest/infra-deploy-networking.git
+              sshPrivateKeySecret:
+                name: github-ssh-key
+                key: id_rsa
+              insecureIgnoreHostKey: true
+      serviceAccountName: argo
+      script:
+        imagePullPolicy: Always
+        image: shahadarsh/terraform:latest
+        cmd:
+          - sh
+        source: |
+          cd /home/aws-vpc
+          mkdir ~/.ssh
+          cat /root/ssh_secret/id_rsa >> ~/.ssh/id_rsa
+          chmod 400 ~/.ssh/id_rsa
+          ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+
+          mkdir ~/.aws
+          cat <<EOT >> ~/.aws/credentials
+          [default]
+          aws_access_key_id = ${CUSTOMER_AWS_ACCESS_KEY_ID}
+          aws_secret_access_key = ${CUSTOMER_AWS_SECRET_ACCESS_KEY}
+          [compuzest-shared]
+          aws_access_key_id = ${SHARED_AWS_ACCESS_KEY_ID}
+          aws_secret_access_key = ${SHARED_AWS_SECRET_ACCESS_KEY}
+          EOT
+
+          terraform init
+          terraform workspace new 1-dev
+          terraform workspace select 1-dev
+          terraform init
+          terraform plan -detailed-exitcode -var-file tfvars/1/dev.tfvars
+          result=$?
+          echo -n $result > /tmp/plan_code.txt
+
+          if [ $result -eq 2 ]
+          then
+            curl -d '{"channel":"slack-notification","message":"Networking Terraform is Out of Sync. Please approve Sync."}' -H "Content-Type: application/json" -X POST http://webhook-eventsource-svc.argo.svc.cluster.local:12000/terraform-diff
+          fi
+        env:
+          - name: CUSTOMER_AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: aws-creds
+                key: aws_access_key_id
+          - name: CUSTOMER_AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: aws-creds
+                key: aws_secret_access_key
+          - name: SHARED_AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: shared-aws-creds
+                key: aws_access_key_id
+          - name: SHARED_AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: shared-aws-creds
+                key: aws_secret_access_key
+        volumeMounts:
+          - name: github-ssh-key-mount
+            mountPath: "/root/ssh_secret"
+            readOnly: false
+      outputs:
+        parameters:
+          - name: planCode
+            valueFrom:
+              path: /tmp/plan_code.txt
+            globalName: plan-code
+
+    - name: approve
+      suspend: {}
+
+    - name: apply
+      inputs:
+        artifacts:
+          - name: terraform-config
+            path: /home
+            git:
+              repo: git@github.com:CompuZest/infra-deploy-networking.git
+              sshPrivateKeySecret:
+                name: github-ssh-key
+                key: id_rsa
+              insecureIgnoreHostKey: true
+      serviceAccountName: argo
+      script:
+        imagePullPolicy: "Always"
+        image: shahadarsh/terraform:latest
+        cmd: ["sh"]
+        source: |
+          cd /home/aws-vpc
+          mkdir ~/.ssh
+          cat /root/ssh_secret/id_rsa >> ~/.ssh/id_rsa
+          chmod 400 ~/.ssh/id_rsa
+          ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+
+          mkdir ~/.aws
+          cat <<EOT >> ~/.aws/credentials
+          [default]
+          aws_access_key_id = ${CUSTOMER_AWS_ACCESS_KEY_ID}
+          aws_secret_access_key = ${CUSTOMER_AWS_SECRET_ACCESS_KEY}
+          [compuzest-shared]
+          aws_access_key_id = ${SHARED_AWS_ACCESS_KEY_ID}
+          aws_secret_access_key = ${SHARED_AWS_SECRET_ACCESS_KEY}
+          EOT
+
+          terraform init
+          terraform workspace new 1-dev
+          terraform workspace select 1-dev
+          terraform init
+          terraform apply -var-file tfvars/1/dev.tfvars -auto-approve
+          curl -d '{"channel":"slack-notification","message":"Networking Terraform is  back in Sync now."}' -H "Content-Type: application/json" -X POST http://webhook-eventsource-svc.argo.svc.cluster.local:12000/terraform-diff
+        env:
+          - name: CUSTOMER_AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: aws-creds
+                key: aws_access_key_id
+          - name: CUSTOMER_AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: aws-creds
+                key: aws_secret_access_key
+          - name: SHARED_AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: shared-aws-creds
+                key: aws_access_key_id
+          - name: SHARED_AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: shared-aws-creds
+                key: aws_secret_access_key
+        volumeMounts:
+          - name: github-ssh-key-mount
+            mountPath: "/root/ssh_secret"
+            readOnly: false
