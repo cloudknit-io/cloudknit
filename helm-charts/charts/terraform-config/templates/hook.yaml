@@ -5,11 +5,8 @@ metadata:
   generateName: terraform-config-networking-
   namespace: argo
   annotations:
-    argocd.argoproj.io/hook: Sync
-    argocd.argoproj.io/sync-wave: "1"
-    argocd.argoproj.io/instance: 1-dev-terraform-config-networking
+    argocd.argoproj.io/hook: PreSync
   labels:
-    argocd.argoproj.io/instance: 1-dev-terraform-config-networking
     workflows.argoproj.io/completed: 'false'
 spec:
   entrypoint: update
