@@ -5,6 +5,8 @@ metadata:
   generateName: terraform-config-networking-
   namespace: argo
   annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
     argocd.argoproj.io/sync-wave: "1"
   labels:
     workflows.argoproj.io/completed: 'false'
