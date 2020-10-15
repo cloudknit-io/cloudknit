@@ -2,6 +2,8 @@ apiVersion: stable.compuzest.com/v1
 kind: TerraformConfig
 metadata:
   name: networking-terraformconfig
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   module:
     source: {{$.Values.module.source}}
