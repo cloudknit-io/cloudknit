@@ -65,7 +65,7 @@ spec:
               curl -d '{"channel":"slack-notification","message":"Networking Terraform is Out of Sync. Please approve Sync."}' -H "Content-Type: application/json" -X POST http://webhook-eventsource-svc.argo.svc.cluster.local:12000/terraform-diff
             fi
           else
-            terraform apply -var-file tfvars/1/dev.tfvars -auto-approve
+            terraform apply -var-file tfvars/$customer_id/$env_name.tfvars -auto-approve
             echo -n 0 > /tmp/plan_code.txt
             curl -d '{"channel":"slack-notification","message":"Networking Terraform is back in Sync now."}' -H "Content-Type: application/json" -X POST http://webhook-eventsource-svc.argo.svc.cluster.local:12000/terraform-diff
           fi
