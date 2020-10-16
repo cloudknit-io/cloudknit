@@ -1,7 +1,7 @@
 apiVersion: stable.compuzest.com/v1
 kind: TerraformConfig
 metadata:
-  name: networking-terraformconfig
+  name: "{{ .Values.customer_id }}-{{ .Values.env_name}}-networking-terraformconfig"
   annotations:
     argocd.argoproj.io/sync-wave: "2"
 spec:
