@@ -27,6 +27,10 @@ spec:
             templateRef:
               name: workflow-template-terraform-plan
               template: plan
+            arguments:
+              parameters:
+                - name: module_source
+                  value: "{{ .Values.module.source }}"
         - - name: approve
             template: approve
             when: "{{` {{steps.plan.outputs.parameters.planCode}} == 2 `}}"
