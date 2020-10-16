@@ -1,12 +1,12 @@
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  name: workflow-template-terraform-plan
+  name: workflow-template-terraform
   namespace: argo
 spec:
-  entrypoint: plan
+  entrypoint: run
   templates:
-    - name: plan
+    - name: run
       inputs:
         parameters:
           - name: module_source
@@ -51,8 +51,6 @@ spec:
           terraform workspace new $cust_id_env_name
           terraform workspace select $cust_id_env_name
           terraform init
-          echo "{{"{{"}}inputs.parameters.is_apply{{"}}"}}"
-
 
           if [ "{{"{{"}}inputs.parameters.is_apply{{"}}"}}" -eq 0 ]
           then

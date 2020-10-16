@@ -25,8 +25,8 @@ spec:
       steps:
         - - name: plan
             templateRef:
-              name: workflow-template-terraform-plan
-              template: plan
+              name: workflow-template-terraform
+              template: run
             arguments:
               parameters:
                 - name: module_source
@@ -38,8 +38,8 @@ spec:
             when: "{{` {{steps.plan.outputs.parameters.planCode}} == 2 `}}"
         - - name: apply
             templateRef:
-              name: workflow-template-terraform-plan
-              template: plan
+              name: workflow-template-terraform
+              template: run
             arguments:
               parameters:
                 - name: module_source
