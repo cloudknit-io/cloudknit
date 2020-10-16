@@ -51,10 +51,10 @@ spec:
           terraform workspace new $cust_id_env_name
           terraform workspace select $cust_id_env_name
           terraform init
-          echo "{{ "{{" }} inputs.parameters.is_apply {{ "}}" }}"
+          echo "{{ "'{{" }} inputs.parameters.is_apply {{ "}}'" }}"
 
 
-          if [ "{{ "{{" }} inputs.parameters.is_apply {{ "}}" }}" -eq 0 ]
+          if [ "{{ "'{{" }} inputs.parameters.is_apply {{ "}}'" }}" -eq 0 ]
           then
             terraform plan -detailed-exitcode -var-file tfvars/$customer_id/$env_name.tfvars
             result=$?
