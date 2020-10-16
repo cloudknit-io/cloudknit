@@ -98,4 +98,3 @@ spec:
             valueFrom:
               path: /tmp/plan_code.txt
             globalName: plan-code
-
