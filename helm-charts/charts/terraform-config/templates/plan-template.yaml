@@ -5,15 +5,12 @@ metadata:
   namespace: argo
 spec:
   entrypoint: plan
-  arguments:
-    parameters:
-      - name: module_source
-        value: 'git@github.com:CompuZest/infra-deploy-networking.git'
   templates:
     - name: plan
       inputs:
         parameters:
           - name: module_source
+          - name: is_apply
         artifacts:
           - name: terraform-config
             path: "/home"
@@ -54,13 +51,20 @@ spec:
           terraform workspace new $cust_id_env_name
           terraform workspace select $cust_id_env_name
           terraform init
-          terraform plan -detailed-exitcode -var-file tfvars/$customer_id/$env_name.tfvars
-          result=$?
-          echo -n $result > /tmp/plan_code.txt
 
-          if [ $result -eq 2 ]
+          if[ {{ inputs.parameters.is_apply -eq 0 }} ]
           then
-            curl -d '{"channel":"slack-notification","message":"Networking Terraform is Out of Sync. Please approve Sync."}' -H "Content-Type: application/json" -X POST http://webhook-eventsource-svc.argo.svc.cluster.local:12000/terraform-diff
+            terraform plan -detailed-exitcode -var-file tfvars/$customer_id/$env_name.tfvars
+            result=$?
+            echo -n $result > /tmp/plan_code.txt
+
+            if [ $result -eq 2 ]
+            then
+              curl -d '{"channel":"slack-notification","message":"Networking Terraform is Out of Sync. Please approve Sync."}' -H "Content-Type: application/json" -X POST http://webhook-eventsource-svc.argo.svc.cluster.local:12000/terraform-diff
+            fi
+          else
+            terraform apply -var-file tfvars/1/dev.tfvars -auto-approve
+            curl -d '{"channel":"slack-notification","message":"Networking Terraform is back in Sync now."}' -H "Content-Type: application/json" -X POST http://webhook-eventsource-svc.argo.svc.cluster.local:12000/terraform-diff
           fi
         env:
           - name: CUSTOMER_AWS_ACCESS_KEY_ID

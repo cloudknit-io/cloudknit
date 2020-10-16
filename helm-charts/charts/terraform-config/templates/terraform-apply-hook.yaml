@@ -31,11 +31,21 @@ spec:
               parameters:
                 - name: module_source
                   value: "{{ .Values.module.source }}"
+                - name: is_apply
+                  value: 0
         - - name: approve
             template: approve
             when: "{{` {{steps.plan.outputs.parameters.planCode}} == 2 `}}"
         - - name: apply
-            template: apply
+            templateRef:
+              name: workflow-template-terraform-plan
+              template: plan
+            arguments:
+              parameters:
+                - name: module_source
+                  value: "{{ .Values.module.source }}"
+                - name: is_apply
+                  value: 1
             when: "{{` {{steps.plan.outputs.parameters.planCode}} == 2 `}}"
 
 
