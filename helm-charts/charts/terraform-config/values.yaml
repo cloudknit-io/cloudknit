@@ -1,5 +1,9 @@
 name: terraform-config
 
+customer_id:
+
+env_name:
+
 module:
   source:
 
