@@ -11,6 +11,8 @@ spec:
         parameters:
           - name: module_source
           - name: is_apply
+          - name: customer_id
+          - name: env_name
         artifacts:
           - name: terraform-config
             path: "/home"
@@ -43,8 +45,8 @@ spec:
           aws_secret_access_key = ${SHARED_AWS_SECRET_ACCESS_KEY}
           EOT
 
-          customer_id={{.Values.customer_id}}
-          env_name={{.Values.env_name}}
+          customer_id="{{"{{"}}inputs.parameters.customer_id{{"}}"}}"
+          env_name="{{"{{"}}inputs.parameters.env_name{{"}}"}}"
           cust_id_env_name=$customer_id-$env_name
 
           terraform init
