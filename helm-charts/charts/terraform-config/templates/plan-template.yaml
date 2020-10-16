@@ -2,16 +2,23 @@ apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
   name: workflow-template-terraform-plan
+  namespace: argo
 spec:
   entrypoint: plan
+  arguments:
+    parameters:
+      - name: module_source
+        value: 'git@github.com:CompuZest/infra-deploy-networking.git'
   templates:
     - name: plan
       inputs:
+        parameters:
+          - name: module_source
         artifacts:
           - name: terraform-config
             path: "/home"
             git:
-              repo: "{{ .Values.module.source }}"
+              repo: "{{ inputs.paramaters.module_source }}"
               sshPrivateKeySecret:
                 name: github-ssh-key
                 key: id_rsa

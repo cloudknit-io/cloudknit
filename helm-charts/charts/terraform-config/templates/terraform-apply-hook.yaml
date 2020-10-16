@@ -16,7 +16,10 @@ spec:
       secret:
         secretName: github-ssh-key
         defaultMode: 384
-
+  arguments:
+    parameters:
+      - name: module_source
+        value: "{{ .Values.module.source }}"
   templates:
     - name: update
       steps:
