@@ -17,7 +17,7 @@ spec:
           - name: terraform-config
             path: "/home"
             git:
-              repo: 'git@github.com:CompuZest/infra-deploy-networking.git'
+              repo: '"{{"{{"}}inputs.parameters.module_source{{"}}"}}"'
               sshPrivateKeySecret:
                 name: github-ssh-key
                 key: id_rsa
