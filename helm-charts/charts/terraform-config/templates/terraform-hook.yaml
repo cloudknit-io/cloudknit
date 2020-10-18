@@ -16,10 +16,6 @@ spec:
       secret:
         secretName: github-ssh-key
         defaultMode: 384
-  arguments:
-    parameters:
-      - name: module_source
-        value: "{{ .Values.module.source }}"
   templates:
     - name: update
       steps:
@@ -31,6 +27,8 @@ spec:
               parameters:
                 - name: module_source
                   value: "{{ .Values.module.source }}"
+                - name: module_source_path
+                  value: "{{ .Values.module.source.path }}"
                 - name: is_apply
                   value: 0
                 - name: customer_id
@@ -48,6 +46,8 @@ spec:
               parameters:
                 - name: module_source
                   value: "{{ .Values.module.source }}"
+                - name: module_source_path
+                  value: "{{ .Values.module.source.path }}"
                 - name: is_apply
                   value: 1
                 - name: customer_id

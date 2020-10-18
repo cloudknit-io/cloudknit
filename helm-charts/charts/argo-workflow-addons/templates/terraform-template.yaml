@@ -10,6 +10,7 @@ spec:
       inputs:
         parameters:
           - name: module_source
+          - name: module_source_path
           - name: is_apply
           - name: customer_id
           - name: env_name
@@ -29,7 +30,7 @@ spec:
         cmd:
           - sh
         source: |
-          cd /home/aws-vpc
+          cd /home/"{{"{{"}}inputs.parameters.module_source_path{{"}}"}}"
           mkdir ~/.ssh
           cat /root/ssh_secret/id_rsa >> ~/.ssh/id_rsa
           chmod 400 ~/.ssh/id_rsa
