@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
-  generateName: "{{ .Values.customer_id }}-{{ .Values.env_name}}-terraform-config-networking-"
+  generateName: "{{ .Values.customer_id }}-{{ .Values.env_name}}-terraformconfig-{{ .Values.env_name}}-"
   namespace: argo
   annotations:
     argocd.argoproj.io/hook: Sync
