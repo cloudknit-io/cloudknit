@@ -21,7 +21,7 @@ spec:
       - name: module_source
         value: "{{ .Values.module.source }}"
       - name: module_source_path
-        value: "{{ .Values.module.source.path }}"
+        value: "{{ .Values.module.path }}"
   templates:
     - name: update
       steps:
@@ -34,7 +34,7 @@ spec:
                 - name: module_source
                   value: "{{ .Values.module.source }}"
                 - name: module_source_path
-                  value: "{{ .Values.module.source.path }}"
+                  value: "{{ .Values.module.path }}"
                 - name: is_apply
                   value: 0
                 - name: customer_id
@@ -53,7 +53,7 @@ spec:
                 - name: module_source
                   value: "{{ .Values.module.source }}"
                 - name: module_source_path
-                  value: "{{ .Values.module.source.path }}"
+                  value: "{{ .Values.module.path }}"
                 - name: is_apply
                   value: 1
                 - name: customer_id
