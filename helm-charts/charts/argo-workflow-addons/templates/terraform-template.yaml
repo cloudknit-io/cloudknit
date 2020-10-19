@@ -16,6 +16,8 @@ spec:
             value: true
           - name: customer_id
           - name: env_name
+          - name: name
+            value: "terraform-config"
         artifacts:
           - name: terraform-config
             path: "/home"
@@ -32,7 +34,10 @@ spec:
         cmd:
           - sh
         source: |
-          cd /home/"{{"{{"}}inputs.parameters.module_source_path{{"}}"}}"
+          module_source="{{"{{"}}inputs.parameters.module_source{{"}}"}}"
+          module_source_path="{{"{{"}}inputs.parameters.module_source_path{{"}}"}}"
+
+          cd /home/$module_source_path
           mkdir ~/.ssh
           cat /root/ssh_secret/id_rsa >> ~/.ssh/id_rsa
           chmod 400 ~/.ssh/id_rsa
@@ -51,6 +56,7 @@ spec:
           customer_id="{{"{{"}}inputs.parameters.customer_id{{"}}"}}"
           env_name="{{"{{"}}inputs.parameters.env_name{{"}}"}}"
           lock_state="{{"{{"}}inputs.parameters.lock_state{{"}}"}}"
+          name="{{"{{"}}inputs.parameters.name{{"}}"}}"
           cust_id_env_name=$customer_id-$env_name
 
           terraform init
@@ -66,6 +72,12 @@ spec:
 
             if [ $result -eq 2 ]
             then
+              app="${cust_id_env_name}-terraform-config-${name}"
+
+              RES=$(curl --insecure -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2MDMxMTk5NDgsImlzcyI6ImFyZ29jZCIsIm5iZiI6MTYwMzExOTk0OCwic3ViIjoiYWRtaW4ifQ.A8vJTbMtGYJFBi_zZ8RFVm0IGgYwkN1cHgNs-yTpDgw"  -H "Content-Type: application/json" -d '{"project":"default","syncPolicy":{"automated":{"prune":true,"selfHeal":true}},"destination":{"namespace":"default","server":"https://2F90398E9082D8C0F636B0172A0232F8.sk1.us-east-1.eks.amazonaws.com"},"source":{"repoURL":"git@github.com:CompuZest/helm-charts.git","path":"charts/terraform-config","targetRevision":"HEAD","helm":{"values":"is_out_of_sync: true\ncustomer_id: \"'$customer_id'\"\nenv_name: \"'$env_name'\"\nname: \"'$name'\"\nmodule:\n  source: \"'$module_source'\"\n  path: '$module_source_path'\nvariables:\n  - name: cidr\n    value: \"10.1.0.0/16\"\noutputs: \"\"\n"}}}' -X PUT https://argo-cd-argocd-server.argo.svc.cluster.local/api/v1/applications/$app/spec)
+              
+              echo $RES
+
               curl -d '{"channel":"slack-notification","message":"Networking Terraform is Out of Sync. Please approve Sync."}' -H "Content-Type: application/json" -X POST http://webhook-eventsource-svc.argo.svc.cluster.local:12000/terraform-diff
             fi
           else

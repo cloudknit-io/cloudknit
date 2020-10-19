@@ -22,6 +22,8 @@ spec:
         value: "{{ .Values.module.source }}"
       - name: module_source_path
         value: "{{ .Values.module.path }}"
+      - name: name
+        value: "{{ .Values.name }}"
   templates:
     - name: update
       steps:
@@ -41,6 +43,8 @@ spec:
                   value: "{{ .Values.customer_id }}"
                 - name: env_name
                   value: "{{ .Values.env_name }}"
+                - name: name
+                  value: "{{ .Values.name }}"
         - - name: approve
             template: approve
             when: "{{` {{steps.plan.outputs.parameters.planCode}} == 2 `}}"
