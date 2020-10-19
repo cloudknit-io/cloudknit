@@ -6,7 +6,7 @@ metadata:
   namespace: argo
 serverDryRun: false
 spec:
-  schedule: "* * * * *"
+  schedule: "*/2 * * * *"
   concurrencyPolicy: "Replace"
   startingDeadlineSeconds: 0
 
