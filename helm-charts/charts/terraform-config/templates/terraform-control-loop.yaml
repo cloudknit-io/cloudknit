@@ -1,0 +1,43 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: "{{ .Values.customer_id }}-{{ .Values.env_name}}-{{ .Values.name}}-control-loop"
+  namespace: argo
+serverDryRun: false
+spec:
+  schedule: "* * * * *"
+  concurrencyPolicy: "Replace"
+  startingDeadlineSeconds: 0
+
+  entrypoint: control-loop
+  volumes:
+    - name: github-ssh-key-mount
+      secret:
+        secretName: github-ssh-key
+        defaultMode: 384
+  arguments:
+    parameters:
+      - name: module_source
+        value: "{{ .Values.module.source }}"
+      - name: module_source_path
+        value: "{{ .Values.module.path }}"
+  templates:
+    - name: control-loop
+      steps:
+        - - name: plan
+            templateRef:
+              name: workflow-template-terraform
+              template: run
+            arguments:
+              parameters:
+                - name: module_source
+                  value: "{{ .Values.module.source }}"
+                - name: module_source_path
+                  value: "{{ .Values.module.path }}"
+                - name: is_apply
+                  value: 0
+                - name: customer_id
+                  value: "{{ .Values.customer_id }}"
+                - name: env_name
+                  value: "{{ .Values.env_name }}"
