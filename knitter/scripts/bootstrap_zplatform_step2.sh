@@ -13,7 +13,7 @@ argocd repo add --name helm-charts git@github.com:CompuZest/helm-charts.git --ss
 
 argocd cluster add arn:aws:eks:us-east-1:413422438110:cluster/0-sandbox-eks
 
-argocd app create customer-1 --repo git@github.com:CompuZest/infra-deploy-terraform-config.git --path . --dest-server https://kubernetes.default.svc --dest-namespace default --directory-recurse  --sync-policy automated --auto-prune
+argocd app create 1-customer --repo git@github.com:CompuZest/infra-deploy-terraform-config.git --path 1 --dest-server https://kubernetes.default.svc --dest-namespace default --sync-policy automated --auto-prune
 
 kubectl port-forward service/argo-workflow-server 8081:2746 -n argo &
 

@@ -1,4 +1,4 @@
-argocd app delete customer-1
+argocd app delete 1-customer
 #argocd cluster rm arn:aws:eks:us-east-1:413422438110:cluster/0-sandbox-eks
 argocd repo rm git@github.com:CompuZest/infra-deploy-terraform-config.git
 argocd repo rm git@github.com:CompuZest/helm-charts.git
