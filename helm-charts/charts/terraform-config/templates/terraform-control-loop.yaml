@@ -37,6 +37,8 @@ spec:
                     value: "{{ .Values.module.path }}"
                   - name: is_apply
                     value: 0
+                  - name: lock_state
+                    value: false
                   - name: customer_id
                     value: "{{ .Values.customer_id }}"
                   - name: env_name

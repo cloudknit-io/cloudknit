@@ -12,6 +12,8 @@ spec:
           - name: module_source
           - name: module_source_path
           - name: is_apply
+          - name: lock_state
+            value: true
           - name: customer_id
           - name: env_name
         artifacts:
@@ -48,6 +50,7 @@ spec:
 
           customer_id="{{"{{"}}inputs.parameters.customer_id{{"}}"}}"
           env_name="{{"{{"}}inputs.parameters.env_name{{"}}"}}"
+          lock_state="{{"{{"}}inputs.parameters.lock_state{{"}}"}}"
           cust_id_env_name=$customer_id-$env_name
 
           terraform init
@@ -57,7 +60,7 @@ spec:
 
           if [ "{{"{{"}}inputs.parameters.is_apply{{"}}"}}" -eq 0 ]
           then
-            terraform plan -detailed-exitcode -var-file tfvars/$customer_id/$env_name.tfvars
+            terraform plan -lock=$lock_state -detailed-exitcode -var-file tfvars/$customer_id/$env_name.tfvars
             result=$?
             echo -n $result > /tmp/plan_code.txt
 
