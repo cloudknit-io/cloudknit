@@ -22,6 +22,8 @@ spec:
           value: "{{ .Values.module.source }}"
         - name: module_source_path
           value: "{{ .Values.module.path }}"
+        - name: name
+          value: "{{ .Values.name }}"
     templates:
       - name: control-loop
         steps:
@@ -43,3 +45,5 @@ spec:
                     value: "{{ .Values.customer_id }}"
                   - name: env_name
                     value: "{{ .Values.env_name }}"
+                  - name: name
+                    value: "{{ .Values.name }}"
