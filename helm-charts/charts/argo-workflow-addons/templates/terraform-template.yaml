@@ -13,7 +13,7 @@ spec:
           - name: module_source_path
           - name: is_apply
           - name: lock_state
-            value: true
+            value: "true"
           - name: customer_id
           - name: env_name
           - name: name
@@ -22,7 +22,7 @@ spec:
           - name: terraform-config
             path: "/home"
             git:
-              repo: '"{{"{{"}}inputs.parameters.module_source{{"}}"}}"'
+              repo: "{{inputs.parameters.module_source}}"
               sshPrivateKeySecret:
                 name: github-ssh-key
                 key: id_rsa
@@ -34,8 +34,8 @@ spec:
         cmd:
           - sh
         source: |
-          module_source="{{"{{"}}inputs.parameters.module_source{{"}}"}}"
-          module_source_path="{{"{{"}}inputs.parameters.module_source_path{{"}}"}}"
+          module_source="{{inputs.parameters.module_source}}"
+          module_source_path="{{inputs.parameters.module_source_path}}"
 
           cd /home/$module_source_path
           mkdir ~/.ssh
@@ -53,10 +53,10 @@ spec:
           aws_secret_access_key = ${SHARED_AWS_SECRET_ACCESS_KEY}
           EOT
 
-          customer_id="{{"{{"}}inputs.parameters.customer_id{{"}}"}}"
-          env_name="{{"{{"}}inputs.parameters.env_name{{"}}"}}"
-          lock_state="{{"{{"}}inputs.parameters.lock_state{{"}}"}}"
-          name="{{"{{"}}inputs.parameters.name{{"}}"}}"
+          customer_id="{{inputs.parameters.customer_id}}"
+          env_name="{{inputs.parameters.env_name}}"
+          lock_state="{{inputs.parameters.lock_state}}"
+          name="{{inputs.parameters.name}}"
           cust_id_env_name=$customer_id-$env_name
 
           terraform init
@@ -64,7 +64,7 @@ spec:
           terraform workspace select $cust_id_env_name
           terraform init
 
-          if [ "{{"{{"}}inputs.parameters.is_apply{{"}}"}}" -eq 0 ]
+          if [ "{{inputs.parameters.is_apply}}" -eq 0 ]
           then
             terraform plan -lock=$lock_state -detailed-exitcode -var-file tfvars/$customer_id/$env_name.tfvars
             result=$?
@@ -74,16 +74,14 @@ spec:
             then
               app="${cust_id_env_name}-terraform-config-${name}"
 
-              RES=$(curl --insecure -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2MDMyMDIwNDksImlzcyI6ImFyZ29jZCIsIm5iZiI6MTYwMzIwMjA0OSwic3ViIjoiYWRtaW4ifQ.358wkQYoNPWJzFYM68cwxItBJvuA9QkWhVt75iXBjCQ" -H "Content-Type: application/json" -d '{"project":"default","syncPolicy":{"automated":{"prune":true,"selfHeal":true}},"destination":{"namespace":"default","server":"https://2F90398E9082D8C0F636B0172A0232F8.sk1.us-east-1.eks.amazonaws.com"},"source":{"repoURL":"git@github.com:CompuZest/helm-charts.git","path":"charts/terraform-config","targetRevision":"HEAD","helm":{"values":"is_out_of_sync: true\ncustomer_id: \"'$customer_id'\"\nenv_name: \"'$env_name'\"\nname: \"'$name'\"\nmodule:\n  source: \"'$module_source'\"\n  path: '$module_source_path'\nvariables:\n  - name: cidr\n    value: \"10.1.0.0/16\"\noutputs: \"\"\n"}}}' -X PUT https://argo-cd-argocd-server.argo.svc.cluster.local/api/v1/applications/$app/spec)
-              
-              echo $RES
+              RES=$(curl --insecure -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2MDM4NTUzNzIsImlzcyI6ImFyZ29jZCIsIm5iZiI6MTYwMzg1NTM3Miwic3ViIjoiYWRtaW4ifQ.-yKKrQJMEbpXNY9oNzdufMtQYqiNQiksXfIihc89rkU" -H "Content-Type: application/json" -d '{"project":"default","syncPolicy":{"automated":{"prune":true,"selfHeal":true
+}},"destination":{"namespace":"default","server":"https://0.0.0.0:54484"},"source":{"repoURL":"git@github.com:CompuZest/hel
+m-charts.git","path":"charts/terraform-config","targetRevision":"HEAD","helm":{"values":"is_out_of_sync: true\ncustomer_id: \"'$customer_id'\"\nenv_name: \"'$env_name'\"\nname: \"'$name'\"\nmodule:\n  source: \"'$module_source'\"\n  path: '$module_source_path'\nvariables:\n  - name: cidr\n    value: \"10.1.0.0/16\"\noutputs: \"\"\n"}}}' -X PUT https://argo-cd-argocd-server.argo.svc.cluster.local/api/v1/applications/$app/spec)
 
-              curl -d '{"channel":"slack-notification","message":"Networking Terraform is Out of Sync. Please approve Sync."}' -H "Content-Type: application/json" -X POST http://webhook-eventsource-svc.argo.svc.cluster.local:12000/terraform-diff
             fi
           else
             terraform apply -var-file tfvars/$customer_id/$env_name.tfvars -auto-approve
             echo -n 0 > /tmp/plan_code.txt
-            curl -d '{"channel":"slack-notification","message":"Networking Terraform is back in Sync now."}' -H "Content-Type: application/json" -X POST http://webhook-eventsource-svc.argo.svc.cluster.local:12000/terraform-diff
           fi
         env:
           - name: CUSTOMER_AWS_ACCESS_KEY_ID
@@ -110,6 +108,11 @@ spec:
           - name: github-ssh-key-mount
             mountPath: "/root/ssh_secret"
             readOnly: false
+          - name: tmp
+            mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: { }
       outputs:
         parameters:
           - name: planCode
