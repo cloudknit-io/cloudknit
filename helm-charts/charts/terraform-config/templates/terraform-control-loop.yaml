@@ -42,7 +42,7 @@ spec:
                   - name: lock_state
                     value: false
                   - name: customer_id
-                    value: "{{ .Values.customer_id }}"
+                    value: '"{{ .Values.customer_id }}"'
                   - name: env_name
                     value: "{{ .Values.env_name }}"
                   - name: name
