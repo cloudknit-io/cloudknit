@@ -63,19 +63,22 @@ spec:
           terraform workspace new $cust_id_env_name
           terraform workspace select $cust_id_env_name
           terraform init
-
+          
+          echo "IsApply"
+          echo "{{inputs.parameters.is_apply}}"
           if [ "{{inputs.parameters.is_apply}}" -eq 0 ]
           then
             terraform plan -lock=$lock_state -detailed-exitcode -var-file tfvars/$customer_id/$env_name.tfvars
             result=$?
             echo -n $result > /tmp/plan_code.txt
-
+            echo $result
             if [ $result -eq 2 ]
             then
               app="${cust_id_env_name}-terraform-config-${name}"
+              echo $app
 
               RES=$(curl --insecure -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2MDM4NTUzNzIsImlzcyI6ImFyZ29jZCIsIm5iZiI6MTYwMzg1NTM3Miwic3ViIjoiYWRtaW4ifQ.-yKKrQJMEbpXNY9oNzdufMtQYqiNQiksXfIihc89rkU" -H "Content-Type: application/json" -d '{"project":"default","syncPolicy":{"automated":{"prune":true,"selfHeal":true
-}},"destination":{"namespace":"default","server":"https://0.0.0.0:54484"},"source":{"repoURL":"git@github.com:CompuZest/hel
+}},"destination":{"namespace":"default","server":"https://192.168.1.155:54484"},"source":{"repoURL":"git@github.com:CompuZest/hel
 m-charts.git","path":"charts/terraform-config","targetRevision":"HEAD","helm":{"values":"is_out_of_sync: true\ncustomer_id: \"'$customer_id'\"\nenv_name: \"'$env_name'\"\nname: \"'$name'\"\nmodule:\n  source: \"'$module_source'\"\n  path: '$module_source_path'\nvariables:\n  - name: cidr\n    value: \"10.1.0.0/16\"\noutputs: \"\"\n"}}}' -X PUT https://argo-cd-argocd-server.argo.svc.cluster.local/api/v1/applications/$app/spec)
 
             fi
