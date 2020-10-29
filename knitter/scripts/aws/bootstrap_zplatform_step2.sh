@@ -11,7 +11,8 @@ argocd repo add --name infra-deploy-terraform-config git@github.com:CompuZest/in
 
 argocd repo add --name helm-charts git@github.com:CompuZest/helm-charts.git --ssh-private-key-path argo --insecure-ignore-host-key
 
-argocd cluster add arn:aws:eks:us-east-1:413422438110:cluster/0-sandbox-eks
+#argocd cluster add arn:aws:eks:us-east-1:413422438110:cluster/0-sandbox-eks
+argocd cluster add k3d-sandbox-k3d
 
 argocd app create 1-customer --repo git@github.com:CompuZest/infra-deploy-terraform-config.git --path 1 --dest-server https://kubernetes.default.svc --dest-namespace default --sync-policy automated --auto-prune
 
