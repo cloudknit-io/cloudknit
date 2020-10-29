@@ -1,0 +1,66 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: terraform-sync-template
+  namespace: argo
+spec:
+  entrypoint: update
+  volumes:
+    - name: github-ssh-key-mount
+      secret:
+        secretName: github-ssh-key
+        defaultMode: 384
+  templates:
+    - name: update
+      inputs:
+        parameters:
+          - name: module_source
+          - name: module_source_path
+          - name: name
+          - name: env_name
+          - name: customer_id
+      steps:
+        - - name: plan
+            templateRef:
+              name: workflow-template-terraform
+              template: run
+            arguments:
+              parameters:
+                - name: module_source
+                  value: "{{inputs.parameters.module_source}}"
+                - name: module_source_path
+                  value: "{{inputs.parameters.module_source_path}}"
+                - name: is_apply
+                  value: "0"
+                - name: customer_id
+                  value: "{{inputs.parameters.customer_id}}"
+                - name: env_name
+                  value: "{{inputs.parameters.env_name}}"
+                - name: name
+                  value: "{{inputs.parameters.name}}"
+        - - name: approve
+            template: approve
+            when: "{{steps.plan.outputs.parameters.planCode}} == 2"
+        - - name: apply
+            templateRef:
+              name: workflow-template-terraform
+              template: run
+            arguments:
+              parameters:
+                - name: module_source
+                  value: "{{inputs.parameters.module_source}}"
+                - name: module_source_path
+                  value: "{{inputs.parameters.module_source_path}}"
+                - name: is_apply
+                  value: "1"
+                - name: customer_id
+                  value: "{{inputs.parameters.customer_id}}"
+                - name: env_name
+                  value: "{{inputs.parameters.env_name}}"
+                - name: name
+                  value: "{{inputs.parameters.name}}"
+            when: "{{steps.plan.outputs.parameters.planCode}} == 2"
+
+    - name: approve
+      suspend: {}

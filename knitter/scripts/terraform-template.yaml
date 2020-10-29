@@ -1,0 +1,128 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: workflow-template-terraform
+  namespace: argo
+spec:
+  entrypoint: run
+  templates:
+    - name: run
+      inputs:
+        parameters:
+          - name: module_source
+          - name: module_source_path
+          - name: is_apply
+          - name: lock_state
+            value: "true"
+          - name: customer_id
+          - name: env_name
+          - name: name
+            value: "terraform-config"
+        artifacts:
+          - name: terraform-config
+            path: "/home"
+            git:
+              repo: "{{inputs.parameters.module_source}}"
+              sshPrivateKeySecret:
+                name: github-ssh-key
+                key: id_rsa
+              insecureIgnoreHostKey: true
+      serviceAccountName: argo
+      script:
+        imagePullPolicy: Always
+        image: shahadarsh/terraform:latest
+        cmd:
+          - sh
+        source: |
+          module_source="{{inputs.parameters.module_source}}"
+          module_source_path="{{inputs.parameters.module_source_path}}"
+
+          cd /home/$module_source_path
+          mkdir ~/.ssh
+          cat /root/ssh_secret/id_rsa >> ~/.ssh/id_rsa
+          chmod 400 ~/.ssh/id_rsa
+          ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+
+          mkdir ~/.aws
+          cat <<EOT >> ~/.aws/credentials
+          [default]
+          aws_access_key_id = ${CUSTOMER_AWS_ACCESS_KEY_ID}
+          aws_secret_access_key = ${CUSTOMER_AWS_SECRET_ACCESS_KEY}
+          [compuzest-shared]
+          aws_access_key_id = ${SHARED_AWS_ACCESS_KEY_ID}
+          aws_secret_access_key = ${SHARED_AWS_SECRET_ACCESS_KEY}
+          EOT
+
+          customer_id="{{inputs.parameters.customer_id}}"
+          env_name="{{inputs.parameters.env_name}}"
+          lock_state="{{inputs.parameters.lock_state}}"
+          name="{{inputs.parameters.name}}"
+          cust_id_env_name=$customer_id-$env_name
+
+          terraform init
+          terraform workspace new $cust_id_env_name
+          terraform workspace select $cust_id_env_name
+          terraform init
+
+          if [ "{{inputs.parameters.is_apply}}" -eq 0 ]
+          then
+            terraform plan -lock=$lock_state -detailed-exitcode -var-file tfvars/$customer_id/$env_name.tfvars
+            result=$?
+            echo -n $result > /tmp/plan_code.txt
+
+            app="${cust_id_env_name}-terraform-config-${name}"
+            token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2MDM5NDQxMjgsImlzcyI6ImFyZ29jZCIsIm5iZiI6MTYwMzk0NDEyOCwic3ViIjoiYWRtaW4ifQ.hlk7a2UGYGiAwXsGdShLT3oL8R1SKrScA7zf3OMGdvc"
+
+            if [ $result -eq 2 ]
+            then
+
+              RES=$(curl --insecure -H "Authorization: Bearer ${token}" -H "Content-Type: application/json" -d '{"project":"default","syncPolicy":{"automated":{"prune":true,"selfHeal":true}},"destination":{"namespace":"default","server":"https://192.168.1.155:54484"},"source":{"repoURL":"git@github.com:CompuZest/helm-charts.git","path":"charts/terraform-config","targetRevision":"HEAD","helm":{"values":"is_out_of_sync: true\ncustomer_id: \"'$customer_id'\"\nenv_name: \"'$env_name'\"\nname: \"'$name'\"\nmodule:\n  source: \"'$module_source'\"\n  path: '$module_source_path'\nvariables:\n  - name: cidr\n    value: \"10.1.0.0/16\"\noutputs: \"\"\n"}}}' -X PUT https://argo-cd-argocd-server.argo.svc.cluster.local/api/v1/applications/$app/spec)
+
+              sleep 5
+
+              curl --insecure https://argo-cd-argocd-server.argo.svc.cluster.local/api/v1/applications/$cust_id_env_name/sync -H 'Content-Type: application/json' -H "Authorization: Bearer ${token}" --data-binary '{"revision":"HEAD","prune":false,"dryRun":false,"strategy":{"hook":{}},"resources":null}'
+
+            else
+              RES=$(curl --insecure -H "Authorization: Bearer ${token}" -H "Content-Type: application/json" -d '{"project":"default","syncPolicy":{"automated":{"prune":true,"selfHeal":true}},"destination":{"namespace":"default","server":"https://192.168.1.155:54484"},"source":{"repoURL":"git@github.com:CompuZest/helm-charts.git","path":"charts/terraform-config","targetRevision":"HEAD","helm":{"values":customer_id: \"'$customer_id'\"\nenv_name: \"'$env_name'\"\nname: \"'$name'\"\nmodule:\n  source: \"'$module_source'\"\n  path: '$module_source_path'\nvariables:\n  - name: cidr\n    value: \"10.1.0.0/16\"\noutputs: \"\"\n"}}}' -X PUT https://argo-cd-argocd-server.argo.svc.cluster.local/api/v1/applications/$app/spec)
+
+            fi
+          else
+            terraform apply -var-file tfvars/$customer_id/$env_name.tfvars -auto-approve
+            echo -n 0 > /tmp/plan_code.txt
+          fi
+        env:
+          - name: CUSTOMER_AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: aws-creds
+                key: aws_access_key_id
+          - name: CUSTOMER_AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: aws-creds
+                key: aws_secret_access_key
+          - name: SHARED_AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: shared-aws-creds
+                key: aws_access_key_id
+          - name: SHARED_AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: shared-aws-creds
+                key: aws_secret_access_key
+        volumeMounts:
+          - name: github-ssh-key-mount
+            mountPath: "/root/ssh_secret"
+            readOnly: false
+          - name: tmp
+            mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: { }
+      outputs:
+        parameters:
+          - name: planCode
+            valueFrom:
+              path: /tmp/plan_code.txt
+            globalName: plan-code
