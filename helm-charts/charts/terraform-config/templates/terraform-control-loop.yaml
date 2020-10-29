@@ -4,6 +4,8 @@ kind: CronWorkflow
 metadata:
   name: "{{ .Values.customer_id }}-{{ .Values.env_name}}-{{ .Values.name}}-control-loop"
   namespace: argo
+  labels:
+    terraform/control-loop: 'true'
 serverDryRun: false
 spec:
   schedule: "*/2 * * * *"
