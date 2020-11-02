@@ -1,0 +1,11 @@
+domain: compuzest.com
+layout: go.kubebuilder.io/v2
+projectName: environment-operator
+repo: github.com/compuzest/environment-operator
+resources:
+- group: stable
+  kind: Environment
+  version: v1alpha1
+version: 3-alpha
+plugins:
+  go.sdk.operatorframework.io/v2-alpha: {}
