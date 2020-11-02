@@ -30,7 +30,8 @@ import (
 	"io/ioutil"
 	//"k8s.io/client-go/kubernetes/scheme"
 	"github.com/argoproj/argo/pkg/client/clientset/versioned/scheme"
-	workflowv1alpha1 "github.com/argoproj/argo/pkg/client/clientset/versioned/typed/workflow/v1alpha1"
+	//workflowv1alpha1 "github.com/argoproj/argo/pkg/client/clientset/versioned/typed/workflow/v1alpha1"
+	v1alpha1 "github.com/argoproj/argo/pkg/apis/workflow/v1alpha1"
 )
 
 // EnvironmentReconciler reconciles a Environment object
@@ -63,8 +64,10 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	}
 	fmt.Printf("%#v\n", obj)
 	fmt.Printf("%#v\n", groupVersionKind)
+	var workflowObj = obj.(*v1alpha1.Workflow)
 
-	workflowv1alpha1.Create(obj)
+	fmt.Printf("%#v\n", workflowObj)
+	//workflowv1alpha1.Create(workflowObj)
 	return ctrl.Result{}, nil
 }
 
