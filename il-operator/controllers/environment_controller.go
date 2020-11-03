@@ -22,7 +22,7 @@ import (
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	kClient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	stablev1alpha1 "github.com/compuzest/environment-operator/api/v1alpha1"
 
@@ -32,11 +32,14 @@ import (
 	"github.com/argoproj/argo/pkg/client/clientset/versioned/scheme"
 	//workflowv1alpha1 "github.com/argoproj/argo/pkg/client/clientset/versioned/typed/workflow/v1alpha1"
 	v1alpha1 "github.com/argoproj/argo/pkg/apis/workflow/v1alpha1"
+	wfclientset "github.com/argoproj/argo/pkg/client/clientset/versioned"
+
+	"k8s.io/client-go/rest"
 )
 
 // EnvironmentReconciler reconciles a Environment object
 type EnvironmentReconciler struct {
-	client.Client
+	kClient.Client
 	Log    logr.Logger
 	Scheme *runtime.Scheme
 }
@@ -53,21 +56,25 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	content, err = ioutil.ReadFile("dev.yaml")
 
-	fmt.Printf("%#v\n", "Here:")
-	fmt.Printf("%#v\n", string(content))
-
 	decode := scheme.Codecs.UniversalDeserializer().Decode
 	obj, groupVersionKind, err := decode(content, nil, nil)
+
+	fmt.Printf("%#v\n", groupVersionKind)
 
 	if err != nil {
 		fmt.Printf("%#v\n", (fmt.Sprintf("Error while decoding YAML object. Err was: %s", err)))
 	}
-	fmt.Printf("%#v\n", obj)
-	fmt.Printf("%#v\n", groupVersionKind)
-	var workflowObj = obj.(*v1alpha1.Workflow)
+
+	workflowObj := obj.(*v1alpha1.Workflow)
 
 	fmt.Printf("%#v\n", workflowObj)
-	//workflowv1alpha1.Create(workflowObj)
+	config, err := rest.InClusterConfig()
+
+	wfClient := wfclientset.NewForConfigOrDie(config).ArgoprojV1alpha1().Workflows("argo")
+
+	createdWf, err := wfClient.Create(workflowObj)
+	fmt.Printf("%#v\n", err)
+	fmt.Printf("%#v\n", createdWf.Name)
 	return ctrl.Result{}, nil
 }
 
