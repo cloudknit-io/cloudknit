@@ -12,7 +12,7 @@ argocd repo add --name infra-deploy-terraform-config git@github.com:CompuZest/in
 argocd repo add --name helm-charts git@github.com:CompuZest/helm-charts.git --ssh-private-key-path argo --insecure-ignore-host-key
 
 #argocd cluster add arn:aws:eks:us-east-1:413422438110:cluster/0-sandbox-eks
-argocd cluster add k3d-sandbox-k3d
+argocd cluster add k3d-sandbox-k3d --insecure
 
 cd ../../../infra-deploy-bootstrap/scripts
 
