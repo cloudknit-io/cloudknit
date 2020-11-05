@@ -27,16 +27,6 @@ import (
 	kClient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	stablev1alpha1 "github.com/compuzest/environment-operator/api/v1alpha1"
-
-	"fmt"
-	"io/ioutil"
-	//"k8s.io/client-go/kubernetes/scheme"
-	"github.com/argoproj/argo/pkg/client/clientset/versioned/scheme"
-	//workflowv1alpha1 "github.com/argoproj/argo/pkg/client/clientset/versioned/typed/workflow/v1alpha1"
-	v1alpha1 "github.com/argoproj/argo/pkg/apis/workflow/v1alpha1"
-	wfclientset "github.com/argoproj/argo/pkg/client/clientset/versioned"
-
-	"k8s.io/client-go/rest"
 )
 
 // EnvironmentReconciler reconciles a Environment object
@@ -53,30 +43,8 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	_ = context.Background()
 	_ = r.Log.WithValues("environment", req.NamespacedName)
 
-	var err error
-	var content []byte
-	github.Setup("Adarsh Shah", "https://github.com/CompuZest/terraform-environment.git", "test.go", "Adarsh Shah", "shahadarsh@gmail.com")
-	content, err = ioutil.ReadFile("dev.yaml")
+	github.Setup("CompuZest", "terraform-environment", "1/dev/dev.yaml,1/dev/networking.yaml,1/dev/platform-eks.yaml", "master", "Adarsh Shah", "shahadarsh@gmail.com")
 
-	decode := scheme.Codecs.UniversalDeserializer().Decode
-	obj, groupVersionKind, err := decode(content, nil, nil)
-
-	fmt.Printf("%#v\n", groupVersionKind)
-
-	if err != nil {
-		fmt.Printf("%#v\n", (fmt.Sprintf("Error while decoding YAML object. Err was: %s", err)))
-	}
-
-	workflowObj := obj.(*v1alpha1.Workflow)
-
-	fmt.Printf("%#v\n", workflowObj)
-	config, err := rest.InClusterConfig()
-
-	wfClient := wfclientset.NewForConfigOrDie(config).ArgoprojV1alpha1().Workflows("argo")
-
-	createdWf, err := wfClient.Create(workflowObj)
-	fmt.Printf("%#v\n", err)
-	fmt.Printf("%#v\n", createdWf.Name)
 	return ctrl.Result{}, nil
 }
 

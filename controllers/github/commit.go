@@ -60,8 +60,8 @@ func getRef() (ref *github.Reference, err error) {
 
 	var baseRef *github.Reference
 	if baseRef, _, err = client.Git.GetRef(ctx, sourceOwner, sourceRepo, "refs/heads/"+baseBranch); err != nil {
-	        fmt.Printf("baseRef: %s\n", baseRef)
-	        fmt.Printf("Error: %s\n", err)
+		fmt.Printf("baseRef: %s\n", baseRef)
+		fmt.Printf("Error: %s\n", err)
 		return nil, err
 	}
 
@@ -168,19 +168,19 @@ func createPR() (err error) {
 	return nil
 }
 
-func Setup(_sourceOwner string, _sourceRepo string, _sourceFiles string, 
-            _commitBranch string, _authorName string, _authorEmail string) {
+func Setup(_sourceOwner string, _sourceRepo string, _sourceFiles string,
+	_commitBranch string, _authorName string, _authorEmail string) {
 	sourceOwner = _sourceOwner
 	sourceRepo = _sourceRepo
 	sourceFiles = _sourceFiles
 	commitBranch = _commitBranch
-	baseBranch = _commitBranch 
-        authorName = _authorName
-        authorEmail = _authorEmail
+	baseBranch = _commitBranch
+	authorName = _authorName
+	authorEmail = _authorEmail
 
 	//token := os.Getenv("GITHUB_AUTH_TOKEN")
-        token := "7108fdd6d833e68a05bc8b6d3f4f1f56e29f890c"
-        if token == "" {
+	token := "7108fdd6d833e68a05bc8b6d3f4f1f56e29f890c"
+	if token == "" {
 		log.Fatal("Unauthorized: No token present")
 	}
 	if sourceOwner == "" || sourceRepo == "" || commitBranch == "" || sourceFiles == "" || authorName == "" || authorEmail == "" {
