@@ -19,6 +19,8 @@ package controllers
 import (
 	"context"
 
+	github "github.com/compuzest/environment-operator/controllers/github"
+
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -53,7 +55,7 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	var err error
 	var content []byte
-
+	github.Setup("Adarsh Shah", "https://github.com/CompuZest/terraform-environment.git", "test.go", "Adarsh Shah", "shahadarsh@gmail.com")
 	content, err = ioutil.ReadFile("dev.yaml")
 
 	decode := scheme.Codecs.UniversalDeserializer().Decode
