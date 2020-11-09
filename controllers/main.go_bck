@@ -1,7 +1,16 @@
 package main
 
-import github "github.com/compuzest/environment-operator/controllers/github"
+import (
+        "fmt"
+        argocd "github.com/compuzest/environment-operator/controllers/argocd"
+       	"k8s.io/apimachinery/pkg/util/json"
+)
 
 func main() {
-        github.Setup("CompuZest", "terraform-environment", "1/dev/dev.yaml,1/dev/networking.yaml,1/dev/platform-eks.yaml", "master", "Adarsh Shah", "shahadarsh@gmail.com")
+        application := argocd.GenerateYaml()
+        bytes, err := json.Marshal(application)
+	if err != nil {
+		panic(err)
+	}
+       fmt.Println(string(bytes))
 }
