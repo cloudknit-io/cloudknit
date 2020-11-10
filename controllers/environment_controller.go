@@ -28,9 +28,7 @@ import (
 
 	stablev1alpha1 "github.com/compuzest/environment-operator/api/v1alpha1"
 	argocd "github.com/compuzest/environment-operator/controllers/argocd"
-	"github.com/ghodss/yaml"
-	"io/ioutil"
-	"k8s.io/apimachinery/pkg/util/json"
+	fileutil "github.com/compuzest/environment-operator/controllers/file"
 )
 
 // EnvironmentReconciler reconciles a Environment object
@@ -45,29 +43,19 @@ type EnvironmentReconciler struct {
 
 func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
-	log := r.Log.WithValues("environment", req.NamespacedName)
+	//log := r.Log.WithValues("environment", req.NamespacedName)
 
 	environment := &stablev1alpha1.Environment{}
 
 	r.Get(ctx, req.NamespacedName, environment)
 
-	log.Info(environment.Spec.TerraformConfigs[0].Name)
+	//env := argocd.GenerateEnvironmentApp(environment)
+	//fileutil.SaveYamlFile(*env, "1/dev.yaml")
 
 	for _, terraformConfig := range environment.Spec.TerraformConfigs {
-		application := argocd.GenerateYaml(*terraformConfig)
-		jsonBytes, err := json.Marshal(application)
-		if err != nil {
-			panic(err)
-		}
+		application := argocd.GenerateTerraformConfigApps(*terraformConfig)
 
-		bytes, err2 := yaml.JSONToYAML(jsonBytes)
-		if err2 != nil {
-			panic(err2)
-		}
-		err3 := ioutil.WriteFile("1/dev/"+terraformConfig.Name+".yaml", bytes, 0644)
-		if err3 != nil {
-			panic(err3)
-		}
+		fileutil.SaveYamlFile(*application, "1/dev/"+terraformConfig.Name+".yaml")
 	}
 
 	github.CommitAndPushFiles("CompuZest", "terraform-environment", "1/dev/", "master", "Adarsh Shah", "shahadarsh@gmail.com")

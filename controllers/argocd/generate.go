@@ -7,7 +7,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func GenerateYaml(terraformConfig stablev1alpha1.TerraformConfig) *appv1.Application {
+func GenerateTerraformConfigApps(terraformConfig stablev1alpha1.TerraformConfig) *appv1.Application {
 
 	variables := ""
 
