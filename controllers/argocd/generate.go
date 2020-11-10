@@ -1,12 +1,32 @@
 package controllers
 
 import (
+	"fmt"
 	appv1 "github.com/argoproj/argo-cd/pkg/apis/application/v1alpha1"
 	stablev1alpha1 "github.com/compuzest/environment-operator/api/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func GenerateYaml(terraformConfig stablev1alpha1.TerraformConfig) *appv1.Application {
+
+	variables := "variables:"
+
+	for _, variable := range terraformConfig.Variables {
+            variables += "\n- name:" + variable.Name + "\nvalue:" + variable.Value
+	}
+
+	helmValues := fmt.Sprintf(`|
+                    customer_id: "1"
+                    env_name: "dev"
+                    name: %s
+                    module:
+                        source: %s
+                        path: %s
+                    variables: %s
+                     `, terraformConfig.Name,
+		terraformConfig.Module.Source,
+		terraformConfig.Module.Path,
+		variables)
 	return &appv1.Application{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Application",
@@ -39,7 +59,7 @@ func GenerateYaml(terraformConfig stablev1alpha1.TerraformConfig) *appv1.Applica
 				Path:           terraformConfig.Module.Path,
 				TargetRevision: "HEAD",
 				Helm: &appv1.ApplicationSourceHelm{
-					Values: "",
+					Values: helmValues,
 				},
 			},
 		},
