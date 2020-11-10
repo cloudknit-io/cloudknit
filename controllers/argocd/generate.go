@@ -9,21 +9,22 @@ import (
 
 func GenerateYaml(terraformConfig stablev1alpha1.TerraformConfig) *appv1.Application {
 
-	variables := "variables:"
+	variables := ""
 
 	for _, variable := range terraformConfig.Variables {
-		variables += "\n- name:" + variable.Name + "\nvalue:" + variable.Value
+		variables += "\n- name:" + variable.Name + "\n  value:" + variable.Value
 	}
 
-	helmValues := fmt.Sprintf(`|
-                    customer_id: "1"
-                    env_name: "dev"
-                    name: %s
-                    module:
-                        source: %s
-                        path: %s
-                    variables: %s
-                     `, terraformConfig.Name,
+	helmValues := fmt.Sprintf(`
+        customer_id: "1"
+        env_name: "dev"
+        name: %s
+        module:
+            source: %s
+            path: %s
+        variables: 
+        %s
+        `, terraformConfig.Name,
 		terraformConfig.Module.Source,
 		terraformConfig.Module.Path,
 		variables)
@@ -51,7 +52,7 @@ func GenerateYaml(terraformConfig stablev1alpha1.TerraformConfig) *appv1.Applica
 				},
 			},
 			Destination: appv1.ApplicationDestination{
-				Server:    "https://192.168.1.155:60792",
+				Server:    "https://192.168.1.155:51231",
 				Namespace: "default",
 			},
 			Source: appv1.ApplicationSource{
