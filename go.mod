@@ -8,6 +8,7 @@ require (
 	github.com/argoproj/argo-cd v0.0.0-00010101000000-000000000000
 	github.com/argoproj/pkg v0.3.0 // indirect
 	github.com/colinmarc/hdfs v1.1.3 // indirect
+	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v0.2.0
 	github.com/gogo/protobuf v1.3.1 // indirect
 	github.com/google/go-github/v32 v32.1.0
@@ -24,6 +25,7 @@ require (
 	gopkg.in/jcmturner/gokrb5.v5 v5.3.0 // indirect
 	gopkg.in/jcmturner/rpc.v0 v0.0.2 // indirect
 	gopkg.in/src-d/go-git.v4 v4.13.1 // indirect
+	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
 	k8s.io/api v0.17.8
 	k8s.io/apimachinery v0.19.3
 	k8s.io/client-go v0.18.6

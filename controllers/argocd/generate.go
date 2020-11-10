@@ -12,7 +12,7 @@ func GenerateYaml(terraformConfig stablev1alpha1.TerraformConfig) *appv1.Applica
 	variables := "variables:"
 
 	for _, variable := range terraformConfig.Variables {
-            variables += "\n- name:" + variable.Name + "\nvalue:" + variable.Value
+		variables += "\n- name:" + variable.Name + "\nvalue:" + variable.Value
 	}
 
 	helmValues := fmt.Sprintf(`|
@@ -55,8 +55,8 @@ func GenerateYaml(terraformConfig stablev1alpha1.TerraformConfig) *appv1.Applica
 				Namespace: "default",
 			},
 			Source: appv1.ApplicationSource{
-				RepoURL:        terraformConfig.Module.Source,
-				Path:           terraformConfig.Module.Path,
+				RepoURL:        "git@github.com:CompuZest/helm-charts.git",
+				Path:           "charts/terraform-config",
 				TargetRevision: "HEAD",
 				Helm: &appv1.ApplicationSourceHelm{
 					Values: helmValues,

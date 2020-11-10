@@ -19,16 +19,17 @@ package controllers
 import (
 	"context"
 
-	//github "github.com/compuzest/environment-operator/controllers/github"
+	github "github.com/compuzest/environment-operator/controllers/github"
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	kClient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"fmt"
 	stablev1alpha1 "github.com/compuzest/environment-operator/api/v1alpha1"
 	argocd "github.com/compuzest/environment-operator/controllers/argocd"
+	"github.com/ghodss/yaml"
+	"io/ioutil"
 	"k8s.io/apimachinery/pkg/util/json"
 )
 
@@ -54,14 +55,22 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	for _, terraformConfig := range environment.Spec.TerraformConfigs {
 		application := argocd.GenerateYaml(*terraformConfig)
-		bytes, err := json.Marshal(application)
+		jsonBytes, err := json.Marshal(application)
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println(string(bytes))
+
+		bytes, err2 := yaml.JSONToYAML(jsonBytes)
+		if err2 != nil {
+			panic(err2)
+		}
+		err3 := ioutil.WriteFile("1/dev/"+terraformConfig.Name+".yaml", bytes, 0644)
+		if err3 != nil {
+			panic(err3)
+		}
 	}
 
-	//github.CommitAndPushFiles("CompuZest", "terraform-environment", "1/dev/", "master", "Adarsh Shah", "shahadarsh@gmail.com")
+	github.CommitAndPushFiles("CompuZest", "terraform-environment", "1/dev/", "master", "Adarsh Shah", "shahadarsh@gmail.com")
 
 	return ctrl.Result{}, nil
 }
