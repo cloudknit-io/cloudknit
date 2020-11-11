@@ -1,0 +1,45 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: workflow-trigger-template
+  namespace: argo
+spec:
+  entrypoint: run
+  templates:
+    - name: run
+      inputs:
+        parameters:
+          - name: workflowtemplate
+          - name: module_source
+          - name: module_source_path
+          - name: customer_id
+            value: '"1"'
+          - name: env_name
+          - name: name
+      resource:
+        action: create
+        manifest: |
+          apiVersion: argoproj.io/v1alpha1
+          kind: Workflow
+          metadata:
+            generateName: {{inputs.parameters.name}}
+            namespace: argo
+            labels:
+              terraform/sync: 'true'
+          spec:
+            arguments:
+              parameters:
+              - name: module_source
+                value: {{inputs.parameters.module_source}}
+              - name: module_source_path
+                value: {{inputs.parameters.module_source_path}}
+              - name: customer_id
+                value: {{inputs.parameters.customer_id}}
+              - name: env_name
+                value: {{inputs.parameters.env_name}}
+              - name: name
+                value: {{inputs.parameters.name}}
+            workflowTemplateRef:
+              name: {{inputs.parameters.workflowtemplate}}
+        successCondition: status.phase == Succeeded
+        failureCondition: status.phase in (Failed, Error)

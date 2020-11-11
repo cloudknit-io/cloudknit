@@ -71,19 +71,19 @@ spec:
             echo -n $result > /tmp/plan_code.txt
 
             app="${cust_id_env_name}-terraform-config-${name}"
-            token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2MDQwNzU3OTcsImlzcyI6ImFyZ29jZCIsIm5iZiI6MTYwNDA3NTc5Nywic3ViIjoiYWRtaW4ifQ.yHoD9M4LsFu_aW2RzcBM4awqSslOcZAdoDafJ7EOto4"
+            token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2MDUxMDUxMjMsImlzcyI6ImFyZ29jZCIsIm5iZiI6MTYwNTEwNTEyMywic3ViIjoiYWRtaW4ifQ.-NNcFj0ByYLlVKB00VmWU7Jr7ZpzhLE3F2Xy1nv_Eho"
 
             if [ $result -eq 2 ]
             then
 
-              RES=$(curl --insecure -H "Authorization: Bearer ${token}" -H "Content-Type: application/json" -d '{"project":"default","syncPolicy":{"automated":{"prune":true,"selfHeal":true}},"destination":{"namespace":"default","server":"https://192.168.1.155:58956"},"source":{"repoURL":"git@github.com:CompuZest/helm-charts.git","path":"charts/terraform-config","targetRevision":"HEAD","helm":{"values":"is_out_of_sync: true\ncustomer_id: \"'$customer_id'\"\nenv_name: \"'$env_name'\"\nname: \"'$name'\"\nmodule:\n  source: \"'$module_source'\"\n  path: '$module_source_path'\nvariables:\n  - name: cidr\n    value: \"10.1.0.0/16\"\noutputs: \"\"\n"}}}' -X PUT https://argo-cd-argocd-server.argo.svc.cluster.local/api/v1/applications/$app/spec)
+              RES=$(curl --insecure -H "Authorization: Bearer ${token}" -H "Content-Type: application/json" -d '{"project":"default","syncPolicy":{"automated":{"prune":true,"selfHeal":true}},"destination":{"namespace":"default","server":"https://192.168.1.155:51231"},"source":{"repoURL":"git@github.com:CompuZest/helm-charts.git","path":"charts/terraform-config","targetRevision":"HEAD","helm":{"values":"is_out_of_sync: true\ncustomer_id: \"'$customer_id'\"\nenv_name: \"'$env_name'\"\nname: \"'$name'\"\nmodule:\n  source: \"'$module_source'\"\n  path: '$module_source_path'\nvariables:\n  - name: cidr\n    value: \"10.1.0.0/16\"\noutputs: \"\"\n"}}}' -X PUT https://argo-cd-argocd-server.argo.svc.cluster.local/api/v1/applications/$app/spec)
 
               sleep 5
 
               curl --insecure https://argo-cd-argocd-server.argo.svc.cluster.local/api/v1/applications/$cust_id_env_name/sync -H 'Content-Type: application/json' -H "Authorization: Bearer ${token}" --data-binary '{"revision":"HEAD","prune":false,"dryRun":false,"strategy":{"hook":{}},"resources":null}'
 
             else
-              RES=$(curl --insecure -H "Authorization: Bearer ${token}" -H "Content-Type: application/json" -d '{"project":"default","syncPolicy":{"automated":{"prune":true,"selfHeal":true}},"destination":{"namespace":"default","server":"https://192.168.1.155:58956"},"source":{"repoURL":"git@github.com:CompuZest/helm-charts.git","path":"charts/terraform-config","targetRevision":"HEAD","helm":{"values":customer_id: \"'$customer_id'\"\nenv_name: \"'$env_name'\"\nname: \"'$name'\"\nmodule:\n  source: \"'$module_source'\"\n  path: '$module_source_path'\nvariables:\n  - name: cidr\n    value: \"10.1.0.0/16\"\noutputs: \"\"\n"}}}' -X PUT https://argo-cd-argocd-server.argo.svc.cluster.local/api/v1/applications/$app/spec)
+              RES=$(curl --insecure -H "Authorization: Bearer ${token}" -H "Content-Type: application/json" -d '{"project":"default","syncPolicy":{"automated":{"prune":true,"selfHeal":true}},"destination":{"namespace":"default","server":"https://192.168.1.155:51231"},"source":{"repoURL":"git@github.com:CompuZest/helm-charts.git","path":"charts/terraform-config","targetRevision":"HEAD","helm":{"values":customer_id: \"'$customer_id'\"\nenv_name: \"'$env_name'\"\nname: \"'$name'\"\nmodule:\n  source: \"'$module_source'\"\n  path: '$module_source_path'\nvariables:\n  - name: cidr\n    value: \"10.1.0.0/16\"\noutputs: \"\"\n"}}}' -X PUT https://argo-cd-argocd-server.argo.svc.cluster.local/api/v1/applications/$app/spec)
 
             fi
           else
