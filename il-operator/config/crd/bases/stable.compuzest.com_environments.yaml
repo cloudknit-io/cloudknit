@@ -36,6 +36,10 @@ spec:
         spec:
           description: EnvironmentSpec defines the desired state of Environment
           properties:
+            customer_id:
+              type: string
+            name:
+              type: string
             terraformConfigs:
               items:
                 properties:
@@ -69,6 +73,8 @@ spec:
                 type: object
               type: array
           required:
+          - customer_id
+          - name
           - terraformConfigs
           type: object
         status:

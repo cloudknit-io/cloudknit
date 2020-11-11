@@ -6,7 +6,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	//"os"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -135,48 +136,16 @@ func pushCommit(ref *github.Reference, tree *github.Tree) (err error) {
 	return err
 }
 
-// createPR creates a pull request. Based on: https://godoc.org/github.com/google/go-github/github#example-PullRequestsService-Create
-func createPR() (err error) {
-	if prSubject == "" {
-		return errors.New("missing `-pr-title` flag; skipping PR creation")
-	}
-
-	if prRepoOwner != "" && prRepoOwner != sourceOwner {
-		commitBranch = fmt.Sprintf("%s:%s", sourceOwner, commitBranch)
-	} else {
-		prRepoOwner = sourceOwner
-	}
-
-	if prRepo == "" {
-		prRepo = sourceRepo
-	}
-
-	newPR := &github.NewPullRequest{
-		Title:               &prSubject,
-		Head:                &commitBranch,
-		Base:                &prBranch,
-		Body:                &prDescription,
-		MaintainerCanModify: github.Bool(true),
-	}
-
-	pr, _, err := client.PullRequests.Create(ctx, prRepoOwner, prRepo, newPR)
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("PR created: %s\n", pr.GetHTMLURL())
-	return nil
-}
-
-func Setup(_sourceOwner string, _sourceRepo string, _sourceFiles string,
+func CommitAndPushFiles(_sourceOwner string, _sourceRepo string, _sourceFolder string,
 	_commitBranch string, _authorName string, _authorEmail string) {
 	sourceOwner = _sourceOwner
 	sourceRepo = _sourceRepo
-	sourceFiles = _sourceFiles
 	commitBranch = _commitBranch
 	baseBranch = _commitBranch
 	authorName = _authorName
 	authorEmail = _authorEmail
+
+	sourceFiles = getFileNames(_sourceFolder)
 
 	//token := os.Getenv("GITHUB_AUTH_TOKEN")
 	token := "7108fdd6d833e68a05bc8b6d3f4f1f56e29f890c"
@@ -206,4 +175,26 @@ func Setup(_sourceOwner string, _sourceRepo string, _sourceFiles string,
 	if err := pushCommit(ref, tree); err != nil {
 		log.Fatalf("Unable to create the commit: %s\n", err)
 	}
+}
+
+func getFileNames(folderPath string) (fileNames string) {
+	var s, sep string
+	err := filepath.Walk(folderPath,
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				log.Fatalf("Error fetching fileNames: %s\n", err)
+				return err
+			}
+
+			if !info.IsDir() {
+				s += sep + path
+				sep = ","
+			}
+			return nil
+		})
+
+	if err != nil {
+		log.Fatalf("Error fetching fileNames: %s\n", err)
+	}
+	return s
 }

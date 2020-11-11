@@ -38,6 +38,8 @@ type TerraformConfig struct {
 
 // EnvironmentSpec defines the desired state of Environment
 type EnvironmentSpec struct {
+	Name             string             `json:"name"`
+	CustomerId       string             `json:"customer_id"`
 	TerraformConfigs []*TerraformConfig `json:"terraformConfigs"`
 }
 
