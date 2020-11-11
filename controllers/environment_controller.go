@@ -28,6 +28,7 @@ import (
 
 	stablev1alpha1 "github.com/compuzest/environment-operator/api/v1alpha1"
 	argocd "github.com/compuzest/environment-operator/controllers/argocd"
+	argoWorkflow "github.com/compuzest/environment-operator/controllers/argoworkflow"
 	fileutil "github.com/compuzest/environment-operator/controllers/file"
 )
 
@@ -59,6 +60,9 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 		fileutil.SaveYamlFile(*application, envPrefix+"/"+terraformConfig.Name+".yaml")
 	}
+
+	workflow := argoWorkflow.GenerateWorkflowOfWorkflows(*environment)
+	fileutil.SaveYamlFile(*workflow, envPrefix+"/wofw.yaml")
 
 	github.CommitAndPushFiles("CompuZest", "terraform-environment", environment.Spec.CustomerId+"/", "master", "Adarsh Shah", "shahadarsh@gmail.com")
 

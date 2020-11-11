@@ -48,7 +48,7 @@ func GenerateTerraformConfigApps(environment stablev1alpha1.Environment, terrafo
 	}
 
 	helmValues := fmt.Sprintf(`
-        customer_id: %s
+        customer_id: "%s"
         env_name: %s
         name: %s
         module:
