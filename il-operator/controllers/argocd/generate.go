@@ -14,7 +14,7 @@ func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Appli
 			Kind:       "Application",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      environment.Spec.Name,
+			Name:      environment.Spec.CustomerId + "-" + environment.Spec.Name,
 			Namespace: "argo",
 		},
 		Spec: appv1.ApplicationSpec{
@@ -68,7 +68,7 @@ func GenerateTerraformConfigApps(environment stablev1alpha1.Environment, terrafo
 			APIVersion: "argoproj.io/v1alpha1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      terraformConfig.Name,
+			Name:      environment.Spec.CustomerId + "-" + environment.Spec.Name + "-" + terraformConfig.Name,
 			Namespace: "argo",
 			Annotations: map[string]string{
 				"argocd.argoproj.io/sync-wave": "2",
