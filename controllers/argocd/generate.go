@@ -7,8 +7,40 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func GenerateTerraformConfigApps(terraformConfig stablev1alpha1.TerraformConfig) *appv1.Application {
+func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Application {
+	return &appv1.Application{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "argoproj.io/v1alpha1",
+			Kind:       "Application",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      environment.Spec.Name,
+			Namespace: "argo",
+		},
+		Spec: appv1.ApplicationSpec{
+			Project: "default",
+			SyncPolicy: &appv1.SyncPolicy{
+				Automated: &appv1.SyncPolicyAutomated{
+					Prune: true,
+				},
+			},
+			Destination: appv1.ApplicationDestination{
+				Server:    "https://kubernetes.default.svc",
+				Namespace: "default",
+			},
+			Source: appv1.ApplicationSource{
+				RepoURL:        "git@github.com:CompuZest/terraform-environment.git",
+				Path:           environment.Spec.CustomerId + "/" + environment.Spec.Name,
+				TargetRevision: "HEAD",
+				Directory: &appv1.ApplicationSourceDirectory{
+					Recurse: true,
+				},
+			},
+		},
+	}
+}
 
+func GenerateTerraformConfigApps(environment stablev1alpha1.Environment, terraformConfig stablev1alpha1.TerraformConfig) *appv1.Application {
 	variables := ""
 
 	for _, variable := range terraformConfig.Variables {
@@ -16,15 +48,17 @@ func GenerateTerraformConfigApps(terraformConfig stablev1alpha1.TerraformConfig)
 	}
 
 	helmValues := fmt.Sprintf(`
-        customer_id: "1"
-        env_name: "dev"
+        customer_id: %s
+        env_name: %s
         name: %s
         module:
             source: %s
             path: %s
         variables: 
         %s
-        `, terraformConfig.Name,
+        `, environment.Spec.CustomerId,
+		environment.Name,
+		terraformConfig.Name,
 		terraformConfig.Module.Source,
 		terraformConfig.Module.Path,
 		variables)

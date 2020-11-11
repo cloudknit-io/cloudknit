@@ -49,16 +49,18 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	r.Get(ctx, req.NamespacedName, environment)
 
-	//env := argocd.GenerateEnvironmentApp(environment)
-	//fileutil.SaveYamlFile(*env, "1/dev.yaml")
+	envPrefix := environment.Spec.CustomerId + "/" + environment.Spec.Name
+
+	env := argocd.GenerateEnvironmentApp(*environment)
+	fileutil.SaveYamlFile(*env, envPrefix+".yaml")
 
 	for _, terraformConfig := range environment.Spec.TerraformConfigs {
-		application := argocd.GenerateTerraformConfigApps(*terraformConfig)
+		application := argocd.GenerateTerraformConfigApps(*environment, *terraformConfig)
 
-		fileutil.SaveYamlFile(*application, "1/dev/"+terraformConfig.Name+".yaml")
+		fileutil.SaveYamlFile(*application, envPrefix+"/"+terraformConfig.Name+".yaml")
 	}
 
-	github.CommitAndPushFiles("CompuZest", "terraform-environment", "1/dev/", "master", "Adarsh Shah", "shahadarsh@gmail.com")
+	github.CommitAndPushFiles("CompuZest", "terraform-environment", environment.Spec.CustomerId+"/", "master", "Adarsh Shah", "shahadarsh@gmail.com")
 
 	return ctrl.Result{}, nil
 }
