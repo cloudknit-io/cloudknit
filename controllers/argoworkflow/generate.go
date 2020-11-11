@@ -9,7 +9,6 @@ import (
 func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workflow.Workflow {
 
 	workflowTemplate := "terraform-sync-template"
-	customerId := string(environment.Spec.CustomerId)
 
 	var parallelSteps []workflow.ParallelSteps
 
@@ -40,10 +39,10 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 								Name:  "env_name",
 								Value: &environment.Spec.Name,
 							},
-							{
-								Name:  "customer_id",
-								Value: &customerId,
-							},
+							//{
+							//	Name:  "customer_id",
+							//	Value: "'" + &customerId + "'",
+							//},
 							{
 								Name:  "name",
 								Value: &terraformConfig.Name,
@@ -65,6 +64,14 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      environment.Spec.CustomerId + "-" + environment.Spec.Name,
 			Namespace: "argo",
+			Annotations: map[string]string{
+				"argocd.argoproj.io/hook":      "Sync",
+				"argocd.argoproj.io/sync-wave": "1",
+			},
+			Labels: map[string]string{
+				"workflows.argoproj.io/completed": "false",
+				"terraform/sync":                  "true",
+			},
 		},
 		Spec: workflow.WorkflowSpec{
 			Entrypoint: "main",
