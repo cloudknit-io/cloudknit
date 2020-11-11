@@ -27,6 +27,8 @@ import (
 	kClient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	stablev1alpha1 "github.com/compuzest/environment-operator/api/v1alpha1"
+	argocd "github.com/compuzest/environment-operator/controllers/argocd"
+	fileutil "github.com/compuzest/environment-operator/controllers/file"
 )
 
 // EnvironmentReconciler reconciles a Environment object
@@ -40,10 +42,25 @@ type EnvironmentReconciler struct {
 // +kubebuilder:rbac:groups=stable.compuzest.com,resources=environments/status,verbs=get;update;patch
 
 func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	_ = context.Background()
-	_ = r.Log.WithValues("environment", req.NamespacedName)
+	ctx := context.Background()
+	//log := r.Log.WithValues("environment", req.NamespacedName)
 
-	github.Setup("CompuZest", "terraform-environment", "1/dev/dev.yaml,1/dev/networking.yaml,1/dev/platform-eks.yaml", "master", "Adarsh Shah", "shahadarsh@gmail.com")
+	environment := &stablev1alpha1.Environment{}
+
+	r.Get(ctx, req.NamespacedName, environment)
+
+	envPrefix := environment.Spec.CustomerId + "/" + environment.Spec.Name
+
+	env := argocd.GenerateEnvironmentApp(*environment)
+	fileutil.SaveYamlFile(*env, envPrefix+".yaml")
+
+	for _, terraformConfig := range environment.Spec.TerraformConfigs {
+		application := argocd.GenerateTerraformConfigApps(*environment, *terraformConfig)
+
+		fileutil.SaveYamlFile(*application, envPrefix+"/"+terraformConfig.Name+".yaml")
+	}
+
+	github.CommitAndPushFiles("CompuZest", "terraform-environment", environment.Spec.CustomerId+"/", "master", "Adarsh Shah", "shahadarsh@gmail.com")
 
 	return ctrl.Result{}, nil
 }
