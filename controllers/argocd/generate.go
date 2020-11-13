@@ -8,6 +8,7 @@ import (
 )
 
 func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Application {
+
 	return &appv1.Application{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "argoproj.io/v1alpha1",
@@ -37,6 +38,16 @@ func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Appli
 				},
 			},
 		},
+		Status: appv1.ApplicationStatus{
+			Sync: appv1.SyncStatus{
+				ComparedTo: appv1.ComparedTo{
+					Source: appv1.ApplicationSource{
+						RepoURL: "git@github.com:CompuZest/helm-charts.git",
+					},
+				},
+				Status: "Synced",
+			},
+		},
 	}
 }
 
@@ -62,6 +73,7 @@ func GenerateTerraformConfigApps(environment stablev1alpha1.Environment, terrafo
 		terraformConfig.Module.Source,
 		terraformConfig.Module.Path,
 		variables)
+
 	return &appv1.Application{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Application",
@@ -86,7 +98,7 @@ func GenerateTerraformConfigApps(environment stablev1alpha1.Environment, terrafo
 				},
 			},
 			Destination: appv1.ApplicationDestination{
-				Server:    "https://192.168.1.155:51231",
+				Server:    "https://26AA99424E3949C763C1C083F8E0C4CA.gr7.us-east-1.eks.amazonaws.com",
 				Namespace: "default",
 			},
 			Source: appv1.ApplicationSource{
@@ -96,6 +108,16 @@ func GenerateTerraformConfigApps(environment stablev1alpha1.Environment, terrafo
 				Helm: &appv1.ApplicationSourceHelm{
 					Values: helmValues,
 				},
+			},
+		},
+		Status: appv1.ApplicationStatus{
+			Sync: appv1.SyncStatus{
+				ComparedTo: appv1.ComparedTo{
+					Source: appv1.ApplicationSource{
+						RepoURL: "git@github.com:CompuZest/helm-charts.git",
+					},
+				},
+				Status: "Synced",
 			},
 		},
 	}
