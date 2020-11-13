@@ -15,9 +15,9 @@ argocd repo add --name helm-charts git@github.com:CompuZest/helm-charts.git --ss
 
 if [ $LOCATION -eq 1 ]
 then
-    argocd cluster add k3d-sandbox-k3d --insecure
+    argocd cluster add k3d-sandbox-k3d --insecure --name sandbox
 else 
-    argocd cluster add arn:aws:eks:us-east-1:413422438110:cluster/0-sandbox-eks
+    argocd cluster add arn:aws:eks:us-east-1:413422438110:cluster/0-sandbox-eks --name sandbox
 fi
 
 cd ../../../infra-deploy-bootstrap/argo-templates

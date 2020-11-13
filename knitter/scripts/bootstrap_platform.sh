@@ -6,4 +6,4 @@ select LOCATION in "1" "2"; do
     esac
 done
 
-./common/bootstrap_zplatform_step2.sh $LOCATION
+#./common/bootstrap_zplatform_step2.sh $LOCATION

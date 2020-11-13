@@ -19,9 +19,9 @@ terraform init
 terraform apply -auto-approve -var-file tfvars/sandbox.tfvars
 
 cd ../../terraform-k8s-operator
-make generate
-make install
-make docker-build docker-push IMG=shahadarsh/terraform-k8s-operator:latest
+#make generate
+#make install
+#make docker-build docker-push IMG=shahadarsh/terraform-k8s-operator:latest
 make deploy IMG=shahadarsh/terraform-k8s-operator:latest
 
 cd ../environment-operator

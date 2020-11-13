@@ -14,6 +14,15 @@ FROM hashicorp/terraform:0.13.2
 RUN apk add --update curl
 RUN apk update && apk upgrade && apk --no-cache add curl jq
 
+RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+RUN chmod +x ./kubectl
+
+RUN mv ./kubectl /usr/local/bin/kubectl
+RUN kubectl version --client
+
+ADD scripts/terraform/run_terraform.sh .
+RUN chmod +x run_terraform.sh
+
 COPY --from=aws-iam-authenticator /usr/local/bin/aws-iam-authenticator /usr/local/bin/aws-iam-authenticator
 
 ENTRYPOINT ["sh"]
