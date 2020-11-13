@@ -10,6 +10,7 @@
 /bin
 
 *.swp
+*.swo
 
 # Test binary, built with `go test -c`
 *.test
