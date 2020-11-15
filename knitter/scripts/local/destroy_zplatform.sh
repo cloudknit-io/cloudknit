@@ -1,3 +1,7 @@
+kubectl port-forward service/argo-cd-argocd-server 8080:80 -n argo
+
+kubectl patch crd applications.argoproj.io -p '{"metadata":{"finalizers":[]}}' --type=merge -n argo
+
 argocd app delete 1-customer
 argocd cluster rm sandbox
 argocd repo rm git@github.com:CompuZest/terraform-environment.git
