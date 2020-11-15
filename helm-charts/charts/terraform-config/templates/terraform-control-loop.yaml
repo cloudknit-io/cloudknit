@@ -4,6 +4,8 @@ kind: CronWorkflow
 metadata:
   name: "{{ .Values.customer_id }}-{{ .Values.env_name}}-{{ .Values.name}}-control-loop"
   namespace: argo
+  annotations:
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
   labels:
     terraform/control-loop: 'true'
 serverDryRun: false
