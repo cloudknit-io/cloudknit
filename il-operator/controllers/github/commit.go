@@ -147,8 +147,7 @@ func CommitAndPushFiles(_sourceOwner string, _sourceRepo string, _sourceFolder s
 
 	sourceFiles = getFileNames(_sourceFolder)
 
-	//token := os.Getenv("GITHUB_AUTH_TOKEN")
-	token := "7108fdd6d833e68a05bc8b6d3f4f1f56e29f890c"
+	token := os.Getenv("GITHUB_AUTH_TOKEN")
 	if token == "" {
 		log.Fatal("Unauthorized: No token present")
 	}

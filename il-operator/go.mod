@@ -33,7 +33,7 @@ require (
 )
 
 replace (
-	github.com/argoproj/argo-cd => github.com/argoproj/argo-cd v1.5.5
+	github.com/argoproj/argo-cd => github.com/argoproj/argo-cd v1.5.8
 	github.com/colinmarc/hdfs => github.com/colinmarc/hdfs v1.1.4-0.20180805212432-9746310a4d31
 	github.com/go-logr/logr => github.com/go-logr/logr v0.1.0
 	github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.3.1
