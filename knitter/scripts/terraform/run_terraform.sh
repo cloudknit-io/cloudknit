@@ -37,7 +37,7 @@ echo -n $result > /tmp/plan_code.txt
 app="${cust_id_env_name}-terraform-config-${name}"
 argocd_server_name=$(kubectl get pods -l app.kubernetes.io/name=argocd-server -n argo --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}')
 response=`curl --insecure https://argo-cd-argocd-server:443/api/v1/session -d $'{"username":"admin","password":"'$argocd_server_name'"}'`
-token=$response | jq -r '.token'
+token=$(echo $response | jq -r '.token')
 
 if [ $result -eq 2 ]
 then
