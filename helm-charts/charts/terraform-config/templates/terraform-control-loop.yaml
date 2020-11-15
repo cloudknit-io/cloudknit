@@ -8,7 +8,6 @@ metadata:
     argocd.argoproj.io/compare-options: IgnoreExtraneous
   labels:
     terraform/control-loop: 'true'
-serverDryRun: false
 spec:
   schedule: "*/2 * * * *"
   concurrencyPolicy: "Replace"
