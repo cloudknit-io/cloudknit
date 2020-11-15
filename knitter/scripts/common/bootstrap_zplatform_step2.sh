@@ -13,6 +13,9 @@ argocd repo add --name terraform-environment git@github.com:CompuZest/terraform-
 
 argocd repo add --name helm-charts git@github.com:CompuZest/helm-charts.git --ssh-private-key-path argo --insecure-ignore-host-key
 
+APISERVER=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
+kubectl create secret generic k8s-api --from-literal=url=$APISERVER -n environment-operator-system
+
 if [ $LOCATION -eq 1 ]
 then
     argocd cluster add k3d-sandbox-k3d --insecure --name sandbox

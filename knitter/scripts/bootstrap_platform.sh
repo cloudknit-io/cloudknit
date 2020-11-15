@@ -6,4 +6,13 @@ select LOCATION in "1" "2"; do
     esac
 done
 
-#./common/bootstrap_zplatform_step2.sh $LOCATION
+echo ""
+echo ""
+echo "-------------------------------------"
+read -p "Please create secrets and enter Y to continue? " -n 1 -r
+echo "-------------------------------------"
+
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+    ./common/bootstrap_zplatform_step2.sh $LOCATION
+fi
