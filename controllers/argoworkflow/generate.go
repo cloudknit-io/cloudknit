@@ -12,11 +12,15 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 
 	var parallelSteps []workflow.ParallelSteps
 
+	custEnvPrefix := environment.Spec.CustomerId + "-" + environment.Spec.Name + "-"
+
 	for _, terraformConfig := range environment.Spec.TerraformConfigs {
+
+		workflowName := custEnvPrefix + terraformConfig.Name
 		step := workflow.ParallelSteps{
 			Steps: []workflow.WorkflowStep{
 				{
-					Name: terraformConfig.Name,
+					Name: workflowName,
 					TemplateRef: &workflow.TemplateRef{
 						Name:     "workflow-trigger-template",
 						Template: "run",
@@ -45,7 +49,7 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 							//},
 							{
 								Name:  "name",
-								Value: &terraformConfig.Name,
+								Value: &workflowName,
 							},
 						},
 					},
