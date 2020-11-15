@@ -29,6 +29,17 @@ spec:
         - --enable-leader-election
         image: controller:latest
         name: manager
+        env:
+          - name: GITHUB_AUTH_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: github-auth-token
+                key: token
+          - name: K8s_API_URL
+            valueFrom:
+              secretKeyRef:
+                name: k8s-api
+                key: url
         resources:
           limits:
             cpu: 100m

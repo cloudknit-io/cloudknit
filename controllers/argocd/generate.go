@@ -5,6 +5,7 @@ import (
 	appv1 "github.com/argoproj/argo-cd/pkg/apis/application/v1alpha1"
 	stablev1alpha1 "github.com/compuzest/environment-operator/api/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"os"
 )
 
 func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Application {
@@ -74,6 +75,8 @@ func GenerateTerraformConfigApps(environment stablev1alpha1.Environment, terrafo
 		terraformConfig.Module.Path,
 		variables)
 
+	k8s_api_url := os.Getenv("K8s_API_URL")
+
 	return &appv1.Application{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Application",
@@ -98,7 +101,7 @@ func GenerateTerraformConfigApps(environment stablev1alpha1.Environment, terrafo
 				},
 			},
 			Destination: appv1.ApplicationDestination{
-				Server:    "https://26AA99424E3949C763C1C083F8E0C4CA.gr7.us-east-1.eks.amazonaws.com",
+				Server:    k8s_api_url,
 				Namespace: "default",
 			},
 			Source: appv1.ApplicationSource{
