@@ -13,6 +13,9 @@ spec:
   schedule: "*/2 * * * *"
   concurrencyPolicy: "Replace"
   startingDeadlineSeconds: 0
+  workflowMetadata:
+    annotations:
+      argocd.argoproj.io/compare-options: IgnoreExtraneous
   workflowSpec:
     entrypoint: control-loop
     volumes:
