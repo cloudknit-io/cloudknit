@@ -43,7 +43,7 @@ func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Appli
 			Sync: appv1.SyncStatus{
 				ComparedTo: appv1.ComparedTo{
 					Source: appv1.ApplicationSource{
-						RepoURL: "git@github.com:CompuZest/helm-charts.git",
+						RepoURL: "git@github.com:CompuZest/terraform-environment.git",
 					},
 				},
 				Status: "Synced",

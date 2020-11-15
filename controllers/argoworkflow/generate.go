@@ -60,6 +60,8 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 		parallelSteps = append(parallelSteps, step)
 	}
 
+	var parallelism int64 = 1
+
 	return &workflow.Workflow{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "argoproj.io/v1alpha1",
@@ -78,11 +80,13 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 			},
 		},
 		Spec: workflow.WorkflowSpec{
-			Entrypoint: "main",
+			Entrypoint:  "main",
+			Parallelism: &parallelism,
 			Templates: []workflow.Template{
 				{
-					Name:  "main",
-					Steps: parallelSteps,
+					Name:        "main",
+					Parallelism: &parallelism,
+					Steps:       parallelSteps,
 				},
 			},
 		},
