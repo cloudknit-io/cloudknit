@@ -3,7 +3,7 @@ kind: TerraformConfig
 metadata:
   name: "{{ .Values.customer_id }}-{{ .Values.env_name}}-terraformconfig-{{ .Values.name}}"
   annotations:
-    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-wave: "3"
 spec:
   module:
     source: {{$.Values.module.source}}
