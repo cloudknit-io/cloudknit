@@ -17,8 +17,12 @@ RUN apk update && apk upgrade && apk --no-cache add curl jq
 RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
 RUN chmod +x ./kubectl
 
+
 RUN mv ./kubectl /usr/local/bin/kubectl
 RUN kubectl version --client
+
+RUN VERSION=$(curl --silent "https://api.github.com/repos/argoproj/argo-cd/releases/latest" | grep '"tag_name"' | sed -E 's/.*"([^"]+)".*/\1/') && curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/download/$VERSION/argocd-linux-amd64
+RUN chmod +x /usr/local/bin/argocd
 
 ADD scripts/terraform/run_terraform.sh .
 RUN chmod +x run_terraform.sh

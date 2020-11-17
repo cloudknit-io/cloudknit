@@ -31,29 +31,23 @@ terraform init
 if [ $is_apply -eq 0 ]
 then
     terraform plan -lock=$lock_state -detailed-exitcode -var-file tfvars/$customer_id/$env_name.tfvars
-result=$?
-echo -n $result > /tmp/plan_code.txt
+    result=$?
+    echo -n $result > /tmp/plan_code.txt
 
-app="${cust_id_env_name}-terraform-config-${name}"
+    if [ $result -eq 2 ]
+    then
+        tfconfig="${name}-terraformconfig"
 
-argocd_server_name=$(kubectl get pods -l app.kubernetes.io/name=argocd-server -n argo --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}')
-response=`curl --insecure https://argo-cd-argocd-server:443/api/v1/session -d $'{"username":"admin","password":"'$argocd_server_name'"}'`
-token=$(echo $response | jq -r '.token')
+        argocd_server_name=$(kubectl get pods -l app.kubernetes.io/name=argocd-server -n argo --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}')
 
-if [ $result -eq 2 ]
-then
+        argocd login --insecure argo-cd-argocd-server:443 --grpc-web --username admin --password $argocd_server_name
 
-  RES=$(curl --insecure -H "Authorization: Bearer ${token}" -H "Content-Type: application/json" -d '{"project":"default","syncPolicy":{"automated":{"prune":true,"selfHeal":true}},"destination":{"namespace":"default","server":"https://192.168.1.155:59999"},"source":{"repoURL":"git@github.com:CompuZest/helm-charts.git","path":"charts/terraform-config","targetRevision":"HEAD","helm":{"values":"is_out_of_sync: true\ncustomer_id: \"'$customer_id'\"\nenv_name: \"'$env_name'\"\nname: \"'$name'\"\nmodule:\n  source: \"'$module_source'\"\n  path: '$module_source_path'\nvariables:\n  - name: cidr\n    value: \"10.1.0.0/16\"\noutputs: \"\"\n"}}}' -X PUT https://argo-cd-argocd-server.argo.svc.cluster.local/api/v1/applications/$app/spec)
+        argocd app patch-resource $name --kind TerraformConfig --resource-name $tfconfig --patch '{ "spec": { "isInSync": false } }' --patch-type 'application/merge-patch+json'
 
-  sleep 5
+         argocd app sync $cust_id_env_name
 
-  curl --insecure https://argo-cd-argocd-server.argo.svc.cluster.local/api/v1/applications/$cust_id_env_name/sync -H 'Content-Type: application/json' -H "Authorization: Bearer ${token}" --data-binary '{"revision":"HEAD","prune":false,"dryRun":false,"strategy":{"hook":{}},"resources":null}'
-
+    fi
 else
-  RES=$(curl --insecure -H "Authorization: Bearer ${token}" -H "Content-Type: application/json" -d '{"project":"default","syncPolicy":{"automated":{"prune":true,"selfHeal":true}},"destination":{"namespace":"default","server":"https://192.168.1.155:59999"},"source":{"repoURL":"git@github.com:CompuZest/helm-charts.git","path":"charts/terraform-config","targetRevision":"HEAD","helm":{"values":customer_id: \"'$customer_id'\"\nenv_name: \"'$env_name'\"\nname: \"'$name'\"\nmodule:\n  source: \"'$module_source'\"\n  path: '$module_source_path'\nvariables:\n  - name: cidr\n    value: \"10.1.0.0/16\"\noutputs: \"\"\n"}}}' -X PUT https://argo-cd-argocd-server.argo.svc.cluster.local/api/v1/applications/$app/spec)
-
-fi
-else
-terraform apply -var-file tfvars/$customer_id/$env_name.tfvars -auto-approve
-echo -n 0 > /tmp/plan_code.txt
+    terraform apply -var-file tfvars/$customer_id/$env_name.tfvars -auto-approve
+    echo -n 0 > /tmp/plan_code.txt
 fi
