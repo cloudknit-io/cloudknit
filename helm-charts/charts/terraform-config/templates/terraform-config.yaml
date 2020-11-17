@@ -1,7 +1,7 @@
 apiVersion: stable.compuzest.com/v1
 kind: TerraformConfig
 metadata:
-  name: "{{ .Values.customer_id }}-{{ .Values.env_name}}-terraformconfig-{{ .Values.name}}"
+  name: "{{ .Values.customer_id }}-{{ .Values.env_name}}-{{ .Values.name}}-terraformconfig"
   annotations:
     argocd.argoproj.io/sync-wave: "3"
 spec:
