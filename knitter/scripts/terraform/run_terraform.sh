@@ -45,7 +45,6 @@ then
         argocd app patch-resource $name --kind TerraformConfig --resource-name $tfconfig --patch '{ "spec": { "isInSync": false } }' --patch-type 'application/merge-patch+json'
 
          argocd app sync $cust_id_env_name
-
     fi
 else
     terraform apply -var-file tfvars/$customer_id/$env_name.tfvars -auto-approve
