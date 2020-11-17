@@ -96,8 +96,7 @@ func GenerateTerraformConfigApps(environment stablev1alpha1.Environment, terrafo
 			Project: "default",
 			SyncPolicy: &appv1.SyncPolicy{
 				Automated: &appv1.SyncPolicyAutomated{
-					Prune:    true,
-					SelfHeal: true,
+					Prune: true,
 				},
 			},
 			Destination: appv1.ApplicationDestination{

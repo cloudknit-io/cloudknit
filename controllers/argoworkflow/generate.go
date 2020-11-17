@@ -68,11 +68,10 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 			Kind:       "Workflow",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      environment.Spec.CustomerId + "-" + environment.Spec.Name,
-			Namespace: "argo",
+			GenerateName: environment.Spec.CustomerId + "-" + environment.Spec.Name,
+			Namespace:    "argo",
 			Annotations: map[string]string{
-				"argocd.argoproj.io/hook":      "Sync",
-				"argocd.argoproj.io/sync-wave": "1",
+				"argocd.argoproj.io/hook": "PreSync",
 			},
 			Labels: map[string]string{
 				"workflows.argoproj.io/completed": "false",
@@ -84,7 +83,7 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 			Parallelism: &parallelism,
 			Templates: []workflow.Template{
 				{
-					Name:        "main",
+					Name: "main",
 					Parallelism: &parallelism,
 					Steps:       parallelSteps,
 				},
