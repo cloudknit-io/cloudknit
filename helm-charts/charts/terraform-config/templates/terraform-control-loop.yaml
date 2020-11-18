@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: CronWorkflow
 metadata:
-  name: "{{ .Values.customer_id }}-{{ .Values.env_name}}-{{ .Values.name}}-control-loop"
+  name: "{{ .Values.name}}-control-loop"
   namespace: argo
   annotations:
     argocd.argoproj.io/compare-options: IgnoreExtraneous
