@@ -59,6 +59,8 @@ func GenerateTerraformConfigApps(environment stablev1alpha1.Environment, terrafo
 		variables += "\n- name:" + variable.Name + "\n  value:" + variable.Value
 	}
 
+	app_name := environment.Spec.CustomerId + "-" + environment.Spec.Name + "-" + terraformConfig.Name
+
 	helmValues := fmt.Sprintf(`
         customer_id: "%s"
         env_name: %s
@@ -70,7 +72,7 @@ func GenerateTerraformConfigApps(environment stablev1alpha1.Environment, terrafo
         %s
         `, environment.Spec.CustomerId,
 		environment.Name,
-		terraformConfig.Name,
+		app_name,
 		terraformConfig.Module.Source,
 		terraformConfig.Module.Path,
 		variables)
