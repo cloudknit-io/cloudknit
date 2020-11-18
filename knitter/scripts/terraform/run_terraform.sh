@@ -34,17 +34,27 @@ then
     result=$?
     echo -n $result > /tmp/plan_code.txt
 
+    argocd_server_name=$(kubectl get pods -l app.kubernetes.io/name=argocd-server -n argo --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}')
+
+    argocd login --insecure argo-cd-argocd-server:443 --grpc-web --username admin --password $argocd_server_name
+
+    sync_status=$(argocd app get $name -o json | jq '.status.sync.status')
+
     if [ $result -eq 2 ]
     then
-        tfconfig="${name}-terraformconfig"
+        if [ $sync_status != "\"OutOfSync\"" ]
+        then
+            tfconfig="${name}-terraformconfig"
 
-        argocd_server_name=$(kubectl get pods -l app.kubernetes.io/name=argocd-server -n argo --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}')
+            argocd app patch-resource $name --kind TerraformConfig --resource-name $tfconfig --patch '{ "spec": { "isInSync": false } }' --patch-type 'application/merge-patch+json'
 
-        argocd login --insecure argo-cd-argocd-server:443 --grpc-web --username admin --password $argocd_server_name
-
-        argocd app patch-resource $name --kind TerraformConfig --resource-name $tfconfig --patch '{ "spec": { "isInSync": false } }' --patch-type 'application/merge-patch+json'
-
-         argocd app sync $cust_id_env_name
+            argocd app sync $cust_id_env_name
+        fi
+    else
+        if [ $sync_status == "\"OutOfSync\"" ]
+        then
+            argocd app sync $name
+        fi
     fi
 else
     terraform apply -var-file tfvars/$customer_id/$env_name.tfvars -auto-approve
