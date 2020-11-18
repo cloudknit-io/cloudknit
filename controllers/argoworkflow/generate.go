@@ -83,7 +83,7 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 			Parallelism: &parallelism,
 			Templates: []workflow.Template{
 				{
-					Name: "main",
+					Name:        "main",
 					Parallelism: &parallelism,
 					Steps:       parallelSteps,
 				},
