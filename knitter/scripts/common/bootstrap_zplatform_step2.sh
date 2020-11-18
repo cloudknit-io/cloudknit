@@ -9,8 +9,10 @@ sleep 2m
 
 argocd login --insecure localhost:8080 --grpc-web --username admin --password $argocd_server_name
 
+sleep 10s
 argocd repo add --name terraform-environment git@github.com:CompuZest/terraform-environment.git --ssh-private-key-path argo --insecure-ignore-host-key
 
+sleep 10s
 argocd repo add --name helm-charts git@github.com:CompuZest/helm-charts.git --ssh-private-key-path argo --insecure-ignore-host-key
 
 
