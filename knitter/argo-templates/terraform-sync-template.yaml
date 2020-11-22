@@ -39,6 +39,13 @@ spec:
                   value: "{{inputs.parameters.env_name}}"
                 - name: name
                   value: "{{inputs.parameters.name}}"
+        - - name: notify
+            template: notify
+            arguments:
+              parameters:
+                - name: name
+                  value: "{{inputs.parameters.name}}"
+            when: "{{steps.plan.outputs.parameters.planCode}} == 2"
         - - name: approve
             template: approve
             when: "{{steps.plan.outputs.parameters.planCode}} == 2"
@@ -64,3 +71,16 @@ spec:
 
     - name: approve
       suspend: {}
+
+    - name: notify
+      inputs:
+        parameters:
+          - name: name
+      serviceAccountName: argo
+      script:
+        imagePullPolicy: Always
+        image: shahadarsh/terraform:latest
+        cmd:
+          - sh
+        source: |
+          ./send_slack_notification.sh "{{workflow.name}}" "{{inputs.parameters.name}}"

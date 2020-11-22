@@ -25,7 +25,8 @@ RUN VERSION=$(curl --silent "https://api.github.com/repos/argoproj/argo-cd/relea
 RUN chmod +x /usr/local/bin/argocd
 
 ADD scripts/terraform/run_terraform.sh .
-RUN chmod +x run_terraform.sh
+ADD scripts/terraform/send_slack_notification.sh .
+RUN chmod +x run_terraform.sh send_slack_notification.sh
 
 COPY --from=aws-iam-authenticator /usr/local/bin/aws-iam-authenticator /usr/local/bin/aws-iam-authenticator
 
