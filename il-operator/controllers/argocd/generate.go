@@ -53,29 +53,8 @@ func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Appli
 }
 
 func GenerateTerraformConfigApps(environment stablev1alpha1.Environment, terraformConfig stablev1alpha1.TerraformConfig) *appv1.Application {
-	variables := ""
 
-	for _, variable := range terraformConfig.Variables {
-		variables += "\n- name:" + variable.Name + "\n  value:" + variable.Value
-	}
-
-	app_name := environment.Spec.CustomerId + "-" + environment.Spec.Name + "-" + terraformConfig.Name
-
-	helmValues := fmt.Sprintf(`
-        customer_id: "%s"
-        env_name: %s
-        name: %s
-        module:
-            source: %s
-            path: %s
-        variables: 
-        %s
-        `, environment.Spec.CustomerId,
-		environment.Name,
-		app_name,
-		terraformConfig.Module.Source,
-		terraformConfig.Module.Path,
-		variables)
+	helmValues := getHelmValues(environment, terraformConfig)
 
 	k8s_api_url := os.Getenv("K8s_API_URL")
 
@@ -125,4 +104,40 @@ func GenerateTerraformConfigApps(environment stablev1alpha1.Environment, terrafo
 			},
 		},
 	}
+}
+
+func getHelmValues(environment stablev1alpha1.Environment, terraformConfig stablev1alpha1.TerraformConfig) string {
+
+	app_name := environment.Spec.CustomerId + "-" + environment.Spec.Name + "-" + terraformConfig.Name
+
+	helmValues := fmt.Sprintf(`
+        customer_id: "%s"
+        env_name: %s
+        name: %s
+        module:
+            source: %s
+            path: %s`, environment.Spec.CustomerId,
+		environment.Name,
+		app_name,
+		terraformConfig.Module.Source,
+		terraformConfig.Module.Path)
+
+	if terraformConfig.VariablesFile != nil {
+		helmValues += fmt.Sprintf(`
+        variables_file:
+            source: %s
+            path: %s`, terraformConfig.VariablesFile.Source, terraformConfig.VariablesFile.Path)
+	} else {
+		variables := ""
+
+		for _, variable := range terraformConfig.Variables {
+			variables += "\n- name:" + variable.Name + "\n  value:" + variable.Value
+		}
+		helmValues += fmt.Sprintf(`
+        variables:
+        %s`, variables)
+	}
+
+	return helmValues
+
 }

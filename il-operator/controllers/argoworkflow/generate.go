@@ -40,6 +40,14 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 								Value: &terraformConfig.Module.Path,
 							},
 							{
+								Name:  "variables_file_source",
+								Value: &terraformConfig.VariablesFile.Source,
+							},
+							{
+								Name:  "variables_file_path",
+								Value: &terraformConfig.VariablesFile.Path,
+							},
+							{
 								Name:  "env_name",
 								Value: &environment.Spec.Name,
 							},
