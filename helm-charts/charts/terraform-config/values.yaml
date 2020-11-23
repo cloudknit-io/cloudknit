@@ -10,7 +10,7 @@ module:
 
 variables_file:
   source:
-  file_path:
+  path:
 
 variables:
 
