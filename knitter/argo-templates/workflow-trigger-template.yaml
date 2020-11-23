@@ -12,6 +12,8 @@ spec:
           - name: workflowtemplate
           - name: module_source
           - name: module_source_path
+          - name: variables_file_source
+          - name: variables_file_path
           - name: customer_id
             value: '"1"'
           - name: env_name
@@ -33,6 +35,10 @@ spec:
                 value: {{inputs.parameters.module_source}}
               - name: module_source_path
                 value: {{inputs.parameters.module_source_path}}
+              - name: variables_file_source
+                value: {{inputs.parameters.variables_file_source}}
+              - name: variables_file_path
+                value: {{inputs.parameters.variables_file_path}}
               - name: customer_id
                 value: {{inputs.parameters.customer_id}}
               - name: env_name

@@ -1,10 +1,12 @@
 module_source=$1
 module_source_path=$2
-is_apply=$3
-lock_state=$4
-customer_id=$5
-env_name=$6
-name=$7
+variables_file_source=$3
+variables_file_path=$4
+is_apply=$5
+lock_state=$6
+customer_id=$7
+env_name=$8
+name=$9
 cust_id_env_name=$customer_id-$env_name
 
 cd /home/$module_source_path
@@ -30,7 +32,7 @@ terraform init
 
 if [ $is_apply -eq 0 ]
 then
-    terraform plan -lock=$lock_state -detailed-exitcode -var-file tfvars/$customer_id/$env_name.tfvars
+    terraform plan -lock=$lock_state -detailed-exitcode -var-file vars/$variables_file_path
     result=$?
     echo -n $result > /tmp/plan_code.txt
 
@@ -57,6 +59,6 @@ then
         fi
     fi
 else
-    terraform apply -var-file tfvars/$customer_id/$env_name.tfvars -auto-approve
+    terraform apply -var-file vars/$variables_file_path -auto-approve
     echo -n 0 > /tmp/plan_code.txt
 fi

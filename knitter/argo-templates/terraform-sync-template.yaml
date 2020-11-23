@@ -17,6 +17,8 @@ spec:
         parameters:
           - name: module_source
           - name: module_source_path
+          - name: variables_file_source
+          - name: variables_file_path
           - name: name
           - name: env_name
           - name: customer_id
@@ -31,6 +33,10 @@ spec:
                   value: "{{inputs.parameters.module_source}}"
                 - name: module_source_path
                   value: "{{inputs.parameters.module_source_path}}"
+                - name: variables_file_source
+                  value: "{{inputs.parameters.variables_file_source}}"
+                - name: variables_file_path
+                  value: "{{inputs.parameters.variables_file_path}}"
                 - name: is_apply
                   value: "0"
                 - name: customer_id
@@ -59,6 +65,10 @@ spec:
                   value: "{{inputs.parameters.module_source}}"
                 - name: module_source_path
                   value: "{{inputs.parameters.module_source_path}}"
+                - name: variables_file_source
+                  value: "{{inputs.parameters.variables_file_source}}"
+                - name: variables_file_path
+                  value: "{{inputs.parameters.variables_file_path}}"
                 - name: is_apply
                   value: "1"
                 - name: customer_id

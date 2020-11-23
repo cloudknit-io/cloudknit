@@ -11,6 +11,8 @@ spec:
         parameters:
           - name: module_source
           - name: module_source_path
+          - name: variables_file_source
+          - name: variables_file_path
           - name: is_apply
           - name: lock_state
             value: "true"
@@ -27,6 +29,14 @@ spec:
                 name: github-ssh-key
                 key: id_rsa
               insecureIgnoreHostKey: true
+          - name: terraform-variables
+            path: "/home/{{inputs.parameters.module_source_path}}/vars"
+            git:
+              repo: "{{inputs.parameters.variables_file_source}}"
+              sshPrivateKeySecret:
+                name: github-ssh-key
+                key: id_rsa
+              insecureIgnoreHostKey: true
       serviceAccountName: argo
       script:
         imagePullPolicy: Always
@@ -34,7 +44,7 @@ spec:
         cmd:
           - sh
         source: |
-          ./run_terraform.sh "{{inputs.parameters.module_source}}" "{{inputs.parameters.module_source_path}}" "{{inputs.parameters.is_apply}}" "{{inputs.parameters.lock_state}}" "{{inputs.parameters.customer_id}}" "{{inputs.parameters.env_name}}" "{{inputs.parameters.name}}"
+          ./run_terraform.sh "{{inputs.parameters.module_source}}" "{{inputs.parameters.module_source_path}}" "{{inputs.parameters.variables_file_source}}" "{{inputs.parameters.variables_file_path}}" "{{inputs.parameters.is_apply}}" "{{inputs.parameters.lock_state}}" "{{inputs.parameters.customer_id}}" "{{inputs.parameters.env_name}}" "{{inputs.parameters.name}}"
         env:
           - name: CUSTOMER_AWS_ACCESS_KEY_ID
             valueFrom:
