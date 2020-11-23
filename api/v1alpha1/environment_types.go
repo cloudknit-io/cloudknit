@@ -25,15 +25,21 @@ type Module struct {
 	Path   string `json:"path"`
 }
 
+type VariablesFile struct {
+	Source string `json:"source"`
+	Path   string `json:"path"`
+}
+
 type Variable struct {
 	Name  string `json:"name"`
 	Value string `json:"value"`
 }
 
 type TerraformConfig struct {
-	Name      string      `json:"name"`
-	Module    *Module     `json:"module"`
-	Variables []*Variable `json:"variables,omitempty"`
+	Name          string         `json:"name"`
+	Module        *Module        `json:"module"`
+	VariablesFile *VariablesFile `json:"variables_file,omitempty"`
+	Variables     []*Variable    `json:"variables,omitempty"`
 }
 
 // EnvironmentSpec defines the desired state of Environment

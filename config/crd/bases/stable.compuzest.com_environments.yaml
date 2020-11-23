@@ -67,6 +67,16 @@ spec:
                       - value
                       type: object
                     type: array
+                  variables_file:
+                    properties:
+                      path:
+                        type: string
+                      source:
+                        type: string
+                    required:
+                    - path
+                    - source
+                    type: object
                 required:
                 - module
                 - name
