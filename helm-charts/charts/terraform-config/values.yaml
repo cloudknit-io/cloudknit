@@ -8,6 +8,10 @@ module:
   source:
   path:
 
+variables_file:
+  source:
+  file_path:
+
 variables:
 
 outputs:

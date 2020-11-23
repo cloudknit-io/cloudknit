@@ -28,6 +28,10 @@ spec:
           value: "{{ .Values.module.source }}"
         - name: module_source_path
           value: "{{ .Values.module.path }}"
+        - name: variables_file_source
+          value: "{{ .Values.variables_file.source }}"
+        - name: variables_file_path
+          value: "{{ .Values.variables_file.path }}"
         - name: name
           value: "{{ .Values.name }}"
     templates:
@@ -43,6 +47,10 @@ spec:
                     value: "{{ .Values.module.source }}"
                   - name: module_source_path
                     value: "{{ .Values.module.path }}"
+                  - name: variables_file_source
+                    value: "{{ .Values.variables_file.source }}"
+                  - name: variables_file_path
+                    value: "{{ .Values.variables_file.path }}"
                   - name: is_apply
                     value: "0"
                   - name: lock_state
