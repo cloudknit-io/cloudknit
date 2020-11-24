@@ -18,11 +18,18 @@ argocd repo add --name helm-charts git@github.com:CompuZest/helm-charts.git --ss
 
 if [ $LOCATION -eq 1 ]
 then
-    sed -i .bak 's+https://0.0.0.0:59999+https://192.168.1.155:59999+g' ~/.kube/config
+    ip_addr=$(ipconfig getifaddr en0)
+
+    if [ ! $ip_addr ]
+    then
+        ip_addr=$(ipconfig getifaddr en1)
+    fi
+
+    sed -i .bak "s+https://0.0.0.0:59999+https://$ip_addr:59999+g" ~/.kube/config
 
     sleep 10s
 
-    curl --insecure https://192.168.1.155:59999
+    curl --insecure https://$ip_addr:59999
 
     sleep 10s
 
