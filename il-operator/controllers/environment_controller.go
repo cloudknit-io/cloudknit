@@ -56,6 +56,15 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	fileutil.SaveYamlFile(*env, envPrefix+".yaml")
 
 	for _, terraformConfig := range environment.Spec.TerraformConfigs {
+		if terraformConfig.Variables != nil {
+			filePath := environment.Spec.CustomerId + "/" + environment.Spec.Name + "/" + terraformConfig.Name + ".tfvars"
+			fileutil.SaveVarsToFile(terraformConfig.Variables, filePath)
+			terraformConfig.VariablesFile = &stablev1alpha1.VariablesFile{
+				Source: "git@github.com:CompuZest/terraform-environment.git",
+				Path:   filePath,
+			}
+		}
+
 		application := argocd.GenerateTerraformConfigApps(*environment, *terraformConfig)
 
 		fileutil.SaveYamlFile(*application, envPrefix+"/"+terraformConfig.Name+".yaml")

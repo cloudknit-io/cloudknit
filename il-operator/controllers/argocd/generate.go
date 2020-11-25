@@ -122,22 +122,9 @@ func getHelmValues(environment stablev1alpha1.Environment, terraformConfig stabl
 		terraformConfig.Module.Source,
 		terraformConfig.Module.Path)
 
-	if terraformConfig.VariablesFile != nil {
-		helmValues += fmt.Sprintf(`
+	helmValues += fmt.Sprintf(`
         variables_file:
             source: %s
             path: %s`, terraformConfig.VariablesFile.Source, terraformConfig.VariablesFile.Path)
-	} else {
-		variables := ""
-
-		for _, variable := range terraformConfig.Variables {
-			variables += "\n- name:" + variable.Name + "\n  value:" + variable.Value
-		}
-		helmValues += fmt.Sprintf(`
-        variables:
-        %s`, variables)
-	}
-
 	return helmValues
-
 }
