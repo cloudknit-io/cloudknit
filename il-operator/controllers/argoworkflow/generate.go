@@ -51,10 +51,10 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 								Name:  "env_name",
 								Value: &environment.Spec.Name,
 							},
-							//{
-							//	Name:  "customer_id",
-							//	Value: "'" + &customerId + "'",
-							//},
+							{
+								Name:  "customer_id",
+								Value: &environment.Spec.CustomerId,
+							},
 							{
 								Name:  "name",
 								Value: &workflowName,
