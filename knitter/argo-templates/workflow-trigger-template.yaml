@@ -15,7 +15,6 @@ spec:
           - name: variables_file_source
           - name: variables_file_path
           - name: customer_id
-            value: '"1"'
           - name: env_name
           - name: name
       resource:
