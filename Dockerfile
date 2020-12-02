@@ -23,6 +23,6 @@ FROM gcr.io/distroless/static:nonroot
 USER nonroot:nonroot
 WORKDIR /
 COPY --from=builder /workspace/manager .
-ADD --chown=nonroot:nonroot controllers/1/ 1/
+ADD --chown=nonroot:nonroot controllers/teams/ .
 
 ENTRYPOINT ["/manager"]
