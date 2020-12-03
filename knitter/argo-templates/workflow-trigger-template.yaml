@@ -23,7 +23,7 @@ spec:
           apiVersion: argoproj.io/v1alpha1
           kind: Workflow
           metadata:
-            generateName: {{inputs.parameters.name}}
+            generateName: {{inputs.parameters.team_name}}-{{inputs.parameters.env_name}}-{{inputs.parameters.config_name}}
             namespace: argo
             labels:
               terraform/sync: 'true'

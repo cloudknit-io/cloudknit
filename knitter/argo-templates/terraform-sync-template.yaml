@@ -50,7 +50,7 @@ spec:
             arguments:
               parameters:
                 - name: name
-                  value: "{{inputs.parameters.name}}"
+                  value: "{{inputs.parameters.team_name}}-{{inputs.parameters.env_name}}-{{inputs.parameters.config_name}}"
             when: "{{steps.plan.outputs.parameters.planCode}} == 2"
         - - name: approve
             template: approve
