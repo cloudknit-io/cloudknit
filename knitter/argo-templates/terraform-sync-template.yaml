@@ -49,8 +49,12 @@ spec:
             template: notify
             arguments:
               parameters:
-                - name: name
-                  value: "{{inputs.parameters.team_name}}-{{inputs.parameters.env_name}}-{{inputs.parameters.config_name}}"
+                - name: team_name
+                  value: "{{inputs.parameters.team_name}}"
+                - name: env_name
+                  value: "{{inputs.parameters.env_name}}"
+                - name: config_name
+                  value: "{{inputs.parameters.config_name}}"
             when: "{{steps.plan.outputs.parameters.planCode}} == 2"
         - - name: approve
             template: approve
@@ -85,7 +89,9 @@ spec:
     - name: notify
       inputs:
         parameters:
-          - name: name
+          - name: team_name
+          - name: env_name
+          - name: config_name
       serviceAccountName: argo
       script:
         imagePullPolicy: Always
@@ -93,4 +99,4 @@ spec:
         cmd:
           - sh
         source: |
-          ./send_slack_notification.sh "{{workflow.name}}" "{{inputs.parameters.config_name}}"
+          ./send_slack_notification.sh "{{workflow.name}}" "{{inputs.parameters.team_name}}" "{{inputs.parameters.env_name}}" "{{inputs.parameters.config_name}}"
