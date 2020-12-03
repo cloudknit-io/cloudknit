@@ -1,8 +1,6 @@
-name: terraform-config
-
-customer_id:
-
+team_name:
 env_name:
+config_name: terraform-config
 
 module:
   source:

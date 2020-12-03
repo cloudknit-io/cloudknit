@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: CronWorkflow
 metadata:
-  name: "{{ .Values.name}}-control-loop"
+  name: "{{ .Values.team_name}}-{{ .Values.env_name}}-{{ .Values.config_name}}-control-loop"
   namespace: argo
   annotations:
     argocd.argoproj.io/compare-options: IgnoreExtraneous
@@ -22,18 +22,6 @@ spec:
         secret:
           secretName: github-ssh-key
           defaultMode: 384
-    arguments:
-      parameters:
-        - name: module_source
-          value: "{{ .Values.module.source }}"
-        - name: module_source_path
-          value: "{{ .Values.module.path }}"
-        - name: variables_file_source
-          value: "{{ .Values.variables_file.source }}"
-        - name: variables_file_path
-          value: "{{ .Values.variables_file.path }}"
-        - name: name
-          value: "{{ .Values.name }}"
     templates:
       - name: control-loop
         steps:
@@ -43,6 +31,12 @@ spec:
                 template: run
               arguments:
                 parameters:
+                  - name: team_name
+                    value: "{{ .Values.team_name }}"
+                  - name: env_name
+                    value: "{{ .Values.env_name }}"
+                  - name: config_name
+                    value: "{{ .Values.config_name }}"
                   - name: module_source
                     value: "{{ .Values.module.source }}"
                   - name: module_source_path
@@ -55,9 +49,3 @@ spec:
                     value: "0"
                   - name: lock_state
                     value: "false"
-                  - name: customer_id
-                    value: '"{{ .Values.customer_id }}"'
-                  - name: env_name
-                    value: "{{ .Values.env_name }}"
-                  - name: name
-                    value: "{{ .Values.name }}"
