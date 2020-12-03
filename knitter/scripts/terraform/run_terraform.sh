@@ -1,13 +1,14 @@
-module_source=$1
-module_source_path=$2
-variables_file_source=$3
-variables_file_path=$4
-is_apply=$5
-lock_state=$6
-customer_id=$7
-env_name=$8
-name=$9
-cust_id_env_name=$customer_id-$env_name
+team_name=$1
+env_name=$2
+config_name=$3
+module_source=$4
+module_source_path=$5
+variables_file_source=$6
+variables_file_path=$7
+is_apply=$8
+lock_state=$9
+team_env_name=$team_name-$env_name
+team_env_config_name=$team_name-$env_name-$config_name
 
 cd /home/$module_source_path
 mkdir ~/.ssh
@@ -26,8 +27,8 @@ aws_secret_access_key = ${SHARED_AWS_SECRET_ACCESS_KEY}
 EOT
 
 terraform init
-terraform workspace new $cust_id_env_name
-terraform workspace select $cust_id_env_name
+terraform workspace new $team_env_name
+terraform workspace select $team_env_name
 terraform init
 
 if [ $is_apply -eq 0 ]
@@ -40,26 +41,26 @@ then
 
     argocd login --insecure argo-cd-argocd-server:443 --grpc-web --username admin --password $argocd_server_name
 
-    env_sync_status=$(argocd app get $cust_id_env_name -o json | jq '.status.sync.status')
-    sync_status=$(argocd app get $name -o json | jq '.status.sync.status')
+    env_sync_status=$(argocd app get $team_env_name -o json | jq '.status.sync.status')
+    config_sync_status=$(argocd app get $team_env_config_name -o json | jq '.status.sync.status')
 
     if [ $result -eq 2 ]
     then
-        if [ $sync_status != "\"OutOfSync\"" ]
+        if [ $config_sync_status != "\"OutOfSync\"" ]
         then
-            tfconfig="${name}-terraformconfig"
+            tfconfig="${team_env_config_name}-terraformconfig"
 
-            argocd app patch-resource $name --kind TerraformConfig --resource-name $tfconfig --patch '{ "spec": { "isInSync": false } }' --patch-type 'application/merge-patch+json'
+            argocd app patch-resource $team_env_config_name --kind TerraformConfig --resource-name $tfconfig --patch '{ "spec": { "isInSync": false } }' --patch-type 'application/merge-patch+json'
 
             if [ $env_sync_status != "\"OutOfSync\"" ]
             then
-                argocd app sync $cust_id_env_name
+                argocd app sync $team_env_name
             fi
         fi
     else
         if [ $sync_status == "\"OutOfSync\"" ]
         then
-            argocd app sync $name
+            argocd app sync $team_env_config_name
         fi
     fi
 else

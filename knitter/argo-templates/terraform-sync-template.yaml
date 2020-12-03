@@ -15,13 +15,13 @@ spec:
     - name: update
       inputs:
         parameters:
+          - name: team_name
+          - name: env_name
+          - name: config_name
           - name: module_source
           - name: module_source_path
           - name: variables_file_source
           - name: variables_file_path
-          - name: name
-          - name: env_name
-          - name: customer_id
       steps:
         - - name: plan
             templateRef:
@@ -29,6 +29,12 @@ spec:
               template: run
             arguments:
               parameters:
+                - name: team_name
+                  value: "{{inputs.parameters.team_name}}"
+                - name: env_name
+                  value: "{{inputs.parameters.env_name}}"
+                - name: config_name
+                  value: "{{inputs.parameters.config_name}}"
                 - name: module_source
                   value: "{{inputs.parameters.module_source}}"
                 - name: module_source_path
@@ -39,12 +45,6 @@ spec:
                   value: "{{inputs.parameters.variables_file_path}}"
                 - name: is_apply
                   value: "0"
-                - name: customer_id
-                  value: "{{inputs.parameters.customer_id}}"
-                - name: env_name
-                  value: "{{inputs.parameters.env_name}}"
-                - name: name
-                  value: "{{inputs.parameters.name}}"
         - - name: notify
             template: notify
             arguments:
@@ -61,6 +61,12 @@ spec:
               template: run
             arguments:
               parameters:
+                - name: team_name
+                  value: "{{inputs.parameters.team_name}}"
+                - name: env_name
+                  value: "{{inputs.parameters.env_name}}"
+                - name: config_name
+                  value: "{{inputs.parameters.config_name}}"
                 - name: module_source
                   value: "{{inputs.parameters.module_source}}"
                 - name: module_source_path
@@ -71,12 +77,6 @@ spec:
                   value: "{{inputs.parameters.variables_file_path}}"
                 - name: is_apply
                   value: "1"
-                - name: customer_id
-                  value: "{{inputs.parameters.customer_id}}"
-                - name: env_name
-                  value: "{{inputs.parameters.env_name}}"
-                - name: name
-                  value: "{{inputs.parameters.name}}"
             when: "{{steps.plan.outputs.parameters.planCode}} == 2"
 
     - name: approve
@@ -93,4 +93,4 @@ spec:
         cmd:
           - sh
         source: |
-          ./send_slack_notification.sh "{{workflow.name}}" "{{inputs.parameters.name}}"
+          ./send_slack_notification.sh "{{workflow.name}}" "{{inputs.parameters.config_name}}"

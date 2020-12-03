@@ -9,14 +9,14 @@ spec:
     - name: run
       inputs:
         parameters:
+          - name: team_name
+          - name: env_name
+          - name: config_name
           - name: workflowtemplate
           - name: module_source
           - name: module_source_path
           - name: variables_file_source
           - name: variables_file_path
-          - name: customer_id
-          - name: env_name
-          - name: name
       resource:
         action: create
         manifest: |
@@ -30,6 +30,12 @@ spec:
           spec:
             arguments:
               parameters:
+              - name: team_name
+                value: {{inputs.parameters.team_name}}
+              - name: env_name
+                value: {{inputs.parameters.env_name}}
+              - name: config_name
+                value: {{inputs.parameters.config_name}}
               - name: module_source
                 value: {{inputs.parameters.module_source}}
               - name: module_source_path
@@ -38,12 +44,6 @@ spec:
                 value: {{inputs.parameters.variables_file_source}}
               - name: variables_file_path
                 value: {{inputs.parameters.variables_file_path}}
-              - name: customer_id
-                value: {{inputs.parameters.customer_id}}
-              - name: env_name
-                value: {{inputs.parameters.env_name}}
-              - name: name
-                value: {{inputs.parameters.name}}
             workflowTemplateRef:
               name: {{inputs.parameters.workflowtemplate}}
         successCondition: status.phase == Succeeded

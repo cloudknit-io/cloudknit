@@ -9,6 +9,9 @@ spec:
     - name: run
       inputs:
         parameters:
+          - name: team_name
+          - name: env_name
+          - name: config_name
           - name: module_source
           - name: module_source_path
           - name: variables_file_source
@@ -16,10 +19,6 @@ spec:
           - name: is_apply
           - name: lock_state
             value: "true"
-          - name: customer_id
-          - name: env_name
-          - name: name
-            value: "terraform-config"
         artifacts:
           - name: terraform-config
             path: "/home"
@@ -44,7 +43,7 @@ spec:
         cmd:
           - sh
         source: |
-          ./run_terraform.sh "{{inputs.parameters.module_source}}" "{{inputs.parameters.module_source_path}}" "{{inputs.parameters.variables_file_source}}" "{{inputs.parameters.variables_file_path}}" "{{inputs.parameters.is_apply}}" "{{inputs.parameters.lock_state}}" "{{inputs.parameters.customer_id}}" "{{inputs.parameters.env_name}}" "{{inputs.parameters.name}}"
+          ./run_terraform.sh "{{inputs.parameters.team_name}}" "{{inputs.parameters.env_name}}" "{{inputs.parameters.config_name}}" "{{inputs.parameters.module_source}}" "{{inputs.parameters.module_source_path}}" "{{inputs.parameters.variables_file_source}}" "{{inputs.parameters.variables_file_path}}" "{{inputs.parameters.is_apply}}" "{{inputs.parameters.lock_state}}"
         env:
           - name: CUSTOMER_AWS_ACCESS_KEY_ID
             valueFrom:
