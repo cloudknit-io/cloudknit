@@ -50,14 +50,14 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	r.Get(ctx, req.NamespacedName, environment)
 
-	envPrefix := environment.Spec.CustomerId + "/" + environment.Spec.Name
+	teamEnvPrefix := environment.Spec.TeamName + "/" + environment.Spec.EnvName
 
 	env := argocd.GenerateEnvironmentApp(*environment)
-	fileutil.SaveYamlFile(*env, envPrefix+".yaml")
+	fileutil.SaveYamlFile(*env, teamEnvPrefix+".yaml")
 
 	for _, terraformConfig := range environment.Spec.TerraformConfigs {
 		if terraformConfig.Variables != nil {
-			filePath := environment.Spec.CustomerId + "/" + environment.Spec.Name + "/" + terraformConfig.Name + ".tfvars"
+			filePath := teamEnvPrefix + "/" + terraformConfig.ConfigName + ".tfvars"
 			fileutil.SaveVarsToFile(terraformConfig.Variables, filePath)
 			terraformConfig.VariablesFile = &stablev1alpha1.VariablesFile{
 				Source: "git@github.com:CompuZest/terraform-environment.git",
@@ -67,13 +67,13 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 		application := argocd.GenerateTerraformConfigApps(*environment, *terraformConfig)
 
-		fileutil.SaveYamlFile(*application, envPrefix+"/"+terraformConfig.Name+".yaml")
+		fileutil.SaveYamlFile(*application, teamEnvPrefix+"/"+terraformConfig.ConfigName+".yaml")
 	}
 
 	workflow := argoWorkflow.GenerateWorkflowOfWorkflows(*environment)
-	fileutil.SaveYamlFile(*workflow, envPrefix+"/wofw.yaml")
+	fileutil.SaveYamlFile(*workflow, teamEnvPrefix+"/wofw.yaml")
 
-	github.CommitAndPushFiles("CompuZest", "terraform-environment", environment.Spec.CustomerId+"/", "master", "Adarsh Shah", "shahadarsh@gmail.com")
+	github.CommitAndPushFiles("CompuZest", "terraform-environment", environment.Spec.TeamName+"/", "master", "Adarsh Shah", "shahadarsh@gmail.com")
 
 	return ctrl.Result{}, nil
 }

@@ -36,16 +36,16 @@ type Variable struct {
 }
 
 type TerraformConfig struct {
-	Name          string         `json:"name"`
+	ConfigName    string         `json:"configName"`
 	Module        *Module        `json:"module"`
-	VariablesFile *VariablesFile `json:"variables_file,omitempty"`
+	VariablesFile *VariablesFile `json:"variablesFile,omitempty"`
 	Variables     []*Variable    `json:"variables,omitempty"`
 }
 
 // EnvironmentSpec defines the desired state of Environment
 type EnvironmentSpec struct {
-	Name             string             `json:"name"`
-	CustomerId       string             `json:"customer_id"`
+	TeamName         string             `json:"teamName"`
+	EnvName          string             `json:"envName"`
 	TerraformConfigs []*TerraformConfig `json:"terraformConfigs"`
 }
 
