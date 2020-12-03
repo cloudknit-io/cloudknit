@@ -12,11 +12,12 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 
 	var parallelSteps []workflow.ParallelSteps
 
-	custEnvPrefix := environment.Spec.CustomerId + "-" + environment.Spec.Name + "-"
+	custEnvPrefix := environment.Spec.TeamName + "-" + environment.Spec.EnvName + "-"
 
 	for _, terraformConfig := range environment.Spec.TerraformConfigs {
 
-		workflowName := custEnvPrefix + terraformConfig.Name
+		workflowName := custEnvPrefix + terraformConfig.ConfigName
+
 		step := workflow.ParallelSteps{
 			Steps: []workflow.WorkflowStep{
 				{
@@ -48,16 +49,16 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 								Value: &terraformConfig.VariablesFile.Path,
 							},
 							{
+								Name:  "team_name",
+								Value: &environment.Spec.TeamName,
+							},
+							{
 								Name:  "env_name",
-								Value: &environment.Spec.Name,
+								Value: &environment.Spec.EnvName,
 							},
 							{
-								Name:  "customer_id",
-								Value: &environment.Spec.CustomerId,
-							},
-							{
-								Name:  "name",
-								Value: &workflowName,
+								Name:  "config_name",
+								Value: &terraformConfig.ConfigName,
 							},
 						},
 					},
@@ -74,7 +75,7 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 			Kind:       "Workflow",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			GenerateName: environment.Spec.CustomerId + "-" + environment.Spec.Name,
+			GenerateName: environment.Spec.TeamName + "-" + environment.Spec.EnvName,
 			Namespace:    "argo",
 			Annotations: map[string]string{
 				"argocd.argoproj.io/hook": "PreSync",

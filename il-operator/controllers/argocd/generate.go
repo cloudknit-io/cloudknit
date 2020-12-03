@@ -16,7 +16,7 @@ func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Appli
 			Kind:       "Application",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      environment.Spec.CustomerId + "-" + environment.Spec.Name,
+			Name:      environment.Spec.TeamName + "-" + environment.Spec.EnvName,
 			Namespace: "argo",
 		},
 		Spec: appv1.ApplicationSpec{
@@ -32,7 +32,7 @@ func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Appli
 			},
 			Source: appv1.ApplicationSource{
 				RepoURL:        "git@github.com:CompuZest/terraform-environment.git",
-				Path:           environment.Spec.CustomerId + "/" + environment.Spec.Name,
+				Path:           environment.Spec.TeamName + "/" + environment.Spec.EnvName,
 				TargetRevision: "HEAD",
 				Directory: &appv1.ApplicationSourceDirectory{
 					Recurse: true,
@@ -64,7 +64,7 @@ func GenerateTerraformConfigApps(environment stablev1alpha1.Environment, terrafo
 			APIVersion: "argoproj.io/v1alpha1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      environment.Spec.CustomerId + "-" + environment.Spec.Name + "-" + terraformConfig.Name,
+			Name:      environment.Spec.TeamName + "-" + environment.Spec.EnvName + "-" + terraformConfig.ConfigName,
 			Namespace: "argo",
 			Annotations: map[string]string{
 				"argocd.argoproj.io/sync-wave": "2",
@@ -108,17 +108,15 @@ func GenerateTerraformConfigApps(environment stablev1alpha1.Environment, terrafo
 
 func getHelmValues(environment stablev1alpha1.Environment, terraformConfig stablev1alpha1.TerraformConfig) string {
 
-	app_name := environment.Spec.CustomerId + "-" + environment.Spec.Name + "-" + terraformConfig.Name
-
 	helmValues := fmt.Sprintf(`
-        customer_id: "%s"
+        team_name: "%s"
         env_name: %s
-        name: %s
+        config_name: %s
         module:
             source: %s
-            path: %s`, environment.Spec.CustomerId,
-		environment.Name,
-		app_name,
+            path: %s`, environment.Spec.TeamName,
+		environment.Spec.EnvName,
+		terraformConfig.ConfigName,
 		terraformConfig.Module.Source,
 		terraformConfig.Module.Path)
 

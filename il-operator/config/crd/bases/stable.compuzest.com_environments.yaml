@@ -36,13 +36,15 @@ spec:
         spec:
           description: EnvironmentSpec defines the desired state of Environment
           properties:
-            customer_id:
+            envName:
               type: string
-            name:
+            teamName:
               type: string
             terraformConfigs:
               items:
                 properties:
+                  configName:
+                    type: string
                   module:
                     properties:
                       path:
@@ -53,8 +55,6 @@ spec:
                     - path
                     - source
                     type: object
-                  name:
-                    type: string
                   variables:
                     items:
                       properties:
@@ -67,7 +67,7 @@ spec:
                       - value
                       type: object
                     type: array
-                  variables_file:
+                  variablesFile:
                     properties:
                       path:
                         type: string
@@ -78,13 +78,13 @@ spec:
                     - source
                     type: object
                 required:
+                - configName
                 - module
-                - name
                 type: object
               type: array
           required:
-          - customer_id
-          - name
+          - envName
+          - teamName
           - terraformConfigs
           type: object
         status:
