@@ -46,11 +46,17 @@ else
     argocd cluster add arn:aws:eks:us-east-1:413422438110:cluster/0-sandbox-eks --name sandbox
 fi
 
+# Create all bootstrap argo workflow template
 cd ../../../infra-deploy-bootstrap/argo-templates
-
 kubectl apply -f .
 
-#argocd app create 1-customer --repo git@github.com:CompuZest/terraform-environment.git --path 1 --dest-server https://kubernetes.default.svc --dest-namespace default --sync-policy automated --auto-prune
+# Create all team environments
+cd ../../infra-deploy-terraform-config
+kubectl apply -R -f teams/account-team
+kubectl apply -R -f teams/user-team
+
+# kubectl apply -f teams/account-team.yaml
+# kubectl apply -f teams/user-team.yaml
 
 kubectl port-forward service/argo-workflow-server 8081:2746 -n argo &
 
