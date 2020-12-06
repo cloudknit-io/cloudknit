@@ -66,9 +66,6 @@ func GenerateTerraformConfigApps(environment stablev1alpha1.Environment, terrafo
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      environment.Spec.TeamName + "-" + environment.Spec.EnvName + "-" + terraformConfig.ConfigName,
 			Namespace: "argo",
-			Annotations: map[string]string{
-				"argocd.argoproj.io/sync-wave": "2",
-			},
 			Finalizers: []string{
 				"resources-finalizer.argocd.argoproj.io",
 			},
