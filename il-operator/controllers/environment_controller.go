@@ -30,6 +30,7 @@ import (
 	argocd "github.com/compuzest/environment-operator/controllers/argocd"
 	argoWorkflow "github.com/compuzest/environment-operator/controllers/argoworkflow"
 	fileutil "github.com/compuzest/environment-operator/controllers/file"
+	k8s "github.com/compuzest/environment-operator/controllers/kubernetes"
 )
 
 // EnvironmentReconciler reconciles a Environment object
@@ -72,6 +73,9 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	workflow := argoWorkflow.GenerateWorkflowOfWorkflows(*environment)
 	fileutil.SaveYamlFile(*workflow, teamEnvPrefix+"/wofw.yaml")
+
+	presyncJob := k8s.GeneratePreSyncJob(*environment)
+	fileutil.SaveYamlFile(*presyncJob, teamEnvPrefix+"/presync-job.yaml")
 
 	github.CommitAndPushFiles("CompuZest", "terraform-environment", environment.Spec.TeamName+"/", "master", "Adarsh Shah", "shahadarsh@gmail.com")
 
