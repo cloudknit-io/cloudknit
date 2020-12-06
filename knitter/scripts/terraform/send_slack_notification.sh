@@ -1,3 +1,6 @@
+# exit when any command fails
+set -e
+
 workflow_name=$1
 team_name=$2
 env_name=$3

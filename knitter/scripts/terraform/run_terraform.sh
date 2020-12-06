@@ -27,8 +27,7 @@ aws_secret_access_key = ${SHARED_AWS_SECRET_ACCESS_KEY}
 EOT
 
 terraform init
-terraform workspace new $team_env_name
-terraform workspace select $team_env_name
+terraform workspace select $team_env_name || terraform workspace new $team_env_name
 terraform init
 
 if [ $is_apply -eq 0 ]
