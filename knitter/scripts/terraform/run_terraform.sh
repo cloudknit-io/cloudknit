@@ -10,6 +10,7 @@ variables_file_source=$6
 variables_file_path=$7
 is_apply=$8
 lock_state=$9
+is_sync=$10
 team_env_name=$team_name-$env_name
 team_env_config_name=$team_name-$env_name-$config_name
 
@@ -39,31 +40,34 @@ then
     result=$?
     echo -n $result > /tmp/plan_code.txt
 
-    argocd_server_name=$(kubectl get pods -l app.kubernetes.io/name=argocd-server -n argo --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}')
-
-    argocd login --insecure argo-cd-argocd-server:443 --grpc-web --username admin --password $argocd_server_name
-
-    env_sync_status=$(argocd app get $team_env_name -o json | jq '.status.sync.status')
-    config_sync_status=$(argocd app get $team_env_config_name -o json | jq '.status.sync.status')
-
-    if [ $result -eq 2 ]
+    if [ $is_sync -eq 0 ]
     then
-        if [ $config_sync_status != "\"OutOfSync\"" ]
-        then
-            tfconfig="${team_env_config_name}-terraformconfig"
+            argocd_server_name=$(kubectl get pods -l app.kubernetes.io/name=argocd-server -n argo --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}')
 
-            argocd app patch-resource $team_env_config_name --kind TerraformConfig --resource-name $tfconfig --patch '{ "spec": { "isInSync": false } }' --patch-type 'application/merge-patch+json'
+            argocd login --insecure argo-cd-argocd-server:443 --grpc-web --username admin --password $argocd_server_name
 
-            if [ $env_sync_status != "\"OutOfSync\"" ]
+            env_sync_status=$(argocd app get $team_env_name -o json | jq '.status.sync.status')
+            config_sync_status=$(argocd app get $team_env_config_name -o json | jq '.status.sync.status')
+
+            if [ $result -eq 2 ]
             then
-                argocd app sync $team_env_name
+                if [ $config_sync_status != "\"OutOfSync\"" ]
+                then
+                    tfconfig="${team_env_config_name}-terraformconfig"
+
+                    argocd app patch-resource $team_env_config_name --kind TerraformConfig --resource-name $tfconfig --patch '{ "spec": { "isInSync": false } }' --patch-type 'application/merge-patch+json'
+
+                    if [ $env_sync_status != "\"OutOfSync\"" ]
+                    then
+                        argocd app sync $team_env_name
+                    fi
+                fi
+            else
+                if [ $sync_status == "\"OutOfSync\"" ]
+                then
+                    argocd app sync $team_env_config_name
+                fi
             fi
-        fi
-    else
-        if [ $sync_status == "\"OutOfSync\"" ]
-        then
-            argocd app sync $team_env_config_name
-        fi
     fi
 else
     terraform apply -var-file vars/$variables_file_path -auto-approve

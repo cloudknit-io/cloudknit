@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  name: workflow-template-terraform
+  name: terraform-run-template
   namespace: argo
 spec:
   entrypoint: run
@@ -19,6 +19,8 @@ spec:
           - name: is_apply
           - name: lock_state
             value: "true"
+          - name: is_sync
+            value: "0"
         artifacts:
           - name: terraform-config
             path: "/home"
@@ -43,7 +45,7 @@ spec:
         cmd:
           - sh
         source: |
-          ./run_terraform.sh "{{inputs.parameters.team_name}}" "{{inputs.parameters.env_name}}" "{{inputs.parameters.config_name}}" "{{inputs.parameters.module_source}}" "{{inputs.parameters.module_source_path}}" "{{inputs.parameters.variables_file_source}}" "{{inputs.parameters.variables_file_path}}" "{{inputs.parameters.is_apply}}" "{{inputs.parameters.lock_state}}"
+          ./run_terraform.sh "{{inputs.parameters.team_name}}" "{{inputs.parameters.env_name}}" "{{inputs.parameters.config_name}}" "{{inputs.parameters.module_source}}" "{{inputs.parameters.module_source_path}}" "{{inputs.parameters.variables_file_source}}" "{{inputs.parameters.variables_file_path}}" "{{inputs.parameters.is_apply}}" "{{inputs.parameters.lock_state}}" "{{inputs.parameters.is_sync}}"
         env:
           - name: CUSTOMER_AWS_ACCESS_KEY_ID
             valueFrom:
