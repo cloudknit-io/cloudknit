@@ -46,24 +46,24 @@ then
 
             argocd login --insecure argo-cd-argocd-server:443 --grpc-web --username admin --password $argocd_server_name
 
-            env_sync_status=$(argocd app get $team_env_name -o json | jq '.status.sync.status')
-            config_sync_status=$(argocd app get $team_env_config_name -o json | jq '.status.sync.status')
+            env_sync_status=$(argocd app get $team_env_name -o json | jq -r '.status.sync.status')
+            config_sync_status=$(argocd app get $team_env_config_name -o json | jq -r '.status.sync.status')
 
             if [ $result -eq 2 ]
             then
-                if [ $config_sync_status != "\"OutOfSync\"" ]
+                if [ $config_sync_status != "OutOfSync" ]
                 then
                     tfconfig="${team_env_config_name}-terraformconfig"
 
                     argocd app patch-resource $team_env_config_name --kind TerraformConfig --resource-name $tfconfig --patch '{ "spec": { "isInSync": false } }' --patch-type 'application/merge-patch+json'
 
-                    if [ $env_sync_status != "\"OutOfSync\"" ]
+                    if [ $env_sync_status != "OutOfSync" ]
                     then
                         argocd app sync $team_env_name
                     fi
                 fi
             else
-                if [ $sync_status == "\"OutOfSync\"" ]
+                if [ $config_sync_status == "OutOfSync" ]
                 then
                     argocd app sync $team_env_config_name
                 fi
