@@ -27,7 +27,7 @@ spec:
         steps:
           - - name: plan
               templateRef:
-                name: workflow-template-terraform
+                name: terraform-run-template
                 template: run
               arguments:
                 parameters:
