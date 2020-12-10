@@ -3,7 +3,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: CronWorkflow
 metadata:
   name: "{{ .Values.team_name}}-{{ .Values.env_name}}-{{ .Values.config_name}}-control-loop"
-  namespace: argo
+  namespace: {{.Values.namespace}}
   annotations:
     argocd.argoproj.io/compare-options: IgnoreExtraneous
   labels:

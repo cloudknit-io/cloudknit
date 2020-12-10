@@ -1,3 +1,4 @@
+namespace: argocd
 team_name:
 env_name:
 config_name: terraform-config
