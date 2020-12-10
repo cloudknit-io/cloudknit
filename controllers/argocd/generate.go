@@ -17,7 +17,7 @@ func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Appli
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      environment.Spec.TeamName + "-" + environment.Spec.EnvName,
-			Namespace: "argo",
+			Namespace: "argocd",
 		},
 		Spec: appv1.ApplicationSpec{
 			Project: "default",
