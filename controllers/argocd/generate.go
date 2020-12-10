@@ -65,7 +65,7 @@ func GenerateTerraformConfigApps(environment stablev1alpha1.Environment, terrafo
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      environment.Spec.TeamName + "-" + environment.Spec.EnvName + "-" + terraformConfig.ConfigName,
-			Namespace: "argo",
+			Namespace: "argocd",
 			Finalizers: []string{
 				"resources-finalizer.argocd.argoproj.io",
 			},

@@ -76,7 +76,7 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      environment.Spec.TeamName + "-" + environment.Spec.EnvName,
-			Namespace: "argo",
+			Namespace: "argocd",
 			Annotations: map[string]string{
 				"argocd.argoproj.io/hook":               "PreSync",
 				"argocd.argoproj.io/hook-delete-policy": "BeforeHookCreation",

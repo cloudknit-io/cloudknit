@@ -17,7 +17,7 @@ func GeneratePreSyncJob(environment stablev1alpha1.Environment) *batchv1.Job {
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      jobNamePrefix + "-presync",
-			Namespace: "argo",
+			Namespace: "argocd",
 			Annotations: map[string]string{
 				"argocd.argoproj.io/hook":               "PreSync",
 				"argocd.argoproj.io/hook-delete-policy": "BeforeHookCreation",
