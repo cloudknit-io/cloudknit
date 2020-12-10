@@ -3,7 +3,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
   name: terraform-sync-template
-  namespace: argo
+  namespace: argocd
 spec:
   entrypoint: update
   volumes:

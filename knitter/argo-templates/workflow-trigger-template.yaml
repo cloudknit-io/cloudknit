@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
   name: workflow-trigger-template
-  namespace: argo
+  namespace: argocd
 spec:
   entrypoint: run
   templates:
@@ -24,7 +24,7 @@ spec:
           kind: Workflow
           metadata:
             generateName: {{inputs.parameters.team_name}}-{{inputs.parameters.env_name}}-{{inputs.parameters.config_name}}
-            namespace: argo
+            namespace: argocd
             labels:
               terraform/sync: 'true'
           spec:

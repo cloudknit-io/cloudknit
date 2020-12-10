@@ -42,7 +42,7 @@ then
 
     if [ $is_sync -eq 0 ]
     then
-            argocd_server_name=$(kubectl get pods -l app.kubernetes.io/name=argocd-server -n argo --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}')
+            argocd_server_name=$(kubectl get pods -l app.kubernetes.io/name=argocd-server -n argocd --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}')
 
             argocd login --insecure argo-cd-argocd-server:443 --grpc-web --username admin --password $argocd_server_name
 
