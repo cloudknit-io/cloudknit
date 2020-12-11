@@ -45,6 +45,10 @@ spec:
                 properties:
                   configName:
                     type: string
+                  dependsOn:
+                    items:
+                      type: string
+                    type: array
                   module:
                     properties:
                       path:
