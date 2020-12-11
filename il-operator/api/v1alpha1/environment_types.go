@@ -37,6 +37,7 @@ type Variable struct {
 
 type TerraformConfig struct {
 	ConfigName    string         `json:"configName"`
+	DependsOn     []string       `json:"dependsOn,omitempty"`
 	Module        *Module        `json:"module"`
 	VariablesFile *VariablesFile `json:"variablesFile,omitempty"`
 	Variables     []*Variable    `json:"variables,omitempty"`
