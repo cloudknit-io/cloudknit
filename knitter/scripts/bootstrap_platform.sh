@@ -1,9 +1,3 @@
-# Check if docker is running
-if ! docker info >/dev/null 2>&1; then
-    echo "Docker does not seem to be running, run it first and retry"
-    exit 1
-fi
-
 echo "Please enter 1 for local and 2 for AWS:"
 select LOCATION in "1" "2"; do
     case $LOCATION in

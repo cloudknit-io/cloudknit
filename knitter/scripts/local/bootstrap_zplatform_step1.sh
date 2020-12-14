@@ -7,6 +7,10 @@ echo "-------------------------------------"
 
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
+    if ! docker info >/dev/null 2>&1; then
+        echo "Docker does not seem to be running, run it first and retry"
+        exit 1
+    fi
     k3d cluster create sandbox-k3d -a 3 --api-port 59999
 fi
 
