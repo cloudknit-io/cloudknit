@@ -1,8 +1,0 @@
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  namespace: {{.Values.namespace}}
-  name: argocd-cm
-data:
-  ui.cssurl: "./custom/zLifecycle-styles.css"
