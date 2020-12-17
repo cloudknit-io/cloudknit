@@ -14,7 +14,7 @@ is_sync=$10
 team_env_name=$team_name-$env_name
 team_env_config_name=$team_name-$env_name-$config_name
 
-cd /home/$module_source_path
+cd /home/terraform-config
 mkdir ~/.ssh
 cat /root/ssh_secret/id_rsa >> ~/.ssh/id_rsa
 chmod 400 ~/.ssh/id_rsa
@@ -30,13 +30,55 @@ aws_access_key_id = ${SHARED_AWS_ACCESS_KEY_ID}
 aws_secret_access_key = ${SHARED_AWS_SECRET_ACCESS_KEY}
 EOT
 
-terraform init
-terraform workspace select $team_env_config_name || terraform workspace new $team_env_config_name
+
+if [ -n "${module_source_path}" ]; then
+    full_module_source="${module_source}//${module_source_path}"
+else
+    full_module_source="${module_source}"
+fi
+
+cat > module.tf << EOL
+module "${config_name}" {
+  source = "${full_module_source}"
+EOL
+
+cat vars/$variables_file_path >> module.tf
+
+echo "}" >> module.tf
+
+cat > provider.tf << EOL
+provider "aws" {
+  region = "us-east-1"
+  version = "~> 3.0"
+}
+EOL
+
+cat > terraform.tf << EOL
+terraform {
+  required_version = "= 0.13.2"
+
+  backend "s3" {
+    profile                 = "compuzest-shared"
+
+    bucket                  = "compuzest-tfstate"
+    key                     = "${team_name}/${env_name}/${config_name}/terraform.tfstate"
+    region                  = "us-east-1"
+
+    dynamodb_table          = "compuzest-tflock"
+    encrypt                 = true
+  }
+}
+EOL
+
+cat module.tf
+cat provider.tf
+cat terraform.tf
+
 terraform init
 
 if [ $is_apply -eq 0 ]
 then
-    terraform plan -lock=$lock_state -detailed-exitcode -var-file vars/$variables_file_path
+    terraform plan -lock=$lock_state -detailed-exitcode
     result=$?
     echo -n $result > /tmp/plan_code.txt
 
@@ -70,6 +112,6 @@ then
             fi
     fi
 else
-    terraform apply -var-file vars/$variables_file_path -auto-approve
+    terraform apply -auto-approve
     echo -n 0 > /tmp/plan_code.txt
 fi

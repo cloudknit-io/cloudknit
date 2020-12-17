@@ -31,7 +31,7 @@ spec:
                 key: id_rsa
               insecureIgnoreHostKey: true
           - name: terraform-variables
-            path: "/home/{{inputs.parameters.module_source_path}}/vars"
+            path: "/home/terraform-config/vars"
             git:
               repo: "{{inputs.parameters.variables_file_source}}"
               sshPrivateKeySecret:
