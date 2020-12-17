@@ -5,7 +5,7 @@ config_name: terraform-config
 
 module:
   source:
-  path:
+  path: ""
 
 variables_file:
   source:
