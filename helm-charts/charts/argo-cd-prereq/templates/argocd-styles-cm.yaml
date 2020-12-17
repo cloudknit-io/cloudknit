@@ -5,7 +5,7 @@ metadata:
   namespace: {{.Values.namespace}}
   name: argocd-styles-cm
 data:
-  zLifecycle-syles.css: |
+  zLifecycle-styles.css: |
     .nav-bar {
       background: #2d0780
     }
