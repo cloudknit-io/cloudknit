@@ -5,7 +5,10 @@
 - [Register Teams](#register-teams)
 
 # Overview
-Repo with everything needed to Bootstrap zLifecycle Platform
+
+zLifecycle is a product to manage lifecycle for infrastructure across various cloud providers as well as on-prem.
+
+For more details & diagrams look at: https://app.diagrams.net/#G1gXeFRlERpqjXpeSjxRPLP6YZMRyFG5SN
 
 ## Initial Bootstrap
 
