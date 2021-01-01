@@ -2,6 +2,7 @@
 - [Overview](#overview)
 - [Initial Bootstrap](#initial-bootstrap)
 - [Bootstrap zLifecycle](#bootstrap-zlifecycle)
+- [Register Teams](#register-teams)
 
 # Overview
 Repo with everything needed to Bootstrap zLifecycle Platform
@@ -28,4 +29,13 @@ and create secrets using scripts in LastPass
 ```bash
 cd scripts
 ./bootstrap_zLifecycle.sh
+```
+
+## Register Teams
+
+You need to manually register teams currently using following script
+
+```bash
+cd ../../zLifecycle-teams
+kubectl apply -f teams/account-team.yaml # Replace yaml file with team name for the team you want to register
 ```
