@@ -47,11 +47,11 @@ else
 fi
 
 # Create all bootstrap argo workflow template
-cd ../../../infra-deploy-bootstrap/argo-templates
+cd ../../../zLifecycle-bootstrap/argo-templates
 kubectl apply -f .
 
 # Create all team environments
-cd ../../infra-deploy-terraform-config
+cd ../../zLifecycle-teams
 kubectl apply -R -f teams/account-team
 kubectl apply -R -f teams/user-team
 
@@ -59,4 +59,3 @@ kubectl apply -R -f teams/user-team
 # kubectl apply -f teams/user-team.yaml
 
 kubectl port-forward service/argo-workflow-server 8081:2746 -n argocd &
-

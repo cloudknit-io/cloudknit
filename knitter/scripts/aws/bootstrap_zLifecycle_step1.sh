@@ -1,4 +1,3 @@
-set -e
 cd ../../infra-deploy-networking/aws-vpc
 terraform init
 terraform workspace select 0-sandbox || terraform workspace new 0-sandbox
