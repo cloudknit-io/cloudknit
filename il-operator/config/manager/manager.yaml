@@ -40,6 +40,9 @@ spec:
               secretKeyRef:
                 name: k8s-api
                 key: url
+        envFrom:
+          - configMapRef:
+              name: company-config
         resources:
           limits:
             cpu: 100m
