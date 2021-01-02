@@ -3,6 +3,7 @@
 - [Initial Bootstrap](#initial-bootstrap)
 - [Bootstrap zLifecycle](#bootstrap-zlifecycle)
 - [Register Teams](#register-teams)
+- [Build Terraform Docker Image](build-terraform-docker-image)
 
 # Overview
 
@@ -41,4 +42,12 @@ You need to manually register teams currently using following script
 ```bash
 cd ../../zLifecycle-teams
 kubectl apply -f teams/account-team.yaml # Replace yaml file with team name for the team you want to register
+```
+
+## Build Terraform Docker Image
+
+```bash
+cd terraform
+docker build -t shahadarsh/terraform:latest .
+docker push shahadarsh/terraform:latest
 ```
