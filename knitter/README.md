@@ -31,7 +31,7 @@ Note: When it asks to create secret go to `infra-deploy-platform/k8s-addons/argo
 and create secrets using scripts in LastPass
 
 ```bash
-cd scripts
+cd bootstrap
 ./bootstrap_zLifecycle.sh
 ```
 
