@@ -1,6 +1,6 @@
 LOCATION=$1
 
-cd ../../infra-deploy-platform/k8s-addons/argo-workflow
+cd ../../zLifecycle-infra-deploy/k8s-addons/argo-workflow
 
 argocd_server_name=$(kubectl get pods -l app.kubernetes.io/name=argocd-server -n argocd --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}')
 kubectl port-forward service/argo-cd-argocd-server 8080:80 -n argocd &

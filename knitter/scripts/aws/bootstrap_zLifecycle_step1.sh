@@ -1,11 +1,11 @@
-cd ../../infra-deploy-networking/aws-vpc
+cd ../../zLifecycle-infra-deploy/aws-vpc
 terraform init
 terraform workspace select 0-sandbox || terraform workspace new 0-sandbox
 terraform init
 
 terraform apply -auto-approve -var-file tfvars/sandbox.tfvars
 
-cd ../../infra-deploy-platform/aws-eks
+cd ../aws-eks
 terraform init
 terraform workspace select 0-sandbox || terraform workspace new 0-sandbox
 terraform init
