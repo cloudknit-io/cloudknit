@@ -18,6 +18,7 @@ package controllers
 
 import (
 	"context"
+	"os"
 
 	github "github.com/compuzest/environment-operator/controllers/github"
 
@@ -56,12 +57,14 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	env := argocd.GenerateEnvironmentApp(*environment)
 	fileutil.SaveYamlFile(*env, teamEnvPrefix+".yaml")
 
+	ilRepo := os.Getenv("ilRepo")
+
 	for _, terraformConfig := range environment.Spec.TerraformConfigs {
 		if terraformConfig.Variables != nil {
 			filePath := teamEnvPrefix + "/" + terraformConfig.ConfigName + ".tfvars"
 			fileutil.SaveVarsToFile(terraformConfig.Variables, filePath)
 			terraformConfig.VariablesFile = &stablev1alpha1.VariablesFile{
-				Source: "git@github.com:CompuZest/terraform-environment.git",
+				Source: ilRepo,
 				Path:   filePath,
 			}
 		}
@@ -76,8 +79,10 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	presyncJob := k8s.GeneratePreSyncJob(*environment)
 	fileutil.SaveYamlFile(*presyncJob, teamEnvPrefix+"/presync-job.yaml")
+	ilRepoName := os.Getenv("ilRepoName")
+	companyName := os.Getenv("companyName")
 
-	github.CommitAndPushFiles("CompuZest", "terraform-environment", environment.Spec.TeamName+"/", "master", "Adarsh Shah", "shahadarsh@gmail.com")
+	github.CommitAndPushFiles(companyName, ilRepoName, environment.Spec.TeamName+"/", "master", "Adarsh Shah", "shahadarsh@gmail.com")
 
 	return ctrl.Result{}, nil
 }
