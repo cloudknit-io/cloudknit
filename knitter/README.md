@@ -50,7 +50,7 @@ cd bootstrap
 You need to manually register teams currently using following script
 
 ```bash
-cd ../../zLifecycle-teams
+cd ../../zLifecycle-CompuZest-config
 kubectl apply -f teams/account-team.yaml # Replace yaml file with team name for the team you want to register
 ```
 
