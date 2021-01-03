@@ -6,6 +6,13 @@ select LOCATION in "1" "2"; do
     esac
 done
 
+cd ../../environment-operator
+make deploy IMG=shahadarsh/environment-operator:latest
+
+cd ../zLifecycle/bootstrap
+
+kubectl apply -f common/company-config.yaml
+
 echo ""
 echo ""
 echo "-------------------------------------"

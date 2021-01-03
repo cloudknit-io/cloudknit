@@ -19,6 +19,3 @@ terraform init
 terraform workspace select 0-local || terraform workspace new 0-local
 terraform init
 terraform apply -auto-approve -var-file tfvars/local.tfvars
-
-cd ../../environment-operator
-make deploy IMG=shahadarsh/environment-operator:latest

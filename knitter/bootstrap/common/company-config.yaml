@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: company-config
+  namespace: environment-operator-system
+data:
+  companyName: "CompuZest"
+  adminEmail: "admin@compuzest.com"
+  teamsConfigPath: "teams"
+  ilRepo: "git@github.com:CompuZest/terraform-environment.git"
+  ilRepoName: "terraform-environment"
+  helmChartsRepo: "git@github.com:CompuZest/helm-charts.git"

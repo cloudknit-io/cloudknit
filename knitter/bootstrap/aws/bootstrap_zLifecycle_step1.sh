@@ -20,6 +20,3 @@ terraform init
 terraform workspace select 0-sandbox || terraform workspace new 0-sandbox
 terraform init
 terraform apply -auto-approve -var-file tfvars/sandbox.tfvars
-
-cd ../../environment-operator
-make deploy IMG=shahadarsh/environment-operator:latest
