@@ -10,6 +10,8 @@ import (
 
 func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Application {
 
+	ilRepo := os.Getenv("ilRepo")
+
 	return &appv1.Application{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "argoproj.io/v1alpha1",
@@ -31,7 +33,7 @@ func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Appli
 				Namespace: "default",
 			},
 			Source: appv1.ApplicationSource{
-				RepoURL:        "git@github.com:CompuZest/terraform-environment.git",
+				RepoURL:        ilRepo,
 				Path:           environment.Spec.TeamName + "/" + environment.Spec.EnvName,
 				TargetRevision: "HEAD",
 				Directory: &appv1.ApplicationSourceDirectory{
@@ -43,7 +45,7 @@ func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Appli
 			Sync: appv1.SyncStatus{
 				ComparedTo: appv1.ComparedTo{
 					Source: appv1.ApplicationSource{
-						RepoURL: "git@github.com:CompuZest/terraform-environment.git",
+						RepoURL: ilRepo,
 					},
 				},
 				Status: "Synced",
@@ -57,6 +59,7 @@ func GenerateTerraformConfigApps(environment stablev1alpha1.Environment, terrafo
 	helmValues := getHelmValues(environment, terraformConfig)
 
 	k8s_api_url := os.Getenv("K8s_API_URL")
+	helmChartsRepo := os.Getenv("helmChartsRepo")
 
 	return &appv1.Application{
 		TypeMeta: metav1.TypeMeta{
@@ -82,7 +85,7 @@ func GenerateTerraformConfigApps(environment stablev1alpha1.Environment, terrafo
 				Namespace: "default",
 			},
 			Source: appv1.ApplicationSource{
-				RepoURL:        "git@github.com:CompuZest/helm-charts.git",
+				RepoURL:        helmChartsRepo,
 				Path:           "charts/terraform-config",
 				TargetRevision: "HEAD",
 				Helm: &appv1.ApplicationSourceHelm{
@@ -94,7 +97,7 @@ func GenerateTerraformConfigApps(environment stablev1alpha1.Environment, terrafo
 			Sync: appv1.SyncStatus{
 				ComparedTo: appv1.ComparedTo{
 					Source: appv1.ApplicationSource{
-						RepoURL: "git@github.com:CompuZest/helm-charts.git",
+						RepoURL: helmChartsRepo,
 					},
 				},
 				Status: "Synced",
