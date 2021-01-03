@@ -82,7 +82,7 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	ilRepoName := os.Getenv("ilRepoName")
 	companyName := os.Getenv("companyName")
 
-	github.CommitAndPushFiles(companyName, ilRepoName, environment.Spec.TeamName+"/", "master", "Adarsh Shah", "shahadarsh@gmail.com")
+	github.CommitAndPushFiles(companyName, ilRepoName, environment.Spec.TeamName+"/", "master", "zLifecycle", "zLifecycle@compuzest.com")
 
 	return ctrl.Result{}, nil
 }
