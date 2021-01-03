@@ -10,11 +10,11 @@ argocd login --insecure localhost:8080 --grpc-web --username admin --password $a
 
 sleep 10s
 ilRepo=$(kubectl get ConfigMap company-config -n environment-operator-system -o jsonpath='{.data.ilRepo}')
-argocd repo add --name terraform-environment $ilRepo --ssh-private-key-path argo --insecure-ignore-host-key
+argocd repo add --name terraform-environment $ilRepo --ssh-private-key-path zLifecycle --insecure-ignore-host-key
 
 sleep 10s
 helmChartsRepo=$(kubectl get ConfigMap company-config -n environment-operator-system -o jsonpath='{.data.helmChartsRepo}')
-argocd repo add --name helm-charts $helmChartsRepo --ssh-private-key-path argo --insecure-ignore-host-key
+argocd repo add --name helm-charts $helmChartsRepo --ssh-private-key-path zLifecycle --insecure-ignore-host-key
 
 if [ $LOCATION -eq 1 ]
 then
@@ -44,6 +44,7 @@ else
     kubectl create secret generic k8s-api --from-literal=url=$APISERVER -n environment-operator-system
 
     argocd cluster add arn:aws:eks:us-east-1:413422438110:cluster/0-sandbox-eks --name sandbox
+
 fi
 
 # Create all bootstrap argo workflow template

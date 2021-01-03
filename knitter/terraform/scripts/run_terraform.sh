@@ -30,7 +30,6 @@ aws_access_key_id = ${SHARED_AWS_ACCESS_KEY_ID}
 aws_secret_access_key = ${SHARED_AWS_SECRET_ACCESS_KEY}
 EOT
 
-
 if [ -n "${module_source_path}" ]; then
     full_module_source="${module_source}//${module_source_path}"
 else

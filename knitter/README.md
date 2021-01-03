@@ -1,5 +1,6 @@
 # Index
 - [Overview](#overview)
+- [Setup New Customer](#setup-new-customer)
 - [Initial Bootstrap](#initial-bootstrap)
 - [Bootstrap zLifecycle](#bootstrap-zlifecycle)
 - [Register Teams](#register-teams)
@@ -10,6 +11,15 @@
 zLifecycle is a product to manage lifecycle for infrastructure across various cloud providers as well as on-prem.
 
 For more details & diagrams look at: https://app.diagrams.net/#G1gXeFRlERpqjXpeSjxRPLP6YZMRyFG5SN
+
+## Setup New Customer
+
+* Create new Github service account (example: zLifecycle with zLifecycle@compuzest.com email)
+* Generate Personal Token & ssh key to be used by secret created (Check LastPass secret note: "zLifecycle - k8s secrets")
+* Add new github service account to the customer github org and give perms to following repos
+    * terraform-environment - write access
+    * helm-charts - read access
+    * zLifecycle-CompuZest-config - read access
 
 ## Initial Bootstrap
 
