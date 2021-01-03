@@ -8,7 +8,7 @@ argocd cluster rm sandbox
 argocd repo rm git@github.com:CompuZest/terraform-environment.git
 argocd repo rm git@github.com:CompuZest/helm-charts.git
 
-cd ../../../zLifecycle-infra-deploy/k8s-addons
+cd ../../../infra-deploy-zlifecycle/k8s-addons
 terraform init
 terraform workspace select 0-local
 terraform init

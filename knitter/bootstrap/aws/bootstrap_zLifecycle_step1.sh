@@ -1,4 +1,4 @@
-cd ../../zLifecycle-infra-deploy/aws-vpc
+cd ../../infra-deploy-zlifecycle/aws-vpc
 terraform init
 terraform workspace select 0-sandbox || terraform workspace new 0-sandbox
 terraform init

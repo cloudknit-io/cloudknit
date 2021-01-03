@@ -1,6 +1,6 @@
 LOCATION=$1
 
-cd ../../zLifecycle-infra-deploy/k8s-addons/argo-workflow
+cd ../../infra-deploy-zlifecycle/k8s-addons/argo-workflow
 
 kubectl port-forward service/argo-cd-argocd-server 8080:80 -n argocd &
 
@@ -10,7 +10,8 @@ argocd login --insecure localhost:8080 --grpc-web --username admin --password $a
 
 sleep 10s
 ilRepo=$(kubectl get ConfigMap company-config -n environment-operator-system -o jsonpath='{.data.ilRepo}')
-argocd repo add --name terraform-environment $ilRepo --ssh-private-key-path zLifecycle --insecure-ignore-host-key
+ilRepoName=$(kubectl get ConfigMap company-config -n environment-operator-system -o jsonpath='{.data.ilRepoName}')
+argocd repo add --name $ilRepoName $ilRepo --ssh-private-key-path zLifecycle --insecure-ignore-host-key
 
 sleep 10s
 helmChartsRepo=$(kubectl get ConfigMap company-config -n environment-operator-system -o jsonpath='{.data.helmChartsRepo}')
@@ -52,7 +53,7 @@ cd ../../../zLifecycle/argo-templates
 kubectl apply -f .
 
 # Create all team environments
-cd ../../zLifecycle-CompuZest-config
+cd ../../compuzest-environment-config
 kubectl apply -R -f teams/account-team
 kubectl apply -R -f teams/user-team
 
