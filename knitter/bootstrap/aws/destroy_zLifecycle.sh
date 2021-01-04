@@ -17,5 +17,7 @@ terraform destroy -auto-approve -var-file tfvars/sandbox.tfvars
 
 
 cd ../aws-vpc
+terraform init
 terraform workspace select 0-sandbox
+terraform init
 terraform destroy -auto-approve -var-file tfvars/sandbox.tfvars
