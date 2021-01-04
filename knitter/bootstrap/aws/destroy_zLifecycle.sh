@@ -3,7 +3,7 @@ argocd app delete 1-customer
 argocd repo rm git@github.com:CompuZest/infra-deploy-terraform-config.git
 argocd repo rm git@github.com:CompuZest/helm-charts.git
 
-cd ../../../infra-deploy-zlifecycle/k8s-addons
+cd ../../../zlifecycle-provisioner/k8s-addons
 terraform init
 terraform workspace select 0-sandbox
 terraform init

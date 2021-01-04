@@ -1,6 +1,6 @@
 LOCATION=$1
 
-cd ../../infra-deploy-zlifecycle/k8s-addons/argo-workflow
+cd ../../zlifecycle-provisioner/k8s-addons/argo-workflow
 
 kubectl port-forward service/argo-cd-argocd-server 8080:80 -n argocd &
 

@@ -14,7 +14,7 @@ then
     k3d cluster create sandbox-k3d -a 3 --api-port 59999
 fi
 
-cd ../../infra-deploy-zlifecycle/k8s-addons
+cd ../../zlifecycle-provisioner/k8s-addons
 terraform init
 terraform workspace select 0-local || terraform workspace new 0-local
 terraform init

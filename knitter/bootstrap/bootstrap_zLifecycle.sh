@@ -6,7 +6,7 @@ select LOCATION in "1" "2"; do
     esac
 done
 
-cd ../../environment-operator
+cd ../../zlifecycle-il-operator
 make deploy IMG=shahadarsh/environment-operator:latest
 
 cd ../zLifecycle/bootstrap
