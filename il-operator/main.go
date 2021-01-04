@@ -27,8 +27,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	stablev1alpha1 "github.com/compuzest/environment-operator/api/v1alpha1"
-	"github.com/compuzest/environment-operator/controllers"
+	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
+	"github.com/compuzest/zlifecycle-il-operator/controllers"
 	// +kubebuilder:scaffold:imports
 )
 

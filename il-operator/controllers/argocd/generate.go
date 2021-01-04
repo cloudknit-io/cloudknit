@@ -3,7 +3,7 @@ package controllers
 import (
 	"fmt"
 	appv1 "github.com/argoproj/argo-cd/pkg/apis/application/v1alpha1"
-	stablev1alpha1 "github.com/compuzest/environment-operator/api/v1alpha1"
+	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"os"
 )

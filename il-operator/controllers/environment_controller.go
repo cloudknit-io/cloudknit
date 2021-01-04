@@ -20,18 +20,18 @@ import (
 	"context"
 	"os"
 
-	github "github.com/compuzest/environment-operator/controllers/github"
+	github "github.com/compuzest/zlifecycle-il-operator/controllers/github"
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	kClient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	stablev1alpha1 "github.com/compuzest/environment-operator/api/v1alpha1"
-	argocd "github.com/compuzest/environment-operator/controllers/argocd"
-	argoWorkflow "github.com/compuzest/environment-operator/controllers/argoworkflow"
-	fileutil "github.com/compuzest/environment-operator/controllers/file"
-	k8s "github.com/compuzest/environment-operator/controllers/kubernetes"
+	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
+	argocd "github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
+	argoWorkflow "github.com/compuzest/zlifecycle-il-operator/controllers/argoworkflow"
+	fileutil "github.com/compuzest/zlifecycle-il-operator/controllers/file"
+	k8s "github.com/compuzest/zlifecycle-il-operator/controllers/kubernetes"
 )
 
 // EnvironmentReconciler reconciles a Environment object

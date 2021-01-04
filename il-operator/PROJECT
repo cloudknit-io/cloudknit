@@ -1,7 +1,7 @@
 domain: compuzest.com
 layout: go.kubebuilder.io/v2
-projectName: environment-operator
-repo: github.com/compuzest/environment-operator
+projectName: zlifecycle-il-operator
+repo: github.com/compuzest/zlifecycle-il-operator
 resources:
 - group: stable
   kind: Environment
