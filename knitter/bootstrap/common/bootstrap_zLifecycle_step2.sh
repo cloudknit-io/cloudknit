@@ -9,12 +9,12 @@ argocd_server_name=$(kubectl get pods -l app.kubernetes.io/name=argocd-server -n
 argocd login --insecure localhost:8080 --grpc-web --username admin --password $argocd_server_name
 
 sleep 10s
-ilRepo=$(kubectl get ConfigMap company-config -n environment-operator-system -o jsonpath='{.data.ilRepo}')
-ilRepoName=$(kubectl get ConfigMap company-config -n environment-operator-system -o jsonpath='{.data.ilRepoName}')
+ilRepo=$(kubectl get ConfigMap company-config -n zlifecycle-il-operator-system -o jsonpath='{.data.ilRepo}')
+ilRepoName=$(kubectl get ConfigMap company-config -n zlifecycle-il-operator-system -o jsonpath='{.data.ilRepoName}')
 argocd repo add --name $ilRepoName $ilRepo --ssh-private-key-path zLifecycle --insecure-ignore-host-key
 
 sleep 10s
-helmChartsRepo=$(kubectl get ConfigMap company-config -n environment-operator-system -o jsonpath='{.data.helmChartsRepo}')
+helmChartsRepo=$(kubectl get ConfigMap company-config -n zlifecycle-il-operator-system -o jsonpath='{.data.helmChartsRepo}')
 argocd repo add --name helm-charts $helmChartsRepo --ssh-private-key-path zLifecycle --insecure-ignore-host-key
 
 if [ $LOCATION -eq 1 ]
@@ -35,14 +35,14 @@ then
     sleep 10s
 
     APISERVER=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
-    kubectl create secret generic k8s-api --from-literal=url=$APISERVER -n environment-operator-system
+    kubectl create secret generic k8s-api --from-literal=url=$APISERVER -n zlifecycle-il-operator-system
 
     argocd cluster add k3d-sandbox-k3d --insecure --name sandbox
 
 else 
 
     APISERVER=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
-    kubectl create secret generic k8s-api --from-literal=url=$APISERVER -n environment-operator-system
+    kubectl create secret generic k8s-api --from-literal=url=$APISERVER -n zlifecycle-il-operator-system
 
     argocd cluster add arn:aws:eks:us-east-1:413422438110:cluster/0-sandbox-eks --name sandbox
 

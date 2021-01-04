@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: company-config
-  namespace: environment-operator-system
+  namespace: zlifecycle-il-operator-system
 data:
   companyName: "CompuZest"
   adminEmail: "admin@compuzest.com"

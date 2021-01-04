@@ -7,7 +7,7 @@ select LOCATION in "1" "2"; do
 done
 
 cd ../../zlifecycle-il-operator
-make deploy IMG=shahadarsh/environment-operator:latest
+make deploy IMG=shahadarsh/zlifecycle-il-operator:latest
 
 cd ../zLifecycle/bootstrap
 
