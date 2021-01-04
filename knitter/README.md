@@ -15,11 +15,11 @@ For more details & diagrams look at: https://app.diagrams.net/#G1gXeFRlERpqjXpeS
 ## Setup New Customer
 
 * Create new Github service account (example: zLifecycle with zLifecycle@compuzest.com email)
-* Generate Personal Token & ssh key to be used by secret created (Check LastPass secret note: "zLifecycle - k8s secrets")
 * Add new github service account to the customer github org and give perms to following repos
-    * terraform-environment - write access
+    * compuzest-zlifecycle-il - write access
     * helm-charts - read access
-    * zLifecycle-CompuZest-config - read access
+    * compuZest-zlifecycle-config - read access
+* Generate Personal Token & ssh key for the Github service account to be used by secret created (Check LastPass secret note: "zLifecycle - k8s secrets")
 
 ## Initial Bootstrap
 
@@ -37,11 +37,11 @@ terraform apply
 
 To bootstrap zLifecycle run following script and following instructions:
 
-Note: When it asks to create secret go to `infra-deploy-platform/k8s-addons/argo-workflow` folder 
+Note: When it asks to create secret go to `zlifecycle-provisioner/k8s-addons/argo-workflow` folder
 and create secrets using scripts in LastPass
 
 ```bash
-cd bootstrap
+cd zlifecycle/bootstrap
 ./bootstrap_zLifecycle.sh
 ```
 
@@ -50,7 +50,7 @@ cd bootstrap
 You need to manually register teams currently using following script
 
 ```bash
-cd ../../zLifecycle-CompuZest-config
+cd ../../compuzest-zlifecycle-config
 kubectl apply -f teams/account-team.yaml # Replace yaml file with team name for the team you want to register
 ```
 
