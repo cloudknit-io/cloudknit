@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	stablev1alpha1 "github.com/compuzest/environment-operator/api/v1alpha1"
+	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

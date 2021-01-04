@@ -1,4 +1,4 @@
-module github.com/compuzest/environment-operator
+module github.com/compuzest/zlifecycle-il-operator
 
 go 1.13
 

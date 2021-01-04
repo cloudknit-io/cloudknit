@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"fmt"
-	stablev1alpha1 "github.com/compuzest/environment-operator/api/v1alpha1"
+	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
 	"github.com/ghodss/yaml"
 	"io/ioutil"
 	"k8s.io/apimachinery/pkg/util/json"
