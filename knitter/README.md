@@ -63,7 +63,7 @@ docker push shahadarsh/terraform:latest
 ```
 
 ## Connect to zLifecycle AWS environment
-Configure proper credentials in `~/.aws/credentials` or setting `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`. Then:
+- Configure proper credentials in `~/.aws/credentials` as a profile names `compuzest-shared`
 ```
 aws eks --region us-east-1 update-kubeconfig --name 0-sandbox-eks
 ```
