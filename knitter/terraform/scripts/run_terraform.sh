@@ -67,11 +67,11 @@ terraform {
   backend "s3" {
     profile                 = "compuzest-shared"
 
-    bucket                  = "compuzest-tfstate"
+    bucket                  = "compuzest-zlifecycle-tfstate"
     key                     = "${team_name}/${env_name}/${config_name}/terraform.tfstate"
     region                  = "us-east-1"
 
-    dynamodb_table          = "compuzest-tflock"
+    dynamodb_table          = "compuzest-zlifecycle-tflock"
     encrypt                 = true
   }
 }
