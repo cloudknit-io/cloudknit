@@ -20,9 +20,24 @@ done
 cd ../../zlifecycle-il-operator
 make deploy IMG=shahadarsh/zlifecycle-il-operator:latest
 
-cd ../zLifecycle/bootstrap
+if [[ $LOCATION -eq 1 ]]
+then
+    cd ../zLifecycle/bootstrap/local
+    kubectl apply -f company-config.yaml
 
-kubectl apply -f common/company-config.yaml
+    # Create all team environments
+    cd ../../../compuzest-dev-a-zlifecycle-config
+    kubectl apply -R -f teams/account-team
+    kubectl apply -R -f teams/user-team
+else
+    cd ../zLifecycle/bootstrap/aws
+    kubectl apply -f company-config.yaml
+
+    # Create all team environments
+    cd ../../../compuzest-zlifecycle-config
+    kubectl apply -R -f teams/account-team
+    kubectl apply -R -f teams/user-team
+fi
 
 echo ""
 echo ""
@@ -33,5 +48,6 @@ echo "-------------------------------------"
 
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
+    cd ../zlifecycle/bootstrap
     ./common/bootstrap_zLifecycle_step2.sh $LOCATION
 fi

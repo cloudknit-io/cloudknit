@@ -30,3 +30,4 @@ terraform init
 terraform workspace select 0-local || terraform workspace new 0-local
 terraform init
 terraform apply -auto-approve -var-file tfvars/local.tfvars
+

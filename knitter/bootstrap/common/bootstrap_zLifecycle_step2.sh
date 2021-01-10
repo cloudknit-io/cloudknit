@@ -63,9 +63,4 @@ fi
 cd ../../../zLifecycle/argo-templates
 kubectl apply -f .
 
-# Create all team environments
-cd ../../compuzest-zlifecycle-config
-kubectl apply -R -f teams/account-team
-kubectl apply -R -f teams/user-team
-
 kubectl port-forward service/argo-workflow-server 8081:2746 -n argocd &
