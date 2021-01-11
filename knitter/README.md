@@ -62,7 +62,7 @@ kubectl apply -f teams/account-team.yaml # Replace yaml file with team name for 
 ## Build Terraform Docker Image
 
 ```bash
-cd terraform
+cd terraform-image
 docker build -t shahadarsh/terraform:latest .
 docker push shahadarsh/terraform:latest
 ```
