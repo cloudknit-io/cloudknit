@@ -14,5 +14,6 @@ make docker-build docker-push IMG=shahadarsh/zlifecycle-il-operator:latest
 Run following in the root directory.
 
 ```bash
-make deploy IMG=shahadarsh/zlifecycle-il-operator:latest
+export AWS_ACCOUNT_ID=xxxx
+make docker-build docker-push IMG=$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-il-operator:latest
 ```
