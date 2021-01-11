@@ -21,9 +21,11 @@ For more details & diagrams look at: https://app.diagrams.net/#G1gXeFRlERpqjXpeS
     * compuZest-zlifecycle-config - read access
 * Generate Personal Token & ssh key for the Github service account to be used by secret created (Check LastPass secret note: "zLifecycle - k8s secrets")
 
-## Initial Bootstrap
+## Initial Bootstrap 
 
 ### Terraform Shared State
+
+zLifecycle environments (e.g. demo, dev) are managed by terraform workspaces. These terraform workspaces share a parent state directory maintained in terraform (`zlifecycle-tfstate`) that needs to be initialized before environments can be created. This bootstrap script is for this use case, where no zlifecycle environments exist yet.
 
 Run `tfstate` terraform to provision S3 bucket and Dynamo DB table that will be used for Terraform Shared State.
 
@@ -35,10 +37,13 @@ terraform apply
 
 ## Bootstrap zLifecycle
 
-To bootstrap zLifecycle run following script and following instructions:
+To bootstrap zLifecycle in a given environment (e.g. demo, dev-a, dev-b):
+1. Add the zlifecycle GitHub service account SSH key pair to `zlifecycle-provisioner/k8s-addons/argo-workflow` in files named `zlifecycle` and `zlifecycle.pub`.
+2. Create a `tfvars` file for your environment in `zlifecycle-provisioner/k8s-addons/tfvars` based on the example file. Non `.example` files will be git ignored. Add required values, such as the ArgoCD slack token.
+3. Run following script and following instructions with the following note:
 
 Note: When it asks to create secret go to `zlifecycle-provisioner/k8s-addons/argo-workflow` folder
-and create secrets using scripts in LastPass
+and create secrets using scripts in LastPass. This will ensure the GitHub key created in step 1 is used.
 
 ```bash
 cd zlifecycle/bootstrap
