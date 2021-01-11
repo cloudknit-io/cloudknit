@@ -9,24 +9,31 @@
 # law. Dissemination of this information or reproduction of this material is
 # strictly forbidden unless prior written permission is obtained from CompuZest, Inc.
 
-echo "Please enter 1 for local and 2 for AWS:"
-select LOCATION in "1" "2"; do
+echo "Please select the environment you wish to bootstrap:"
+select LOCATION in "dev-a" "dev-b" "sandbox"; do
     case $LOCATION in
-        1 ) ./local/bootstrap_zLifecycle_step1.sh; break;;
-        2 ) ./aws/bootstrap_zLifecycle_step1.sh; break;;
+        "dev-a" ) LOCAL=1 ./local/bootstrap_zLifecycle_step1.sh $LOCATION; break;;
+        "dev-b" ) LOCAL=1 ./local/bootstrap_zLifecycle_step1.sh $LOCATION; break;;
+        "sandbox" ) LOCAL=0 ./aws/bootstrap_zLifecycle_step1.sh; break;;
     esac
 done
 
 cd ../../zlifecycle-il-operator
 make deploy IMG=shahadarsh/zlifecycle-il-operator:latest
 
-if [[ $LOCATION -eq 1 ]]
+LOCAL=1
+if [[ $LOCATION == "sandbox" ]]
+then
+    LOCAL=0
+fi
+
+if [[ $LOCAL -eq 1 ]]
 then
     cd ../zLifecycle/bootstrap/local
     kubectl apply -f company-config.yaml
 
     # Create all team environments
-    cd ../../../compuzest-dev-a-zlifecycle-config
+    cd ../../../compuzest-$LOCATION-zlifecycle-config
     kubectl apply -R -f teams/account-team
     kubectl apply -R -f teams/user-team
 else
@@ -49,5 +56,5 @@ echo "-------------------------------------"
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
     cd ../zlifecycle/bootstrap
-    ./common/bootstrap_zLifecycle_step2.sh $LOCATION
+    ./common/bootstrap_zLifecycle_step2.sh $LOCATION $LOCAL
 fi

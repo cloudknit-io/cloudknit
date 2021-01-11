@@ -10,6 +10,7 @@
 # strictly forbidden unless prior written permission is obtained from CompuZest, Inc.
 
 LOCATION=$1
+LOCAL=$2
 
 cd ../../zlifecycle-provisioner/k8s-addons/argo-workflow
 
@@ -25,13 +26,13 @@ zlifecycleSSHKeyPath=zlifecycle
 sleep 10s
 ilRepo=$(kubectl get ConfigMap company-config -n zlifecycle-il-operator-system -o jsonpath='{.data.ilRepo}')
 ilRepoName=$(kubectl get ConfigMap company-config -n zlifecycle-il-operator-system -o jsonpath='{.data.ilRepoName}')
-argocd repo add --name $ilRepoName $ilRepo --ssh-private-key-path $zlifecycleSSHKeyPath --insecure-ignore-host-key
+argocd repo add $ilRepo --name $ilRepoName --ssh-private-key-path $zlifecycleSSHKeyPath --insecure-ignore-host-key
 
 sleep 10s
 helmChartsRepo=$(kubectl get ConfigMap company-config -n zlifecycle-il-operator-system -o jsonpath='{.data.helmChartsRepo}')
 argocd repo add --name helm-charts $helmChartsRepo --ssh-private-key-path $zlifecycleSSHKeyPath --insecure-ignore-host-key
 
-if [ $LOCATION -eq 1 ]
+if [ $LOCAL -eq 1 ]
 then
     ip_addr=$(ipconfig getifaddr en0)
 
@@ -51,14 +52,14 @@ then
     APISERVER=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
     kubectl create secret generic k8s-api --from-literal=url=$APISERVER -n zlifecycle-il-operator-system
 
-    argocd cluster add k3d-sandbox-k3d --insecure --name sandbox
+    argocd cluster add k3d-$LOCATION-k3d --insecure --name $LOCATION
 
 else 
 
     APISERVER=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
     kubectl create secret generic k8s-api --from-literal=url=$APISERVER -n zlifecycle-il-operator-system
 
-    argocd cluster add arn:aws:eks:us-east-1:413422438110:cluster/0-sandbox-eks --name sandbox
+    argocd cluster add arn:aws:eks:us-east-1:413422438110:cluster/0-$LOCATION-eks --name $LOCATION
 
 fi
 

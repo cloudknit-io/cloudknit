@@ -9,6 +9,10 @@
 # law. Dissemination of this information or reproduction of this material is
 # strictly forbidden unless prior written permission is obtained from CompuZest, Inc.
 
+
+LOCATION=$1
+LOCAL=1
+
 echo ""
 echo ""
 echo "-------------------------------------"
@@ -22,12 +26,12 @@ then
         echo "Docker does not seem to be running, run it first and retry"
         exit 1
     fi
-    k3d cluster create sandbox-k3d -a 3 --api-port 59999
+    k3d cluster create $LOCATION-k3d -a 3 --api-port 59999
 fi
 
 cd ../../zlifecycle-provisioner/k8s-addons
 terraform init
-terraform workspace select 0-local || terraform workspace new 0-local
+terraform workspace select 0-$LOCATION || terraform workspace new 0-$LOCATION
 terraform init
-terraform apply -auto-approve -var-file tfvars/local.tfvars
+terraform apply -auto-approve -var-file tfvars/$LOCATION.tfvars
 
