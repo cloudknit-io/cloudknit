@@ -6,7 +6,7 @@ namespace: zlifecycle-il-operator-system
 # "wordpress" becomes "alices-wordpress".
 # Note that it should also match with the prefix (text before '-') of the namespace
 # field above.
-namePrefix: zlifecycle-operator-
+namePrefix: zlifecycle-il-operator-
 
 # Labels to add to all resources and selectors.
 #commonLabels:
