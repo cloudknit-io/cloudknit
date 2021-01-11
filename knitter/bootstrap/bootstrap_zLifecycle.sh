@@ -18,8 +18,14 @@ select LOCATION in "dev-a" "dev-b" "sandbox"; do
     esac
 done
 
-cd ../../zlifecycle-il-operator
-make deploy IMG=shahadarsh/zlifecycle-il-operator:latest
+if [[ -z "$AWS_ACCOUNT_ID" ]]
+then
+    echo "Error: Please set \$AWS_ACCOUNT_ID"
+    exit 1
+else
+    cd ../../zlifecycle-il-operator
+    make deploy IMG=$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-il-operator:latest
+fi
 
 LOCAL=1
 if [[ $LOCATION == "sandbox" ]]
