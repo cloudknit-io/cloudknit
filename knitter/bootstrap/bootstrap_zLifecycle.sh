@@ -24,6 +24,7 @@ then
     exit 1
 else
     cd ../../zlifecycle-il-operator
+    echo "Deploying zlifecycle-il-operator"
     make deploy IMG=$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-il-operator:latest
 fi
 
@@ -36,7 +37,7 @@ fi
 if [[ $LOCAL -eq 1 ]]
 then
     cd ../zLifecycle/bootstrap/local
-    kubectl apply -f company-config.yaml
+    kubectl apply -f company-config-$LOCATION.yaml
 
     # Create all team environments
     cd ../../../compuzest-$LOCATION-zlifecycle-config
