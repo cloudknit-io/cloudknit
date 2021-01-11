@@ -16,7 +16,7 @@ kubectl patch crd applications.argoproj.io -p '{"metadata":{"finalizers":[]}}' -
 argocd app delete $(argocd app list -o name)
 
 argocd cluster rm sandbox
-argocd repo rm git@github.com:CompuZest/terraform-environment.git
+argocd repo rm git@github.com:CompuZest/compuzest-dev-a-zlifecycle-il.git
 argocd repo rm git@github.com:CompuZest/helm-charts.git
 
 cd ../../../zlifecycle-provisioner/k8s-addons
@@ -24,7 +24,7 @@ terraform init
 terraform workspace select 0-local
 terraform init
 
-terraform destroy -auto-approve -var-file tfvars/sandbox.tfvars
+terraform destroy -auto-approve -var-file tfvars/local.tfvars
 
 echo ""
 echo ""
