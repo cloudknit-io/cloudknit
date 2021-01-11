@@ -23,3 +23,6 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+
+# HACK: git ignore this file to avoid AWS account id being committed to git
+config/manager/kustomization.yaml
