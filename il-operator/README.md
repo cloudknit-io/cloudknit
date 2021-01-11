@@ -14,5 +14,5 @@ make docker-build docker-push IMG=shahadarsh/zlifecycle-il-operator:latest
 Run following in the root directory.
 
 ```bash
-make deploy IMG=shahadarsh/environment-operator:latest
+make deploy IMG=shahadarsh/zlifecycle-il-operator:latest
 ```
