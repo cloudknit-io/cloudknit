@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright (C) 2020 CompuZest, Inc. - All Rights Reserved
 #
 # Unauthorized copying of this file, via any medium, is strictly prohibited
@@ -8,70 +9,86 @@
 # proprietary to CompuZest, Inc. and are protected by trade secret or copyright
 # law. Dissemination of this information or reproduction of this material is
 # strictly forbidden unless prior written permission is obtained from CompuZest, Inc.
-if [[ -z "$AWS_ACCOUNT_ID" ]]
-then
-    echo "Error: Please set \$AWS_ACCOUNT_ID"
-    exit 1
-fi
 
-echo "Please select the environment you wish to bootstrap:"
-select LOCATION in "dev-a" "dev-b" "sandbox"; do
-    case $LOCATION in
-        "dev-a" ) LOCAL=1 ./local/bootstrap_zLifecycle_step1.sh $LOCATION; break;;
-        "dev-b" ) LOCAL=1 ./local/bootstrap_zLifecycle_step1.sh $LOCATION; break;;
-        "sandbox" ) LOCAL=0 ./aws/bootstrap_zLifecycle_step1.sh; break;;
-    esac
-done
 
-cd ../../zlifecycle-il-operator
+main() {
+    announcePhase() {
+        echo ""
+        echo ""
+        echo "-------------------------------------"
+        echo $1
+        echo ""
+        echo "-------------------------------------"   
+    }
 
-# hack to keep account id out of version control, see yaml.example file for more info
-cp config/manager/kustomization.yaml.example config/manager/kustomization.yaml
+    checkForFailures() {
+        if [ $? -ne 0 ]
+        then
+            echo ""
+            echo "-------------------------------------"   
+            read -p "Bootstrap phase has failed, type C to exit, any other key to continue" -n 1 -r
+            echo ""
 
-echo "Deploying zlifecycle-il-operator"
-make deploy IMG=$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-il-operator:latest
+            if [[ $REPLY =~ ^[Cc]$ ]]
+            then
+                exit 1
+            fi
+        fi
+    }
 
-LOCAL=1
-if [[ $LOCATION == "sandbox" ]]
-then
-    LOCAL=0
-fi
-
-if [[ $LOCAL -eq 1 ]]
-then
-    cd ../zLifecycle/bootstrap/local
-    kubectl apply -f company-config-$LOCATION.yaml
-
-    # Create all team environments
-    cd ../../../compuzest-$LOCATION-zlifecycle-config
-    kubectl apply -R -f teams/account-team
-    kubectl apply -R -f teams/user-team
-else
-    cd ../zLifecycle/bootstrap/aws
-    kubectl apply -f company-config.yaml
-
-    # Create all team environments
-    cd ../../../compuzest-zlifecycle-config
-    kubectl apply -R -f teams/account-team
-    kubectl apply -R -f teams/user-team
-fi
-
-echo ""
-echo ""
-echo "-------------------------------------"
-read -p "Please create secrets and enter Y to continue? " -n 1 -r
-echo ""
-echo "-------------------------------------"
-
-if [[ $REPLY =~ ^[Yy]$ ]]
-then
-    if [[ $LOCAL -eq 1 ]]
+    if [[ -z "$AWS_ACCOUNT_ID" ]]
     then
-        echo $(pwd)
-        cd ../zLifecycle/bootstrap/local
-        kubectl apply -f pull-ecr-cron.yaml # create resources to allow local clusters to pull from ECR
-        kubectl create job --from=cronjob/aws-registry-credential-cron -n zlifecycle-il-operator-system aws-registry-initial-job
+        echo "Error: Please set \$AWS_ACCOUNT_ID"
+        exit 1
     fi
-    cd ..
-    ./common/bootstrap_zLifecycle_step2.sh $LOCATION $LOCAL
-fi
+
+    echo "Please select the environment you wish to bootstrap:"
+    select LOCATION in "dev-a" "dev-b" "sandbox"; do
+        if [[ $LOCATION == "sandbox" ]]
+        then
+            readonly PARENT_DIRECTORY=aws
+            break;
+        else
+            readonly PARENT_DIRECTORY=local
+            break;
+        fi
+    done
+
+    # Provision with Terraform
+    announcePhase "Provision"
+    ./$PARENT_DIRECTORY/provision.sh $LOCATION;
+    checkForFailures
+
+
+    # Deploy Operator
+    announcePhase "Deploying zlifecycle-il-operator"
+    ./common/deploy_operator.sh
+    checkForFailures
+
+    # Bootstrap customers
+    announcePhase "Bootstrap customer Environments"
+    ./$PARENT_DIRECTORY/bootstrap_customers.sh $LOCATION $PARENT_DIRECTORY;
+    checkForFailures
+
+    #Prepare secrets
+    echo ""
+    echo ""
+    echo "-------------------------------------"
+    read -p "Please create secrets and enter Y to continue? " -n 1 -r
+    echo ""
+    echo "-------------------------------------"
+    echo ""
+    echo ""
+
+    #Set up Argo
+    announcePhase "Set up Argo"
+    ./common/configure_argo.sh
+    checkForFailures
+
+    #Configure Cluster
+    announcePhase "Configure cluster"
+    ./$PARENT_DIRECTORY/configure_cluster.sh $LOCATION $PARENT_DIRECTORY
+    checkForFailures
+}
+
+main

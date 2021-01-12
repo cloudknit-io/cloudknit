@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Copyright (C) 2020 CompuZest, Inc. - All Rights Reserved
 #
 # Unauthorized copying of this file, via any medium, is strictly prohibited
@@ -9,13 +11,11 @@
 # law. Dissemination of this information or reproduction of this material is
 # strictly forbidden unless prior written permission is obtained from CompuZest, Inc.
 
+set -eo pipefail
 
 LOCATION=$1
-LOCAL=1
 
 echo ""
-echo ""
-echo "-------------------------------------"
 read -p "If you want create a k3d cluster enter Y: " -n 1 -r
 echo ""
 echo "-------------------------------------"

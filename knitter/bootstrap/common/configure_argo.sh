@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Copyright (C) 2020 CompuZest, Inc. - All Rights Reserved
 #
 # Unauthorized copying of this file, via any medium, is strictly prohibited
@@ -8,13 +10,14 @@
 # proprietary to CompuZest, Inc. and are protected by trade secret or copyright
 # law. Dissemination of this information or reproduction of this material is
 # strictly forbidden unless prior written permission is obtained from CompuZest, Inc.
-
-LOCATION=$1
-LOCAL=$2
+set -eo pipefail
 
 cd ../../zlifecycle-provisioner/k8s-addons/argo-workflow
 
-kubectl port-forward service/argo-cd-argocd-server 8080:80 -n argocd &
+if [[ $(lsof -i :8080 | wc -l) > 0 ]]
+then
+    kubectl port-forward service/argo-cd-argocd-server 8080:80 -n argocd &
+fi
 
 sleep 2m
 argocd_server_name=$(kubectl get pods -l app.kubernetes.io/name=argocd-server -n argocd --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}')
@@ -32,39 +35,10 @@ sleep 10s
 helmChartsRepo=$(kubectl get ConfigMap company-config -n zlifecycle-il-operator-system -o jsonpath='{.data.helmChartsRepo}')
 argocd repo add --name helm-charts $helmChartsRepo --ssh-private-key-path $zlifecycleSSHKeyPath --insecure-ignore-host-key
 
-if [ $LOCAL -eq 1 ]
-then
-    ip_addr=$(ipconfig getifaddr en0)
-
-    if [ ! $ip_addr ]
-    then
-        ip_addr=$(ipconfig getifaddr en1)
-    fi
-
-    sed -i .bak "s+https://0.0.0.0:59999+https://$ip_addr:59999+g" ~/.kube/config
-
-    sleep 10s
-
-    curl --insecure https://$ip_addr:59999
-
-    sleep 10s
-
-    APISERVER=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
-    kubectl create secret generic k8s-api --from-literal=url=$APISERVER -n zlifecycle-il-operator-system
-
-    argocd cluster add k3d-$LOCATION-k3d --insecure --name $LOCATION
-
-else 
-
-    APISERVER=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
-    kubectl create secret generic k8s-api --from-literal=url=$APISERVER -n zlifecycle-il-operator-system
-
-    argocd cluster add arn:aws:eks:us-east-1:413422438110:cluster/0-$LOCATION-eks --name $LOCATION
-
-fi
-
 # Create all bootstrap argo workflow template
 cd ../../../zLifecycle/argo-templates
 kubectl apply -f .
-
-kubectl port-forward service/argo-workflow-server 8081:2746 -n argocd &
+if [[ $(lsof -i :8081 | wc -l) > 0 ]]
+then
+    kubectl port-forward service/argo-workflow-server 8081:2746 -n argocd &
+fi

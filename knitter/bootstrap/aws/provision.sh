@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright (C) 2020 CompuZest, Inc. - All Rights Reserved
 #
 # Unauthorized copying of this file, via any medium, is strictly prohibited
@@ -8,6 +9,9 @@
 # proprietary to CompuZest, Inc. and are protected by trade secret or copyright
 # law. Dissemination of this information or reproduction of this material is
 # strictly forbidden unless prior written permission is obtained from CompuZest, Inc.
+set -eo pipefail
+
+LOCATION=$1
 
 cd ../../zlifecycle-provisioner/aws-vpc
 terraform init
