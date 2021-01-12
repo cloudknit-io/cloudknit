@@ -8,6 +8,11 @@
 # proprietary to CompuZest, Inc. and are protected by trade secret or copyright
 # law. Dissemination of this information or reproduction of this material is
 # strictly forbidden unless prior written permission is obtained from CompuZest, Inc.
+if [[ -z "$AWS_ACCOUNT_ID" ]]
+then
+    echo "Error: Please set \$AWS_ACCOUNT_ID"
+    exit 1
+fi
 
 echo "Please select the environment you wish to bootstrap:"
 select LOCATION in "dev-a" "dev-b" "sandbox"; do
@@ -18,15 +23,9 @@ select LOCATION in "dev-a" "dev-b" "sandbox"; do
     esac
 done
 
-if [[ -z "$AWS_ACCOUNT_ID" ]]
-then
-    echo "Error: Please set \$AWS_ACCOUNT_ID"
-    exit 1
-else
-    cd ../../zlifecycle-il-operator
-    echo "Deploying zlifecycle-il-operator"
-    make deploy IMG=$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-il-operator:latest
-fi
+cd ../../zlifecycle-il-operator
+echo "Deploying zlifecycle-il-operator"
+make deploy IMG=$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-il-operator:latest
 
 LOCAL=1
 if [[ $LOCATION == "sandbox" ]]
@@ -62,6 +61,13 @@ echo "-------------------------------------"
 
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
-    cd ../zlifecycle/bootstrap
+    if [[ $LOCAL -eq 1 ]]
+    then
+        echo $(pwd)
+        cd ../zLifecycle/bootstrap/local
+        kubectl apply -f pull-ecr-cron.yaml # create resources to allow local clusters to pull from ECR
+        kubectl create job --from=cronjob/aws-registry-credential-cron -n zlifecycle-il-operator-system aws-registry-initial-job
+    fi
+    cd ..
     ./common/bootstrap_zLifecycle_step2.sh $LOCATION $LOCAL
 fi

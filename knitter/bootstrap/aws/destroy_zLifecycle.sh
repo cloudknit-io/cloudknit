@@ -8,6 +8,12 @@
 # proprietary to CompuZest, Inc. and are protected by trade secret or copyright
 # law. Dissemination of this information or reproduction of this material is
 # strictly forbidden unless prior written permission is obtained from CompuZest, Inc.
+LOCATION=$1
+if [[ -z "$LOCATION" ]]
+then
+    echo "Error: Please pass the name of the environment you'd like to destroy to this script"
+    exit 1
+fi
 
 argocd app delete 1-customer
 #argocd cluster rm arn:aws:eks:us-east-1:413422438110:cluster/0-sandbox-eks
@@ -16,19 +22,19 @@ argocd repo rm git@github.com:CompuZest/helm-charts.git
 
 cd ../../../zlifecycle-provisioner/k8s-addons
 terraform init
-terraform workspace select 0-sandbox
+terraform workspace select 0-$LOCATION
 terraform init
 terraform destroy -auto-approve -var-file tfvars/sandbox.tfvars
 
 cd ../aws-eks
 terraform init
-terraform workspace select 0-sandbox
+terraform workspace select 0-$LOCATION
 terraform init
 terraform destroy -auto-approve -var-file tfvars/sandbox.tfvars
 
 
 cd ../aws-vpc
 terraform init
-terraform workspace select 0-sandbox
+terraform workspace select 0-$LOCATION
 terraform init
 terraform destroy -auto-approve -var-file tfvars/sandbox.tfvars
