@@ -50,6 +50,16 @@ cd zlifecycle/bootstrap
 ./bootstrap_zLifecycle.sh
 ```
 
+## Creating a new environment
+1. Configure bootstrap scripts with new terraform workspace, etc. based on environment name
+1. Create new customers in that environment, see (onboarding a new customer)[#onboarding-a-new-customer]
+
+## Onboarding a new customer
+1. Create a new config repo for that customer
+1. Create a new empty IL repo for that customer
+1. Create a new directory in the `zlifecycle-il-operator` service for the new customer
+
+
 ## Register Teams
 
 You need to manually register teams currently using following script
