@@ -24,6 +24,7 @@ select LOCATION in "dev-a" "dev-b" "sandbox"; do
 done
 
 cd ../../zlifecycle-il-operator
+cp config/manager/kustomization.yaml.example config/manager/kustomization.yaml
 echo "Deploying zlifecycle-il-operator"
 make deploy IMG=$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-il-operator:latest
 
