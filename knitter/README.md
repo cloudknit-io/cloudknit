@@ -38,7 +38,7 @@ terraform apply
 ## Bootstrap zLifecycle
 
 To bootstrap zLifecycle in a given environment (e.g. demo, dev-a, dev-b):
-1. Add the zlifecycle GitHub service account SSH key pair to `zlifecycle-provisioner/k8s-addons/argo-workflow` in files named `zlifecycle` and `zlifecycle.pub`.
+1. Download the zlifecycle GitHub service account SSH key pair (from LastPass) to `zlifecycle-provisioner/k8s-addons/argo-workflow` folder on your machine and name the files `zlifecycle` and `zlifecycle.pub`. If you already have those files locally no need to do it again unless the key pair changed.
 2. Create a `tfvars` file for your environment in `zlifecycle-provisioner/k8s-addons/tfvars` based on the example file. Non `.example` files will be git ignored. Add required values, such as the ArgoCD slack token.
 3. Run following script and following instructions with the following note:
 
@@ -64,7 +64,6 @@ cd zlifecycle/bootstrap
 1. Create a new empty IL repo for that customer
 1. Create a new directory in the `zlifecycle-il-operator` service for the new customer
 
-
 ## Register Teams
 
 You need to manually register teams currently using following script
@@ -87,4 +86,3 @@ docker push shahadarsh/terraform:latest
 ```
 aws eks --region us-east-1 update-kubeconfig --name 0-sandbox-eks
 ```
-
