@@ -9,6 +9,7 @@
 # proprietary to CompuZest, Inc. and are protected by trade secret or copyright
 # law. Dissemination of this information or reproduction of this material is
 # strictly forbidden unless prior written permission is obtained from CompuZest, Inc.
+
 LOCATION=$1
 
 if [[ -z "$LOCATION" ]]

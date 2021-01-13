@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # Copyright (C) 2020 CompuZest, Inc. - All Rights Reserved
 #
 # Unauthorized copying of this file, via any medium, is strictly prohibited
@@ -13,7 +12,7 @@
 
 cd ../../zlifecycle-provisioner/k8s-addons/argo-workflow
 
-if [[ $(lsof -i :8080 | wc -l) > 0 ]]
+if [[ $(lsof -i :8080 | wc -l) -eq 0 ]]
 then
     echo "Port forwarding ArgoCD"
     kubectl port-forward service/argo-cd-argocd-server 8080:80 -n argocd &

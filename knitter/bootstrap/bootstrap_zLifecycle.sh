@@ -10,7 +10,6 @@
 # law. Dissemination of this information or reproduction of this material is
 # strictly forbidden unless prior written permission is obtained from CompuZest, Inc.
 
-
 main() {
     announcePhase() {
         echo ""
@@ -38,7 +37,7 @@ main() {
 
     if [[ -z "$AWS_ACCOUNT_ID" ]]
     then
-        echo "Error: Please set \$AWS_ACCOUNT_ID"
+        echo "Error: Please set \$AWS_ACCOUNT_ID for ECR"
         exit 1
     fi
 
@@ -58,7 +57,6 @@ main() {
     announcePhase "Provision"
     ./$PARENT_DIRECTORY/provision.sh $LOCATION;
     checkForFailures
-
 
     # Deploy Operator
     announcePhase "Deploying zlifecycle-il-operator"
