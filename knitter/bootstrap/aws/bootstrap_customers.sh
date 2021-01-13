@@ -1,7 +1,9 @@
 #!/bin/bash
 set -eo pipefail
 
-cd ../zLifecycle/bootstrap/aws
+PARENT_DIRECTORY=$2
+cd $PARENT_DIRECTORY
+
 kubectl apply -f company-config.yaml
 
 # Create all team environments

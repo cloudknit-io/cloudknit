@@ -16,8 +16,11 @@ then
     exit 1
 fi
 
+argocd_server_name=$(kubectl get pods -l app.kubernetes.io/name=argocd-server -n argocd --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}')
+argocd login --insecure localhost:8080 --grpc-web --username admin --password $argocd_server_name
+
 argocd app delete 1-customer
-#argocd cluster rm arn:aws:eks:us-east-1:413422438110:cluster/0-sandbox-eks
+argocd cluster rm arn:aws:eks:us-east-1:413422438110:cluster/0-$LOCATION-eks
 argocd repo rm git@github.com:CompuZest/infra-deploy-terraform-config.git
 argocd repo rm git@github.com:CompuZest/helm-charts.git
 
@@ -25,17 +28,17 @@ cd ../../../zlifecycle-provisioner/k8s-addons
 terraform init
 terraform workspace select 0-$LOCATION
 terraform init
-terraform destroy -auto-approve -var-file tfvars/sandbox.tfvars
+terraform destroy -auto-approve -var-file tfvars/$LOCATION.tfvars
 
 cd ../aws-eks
 terraform init
 terraform workspace select 0-$LOCATION
 terraform init
-terraform destroy -auto-approve -var-file tfvars/sandbox.tfvars
+terraform destroy -auto-approve -var-file tfvars/$LOCATION.tfvars
 
 
 cd ../aws-vpc
 terraform init
 terraform workspace select 0-$LOCATION
 terraform init
-terraform destroy -auto-approve -var-file tfvars/sandbox.tfvars
+terraform destroy -auto-approve -var-file tfvars/$LOCATION.tfvars

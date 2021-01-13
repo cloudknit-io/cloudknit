@@ -10,12 +10,12 @@
 # proprietary to CompuZest, Inc. and are protected by trade secret or copyright
 # law. Dissemination of this information or reproduction of this material is
 # strictly forbidden unless prior written permission is obtained from CompuZest, Inc.
-set -eo pipefail
 
 cd ../../zlifecycle-provisioner/k8s-addons/argo-workflow
 
 if [[ $(lsof -i :8080 | wc -l) > 0 ]]
 then
+    echo "Port forwarding ArgoCD"
     kubectl port-forward service/argo-cd-argocd-server 8080:80 -n argocd &
 fi
 

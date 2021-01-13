@@ -50,6 +50,11 @@ cd zlifecycle/bootstrap
 ./bootstrap_zLifecycle.sh
 ```
 
+## Bootstrap Gotchas
+1. Make sure you have run `brew bundle` in the `company` repo to ensure you have all the dependencies in `osx/Brewfile`. Missing dependencies, for example `aws-iam-authenticator` can cause weird errors
+1. `aws-eks` failing on `null_resource.wait_for_cluster`, try `terraform destroy`ing that resource and re-applying
+
+
 ## Creating a new environment
 1. Configure bootstrap scripts with new terraform workspace, etc. based on environment name
 1. Create new customers in that environment, see (onboarding a new customer)[#onboarding-a-new-customer]
@@ -82,3 +87,4 @@ docker push shahadarsh/terraform:latest
 ```
 aws eks --region us-east-1 update-kubeconfig --name 0-sandbox-eks
 ```
+

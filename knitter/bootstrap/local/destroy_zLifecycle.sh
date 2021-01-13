@@ -23,8 +23,8 @@ kubectl get applications -n argocd -o jsonpath='{range .items[*]}{.metadata.name
 kubectl patch crd applications.argoproj.io -p '{"metadata":{"finalizers":[]}}' --type=merge -n argocd
 argocd app delete $(argocd app list -o name)
 
-argocd cluster rm sandbox
-argocd repo rm git@github.com:CompuZest/compuzest-$LOCATION-lzlifecycle-il.git
+argocd cluster rm k3d-$LOCATION-k3d
+argocd repo rm git@github.com:CompuZest/compuzest-$LOCATION-zlifecycle-il.git
 argocd repo rm git@github.com:CompuZest/helm-charts.git
 
 cd ../../../zlifecycle-provisioner/k8s-addons
