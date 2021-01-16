@@ -18,6 +18,8 @@ data:
   companyName: "CompuZest"
   adminEmail: "admin@compuzest.com"
   teamsConfigPath: "teams"
+  configRepo: "git@github.com:CompuZest/compuzest-zlifecycle-config.git"
+  configRepoName: "compuzest-zlifecycle-config"
   ilRepo: "git@github.com:CompuZest/compuzest-zlifecycle-il.git"
   ilRepoName: "compuzest-zlifecycle-il"
   helmChartsRepo: "git@github.com:CompuZest/helm-charts.git"

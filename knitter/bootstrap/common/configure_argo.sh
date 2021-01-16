@@ -34,6 +34,11 @@ sleep 10s
 helmChartsRepo=$(kubectl get ConfigMap company-config -n zlifecycle-il-operator-system -o jsonpath='{.data.helmChartsRepo}')
 argocd repo add --name helm-charts $helmChartsRepo --ssh-private-key-path $zlifecycleSSHKeyPath --insecure-ignore-host-key
 
+configRepo=$(kubectl get ConfigMap company-config -n zlifecycle-il-operator-system -o jsonpath='{.data.configRepo}')
+configRepoName=$(kubectl get ConfigMap company-config -n zlifecycle-il-operator-system -o jsonpath='{.data.configRepoName}')
+
+argocd repo add --name $configRepoName $configRepo --ssh-private-key-path $zlifecycleSSHKeyPath --insecure-ignore-host-key
+
 # Create all bootstrap argo workflow template
 cd ../../../zLifecycle/argo-templates
 kubectl apply -f .
@@ -41,3 +46,6 @@ if [[ $(lsof -i :8081 | wc -l) > 0 ]]
 then
     kubectl port-forward service/argo-workflow-server 8081:2746 -n argocd &
 fi
+
+
+argocd app create $configRepoName --repo $configRepo --path . --dest-server https://kubernetes.default.svc --dest-namespace default --sync-policy automated --auto-prune --directory-recurse
