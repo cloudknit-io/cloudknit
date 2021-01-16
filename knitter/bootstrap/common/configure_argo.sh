@@ -19,8 +19,8 @@ then
 fi
 
 sleep 2m
-argocd_server_name=$(kubectl get pods -l app.kubernetes.io/name=argocd-server -n argocd --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}')
-argocd login --insecure localhost:8080 --grpc-web --username admin --password $argocd_server_name
+argoPassword=$(kubectl get secret argocd-server-login -n argocd -o json | jq '.data.password | @base64d' | tr -d '"')
+argocd login --insecure localhost:8080 --grpc-web --username admin --password $argoPassword
 
 # this script is run from zlifecycle-provisioner/k8s-addons/argo-workflow, so path is zlifecycle-provisioner/k8s-addons/argo-workflow
 zlifecycleSSHKeyPath=zlifecycle
