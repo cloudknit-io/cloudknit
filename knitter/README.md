@@ -77,8 +77,8 @@ kubectl apply -f teams/account-team.yaml # Replace yaml file with team name for 
 
 ```bash
 cd terraform-image
-docker build -t shahadarsh/terraform:latest .
-docker push shahadarsh/terraform:latest
+docker build -t 413422438110.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-terraform:latest .
+docker push 413422438110.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-terraform:latest
 ```
 
 ## Connect to zLifecycle AWS environment
