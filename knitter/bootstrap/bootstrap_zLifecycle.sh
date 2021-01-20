@@ -68,6 +68,11 @@ main() {
     ./$PARENT_DIRECTORY/bootstrap_customers.sh $LOCATION $PARENT_DIRECTORY;
     checkForFailures
 
+    # Deploy UI
+    announcePhase "Deploy UI"
+    ./common/deploy_ui.sh;
+    checkForFailures
+
     #Prepare secrets
     echo ""
     echo ""
