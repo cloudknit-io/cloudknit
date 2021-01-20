@@ -13,15 +13,8 @@
 
 set -eo pipefail
 
-certArn=$(kubectl get secret ssl-cert-arn -o json | jq '.data.arn | @base64d' | tr -d '"')
-export AWS_CERT_ARN=$certArn
+# cd ../../zlifecycle-ui
 
-#cd ../../zlifecycle-ui
-
-#kubectl apply -f kubernetes/deployment.yaml
-#kubectl apply -f kubernetes/service.yaml
-
-cd ../../zlifecycle-api
-
-kubectl apply -f kubernetes/deployment.yaml
-kubectl apply -f kubernetes/service.yaml
+# kubectl apply -f kubernetes/deployment.yaml
+# kubectl apply -f kubernetes/service.yaml
+# kubectl apply -f kubernetes/ingress.yaml
