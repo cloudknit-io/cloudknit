@@ -25,7 +25,7 @@ main() {
         then
             echo ""
             echo "-------------------------------------"   
-            read -p "Bootstrap phase has failed, type C to exit, any other key to continue" -n 1 -r
+            read -p "Destroy phase has failed, type C to exit, any other key to continue" -n 1 -r
             echo ""
 
             if [[ $REPLY =~ ^[Cc]$ ]]
@@ -35,7 +35,7 @@ main() {
         fi
     }
 
-    echo "Please select the environment you wish to bootstrap:"
+    echo "Please select the environment you wish to destroy:"
     select LOCATION in "dev-a" "dev-b" "sandbox"; do
         if [[ $LOCATION == "sandbox" ]]
         then
