@@ -7,7 +7,7 @@ spec:
     serviceAccountName: argo-events-sa
   dependencies:
     - name: webhook-dep
-      eventSourceName: webhook
+      eventSourceName: terraform-diff
       eventName: terraform-diff
   triggers:
     - template:
