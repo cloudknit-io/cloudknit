@@ -20,7 +20,6 @@ cd $PARENT_DIRECTORY
 kubectl apply -f pull-ecr-cron.yaml # create resources to allow local clusters to pull from ECR
 kubectl create job --from=cronjob/aws-registry-credential-cron -n zlifecycle-il-operator-system aws-registry-initial-job
 
-
 ip_addr=$(ipconfig getifaddr en0)
 
 if [ ! $ip_addr ]

@@ -65,7 +65,7 @@ main() {
 
     # Bootstrap customers
     announcePhase "Bootstrap customer Environments"
-    ./$PARENT_DIRECTORY/bootstrap_customers.sh $LOCATION $PARENT_DIRECTORY;
+    ./common/bootstrap_customers.sh $LOCATION $PARENT_DIRECTORY;
     checkForFailures
 
     # Deploy UI
