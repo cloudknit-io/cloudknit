@@ -13,8 +13,8 @@
 
 set -eo pipefail
 
-# cd ../../zlifecycle-ui
+cd ../../zlifecycle-ui/kubernetes
 
-# kubectl apply -f kubernetes/deployment.yaml
-# kubectl apply -f kubernetes/service.yaml
-# kubectl apply -f kubernetes/ingress.yaml
+sed -i '' "s/\${AWS_ACCOUNT_ID}/${AWS_ACCOUNT_ID}/g" deployment.yaml
+
+kubectl apply -f .
