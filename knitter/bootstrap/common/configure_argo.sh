@@ -20,7 +20,7 @@ fi
 
 sleep 2m
 argoPassword=$(kubectl get secret argocd-server-login -n argocd -o json | jq '.data.password | @base64d' | tr -d '"')
-argocd login --insecure localhost:8080 --grpc-web --username admin --password $argoPassword
+yes Y | argocd login --insecure localhost:8080 --grpc-web --username admin --password $argoPassword
 
 # this script is run from zlifecycle-provisioner/k8s-addons/argo-workflow, so path is zlifecycle-provisioner/k8s-addons/argo-workflow
 zlifecycleSSHKeyPath=zlifecycle
