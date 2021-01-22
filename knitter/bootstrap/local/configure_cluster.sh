@@ -18,8 +18,15 @@ PARENT_DIRECTORY=$2
 cd $PARENT_DIRECTORY
 
 kubectl apply -f ecr-auth # create resources to allow local clusters to pull from ECR
-kubectl create job --from=cronjob/aws-registry-credential-cron -n zlifecycle-il-operator-system aws-registry-initial-job
-kubectl create job --from=cronjob/aws-registry-credential-cron -n zlifecycle-ui aws-registry-initial-job
+
+if [[ $(kubectl get job -n zlifecycle-ui | grep aws | wc -l) -eq 0 ]]
+then
+    kubectl create job --from=cronjob/aws-registry-credential-cron -n zlifecycle-ui aws-registry-initial-job
+fi
+if [[ $(kubectl get job -n zlifecycle-il-operator-system | grep aws | wc -l) -eq 0 ]]
+then
+    kubectl create job --from=cronjob/aws-registry-credential-cron -n zlifecycle-il-operator-system aws-registry-initial-job
+fi
 
 ip_addr=$(ipconfig getifaddr en0)
 
