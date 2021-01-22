@@ -50,8 +50,8 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	teamEnvPrefix := environment.Spec.TeamName + "/" + environment.Spec.EnvName
 
-	env := argocd.GenerateEnvironmentApp(*environment)
-	fileutil.SaveYamlFile(*env, teamEnvPrefix+".yaml")
+	envApp := argocd.GenerateEnvironmentApp(*environment)
+	fileutil.SaveYamlFile(*envApp, teamEnvPrefix+".yaml")
 
 	ilRepo := os.Getenv("ilRepo")
 
