@@ -26,3 +26,23 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - stable.compuzest.com
+  resources:
+  - teams
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - stable.compuzest.com
+  resources:
+  - teams/status
+  verbs:
+  - get
+  - patch
+  - update
