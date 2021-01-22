@@ -13,7 +13,7 @@
 kubectl port-forward service/argo-cd-argocd-server 8080:80 -n argocd &
 
 argoPassword=$(kubectl get secret argocd-server-login -n argocd -o json | jq '.data.password | @base64d' | tr -d '"')
-argocd login --insecure localhost:8080 --grpc-web --username admin --password $argoPassword
+yes Y | argocd login --insecure localhost:8080 --grpc-web --username admin --password $argoPassword
 
 kubectl get applications -n argocd -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | xargs kubectl patch applications  -p '{"metadata":{"finalizers":[]}}' --type=merge -n argocd
 kubectl patch crd applications.argoproj.io -p '{"metadata":{"finalizers":[]}}' --type=merge -n argocd
