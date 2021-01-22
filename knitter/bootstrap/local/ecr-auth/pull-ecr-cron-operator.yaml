@@ -77,8 +77,6 @@ spec:
               DOCKER_PASSWORD=`aws ecr get-login --region ${AWS_REGION} --registry-ids ${AWS_ACCOUNT_ID} | cut -d' ' -f6`
               kubectl delete secret -n zlifecycle-il-operator-system aws-registry || true
               kubectl create secret -n zlifecycle-il-operator-system docker-registry aws-registry \
-              kubectl delete secret -n zlifecycle-ui aws-registry || true
-              kubectl create secret -n zlifecycle-ui docker-registry aws-registry \
               --docker-server=$DOCKER_REGISTRY_SERVER \
               --docker-username=$DOCKER_USER \
               --docker-password=$DOCKER_PASSWORD \
