@@ -7,7 +7,7 @@ The ArgoCD Applications themselves are configured [here](https://github.com/Comp
 
 ### Local Development
 
-Create a branch in the helm-charts repo and make changes to `terraform-config` chart.
+Create a branch (`my-cool-branch`) in the helm-charts repo and make changes to `terraform-config` chart.
 Update your local zLifecycle Operator to point ArgoCD Applications to your branch of the helm chart, then redeploy your operator.
 
 ```
