@@ -15,7 +15,10 @@ set -eo pipefail
 LOCATION=$1
 PARENT_DIRECTORY=$2
 
-cd $PARENT_DIRECTORY
+cd ../argo-templates/
+kubectl apply -f local/ # add ecr image pull secrets to argo workflow templates
+
+cd ../bootstrap/$PARENT_DIRECTORY
 
 kubectl apply -f ecr-auth # create resources to allow local clusters to pull from ECR
 

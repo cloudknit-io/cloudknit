@@ -13,17 +13,17 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
  name: docker-registry
- namespace: zlifecycle-ui
+ namespace: argocd
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
-  name: fabric8-rbac-ui
+  name: fabric8-rbac-argocd
 subjects:
   - kind: ServiceAccount
     name: docker-registry
-    namespace: zlifecycle-ui
+    namespace: argocd
 roleRef:
   kind: ClusterRole
   name: cluster-admin
@@ -34,7 +34,7 @@ apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
   name: aws-registry-credential-cron
-  namespace: zlifecycle-ui
+  namespace: argocd
 spec:
   schedule: "0 */8 * * *"
   successfulJobsHistoryLimit: 2
@@ -75,10 +75,10 @@ spec:
             - |
               DOCKER_REGISTRY_SERVER=https://${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
               DOCKER_PASSWORD=`aws ecr get-login --region ${AWS_REGION} --registry-ids ${AWS_ACCOUNT_ID} | cut -d' ' -f6`
-              kubectl delete secret -n zlifecycle-ui aws-registry || true
-              kubectl create secret -n zlifecycle-ui docker-registry aws-registry \
+              kubectl delete secret -n argocd aws-registry || true
+              kubectl create secret -n argocd docker-registry aws-registry \
               --docker-server=$DOCKER_REGISTRY_SERVER \
               --docker-username=$DOCKER_USER \
               --docker-password=$DOCKER_PASSWORD \
               --docker-email=no@email.local
-              kubectl patch serviceaccount zlifecycle-ui -p '{"imagePullSecrets":[{"name":"aws-registry"}]}'
+              kubectl patch serviceaccount default -p '{"imagePullSecrets":[{"name":"aws-registry"}]}'

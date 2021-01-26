@@ -19,7 +19,7 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
-  name: fabric8-rbac
+  name: fabric8-rbac-operator
 subjects:
   - kind: ServiceAccount
     name: docker-registry
