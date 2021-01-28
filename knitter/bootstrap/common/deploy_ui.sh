@@ -17,4 +17,8 @@ cd ../../zlifecycle-ui/kubernetes
 
 sed -i '' "s/\${AWS_ACCOUNT_ID}/${AWS_ACCOUNT_ID}/g" deployment.yaml
 
+# set cert for ALB Ingress
+certArn=$(kubectl get secret ssl-cert-arn -o json | jq '.data.arn | @base64d' | tr -d '"')
+sed -i '' "s/\${AWS_CERT_ARN}/${certArn}/g" ingress-alb.yaml
+
 kubectl apply -f .
