@@ -1,8 +1,8 @@
 # Index
 - [Overview](#overview)
-- [Setup New Customer](#setup-new-customer)
-- [Initial Bootstrap](#initial-bootstrap)
-- [Bootstrap zLifecycle](#bootstrap-zlifecycle)
+- [Initial Bootstrap](./runbook/setup/initial-bootstrap.md)
+- [Setup New Customer](./runbook/setup/new-customer-setup.md)
+- [Bootstrap zLifecycle](./runbook/setup/bootstrap-zlifecycle.md)
 - [Register Teams](#register-teams)
 - [Build Terraform Docker Image](build-terraform-docker-image)
 
@@ -11,49 +11,6 @@
 zLifecycle is a product to manage lifecycle for infrastructure across various cloud providers as well as on-prem.
 
 For more details & diagrams look at: https://app.diagrams.net/#G1gXeFRlERpqjXpeSjxRPLP6YZMRyFG5SN
-
-## Setup New Customer
-
-* Create new Github service account (example: zLifecycle with zLifecycle@compuzest.com email)
-* Add new github service account to the customer github org and give perms to following repos
-    * compuzest-zlifecycle-il - write access
-    * helm-charts - read access
-    * compuZest-zlifecycle-config - read access
-* Generate Personal Token & ssh key for the Github service account to be used by secret created (Check LastPass secret note: "zLifecycle - k8s secrets")
-
-## Initial Bootstrap 
-
-### Terraform Shared State
-
-zLifecycle environments (e.g. demo, dev) are managed by terraform workspaces. These terraform workspaces share a parent state directory maintained in terraform (`zlifecycle-tfstate`) that needs to be initialized before environments can be created. This bootstrap script is for this use case, where no zlifecycle environments exist yet.
-
-Run `tfstate` terraform to provision S3 bucket and Dynamo DB table that will be used for Terraform Shared State.
-
-```bash
-cd tfstate
-terraform init
-terraform apply
-```
-
-## Bootstrap zLifecycle
-
-To bootstrap zLifecycle in a given environment (e.g. demo, dev-a, dev-b):
-1. Download the zlifecycle GitHub service account SSH key pair (from LastPass) to `zlifecycle-provisioner/k8s-addons/argo-workflow` folder on your machine and name the files `zlifecycle` and `zlifecycle.pub`. If you already have those files locally no need to do it again unless the key pair changed.
-2. Create a `tfvars` file for your environment in `zlifecycle-provisioner/k8s-addons/tfvars` based on the example file. Non `.example` files will be git ignored. Add required values, such as the ArgoCD slack token.
-3. Run following script and following instructions with the following note:
-
-Note: When it asks to create secret go to `zlifecycle-provisioner/k8s-addons/argo-workflow` folder
-and create secrets using scripts in LastPass. This will ensure the GitHub key created in step 1 is used.
-
-```bash
-cd zlifecycle/bootstrap
-./bootstrap_zLifecycle.sh
-```
-
-## Bootstrap Gotchas
-1. Make sure you have run `brew bundle` in the `company` repo to ensure you have all the dependencies in `osx/Brewfile`. Missing dependencies, for example `aws-iam-authenticator` can cause weird errors
-1. `aws-eks` failing on `null_resource.wait_for_cluster`, try `terraform destroy`ing that resource and re-applying
-
 
 ## Creating a new environment
 1. Configure bootstrap scripts with new terraform workspace, etc. based on environment name
