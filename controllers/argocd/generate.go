@@ -30,7 +30,7 @@ func GenerateTeamApp(team stablev1alpha1.Team) *appv1.Application {
 			Name:      team.Spec.TeamName,
 			Namespace: "argocd",
 			Labels: map[string]string{
-				"terraform-config/object": "team",
+				"zlifecycle/model": "team",
 			},
 		},
 		Spec: appv1.ApplicationSpec{
@@ -68,6 +68,9 @@ func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Appli
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      environment.Spec.TeamName + "-" + environment.Spec.EnvName,
 			Namespace: "argocd",
+			Labels: map[string]string{
+				"zlifecycle/model": "environment",
+			},
 		},
 		Spec: appv1.ApplicationSpec{
 			Project: "default",
@@ -117,6 +120,9 @@ func GenerateTerraformConfigApps(environment stablev1alpha1.Environment, terrafo
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      environment.Spec.TeamName + "-" + environment.Spec.EnvName + "-" + terraformConfig.ConfigName,
 			Namespace: "argocd",
+			Labels: map[string]string{
+				"zlifecycle/model": "component",
+			},
 			Finalizers: []string{
 				"resources-finalizer.argocd.argoproj.io",
 			},
