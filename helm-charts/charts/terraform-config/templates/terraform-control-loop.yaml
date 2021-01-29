@@ -17,7 +17,7 @@ metadata:
   annotations:
     argocd.argoproj.io/compare-options: IgnoreExtraneous
   labels:
-    terraform/control-loop: 'true'
+    zlifecycle/model/argo: 'control-loop'
 spec:
   schedule: "*/2 * * * *"
   concurrencyPolicy: "Replace"
