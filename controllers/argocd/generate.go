@@ -141,6 +141,11 @@ func getHelmValues(environment stablev1alpha1.Environment, terraformConfig stabl
             path: %s`, terraformConfig.Module.Path)
 	}
 
+	if terraformConfig.CronSchedule != "" {
+		helmValues += fmt.Sprintf(`
+        cron_schedule: %s`, terraformConfig.CronSchedule)
+	}
+
 	helmValues += fmt.Sprintf(`
         variables_file:
             source: %s
