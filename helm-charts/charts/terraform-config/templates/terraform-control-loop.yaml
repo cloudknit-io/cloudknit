@@ -17,7 +17,7 @@ metadata:
   annotations:
     argocd.argoproj.io/compare-options: IgnoreExtraneous
   labels:
-    zlifecycle/model/argo: 'control-loop'
+    zlifecycle.com/model: 'control-loop'
 spec:
   schedule: "*/2 * * * *"
   concurrencyPolicy: "Replace"
