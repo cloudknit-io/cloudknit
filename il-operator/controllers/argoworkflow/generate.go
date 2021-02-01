@@ -89,6 +89,7 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 			Labels: map[string]string{
 				"workflows.argoproj.io/completed": "false",
 				"terraform/sync":                  "true",
+				"zlifecycle.com/model":                "environment-sync-flow",
 			},
 		},
 		Spec: workflow.WorkflowSpec{
