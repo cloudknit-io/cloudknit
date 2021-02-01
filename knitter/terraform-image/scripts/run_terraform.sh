@@ -112,6 +112,7 @@ then
                     fi
                 fi
             else
+                # update Argo Application to show in sync now that sync has manually taken place
                 if [ $config_sync_status == "OutOfSync" ]
                 then
                     argocd app sync $team_env_config_name
