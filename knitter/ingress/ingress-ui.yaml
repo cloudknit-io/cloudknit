@@ -1,0 +1,33 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: zlifecycle
+  namespace: zlifecycle-ui
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: HTTP
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "PUT, GET, POST, OPTIONS"
+spec:
+  rules:
+  - host: app.zlifecycle.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: zlifecycle-ui
+          servicePort: http
+  - host: zlifecycle.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: zlifecycle-ui
+          servicePort: http
+  - host: www.zlifecycle.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: zlifecycle-ui
+          servicePort: http
