@@ -64,6 +64,10 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 						Value: &environment.Spec.EnvName,
 					},
 					{
+						Name:  "cron_schedule",
+						Value: &terraformConfig.VariablesFile.CronSchedule,
+					},
+					{
 						Name:  "config_name",
 						Value: &terraformConfig.ConfigName,
 					},
