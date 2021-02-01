@@ -91,9 +91,9 @@ then
 
     if [ $is_sync -eq 0 ]
     then
-            argocd_server_name=$(kubectl get pods -l app.kubernetes.io/name=argocd-server -n argocd --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}')
+            argoPassword=$(kubectl get secret argocd-server-login -n argocd -o json | jq '.data.password | @base64d' | tr -d '"')
 
-            argocd login --insecure argo-cd-argocd-server:443 --grpc-web --username admin --password $argocd_server_name
+            argocd login --insecure argo-cd-argocd-server:443 --grpc-web --username admin --password $argoPassword
 
             env_sync_status=$(argocd app get $team_env_name -o json | jq -r '.status.sync.status')
             config_sync_status=$(argocd app get $team_env_config_name -o json | jq -r '.status.sync.status')
