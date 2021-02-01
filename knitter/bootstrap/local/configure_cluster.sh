@@ -32,6 +32,10 @@ if [[ $(kubectl get job -n zlifecycle-il-operator-system | grep aws | wc -l) -eq
 then
     kubectl create job --from=cronjob/aws-registry-credential-cron -n zlifecycle-il-operator-system aws-registry-initial-job
 fi
+if [[ $(kubectl get job -n argocd | grep aws | wc -l) -eq 0 ]]
+then
+    kubectl create job --from=cronjob/aws-registry-credential-cron -n argocd aws-registry-initial-job
+fi
 
 ip_addr=$(ipconfig getifaddr en0)
 
