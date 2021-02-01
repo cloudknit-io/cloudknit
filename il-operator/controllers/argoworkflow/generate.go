@@ -64,10 +64,6 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 						Value: &environment.Spec.EnvName,
 					},
 					{
-						Name:  "cron_schedule",
-						Value: &terraformConfig.VariablesFile.CronSchedule,
-					},
-					{
 						Name:  "config_name",
 						Value: &terraformConfig.ConfigName,
 					},
@@ -93,7 +89,7 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 			Labels: map[string]string{
 				"workflows.argoproj.io/completed": "false",
 				"terraform/sync":                  "true",
-				"zlifecycle.com/model":                "environment-sync-flow",
+				"zlifecycle.com/model":            "environment-sync-flow",
 			},
 		},
 		Spec: workflow.WorkflowSpec{
