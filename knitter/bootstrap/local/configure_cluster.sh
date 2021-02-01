@@ -20,9 +20,7 @@ PARENT_DIRECTORY=$2
 cd ../bootstrap/$PARENT_DIRECTORY
 
 kubectl apply -f ecr-auth # create resources to allow local clusters to pull from ECR
-kubectl patch workflowtemplate terraform-run-template -n argocd -p '{"imagePullSecrets": [{"name": "aws-registry"}]}' --type=merge # add ecr image pull secrets to argo workflow templates
-kubectl patch workflowtemplate terraform-sync-template -n argocd -p '{"imagePullSecrets": [{"name": "aws-registry"}]}' --type=merge # add ecr image pull secrets to argo workflow templates
-kubectl patch workflowtemplate workflow-trigger-template -n argocd -p '{"spec": {"imagePullSecrets": [{"name": "aws-registry"}]}}' --type=merge # add ecr image pull secrets to argo workflow templates
+kubectl patch sa argo -n argocd -p '{"spec": {"imagePullSecrets": [{"name": "aws-registry"}]}}' --type=merge # add ecr image pull secrets to argo service account to pull workflow image
 
 if [[ $(kubectl get job -n zlifecycle-ui | grep aws | wc -l) -eq 0 ]]
 then
