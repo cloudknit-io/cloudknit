@@ -21,27 +21,28 @@ import (
 	"os"
 )
 
-func SaveYamlFile(obj interface{}, fileName string) {
+func SaveYamlFile(obj interface{}, fileName string) error {
 	jsonBytes, err := json.Marshal(obj)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("error: failed to marshal json: %s", err.Error())
 	}
 
-	bytes, err2 := yaml.JSONToYAML(jsonBytes)
-	if err2 != nil {
-		panic(err2)
+	bytes, err := yaml.JSONToYAML(jsonBytes)
+	if err != nil {
+		return fmt.Errorf("error: failed to convert json to yaml: %s", err.Error())
 	}
 
-	err3 := ioutil.WriteFile(fileName, bytes, 0644)
-	if err3 != nil {
-		panic(err3)
+	if err := ioutil.WriteFile(fileName, bytes, 0644); err != nil {
+		return fmt.Errorf("error: failed to write file: %s", err.Error())
 	}
+
+	return nil
 }
 
-func SaveVarsToFile(variables []*stablev1alpha1.Variable, fileName string) {
+func SaveVarsToFile(variables []*stablev1alpha1.Variable, fileName string) error {
 	file, err := os.Create(fileName)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("error: failed to create vars file: %s", err.Error())
 	}
 
 	defer file.Close()
@@ -49,4 +50,6 @@ func SaveVarsToFile(variables []*stablev1alpha1.Variable, fileName string) {
 	for _, variable := range variables {
 		fmt.Fprintf(file, "%s = \"%s\"\n", variable.Name, variable.Value)
 	}
+
+	return nil
 }
