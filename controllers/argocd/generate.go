@@ -16,13 +16,11 @@ import (
 	"fmt"
 	appv1 "github.com/argoproj/argo-cd/pkg/apis/application/v1alpha1"
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
+	utils "github.com/compuzest/zlifecycle-il-operator/controllers/utils"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"os"
 )
 
 func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Application {
-
-	ilRepo := os.Getenv("ilRepo")
 
 	return &appv1.Application{
 		TypeMeta: metav1.TypeMeta{
@@ -48,7 +46,7 @@ func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Appli
 				Namespace: "default",
 			},
 			Source: appv1.ApplicationSource{
-				RepoURL:        ilRepo,
+				RepoURL:        utils.Config.ILRepoURL,
 				Path:           environment.Spec.TeamName + "/" + environment.Spec.EnvName,
 				TargetRevision: "HEAD",
 				Directory: &appv1.ApplicationSourceDirectory{
@@ -60,7 +58,7 @@ func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Appli
 			Sync: appv1.SyncStatus{
 				ComparedTo: appv1.ComparedTo{
 					Source: appv1.ApplicationSource{
-						RepoURL: ilRepo,
+						RepoURL: utils.Config.ILRepoURL,
 					},
 				},
 				Status: "Synced",
@@ -72,9 +70,6 @@ func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Appli
 func GenerateTerraformConfigApps(environment stablev1alpha1.Environment, terraformConfig stablev1alpha1.TerraformConfig) *appv1.Application {
 
 	helmValues := getHelmValues(environment, terraformConfig)
-
-	k8s_api_url := os.Getenv("K8s_API_URL")
-	helmChartsRepo := os.Getenv("helmChartsRepo")
 
 	return &appv1.Application{
 		TypeMeta: metav1.TypeMeta{
@@ -99,11 +94,11 @@ func GenerateTerraformConfigApps(environment stablev1alpha1.Environment, terrafo
 				},
 			},
 			Destination: appv1.ApplicationDestination{
-				Server:    k8s_api_url,
+				Server:    utils.Config.K8sAPIURL,
 				Namespace: "default",
 			},
 			Source: appv1.ApplicationSource{
-				RepoURL:        helmChartsRepo,
+				RepoURL:        utils.Config.HelmChartsRepo,
 				Path:           "charts/terraform-config",
 				TargetRevision: "HEAD",
 				Helm: &appv1.ApplicationSourceHelm{
@@ -115,7 +110,7 @@ func GenerateTerraformConfigApps(environment stablev1alpha1.Environment, terrafo
 			Sync: appv1.SyncStatus{
 				ComparedTo: appv1.ComparedTo{
 					Source: appv1.ApplicationSource{
-						RepoURL: helmChartsRepo,
+						RepoURL: utils.Config.HelmChartsRepo,
 					},
 				},
 				Status: "Synced",
