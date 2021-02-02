@@ -19,7 +19,7 @@ metadata:
   labels:
     zlifecycle.com/model: 'control-loop'
 spec:
-  schedule: {{.Values.cron_schedule}}
+  schedule: "{{.Values.cron_schedule}}"
   concurrencyPolicy: "Replace"
   startingDeadlineSeconds: 0
   workflowMetadata:
