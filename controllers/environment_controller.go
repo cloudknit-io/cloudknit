@@ -51,12 +51,18 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	teamEnvPrefix := environment.Spec.TeamName + "/" + environment.Spec.EnvName
 
 	env := argocd.GenerateEnvironmentApp(*environment)
-	file.SaveYamlFile(*env, teamEnvPrefix+".yaml")
+	if err := fileutil.SaveYamlFile(*env, teamEnvPrefix+".yaml"); err != nil {
+		return ctrl.Result{}, err
+	}
 
 	for _, terraformConfig := range environment.Spec.TerraformConfigs {
 		if terraformConfig.Variables != nil {
 			filePath := teamEnvPrefix + "/" + terraformConfig.ConfigName + ".tfvars"
-			file.SaveVarsToFile(terraformConfig.Variables, filePath)
+
+			if err := fileutil.SaveVarsToFile(terraformConfig.Variables, filePath); err != nil {
+				return ctrl.Result{}, err
+			}
+
 			terraformConfig.VariablesFile = &stablev1alpha1.VariablesFile{
 				Source: config.ILRepoURL,
 				Path:   filePath,
@@ -64,15 +70,20 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		}
 
 		application := argocd.GenerateTerraformConfigApps(*environment, *terraformConfig)
-
-		file.SaveYamlFile(*application, teamEnvPrefix+"/"+terraformConfig.ConfigName+".yaml")
+		if err := fileutil.SaveYamlFile(*application, teamEnvPrefix+"/"+terraformConfig.ConfigName+".yaml"); err != nil {
+			return ctrl.Result{}, err
+		}
 	}
 
 	workflow := argoWorkflow.GenerateWorkflowOfWorkflows(*environment)
-	file.SaveYamlFile(*workflow, teamEnvPrefix+"/wofw.yaml")
+	if err := fileutil.SaveYAMLFile(*workflow, teamEnvPrefix+"/wofw.yaml"); err != nil {
+		return ctrl.Result{}, err
+	}
 
 	presyncJob := k8s.GeneratePreSyncJob(*environment)
-	file.SaveYamlFile(*presyncJob, teamEnvPrefix+"/presync-job.yaml")
+	if err := fileutil.SaveYAMLFile(*presyncJob, teamEnvPrefix+"/presync-job.yaml"); err != nil {
+		return ctrl.Result{}, err
+	}
 
 	github.CommitAndPushFiles(
 		config.CompanyName,
