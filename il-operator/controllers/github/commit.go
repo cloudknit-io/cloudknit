@@ -149,7 +149,7 @@ func pushCommit(ref *github.Reference, tree *github.Tree) (err error) {
 }
 
 func CommitAndPushFiles(_sourceOwner string, _sourceRepo string, _sourceFolder string,
-	_commitBranch string, _authorName string, _authorEmail string) {
+	_commitBranch string, _authorName string, _authorEmail string) (err error) {
 	sourceOwner = _sourceOwner
 	sourceRepo = _sourceRepo
 	commitBranch = _commitBranch
@@ -186,6 +186,8 @@ func CommitAndPushFiles(_sourceOwner string, _sourceRepo string, _sourceFolder s
 	if err := pushCommit(ref, tree); err != nil {
 		log.Fatalf("Unable to create the commit: %s\n", err)
 	}
+
+	return err
 }
 
 func getFileNames(folderPath string) (fileNames string) {
