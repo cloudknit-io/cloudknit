@@ -16,7 +16,7 @@ import (
 	"fmt"
 	appv1 "github.com/argoproj/argo-cd/pkg/apis/application/v1alpha1"
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
-	utils "github.com/compuzest/zlifecycle-il-operator/controllers/utils"
+	config "github.com/compuzest/zlifecycle-il-operator/controllers/util/config"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -46,7 +46,7 @@ func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Appli
 				Namespace: "default",
 			},
 			Source: appv1.ApplicationSource{
-				RepoURL:        utils.Config.ILRepoURL,
+				RepoURL:        config.ILRepoURL,
 				Path:           environment.Spec.TeamName + "/" + environment.Spec.EnvName,
 				TargetRevision: "HEAD",
 				Directory: &appv1.ApplicationSourceDirectory{
@@ -58,7 +58,7 @@ func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Appli
 			Sync: appv1.SyncStatus{
 				ComparedTo: appv1.ComparedTo{
 					Source: appv1.ApplicationSource{
-						RepoURL: utils.Config.ILRepoURL,
+						RepoURL: config.ILRepoURL,
 					},
 				},
 				Status: "Synced",
@@ -94,11 +94,11 @@ func GenerateTerraformConfigApps(environment stablev1alpha1.Environment, terrafo
 				},
 			},
 			Destination: appv1.ApplicationDestination{
-				Server:    utils.Config.K8sAPIURL,
+				Server:    config.K8sAPIURL,
 				Namespace: "default",
 			},
 			Source: appv1.ApplicationSource{
-				RepoURL:        utils.Config.HelmChartsRepo,
+				RepoURL:        config.HelmChartsRepo,
 				Path:           "charts/terraform-config",
 				TargetRevision: "HEAD",
 				Helm: &appv1.ApplicationSourceHelm{
@@ -110,7 +110,7 @@ func GenerateTerraformConfigApps(environment stablev1alpha1.Environment, terrafo
 			Sync: appv1.SyncStatus{
 				ComparedTo: appv1.ComparedTo{
 					Source: appv1.ApplicationSource{
-						RepoURL: utils.Config.HelmChartsRepo,
+						RepoURL: config.HelmChartsRepo,
 					},
 				},
 				Status: "Synced",
