@@ -1,0 +1,44 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: zlifecycle
+  namespace: argocd
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: HTTP
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "PUT, GET, POST, OPTIONS"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "http://zlifecycle.com"
+spec:
+  rules:
+  - host: app.zlifecycle.com
+    http:
+      paths:
+      - path: /api/v1/workflows
+        backend:
+          serviceName: argo-workflow-server
+          servicePort: 2746
+  - host: admin.zlifecycle.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: argo-cd-argocd-server
+          servicePort: http
+  - host: app.zlifecycle.com
+    http:
+      paths:
+      - path: /api
+        backend:
+          serviceName: argo-cd-argocd-server
+          servicePort: http
+  - host: app.zlifecycle.com
+    http:
+      paths:
+      - path: /auth
+        backend:
+          serviceName: argo-cd-argocd-server
+          servicePort: http
