@@ -47,13 +47,16 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	r.Get(ctx, req.NamespacedName, team)
 
 	teamApp := argocd.GenerateTeamApp(*team)
-	fileutil.SaveYamlFile(*teamApp, team.Spec.TeamName+".yaml")
+	fileutil.SaveYamlFile(*teamApp, "teams/"+team.Spec.TeamName+".yaml")
 
 	ilRepoName := os.Getenv("ilRepoName")
 	companyName := os.Getenv("companyName")
 
-	github.CommitAndPushFiles(companyName, ilRepoName, "", "main", "zLifecycle", "zLifecycle@compuzest.com")
+	err := github.CommitAndPushFiles(companyName, ilRepoName, "teams", "main", "zLifecycle", "zLifecycle@compuzest.com")
 
+	if err != nil {
+		github.CommitAndPushFiles(companyName, ilRepoName, "teams", "main", "zLifecycle", "zLifecycle@compuzest.com")
+	}
 	return ctrl.Result{}, nil
 }
 

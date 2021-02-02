@@ -48,7 +48,7 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	r.Get(ctx, req.NamespacedName, environment)
 
-	teamEnvPrefix := environment.Spec.TeamName + "/" + environment.Spec.EnvName
+	teamEnvPrefix := "teams/" + environment.Spec.TeamName + "/" + environment.Spec.EnvName
 
 	envApp := argocd.GenerateEnvironmentApp(*environment)
 	fileutil.SaveYamlFile(*envApp, teamEnvPrefix+".yaml")
@@ -78,8 +78,12 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	ilRepoName := os.Getenv("ilRepoName")
 	companyName := os.Getenv("companyName")
 
-	github.CommitAndPushFiles(companyName, ilRepoName, environment.Spec.TeamName+"/", "main", "zLifecycle", "zLifecycle@compuzest.com")
+	err := github.CommitAndPushFiles(companyName, ilRepoName, "teams/"+environment.Spec.TeamName+"/", "main", "zLifecycle", "zLifecycle@compuzest.com")
 
+	if err != nil {
+		github.CommitAndPushFiles(companyName, ilRepoName, "teams/"+environment.Spec.TeamName+"/", "main", "zLifecycle", "zLifecycle@compuzest.com")
+
+	}
 	return ctrl.Result{}, nil
 }
 
