@@ -2,7 +2,7 @@ namespace: argocd
 team_name:
 env_name:
 config_name: terraform-config
-cron_schedule: "*/2 * * * *"
+cron_schedule: "0 * * * *"
 
 module:
   source:
