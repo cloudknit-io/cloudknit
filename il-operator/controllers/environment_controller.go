@@ -14,7 +14,6 @@ package controllers
 
 import (
 	"context"
-	"os"
 
 	github "github.com/compuzest/zlifecycle-il-operator/controllers/github"
 
@@ -28,6 +27,7 @@ import (
 	argoWorkflow "github.com/compuzest/zlifecycle-il-operator/controllers/argoworkflow"
 	fileutil "github.com/compuzest/zlifecycle-il-operator/controllers/file"
 	k8s "github.com/compuzest/zlifecycle-il-operator/controllers/kubernetes"
+	utils "github.com/compuzest/zlifecycle-il-operator/controllers/utils"
 )
 
 // EnvironmentReconciler reconciles a Environment object
@@ -53,14 +53,12 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	env := argocd.GenerateEnvironmentApp(*environment)
 	fileutil.SaveYamlFile(*env, teamEnvPrefix+".yaml")
 
-	ilRepo := os.Getenv("ilRepo")
-
 	for _, terraformConfig := range environment.Spec.TerraformConfigs {
 		if terraformConfig.Variables != nil {
 			filePath := teamEnvPrefix + "/" + terraformConfig.ConfigName + ".tfvars"
 			fileutil.SaveVarsToFile(terraformConfig.Variables, filePath)
 			terraformConfig.VariablesFile = &stablev1alpha1.VariablesFile{
-				Source: ilRepo,
+				Source: utils.Config.ILRepoURL,
 				Path:   filePath,
 			}
 		}
@@ -75,10 +73,14 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	presyncJob := k8s.GeneratePreSyncJob(*environment)
 	fileutil.SaveYamlFile(*presyncJob, teamEnvPrefix+"/presync-job.yaml")
-	ilRepoName := os.Getenv("ilRepoName")
-	companyName := os.Getenv("companyName")
 
-	github.CommitAndPushFiles(companyName, ilRepoName, environment.Spec.TeamName+"/", "main", "zLifecycle", "zLifecycle@compuzest.com")
+	github.CommitAndPushFiles(
+		utils.Config.CompanyName,
+		utils.Config.ILRepoName,
+		environment.Spec.TeamName+"/",
+		utils.Config.RepoBranch,
+		utils.Config.GithubSvcAccntName,
+		utils.Config.GithubSvcAccntEmail)
 
 	return ctrl.Result{}, nil
 }
