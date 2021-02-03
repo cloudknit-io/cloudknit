@@ -11,6 +11,7 @@ This is used for initial bootstrap of zLifecycle in a totally new setup. Should 
 
 1. [Create AWS Service Account](#create-aws-service-account)
 1. [Setup zLifecycle Terraform Shared State](#setup-zLifecycle-terraform-shared-state)
+1. [Create ECR Repositories](#create-ecr-repositories)
 
 ## Detailed Steps
 
@@ -39,3 +40,10 @@ terraform apply
 ```
 
 Commit & push the tfstate file to github since there is no shared state bucket yet.
+
+#### Create ECR Repositories
+
+Manually create ECR repositories in AWS:
+`zlifecycle-il-operator`
+`zlifecycle-terraform`
+

@@ -14,10 +14,16 @@ set -eo pipefail
 
 LOCATION=$1
 
-./local/create_cluster.sh $LOCATION
+echo ""
+read -p "If you want create a k3d cluster enter Y: " -n 1 -r
+echo ""
+echo "-------------------------------------"
 
-cd ../../zlifecycle-provisioner/k8s-addons
-terraform init
-terraform workspace select 0-$LOCATION || terraform workspace new 0-$LOCATION
-terraform init
-terraform apply -auto-approve -var-file tfvars/$LOCATION.tfvars
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+    if ! docker info >/dev/null 2>&1; then
+        echo "Docker does not seem to be running, run it first and retry"
+        exit 1
+    fi
+    k3d cluster create $LOCATION-k3d -a 3 --api-port 59999
+fi

@@ -15,25 +15,7 @@ set -eo pipefail
 LOCATION=$1
 PARENT_DIRECTORY=$2
 
-
-
 cd ../bootstrap/$PARENT_DIRECTORY
-
-kubectl apply -f ecr-auth # create resources to allow local clusters to pull from ECR
-kubectl patch sa argo -n argocd -p '{"spec": {"imagePullSecrets": [{"name": "aws-registry"}]}}' --type=merge # add ecr image pull secrets to argo service account to pull workflow image
-
-if [[ $(kubectl get job -n zlifecycle-ui | grep aws | wc -l) -eq 0 ]]
-then
-    kubectl create job --from=cronjob/aws-registry-credential-cron -n zlifecycle-ui aws-registry-initial-job
-fi
-if [[ $(kubectl get job -n zlifecycle-il-operator-system | grep aws | wc -l) -eq 0 ]]
-then
-    kubectl create job --from=cronjob/aws-registry-credential-cron -n zlifecycle-il-operator-system aws-registry-initial-job
-fi
-if [[ $(kubectl get job -n argocd | grep aws | wc -l) -eq 0 ]]
-then
-    kubectl create job --from=cronjob/aws-registry-credential-cron -n argocd aws-registry-initial-job
-fi
 
 ip_addr=$(ipconfig getifaddr en0)
 
@@ -52,5 +34,7 @@ sleep 10s
 
 APISERVER=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
 kubectl create secret generic k8s-api --from-literal=url=$APISERVER -n zlifecycle-il-operator-system
+
+./create_ecr_secret.sh
 
 argocd cluster add k3d-$LOCATION-k3d --insecure --name $LOCATION
