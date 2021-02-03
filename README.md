@@ -7,6 +7,8 @@ We are using `go mod vendor` for our code so that all dependencies are available
 
 Note: Any time go dependencies change remember to run `go mod vendor` at the repo root directory and commit the latest folder to source control.
 
+## [Bootstrap zlifecycle-il-operator locally](./zlifecycle/runbook/setup/bootstrap-operator-locally.md)
+
 ## Build & Push Docker image
 
 Run following in the root directory.
