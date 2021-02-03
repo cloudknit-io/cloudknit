@@ -33,7 +33,10 @@ curl --insecure https://$ip_addr:59999
 sleep 10s
 
 APISERVER=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
-kubectl create secret generic k8s-api --from-literal=url=$APISERVER -n zlifecycle-il-operator-system
+if [[ $(kubectl get secret k8s-api -n zlifecycle-il-operator-system | wc -l) -eq 0 ]]
+then
+    kubectl create secret generic k8s-api --from-literal=url=$APISERVER -n zlifecycle-il-operator-system
+fi
 
 ./create_ecr_secret.sh
 
