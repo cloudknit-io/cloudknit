@@ -15,7 +15,10 @@ set -eo pipefail
 LOCATION=$1
 APISERVER=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
 
-kubectl create secret generic k8s-api --from-literal=url=$APISERVER -n zlifecycle-il-operator-system || true
+if [[ $(kubectl get secret k8s-api -n zlifecycle-il-operator-system | wc -l) -eq 0 ]]
+then
+    kubectl create secret generic k8s-api --from-literal=url=$APISERVER -n zlifecycle-il-operator-system || true
+fi
 
 argocd cluster add arn:aws:eks:us-east-1:413422438110:cluster/0-$LOCATION-eks --name $LOCATION
 

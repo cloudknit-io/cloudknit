@@ -23,3 +23,5 @@ kubectl create secret -n argocd docker-registry $SECRET_NAME \
  --docker-username=AWS \
  --docker-password="${TOKEN}" \
  --docker-email="${EMAIL}"
+
+kubectl patch deployment zlifecycle-il-operator-controller-manager -n zlifecycle-il-operator-system  -p '{"spec": { "template": { "spec": {"imagePullSecrets": [{"name": "'${SECRET_NAME}'"}]}}}}'
