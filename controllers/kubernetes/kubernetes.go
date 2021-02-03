@@ -10,7 +10,7 @@
  * strictly forbidden unless prior written permission is obtained from CompuZest, Inc.
  */
 
-package controllers
+package kubernetes
 
 import (
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"

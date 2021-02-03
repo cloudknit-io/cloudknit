@@ -10,13 +10,13 @@
  * strictly forbidden unless prior written permission is obtained from CompuZest, Inc.
  */
 
-package controllers
+package argocd
 
 import (
 	"fmt"
 	appv1 "github.com/argoproj/argo-cd/pkg/apis/application/v1alpha1"
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
-	config "github.com/compuzest/zlifecycle-il-operator/controllers/util/config"
+	env "github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -46,7 +46,7 @@ func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Appli
 				Namespace: "default",
 			},
 			Source: appv1.ApplicationSource{
-				RepoURL:        config.ILRepoURL,
+				RepoURL:        env.Config.ILRepoURL,
 				Path:           environment.Spec.TeamName + "/" + environment.Spec.EnvName,
 				TargetRevision: "HEAD",
 				Directory: &appv1.ApplicationSourceDirectory{
@@ -58,7 +58,7 @@ func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Appli
 			Sync: appv1.SyncStatus{
 				ComparedTo: appv1.ComparedTo{
 					Source: appv1.ApplicationSource{
-						RepoURL: config.ILRepoURL,
+						RepoURL: env.Config.ILRepoURL,
 					},
 				},
 				Status: "Synced",
@@ -94,11 +94,11 @@ func GenerateTerraformConfigApps(environment stablev1alpha1.Environment, terrafo
 				},
 			},
 			Destination: appv1.ApplicationDestination{
-				Server:    config.K8sAPIURL,
+				Server:    env.Config.K8sAPIURL,
 				Namespace: "default",
 			},
 			Source: appv1.ApplicationSource{
-				RepoURL:        config.HelmChartsRepo,
+				RepoURL:        env.Config.HelmChartsRepo,
 				Path:           "charts/terraform-config",
 				TargetRevision: "HEAD",
 				Helm: &appv1.ApplicationSourceHelm{
@@ -110,7 +110,7 @@ func GenerateTerraformConfigApps(environment stablev1alpha1.Environment, terrafo
 			Sync: appv1.SyncStatus{
 				ComparedTo: appv1.ComparedTo{
 					Source: appv1.ApplicationSource{
-						RepoURL: config.HelmChartsRepo,
+						RepoURL: env.Config.HelmChartsRepo,
 					},
 				},
 				Status: "Synced",
