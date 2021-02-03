@@ -10,7 +10,7 @@
  * strictly forbidden unless prior written permission is obtained from CompuZest, Inc.
  */
 
-package controllers
+package file
 
 import (
 	"fmt"
