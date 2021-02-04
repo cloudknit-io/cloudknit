@@ -30,7 +30,7 @@ func GenerateTeamApp(team stablev1alpha1.Team) *appv1.Application {
 			Name:      team.Spec.TeamName,
 			Namespace: "argocd",
 			Labels: map[string]string{
-				"terraform-config/object": "team",
+				"zlifecycle.com/model": "team",
 			},
 		},
 		Spec: appv1.ApplicationSpec{
