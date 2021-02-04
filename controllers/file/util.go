@@ -14,11 +14,13 @@ package controllers
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
 	"github.com/ghodss/yaml"
-	"io/ioutil"
 	"k8s.io/apimachinery/pkg/util/json"
-	"os"
 )
 
 func SaveYamlFile(obj interface{}, folderName string, fileName string) {
@@ -32,7 +34,11 @@ func SaveYamlFile(obj interface{}, folderName string, fileName string) {
 		panic(err2)
 	}
 
-	_ = os.MkdirAll(folderName, os.ModePerm)
+	err1 := os.MkdirAll(folderName, os.ModePerm)
+	if err1 != nil {
+		log.Fatalf("Unable to create directory: %s\n", folderName)
+		panic(err1)
+	}
 
 	err3 := ioutil.WriteFile(folderName+"/"+fileName, bytes, 0644)
 	if err3 != nil {
