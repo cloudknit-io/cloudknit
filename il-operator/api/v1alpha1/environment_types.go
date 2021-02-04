@@ -33,6 +33,7 @@ type Variable struct {
 
 type TerraformConfig struct {
 	ConfigName    string         `json:"configName"`
+	CronSchedule  string         `json:"cronSchedule,omitempty"`
 	DependsOn     []string       `json:"dependsOn,omitempty"`
 	Module        *Module        `json:"module"`
 	VariablesFile *VariablesFile `json:"variablesFile,omitempty"`
