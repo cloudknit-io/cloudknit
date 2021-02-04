@@ -26,3 +26,6 @@ Run following in the root directory.
 export AWS_ACCOUNT_ID=xxxx
 make deploy IMG=$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-il-operator:latest
 ```
+
+## Local Development
+The operator image does not come with a shell, to debug the container change the image in `Dockerfile` to:  `gcr.io/distroless/base:debug`
