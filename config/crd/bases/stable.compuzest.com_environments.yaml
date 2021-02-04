@@ -45,6 +45,8 @@ spec:
                 properties:
                   configName:
                     type: string
+                  cronSchedule:
+                    type: string
                   dependsOn:
                     items:
                       type: string
