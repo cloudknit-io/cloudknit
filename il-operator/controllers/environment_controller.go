@@ -15,8 +15,7 @@ package controllers
 import (
 	"context"
 	"os"
-
-	github "github.com/compuzest/zlifecycle-il-operator/controllers/github"
+	"time"
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -27,6 +26,7 @@ import (
 	argocd "github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
 	argoWorkflow "github.com/compuzest/zlifecycle-il-operator/controllers/argoworkflow"
 	fileutil "github.com/compuzest/zlifecycle-il-operator/controllers/file"
+	github "github.com/compuzest/zlifecycle-il-operator/controllers/github"
 	k8s "github.com/compuzest/zlifecycle-il-operator/controllers/kubernetes"
 )
 
@@ -48,10 +48,11 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	r.Get(ctx, req.NamespacedName, environment)
 
-	teamEnvPrefix := "teams/" + environment.Spec.TeamName + "/" + environment.Spec.EnvName
+	teamEnvPrefix := environment.Spec.TeamName + "/" + environment.Spec.EnvName
 
+	envConfigFolderName := environment.Spec.TeamName + "/environment_configs"
 	envApp := argocd.GenerateEnvironmentApp(*environment)
-	fileutil.SaveYamlFile(*envApp, teamEnvPrefix+".yaml")
+	fileutil.SaveYamlFile(*envApp, envConfigFolderName, environment.Spec.EnvName+".yaml")
 
 	ilRepo := os.Getenv("ilRepo")
 
@@ -67,21 +68,24 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 		application := argocd.GenerateTerraformConfigApps(*environment, *terraformConfig)
 
-		fileutil.SaveYamlFile(*application, teamEnvPrefix+"/"+terraformConfig.ConfigName+".yaml")
+		fileutil.SaveYamlFile(*application, teamEnvPrefix, terraformConfig.ConfigName+".yaml")
 	}
 
 	workflow := argoWorkflow.GenerateWorkflowOfWorkflows(*environment)
-	fileutil.SaveYamlFile(*workflow, teamEnvPrefix+"/wofw.yaml")
+	fileutil.SaveYamlFile(*workflow, teamEnvPrefix, "wofw.yaml")
 
 	presyncJob := k8s.GeneratePreSyncJob(*environment)
-	fileutil.SaveYamlFile(*presyncJob, teamEnvPrefix+"/presync-job.yaml")
+	fileutil.SaveYamlFile(*presyncJob, teamEnvPrefix, "presync-job.yaml")
 	ilRepoName := os.Getenv("ilRepoName")
 	companyName := os.Getenv("companyName")
 
-	err := github.CommitAndPushFiles(companyName, ilRepoName, "teams/"+environment.Spec.TeamName+"/", "main", "zLifecycle", "zLifecycle@compuzest.com")
+	// Avoid race condition on initial Reconcile, collides with Team controller commit
+	time.Sleep(10 * time.Second)
+
+	err := github.CommitAndPushFiles(companyName, ilRepoName, []string{teamEnvPrefix, envConfigFolderName}, "main", "zLifecycle", "zLifecycle@compuzest.com")
 
 	if err != nil {
-		github.CommitAndPushFiles(companyName, ilRepoName, "teams/"+environment.Spec.TeamName+"/", "main", "zLifecycle", "zLifecycle@compuzest.com")
+		github.CommitAndPushFiles(companyName, ilRepoName, []string{teamEnvPrefix, envConfigFolderName}, "main", "zLifecycle", "zLifecycle@compuzest.com")
 
 	}
 	return ctrl.Result{}, nil

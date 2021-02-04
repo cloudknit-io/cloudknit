@@ -21,7 +21,7 @@ import (
 	"os"
 )
 
-func SaveYamlFile(obj interface{}, fileName string) {
+func SaveYamlFile(obj interface{}, folderName string, fileName string) {
 	jsonBytes, err := json.Marshal(obj)
 	if err != nil {
 		panic(err)
@@ -32,7 +32,9 @@ func SaveYamlFile(obj interface{}, fileName string) {
 		panic(err2)
 	}
 
-	err3 := ioutil.WriteFile(fileName, bytes, 0644)
+	_ = os.MkdirAll(folderName, os.ModePerm)
+
+	err3 := ioutil.WriteFile(folderName+"/"+fileName, bytes, 0644)
 	if err3 != nil {
 		panic(err3)
 	}

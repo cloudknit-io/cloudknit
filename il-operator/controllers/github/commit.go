@@ -148,7 +148,7 @@ func pushCommit(ref *github.Reference, tree *github.Tree) (err error) {
 	return err
 }
 
-func CommitAndPushFiles(_sourceOwner string, _sourceRepo string, _sourceFolder string,
+func CommitAndPushFiles(_sourceOwner string, _sourceRepo string, _sourceFolders []string,
 	_commitBranch string, _authorName string, _authorEmail string) (err error) {
 	sourceOwner = _sourceOwner
 	sourceRepo = _sourceRepo
@@ -157,7 +157,7 @@ func CommitAndPushFiles(_sourceOwner string, _sourceRepo string, _sourceFolder s
 	authorName = _authorName
 	authorEmail = _authorEmail
 
-	sourceFiles = getFileNames(_sourceFolder)
+	sourceFiles = getFileNames(_sourceFolders)
 
 	token := os.Getenv("GITHUB_AUTH_TOKEN")
 	if token == "" {
@@ -183,6 +183,8 @@ func CommitAndPushFiles(_sourceOwner string, _sourceRepo string, _sourceFolder s
 		log.Fatalf("Unable to create the tree based on the provided files: %s\n", err)
 	}
 
+	// log.Printf(string(json.Marshal(tree))) for debugging
+
 	if err := pushCommit(ref, tree); err != nil {
 		log.Fatalf("Unable to create the commit: %s\n", err)
 	}
@@ -190,24 +192,27 @@ func CommitAndPushFiles(_sourceOwner string, _sourceRepo string, _sourceFolder s
 	return err
 }
 
-func getFileNames(folderPath string) (fileNames string) {
+func getFileNames(folderPaths []string) (fileNames string) {
 	var s, sep string
-	err := filepath.Walk(folderPath,
-		func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				log.Fatalf("Error fetching fileNames: %s\n", err)
-				return err
-			}
+	for _, f := range folderPaths {
+		err := filepath.Walk(f,
+			func(path string, info os.FileInfo, err error) error {
+				if err != nil {
+					log.Fatalf("Error fetching fileNames: %s\n", err)
+					return err
+				}
 
-			if !info.IsDir() {
-				s += sep + path
-				sep = ","
-			}
-			return nil
-		})
+				if !info.IsDir() {
+					s += sep + path
+					log.Printf(s)
+					sep = ","
+				}
+				return nil
+			})
 
-	if err != nil {
-		log.Fatalf("Error fetching fileNames: %s\n", err)
+		if err != nil {
+			log.Fatalf("Error fetching fileNames: %s\n", err)
+		}
 	}
 	return s
 }
