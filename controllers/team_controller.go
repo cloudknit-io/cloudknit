@@ -22,10 +22,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
-	github "github.com/compuzest/zlifecycle-il-operator/controllers/github"
+	github "github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
 
 	argocd "github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
-	fileutil "github.com/compuzest/zlifecycle-il-operator/controllers/file"
+	fileutil "github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
 )
 
 // TeamReconciler reconciles a Team object

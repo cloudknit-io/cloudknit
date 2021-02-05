@@ -21,12 +21,9 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	kClient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	k8s "github.com/compuzest/zlifecycle-il-operator/controllers/kubernetes"
-
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
 	argocd "github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
 	argoWorkflow "github.com/compuzest/zlifecycle-il-operator/controllers/argoworkflow"
-	github "github.com/compuzest/zlifecycle-il-operator/controllers/github"
 	k8s "github.com/compuzest/zlifecycle-il-operator/controllers/kubernetes"
 	env "github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	file "github.com/compuzest/zlifecycle-il-operator/controllers/util/file"

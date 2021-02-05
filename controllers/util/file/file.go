@@ -22,7 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/json"
 )
 
-func SaveYamlFile(obj interface{}, folderName string, fileName string) {
+func SaveYamlFile(obj interface{}, folderName string, fileName string) error {
 	jsonBytes, err := json.Marshal(obj)
 	if err != nil {
 		return fmt.Errorf("error: failed to marshal json: %s", err.Error())
@@ -33,7 +33,7 @@ func SaveYamlFile(obj interface{}, folderName string, fileName string) {
 		return fmt.Errorf("error: failed to convert json to yaml: %s", err.Error())
 	}
 
-	if err1 := os.MkdirAll(folderName, os.ModePerm); err != nil {
+	if err := os.MkdirAll(folderName, os.ModePerm); err != nil {
 		return fmt.Errorf("error: failed to create directory: %s", err.Error())
 	}
 
