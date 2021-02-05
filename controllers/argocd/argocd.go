@@ -20,6 +20,42 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+func GenerateTeamApp(team stablev1alpha1.Team) *appv1.Application {
+	return &appv1.Application{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "argoproj.io/v1alpha1",
+			Kind:       "Application",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      team.Spec.TeamName,
+			Namespace: "argocd",
+			Labels: map[string]string{
+				"zlifecycle.com/model": "team",
+			},
+		},
+		Spec: appv1.ApplicationSpec{
+			Project: "default",
+			SyncPolicy: &appv1.SyncPolicy{
+				Automated: &appv1.SyncPolicyAutomated{
+					Prune: true,
+				},
+			},
+			Destination: appv1.ApplicationDestination{
+				Server:    "https://kubernetes.default.svc",
+				Namespace: "default",
+			},
+			Source: appv1.ApplicationSource{
+				RepoURL:        team.Spec.ILRepo.Source,
+				Path:           team.Spec.ILRepo.Path,
+				TargetRevision: "HEAD",
+				Directory: &appv1.ApplicationSourceDirectory{
+					Recurse: true,
+				},
+			},
+		},
+	}
+}
+
 func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Application {
 
 	return &appv1.Application{

@@ -14,16 +14,17 @@ package controllers
 
 import (
 	"context"
+	"time"
+
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	kClient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	k8s "github.com/compuzest/zlifecycle-il-operator/controllers/kubernetes"
-
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
 	argocd "github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
 	argoWorkflow "github.com/compuzest/zlifecycle-il-operator/controllers/argoworkflow"
+	k8s "github.com/compuzest/zlifecycle-il-operator/controllers/kubernetes"
 	env "github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	file "github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
 	github "github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
@@ -48,9 +49,10 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	r.Get(ctx, req.NamespacedName, environment)
 
 	teamEnvPrefix := environment.Spec.TeamName + "/" + environment.Spec.EnvName
+	envConfigFolderName := environment.Spec.TeamName + "/environment_configs"
 
 	environ := argocd.GenerateEnvironmentApp(*environment)
-	if err := file.SaveYamlFile(*environ, teamEnvPrefix+".yaml"); err != nil {
+	if err := file.SaveYamlFile(*environ, envConfigFolderName, environment.Spec.EnvName+".yaml"); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -69,29 +71,32 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		}
 
 		application := argocd.GenerateTerraformConfigApps(*environment, *terraformConfig)
-		if err := file.SaveYamlFile(*application, teamEnvPrefix+"/"+terraformConfig.ConfigName+".yaml"); err != nil {
+
+		if err := file.SaveYamlFile(*application, teamEnvPrefix, terraformConfig.ConfigName+".yaml"); err != nil {
 			return ctrl.Result{}, err
 		}
 	}
 
 	workflow := argoWorkflow.GenerateWorkflowOfWorkflows(*environment)
-	if err := file.SaveYamlFile(*workflow, teamEnvPrefix+"/wofw.yaml"); err != nil {
+	if err := file.SaveYamlFile(*workflow, teamEnvPrefix, "/wofw.yaml"); err != nil {
 		return ctrl.Result{}, err
 	}
 
 	presyncJob := k8s.GeneratePreSyncJob(*environment)
-	if err := file.SaveYamlFile(*presyncJob, teamEnvPrefix+"/presync-job.yaml"); err != nil {
+	if err := file.SaveYamlFile(*presyncJob, teamEnvPrefix, "/presync-job.yaml"); err != nil {
 		return ctrl.Result{}, err
 	}
+
+	// Avoid race condition on initial Reconcile, collides with Team controller commit
+	time.Sleep(10 * time.Second)
 
 	github.CommitAndPushFiles(
 		env.Config.CompanyName,
 		env.Config.ILRepoName,
-		environment.Spec.TeamName+"/",
+		[]string{teamEnvPrefix, envConfigFolderName},
 		env.Config.RepoBranch,
 		env.Config.GithubSvcAccntName,
 		env.Config.GithubSvcAccntEmail)
-
 	return ctrl.Result{}, nil
 }
 

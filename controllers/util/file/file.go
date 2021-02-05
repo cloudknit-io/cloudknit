@@ -14,14 +14,15 @@ package file
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
 	"github.com/ghodss/yaml"
-	"io/ioutil"
 	"k8s.io/apimachinery/pkg/util/json"
-	"os"
 )
 
-func SaveYamlFile(obj interface{}, fileName string) error {
+func SaveYamlFile(obj interface{}, folderName string, fileName string) error {
 	jsonBytes, err := json.Marshal(obj)
 	if err != nil {
 		return fmt.Errorf("error: failed to marshal json: %s", err.Error())
@@ -32,7 +33,11 @@ func SaveYamlFile(obj interface{}, fileName string) error {
 		return fmt.Errorf("error: failed to convert json to yaml: %s", err.Error())
 	}
 
-	if err := ioutil.WriteFile(fileName, bytes, 0644); err != nil {
+	if err := os.MkdirAll(folderName, os.ModePerm); err != nil {
+		return fmt.Errorf("error: failed to create directory: %s", err.Error())
+	}
+
+	if err := ioutil.WriteFile(folderName+"/"+fileName, bytes, 0644); err != nil {
 		return fmt.Errorf("error: failed to write file: %s", err.Error())
 	}
 
