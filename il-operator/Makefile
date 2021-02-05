@@ -73,6 +73,10 @@ generate: controller-gen
 docker-build: test
 	docker build . -t ${IMG}
 
+# Build the docker image
+docker-dev-build: test
+	docker build . -t ${IMG} --file Dockerfile.dev
+
 # Push the docker image
 docker-push:
 	aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com

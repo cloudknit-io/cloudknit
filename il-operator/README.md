@@ -28,4 +28,8 @@ make deploy IMG=$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-il-op
 ```
 
 ## Local Development
-The operator image does not come with a shell, to debug the container change the image in `Dockerfile` to:  `gcr.io/distroless/base:debug`
+For faster docker builds, and the ability to shell into a contianer, use `Dockerfile.dev`, you can do this with `make docker-dev-build` or
+
+```
+make docker-dev-build docker-push IMG=$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-il-operator:branch-tag
+```
