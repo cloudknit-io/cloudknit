@@ -58,15 +58,14 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	for _, terraformConfig := range environment.Spec.TerraformConfigs {
 		if terraformConfig.Variables != nil {
-			filePath := teamEnvPrefix + "/" + terraformConfig.ConfigName + ".tfvars"
-
-			if err := file.SaveVarsToFile(terraformConfig.Variables, filePath); err != nil {
+			fileName := terraformConfig.ConfigName + ".tfvars"
+			if err := file.SaveVarsToFile(terraformConfig.Variables, teamEnvPrefix, fileName); err != nil {
 				return ctrl.Result{}, err
 			}
 
 			terraformConfig.VariablesFile = &stablev1alpha1.VariablesFile{
 				Source: env.Config.ILRepoURL,
-				Path:   filePath,
+				Path:   teamEnvPrefix + "/" + fileName,
 			}
 		}
 
