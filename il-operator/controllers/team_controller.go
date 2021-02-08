@@ -14,7 +14,7 @@ package controllers
 
 import (
 	"context"
-	"os"
+	"fmt"
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -22,6 +22,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
+	env "github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	github "github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
 
 	argocd "github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
@@ -50,13 +51,27 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	teamApp := argocd.GenerateTeamApp(*team)
 	fileutil.SaveYamlFile(*teamApp, teamConfigFolderName, team.Spec.TeamName+".yaml")
 
-	ilRepoName := os.Getenv("ilRepoName")
-	companyName := os.Getenv("companyName")
+	ilRepoName := env.Config.ILRepoName
+	companyName := env.Config.CompanyName
 
-	err := github.CommitAndPushFiles(companyName, ilRepoName, []string{teamConfigFolderName}, "main", "zLifecycle", "zLifecycle@compuzest.com")
+	err := github.CommitAndPushFiles(
+		companyName,
+		ilRepoName,
+		[]string{teamConfigFolderName},
+		env.Config.RepoBranch,
+		fmt.Sprintf("Reconciling team %s", team.Spec.TeamName),
+		env.Config.GithubSvcAccntName,
+		env.Config.GithubSvcAccntEmail)
 
 	if err != nil {
-		github.CommitAndPushFiles(companyName, ilRepoName, []string{teamConfigFolderName}, "main", "zLifecycle", "zLifecycle@compuzest.com")
+		github.CommitAndPushFiles(
+			companyName,
+			ilRepoName,
+			[]string{teamConfigFolderName},
+			env.Config.RepoBranch,
+			fmt.Sprintf("Reconciling team %s", team.Spec.TeamName),
+			env.Config.GithubSvcAccntName,
+			env.Config.GithubSvcAccntEmail)
 	}
 	return ctrl.Result{}, nil
 }

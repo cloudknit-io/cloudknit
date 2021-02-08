@@ -133,26 +133,34 @@ func pushCommit(ref *github.Reference, tree *github.Tree) (err error) {
 	// This is not always populated, but is needed.
 	parent.Commit.SHA = parent.SHA
 
-	// Create the commit using the tree.
-	date := time.Now()
-	author := &github.CommitAuthor{Date: &date, Name: &authorName, Email: &authorEmail}
-	commit := &github.Commit{Author: author, Message: &commitMessage, Tree: tree, Parents: []*github.Commit{parent.Commit}}
-	newCommit, _, err := client.Git.CreateCommit(ctx, sourceOwner, sourceRepo, commit)
-	if err != nil {
-		return err
-	}
+	parentSha := *parent.Commit.Tree.SHA
+	newSha := *tree.SHA
 
-	// Attach the commit to the master branch.
-	ref.Object.SHA = newCommit.SHA
-	_, _, err = client.Git.UpdateRef(ctx, sourceOwner, sourceRepo, ref, false)
+	if parentSha == newSha {
+		log.Printf("No git changes to commit, no-op reconciliation.")
+	} else {
+		// Create the commit using the tree.
+		date := time.Now()
+		author := &github.CommitAuthor{Date: &date, Name: &authorName, Email: &authorEmail}
+		commit := &github.Commit{Author: author, Message: &commitMessage, Tree: tree, Parents: []*github.Commit{parent.Commit}}
+		newCommit, _, err := client.Git.CreateCommit(ctx, sourceOwner, sourceRepo, commit)
+		if err != nil {
+			return err
+		}
+
+		// Attach the commit to the master branch.
+		ref.Object.SHA = newCommit.SHA
+		_, _, err = client.Git.UpdateRef(ctx, sourceOwner, sourceRepo, ref, false)
+	}
 	return err
 }
 
 func CommitAndPushFiles(_sourceOwner string, _sourceRepo string, _sourceFolders []string,
-	_commitBranch string, _authorName string, _authorEmail string) (err error) {
+	_commitBranch string, _commitMessage string, _authorName string, _authorEmail string) (err error) {
 	sourceOwner = _sourceOwner
 	sourceRepo = _sourceRepo
 	commitBranch = _commitBranch
+	commitMessage = _commitMessage
 	baseBranch = _commitBranch
 	authorName = _authorName
 	authorEmail = _authorEmail
@@ -204,7 +212,6 @@ func getFileNames(folderPaths []string) (fileNames string) {
 
 				if !info.IsDir() {
 					s += sep + path
-					log.Printf(s)
 					sep = ","
 				}
 				return nil

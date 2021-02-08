@@ -14,6 +14,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -94,6 +95,7 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		env.Config.ILRepoName,
 		[]string{teamEnvPrefix, envConfigFolderName},
 		env.Config.RepoBranch,
+		fmt.Sprintf("Reconciling environment %s", teamEnvPrefix),
 		env.Config.GithubSvcAccntName,
 		env.Config.GithubSvcAccntEmail)
 	return ctrl.Result{}, nil
