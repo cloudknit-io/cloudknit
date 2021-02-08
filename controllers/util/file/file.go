@@ -44,7 +44,11 @@ func SaveYamlFile(obj interface{}, folderName string, fileName string) error {
 	return nil
 }
 
-func SaveVarsToFile(variables []*stablev1alpha1.Variable, fileName string) error {
+func SaveVarsToFile(variables []*stablev1alpha1.Variable, folderName string, fileName string) error {
+	if err := os.MkdirAll(folderName, os.ModePerm); err != nil {
+		return fmt.Errorf("error: failed to create directory: %s", err.Error())
+	}
+
 	file, err := os.Create(fileName)
 	if err != nil {
 		return fmt.Errorf("error: failed to create vars file: %s", err.Error())
