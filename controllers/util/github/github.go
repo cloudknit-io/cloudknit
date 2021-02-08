@@ -135,6 +135,7 @@ func pushCommit(ref *github.Reference, tree *github.Tree) (err error) {
 
 	parentSha := *parent.Commit.Tree.SHA
 	newSha := *tree.SHA
+	// log.Printf(string(json.Marshal(tree))) for debugging
 
 	if parentSha == newSha {
 		log.Printf("No git changes to commit, no-op reconciliation.")
@@ -190,8 +191,6 @@ func CommitAndPushFiles(_sourceOwner string, _sourceRepo string, _sourceFolders 
 	if err != nil {
 		log.Fatalf("Unable to create the tree based on the provided files: %s\n", err)
 	}
-
-	// log.Printf(string(json.Marshal(tree))) for debugging
 
 	if err := pushCommit(ref, tree); err != nil {
 		log.Fatalf("Unable to create the commit: %s\n", err)
