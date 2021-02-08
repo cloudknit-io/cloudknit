@@ -14,6 +14,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -58,15 +59,14 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	for _, terraformConfig := range environment.Spec.TerraformConfigs {
 		if terraformConfig.Variables != nil {
-			filePath := teamEnvPrefix + "/" + terraformConfig.ConfigName + ".tfvars"
-
-			if err := file.SaveVarsToFile(terraformConfig.Variables, filePath); err != nil {
+			fileName := terraformConfig.ConfigName + ".tfvars"
+			if err := file.SaveVarsToFile(terraformConfig.Variables, teamEnvPrefix, fileName); err != nil {
 				return ctrl.Result{}, err
 			}
 
 			terraformConfig.VariablesFile = &stablev1alpha1.VariablesFile{
 				Source: env.Config.ILRepoURL,
-				Path:   filePath,
+				Path:   teamEnvPrefix + "/" + fileName,
 			}
 		}
 
@@ -95,6 +95,7 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		env.Config.ILRepoName,
 		[]string{teamEnvPrefix, envConfigFolderName},
 		env.Config.RepoBranch,
+		fmt.Sprintf("Reconciling environment %s", teamEnvPrefix),
 		env.Config.GithubSvcAccntName,
 		env.Config.GithubSvcAccntEmail)
 	return ctrl.Result{}, nil
