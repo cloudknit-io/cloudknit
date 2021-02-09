@@ -203,7 +203,7 @@ func GenerateTeamEnvironmentWatcherApp(team stablev1alpha1.Team) *appv1.Applicat
 			Kind:       "Application",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      environment.Spec.TeamName + "-" + environment.Spec.EnvName + "-watcher",
+			Name:      team.Spec.TeamName + "-enviornment-watcher",
 			Namespace: "argocd",
 			Labels: map[string]string{
 				"zlifecycle.com/model": "environment-watcher",
