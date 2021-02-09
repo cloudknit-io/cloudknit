@@ -46,7 +46,7 @@ func GenerateTeamApp(team stablev1alpha1.Team) *appv1.Application {
 			},
 			Source: appv1.ApplicationSource{
 				RepoURL:        team.Spec.ILRepo.Source,
-				Path:           team.Spec.ILRepo.Path,
+				Path:           team.Spec.ILRepo.Path + "/environment_configs",
 				TargetRevision: "HEAD",
 				Directory: &appv1.ApplicationSourceDirectory{
 					Recurse: true,
