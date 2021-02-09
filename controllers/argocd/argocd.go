@@ -21,7 +21,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-export func GenerateTeamApp(team stablev1alpha1.Team) *appv1.Application {
+func GenerateTeamApp(team stablev1alpha1.Team) *appv1.Application {
 	return &appv1.Application{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "argoproj.io/v1alpha1",
@@ -67,7 +67,7 @@ export func GenerateTeamApp(team stablev1alpha1.Team) *appv1.Application {
 	}
 }
 
-export func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Application {
+func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Application {
 
 	return &appv1.Application{
 		TypeMeta: metav1.TypeMeta{
@@ -241,4 +241,3 @@ func GenerateTeamEnvironmentWatcherApp(team stablev1alpha1.Team) *appv1.Applicat
 		},
 	}
 }
-
