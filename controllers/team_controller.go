@@ -49,7 +49,9 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	teamConfigFolderName := "team_configs"
 	teamApp := argocd.GenerateTeamApp(*team)
+	teamEnvWatcherApp := argocd.GenerateTeamEnvironmentWatcherApp(*team)
 	fileutil.SaveYamlFile(*teamApp, teamConfigFolderName, team.Spec.TeamName+".yaml")
+	fileutil.SaveYamlFile(*teamEnvWatcherApp, teamConfigFolderName, team.Spec.TeamName+"-env-watcher.yaml")
 
 	ilRepoName := env.Config.ILRepoName
 	companyName := env.Config.CompanyName
