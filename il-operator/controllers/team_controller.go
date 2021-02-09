@@ -49,15 +49,18 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	teamConfigFolderName := "team_configs"
 	teamApp := argocd.GenerateTeamApp(*team)
-	fileutil.SaveYamlFile(*teamApp, teamConfigFolderName, team.Spec.TeamName+".yaml")
-
-	ilRepoName := env.Config.ILRepoName
+	envWatcherApp := argocd.GenerateEnvironmentWatcherApp(*team)
 	companyName := env.Config.CompanyName
+	ilRepoName := env.Config.ILRepoName
+	teamWatcherApp := argocd.GenerateTeamWatcherApp(companyName, ilRepoName)
+	fileutil.SaveYamlFile(*teamApp, teamConfigFolderName, team.Spec.TeamName+".yaml")
+	fileutil.SaveYamlFile(*envWatcherApp, teamConfigFolderName, team.Spec.TeamName+"-env-watcher.yaml")
+	fileutil.SaveYamlFile(*teamWatcherApp, "customer-config", companyName+"-team-watcher.yaml")
 
 	err := github.CommitAndPushFiles(
 		companyName,
 		ilRepoName,
-		[]string{teamConfigFolderName},
+		[]string{teamConfigFolderName, "customer-config"},
 		env.Config.RepoBranch,
 		fmt.Sprintf("Reconciling team %s", team.Spec.TeamName),
 		env.Config.GithubSvcAccntName,
@@ -67,7 +70,7 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		github.CommitAndPushFiles(
 			companyName,
 			ilRepoName,
-			[]string{teamConfigFolderName},
+			[]string{teamConfigFolderName, "customer-config"},
 			env.Config.RepoBranch,
 			fmt.Sprintf("Reconciling team %s", team.Spec.TeamName),
 			env.Config.GithubSvcAccntName,
