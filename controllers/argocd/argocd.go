@@ -14,6 +14,7 @@ package argocd
 
 import (
 	"fmt"
+
 	appv1 "github.com/argoproj/argo-cd/pkg/apis/application/v1alpha1"
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
 	env "github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
@@ -51,6 +52,16 @@ func GenerateTeamApp(team stablev1alpha1.Team) *appv1.Application {
 				Directory: &appv1.ApplicationSourceDirectory{
 					Recurse: true,
 				},
+			},
+		},
+		Status: appv1.ApplicationStatus{
+			Sync: appv1.SyncStatus{
+				ComparedTo: appv1.ComparedTo{
+					Source: appv1.ApplicationSource{
+						RepoURL: team.Spec.ILRepo.Source,
+					},
+				},
+				Status: "Synced",
 			},
 		},
 	}
