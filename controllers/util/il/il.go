@@ -6,6 +6,6 @@ type config struct {
 }
 
 var Config = config{
-	TeamDirectory:          "teams",
-	ConfigWatcherDirectory: "config_watchers",
+	TeamDirectory:          "team",
+	ConfigWatcherDirectory: "config-watcher",
 }
