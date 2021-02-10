@@ -195,7 +195,7 @@ func getHelmValues(environment stablev1alpha1.Environment, terraformConfig stabl
 	return helmValues
 }
 
-func GenerateEnvironmentWatcherApp(team stablev1alpha1.Team) *appv1.Application {
+func GenerateEnvironmentConfigWatcherApp(team stablev1alpha1.Team) *appv1.Application {
 
 	return &appv1.Application{
 		TypeMeta: metav1.TypeMeta{
@@ -242,7 +242,7 @@ func GenerateEnvironmentWatcherApp(team stablev1alpha1.Team) *appv1.Application 
 	}
 }
 
-func GenerateTeamWatcherApp(customerName string, customerConfigRepo string) *appv1.Application {
+func GenerateTeamConfigWatcherApp(customerName string, customerConfigRepo string) *appv1.Application {
 
 	return &appv1.Application{
 		TypeMeta: metav1.TypeMeta{
