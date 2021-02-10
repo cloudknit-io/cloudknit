@@ -203,10 +203,11 @@ func GenerateEnvironmentConfigWatcherApp(team stablev1alpha1.Team) *appv1.Applic
 			Kind:       "Application",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      team.Spec.TeamName + "-enviornment-watcher",
+			Name:      team.Spec.TeamName + "-environment-watcher",
 			Namespace: "argocd",
 			Labels: map[string]string{
-				"zlifecycle.com/model": "environment-watcher",
+				"zlifecycle.com/model":                   "config-watcher",
+				"zlifecycle.com/watched-custom-resource": "environment",
 			},
 		},
 		Spec: appv1.ApplicationSpec{
@@ -253,7 +254,8 @@ func GenerateTeamConfigWatcherApp(customerName string, customerConfigRepo string
 			Name:      customerName + "-team-watcher",
 			Namespace: "argocd",
 			Labels: map[string]string{
-				"zlifecycle.com/model": "team-watcher",
+				"zlifecycle.com/model":                   "config-watcher",
+				"zlifecycle.com/watched-custom-resource": "team",
 			},
 		},
 		Spec: appv1.ApplicationSpec{

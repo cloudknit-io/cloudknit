@@ -61,7 +61,7 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	fileutil.SaveYamlFile(*envConfigWatcherApp, configWatcherDirectory, team.Spec.TeamName+"-team.yaml")
 	fileutil.SaveYamlFile(*teamConfigWatcherApp, configWatcherDirectory, companyName+".yaml")
 
-	err := github.CommitAndPushFiles(
+	github.CommitAndPushFiles(
 		companyName,
 		ilRepoName,
 		[]string{teamDirectory, configWatcherDirectory},
