@@ -93,9 +93,9 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	github.CommitAndPushFiles(
 		env.Config.CompanyName,
 		env.Config.ILRepoName,
-		[]string{teamEnvPrefix, envConfigFolderName},
+		[]string{environmentDirectory, envConfigFolderName},
 		env.Config.RepoBranch,
-		fmt.Sprintf("Reconciling environment %s", teamEnvPrefix),
+		fmt.Sprintf("Reconciling environment %s", environment.Spec.EnvName),
 		env.Config.GithubSvcAccntName,
 		env.Config.GithubSvcAccntEmail)
 	return ctrl.Result{}, nil
