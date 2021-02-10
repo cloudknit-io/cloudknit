@@ -70,16 +70,6 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		env.Config.GithubSvcAccntName,
 		env.Config.GithubSvcAccntEmail)
 
-	if err != nil {
-		github.CommitAndPushFiles(
-			companyName,
-			ilRepoName,
-			[]string{teamDirectory, configWatcherDirectory},
-			env.Config.RepoBranch,
-			fmt.Sprintf("Reconciling team %s", team.Spec.TeamName),
-			env.Config.GithubSvcAccntName,
-			env.Config.GithubSvcAccntEmail)
-	}
 	return ctrl.Result{}, nil
 }
 
