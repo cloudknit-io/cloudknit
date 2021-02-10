@@ -50,8 +50,8 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	r.Get(ctx, req.NamespacedName, environment)
 
-	envDirectory := il.Config.TeamsDirectory + "/" + environment.Spec.TeamName + "-team-environments"
-	envComponentDirectory := envDirectory + "/" + environment.Spec.EnvName + "-environment-components"
+	envDirectory := il.Config.TeamDirectory + "/" + environment.Spec.TeamName + "-team-environment"
+	envComponentDirectory := envDirectory + "/" + environment.Spec.EnvName + "-environment-component"
 
 	environ := argocd.GenerateEnvironmentApp(*environment)
 	if err := file.SaveYamlFile(*environ, envDirectory, environment.Spec.EnvName+"-environment.yaml"); err != nil {
