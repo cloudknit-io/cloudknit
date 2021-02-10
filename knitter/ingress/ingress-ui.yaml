@@ -17,17 +17,3 @@ spec:
         backend:
           serviceName: zlifecycle-ui
           servicePort: http
-  - host: zlifecycle.com
-    http:
-      paths:
-      - path: /
-        backend:
-          serviceName: zlifecycle-ui
-          servicePort: http
-  - host: www.zlifecycle.com
-    http:
-      paths:
-      - path: /
-        backend:
-          serviceName: zlifecycle-ui
-          servicePort: http

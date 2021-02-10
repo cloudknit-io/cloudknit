@@ -23,4 +23,4 @@ fi
 argocd cluster add arn:aws:eks:us-east-1:413422438110:cluster/0-$LOCATION-eks --name $LOCATION
 
 cd ..
-kubectl apply ingress/.
+kubectl apply -f ingress/.

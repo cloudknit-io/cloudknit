@@ -26,12 +26,15 @@ kubectl create secret -n zlifecycle-il-operator-system docker-registry $SECRET_N
 
 kubectl patch deployment zlifecycle-il-operator-controller-manager -n zlifecycle-il-operator-system  -p '{"spec": { "template": { "spec": {"imagePullSecrets": [{"name": "'${SECRET_NAME}'"}]}}}}'
 
+
+kubectl delete secret -n zlifecycle-ui --ignore-not-found $SECRET_NAME
 kubectl create secret -n zlifecycle-ui docker-registry $SECRET_NAME \
  --docker-server=https://$AWS_ACCOUNT_ID.dkr.ecr.${REGION}.amazonaws.com \
  --docker-username=AWS \
  --docker-password="${TOKEN}" \
  --docker-email="${EMAIL}"
 
+kubectl patch deployment zlifecycle-ui -n zlifecycle-ui  -p '{"spec": { "template": { "spec": {"imagePullSecrets": [{"name": "'${SECRET_NAME}'"}]}}}}'
 kubectl create secret -n argocd docker-registry $SECRET_NAME \
  --docker-server=https://$AWS_ACCOUNT_ID.dkr.ecr.${REGION}.amazonaws.com \
  --docker-username=AWS \
