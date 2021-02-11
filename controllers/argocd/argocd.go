@@ -48,7 +48,7 @@ func GenerateTeamApp(team stablev1alpha1.Team) *appv1.Application {
 			},
 			Source: appv1.ApplicationSource{
 				RepoURL:        team.Spec.ILRepo.Source,
-				Path:           "./" + il.Config.TeamDirectory + "/" + team.Spec.TeamName + "-team-environment",
+				Path:           "./" + il.environmentDirectory(team.Spec.TeamName),
 				TargetRevision: "HEAD",
 				Directory: &appv1.ApplicationSourceDirectory{
 					Recurse: false,
@@ -95,7 +95,7 @@ func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Appli
 			},
 			Source: appv1.ApplicationSource{
 				RepoURL:        env.Config.ILRepoURL,
-				Path:           "./" + il.Config.TeamDirectory + "/" + environment.Spec.TeamName + "-team-environment/" + environment.Spec.EnvName + "-environment-component",
+				Path:           "./" + il.environmentComponentDirectory(environment.Spec.TeamName, environment.Spec.EnvName)
 				TargetRevision: "HEAD",
 				Directory: &appv1.ApplicationSourceDirectory{
 					Recurse: false,
