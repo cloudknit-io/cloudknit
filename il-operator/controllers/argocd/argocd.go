@@ -18,6 +18,7 @@ import (
 	appv1 "github.com/argoproj/argo-cd/pkg/apis/application/v1alpha1"
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
 	env "github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -47,7 +48,7 @@ func GenerateTeamApp(team stablev1alpha1.Team) *appv1.Application {
 			},
 			Source: appv1.ApplicationSource{
 				RepoURL:        team.Spec.ILRepo.Source,
-				Path:           team.Spec.ILRepo.Path + "/environment_configs",
+				Path:           "./" + il.Config.TeamDirectory + "/" + team.Spec.TeamName + "-team-environment",
 				TargetRevision: "HEAD",
 				Directory: &appv1.ApplicationSourceDirectory{
 					Recurse: true,
@@ -94,7 +95,7 @@ func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Appli
 			},
 			Source: appv1.ApplicationSource{
 				RepoURL:        env.Config.ILRepoURL,
-				Path:           environment.Spec.TeamName + "/" + environment.Spec.EnvName,
+				Path:           "./" + il.Config.TeamDirectory + "/" + environment.Spec.TeamName + "-team-environment/" + environment.Spec.EnvName + "-environment-component",
 				TargetRevision: "HEAD",
 				Directory: &appv1.ApplicationSourceDirectory{
 					Recurse: true,
