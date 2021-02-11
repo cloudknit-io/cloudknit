@@ -59,7 +59,7 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	fileutil.SaveYamlFile(*envConfigWatcherApp, configWatcherDirectory, team.Spec.TeamName+"-team.yaml")
 
 	github.CommitAndPushFiles(
-		"CompuZest",
+		env.Config.SourceOwner,
 		ilRepoName,
 		[]string{teamDirectory, configWatcherDirectory},
 		env.Config.RepoBranch,

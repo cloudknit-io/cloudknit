@@ -6,6 +6,7 @@ type config struct {
 	CompanyName string
 	ILRepoName  string
 	ILRepoURL   string
+	SourceOwner string
 
 	GithubSvcAccntName  string
 	GithubSvcAccntEmail string
@@ -21,6 +22,7 @@ var Config = config{
 	CompanyName: os.Getenv("companyName"),
 	ILRepoName:  os.Getenv("ilRepoName"),
 	ILRepoURL:   os.Getenv("ilRepo"),
+	SourceOwner: "CompuZest",
 
 	GithubSvcAccntName:  "zLifecycle",
 	GithubSvcAccntEmail: "zLifecycle@compuzest.com",
