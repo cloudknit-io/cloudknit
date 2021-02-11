@@ -38,6 +38,8 @@ configRepo=$(kubectl get ConfigMap company-config -n zlifecycle-il-operator-syst
 configRepoName=$(kubectl get ConfigMap company-config -n zlifecycle-il-operator-system -o jsonpath='{.data.configRepoName}')
 
 argocd repo add --name $configRepoName $configRepo --ssh-private-key-path $zlifecycleSSHKeyPath --insecure-ignore-host-key
+argocd repo add --name "payments-team" "git@github.com:CompuZest/zmart-payments-team-config.git" --ssh-private-key-path $zlifecycleSSHKeyPath --insecure-ignore-host-key
+argocd repo add --name "design-team" "git@github.com:CompuZest/zmart-design-team-config.git" --ssh-private-key-path $zlifecycleSSHKeyPath --insecure-ignore-host-key
 
 # Create all bootstrap argo workflow template
 cd ../../../zLifecycle/argo-templates
