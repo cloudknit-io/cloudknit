@@ -29,6 +29,7 @@ import (
 	env "github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	file "github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
 	github "github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
+	il "github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
 )
 
 // EnvironmentReconciler reconciles a Environment object
@@ -49,41 +50,41 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	r.Get(ctx, req.NamespacedName, environment)
 
-	teamEnvPrefix := environment.Spec.TeamName + "/" + environment.Spec.EnvName
-	envConfigFolderName := environment.Spec.TeamName + "/environment_configs"
+	envDirectory := il.EnvironmentDirectory(environment.Spec.TeamName)
+	envComponentDirectory := il.EnvironmentComponentDirectory(environment.Spec.TeamName, environment.Spec.EnvName)
 
 	environ := argocd.GenerateEnvironmentApp(*environment)
-	if err := file.SaveYamlFile(*environ, envConfigFolderName, environment.Spec.EnvName+".yaml"); err != nil {
+	if err := file.SaveYamlFile(*environ, envDirectory, environment.Spec.EnvName+"-environment.yaml"); err != nil {
 		return ctrl.Result{}, err
 	}
 
 	for _, terraformConfig := range environment.Spec.TerraformConfigs {
 		if terraformConfig.Variables != nil {
 			fileName := terraformConfig.ConfigName + ".tfvars"
-			if err := file.SaveVarsToFile(terraformConfig.Variables, teamEnvPrefix, fileName); err != nil {
+			if err := file.SaveVarsToFile(terraformConfig.Variables, envComponentDirectory, fileName); err != nil {
 				return ctrl.Result{}, err
 			}
 
 			terraformConfig.VariablesFile = &stablev1alpha1.VariablesFile{
 				Source: env.Config.ILRepoURL,
-				Path:   teamEnvPrefix + "/" + fileName,
+				Path:   envComponentDirectory + "/" + fileName,
 			}
 		}
 
 		application := argocd.GenerateTerraformConfigApps(*environment, *terraformConfig)
 
-		if err := file.SaveYamlFile(*application, teamEnvPrefix, terraformConfig.ConfigName+".yaml"); err != nil {
+		if err := file.SaveYamlFile(*application, envComponentDirectory, terraformConfig.ConfigName+".yaml"); err != nil {
 			return ctrl.Result{}, err
 		}
 	}
 
 	workflow := argoWorkflow.GenerateWorkflowOfWorkflows(*environment)
-	if err := file.SaveYamlFile(*workflow, teamEnvPrefix, "/wofw.yaml"); err != nil {
+	if err := file.SaveYamlFile(*workflow, envComponentDirectory, "/wofw.yaml"); err != nil {
 		return ctrl.Result{}, err
 	}
 
 	presyncJob := k8s.GeneratePreSyncJob(*environment)
-	if err := file.SaveYamlFile(*presyncJob, teamEnvPrefix, "/presync-job.yaml"); err != nil {
+	if err := file.SaveYamlFile(*presyncJob, envComponentDirectory, "/presync-job.yaml"); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -91,11 +92,11 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	time.Sleep(10 * time.Second)
 
 	github.CommitAndPushFiles(
-		env.Config.CompanyName,
+		env.Config.SourceOwner,
 		env.Config.ILRepoName,
-		[]string{teamEnvPrefix, envConfigFolderName},
+		[]string{envDirectory, envComponentDirectory},
 		env.Config.RepoBranch,
-		fmt.Sprintf("Reconciling environment %s", teamEnvPrefix),
+		fmt.Sprintf("Reconciling environment %s", environment.Spec.EnvName),
 		env.Config.GithubSvcAccntName,
 		env.Config.GithubSvcAccntEmail)
 	return ctrl.Result{}, nil

@@ -18,6 +18,7 @@ import (
 	appv1 "github.com/argoproj/argo-cd/pkg/apis/application/v1alpha1"
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
 	env "github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -47,10 +48,10 @@ func GenerateTeamApp(team stablev1alpha1.Team) *appv1.Application {
 			},
 			Source: appv1.ApplicationSource{
 				RepoURL:        team.Spec.ILRepo.Source,
-				Path:           team.Spec.ILRepo.Path + "/environment_configs",
+				Path:           "./" + il.EnvironmentDirectory(team.Spec.TeamName),
 				TargetRevision: "HEAD",
 				Directory: &appv1.ApplicationSourceDirectory{
-					Recurse: true,
+					Recurse: false,
 				},
 			},
 		},
@@ -94,10 +95,10 @@ func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Appli
 			},
 			Source: appv1.ApplicationSource{
 				RepoURL:        env.Config.ILRepoURL,
-				Path:           environment.Spec.TeamName + "/" + environment.Spec.EnvName,
+				Path:           "./" + il.EnvironmentComponentDirectory(environment.Spec.TeamName, environment.Spec.EnvName),
 				TargetRevision: "HEAD",
 				Directory: &appv1.ApplicationSourceDirectory{
-					Recurse: true,
+					Recurse: false,
 				},
 			},
 		},
@@ -195,7 +196,7 @@ func getHelmValues(environment stablev1alpha1.Environment, terraformConfig stabl
 	return helmValues
 }
 
-func GenerateEnvironmentWatcherApp(team stablev1alpha1.Team) *appv1.Application {
+func GenerateEnvironmentConfigWatcherApp(team stablev1alpha1.Team) *appv1.Application {
 
 	return &appv1.Application{
 		TypeMeta: metav1.TypeMeta{
@@ -203,10 +204,11 @@ func GenerateEnvironmentWatcherApp(team stablev1alpha1.Team) *appv1.Application 
 			Kind:       "Application",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      team.Spec.TeamName + "-enviornment-watcher",
+			Name:      team.Spec.TeamName + "-environment-watcher",
 			Namespace: "argocd",
 			Labels: map[string]string{
-				"zlifecycle.com/model": "environment-watcher",
+				"zlifecycle.com/model":                   "config-watcher",
+				"zlifecycle.com/watched-custom-resource": "environment",
 			},
 		},
 		Spec: appv1.ApplicationSpec{
@@ -242,7 +244,7 @@ func GenerateEnvironmentWatcherApp(team stablev1alpha1.Team) *appv1.Application 
 	}
 }
 
-func GenerateTeamWatcherApp(customerName string, customerConfigRepo string) *appv1.Application {
+func GenerateTeamConfigWatcherApp(customerName string, customerConfigRepo string) *appv1.Application {
 
 	return &appv1.Application{
 		TypeMeta: metav1.TypeMeta{
@@ -253,7 +255,8 @@ func GenerateTeamWatcherApp(customerName string, customerConfigRepo string) *app
 			Name:      customerName + "-team-watcher",
 			Namespace: "argocd",
 			Labels: map[string]string{
-				"zlifecycle.com/model": "team-watcher",
+				"zlifecycle.com/model":                   "config-watcher",
+				"zlifecycle.com/watched-custom-resource": "team",
 			},
 		},
 		Spec: appv1.ApplicationSpec{
@@ -269,7 +272,7 @@ func GenerateTeamWatcherApp(customerName string, customerConfigRepo string) *app
 			},
 			Source: appv1.ApplicationSource{
 				RepoURL:        customerConfigRepo,
-				Path:           "team-configs",
+				Path:           ".",
 				TargetRevision: "HEAD",
 				Directory: &appv1.ApplicationSourceDirectory{
 					Recurse: true,

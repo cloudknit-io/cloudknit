@@ -24,6 +24,7 @@ import (
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
 	env "github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	github "github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
+	il "github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
 
 	argocd "github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
 	fileutil "github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
@@ -47,35 +48,25 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	r.Get(ctx, req.NamespacedName, team)
 
-	teamConfigFolderName := "team_configs"
 	teamApp := argocd.GenerateTeamApp(*team)
-	envWatcherApp := argocd.GenerateEnvironmentWatcherApp(*team)
-	companyName := env.Config.CompanyName
 	ilRepoName := env.Config.ILRepoName
-	teamWatcherApp := argocd.GenerateTeamWatcherApp(companyName, ilRepoName)
-	fileutil.SaveYamlFile(*teamApp, teamConfigFolderName, team.Spec.TeamName+".yaml")
-	fileutil.SaveYamlFile(*envWatcherApp, teamConfigFolderName, team.Spec.TeamName+"-env-watcher.yaml")
-	fileutil.SaveYamlFile(*teamWatcherApp, "customer-config", companyName+"-team-watcher.yaml")
+	teamDirectory := il.Config.TeamDirectory
+	configWatcherDirectory := il.Config.ConfigWatcherDirectory
+	fileutil.SaveYamlFile(*teamApp, teamDirectory, team.Spec.TeamName+"-team.yaml")
 
-	err := github.CommitAndPushFiles(
-		companyName,
+	// generate config watchers
+	envConfigWatcherApp := argocd.GenerateEnvironmentConfigWatcherApp(*team)
+	fileutil.SaveYamlFile(*envConfigWatcherApp, configWatcherDirectory, team.Spec.TeamName+"-team.yaml")
+
+	github.CommitAndPushFiles(
+		env.Config.SourceOwner,
 		ilRepoName,
-		[]string{teamConfigFolderName, "customer-config"},
+		[]string{teamDirectory, configWatcherDirectory},
 		env.Config.RepoBranch,
 		fmt.Sprintf("Reconciling team %s", team.Spec.TeamName),
 		env.Config.GithubSvcAccntName,
 		env.Config.GithubSvcAccntEmail)
 
-	if err != nil {
-		github.CommitAndPushFiles(
-			companyName,
-			ilRepoName,
-			[]string{teamConfigFolderName, "customer-config"},
-			env.Config.RepoBranch,
-			fmt.Sprintf("Reconciling team %s", team.Spec.TeamName),
-			env.Config.GithubSvcAccntName,
-			env.Config.GithubSvcAccntEmail)
-	}
 	return ctrl.Result{}, nil
 }
 
