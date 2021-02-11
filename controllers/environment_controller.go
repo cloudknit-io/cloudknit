@@ -92,7 +92,7 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	time.Sleep(10 * time.Second)
 
 	github.CommitAndPushFiles(
-		env.Config.CompanyName,
+		"CompuZest",
 		env.Config.ILRepoName,
 		[]string{envDirectory, envComponentDirectory},
 		env.Config.RepoBranch,

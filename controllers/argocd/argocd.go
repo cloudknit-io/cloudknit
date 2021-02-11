@@ -271,7 +271,7 @@ func GenerateTeamConfigWatcherApp(customerName string, customerConfigRepo string
 			},
 			Source: appv1.ApplicationSource{
 				RepoURL:        customerConfigRepo,
-				Path:           "/",
+				Path:           ".",
 				TargetRevision: "HEAD",
 				Directory: &appv1.ApplicationSourceDirectory{
 					Recurse: true,
