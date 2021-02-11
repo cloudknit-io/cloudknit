@@ -25,6 +25,9 @@ import (
 
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
+	fileutil "github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -86,4 +89,7 @@ func main() {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}
+
+	teamConfigWatcherApp := argocd.GenerateTeamConfigWatcherApp("zmart", il.Config.CompanyConfigRepo)
+	fileutil.SaveYamlFile(*teamConfigWatcherApp, il.Config.ConfigWatcherDirectory+"/company", "zmart.yaml")
 }
