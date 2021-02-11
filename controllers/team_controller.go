@@ -49,17 +49,14 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	r.Get(ctx, req.NamespacedName, team)
 
 	teamApp := argocd.GenerateTeamApp(*team)
-	companyName := env.Config.CompanyName
 	ilRepoName := env.Config.ILRepoName
 	teamDirectory := il.Config.TeamDirectory
 	configWatcherDirectory := il.Config.ConfigWatcherDirectory
 	fileutil.SaveYamlFile(*teamApp, teamDirectory, team.Spec.TeamName+"-team.yaml")
 
 	// generate config watchers
-	teamConfigWatcherApp := argocd.GenerateTeamConfigWatcherApp(companyName, il.Config.CompanyConfigRepo)
 	envConfigWatcherApp := argocd.GenerateEnvironmentConfigWatcherApp(*team)
 	fileutil.SaveYamlFile(*envConfigWatcherApp, configWatcherDirectory, team.Spec.TeamName+"-team.yaml")
-	fileutil.SaveYamlFile(*teamConfigWatcherApp, configWatcherDirectory, companyName+".yaml")
 
 	github.CommitAndPushFiles(
 		"CompuZest",
