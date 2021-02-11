@@ -50,8 +50,8 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	r.Get(ctx, req.NamespacedName, environment)
 
-	envDirectory := il.Config.TeamDirectory + "/" + environment.Spec.TeamName + "-team-environment"
-	envComponentDirectory := envDirectory + "/" + environment.Spec.EnvName + "-environment-component"
+	envDirectory := il.EnvironmentDirectory(environment.Spec.TeamName)
+	envComponentDirectory := il.EnvironmentComponentDirectory(environment.Spec.TeamName, environment.Spec.EnvName)
 
 	environ := argocd.GenerateEnvironmentApp(*environment)
 	if err := file.SaveYamlFile(*environ, envDirectory, environment.Spec.EnvName+"-environment.yaml"); err != nil {
@@ -92,7 +92,7 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	time.Sleep(10 * time.Second)
 
 	github.CommitAndPushFiles(
-		env.Config.sourceOwner,
+		env.Config.SourceOwner,
 		env.Config.ILRepoName,
 		[]string{envDirectory, envComponentDirectory},
 		env.Config.RepoBranch,

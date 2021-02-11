@@ -12,10 +12,10 @@ var Config = config{
 	CompanyConfigRepo:      "git@github.com:CompuZest/zmart-config.git",
 }
 
-func environmentComponentDirectory(teamName string, envName string) string {
-	return environmentDirectory(teamName) + "/" + envName + "-environment-component"
+func EnvironmentComponentDirectory(teamName string, envName string) string {
+	return EnvironmentDirectory(teamName) + "/" + envName + "-environment-component"
 }
 
-func environmentDirectory(teamName string) string {
+func EnvironmentDirectory(teamName string) string {
 	return Config.TeamDirectory + "/" + teamName + "-team-environment"
 }
