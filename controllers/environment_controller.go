@@ -42,6 +42,7 @@ type EnvironmentReconciler struct {
 // +kubebuilder:rbac:groups=stable.compuzest.com,resources=environments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=stable.compuzest.com,resources=environments/status,verbs=get;update;patch
 
+// Reconcile method called everytime there is a change in Environment Custom Resource
 func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	//log := r.Log.WithValues("environment", req.NamespacedName)
@@ -53,8 +54,8 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	envDirectory := il.EnvironmentDirectory(environment.Spec.TeamName)
 	envComponentDirectory := il.EnvironmentComponentDirectory(environment.Spec.TeamName, environment.Spec.EnvName)
 
-	environ := argocd.GenerateEnvironmentApp(*environment)
-	if err := file.SaveYamlFile(*environ, envDirectory, environment.Spec.EnvName+"-environment.yaml"); err != nil {
+	envApp := argocd.GenerateEnvironmentApp(*environment)
+	if err := file.SaveYamlFile(*envApp, envDirectory, environment.Spec.EnvName+"-environment.yaml"); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -102,6 +103,7 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	return ctrl.Result{}, nil
 }
 
+// SetupWithManager sets up the Environment Controller with Manager
 func (r *EnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&stablev1alpha1.Environment{}).
