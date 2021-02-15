@@ -40,38 +40,61 @@ type TeamReconciler struct {
 // +kubebuilder:rbac:groups=stable.compuzest.com,resources=teams,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=stable.compuzest.com,resources=teams/status,verbs=get;update;patch
 
+// Reconcile method called everytime there is a change in Team Custom Resource
 func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	//log := r.Log.WithValues("team", req.NamespacedName)
 
 	team := &stablev1alpha1.Team{}
-
 	r.Get(ctx, req.NamespacedName, team)
 
-	teamApp := argocd.GenerateTeamApp(*team)
-	ilRepoName := env.Config.ILRepoName
-	teamDirectory := il.Config.TeamDirectory
-	configWatcherDirectory := il.Config.ConfigWatcherDirectory
-	fileutil.SaveYamlFile(*teamApp, teamDirectory, team.Spec.TeamName+"-team.yaml")
+	teamYAML := fmt.Sprintf("%s-team.yaml", team.Spec.TeamName)
 
-	// generate config watchers
-	envConfigWatcherApp := argocd.GenerateEnvironmentConfigWatcherApp(*team)
-	fileutil.SaveYamlFile(*envConfigWatcherApp, configWatcherDirectory, team.Spec.TeamName+"-team.yaml")
+	if err := generateAndSaveTeamApp(team, teamYAML); err != nil {
+		return ctrl.Result{}, err
+	}
 
-	github.CommitAndPushFiles(
+	if err := generateAndSaveConfigWatchers(team, teamYAML); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	if err := github.CommitAndPushFiles(
 		env.Config.SourceOwner,
-		ilRepoName,
-		[]string{teamDirectory, configWatcherDirectory},
+		env.Config.ILRepoName,
+		[]string{il.Config.TeamDirectory, il.Config.ConfigWatcherDirectory},
 		env.Config.RepoBranch,
 		fmt.Sprintf("Reconciling team %s", team.Spec.TeamName),
 		env.Config.GithubSvcAccntName,
-		env.Config.GithubSvcAccntEmail)
+		env.Config.GithubSvcAccntEmail); err != nil {
+		return ctrl.Result{}, err
+	}
 
 	return ctrl.Result{}, nil
 }
 
+// SetupWithManager sets up the Team Controller with Manager
 func (r *TeamReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&stablev1alpha1.Team{}).
 		Complete(r)
+}
+
+func generateAndSaveTeamApp(team *stablev1alpha1.Team, teamYAML string) error {
+	teamApp := argocd.GenerateTeamApp(*team)
+
+	if err := fileutil.SaveYamlFile(*teamApp, il.Config.TeamDirectory, teamYAML); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func generateAndSaveConfigWatchers(team *stablev1alpha1.Team, teamYAML string) error {
+	envConfigWatcherApp := argocd.GenerateEnvironmentConfigWatcherApp(*team)
+
+	if err := fileutil.SaveYamlFile(*envConfigWatcherApp, il.Config.ConfigWatcherDirectory, teamYAML); err != nil {
+		return err
+	}
+
+	return nil
 }
