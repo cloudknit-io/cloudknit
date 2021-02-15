@@ -54,16 +54,53 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	envDirectory := il.EnvironmentDirectory(environment.Spec.TeamName)
 	envComponentDirectory := il.EnvironmentComponentDirectory(environment.Spec.TeamName, environment.Spec.EnvName)
 
-	envApp := argocd.GenerateEnvironmentApp(*environment)
-	if err := file.SaveYamlFile(*envApp, envDirectory, environment.Spec.EnvName+"-environment.yaml"); err != nil {
+	if err := generateAndSaveEnvironmentApp(environment, envDirectory); err != nil {
 		return ctrl.Result{}, err
 	}
 
+	if err := generateAndSaveTerraformConfigs(environment, envComponentDirectory); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	if err := generateAndSaveWorkflowOfWorkflows(environment, envComponentDirectory); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	if err := generateAndSavePresyncJob(environment, envComponentDirectory); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	// Avoid race condition on initial Reconcile, collides with Team controller commit
+	time.Sleep(10 * time.Second)
+
+	if err := github.CommitAndPushFiles(
+		env.Config.SourceOwner,
+		env.Config.ILRepoName,
+		[]string{envDirectory, envComponentDirectory},
+		env.Config.RepoBranch,
+		fmt.Sprintf("Reconciling environment %s", environment.Spec.EnvName),
+		env.Config.GithubSvcAccntName,
+		env.Config.GithubSvcAccntEmail); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	return ctrl.Result{}, nil
+}
+
+// SetupWithManager sets up the Environment Controller with Manager
+func (r *EnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	return ctrl.NewControllerManagedBy(mgr).
+		For(&stablev1alpha1.Environment{}).
+		Complete(r)
+}
+
+func generateAndSaveTerraformConfigs(environment *stablev1alpha1.Environment, envComponentDirectory string) error {
 	for _, terraformConfig := range environment.Spec.TerraformConfigs {
 		if terraformConfig.Variables != nil {
-			fileName := terraformConfig.ConfigName + ".tfvars"
+			fileName := fmt.Sprintf("%s.tfvars", terraformConfig.ConfigName)
+
 			if err := file.SaveVarsToFile(terraformConfig.Variables, envComponentDirectory, fileName); err != nil {
-				return ctrl.Result{}, err
+				return err
 			}
 
 			terraformConfig.VariablesFile = &stablev1alpha1.VariablesFile{
@@ -75,37 +112,38 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		application := argocd.GenerateTerraformConfigApps(*environment, *terraformConfig)
 
 		if err := file.SaveYamlFile(*application, envComponentDirectory, terraformConfig.ConfigName+".yaml"); err != nil {
-			return ctrl.Result{}, err
+			return err
 		}
 	}
 
-	workflow := argoWorkflow.GenerateWorkflowOfWorkflows(*environment)
-	if err := file.SaveYamlFile(*workflow, envComponentDirectory, "/wofw.yaml"); err != nil {
-		return ctrl.Result{}, err
-	}
-
-	presyncJob := k8s.GeneratePreSyncJob(*environment)
-	if err := file.SaveYamlFile(*presyncJob, envComponentDirectory, "/presync-job.yaml"); err != nil {
-		return ctrl.Result{}, err
-	}
-
-	// Avoid race condition on initial Reconcile, collides with Team controller commit
-	time.Sleep(10 * time.Second)
-
-	github.CommitAndPushFiles(
-		env.Config.SourceOwner,
-		env.Config.ILRepoName,
-		[]string{envDirectory, envComponentDirectory},
-		env.Config.RepoBranch,
-		fmt.Sprintf("Reconciling environment %s", environment.Spec.EnvName),
-		env.Config.GithubSvcAccntName,
-		env.Config.GithubSvcAccntEmail)
-	return ctrl.Result{}, nil
+	return nil
 }
 
-// SetupWithManager sets up the Environment Controller with Manager
-func (r *EnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
-		For(&stablev1alpha1.Environment{}).
-		Complete(r)
+func generateAndSaveWorkflowOfWorkflows(environment *stablev1alpha1.Environment, envComponentDirectory string) error {
+	workflow := argoWorkflow.GenerateWorkflowOfWorkflows(*environment)
+	if err := file.SaveYamlFile(*workflow, envComponentDirectory, "/wofw.yaml"); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func generateAndSaveEnvironmentApp(environment *stablev1alpha1.Environment, envDirectory string) error {
+	envApp := argocd.GenerateEnvironmentApp(*environment)
+	envYAML := fmt.Sprintf("%s-environment.yaml", environment.Spec.EnvName)
+
+	if err := file.SaveYamlFile(*envApp, envDirectory, envYAML); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func generateAndSavePresyncJob(environment *stablev1alpha1.Environment, envComponentDirectory string) error {
+	presyncJob := k8s.GeneratePreSyncJob(*environment)
+	if err := file.SaveYamlFile(*presyncJob, envComponentDirectory, "/presync-job.yaml"); err != nil {
+		return err
+	}
+
+	return nil
 }
