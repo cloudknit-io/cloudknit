@@ -3,5 +3,7 @@ kind: Team
 metadata:
   name: team-sample
 spec:
-  # Add fields here
-  foo: bar
+  teamName: "design"
+  configRepo:
+    source: "git@github.com:CompuZest/zmart-design-team-config.git"
+    path: "."

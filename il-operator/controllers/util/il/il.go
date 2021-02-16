@@ -2,14 +2,14 @@ package il
 
 type config struct {
 	TeamDirectory          string
+	CompanyDirectory       string
 	ConfigWatcherDirectory string
-	CompanyConfigRepo      string
 }
 
 var Config = config{
 	TeamDirectory:          "team",
+	CompanyDirectory:       "company",
 	ConfigWatcherDirectory: "config-watcher",
-	CompanyConfigRepo:      "git@github.com:CompuZest/zmart-config.git",
 }
 
 func EnvironmentComponentDirectory(teamName string, envName string) string {
