@@ -9,6 +9,26 @@ rules:
 - apiGroups:
   - stable.compuzest.com
   resources:
+  - companies
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - stable.compuzest.com
+  resources:
+  - companies/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - stable.compuzest.com
+  resources:
   - environments
   verbs:
   - create

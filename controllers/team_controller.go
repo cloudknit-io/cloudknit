@@ -15,6 +15,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -43,7 +44,6 @@ type TeamReconciler struct {
 // Reconcile method called everytime there is a change in Team Custom Resource
 func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
-	//log := r.Log.WithValues("team", req.NamespacedName)
 
 	team := &stablev1alpha1.Team{}
 	r.Get(ctx, req.NamespacedName, team)
@@ -57,6 +57,9 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	if err := generateAndSaveConfigWatchers(team, teamYAML); err != nil {
 		return ctrl.Result{}, err
 	}
+
+	// Avoid race condition on initial Reconcile, collides with Team controller commit
+	time.Sleep(5 * time.Second)
 
 	if err := github.CommitAndPushFiles(
 		env.Config.SourceOwner,
@@ -72,7 +75,7 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	return ctrl.Result{}, nil
 }
 
-// SetupWithManager sets up the Team Controller with Manager
+// SetupWithManager sets up the Company Controller with Manager
 func (r *TeamReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&stablev1alpha1.Team{}).
@@ -90,9 +93,9 @@ func generateAndSaveTeamApp(team *stablev1alpha1.Team, teamYAML string) error {
 }
 
 func generateAndSaveConfigWatchers(team *stablev1alpha1.Team, teamYAML string) error {
-	envConfigWatcherApp := argocd.GenerateEnvironmentConfigWatcherApp(*team)
+	teamConfigWatcherApp := argocd.GenerateTeamConfigWatcherApp(*team)
 
-	if err := fileutil.SaveYamlFile(*envConfigWatcherApp, il.Config.ConfigWatcherDirectory, teamYAML); err != nil {
+	if err := fileutil.SaveYamlFile(*teamConfigWatcherApp, il.Config.ConfigWatcherDirectory, teamYAML); err != nil {
 		return err
 	}
 
