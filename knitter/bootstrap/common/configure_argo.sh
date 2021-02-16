@@ -49,4 +49,5 @@ then
     kubectl port-forward service/argo-workflow-server 8081:2746 -n argocd &
 fi
 
-argocd app create config-watcher-parent --repo $ilRepo --path config-watcher --dest-server https://kubernetes.default.svc --dest-namespace default --sync-policy automated --auto-prune --directory-recurse
+argocd app create config-watcher-bootstrap --repo $ilRepo --path config-watcher --dest-server https://kubernetes.default.svc --dest-namespace default --sync-policy automated --auto-prune
+argocd app create company-bootstrap --repo $ilRepo --path company --dest-server https://kubernetes.default.svc --dest-namespace default --sync-policy automated --auto-prune
