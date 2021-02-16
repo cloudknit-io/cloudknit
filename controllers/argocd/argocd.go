@@ -59,6 +59,9 @@ func GenerateCompanyApp(company stablev1alpha1.Company) *appv1.Application {
 			Sync: appv1.SyncStatus{
 				ComparedTo: appv1.ComparedTo{
 					Source: appv1.ApplicationSource{
+						Directory: &appv1.ApplicationSourceDirectory{
+							Jsonnet: appv1.ApplicationSourceJsonnet{},
+						},
 						RepoURL: env.Config.ILRepoURL,
 					},
 				},
@@ -104,6 +107,9 @@ func GenerateTeamApp(team stablev1alpha1.Team) *appv1.Application {
 			Sync: appv1.SyncStatus{
 				ComparedTo: appv1.ComparedTo{
 					Source: appv1.ApplicationSource{
+						Directory: &appv1.ApplicationSourceDirectory{
+							Jsonnet: appv1.ApplicationSourceJsonnet{},
+						},
 						RepoURL: env.Config.ILRepoURL,
 					},
 				},
@@ -151,6 +157,9 @@ func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Appli
 			Sync: appv1.SyncStatus{
 				ComparedTo: appv1.ComparedTo{
 					Source: appv1.ApplicationSource{
+						Directory: &appv1.ApplicationSourceDirectory{
+							Jsonnet: appv1.ApplicationSourceJsonnet{},
+						},
 						RepoURL: env.Config.ILRepoURL,
 					},
 				},
