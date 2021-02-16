@@ -22,6 +22,51 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+func GenerateCompanyApp(company stablev1alpha1.Company) *appv1.Application {
+	return &appv1.Application{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "argoproj.io/v1alpha1",
+			Kind:       "Application",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      company.Spec.CompanyName,
+			Namespace: "argocd",
+			Labels: map[string]string{
+				"zlifecycle.com/model": "company",
+			},
+		},
+		Spec: appv1.ApplicationSpec{
+			Project: "default",
+			SyncPolicy: &appv1.SyncPolicy{
+				Automated: &appv1.SyncPolicyAutomated{
+					Prune: true,
+				},
+			},
+			Destination: appv1.ApplicationDestination{
+				Server:    "https://kubernetes.default.svc",
+				Namespace: "default",
+			},
+			Source: appv1.ApplicationSource{
+				RepoURL:        env.Config.ILRepoURL,
+				Path:           "./" + il.Config.TeamDirectory,
+				TargetRevision: "HEAD",
+				Directory: &appv1.ApplicationSourceDirectory{
+					Recurse: false,
+				},
+			},
+		},
+		Status: appv1.ApplicationStatus{
+			Sync: appv1.SyncStatus{
+				ComparedTo: appv1.ComparedTo{
+					Source: appv1.ApplicationSource{
+						RepoURL: env.Config.ILRepoURL,
+					},
+				},
+				Status: "Synced",
+			},
+		},
+	}
+}
 func GenerateTeamApp(team stablev1alpha1.Team) *appv1.Application {
 	return &appv1.Application{
 		TypeMeta: metav1.TypeMeta{
@@ -47,7 +92,7 @@ func GenerateTeamApp(team stablev1alpha1.Team) *appv1.Application {
 				Namespace: "default",
 			},
 			Source: appv1.ApplicationSource{
-				RepoURL:        team.Spec.ILRepo.Source,
+				RepoURL:        env.Config.ILRepoURL,
 				Path:           "./" + il.EnvironmentDirectory(team.Spec.TeamName),
 				TargetRevision: "HEAD",
 				Directory: &appv1.ApplicationSourceDirectory{
@@ -59,7 +104,7 @@ func GenerateTeamApp(team stablev1alpha1.Team) *appv1.Application {
 			Sync: appv1.SyncStatus{
 				ComparedTo: appv1.ComparedTo{
 					Source: appv1.ApplicationSource{
-						RepoURL: team.Spec.ILRepo.Source,
+						RepoURL: env.Config.ILRepoURL,
 					},
 				},
 				Status: "Synced",
@@ -196,7 +241,7 @@ func getHelmValues(environment stablev1alpha1.Environment, terraformConfig stabl
 	return helmValues
 }
 
-func GenerateEnvironmentConfigWatcherApp(team stablev1alpha1.Team) *appv1.Application {
+func GenerateTeamConfigWatcherApp(team stablev1alpha1.Team) *appv1.Application {
 
 	return &appv1.Application{
 		TypeMeta: metav1.TypeMeta{
@@ -204,11 +249,11 @@ func GenerateEnvironmentConfigWatcherApp(team stablev1alpha1.Team) *appv1.Applic
 			Kind:       "Application",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      team.Spec.TeamName + "-environment-watcher",
+			Name:      team.Spec.TeamName + "-team-watcher",
 			Namespace: "argocd",
 			Labels: map[string]string{
 				"zlifecycle.com/model":                   "config-watcher",
-				"zlifecycle.com/watched-custom-resource": "environment",
+				"zlifecycle.com/watched-custom-resource": "team",
 			},
 		},
 		Spec: appv1.ApplicationSpec{
@@ -244,7 +289,7 @@ func GenerateEnvironmentConfigWatcherApp(team stablev1alpha1.Team) *appv1.Applic
 	}
 }
 
-func GenerateTeamConfigWatcherApp(customerName string, customerConfigRepo string) *appv1.Application {
+func GenerateCompanyConfigWatcherApp(customerName string, companyConfigRepo string) *appv1.Application {
 
 	return &appv1.Application{
 		TypeMeta: metav1.TypeMeta{
@@ -252,11 +297,11 @@ func GenerateTeamConfigWatcherApp(customerName string, customerConfigRepo string
 			Kind:       "Application",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      customerName + "-team-watcher",
+			Name:      customerName + "-watcher",
 			Namespace: "argocd",
 			Labels: map[string]string{
 				"zlifecycle.com/model":                   "config-watcher",
-				"zlifecycle.com/watched-custom-resource": "team",
+				"zlifecycle.com/watched-custom-resource": "company",
 			},
 		},
 		Spec: appv1.ApplicationSpec{
@@ -271,7 +316,7 @@ func GenerateTeamConfigWatcherApp(customerName string, customerConfigRepo string
 				Namespace: "default",
 			},
 			Source: appv1.ApplicationSource{
-				RepoURL:        customerConfigRepo,
+				RepoURL:        companyConfigRepo,
 				Path:           ".",
 				TargetRevision: "HEAD",
 				Directory: &appv1.ApplicationSourceDirectory{
@@ -283,7 +328,7 @@ func GenerateTeamConfigWatcherApp(customerName string, customerConfigRepo string
 			Sync: appv1.SyncStatus{
 				ComparedTo: appv1.ComparedTo{
 					Source: appv1.ApplicationSource{
-						RepoURL: customerConfigRepo,
+						RepoURL: companyConfigRepo,
 					},
 				},
 				Status: "Synced",

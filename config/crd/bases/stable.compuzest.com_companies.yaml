@@ -6,20 +6,20 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
-  name: teams.stable.compuzest.com
+  name: companies.stable.compuzest.com
 spec:
   group: stable.compuzest.com
   names:
-    kind: Team
-    listKind: TeamList
-    plural: teams
-    singular: team
+    kind: Company
+    listKind: CompanyList
+    plural: companies
+    singular: company
   scope: Namespaced
   subresources:
     status: {}
   validation:
     openAPIV3Schema:
-      description: Team is the Schema for the teams API
+      description: Company is the Schema for the companies API
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -34,8 +34,12 @@ spec:
         metadata:
           type: object
         spec:
-          description: TeamSpec defines the desired state of Team
+          description: CompanySpec defines the desired state of Company
           properties:
+            companyName:
+              description: Foo is an example field of Company. Edit Company_types.go
+                to remove/update
+              type: string
             configRepo:
               properties:
                 path:
@@ -46,14 +50,12 @@ spec:
               - path
               - source
               type: object
-            teamName:
-              type: string
           required:
+          - companyName
           - configRepo
-          - teamName
           type: object
         status:
-          description: TeamStatus defines the observed state of Team
+          description: CompanyStatus defines the observed state of Company
           type: object
       type: object
   version: v1alpha1

@@ -25,9 +25,6 @@ import (
 
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
-	fileutil "github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -82,6 +79,14 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Team")
 		os.Exit(1)
 	}
+	if err = (&controllers.CompanyReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("Company"),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Company")
+		os.Exit(1)
+	}
 	// +kubebuilder:scaffold:builder
 
 	setupLog.Info("starting manager")
@@ -89,7 +94,4 @@ func main() {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}
-
-	teamConfigWatcherApp := argocd.GenerateTeamConfigWatcherApp("zmart", il.Config.CompanyConfigRepo)
-	fileutil.SaveYamlFile(*teamConfigWatcherApp, il.Config.ConfigWatcherDirectory+"/company", "zmart.yaml")
 }
