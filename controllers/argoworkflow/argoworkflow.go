@@ -15,6 +15,7 @@ package argoworkflow
 import (
 	workflow "github.com/argoproj/argo/pkg/apis/workflow/v1alpha1"
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -24,15 +25,17 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 
 	var tasks []workflow.DAGTask
 
-	for _, terraformConfig := range environment.Spec.TerraformConfigs {
+	for _, environmentComponent := range environment.Spec.EnvironmentComponent {
+		moduleSource := il.EnvComponentModuleSource(environmentComponent.Module.Source, environmentComponent.Module.Name)
+		modulePath := il.EnvComponentModulePath(environmentComponent.Module.Path)
 
 		task := workflow.DAGTask{
-			Name: terraformConfig.ConfigName,
+			Name: environmentComponent.Name,
 			TemplateRef: &workflow.TemplateRef{
 				Name:     "workflow-trigger-template",
 				Template: "run",
 			},
-			Dependencies: terraformConfig.DependsOn,
+			Dependencies: environmentComponent.DependsOn,
 			Arguments: workflow.Arguments{
 				Parameters: []workflow.Parameter{
 					{
@@ -41,19 +44,19 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 					},
 					{
 						Name:  "module_source",
-						Value: environmentComponentModel.buildModuleSource(&terraformConfig.Module.Source),
+						Value: &moduleSource,
 					},
 					{
 						Name:  "module_source_path",
-						Value: environmentComponentModel.buildModulePath(&terraformConfig.Module.Path),
+						Value: &modulePath,
 					},
 					{
 						Name:  "variables_file_source",
-						Value: &terraformConfig.VariablesFile.Source,
+						Value: &environmentComponent.VariablesFile.Source,
 					},
 					{
 						Name:  "variables_file_path",
-						Value: &terraformConfig.VariablesFile.Path,
+						Value: &environmentComponent.VariablesFile.Path,
 					},
 					{
 						Name:  "team_name",
@@ -65,7 +68,7 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 					},
 					{
 						Name:  "config_name",
-						Value: &terraformConfig.ConfigName,
+						Value: &environmentComponent.Name,
 					},
 				},
 			},
