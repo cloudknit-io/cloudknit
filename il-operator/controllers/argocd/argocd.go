@@ -151,9 +151,9 @@ func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Appli
 	}
 }
 
-func GenerateTerraformConfigApps(environment stablev1alpha1.Environment, terraformConfig stablev1alpha1.TerraformConfig) *appv1.Application {
+func GenerateEnvironmentComponentApps(environment stablev1alpha1.Environment, environmentComponent stablev1alpha1.EnvironmentComponent) *appv1.Application {
 
-	helmValues := getHelmValues(environment, terraformConfig)
+	helmValues := getHelmValues(environment, environmentComponent)
 
 	return &appv1.Application{
 		TypeMeta: metav1.TypeMeta{
@@ -161,7 +161,7 @@ func GenerateTerraformConfigApps(environment stablev1alpha1.Environment, terrafo
 			APIVersion: "argoproj.io/v1alpha1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      environment.Spec.TeamName + "-" + environment.Spec.EnvName + "-" + terraformConfig.ConfigName,
+			Name:      environment.Spec.TeamName + "-" + environment.Spec.EnvName + "-" + environmentComponent.Name,
 			Namespace: "argocd",
 			Labels: map[string]string{
 				"zlifecycle.com/model": "environment-component",
@@ -203,32 +203,29 @@ func GenerateTerraformConfigApps(environment stablev1alpha1.Environment, terrafo
 	}
 }
 
-func getHelmValues(environment stablev1alpha1.Environment, terraformConfig stablev1alpha1.TerraformConfig) string {
+func getHelmValues(environment stablev1alpha1.Environment, environmentComponent stablev1alpha1.EnvironmentComponent) string {
 
 	helmValues := fmt.Sprintf(`
         team_name: "%s"
         env_name: %s
         config_name: %s
         module:
-            source: %s`, environment.Spec.TeamName,
+            source: %s
+            path: %s`, environment.Spec.TeamName,
 		environment.Spec.EnvName,
-		terraformConfig.ConfigName,
-		environmentcomponentmodel.buildModuleSource(terraformConfig.Module.Source))
+		environmentComponent.Name,
+		il.EnvComponentModuleSource(environmentComponent.Module.Source, environmentComponent.Module.Name),
+		il.EnvComponentModulePath(environmentComponent.Module.Path))
 
-	if terraformConfig.Module.Path != "" {
+	if environmentComponent.CronSchedule != "" {
 		helmValues += fmt.Sprintf(`
-            path: %s`, environmentcomponentmodel.buildModulePath(terraformConfig.Module.Path))
-	}
-
-	if terraformConfig.CronSchedule != "" {
-		helmValues += fmt.Sprintf(`
-        cron_schedule: %s`, terraformConfig.CronSchedule)
+        cron_schedule: %s`, environmentComponent.CronSchedule)
 	}
 
 	helmValues += fmt.Sprintf(`
         variables_file:
             source: %s
-            path: %s`, terraformConfig.VariablesFile.Source, terraformConfig.VariablesFile.Path)
+            path: %s`, environmentComponent.VariablesFile.Source, environmentComponent.VariablesFile.Path)
 	return helmValues
 }
 
