@@ -18,7 +18,8 @@ import (
 
 type Module struct {
 	Source string `json:"source"`
-	Path   string `json:"path"`
+	Path   string `json:"path,omitempty"`
+	Name   string `json:"name,omitempty"`
 }
 
 type VariablesFile struct {
@@ -31,8 +32,8 @@ type Variable struct {
 	Value string `json:"value"`
 }
 
-type TerraformConfig struct {
-	ConfigName    string         `json:"configName"`
+type EnvironmentComponent struct {
+	Name          string         `json:"name"`
 	CronSchedule  string         `json:"cronSchedule,omitempty"`
 	DependsOn     []string       `json:"dependsOn,omitempty"`
 	Module        *Module        `json:"module"`
@@ -42,9 +43,9 @@ type TerraformConfig struct {
 
 // EnvironmentSpec defines the desired state of Environment
 type EnvironmentSpec struct {
-	TeamName         string             `json:"teamName"`
-	EnvName          string             `json:"envName"`
-	TerraformConfigs []*TerraformConfig `json:"terraformConfigs"`
+	TeamName             string                  `json:"teamName"`
+	EnvName              string                  `json:"envName"`
+	EnvironmentComponent []*EnvironmentComponent `json:"components"`
 }
 
 // EnvironmentStatus defines the observed state of Environment

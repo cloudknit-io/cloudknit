@@ -36,15 +36,9 @@ spec:
         spec:
           description: EnvironmentSpec defines the desired state of Environment
           properties:
-            envName:
-              type: string
-            teamName:
-              type: string
-            terraformConfigs:
+            components:
               items:
                 properties:
-                  configName:
-                    type: string
                   cronSchedule:
                     type: string
                   dependsOn:
@@ -53,14 +47,17 @@ spec:
                     type: array
                   module:
                     properties:
+                      name:
+                        type: string
                       path:
                         type: string
                       source:
                         type: string
                     required:
-                    - path
                     - source
                     type: object
+                  name:
+                    type: string
                   variables:
                     items:
                       properties:
@@ -84,14 +81,18 @@ spec:
                     - source
                     type: object
                 required:
-                - configName
                 - module
+                - name
                 type: object
               type: array
+            envName:
+              type: string
+            teamName:
+              type: string
           required:
+          - components
           - envName
           - teamName
-          - terraformConfigs
           type: object
         status:
           description: EnvironmentStatus defines the observed state of Environment
