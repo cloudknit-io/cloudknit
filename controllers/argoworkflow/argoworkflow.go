@@ -41,11 +41,11 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 					},
 					{
 						Name:  "module_source",
-						Value: terraformConfigModel.buildModuleSource(&terraformConfig.Module.Source),
+						Value: environmentComponentModel.buildModuleSource(&terraformConfig.Module.Source),
 					},
 					{
 						Name:  "module_source_path",
-						Value: terraformConfigModel.buildModulePath(&terraformConfig.Module.Path),
+						Value: environmentComponentModel.buildModulePath(&terraformConfig.Module.Path),
 					},
 					{
 						Name:  "variables_file_source",
