@@ -72,13 +72,13 @@ main() {
     echo ""
     echo ""
 
+    # Manually creating argocd namespace so enviroments can be deployment for testing.
+    kubectl create namespace argocd
+
     #Configure Cluster
     announcePhase "Configure cluster"
     ./$PARENT_DIRECTORY/configure_cluster.sh $LOCATION $PARENT_DIRECTORY
-    checkForFailures
-
-    # Manually creating argocd namespace so enviroments can be deployment for testing.
-    kubectl create namespace argocd
+    #checkForFailures
 }
 
 main
