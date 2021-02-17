@@ -49,7 +49,7 @@ func SaveVarsToFile(variables []*stablev1alpha1.Variable, folderName string, fil
 		return fmt.Errorf("error: failed to create directory: %s", err.Error())
 	}
 
-	file, err := os.Create(fileName)
+	file, err := os.Create(folderName + "/" + fileName)
 	if err != nil {
 		return fmt.Errorf("error: failed to create vars file: %s", err.Error())
 	}
