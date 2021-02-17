@@ -211,7 +211,7 @@ func getHelmValues(environment stablev1alpha1.Environment, environmentComponent 
         config_name: %s
         module:
             source: %s
-			path: %s`, environment.Spec.TeamName,
+            path: %s`, environment.Spec.TeamName,
 		environment.Spec.EnvName,
 		environmentComponent.Name,
 		il.EnvComponentModuleSource(environmentComponent.Module.Source, environmentComponent.Module.Name),
