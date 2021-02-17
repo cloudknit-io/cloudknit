@@ -1,4 +1,4 @@
-package terraformConfigModel
+package environmentcomponentmodel
 
 func buildModuleSource(moduleSource string) error {
 	return nil

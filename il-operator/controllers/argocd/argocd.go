@@ -213,11 +213,11 @@ func getHelmValues(environment stablev1alpha1.Environment, terraformConfig stabl
             source: %s`, environment.Spec.TeamName,
 		environment.Spec.EnvName,
 		terraformConfig.ConfigName,
-		terraformConfigModel.buildModuleSource(terraformConfig.Module.Source))
+		environmentcomponentmodel.buildModuleSource(terraformConfig.Module.Source))
 
 	if terraformConfig.Module.Path != "" {
 		helmValues += fmt.Sprintf(`
-            path: %s`, terraformConfigModel.buildModulePath(terraformConfig.Module.Path))
+            path: %s`, environmentcomponentmodel.buildModulePath(terraformConfig.Module.Path))
 	}
 
 	if terraformConfig.CronSchedule != "" {
