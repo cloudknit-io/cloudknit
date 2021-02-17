@@ -1,5 +1,6 @@
 # Index
 - [Overview](#overview)
+- [Runbooks](#runbooks)
 - [Initial Bootstrap](./runbook/setup/initial-bootstrap.md)
 - [Setup New Customer](./runbook/setup/new-customer-setup.md)
 - [Bootstrap zLifecycle](./runbook/setup/bootstrap-zlifecycle.md)
@@ -11,6 +12,11 @@
 zLifecycle is a product to manage lifecycle for infrastructure across various cloud providers as well as on-prem.
 
 For more details & diagrams look at: https://app.diagrams.net/#G1gXeFRlERpqjXpeSjxRPLP6YZMRyFG5SN
+
+## Runbooks
+
+#### What goes in a runbook vs a README?
+If a piece of documentation involves step-by-step procedures, executing commands, or directly references code (e.g. use of a variable defined in code), consider creating a runbook for it in the `runbook` directory. See the [base template](./runbook/template.md) as a guide to get started.
 
 ## Creating a new environment
 1. Configure bootstrap scripts with new terraform workspace, etc. based on environment name
