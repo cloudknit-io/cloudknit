@@ -22,7 +22,7 @@ func EnvironmentDirectory(teamName string) string {
 
 func EnvComponentModuleSource(moduleSource string, moduleName string) string {
 	if moduleSource == "aws" {
-		return "git@github.com:terraform-aws-modules/" + moduleName + ".git"
+		return "git@github.com:terraform-aws-modules/terraform-aws-" + moduleName + ".git"
 	}
 	return moduleSource
 }

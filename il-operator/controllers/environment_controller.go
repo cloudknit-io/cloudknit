@@ -58,7 +58,7 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, err
 	}
 
-	if err := generateAndSaveTerraformConfigs(environment, envComponentDirectory); err != nil {
+	if err := generateAndSaveEnvironmentComponents(environment, envComponentDirectory); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -94,24 +94,24 @@ func (r *EnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func generateAndSaveTerraformConfigs(environment *stablev1alpha1.Environment, envComponentDirectory string) error {
-	for _, terraformConfig := range environment.Spec.TerraformConfigs {
-		if terraformConfig.Variables != nil {
-			fileName := fmt.Sprintf("%s.tfvars", terraformConfig.ConfigName)
+func generateAndSaveEnvironmentComponents(environment *stablev1alpha1.Environment, envComponentDirectory string) error {
+	for _, environmentComponent := range environment.Spec.EnvironmentComponent {
+		if environmentComponent.Variables != nil {
+			fileName := fmt.Sprintf("%s.tfvars", environmentComponent.Name)
 
-			if err := file.SaveVarsToFile(terraformConfig.Variables, envComponentDirectory, fileName); err != nil {
+			if err := file.SaveVarsToFile(environmentComponent.Variables, envComponentDirectory, fileName); err != nil {
 				return err
 			}
 
-			terraformConfig.VariablesFile = &stablev1alpha1.VariablesFile{
+			environmentComponent.VariablesFile = &stablev1alpha1.VariablesFile{
 				Source: env.Config.ILRepoURL,
 				Path:   envComponentDirectory + "/" + fileName,
 			}
 		}
 
-		application := argocd.GenerateTerraformConfigApps(*environment, *terraformConfig)
+		application := argocd.GenerateEnvironmentComponentApps(*environment, *environmentComponent)
 
-		if err := file.SaveYamlFile(*application, envComponentDirectory, terraformConfig.ConfigName+".yaml"); err != nil {
+		if err := file.SaveYamlFile(*application, envComponentDirectory, environmentComponent.Name+".yaml"); err != nil {
 			return err
 		}
 	}
