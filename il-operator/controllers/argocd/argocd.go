@@ -50,18 +50,12 @@ func GenerateCompanyApp(company stablev1alpha1.Company) *appv1.Application {
 				RepoURL:        env.Config.ILRepoURL,
 				Path:           "./" + il.Config.TeamDirectory,
 				TargetRevision: "HEAD",
-				Directory: &appv1.ApplicationSourceDirectory{
-					Recurse: false,
-				},
 			},
 		},
 		Status: appv1.ApplicationStatus{
 			Sync: appv1.SyncStatus{
 				ComparedTo: appv1.ComparedTo{
 					Source: appv1.ApplicationSource{
-						Directory: &appv1.ApplicationSourceDirectory{
-							Jsonnet: appv1.ApplicationSourceJsonnet{},
-						},
 						RepoURL: env.Config.ILRepoURL,
 					},
 				},
@@ -98,18 +92,12 @@ func GenerateTeamApp(team stablev1alpha1.Team) *appv1.Application {
 				RepoURL:        env.Config.ILRepoURL,
 				Path:           "./" + il.EnvironmentDirectory(team.Spec.TeamName),
 				TargetRevision: "HEAD",
-				Directory: &appv1.ApplicationSourceDirectory{
-					Recurse: false,
-				},
 			},
 		},
 		Status: appv1.ApplicationStatus{
 			Sync: appv1.SyncStatus{
 				ComparedTo: appv1.ComparedTo{
 					Source: appv1.ApplicationSource{
-						Directory: &appv1.ApplicationSourceDirectory{
-							Jsonnet: appv1.ApplicationSourceJsonnet{},
-						},
 						RepoURL: env.Config.ILRepoURL,
 					},
 				},
@@ -148,18 +136,12 @@ func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Appli
 				RepoURL:        env.Config.ILRepoURL,
 				Path:           "./" + il.EnvironmentComponentDirectory(environment.Spec.TeamName, environment.Spec.EnvName),
 				TargetRevision: "HEAD",
-				Directory: &appv1.ApplicationSourceDirectory{
-					Recurse: false,
-				},
 			},
 		},
 		Status: appv1.ApplicationStatus{
 			Sync: appv1.SyncStatus{
 				ComparedTo: appv1.ComparedTo{
 					Source: appv1.ApplicationSource{
-						Directory: &appv1.ApplicationSourceDirectory{
-							Jsonnet: appv1.ApplicationSourceJsonnet{},
-						},
 						RepoURL: env.Config.ILRepoURL,
 					},
 				},
