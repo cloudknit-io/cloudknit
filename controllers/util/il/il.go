@@ -19,3 +19,18 @@ func EnvironmentComponentDirectory(teamName string, envName string) string {
 func EnvironmentDirectory(teamName string) string {
 	return Config.TeamDirectory + "/" + teamName + "-team-environment"
 }
+
+func EnvComponentModuleSource(moduleSource string, moduleName string) string {
+	if moduleSource == "aws" {
+		return "git@github.com:terraform-aws-modules/" + moduleName + ".git"
+	}
+	return moduleSource
+}
+
+func EnvComponentModulePath(modulePath string) string {
+	if modulePath == "" {
+		return "."
+	} else {
+		return modulePath
+	}
+}
