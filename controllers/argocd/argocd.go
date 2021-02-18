@@ -219,7 +219,7 @@ func getHelmValues(environment stablev1alpha1.Environment, environmentComponent 
 
 	if environmentComponent.CronSchedule != "" {
 		helmValues += fmt.Sprintf(`
-        cron_schedule: %s`, environmentComponent.CronSchedule)
+        cron_schedule: "%s"`, environmentComponent.CronSchedule)
 	}
 
 	helmValues += fmt.Sprintf(`
