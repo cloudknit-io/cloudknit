@@ -34,6 +34,7 @@ type Variable struct {
 
 type EnvironmentComponent struct {
 	Name          string         `json:"name"`
+	Type          string         `json:"type"`
 	CronSchedule  string         `json:"cronSchedule,omitempty"`
 	DependsOn     []string       `json:"dependsOn,omitempty"`
 	Module        *Module        `json:"module"`

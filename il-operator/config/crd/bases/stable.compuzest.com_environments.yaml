@@ -58,6 +58,8 @@ spec:
                     type: object
                   name:
                     type: string
+                  type:
+                    type: string
                   variables:
                     items:
                       properties:
@@ -83,6 +85,7 @@ spec:
                 required:
                 - module
                 - name
+                - type
                 type: object
               type: array
             envName:
