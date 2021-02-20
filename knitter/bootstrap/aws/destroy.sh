@@ -31,26 +31,26 @@ checkForFailures() {
         fi
     fi
 }
-argocd cluster rm arn:aws:eks:us-east-1:413422438110:cluster/0-$LOCATION-eks
+argocd cluster rm arn:aws:eks:us-east-1:413422438110:cluster/$LOCATION-eks
 argocd repo rm git@github.com:CompuZest/infra-deploy-terraform-config.git
 argocd repo rm git@github.com:CompuZest/helm-charts.git
 
 cd ../../zlifecycle-provisioner/k8s-addons
 terraform init
-terraform workspace select 0-$LOCATION
+terraform workspace select $LOCATION
 terraform init
 terraform destroy -auto-approve -var-file tfvars/$LOCATION.tfvars
 checkForFailures
 
 cd ../aws-eks
 terraform init
-terraform workspace select 0-$LOCATION
+terraform workspace select $LOCATION
 terraform init
 terraform destroy -auto-approve -var-file tfvars/$LOCATION.tfvars
 checkForFailures
 
 cd ../aws-vpc
 terraform init
-terraform workspace select 0-$LOCATION
+terraform workspace select $LOCATION
 terraform init
 terraform destroy -auto-approve -var-file tfvars/$LOCATION.tfvars

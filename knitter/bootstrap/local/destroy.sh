@@ -24,7 +24,7 @@ argocd repo rm git@github.com:CompuZest/helm-charts.git
 
 cd ../../zlifecycle-provisioner/k8s-addons
 terraform init
-terraform workspace select 0-$LOCATION
+terraform workspace select $LOCATION
 terraform init
 
 terraform destroy -auto-approve -var-file tfvars/$LOCATION.tfvars

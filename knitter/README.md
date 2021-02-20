@@ -47,5 +47,5 @@ docker push 413422438110.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-terraform:la
 ## Connect to zLifecycle AWS environment
 - Configure proper credentials in `~/.aws/credentials` as a profile names `compuzest-shared`
 ```
-aws eks --region us-east-1 update-kubeconfig --name 0-sandbox-eks
+aws eks --region us-east-1 update-kubeconfig --name sandbox-eks
 ```

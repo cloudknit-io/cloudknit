@@ -18,6 +18,6 @@ LOCATION=$1
 
 cd ../../zlifecycle-provisioner/k8s-addons
 terraform init
-terraform workspace select 0-$LOCATION || terraform workspace new 0-$LOCATION
+terraform workspace select $LOCATION || terraform workspace new $LOCATION
 terraform init
 terraform apply -auto-approve -var-file tfvars/$LOCATION.tfvars

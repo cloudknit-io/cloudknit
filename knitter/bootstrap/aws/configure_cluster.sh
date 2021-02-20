@@ -20,7 +20,7 @@ then
     kubectl create secret generic k8s-api --from-literal=url=$APISERVER -n zlifecycle-il-operator-system || true
 fi
 
-argocd cluster add arn:aws:eks:us-east-1:413422438110:cluster/0-$LOCATION-eks --name $LOCATION
+argocd cluster add arn:aws:eks:us-east-1:413422438110:cluster/$LOCATION-eks --name $LOCATION
 
 cd ..
 kubectl apply -f ingress/.
