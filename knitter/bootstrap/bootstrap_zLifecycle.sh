@@ -17,14 +17,14 @@ main() {
         echo "-------------------------------------"
         echo $1
         echo ""
-        echo "-------------------------------------"   
+        echo "-------------------------------------"
     }
 
     checkForFailures() {
         if [ $? -ne 0 ]
         then
             echo ""
-            echo "-------------------------------------"   
+            echo "-------------------------------------"
             read -p "Bootstrap phase has failed, type C to exit, any other key to continue" -n 1 -r
             echo ""
 
@@ -42,8 +42,8 @@ main() {
     fi
 
     echo "Please select the environment you wish to bootstrap:"
-    select LOCATION in "dev-a" "dev-b" "sandbox"; do
-        if [[ $LOCATION == "sandbox" ]]
+    select LOCATION in "dev-a" "dev-b" "sandbox" "demo"; do
+        if [[ $LOCATION == "sandbox" ]] || [[ $LOCATION == "demo" ]]
         then
             readonly PARENT_DIRECTORY=aws
             break;
