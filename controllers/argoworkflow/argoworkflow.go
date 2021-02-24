@@ -87,7 +87,7 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 			Namespace: "argocd",
 			Annotations: map[string]string{
 				"argocd.argoproj.io/hook":               "PreSync",
-				"argocd.argoproj.io/hook-delete-policy": "HookSucceeded",
+				"argocd.argoproj.io/hook-delete-policy": "BeforeHookCreation",
 			},
 			Labels: map[string]string{
 				"workflows.argoproj.io/completed": "false",
