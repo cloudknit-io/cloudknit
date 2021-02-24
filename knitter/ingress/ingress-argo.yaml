@@ -19,19 +19,19 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: argo-cd-argocd-server
+          serviceName: argocd-server
           servicePort: http
   - host: admin.zlifecycle.com
     http:
       paths:
       - path: /api
         backend:
-          serviceName: argo-cd-argocd-server
+          serviceName: argocd-server
           servicePort: http
   - host: admin.zlifecycle.com
     http:
       paths:
       - path: /dex
         backend:
-          serviceName: argo-cd-argocd-dex-server
+          serviceName: argocd-dex-server
           servicePort: http

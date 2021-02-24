@@ -93,7 +93,7 @@ then
 
     argoPassword=$(kubectl get secret argocd-server-login -n argocd -o json | jq '.data.password | @base64d' | tr -d '"')
 
-    echo y | argocd login --insecure argo-cd-argocd-server:443 --grpc-web --username admin --password $argoPassword
+    echo y | argocd login --insecure argocd-server:443 --grpc-web --username admin --password $argoPassword
 
     if [ $is_sync -eq 0 ]
     then

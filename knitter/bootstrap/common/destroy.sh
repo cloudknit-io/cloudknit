@@ -10,7 +10,7 @@
 # law. Dissemination of this information or reproduction of this material is
 # strictly forbidden unless prior written permission is obtained from CompuZest, Inc.
 
-kubectl port-forward service/argo-cd-argocd-server 8080:80 -n argocd &
+kubectl port-forward service/argocd-server 8080:80 -n argocd &
 
 argoPassword=$(kubectl get secret argocd-server-login -n argocd -o json | jq '.data.password | @base64d' | tr -d '"')
 yes Y | argocd login --insecure localhost:8080 --grpc-web --username admin --password $argoPassword

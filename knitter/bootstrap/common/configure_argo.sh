@@ -15,7 +15,7 @@ cd ../../zlifecycle-provisioner/k8s-addons/argo-workflow
 if [[ $(lsof -i :8080 | wc -l) -eq 0 ]]
 then
     echo "Port forwarding ArgoCD"
-    kubectl port-forward service/argo-cd-argocd-server 8080:80 -n argocd &
+    kubectl port-forward service/argocd-server 8080:80 -n argocd &
 fi
 
 sleep 2m
