@@ -15,5 +15,33 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: zlifecycle-ui
+          serviceName: zlifecycle-web
+          servicePort: http
+  - host: app.zlifecycle.com
+    http:
+      paths:
+      - path: /authorize
+        backend:
+          serviceName: zlifecycle-web-bff
+          servicePort: http
+  - host: app.zlifecycle.com
+    http:
+      paths:
+      - path: /cd
+        backend:
+          serviceName: zlifecycle-web-bff
+          servicePort: http
+  - host: app.zlifecycle.com
+    http:
+      paths:
+      - path: /wf
+        backend:
+          serviceName: zlifecycle-web-bff
+          servicePort: http
+  - host: app.zlifecycle.com
+    http:
+      paths:
+      - path: /auth
+        backend:
+          serviceName: zlifecycle-web-bff
           servicePort: http
