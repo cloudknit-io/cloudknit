@@ -75,6 +75,7 @@ func GenerateTeamApp(team stablev1alpha1.Team) *appv1.Application {
 			Namespace: "argocd",
 			Labels: map[string]string{
 				"zlifecycle.com/model": "team",
+				"type":                 "project",
 			},
 		},
 		Spec: appv1.ApplicationSpec{
@@ -119,6 +120,8 @@ func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Appli
 			Namespace: "argocd",
 			Labels: map[string]string{
 				"zlifecycle.com/model": "environment",
+				"type":                 "environment",
+				"project_id":           environment.Spec.TeamName,
 			},
 		},
 		Spec: appv1.ApplicationSpec{
@@ -165,6 +168,9 @@ func GenerateEnvironmentComponentApps(environment stablev1alpha1.Environment, en
 			Namespace: "argocd",
 			Labels: map[string]string{
 				"zlifecycle.com/model": "environment-component",
+				"type":                 "config",
+				"project_id":           environment.Spec.TeamName,
+				"environment_id":       environment.Spec.TeamName + "-" + environment.Spec.EnvName,
 			},
 			Finalizers: []string{
 				"resources-finalizer.argocd.argoproj.io",
