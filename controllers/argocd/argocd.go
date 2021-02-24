@@ -121,6 +121,7 @@ func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Appli
 			Labels: map[string]string{
 				"zlifecycle.com/model": "environment",
 				"type":                 "environment",
+				"project_id":           environment.Spec.TeamName,
 			},
 		},
 		Spec: appv1.ApplicationSpec{
@@ -168,6 +169,7 @@ func GenerateEnvironmentComponentApps(environment stablev1alpha1.Environment, en
 			Labels: map[string]string{
 				"zlifecycle.com/model": "environment-component",
 				"type":                 "config",
+				"project_id":           environment.Spec.TeamName,
 			},
 			Finalizers: []string{
 				"resources-finalizer.argocd.argoproj.io",
