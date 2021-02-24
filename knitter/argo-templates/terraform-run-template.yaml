@@ -16,10 +16,6 @@ metadata:
   namespace: argocd
 spec:
   entrypoint: run
-  podGC:
-    strategy: OnPodSuccess
-  ttlStrategy:
-    secondsAfterSuccess: 5
   templates:
     - name: run
       inputs:
@@ -60,7 +56,7 @@ spec:
         cmd:
           - sh
         source: |
-          ./run_terraform.sh "{{inputs.parameters.team_name}}" "{{inputs.parameters.env_name}}" "{{inputs.parameters.config_name}}" "{{inputs.parameters.module_source}}" "{{inputs.parameters.module_source_path}}" "{{inputs.parameters.variables_file_source}}" "{{inputs.parameters.variables_file_path}}" "{{inputs.parameters.is_apply}}" "{{inputs.parameters.lock_state}}" "{{inputs.parameters.is_sync}}"
+          ./run_terraform.sh "{{inputs.parameters.team_name}}" "{{inputs.parameters.env_name}}" "{{inputs.parameters.config_name}}" "{{inputs.parameters.module_source}}" "{{inputs.parameters.module_source_path}}" "{{inputs.parameters.variables_file_source}}" "{{inputs.parameters.variables_file_path}}" "{{inputs.parameters.is_apply}}" "{{inputs.parameters.lock_state}}" "{{inputs.parameters.is_sync}}" "{{workflow.name}}"
         env:
           - name: CUSTOMER_AWS_ACCESS_KEY_ID
             valueFrom:

@@ -19,6 +19,8 @@ variables_file_path=$7
 is_apply=$8
 lock_state=$9
 is_sync=$10
+workflow_id=$11
+
 team_env_name=$team_name-$env_name
 team_env_config_name=$team_name-$env_name-$config_name
 
@@ -89,35 +91,39 @@ then
     result=$?
     echo -n $result > /tmp/plan_code.txt
 
+    argoPassword=$(kubectl get secret argocd-server-login -n argocd -o json | jq '.data.password | @base64d' | tr -d '"')
+
+    echo y | argocd login --insecure argo-cd-argocd-server:443 --grpc-web --username admin --password $argoPassword
+
     if [ $is_sync -eq 0 ]
     then
-            argoPassword=$(kubectl get secret argocd-server-login -n argocd -o json | jq '.data.password | @base64d' | tr -d '"')
+        env_sync_status=$(argocd app get $team_env_name -o json | jq -r '.status.sync.status')
+        config_sync_status=$(argocd app get $team_env_config_name -o json | jq -r '.status.sync.status')
 
-            argocd login --insecure argo-cd-argocd-server:443 --grpc-web --username admin --password $argoPassword
-
-            env_sync_status=$(argocd app get $team_env_name -o json | jq -r '.status.sync.status')
-            config_sync_status=$(argocd app get $team_env_config_name -o json | jq -r '.status.sync.status')
-
-            if [ $result -eq 2 ]
+        if [ $result -eq 2 ]
+        then
+            if [ $config_sync_status != "OutOfSync" ]
             then
-                if [ $config_sync_status != "OutOfSync" ]
-                then
-                    tfconfig="${team_env_config_name}-terraformconfig"
+                tfconfig="${team_env_config_name}-terraformconfig"
 
-                    argocd app patch-resource $team_env_config_name --kind TerraformConfig --resource-name $tfconfig --patch '{ "spec": { "isInSync": false } }' --patch-type 'application/merge-patch+json'
+                argocd app patch-resource $team_env_config_name --kind TerraformConfig --resource-name $tfconfig --patch '{ "spec": { "isInSync": false } }' --patch-type 'application/merge-patch+json'
 
-                    if [ $env_sync_status != "OutOfSync" ]
-                    then
-                        argocd app sync $team_env_name
-                    fi
-                fi
-            else
-                # update Argo Application to show in sync now that sync has manually taken place
-                if [ $config_sync_status == "OutOfSync" ]
+                if [ $env_sync_status != "OutOfSync" ]
                 then
-                    argocd app sync $team_env_config_name
+                    argocd app sync $team_env_name
                 fi
             fi
+        else
+            # update Argo Application to show in sync now that sync has manually taken place
+            if [ $config_sync_status == "OutOfSync" ]
+            then
+                argocd app sync $team_env_config_name
+            fi
+        fi
+    else
+        # add last argo workflow run id to config application so it can fetch workflow details on UI
+        data='{"metadata":{"labels":{"last_workflow_run_id":"'$workflow_id'"}}}'
+        argocd app patch $team_env_config_name --patch $data --type merge
     fi
 else
     terraform apply -auto-approve
