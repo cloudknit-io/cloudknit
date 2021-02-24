@@ -170,6 +170,7 @@ func GenerateEnvironmentComponentApps(environment stablev1alpha1.Environment, en
 				"zlifecycle.com/model": "environment-component",
 				"type":                 "config",
 				"project_id":           environment.Spec.TeamName,
+				"environment_id":       environment.Spec.TeamName + "-" + environment.Spec.EnvName,
 			},
 			Finalizers: []string{
 				"resources-finalizer.argocd.argoproj.io",
