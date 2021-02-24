@@ -41,7 +41,7 @@ func GeneratePreSyncJob(environment stablev1alpha1.Environment) *batchv1.Job {
 					Containers: []apiv1.Container{
 						{
 							Name:    jobNamePrefix + "-container",
-							Image:   "413422438110.dkr.ecr.us-east-1.amazonaws.com/argoproj/argocli:latest",
+							Image:   "quay.io/argoproj/argocli:latest",
 							Command: []string{"argo", "watch", jobNamePrefix},
 						},
 					},
