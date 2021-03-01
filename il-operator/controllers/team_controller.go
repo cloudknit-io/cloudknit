@@ -62,7 +62,7 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	time.Sleep(5 * time.Second)
 
 	if err := github.CommitAndPushFiles(
-		env.Config.SourceOwner,
+		env.Config.ILRepoSourceOwner,
 		env.Config.ILRepoName,
 		[]string{il.Config.TeamDirectory, il.Config.ConfigWatcherDirectory},
 		env.Config.RepoBranch,
