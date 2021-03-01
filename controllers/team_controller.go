@@ -14,18 +14,22 @@ package controllers
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"time"
-
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"strings"
+	"time"
 
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
 	env "github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	github "github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
 	il "github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
+
+	coreV1 "k8s.io/api/core/v1"
 
 	argocd "github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
 	fileutil "github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
@@ -38,6 +42,7 @@ type TeamReconciler struct {
 	Scheme *runtime.Scheme
 }
 
+// +kubebuilder:rbac:groups="",resources=configmaps;secrets,verbs=get;list;watch;update;patch
 // +kubebuilder:rbac:groups=stable.compuzest.com,resources=teams,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=stable.compuzest.com,resources=teams/status,verbs=get;update;patch
 
@@ -49,6 +54,12 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	r.Get(ctx, req.NamespacedName, team)
 
 	teamYAML := fmt.Sprintf("%s-team.yaml", team.Spec.TeamName)
+
+	teamRepo := team.Spec.ConfigRepo.Source
+	repoSecret := team.Spec.ConfigRepo.RepoSecret
+	if err := tryRegisterTeamRepo(r, ctx, teamRepo, req.Namespace, repoSecret); err != nil {
+		return ctrl.Result{}, err
+	}
 
 	if err := generateAndSaveTeamApp(team, teamYAML); err != nil {
 		return ctrl.Result{}, err
@@ -73,6 +84,82 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	return ctrl.Result{}, nil
+}
+
+func tryRegisterTeamRepo(
+	r *TeamReconciler,
+	ctx context.Context,
+	repo string,
+	namespace string,
+	secretName string,
+) error {
+
+	cm := &coreV1.ConfigMap{}
+	cmName := "argocd-cm"
+	cmNamespacedName :=
+		types.NamespacedName{Namespace: namespace, Name: cmName}
+	if err := r.Get(ctx, cmNamespacedName, cm); err != nil {
+		fmt.Printf(
+			"ConfigMap %s does not exist in namespace %s\n",
+			cmName,
+			namespace,
+		)
+		return err
+	}
+
+	repositories := cm.Data["repositories"]
+	fmt.Printf(repositories)
+	if strings.Contains(repositories, repo) == true {
+		fmt.Printf(
+			"ConfigMap %s already has repository %s registered\n",
+			cmName,
+			repo,
+		)
+		return nil
+	}
+
+	secret := &coreV1.Secret{}
+	secretNamespacedName :=
+		types.NamespacedName{Namespace: namespace, Name: secretName}
+	if err := r.Get(ctx, secretNamespacedName, secret); err != nil {
+		fmt.Printf(
+			"Secret %s does not exist in namespace %s\n",
+			secretName,
+			namespace,
+		)
+		return err
+	}
+
+	sshKeyField := "sshPrivateKey"
+	sshKey := string(secret.Data[sshKeyField])
+	if sshKey == "" {
+		errMsg := fmt.Sprintf("Secret is missing %s data field!", sshKeyField)
+		fmt.Println(errMsg)
+		return errors.New(errMsg)
+	}
+
+	newRepoConfig := fmt.Sprintf(`
+- url: %s
+  sshPrivateKeySecret:
+    name: %s
+    key: %s`,
+		repo,
+		secretName,
+		sshKeyField,
+	)
+
+	cm.Data["repositories"] = repositories + newRepoConfig
+	println(repositories + newRepoConfig)
+	if err := r.Update(ctx, cm); err != nil {
+		fmt.Printf(
+			"ConfigMap %s cannot be updated %s\n",
+			cmName,
+			namespace,
+		)
+		return err
+	}
+
+	return nil
 }
 
 // SetupWithManager sets up the Company Controller with Manager
