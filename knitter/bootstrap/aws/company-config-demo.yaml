@@ -20,6 +20,7 @@ data:
   teamsConfigPath: "teams"
   configRepo: "git@github.com:zmart-tech/zmart-config.git"
   configRepoName: "zmart-config"
+  ilRepoSourceOwner: "CompuZest"
   ilRepo: "git@github.com:CompuZest/zmart-il.git"
   ilRepoName: "zmart-il"
   helmChartsRepo: "git@github.com:CompuZest/helm-charts.git"
