@@ -40,10 +40,13 @@ spec:
               properties:
                 path:
                   type: string
+                repoSecret:
+                  type: string
                 source:
                   type: string
               required:
               - path
+              - repoSecret
               - source
               type: object
             teamName:
