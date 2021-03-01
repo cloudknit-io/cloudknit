@@ -18,7 +18,7 @@ data:
   companyName: "zmart"
   adminEmail: "admin@compuzest.com"
   teamsConfigPath: "teams"
-  configRepo: "git@github.com:CompuZest/zmart-config.git"
+  configRepo: "git@github.com:zmart-tech/zmart-config.git"
   configRepoName: "zmart-config"
   ilRepo: "git@github.com:CompuZest/zmart-il.git"
   ilRepoName: "zmart-il"
