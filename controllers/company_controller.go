@@ -54,9 +54,9 @@ func (r *CompanyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	github.CommitAndPushFiles(
-		env.Config.SourceOwner,
+		env.Config.ILRepoSourceOwner,
 		env.Config.ILRepoName,
-		[]string{il.Config.CompanyDirectory},
+		[]string{il.Config.CompanyDirectory, il.Config.ConfigWatcherDirectory},
 		env.Config.RepoBranch,
 		fmt.Sprintf("Reconciling company %s", company.Spec.CompanyName),
 		env.Config.GithubSvcAccntName,
