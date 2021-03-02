@@ -31,6 +31,13 @@ spec:
   - host: admin.zlifecycle.com
     http:
       paths:
+      - path: /api/v1/workflows
+        backend:
+          serviceName: argo-workflow-server
+          servicePort: 2746
+  - host: admin.zlifecycle.com
+    http:
+      paths:
       - path: /dex
         backend:
           serviceName: argocd-dex-server
