@@ -21,3 +21,9 @@ terraform init
 terraform workspace select $LOCATION || terraform workspace new $LOCATION
 terraform init
 terraform apply -auto-approve -var-file tfvars/$LOCATION.tfvars
+
+cd ../zlifecycle-addons
+terraform init
+terraform workspace select $LOCATION || terraform workspace new $LOCATION
+terraform init
+terraform apply -auto-approve -var-file tfvars/$LOCATION.tfvars
