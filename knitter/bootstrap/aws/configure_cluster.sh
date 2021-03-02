@@ -21,3 +21,5 @@ then
 fi
 
 argocd cluster add arn:aws:eks:us-east-1:413422438110:cluster/$LOCATION-eks --name $LOCATION
+
+kubectl apply -f ../../zmart-tech-sandbox/zmart-config/zmart.yaml
