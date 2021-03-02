@@ -1,0 +1,6 @@
+corsAllowOrigin:
+argocd:
+  domain:
+  paths:
+  - "/"
+  - "/api"
