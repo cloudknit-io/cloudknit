@@ -24,108 +24,42 @@ workflow_id=$11
 team_env_name=$team_name-$env_name
 team_env_config_name=$team_name-$env_name-$config_name
 
-cd /home/terraform-config
-mkdir ~/.ssh
-cat /root/ssh_secret/id_rsa >> ~/.ssh/id_rsa
-chmod 400 ~/.ssh/id_rsa
-ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+ENV_COMPONENT_PATH=/home/terraform-config
 
-mkdir ~/.aws
-cat <<EOT >> ~/.aws/credentials
-[default]
-aws_access_key_id = ${CUSTOMER_AWS_ACCESS_KEY_ID}
-aws_secret_access_key = ${CUSTOMER_AWS_SECRET_ACCESS_KEY}
-[compuzest-shared]
-aws_access_key_id = ${SHARED_AWS_ACCESS_KEY_ID}
-aws_secret_access_key = ${SHARED_AWS_SECRET_ACCESS_KEY}
-EOT
+function Error() {
+  if [ -n "$1" ];
+  then
+    echo "Error: "$1
+  fi
 
-if [ -n "${module_source_path}" ]; then
-    full_module_source="${module_source}//${module_source_path}"
-else
-    full_module_source="${module_source}"
-fi
-
-cat > module.tf << EOL
-module "${config_name}" {
-  source = "${full_module_source}"
-EOL
-
-cat vars/$variables_file_path >> module.tf
-
-echo "}" >> module.tf
-
-cat > provider.tf << EOL
-provider "aws" {
-  region = "us-east-1"
-  version = "~> 3.0"
+    exit 1;
 }
-EOL
 
-cat > terraform.tf << EOL
-terraform {
-  required_version = "= 0.13.2"
+sh /clients/setup_github.sh || Error "Cannot setup github ssh key"
 
-  backend "s3" {
-    profile                 = "compuzest-shared"
+sh /clients/setup_aws.sh || Error "Cannot setup aws credentials"
 
-    bucket                  = "compuzest-zlifecycle-tfstate"
-    key                     = "${team_name}/${env_name}/${config_name}/terraform.tfstate"
-    region                  = "us-east-1"
+sh /terraform/provider.tf.sh $ENV_COMPONENT_PATH || Error "Cannot generate terraform provider"
+sh /terraform/module.tf.sh $ENV_COMPONENT_PATH $config_name $module_source $module_source_path $variables_file_path || Error "Cannot generate terraform module"
+sh /terraform/terraform.tf.sh $ENV_COMPONENT_PATH $team_name $team_env_name $config_name || Error "Cannot generate terraform state block"
 
-    dynamodb_table          = "compuzest-zlifecycle-tflock"
-    encrypt                 = true
-  }
-}
-EOL
+cd $ENV_COMPONENT_PATH
 
-cat module.tf
-cat provider.tf
-cat terraform.tf
-
-terraform init
+terraform init || Error "Cannot initialize terraform"
 
 if [ $is_apply -eq 0 ]
 then
-    terraform plan -lock=$lock_state -detailed-exitcode
+    terraform plan -lock=$lock_state -parallelism=2 -input=false -no-color -out=terraform-plan -detailed-exitcode
     result=$?
     echo -n $result > /tmp/plan_code.txt
 
-    argoPassword=$(kubectl get secret argocd-server-login -n argocd -o json | jq '.data.password | @base64d' | tr -d '"')
-
-    echo y | argocd login --insecure argocd-server:443 --grpc-web --username admin --password $argoPassword
-
-    if [ $is_sync -eq 0 ]
+    if [ $result -eq 1 ]
     then
-        env_sync_status=$(argocd app get $team_env_name -o json | jq -r '.status.sync.status')
-        config_sync_status=$(argocd app get $team_env_config_name -o json | jq -r '.status.sync.status')
-
-        if [ $result -eq 2 ]
-        then
-            if [ $config_sync_status != "OutOfSync" ]
-            then
-                tfconfig="${team_env_config_name}-terraformconfig"
-
-                argocd app patch-resource $team_env_config_name --kind TerraformConfig --resource-name $tfconfig --patch '{ "spec": { "isInSync": false } }' --patch-type 'application/merge-patch+json'
-
-                if [ $env_sync_status != "OutOfSync" ]
-                then
-                    argocd app sync $team_env_name
-                fi
-            fi
-        else
-            # update Argo Application to show in sync now that sync has manually taken place
-            if [ $config_sync_status == "OutOfSync" ]
-            then
-                argocd app sync $team_env_config_name
-            fi
-        fi
-    else
-        # add last argo workflow run id to config application so it can fetch workflow details on UI
-        data='{"metadata":{"labels":{"last_workflow_run_id":"'$workflow_id'"}}}'
-        argocd app patch $team_env_config_name --patch $data --type merge
+      Error "There is issue with generating terraform plan"
     fi
+
+    sh /clients/argocd.sh $is_sync $result $team_env_name $team_env_config_name $workflow_id || Error "There is an issue with ArgoCD CLI"
 else
-    terraform apply -auto-approve
+    terraform apply -auto-approve -input=false -parallelism=2 -no-color || Error "Can not apply terraform plan"
     echo -n 0 > /tmp/plan_code.txt
 fi

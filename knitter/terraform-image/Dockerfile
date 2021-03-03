@@ -34,9 +34,11 @@ RUN kubectl version --client
 RUN VERSION=$(curl --silent "https://api.github.com/repos/argoproj/argo-cd/releases/latest" | grep '"tag_name"' | sed -E 's/.*"([^"]+)".*/\1/') && curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/download/$VERSION/argocd-linux-amd64
 RUN chmod +x /usr/local/bin/argocd
 
-ADD scripts/run_terraform.sh .
-ADD scripts/send_slack_notification.sh .
-RUN chmod +x run_terraform.sh send_slack_notification.sh
+COPY ./scripts .
+
+RUN find / -type f -iname "*.sh" -exec chmod +x {} \;
+RUN find /clients -type f -iname "*.sh" -exec chmod +x {} \;
+RUN find /terraform -type f -iname "*.sh" -exec chmod +x {} \;
 
 COPY --from=aws-iam-authenticator /usr/local/bin/aws-iam-authenticator /usr/local/bin/aws-iam-authenticator
 
