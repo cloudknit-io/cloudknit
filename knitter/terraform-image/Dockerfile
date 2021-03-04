@@ -37,7 +37,7 @@ RUN chmod +x /usr/local/bin/argocd
 COPY ./scripts .
 
 RUN find / -type f -iname "*.sh" -exec chmod +x {} \;
-RUN find /clients -type f -iname "*.sh" -exec chmod +x {} \;
+RUN find /client -type f -iname "*.sh" -exec chmod +x {} \;
 RUN find /terraform -type f -iname "*.sh" -exec chmod +x {} \;
 
 COPY --from=aws-iam-authenticator /usr/local/bin/aws-iam-authenticator /usr/local/bin/aws-iam-authenticator
