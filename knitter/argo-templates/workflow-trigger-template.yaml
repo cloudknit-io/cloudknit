@@ -18,6 +18,74 @@ spec:
   entrypoint: run
   templates:
     - name: run
+      serviceAccountName: argo
+      inputs:
+        parameters:
+          - name: team_name
+          - name: env_name
+          - name: config_name
+          - name: workflowtemplate
+          - name: module_source
+          - name: module_source_path
+          - name: variables_file_source
+          - name: variables_file_path
+      steps:
+        - - name: validate
+            template: validate_env_component
+            arguments:
+              parameters:
+                - name: team_name
+                  value: "{{inputs.parameters.team_name}}"
+                - name: env_name
+                  value: "{{inputs.parameters.env_name}}"
+                - name: config_name
+                  value: "{{inputs.parameters.config_name}}"
+        - - name: run
+            template: run_env_component
+            arguments:
+              parameters:
+                - name: team_name
+                  value: "{{inputs.parameters.team_name}}"
+                - name: env_name
+                  value: "{{inputs.parameters.env_name}}"
+                - name: config_name
+                  value: "{{inputs.parameters.config_name}}"
+                - name: workflowtemplate
+                  value: "{{inputs.parameters.workflowtemplate}}"
+                - name: module_source
+                  value: "{{inputs.parameters.module_source}}"
+                - name: module_source_path
+                  value: "{{inputs.parameters.module_source_path}}"
+                - name: variables_file_source
+                  value: "{{inputs.parameters.variables_file_source}}"
+                - name: variables_file_path
+                  value: "{{inputs.parameters.variables_file_path}}"
+            when: "{{steps.validate.outputs.parameters.errorCode}} != 20"
+
+    - name: validate_env_component
+      inputs:
+        parameters:
+          - name: team_name
+          - name: env_name
+          - name: config_name
+      script:
+        imagePullPolicy: Always
+        image: 413422438110.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-terraform:validate
+        cmd:
+          - sh
+        source: |
+          ./validate_env_component.sh "{{inputs.parameters.team_name}}" "{{inputs.parameters.env_name}}" "{{inputs.parameters.config_name}}"
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      outputs:
+        parameters:
+          - name: errorCode
+            valueFrom:
+              path: /tmp/error_code.txt
+            globalName: error-code
+
+    - name: run_env_component
       inputs:
         parameters:
           - name: team_name

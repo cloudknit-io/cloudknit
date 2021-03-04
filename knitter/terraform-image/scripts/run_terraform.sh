@@ -36,7 +36,6 @@ function Error() {
 }
 
 sh /client/setup_github.sh || Error "Cannot setup github ssh key"
-
 sh /client/setup_aws.sh || Error "Cannot setup aws credentials"
 
 sh /terraform/provider.tf.sh $ENV_COMPONENT_PATH || Error "Cannot generate terraform provider"
@@ -47,19 +46,38 @@ cd $ENV_COMPONENT_PATH
 
 terraform init || Error "Cannot initialize terraform"
 
+sh /argocd/login.sh
+
 if [ $is_apply -eq 0 ]
 then
+
+    if [ $is_sync -eq 1 ]
+    then
+        sh /argocd/patch_env_component.sh $team_env_config_name
+
+        # add last argo workflow run id to config application so it can fetch workflow details on UI
+        data='{"metadata":{"labels":{"last_workflow_run_id":"'$workflow_id'"}}}'
+        argocd app patch $team_env_config_name --patch $data --type merge
+    fi
+
     terraform plan -lock=$lock_state -parallelism=2 -input=false -no-color -out=terraform-plan -detailed-exitcode
     result=$?
     echo -n $result > /tmp/plan_code.txt
 
     if [ $result -eq 1 ]
     then
-      Error "There is issue with generating terraform plan"
+        Error "There is issue with generating terraform plan"
+    elif [ $result -eq 0 ]
+    then
+        argocd app sync $team_env_config_name
     fi
 
-    sh /client/argocd.sh $is_sync $result $team_env_name $team_env_config_name $workflow_id || Error "There is an issue with ArgoCD CLI"
+    sh /argocd/control_loop.sh $is_sync $result $team_env_name $team_env_config_name $workflow_id || Error "There is an issue with ArgoCD CLI"
+
 else
+
     terraform apply -auto-approve -input=false -parallelism=2 -no-color || Error "Can not apply terraform plan"
     echo -n 0 > /tmp/plan_code.txt
+    argocd app sync $team_env_config_name
+
 fi
