@@ -35,9 +35,9 @@ function Error() {
     exit 1;
 }
 
-sh /clients/setup_github.sh || Error "Cannot setup github ssh key"
+sh /client/setup_github.sh || Error "Cannot setup github ssh key"
 
-sh /clients/setup_aws.sh || Error "Cannot setup aws credentials"
+sh /client/setup_aws.sh || Error "Cannot setup aws credentials"
 
 sh /terraform/provider.tf.sh $ENV_COMPONENT_PATH || Error "Cannot generate terraform provider"
 sh /terraform/module.tf.sh $ENV_COMPONENT_PATH $config_name $module_source $module_source_path $variables_file_path || Error "Cannot generate terraform module"
@@ -58,7 +58,7 @@ then
       Error "There is issue with generating terraform plan"
     fi
 
-    sh /clients/argocd.sh $is_sync $result $team_env_name $team_env_config_name $workflow_id || Error "There is an issue with ArgoCD CLI"
+    sh /client/argocd.sh $is_sync $result $team_env_name $team_env_config_name $workflow_id || Error "There is an issue with ArgoCD CLI"
 else
     terraform apply -auto-approve -input=false -parallelism=2 -no-color || Error "Can not apply terraform plan"
     echo -n 0 > /tmp/plan_code.txt
