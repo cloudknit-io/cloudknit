@@ -21,7 +21,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"strings"
 	"time"
 
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
@@ -57,7 +56,7 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	teamRepo := team.Spec.ConfigRepo.Source
 	repoSecret := team.Spec.ConfigRepo.RepoSecret
-	if err := tryRegisterTeamRepo(r, ctx, teamRepo, req.Namespace, repoSecret); err != nil {
+	if err := tryRegisterTeamRepo(r.Client, r.Log, ctx, teamRepo, req.Namespace, repoSecret); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -87,75 +86,42 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 }
 
 func tryRegisterTeamRepo(
-	r *TeamReconciler,
+	c client.Client,
+	log logr.Logger,
 	ctx context.Context,
-	repo string,
+	teamRepo string,
 	namespace string,
-	secretName string,
+	repoSecret string,
 ) error {
-
-	cm := &coreV1.ConfigMap{}
-	cmName := "argocd-cm"
-	cmNamespacedName :=
-		types.NamespacedName{Namespace: namespace, Name: cmName}
-	if err := r.Get(ctx, cmNamespacedName, cm); err != nil {
-		fmt.Printf(
-			"ConfigMap %s does not exist in namespace %s\n",
-			cmName,
-			namespace,
-		)
-		return err
-	}
-
-	repositories := cm.Data["repositories"]
-	fmt.Printf(repositories)
-	if strings.Contains(repositories, repo) == true {
-		fmt.Printf(
-			"ConfigMap %s already has repository %s registered\n",
-			cmName,
-			repo,
-		)
-		return nil
-	}
-
 	secret := &coreV1.Secret{}
 	secretNamespacedName :=
-		types.NamespacedName{Namespace: namespace, Name: secretName}
-	if err := r.Get(ctx, secretNamespacedName, secret); err != nil {
-		fmt.Printf(
+		types.NamespacedName{Namespace: namespace, Name: repoSecret}
+	if err := c.Get(ctx, secretNamespacedName, secret); err != nil {
+		log.Info(
 			"Secret %s does not exist in namespace %s\n",
-			secretName,
+			repoSecret,
 			namespace,
 		)
 		return err
 	}
 
-	sshKeyField := "sshPrivateKey"
-	sshKey := string(secret.Data[sshKeyField])
-	if sshKey == "" {
-		errMsg := fmt.Sprintf("Secret is missing %s data field!", sshKeyField)
-		fmt.Println(errMsg)
-		return errors.New(errMsg)
+	sshPrivateKeyField := "sshPrivateKey"
+	sshPrivateKey := string(secret.Data[sshPrivateKeyField])
+	if sshPrivateKey == "" {
+		errMsg := fmt.Sprintf("Secret is missing %s data field!", sshPrivateKeyField)
+		err := errors.New(errMsg)
+		log.Error(err, errMsg)
+		return err
 	}
 
-	newRepoConfig := fmt.Sprintf(`
-- url: %s
-  sshPrivateKeySecret:
-    name: %s
-    key: %s`,
-		repo,
-		secretName,
-		sshKeyField,
-	)
+	repoOpts := argocd.RepoOpts{
+		ServerUrl:     "http://argocd-server.argocd.svc.cluster.local",
+		RepoUrl:       teamRepo,
+		SshPrivateKey: sshPrivateKey,
+	}
 
-	cm.Data["repositories"] = repositories + newRepoConfig
-	println(repositories + newRepoConfig)
-	if err := r.Update(ctx, cm); err != nil {
-		fmt.Printf(
-			"ConfigMap %s cannot be updated %s\n",
-			cmName,
-			namespace,
-		)
+	if err := argocd.RegisterRepo(log, repoOpts); err != nil {
+		log.Error(err, "Error while calling ArgoCD Repo API")
 		return err
 	}
 

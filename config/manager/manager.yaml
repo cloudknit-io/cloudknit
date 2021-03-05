@@ -44,6 +44,8 @@ spec:
         envFrom:
           - configMapRef:
               name: company-config
+          - secretRef:
+              name: argocd-creds
         resources:
           limits:
             cpu: 100m
