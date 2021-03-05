@@ -22,6 +22,19 @@ import (
 	"k8s.io/apimachinery/pkg/util/json"
 )
 
+// CreateEmptyDirectory creates empty directory with a .keep file
+func CreateEmptyDirectory(folderName string) error {
+	if err := os.MkdirAll(folderName, os.ModePerm); err != nil {
+		return fmt.Errorf("error: failed to create directory: %s", err.Error())
+	}
+
+	if err := ioutil.WriteFile(folderName+"/.keep", nil, 0644); err != nil {
+		return fmt.Errorf("error: failed to write .keep file: %s", err.Error())
+	}
+
+	return nil
+}
+
 func SaveYamlFile(obj interface{}, folderName string, fileName string) error {
 	jsonBytes, err := json.Marshal(obj)
 	if err != nil {
