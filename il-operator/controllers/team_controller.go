@@ -50,6 +50,10 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	teamYAML := fmt.Sprintf("%s-team.yaml", team.Spec.TeamName)
 
+	if err := fileutil.CreateEmptyDirectory(il.EnvironmentDirectory(team.Spec.TeamName)); err != nil {
+		return ctrl.Result{}, err
+	}
+
 	if err := generateAndSaveTeamApp(team, teamYAML); err != nil {
 		return ctrl.Result{}, err
 	}
