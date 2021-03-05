@@ -10,6 +10,9 @@ require (
 	github.com/colinmarc/hdfs v1.1.3 // indirect
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v0.2.0
+	github.com/go-redis/cache v6.4.0+incompatible // indirect
+	github.com/go-redis/redis v6.15.9+incompatible // indirect
+	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gogo/protobuf v1.3.1 // indirect
 	github.com/google/go-github/v32 v32.1.0
 	github.com/hashicorp/go-uuid v1.0.2 // indirect
@@ -17,8 +20,10 @@ require (
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/onsi/ginkgo v1.12.1
 	github.com/onsi/gomega v1.10.1
+	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/robfig/cron v1.2.0 // indirect
 	github.com/valyala/fasttemplate v1.2.1 // indirect
+	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	gopkg.in/jcmturner/aescts.v1 v1.0.1 // indirect
 	gopkg.in/jcmturner/dnsutils.v1 v1.0.1 // indirect
