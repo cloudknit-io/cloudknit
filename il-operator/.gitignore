@@ -8,24 +8,19 @@
 *.so
 *.dylib
 
-# Test Bin
-/testbin
-/bin
-
-*.swp
-*.swo
-
 # Test binary, built with `go test -c`
 *.test
 
-# Output of the go coverage tool, specifically when used with LiteIDE
+# Output of the go coverage tool
 *.out
 
-# Mac
-*.DS_Store
-
-# Dependency directories (remove the comment below to include it)
-# vendor/
+# Development
+build/
+testbin/
+test-results/
+.DS_Store
+*.swp
+*.swo
 
 # HACK: git ignore this file to avoid AWS account id being committed to git
 config/manager/kustomization.yaml
