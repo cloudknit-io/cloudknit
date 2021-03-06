@@ -15,6 +15,9 @@ type config struct {
 
 	HelmChartsRepo string
 	K8sAPIURL      string
+
+	ArgocdServerUrl string
+	ArgocdHookUrl   string
 }
 
 // Various config vars used throughout the operator
@@ -31,4 +34,6 @@ var Config = config{
 
 	HelmChartsRepo: os.Getenv("helmChartsRepo"),
 	K8sAPIURL:      os.Getenv("K8s_API_URL"),
+
+	ArgocdHookUrl: os.Getenv("ARGOCD_WEBHOOK_URL"),
 }
