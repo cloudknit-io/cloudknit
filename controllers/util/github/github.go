@@ -17,7 +17,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	"github.com/go-logr/logr"
 	"io/ioutil"
 	"log"
@@ -75,7 +74,7 @@ func createGithubClient(token string) *github.Client {
 // CreateRepoWebhook tries to create a repository webhook
 // It returns a bool whether it created a webhook, or any kind of error.
 func CreateRepoWebhook(log logr.Logger, token string, repoUrl string, payloadUrl string) (bool, error) {
-	c := createGithubClient(env.Config.GitHubAuthToken)
+	c := createGithubClient(token)
 	owner, repo, err := parseRepoUrl(repoUrl)
 	if err != nil {
 		log.Error(err, "Error while parsing owner and repo name from repo url", "url", repoUrl)
