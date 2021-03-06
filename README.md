@@ -1,4 +1,5 @@
-# zlifecycle-il-operator
+# zlifecycle-il-operator ![Build status badge](https://github.com/CompuZest/zlifecycle-il-operator/actions/workflows/main.yaml/badge.svg)
+
 zLifecycle Operator that generates Intermediate Language (ArgoCD Apps/Argo Workflows) from the CRD (Environment)
 
 ## Vendoring
@@ -14,8 +15,8 @@ Note: Any time go dependencies change remember to run `go mod vendor` at the rep
 Run following in the root directory.
 
 ```bash
-export AWS_ACCOUNT_ID=xxxx
-make docker-build docker-push IMG=$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-il-operator:latest
+export ECR_REPO=[ THE AWS ECR REPO ]
+make docker-push
 ```
 
 ## Deploy controller to k8s cluster
@@ -23,8 +24,8 @@ make docker-build docker-push IMG=$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.co
 Run following in the root directory.
 
 ```bash
-export AWS_ACCOUNT_ID=xxxx
-make deploy IMG=$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-il-operator:latest
+export ECR_REPO=[ THE AWS ECR REPO ]
+make deploy
 ```
 
 ## Local Development
