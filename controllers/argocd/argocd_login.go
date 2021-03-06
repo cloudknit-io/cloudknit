@@ -2,6 +2,7 @@ package argocd
 
 import (
 	"bytes"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	"github.com/go-logr/logr"
 	"net/http"
 )
@@ -28,7 +29,7 @@ func GetAuthToken(log logr.Logger, argocdUrl string) (*GetTokenResponse, error) 
 	}
 
 	body := GetTokenBody{Username: creds.Username, Password: creds.Password}
-	jsonBody, err := toJson(log, body)
+	jsonBody, err := common.ToJson(log, body)
 
 	getTokenUrl := argocdUrl + "/api/v1/session"
 	resp, err := http.Post(getTokenUrl, "application/json", bytes.NewBuffer(jsonBody))
@@ -37,13 +38,13 @@ func GetAuthToken(log logr.Logger, argocdUrl string) (*GetTokenResponse, error) 
 		return nil, err
 	}
 
-	respBody, err := readBody(log, resp.Body)
+	respBody, err := common.ReadBody(log, resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
 	t := new(GetTokenResponse)
-	err = fromJson(log, t, respBody)
+	err = common.FromJson(log, t, respBody)
 
 	return t, nil
 }

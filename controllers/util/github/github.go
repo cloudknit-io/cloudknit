@@ -16,6 +16,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
+	"github.com/go-logr/logr"
 	"io/ioutil"
 	"log"
 	"os"
@@ -51,8 +54,88 @@ type Package struct {
 	LastUpdatedBy string
 }
 
+type HookCfg struct {
+	Url         string `json:"url"`
+	ContentType string `json:"content-type"`
+}
+
+type Owner = string
+
+type Repo = string
+
 var client *github.Client
 var ctx = context.Background()
+
+func createGithubClient(token string) *github.Client {
+	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
+	tc := oauth2.NewClient(ctx, ts)
+	return github.NewClient(tc)
+}
+
+// CreateRepoWebhook tries to create a repository webhook
+// It returns a bool whether it created a webhook, or any kind of error.
+func CreateRepoWebhook(log logr.Logger, token string, repoUrl string, payloadUrl string) (bool, error) {
+	c := createGithubClient(env.Config.GitHubAuthToken)
+	owner, repo, err := parseRepoUrl(repoUrl)
+	if err != nil {
+		log.Error(err, "Error while parsing owner and repo name from repo url", "url", repoUrl)
+		return false, err
+	}
+	log.Info("Parsed repo url", "url", repoUrl, "owner", owner, "repo", repo)
+
+	hooks, _, err := c.Repositories.ListHooks(ctx, owner, repo, nil)
+	if err != nil {
+		log.Error(err, "Error while fetching list of webhooks", "url", repoUrl, "owner", owner, "repo", repo)
+		return false, err
+	}
+
+	for _, h := range hooks {
+		cfg := new(HookCfg)
+		err := common.FromJsonMap(log, h.Config, cfg)
+		if err != nil {
+			return false, err
+		}
+		if cfg.Url == payloadUrl {
+			log.Info("Hook already exists", "url", repoUrl, "owner", owner, "repo", repo, "hookId", *h.ID, "payloadUrl", payloadUrl)
+			return true, nil
+		}
+	}
+
+	isActive := true
+	cfg := map[string]interface{}{
+		"url":          payloadUrl,
+		"content-type": "json",
+	}
+	h := github.Hook{Events: []string{"push"}, Active: &isActive, Config: cfg}
+	hook, _, err := c.Repositories.CreateHook(ctx, owner, repo, &h)
+	if err != nil {
+		log.Error(err, "Error while calling create repository hook", "url", repoUrl, "owner", owner, "repo", repo)
+		return false, err
+	}
+
+	log.Info(
+		"Successfully created repository webhook", "url",
+		repoUrl, "owner",
+		owner,
+		"repo",
+		repo,
+		"hookId", *hook.ID,
+		"payloadUrl", *hook.URL,
+	)
+	return false, nil
+}
+
+func parseRepoUrl(url string) (Owner, Repo, error) {
+	if url == "" {
+		return "", "", errors.New("URL cannot be empty")
+	}
+
+	owner := url[strings.LastIndex(url, ":")+1 : strings.LastIndex(url, "/")]
+	repoUri := url[strings.LastIndex(url, "/")+1:]
+	repo := strings.TrimSuffix(repoUri, ".git")
+
+	return owner, repo, nil
+}
 
 // getRef returns the commit branch reference object if it exists or creates it
 // from the base branch before returning it.
