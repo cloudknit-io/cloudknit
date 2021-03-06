@@ -54,6 +54,10 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	teamYAML := fmt.Sprintf("%s-team.yaml", team.Spec.TeamName)
 
+	if err := fileutil.CreateEmptyDirectory(il.EnvironmentDirectory(team.Spec.TeamName)); err != nil {
+		return ctrl.Result{}, err
+	}
+
 	teamRepo := team.Spec.ConfigRepo.Source
 	repoSecret := team.Spec.ConfigRepo.RepoSecret
 	if err := tryRegisterTeamRepo(r.Client, r.Log, ctx, teamRepo, req.Namespace, repoSecret); err != nil {
@@ -72,7 +76,7 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	time.Sleep(5 * time.Second)
 
 	if err := github.CommitAndPushFiles(
-		env.Config.SourceOwner,
+		env.Config.ILRepoSourceOwner,
 		env.Config.ILRepoName,
 		[]string{il.Config.TeamDirectory, il.Config.ConfigWatcherDirectory},
 		env.Config.RepoBranch,
@@ -115,7 +119,7 @@ func tryRegisterTeamRepo(
 	}
 
 	repoOpts := argocd.RepoOpts{
-		ServerUrl:     "http://argocd-server.argocd.svc.cluster.local",
+		ServerUrl:     argocd.GetArgocdServerAddr(),
 		RepoUrl:       teamRepo,
 		SshPrivateKey: sshPrivateKey,
 	}

@@ -21,7 +21,7 @@ type GetTokenResponse struct {
 }
 
 func GetAuthToken(log logr.Logger, argocdUrl string) (*GetTokenResponse, error) {
-	creds, err := getArgocdCredentialsFromEnv(log)
+	creds, err := getArgocdCredentialsFromEnv()
 	if err != nil {
 		log.Error(err, "Error getting argocd credentials")
 		return nil, err
