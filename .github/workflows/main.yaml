@@ -35,8 +35,6 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      # TODO(roger): if anyone knows how to move into and stay in a
-      # working-directory for subsequent jobs, please let me know (or fix this)
       - run: make deps
         working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}
       - run: make check
