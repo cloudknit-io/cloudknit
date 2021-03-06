@@ -27,6 +27,11 @@ spec:
       argocd.argoproj.io/compare-options: IgnoreExtraneous
   workflowSpec:
     entrypoint: control-loop
+    podGC:
+      strategy: OnWorkflowSuccess
+    ttlStrategy:
+      secondsAfterCompletion: 600
+      secondsAfterSuccess: 600
     volumes:
       - name: github-ssh-key-mount
         secret:
