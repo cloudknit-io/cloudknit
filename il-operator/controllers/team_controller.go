@@ -14,18 +14,21 @@ package controllers
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"time"
-
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"time"
 
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
 	env "github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	github "github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
 	il "github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
+
+	coreV1 "k8s.io/api/core/v1"
 
 	argocd "github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
 	fileutil "github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
@@ -38,6 +41,7 @@ type TeamReconciler struct {
 	Scheme *runtime.Scheme
 }
 
+// +kubebuilder:rbac:groups="",resources=configmaps;secrets,verbs=get;list;watch;update;patch
 // +kubebuilder:rbac:groups=stable.compuzest.com,resources=teams,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=stable.compuzest.com,resources=teams/status,verbs=get;update;patch
 
@@ -51,6 +55,12 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	teamYAML := fmt.Sprintf("%s-team.yaml", team.Spec.TeamName)
 
 	if err := fileutil.CreateEmptyDirectory(il.EnvironmentDirectory(team.Spec.TeamName)); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	teamRepo := team.Spec.ConfigRepo.Source
+	repoSecret := team.Spec.ConfigRepo.RepoSecret
+	if err := tryRegisterTeamRepo(r.Client, r.Log, ctx, teamRepo, req.Namespace, repoSecret); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -77,6 +87,49 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	return ctrl.Result{}, nil
+}
+
+func tryRegisterTeamRepo(
+	c client.Client,
+	log logr.Logger,
+	ctx context.Context,
+	teamRepo string,
+	namespace string,
+	repoSecret string,
+) error {
+	secret := &coreV1.Secret{}
+	secretNamespacedName :=
+		types.NamespacedName{Namespace: namespace, Name: repoSecret}
+	if err := c.Get(ctx, secretNamespacedName, secret); err != nil {
+		log.Info(
+			"Secret %s does not exist in namespace %s\n",
+			repoSecret,
+			namespace,
+		)
+		return err
+	}
+
+	sshPrivateKeyField := "sshPrivateKey"
+	sshPrivateKey := string(secret.Data[sshPrivateKeyField])
+	if sshPrivateKey == "" {
+		errMsg := fmt.Sprintf("Secret is missing %s data field!", sshPrivateKeyField)
+		err := errors.New(errMsg)
+		log.Error(err, errMsg)
+		return err
+	}
+
+	repoOpts := argocd.RepoOpts{
+		ServerUrl:     argocd.GetArgocdServerAddr(),
+		RepoUrl:       teamRepo,
+		SshPrivateKey: sshPrivateKey,
+	}
+
+	if err := argocd.RegisterRepo(log, repoOpts); err != nil {
+		log.Error(err, "Error while calling ArgoCD Repo API")
+		return err
+	}
+
+	return nil
 }
 
 // SetupWithManager sets up the Company Controller with Manager
