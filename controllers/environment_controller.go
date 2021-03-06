@@ -74,7 +74,7 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	time.Sleep(10 * time.Second)
 
 	if err := github.CommitAndPushFiles(
-		env.Config.SourceOwner,
+		env.Config.ILRepoSourceOwner,
 		env.Config.ILRepoName,
 		[]string{envDirectory, envComponentDirectory},
 		env.Config.RepoBranch,

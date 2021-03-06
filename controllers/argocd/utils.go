@@ -49,7 +49,16 @@ func readBody(log logr.Logger, stream io.ReadCloser) ([]byte, error) {
 	return body, nil
 }
 
-func getArgocdCredentialsFromEnv(log logr.Logger) (*ArgocdCredentials, error) {
+func GetArgocdServerAddr() string {
+	addr, exists := os.LookupEnv("argocd_url")
+	if exists {
+		return addr
+	} else {
+		return "http://argocd-server.argocd.svc.cluster.local"
+	}
+}
+
+func getArgocdCredentialsFromEnv() (*ArgocdCredentials, error) {
 	username := os.Getenv("argocd_username")
 	password := os.Getenv("argocd_password")
 	if username == "" || password == "" {
