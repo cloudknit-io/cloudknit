@@ -7,6 +7,6 @@ func GetWebhookSecret() string {
 	if exists {
 		return secret
 	} else {
-		return "C0mpuZ3s7"
+		return ""
 	}
 }
