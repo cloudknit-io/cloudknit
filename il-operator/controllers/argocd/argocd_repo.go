@@ -15,6 +15,7 @@ package argocd
 import (
 	"bytes"
 	"errors"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	"github.com/go-logr/logr"
 	"net/http"
 	"strings"
@@ -64,7 +65,7 @@ func RegisterRepo(log logr.Logger, repoOpts RepoOpts) error {
 	defer resp2.Body.Close()
 
 	if resp2.StatusCode != 200 {
-		logBody(log, resp2.Body)
+		common.LogBody(log, resp2.Body)
 		err2 = errors.New("status code does not equal 200")
 		log.Error(err2, "Add new repo request failed", "status code", resp2.StatusCode, "response", resp2.Body)
 		return err2
@@ -96,7 +97,7 @@ func getRepository(log logr.Logger, host string, repoName string, bearerToken st
 }
 
 func postCreateRepository(log logr.Logger, host string, body CreateRepoBody, bearerToken string) (*http.Response, error) {
-	jsonBody, err := toJson(log, body)
+	jsonBody, err := common.ToJson(log, body)
 
 	addRepoUrl := host + "/api/v1/repositories"
 	req, err := http.NewRequest("POST", addRepoUrl, bytes.NewBuffer(jsonBody))
