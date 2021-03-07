@@ -6,7 +6,7 @@ import (
 )
 
 func GetArgocdServerAddr() string {
-	addr, exists := os.LookupEnv("argocd_url")
+	addr, exists := os.LookupEnv("ARGOCD_API_URL")
 	if exists {
 		return addr
 	} else {
@@ -15,10 +15,10 @@ func GetArgocdServerAddr() string {
 }
 
 func getArgocdCredentialsFromEnv() (*ArgocdCredentials, error) {
-	username := os.Getenv("argocd_username")
-	password := os.Getenv("argocd_password")
+	username := os.Getenv("ARGOCD_USERNAME")
+	password := os.Getenv("ARGOCD_PASSWORD")
 	if username == "" || password == "" {
-		return nil, errors.New("missing 'argocd_username' or 'argocd_password' env variables")
+		return nil, errors.New("missing 'ARGOCD_USERNAME' or 'ARGOCD_PASSWORD' env variables")
 	}
 
 	creds := ArgocdCredentials{Username: username, Password: password}
