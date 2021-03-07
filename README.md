@@ -8,25 +8,12 @@ This project calls ArgoCD API endpoints, so it needs credentials from which it c
 Credentials should be stored in a secret called `argocd-creds` in the operator namespace, usually `zlifecycle-il-operator-system`.
 This secret also contains the ARGOCD_WEBHOOK_URL, and an optional ARGOCD_API_URL variable which should point argocd server,
 the default value http://argocd-server.argocd.svc.cluster.local.
+Check LastPass for secret values.
 TODO: Refactor ARGOCD_WEBHOOK_URL and ARGOCD_API_URL to be a config variable instead of a secret value
-
-ex.
-```shell script
-kubectl create secret generic argocd-creds \
-  --from-literal=ARGOCD_USERNAME=<username> \
-  --from-literal=ARGOCD_PASSWORD=<password>> \
-  --from-literal=ARGOCD_WEBHOOK_URL=https://<argo_host>/api/webhook \
-  -n zlifecycle-il-operator-system
-```
 
 ### Auto-registration of team config repos
 `Team` resource has a `repoSecret` field which is the name of the secret which holds the SSH key for the team config repo.
 The secret should have the private SSH key stored in base64 format in the `sshPrivateKey` field.
-
-ex.
-```shell script
-kubectl create secret <secret_name> --from-file sshPrivateKey=<path_to_private_key> --namespace <team_namespace>
-```
 
 ## Vendoring
 
