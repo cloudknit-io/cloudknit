@@ -79,7 +79,7 @@ docker-dev-build: test
 
 # Push the docker image
 docker-push:
-	aws ecr get-login-password --region us-east-1 --profile compuzest | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com
+	aws ecr get-login-password --region us-east-1 --profile compuzest-shared | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com
 	docker push ${IMG}
 
 # find or download controller-gen
