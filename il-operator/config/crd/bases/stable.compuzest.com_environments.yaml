@@ -92,6 +92,8 @@ spec:
               type: string
             teamName:
               type: string
+            description:
+              type: string
           required:
           - components
           - envName
