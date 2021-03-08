@@ -15,15 +15,15 @@ package github
 import (
 	"context"
 	"errors"
-	"fmt"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
-	"github.com/go-logr/logr"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
+	"github.com/go-logr/logr"
 
 	"github.com/google/go-github/v32/github"
 	"golang.org/x/oauth2"
@@ -136,33 +136,16 @@ func parseRepoUrl(url string) (Owner, Repo, error) {
 	return owner, repo, nil
 }
 
-// getRef returns the commit branch reference object if it exists or creates it
-// from the base branch before returning it.
+// getRef returns the commit branch reference object if it exists or return error
 func getRef() (ref *github.Reference, err error) {
+	if commitBranch == "" {
+		return nil, errors.New("The `-commit-branch` should not be set to an empty string")
+	}
+
 	if ref, _, err = client.Git.GetRef(ctx, sourceOwner, sourceRepo, "refs/heads/"+commitBranch); err == nil {
 		return ref, nil
 	}
 
-	// We consider that an error means the branch has not been found and needs to
-	// be created.
-	if commitBranch == baseBranch {
-		return nil, errors.New("The commit branch does not exist but `-base-branch` is the same as `-commit-branch`")
-	}
-
-	if baseBranch == "" {
-		return nil, errors.New("The `-base-branch` should not be set to an empty string when the branch specified by `-commit-branch` does not exists")
-	}
-
-	var baseRef *github.Reference
-	if baseRef, _, err = client.Git.GetRef(ctx, sourceOwner, sourceRepo, "refs/heads/"+baseBranch); err != nil {
-		fmt.Printf("baseRef: %s\n", baseRef)
-		fmt.Printf("Error: %s\n", err)
-		return nil, err
-	}
-
-	newRef := &github.Reference{Ref: github.String("refs/heads/" + commitBranch), Object: &github.GitObject{SHA: baseRef.Object.SHA}}
-	fmt.Printf("newRef: %s\n", newRef)
-	ref, _, err = client.Git.CreateRef(ctx, sourceOwner, sourceRepo, newRef)
 	return ref, err
 }
 

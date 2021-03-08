@@ -53,6 +53,7 @@ docker-build:
 .PHONY: docker-dev-build 
 docker-dev-build:
 	docker build . -t ${DOCKER_IMG} --file Dockerfile.dev
+	docker tag $(DOCKER_IMG) $${DOCKER_IMG%:*}:latest
 
 # Push the docker image to ECR -- reminder: never push 'latest'
 .PHONY: docker-push
@@ -71,7 +72,7 @@ endif
 
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
 deploy: manifests kustomize
-	cd config/manager && kustomize edit set image controller=$(DOCKER_IMG)
+	cd config/manager && kustomize edit set image controller=$(ECR_REPO)/$(DOCKER_IMG)
 	kustomize build config/default | kubectl apply -f -
 
 .PHONY: clean
