@@ -14,7 +14,9 @@ package argocd
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	"github.com/go-logr/logr"
 	"net/http"
@@ -28,9 +30,18 @@ type RepoOpts struct {
 }
 
 type CreateRepoBody struct {
-	Repo          string
-	Name          string
-	SshPrivateKey string
+	Repo          string `json:"repo"`
+	Name          string `json:"name"`
+	SshPrivateKey string `json:"sshPrivateKey"`
+}
+
+type RepositoryList struct {
+	Items []Repository `json:"items"`
+}
+
+type Repository struct {
+	Repo string `json:"repo"`
+	Name string `json:"name"`
 }
 
 func RegisterRepo(log logr.Logger, repoOpts RepoOpts) error {
@@ -44,17 +55,22 @@ func RegisterRepo(log logr.Logger, repoOpts RepoOpts) error {
 	}
 
 	bearer := "Bearer " + tokenResponse.Token
-	resp1, err1 := getRepository(log, repoOpts.ServerUrl, repoName, bearer)
+	repositories, resp1, err1 := listRepositories(log, repoOpts.ServerUrl, bearer)
 	if err1 != nil {
-		log.Error(err1, "Error while calling get repository")
 		return err1
 	}
 	defer resp1.Body.Close()
 
-	if resp1.StatusCode == 200 {
-		log.Info("Repository already registered", "repository", repoOpts.RepoUrl)
+	if isRepoRegistered(*repositories, repoOpts.RepoUrl) {
+		log.Info("Repository already registered",
+			"repos", repositories.Items,
+			"repoName", repoName,
+			"repoUrl", repoOpts.RepoUrl,
+		)
 		return nil
 	}
+
+	log.Info("Repository is not registered, registering now...", "repos", repositories, "repoName", repoName)
 
 	createRepoBody := CreateRepoBody{Repo: repoOpts.RepoUrl, Name: repoName, SshPrivateKey: repoOpts.SshPrivateKey}
 	resp2, err2 := postCreateRepository(log, repoOpts.ServerUrl, createRepoBody, bearer)
@@ -64,24 +80,26 @@ func RegisterRepo(log logr.Logger, repoOpts RepoOpts) error {
 	}
 	defer resp2.Body.Close()
 
-	if resp2.StatusCode != 200 {
-		common.LogBody(log, resp2.Body)
-		err2 = errors.New("status code does not equal 200")
-		log.Error(err2, "Add new repo request failed", "status code", resp2.StatusCode, "response", resp2.Body)
-		return err2
-	}
-
 	log.Info("Successfully registered repository", "repo", repoOpts.RepoUrl)
 
 	return nil
 }
 
-func getRepository(log logr.Logger, host string, repoName string, bearerToken string) (*http.Response, error) {
-	getRepoUrl := host + "/api/v1/repositories/" + repoName
+func isRepoRegistered(repos RepositoryList, repoUrl string) bool {
+	for _, r := range repos.Items {
+		if r.Repo == repoUrl {
+			return true
+		}
+	}
+	return false
+}
+
+func listRepositories(log logr.Logger, host string, bearerToken string) (*RepositoryList, *http.Response, error) {
+	getRepoUrl := host + "/api/v1/repositories"
 	req, err := http.NewRequest("GET", getRepoUrl, nil)
 	if err != nil {
 		log.Error(err, "Failed to create POST request")
-		return nil, err
+		return nil, nil, err
 	}
 
 	req.Header.Add("Authorization", bearerToken)
@@ -90,16 +108,31 @@ func getRepository(log logr.Logger, host string, repoName string, bearerToken st
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Error(err, "Failed to send GET request to argocd server", "url", getRepoUrl)
-		return nil, err
+		return nil, nil, err
 	}
 
-	return resp, nil
+	if resp.StatusCode != 200 {
+		err := errors.New(
+			fmt.Sprintf("list repositories returned a non-OK response: %d", resp.StatusCode),
+		)
+		resp.Body.Close()
+		return nil, nil, err
+	}
+
+	repos := new(RepositoryList)
+	err = json.NewDecoder(resp.Body).Decode(repos)
+	if err != nil {
+		resp.Body.Close()
+		return nil, nil, err
+	}
+
+	return repos, resp, nil
 }
 
-func postCreateRepository(log logr.Logger, host string, body CreateRepoBody, bearerToken string) (*http.Response, error) {
+func postCreateRepository(log logr.Logger, serverUrl string, body CreateRepoBody, bearerToken string) (*http.Response, error) {
 	jsonBody, err := common.ToJson(log, body)
 
-	addRepoUrl := host + "/api/v1/repositories"
+	addRepoUrl := serverUrl + "/api/v1/repositories"
 	req, err := http.NewRequest("POST", addRepoUrl, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		log.Error(err, "Failed to create POST request")
@@ -111,7 +144,14 @@ func postCreateRepository(log logr.Logger, host string, body CreateRepoBody, bea
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Error(err, "Failed to send POST request to argocd server", "url", addRepoUrl)
+		log.Error(err, "Failed to send POST request to /repositories", "server", serverUrl, "repoUrl", addRepoUrl)
+		return nil, err
+	}
+
+	if resp.StatusCode != 200 {
+		common.LogBody(log, resp.Body)
+		err = errors.New(fmt.Sprintf("create repository returned non-OK status code: %d", resp.StatusCode))
+		resp.Body.Close()
 		return nil, err
 	}
 
