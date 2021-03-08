@@ -46,7 +46,7 @@ type EnvironmentComponent struct {
 type EnvironmentSpec struct {
 	TeamName             string                  `json:"teamName"`
 	EnvName              string                  `json:"envName"`
-	Description          string                  `json:"description"`
+	Description          string                  `json:"description,omitempty"`
 	EnvironmentComponent []*EnvironmentComponent `json:"components"`
 }
 
