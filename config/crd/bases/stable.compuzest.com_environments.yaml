@@ -88,11 +88,11 @@ spec:
                 - type
                 type: object
               type: array
+            description:
+              type: string
             envName:
               type: string
             teamName:
-              type: string
-            description:
               type: string
           required:
           - components
