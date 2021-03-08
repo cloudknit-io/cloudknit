@@ -16,6 +16,12 @@ metadata:
   namespace: argocd
 spec:
   entrypoint: run
+  podGC:
+    strategy: OnWorkflowSuccess
+  ttlStrategy:
+    secondsAfterSuccess: 600
+    secondsAfterCompletion: 600
+
   templates:
     - name: run
       inputs:
