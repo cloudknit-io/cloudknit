@@ -88,38 +88,47 @@ func CreateRepoWebhook(log logr.Logger, token string, repoUrl string, payloadUrl
 		return false, err
 	}
 
-	for _, h := range hooks {
-		cfg := new(HookCfg)
-		err := common.FromJsonMap(log, h.Config, cfg)
-		if err != nil {
-			return false, err
-		}
-		if cfg.Url == payloadUrl {
-			log.Info("Hook already exists", "url", repoUrl, "owner", owner, "repo", repo, "hookId", *h.ID, "payloadUrl", payloadUrl)
-			return true, nil
-		}
+	exists, err := checkIsHookRegistered(
+		log,
+		hooks,
+		payloadUrl,
+	)
+	if exists {
+		log.Info(
+			"Hook already exists",
+			"url", repoUrl,
+			"owner", owner,
+			"repo", repo,
+			"payloadUrl", payloadUrl,
+		)
+		return true, nil
+	}
+	if err != nil {
+		log.Error(err, "Error while checking is hook already registered", "hooks", hooks)
+		return false, err
 	}
 
-	isActive := true
-	cfg := map[string]interface{}{
-		"url":          payloadUrl,
-		"content-type": "json",
-	}
-	h := github.Hook{Events: []string{"push"}, Active: &isActive, Config: cfg}
+	h := newHook(payloadUrl)
 	hook, _, err := c.Repositories.CreateHook(ctx, owner, repo, &h)
 	if err != nil {
-		log.Error(err, "Error while calling create repository hook", "url", repoUrl, "owner", owner, "repo", repo)
+		log.Error(
+			err, "Error while calling create repository hook",
+			"url", repoUrl,
+			"owner", owner,
+			"repo", repo,
+			"cfg", h.Config,
+		)
 		return false, err
 	}
 
 	log.Info(
-		"Successfully created repository webhook", "url",
-		repoUrl, "owner",
-		owner,
-		"repo",
-		repo,
+		"Successfully created repository webhook",
+		"url", repoUrl,
+		"owner", owner,
+		"repo",	repo,
 		"hookId", *hook.ID,
 		"payloadUrl", *hook.URL,
+		"cfg", h.Config,
 	)
 	return false, nil
 }
@@ -134,6 +143,31 @@ func parseRepoUrl(url string) (Owner, Repo, error) {
 	repo := strings.TrimSuffix(repoUri, ".git")
 
 	return owner, repo, nil
+}
+
+func checkIsHookRegistered(log logr.Logger, hooks []*github.Hook, payloadUrl string) (bool, error) {
+	for _, h := range hooks {
+		cfg := new(HookCfg)
+		err := common.FromJsonMap(log, h.Config, cfg)
+		if err != nil {
+			return false, err
+		}
+		if cfg.Url == payloadUrl {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+func newHook(payloadUrl string) github.Hook {
+	isActive := true
+	events := []string{"push"}
+	cfg := map[string]interface{}{
+		"url":          payloadUrl,
+		"content_type": "json",
+	}
+	return github.Hook{Events: events, Active: &isActive, Config: cfg}
 }
 
 // getRef returns the commit branch reference object if it exists or return error
