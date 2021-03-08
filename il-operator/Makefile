@@ -1,7 +1,7 @@
 SHELL = /bin/bash
 
 export CGO_ENABLED = 0
-export DOCKER_IMG = zlifecycle-il-operator:$(VERSION)
+export DOCKER_IMG = zlifecycle-il-operator:latest
 export VERSION = $(shell git describe --always --tags 2>/dev/null || echo "initial")
 
 BUILD_CMD = go build -a -o build/zlifecycle-il-operator-$${GOOS}-$${GOARCH}
