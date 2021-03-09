@@ -168,7 +168,8 @@ func GenerateEnvironmentComponentApps(environment stablev1alpha1.Environment, en
 			Namespace: "argocd",
 			Labels: map[string]string{
 				"zlifecycle.com/model": "environment-component",
-				"type":                 environmentComponent.Type,
+				"component_type":       environmentComponent.Type,
+				"type":                 "config",
 				"project_id":           environment.Spec.TeamName,
 				"environment_id":       environment.Spec.TeamName + "-" + environment.Spec.EnvName,
 			},
