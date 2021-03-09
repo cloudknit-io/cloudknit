@@ -16,11 +16,6 @@ metadata:
   namespace: argocd
 spec:
   entrypoint: update
-  podGC:
-    strategy: OnWorkflowSuccess
-  ttlStrategy:
-    secondsAfterSuccess: 600
-    secondsAfterCompletion: 600
   volumes:
     - name: github-ssh-key-mount
       secret:
