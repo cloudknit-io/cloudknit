@@ -118,7 +118,7 @@ func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Appli
 			Kind:       "Application",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      environment.Spec.TeamName + "-" + environment.Spec.EnvName,
+			Name:      environment.Spec.EnvName,
 			Namespace: "argocd",
 			Labels: map[string]string{
 				"zlifecycle.com/model": "environment",
