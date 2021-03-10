@@ -6,7 +6,7 @@ import (
 )
 
 func GetArgocdServerAddr() string {
-	addr, exists := os.LookupEnv("argocd_url")
+	addr, exists := os.LookupEnv("ARGOCD_URL")
 	if exists {
 		return addr
 	} else {
