@@ -6,12 +6,13 @@ import (
 )
 
 type ArgocdAPI interface {
-	GetAuthToken(argocdUrl string) (*GetTokenResponse, error)
-	ListRepositories(host string, bearerToken string) (*RepositoryList, *http.Response, error)
-	CreateRepository(serverUrl string, body CreateRepoBody, bearerToken string) (*http.Response, error)
+	GetAuthToken() (*GetTokenResponse, error)
+	ListRepositories(bearerToken string) (*RepositoryList, *http.Response, error)
+	CreateRepository(body CreateRepoBody, bearerToken string) (*http.Response, error)
 }
 
 type ArgocdHttpAPI struct {
+	ServerUrl string
 	Log logr.Logger
 }
 
@@ -31,9 +32,7 @@ type GetTokenResponse struct {
 	Token string
 }
 
-
 type RepoOpts struct {
-	ServerUrl     string
 	RepoUrl       string
 	SshPrivateKey string
 }

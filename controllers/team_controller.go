@@ -124,12 +124,11 @@ func tryRegisterTeamRepo(
 	}
 
 	repoOpts := argocd.RepoOpts{
-		ServerUrl:     argocd.GetArgocdServerAddr(),
 		RepoUrl:       teamRepo,
 		SshPrivateKey: sshPrivateKey,
 	}
 
-	argocdApi := argocd.NewHttpClient(log)
+	argocdApi := argocd.NewHttpClient(log, argocd.GetArgocdServerAddr())
 	if _, err := argocd.RegisterRepo(log, argocdApi, repoOpts); err != nil {
 		log.Error(err, "Error while calling ArgoCD Repo API")
 		return err

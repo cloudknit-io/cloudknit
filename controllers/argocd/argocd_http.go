@@ -10,11 +10,11 @@ import (
 	"net/http"
 )
 
-func NewHttpClient(l logr.Logger) ArgocdAPI {
-	return ArgocdHttpAPI{Log: l}
+func NewHttpClient(l logr.Logger, serverUrl string) ArgocdAPI {
+	return ArgocdHttpAPI{Log: l, ServerUrl: serverUrl}
 }
 
-func (api ArgocdHttpAPI) GetAuthToken(argocdUrl string) (*GetTokenResponse, error) {
+func (api ArgocdHttpAPI) GetAuthToken() (*GetTokenResponse, error) {
 	creds, err := getArgocdCredentialsFromEnv()
 	if err != nil {
 		api.Log.Error(err, "Error getting argocd credentials")
@@ -24,7 +24,7 @@ func (api ArgocdHttpAPI) GetAuthToken(argocdUrl string) (*GetTokenResponse, erro
 	body := GetTokenBody{Username: creds.Username, Password: creds.Password}
 	jsonBody, err := common.ToJson(api.Log, body)
 
-	getTokenUrl := argocdUrl + "/api/v1/session"
+	getTokenUrl := api.ServerUrl + "/api/v1/session"
 	resp, err := http.Post(getTokenUrl, "application/json", bytes.NewBuffer(jsonBody))
 	if err != nil {
 		api.Log.Error(err, "Failed to send POST request to argocd server", "url", getTokenUrl)
@@ -51,8 +51,8 @@ func isRepoRegistered(repos RepositoryList, repoUrl string) bool {
 	return false
 }
 
-func (api ArgocdHttpAPI) ListRepositories(host string, bearerToken string) (*RepositoryList, *http.Response, error) {
-	getRepoUrl := host + "/api/v1/repositories"
+func (api ArgocdHttpAPI) ListRepositories(bearerToken string) (*RepositoryList, *http.Response, error) {
+	getRepoUrl := api.ServerUrl + "/api/v1/repositories"
 	req, err := http.NewRequest("GET", getRepoUrl, nil)
 	if err != nil {
 		api.Log.Error(err, "Failed to create POST request")
@@ -86,10 +86,10 @@ func (api ArgocdHttpAPI) ListRepositories(host string, bearerToken string) (*Rep
 	return repos, resp, nil
 }
 
-func (api ArgocdHttpAPI) CreateRepository(serverUrl string, body CreateRepoBody, bearerToken string) (*http.Response, error) {
+func (api ArgocdHttpAPI) CreateRepository(body CreateRepoBody, bearerToken string) (*http.Response, error) {
 	jsonBody, err := common.ToJson(api.Log, body)
 
-	addRepoUrl := serverUrl + "/api/v1/repositories"
+	addRepoUrl := api.ServerUrl + "/api/v1/repositories"
 	req, err := http.NewRequest("POST", addRepoUrl, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		api.Log.Error(err, "Failed to create POST request")
@@ -101,7 +101,11 @@ func (api ArgocdHttpAPI) CreateRepository(serverUrl string, body CreateRepoBody,
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		api.Log.Error(err, "Failed to send POST request to /repositories", "server", serverUrl, "repoUrl", addRepoUrl)
+		api.Log.Error(
+			err, "Failed to send POST request to /repositories",
+			"serverUrl", api.ServerUrl,
+			"repoUrl", addRepoUrl,
+		)
 		return nil, err
 	}
 

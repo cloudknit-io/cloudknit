@@ -16,16 +16,19 @@ func TestRegisterRepoNewRepo(t *testing.T) {
 
 	mockArgocdAPI := NewMockArgocdAPI(mockCtrl)
 
-	mockArgocdAPI.EXPECT().GetAuthToken(gomock.Any()).Return(&GetTokenResponse{Token: "test_token"}, nil)
-	repo := Repository{Repo: "git@github.com:CompuZest/test_repo.git", Name: "test_repo"}
+	repoOpts := RepoOpts{RepoUrl: "git@github.com:CompuZest/test_repo.git", SshPrivateKey: "test_key"}
+
+	mockArgocdAPI.EXPECT().GetAuthToken().Return(&GetTokenResponse{Token: "test_token"}, nil)
+	repo := Repository{Repo: "git@github.com:CompuZest/test_repo2.git", Name: "test_repo2"}
 	list := RepositoryList{Items: []Repository{repo}}
 	r1    := ioutil.NopCloser(bytes.NewReader([]byte{}))
-	mockArgocdAPI.EXPECT().ListRepositories(gomock.Any(), gomock.Any()).Return(&list, &http.Response{Body: r1}, nil)
+	mockArgocdAPI.EXPECT().ListRepositories(gomock.Any()).Return(&list, &http.Response{Body: r1}, nil)
 	r2    := ioutil.NopCloser(bytes.NewReader([]byte{}))
-	mockArgocdAPI.EXPECT().CreateRepository(gomock.Any(), gomock.Any(), gomock.Any()).Return(&http.Response{Body: r2}, nil)
+	createRepoBody := CreateRepoBody{Name: "test_repo", Repo: "git@github.com:CompuZest/test_repo.git", SshPrivateKey: "test_key"}
+	mockArgocdAPI.EXPECT().CreateRepository(createRepoBody, gomock.Any()).Return(&http.Response{Body: r2}, nil)
 
 	log := ctrl.Log.WithName("TestRegisterRepoNewRepo")
-	registered, err := RegisterRepo(log, mockArgocdAPI, RepoOpts{})
+	registered, err := RegisterRepo(log, mockArgocdAPI, repoOpts)
 	assert.True(t, registered)
 	assert.NoError(t, err)
 }
@@ -36,14 +39,16 @@ func TestRegisterRepoExistingRepo(t *testing.T) {
 
 	mockArgocdAPI := NewMockArgocdAPI(mockCtrl)
 
-	mockArgocdAPI.EXPECT().GetAuthToken(gomock.Any()).Return(&GetTokenResponse{Token: "test_token"}, nil)
+	mockArgocdAPI.EXPECT().GetAuthToken().Return(&GetTokenResponse{Token: "test_token"}, nil)
 	repo := Repository{Repo: "git@github.com:CompuZest/test_repo.git", Name: "test_repo"}
 	list := RepositoryList{Items: []Repository{repo}}
 	r1    := ioutil.NopCloser(bytes.NewReader([]byte{}))
-	mockArgocdAPI.EXPECT().ListRepositories(gomock.Any(), gomock.Any()).Return(&list, &http.Response{Body: r1}, nil)
+	mockArgocdAPI.EXPECT().ListRepositories(gomock.Any()).Return(&list, &http.Response{Body: r1}, nil)
 
 	log := ctrl.Log.WithName("TestRegisterRepoExistingRepo")
-	registered, err := RegisterRepo(log, mockArgocdAPI, RepoOpts{RepoUrl: repo.Repo})
+
+	repoOpts := RepoOpts{RepoUrl: repo.Repo, SshPrivateKey: "test_key"}
+	registered, err := RegisterRepo(log, mockArgocdAPI, repoOpts)
 	assert.False(t, registered)
 	assert.NoError(t, err)
 }

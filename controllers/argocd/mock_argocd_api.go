@@ -35,39 +35,39 @@ func (m *MockArgocdAPI) EXPECT() *MockArgocdAPIMockRecorder {
 }
 
 // CreateRepository mocks base method.
-func (m *MockArgocdAPI) CreateRepository(arg0 string, arg1 CreateRepoBody, arg2 string) (*http.Response, error) {
+func (m *MockArgocdAPI) CreateRepository(arg0 CreateRepoBody, arg1 string) (*http.Response, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateRepository", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "CreateRepository", arg0, arg1)
 	ret0, _ := ret[0].(*http.Response)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateRepository indicates an expected call of CreateRepository.
-func (mr *MockArgocdAPIMockRecorder) CreateRepository(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockArgocdAPIMockRecorder) CreateRepository(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRepository", reflect.TypeOf((*MockArgocdAPI)(nil).CreateRepository), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRepository", reflect.TypeOf((*MockArgocdAPI)(nil).CreateRepository), arg0, arg1)
 }
 
 // GetAuthToken mocks base method.
-func (m *MockArgocdAPI) GetAuthToken(arg0 string) (*GetTokenResponse, error) {
+func (m *MockArgocdAPI) GetAuthToken() (*GetTokenResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAuthToken", arg0)
+	ret := m.ctrl.Call(m, "GetAuthToken")
 	ret0, _ := ret[0].(*GetTokenResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAuthToken indicates an expected call of GetAuthToken.
-func (mr *MockArgocdAPIMockRecorder) GetAuthToken(arg0 interface{}) *gomock.Call {
+func (mr *MockArgocdAPIMockRecorder) GetAuthToken() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAuthToken", reflect.TypeOf((*MockArgocdAPI)(nil).GetAuthToken), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAuthToken", reflect.TypeOf((*MockArgocdAPI)(nil).GetAuthToken))
 }
 
 // ListRepositories mocks base method.
-func (m *MockArgocdAPI) ListRepositories(arg0, arg1 string) (*RepositoryList, *http.Response, error) {
+func (m *MockArgocdAPI) ListRepositories(arg0 string) (*RepositoryList, *http.Response, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListRepositories", arg0, arg1)
+	ret := m.ctrl.Call(m, "ListRepositories", arg0)
 	ret0, _ := ret[0].(*RepositoryList)
 	ret1, _ := ret[1].(*http.Response)
 	ret2, _ := ret[2].(error)
@@ -75,7 +75,7 @@ func (m *MockArgocdAPI) ListRepositories(arg0, arg1 string) (*RepositoryList, *h
 }
 
 // ListRepositories indicates an expected call of ListRepositories.
-func (mr *MockArgocdAPIMockRecorder) ListRepositories(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockArgocdAPIMockRecorder) ListRepositories(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListRepositories", reflect.TypeOf((*MockArgocdAPI)(nil).ListRepositories), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListRepositories", reflect.TypeOf((*MockArgocdAPI)(nil).ListRepositories), arg0)
 }

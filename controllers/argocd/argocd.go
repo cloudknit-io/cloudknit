@@ -338,14 +338,14 @@ func RegisterRepo(log logr.Logger, api ArgocdAPI, repoOpts RepoOpts) (bool, erro
 	repoUri := repoOpts.RepoUrl[strings.LastIndex(repoOpts.RepoUrl, "/")+1:]
 	repoName := strings.TrimSuffix(repoUri, ".git")
 
-	tokenResponse, err := api.GetAuthToken(repoOpts.ServerUrl)
+	tokenResponse, err := api.GetAuthToken()
 	if err != nil {
 		log.Error(err, "Error while calling get auth token")
 		return false, err
 	}
 
 	bearer := "Bearer " + tokenResponse.Token
-	repositories, resp1, err1 := api.ListRepositories(repoOpts.ServerUrl, bearer)
+	repositories, resp1, err1 := api.ListRepositories(bearer)
 	if err1 != nil {
 		return false, err1
 	}
@@ -363,7 +363,7 @@ func RegisterRepo(log logr.Logger, api ArgocdAPI, repoOpts RepoOpts) (bool, erro
 	log.Info("Repository is not registered, registering now...", "repos", repositories, "repoName", repoName)
 
 	createRepoBody := CreateRepoBody{Repo: repoOpts.RepoUrl, Name: repoName, SshPrivateKey: repoOpts.SshPrivateKey}
-	resp2, err2 := api.CreateRepository(repoOpts.ServerUrl, createRepoBody, bearer)
+	resp2, err2 := api.CreateRepository(createRepoBody, bearer)
 	if err2 != nil {
 		log.Error(err2, "Error while calling post create repository")
 		return false, err2
