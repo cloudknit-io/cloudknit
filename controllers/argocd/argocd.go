@@ -334,20 +334,20 @@ func GenerateCompanyConfigWatcherApp(customerName string, companyConfigRepo stri
 	}
 }
 
-func RegisterRepo(log logr.Logger, api ArgocdAPI, repoOpts RepoOpts) error {
+func RegisterRepo(log logr.Logger, api ArgocdAPI, repoOpts RepoOpts) (bool, error) {
 	repoUri := repoOpts.RepoUrl[strings.LastIndex(repoOpts.RepoUrl, "/")+1:]
 	repoName := strings.TrimSuffix(repoUri, ".git")
 
 	tokenResponse, err := api.GetAuthToken(repoOpts.ServerUrl)
 	if err != nil {
 		log.Error(err, "Error while calling get auth token")
-		return err
+		return false, err
 	}
 
 	bearer := "Bearer " + tokenResponse.Token
 	repositories, resp1, err1 := api.ListRepositories(repoOpts.ServerUrl, bearer)
 	if err1 != nil {
-		return err1
+		return false, err1
 	}
 	defer resp1.Body.Close()
 
@@ -357,7 +357,7 @@ func RegisterRepo(log logr.Logger, api ArgocdAPI, repoOpts RepoOpts) error {
 			"repoName", repoName,
 			"repoUrl", repoOpts.RepoUrl,
 		)
-		return nil
+		return false, nil
 	}
 
 	log.Info("Repository is not registered, registering now...", "repos", repositories, "repoName", repoName)
@@ -366,11 +366,11 @@ func RegisterRepo(log logr.Logger, api ArgocdAPI, repoOpts RepoOpts) error {
 	resp2, err2 := api.CreateRepository(repoOpts.ServerUrl, createRepoBody, bearer)
 	if err2 != nil {
 		log.Error(err2, "Error while calling post create repository")
-		return err2
+		return false, err2
 	}
 	defer resp2.Body.Close()
 
 	log.Info("Successfully registered repository", "repo", repoOpts.RepoUrl)
 
-	return nil
+	return true, nil
 }

@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-func TestRegisterRepoHappyPath(t *testing.T) {
+func TestRegisterRepoNewRepo(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
@@ -25,6 +25,26 @@ func TestRegisterRepoHappyPath(t *testing.T) {
 	mockArgocdAPI.EXPECT().CreateRepository(gomock.Any(), gomock.Any(), gomock.Any()).Return(&http.Response{Body: r2}, nil)
 
 	log := ctrl.Log.WithName("TestRegisterRepoHappyPath")
-	err := RegisterRepo(log, mockArgocdAPI, RepoOpts{})
+	registered, err := RegisterRepo(log, mockArgocdAPI, RepoOpts{})
+	assert.True(t, registered)
 	assert.NoError(t, err)
 }
+
+func TestRegisterRepoExistingRepo(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockArgocdAPI := NewMockArgocdAPI(mockCtrl)
+
+	mockArgocdAPI.EXPECT().GetAuthToken(gomock.Any()).Return(&GetTokenResponse{Token: "test_token"}, nil)
+	repo := Repository{Repo: "git@github.com:CompuZest/test_repo.git", Name: "test_repo"}
+	list := RepositoryList{Items: []Repository{repo}}
+	r1    := ioutil.NopCloser(bytes.NewReader([]byte{}))
+	mockArgocdAPI.EXPECT().ListRepositories(gomock.Any(), gomock.Any()).Return(&list, &http.Response{Body: r1}, nil)
+
+	log := ctrl.Log.WithName("TestRegisterRepoHappyPath")
+	registered, err := RegisterRepo(log, mockArgocdAPI, RepoOpts{RepoUrl: repo.Repo})
+	assert.False(t, registered)
+	assert.NoError(t, err)
+}
+

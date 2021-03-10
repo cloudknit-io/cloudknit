@@ -130,7 +130,7 @@ func tryRegisterTeamRepo(
 	}
 
 	argocdApi := argocd.NewHttpClient(log)
-	if err := argocd.RegisterRepo(log, argocdApi, repoOpts); err != nil {
+	if _, err := argocd.RegisterRepo(log, argocdApi, repoOpts); err != nil {
 		log.Error(err, "Error while calling ArgoCD Repo API")
 		return err
 	}
