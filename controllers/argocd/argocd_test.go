@@ -47,7 +47,7 @@ func TestRegisterRepoExistingRepo(t *testing.T) {
 
 	log := ctrl.Log.WithName("TestRegisterRepoExistingRepo")
 
-	repoOpts := RepoOpts{RepoUrl: repo.Repo, SshPrivateKey: "test_key"}
+	repoOpts := RepoOpts{RepoUrl: "git@github.com:CompuZest/test_repo.git", SshPrivateKey: "test_key"}
 	registered, err := RegisterRepo(log, mockArgocdAPI, repoOpts)
 	assert.False(t, registered)
 	assert.NoError(t, err)
