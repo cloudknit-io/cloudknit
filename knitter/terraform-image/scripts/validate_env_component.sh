@@ -16,9 +16,7 @@ env_component_name=$3
 team_env_name=$team_name-$env_name
 team_env_component_name=$team_name-$env_name-$env_component_name
 
-argoPassword=$(kubectl get secret argocd-server-login -n argocd -o json | jq '.data.password | @base64d' | tr -d '"')
-
-echo y | argocd login --insecure argocd-server:443 --grpc-web --username admin --password $argoPassword
+sh /argocd/login.sh
 
 # Check if environment component application exists. If not then skip plan/apply and so that the 
 # environment component application gets created

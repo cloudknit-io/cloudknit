@@ -9,8 +9,6 @@
 # law. Dissemination of this information or reproduction of this material is
 # strictly forbidden unless prior written permission is obtained from CompuZest, Inc.
 
-set -eo pipefail
-
 team_env_config_name=$1
 
 tfconfig="${team_env_config_name}-terraformconfig"

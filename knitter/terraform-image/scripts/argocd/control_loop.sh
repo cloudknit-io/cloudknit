@@ -9,35 +9,42 @@
 # law. Dissemination of this information or reproduction of this material is
 # strictly forbidden unless prior written permission is obtained from CompuZest, Inc.
 
-set -eo pipefail
-
 is_sync=$1
 result=$2
 team_env_name=$3
 team_env_config_name=$4
 workflow_id=$5
 
-if [ $is_sync -eq 0 ]
+function Error() {
+  if [ -n "$1" ];
+  then
+    echo "Error: "$1
+  fi
+
+    exit 1;
+}
+
+env_sync_status=$(argocd app get $team_env_name -o json | jq -r '.status.sync.status') || Error "Failed getting env_sync_status"
+
+config_sync_status=$(argocd app get $team_env_config_name -o json | jq -r '.status.sync.status') || Error "Failed getting config_sync_status"
+
+if [ $result -eq 0 ]
 then
-    if [ $result -eq 2 ]
+    if [ $config_sync_status == "OutOfSync" ]
     then
-        env_sync_status=$(argocd app get $team_env_name -o json | jq -r '.status.sync.status')
-        config_sync_status=$(argocd app get $team_env_config_name -o json | jq -r '.status.sync.status')
-        
+        argocd app sync $team_env_config_name || Error "Failed syncing env component"
+    fi
+elif [ $result -eq 2 ]
+then
+    if [ $is_sync -eq 0 ]
+    then
         if [ $config_sync_status != "OutOfSync" ]
         then
-            sh /argocd/patch_env_component.sh $team_env_config_name
-
+            sh /argocd/patch_env_component.sh $team_env_config_name || Error "Failed patching env component"
             if [ $env_sync_status != "OutOfSync" ]
             then
-                argocd app sync $team_env_name
+                argocd app sync $team_env_name || Error "Failed syncing env"
             fi
-        fi
-    else
-        # update Argo Application to show in sync now that sync has manually taken place
-        if [ $config_sync_status == "OutOfSync" ]
-        then
-            argocd app sync $team_env_config_name
         fi
     fi
 fi

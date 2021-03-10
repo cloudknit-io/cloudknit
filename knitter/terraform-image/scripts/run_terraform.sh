@@ -67,9 +67,6 @@ then
     if [ $result -eq 1 ]
     then
         Error "There is issue with generating terraform plan"
-    elif [ $result -eq 0 ]
-    then
-        argocd app sync $team_env_config_name
     fi
 
     sh /argocd/control_loop.sh $is_sync $result $team_env_name $team_env_config_name $workflow_id || Error "There is an issue with ArgoCD CLI"
