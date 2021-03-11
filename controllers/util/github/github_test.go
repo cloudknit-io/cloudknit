@@ -70,7 +70,7 @@ func TestCreateRepoWebhookExisting(t *testing.T) {
 		gomock.Nil(),
 	).Return([]*github.Hook{&testHook1}, &mockResponse1, nil)
 
-	log := ctrl.Log.WithName("TestCreateRepoWebhookNew")
+	log := ctrl.Log.WithName("TestCreateRepoWebhookExisting")
 
 	testRepoUrl := fmt.Sprintf("git@github.com:%s/%s", testOwner, testRepo)
 	created, err := CreateRepoWebhook(log, mockRepositoryApi, testRepoUrl, testPayloadUrl1)
