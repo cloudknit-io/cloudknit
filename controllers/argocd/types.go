@@ -5,20 +5,20 @@ import (
 	"net/http"
 )
 
-type ArgocdAPI interface {
+type Api interface {
 	GetAuthToken() (*GetTokenResponse, error)
 	ListRepositories(bearerToken string) (*RepositoryList, *http.Response, error)
 	CreateRepository(body CreateRepoBody, bearerToken string) (*http.Response, error)
 }
 
-type ArgocdHttpAPI struct {
+type HttpApi struct {
 	ServerUrl string
 	Log logr.Logger
 }
 
-type ArgocdMockAPI struct {}
+type MockAPI struct {}
 
-type ArgocdCredentials struct {
+type Credentials struct {
 	Username string
 	Password string
 }

@@ -14,14 +14,14 @@ func GetArgocdServerAddr() string {
 	}
 }
 
-func getArgocdCredentialsFromEnv() (*ArgocdCredentials, error) {
+func getArgocdCredentialsFromEnv() (*Credentials, error) {
 	username := os.Getenv("ARGOCD_USERNAME")
 	password := os.Getenv("ARGOCD_PASSWORD")
 	if username == "" || password == "" {
 		return nil, errors.New("missing 'ARGOCD_USERNAME' or 'ARGOCD_PASSWORD' env variables")
 	}
 
-	creds := ArgocdCredentials{Username: username, Password: password}
+	creds := Credentials{Username: username, Password: password}
 
 	return &creds, nil
 }
