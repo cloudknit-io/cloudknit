@@ -21,7 +21,7 @@ func TestCreateRepoWebhookNew(t *testing.T) {
 
 	testOwner, testRepo := "CompuZest", "test_repo"
 	testPayloadUrl1 := "https://test1.webhook.com"
-	testCfg1 := map[string]interface{}{"content-type": "json", "url": testPayloadUrl1}
+	testCfg1 := map[string]interface{}{"content_type": "json", "url": testPayloadUrl1}
 	testHook1 := github.Hook{Active: &active, Config: testCfg1, Events: events}
 	mockResponse1 := github.Response{Response: common.CreateMockResponse(200)}
 	mockRepositoryApi.EXPECT().ListHooks(
@@ -61,7 +61,7 @@ func TestCreateRepoWebhookExisting(t *testing.T) {
 
 	testOwner, testRepo := "CompuZest", "test_repo"
 	testPayloadUrl1 := "https://test1.webhook.com"
-	testCfg1 := map[string]interface{}{"content-type": "json", "url": testPayloadUrl1}
+	testCfg1 := map[string]interface{}{"content_type": "json", "url": testPayloadUrl1}
 	testHook1 := github.Hook{Active: &active, Config: testCfg1, Events: events}
 	mockResponse1 := github.Response{Response: common.CreateMockResponse(200)}
 	mockRepositoryApi.EXPECT().ListHooks(
