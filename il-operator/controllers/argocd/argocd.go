@@ -14,6 +14,8 @@ package argocd
 
 import (
 	"fmt"
+	"github.com/go-logr/logr"
+	"strings"
 
 	appv1 "github.com/argoproj/argo-cd/pkg/apis/application/v1alpha1"
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
@@ -330,4 +332,45 @@ func GenerateCompanyConfigWatcherApp(customerName string, companyConfigRepo stri
 			},
 		},
 	}
+}
+
+func RegisterRepo(log logr.Logger, api ArgocdAPI, repoOpts RepoOpts) (bool, error) {
+	repoUri := repoOpts.RepoUrl[strings.LastIndex(repoOpts.RepoUrl, "/")+1:]
+	repoName := strings.TrimSuffix(repoUri, ".git")
+
+	tokenResponse, err := api.GetAuthToken()
+	if err != nil {
+		log.Error(err, "Error while calling get auth token")
+		return false, err
+	}
+
+	bearer := "Bearer " + tokenResponse.Token
+	repositories, resp1, err1 := api.ListRepositories(bearer)
+	if err1 != nil {
+		return false, err1
+	}
+	defer resp1.Body.Close()
+
+	if isRepoRegistered(*repositories, repoOpts.RepoUrl) {
+		log.Info("Repository already registered",
+			"repos", repositories.Items,
+			"repoName", repoName,
+			"repoUrl", repoOpts.RepoUrl,
+		)
+		return false, nil
+	}
+
+	log.Info("Repository is not registered, registering now...", "repos", repositories, "repoName", repoName)
+
+	createRepoBody := CreateRepoBody{Repo: repoOpts.RepoUrl, Name: repoName, SshPrivateKey: repoOpts.SshPrivateKey}
+	resp2, err2 := api.CreateRepository(createRepoBody, bearer)
+	if err2 != nil {
+		log.Error(err2, "Error while calling post create repository")
+		return false, err2
+	}
+	defer resp2.Body.Close()
+
+	log.Info("Successfully registered repository", "repo", repoOpts.RepoUrl)
+
+	return true, nil
 }
