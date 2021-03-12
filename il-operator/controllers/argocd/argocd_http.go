@@ -10,11 +10,11 @@ import (
 	"net/http"
 )
 
-func NewHttpClient(l logr.Logger, serverUrl string) ArgocdAPI {
-	return ArgocdHttpAPI{Log: l, ServerUrl: serverUrl}
+func NewHttpClient(l logr.Logger, serverUrl string) Api {
+	return HttpApi{Log: l, ServerUrl: serverUrl}
 }
 
-func (api ArgocdHttpAPI) GetAuthToken() (*GetTokenResponse, error) {
+func (api HttpApi) GetAuthToken() (*GetTokenResponse, error) {
 	creds, err := getArgocdCredentialsFromEnv()
 	if err != nil {
 		api.Log.Error(err, "Error getting argocd credentials")
@@ -51,7 +51,7 @@ func isRepoRegistered(repos RepositoryList, repoUrl string) bool {
 	return false
 }
 
-func (api ArgocdHttpAPI) ListRepositories(bearerToken string) (*RepositoryList, *http.Response, error) {
+func (api HttpApi) ListRepositories(bearerToken string) (*RepositoryList, *http.Response, error) {
 	getRepoUrl := api.ServerUrl + "/api/v1/repositories"
 	req, err := http.NewRequest("GET", getRepoUrl, nil)
 	if err != nil {
@@ -86,7 +86,7 @@ func (api ArgocdHttpAPI) ListRepositories(bearerToken string) (*RepositoryList, 
 	return repos, resp, nil
 }
 
-func (api ArgocdHttpAPI) CreateRepository(body CreateRepoBody, bearerToken string) (*http.Response, error) {
+func (api HttpApi) CreateRepository(body CreateRepoBody, bearerToken string) (*http.Response, error) {
 	jsonBody, err := common.ToJson(api.Log, body)
 
 	addRepoUrl := api.ServerUrl + "/api/v1/repositories"
