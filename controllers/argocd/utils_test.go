@@ -7,7 +7,7 @@ import (
 )
 
 func TestGetArgocdServerAddrExistingCreds(t *testing.T) {
-	expected := ArgocdCredentials{Username: "test", Password: "test"}
+	expected := Credentials{Username: "test", Password: "test"}
 	os.Setenv("ARGOCD_USERNAME", expected.Username)
 	os.Setenv("ARGOCD_PASSWORD", expected.Password)
 	r, _ := getArgocdCredentialsFromEnv()
@@ -18,7 +18,7 @@ func TestGetArgocdServerAddrExistingCreds(t *testing.T) {
 }
 
 func TestGetArgocdServerAddrMissingCreds(t *testing.T) {
-	expected := ArgocdCredentials{Username: "test"}
+	expected := Credentials{Username: "test"}
 	os.Setenv("ARGOCD_USERNAME", expected.Username)
 	_, err := getArgocdCredentialsFromEnv()
 	assert.Error(t, err)

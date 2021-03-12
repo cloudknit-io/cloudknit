@@ -1,10 +1,12 @@
 package common
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/go-logr/logr"
 	"io"
 	"io/ioutil"
+	"net/http"
 )
 
 func LogBody(log logr.Logger, body io.ReadCloser) {
@@ -58,4 +60,9 @@ func ReadBody(log logr.Logger, stream io.ReadCloser) ([]byte, error) {
 	}
 
 	return body, nil
+}
+
+func CreateMockResponse(code int) *http.Response {
+	r := http.Response{Body: ioutil.NopCloser(bytes.NewReader([]byte{})), StatusCode: code}
+	return &r
 }

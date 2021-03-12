@@ -45,36 +45,12 @@ var (
 	authorEmail   string
 )
 
-type Package struct {
-	FullName      string
-	Description   string
-	StarsCount    int
-	ForksCount    int
-	LastUpdatedBy string
-}
-
-type HookCfg struct {
-	Url         string `json:"url"`
-	ContentType string `json:"content-type"`
-}
-
-type Owner = string
-
-type Repo = string
-
 var client *github.Client
 var ctx = context.Background()
 
-func createGithubClient(token string) *github.Client {
-	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
-	tc := oauth2.NewClient(ctx, ts)
-	return github.NewClient(tc)
-}
-
 // CreateRepoWebhook tries to create a repository webhook
-// It returns a bool whether it created a webhook, or any kind of error.
-func CreateRepoWebhook(log logr.Logger, token string, repoUrl string, payloadUrl string) (bool, error) {
-	c := createGithubClient(token)
+// It returns true if webhook already exists, false if new webhook was created, or any kind of error.
+func CreateRepoWebhook(log logr.Logger, api RepositoryApi, repoUrl string, payloadUrl string) (bool, error) {
 	owner, repo, err := parseRepoUrl(repoUrl)
 	if err != nil {
 		log.Error(err, "Error while parsing owner and repo name from repo url", "url", repoUrl)
@@ -82,11 +58,16 @@ func CreateRepoWebhook(log logr.Logger, token string, repoUrl string, payloadUrl
 	}
 	log.Info("Parsed repo url", "url", repoUrl, "owner", owner, "repo", repo)
 
-	hooks, _, err := c.Repositories.ListHooks(ctx, owner, repo, nil)
+	hooks, resp1, err := api.ListHooks(owner, repo, nil)
 	if err != nil {
-		log.Error(err, "Error while fetching list of webhooks", "url", repoUrl, "owner", owner, "repo", repo)
+		log.Error(err, "Error while fetching list of webhooks",
+			"url", repoUrl,
+			"owner", owner,
+			"repo", repo,
+		)
 		return false, err
 	}
+	defer resp1.Body.Close()
 
 	exists, err := checkIsHookRegistered(
 		log,
@@ -109,7 +90,7 @@ func CreateRepoWebhook(log logr.Logger, token string, repoUrl string, payloadUrl
 	}
 
 	h := newHook(payloadUrl)
-	hook, _, err := c.Repositories.CreateHook(ctx, owner, repo, &h)
+	hook, resp2, err := api.CreateHook(owner, repo, &h)
 	if err != nil {
 		log.Error(
 			err, "Error while calling create repository hook",
@@ -120,6 +101,7 @@ func CreateRepoWebhook(log logr.Logger, token string, repoUrl string, payloadUrl
 		)
 		return false, err
 	}
+	defer resp2.Body.Close()
 
 	log.Info(
 		"Successfully created repository webhook",

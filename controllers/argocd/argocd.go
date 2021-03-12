@@ -334,7 +334,7 @@ func GenerateCompanyConfigWatcherApp(customerName string, companyConfigRepo stri
 	}
 }
 
-func RegisterRepo(log logr.Logger, api ArgocdAPI, repoOpts RepoOpts) (bool, error) {
+func RegisterRepo(log logr.Logger, api Api, repoOpts RepoOpts) (bool, error) {
 	repoUri := repoOpts.RepoUrl[strings.LastIndex(repoOpts.RepoUrl, "/")+1:]
 	repoName := strings.TrimSuffix(repoUri, ".git")
 
