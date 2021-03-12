@@ -28,11 +28,11 @@ zlifecycleSSHKeyPath=zlifecycle
 sleep 10s
 ilRepo=$(kubectl get ConfigMap company-config -n zlifecycle-il-operator-system -o jsonpath='{.data.ilRepo}')
 ilRepoName=$(kubectl get ConfigMap company-config -n zlifecycle-il-operator-system -o jsonpath='{.data.ilRepoName}')
-argocd repo add $ilRepo --name $ilRepoName --ssh-private-key-path $zlifecycleSSHKeyPath --insecure-ignore-host-key
+argocd repo add $ilRepo --upsert --name $ilRepoName --ssh-private-key-path $zlifecycleSSHKeyPath --insecure-ignore-host-key
 
 sleep 10s
 helmChartsRepo=$(kubectl get ConfigMap company-config -n zlifecycle-il-operator-system -o jsonpath='{.data.helmChartsRepo}')
-argocd repo add --name helm-charts $helmChartsRepo --ssh-private-key-path $zlifecycleSSHKeyPath --insecure-ignore-host-key
+argocd repo add --upsert --name helm-charts $helmChartsRepo --ssh-private-key-path $zlifecycleSSHKeyPath --insecure-ignore-host-key
 
 configRepo=$(kubectl get ConfigMap company-config -n zlifecycle-il-operator-system -o jsonpath='{.data.configRepo}')
 configRepoName=$(kubectl get ConfigMap company-config -n zlifecycle-il-operator-system -o jsonpath='{.data.configRepoName}')
@@ -47,5 +47,5 @@ then
     kubectl port-forward service/argo-workflow-server 8081:2746 -n argocd &
 fi
 
-argocd app create config-watcher-bootstrap --repo $ilRepo --path config-watcher --dest-server https://kubernetes.default.svc --dest-namespace default --sync-policy automated --auto-prune
-argocd app create company-bootstrap --repo $ilRepo --path company --dest-server https://kubernetes.default.svc --dest-namespace default --sync-policy automated --auto-prune
+argocd app create config-watcher-bootstrap --upsert --repo $ilRepo --path config-watcher --dest-server https://kubernetes.default.svc --dest-namespace default --sync-policy automated --auto-prune
+argocd app create company-bootstrap --upsert --repo $ilRepo --path company --dest-server https://kubernetes.default.svc --dest-namespace default --sync-policy automated --auto-prune
