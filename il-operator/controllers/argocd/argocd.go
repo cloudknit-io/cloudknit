@@ -123,6 +123,7 @@ func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Appli
 			Labels: map[string]string{
 				"zlifecycle.com/model": "environment",
 				"type":                 "environment",
+				"env_name":             environment.Spec.EnvName,
 				"project_id":           environment.Spec.TeamName,
 			},
 		},
@@ -172,6 +173,7 @@ func GenerateEnvironmentComponentApps(environment stablev1alpha1.Environment, en
 				"zlifecycle.com/model": "environment-component",
 				"component_type":       environmentComponent.Type,
 				"type":                 "config",
+				"component_name":       environmentComponent.Name,
 				"project_id":           environment.Spec.TeamName,
 				"environment_id":       environment.Spec.TeamName + "-" + environment.Spec.EnvName,
 			},
