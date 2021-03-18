@@ -33,6 +33,8 @@ var (
 	setupLog = ctrl.Log.WithName("setup")
 )
 
+// +kubebuilder:rbac:groups="",resources=configmaps;secrets,verbs=get;list;watch;update;patch
+
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 

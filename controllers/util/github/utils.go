@@ -10,3 +10,12 @@ func GetWebhookSecret() string {
 		return ""
 	}
 }
+
+func GetZlifecycleOwner() string {
+	secret, exists := os.LookupEnv("GITHUB_ZLIFECYCLE_OWNER")
+	if exists {
+		return secret
+	} else {
+		return "CompuZest"
+	}
+}

@@ -45,6 +45,12 @@ func (r *CompanyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	company := &stablev1alpha1.Company{}
 	r.Get(ctx, req.NamespacedName, company)
 
+	teamRepo := company.Spec.ConfigRepo.Source
+	repoSecret := company.Spec.ConfigRepo.RepoSecret
+	if err := argocd.TryRegisterTeamRepo(r.Client, r.Log, ctx, teamRepo, req.Namespace, repoSecret); err != nil {
+		return ctrl.Result{}, err
+	}
+
 	if err := generateAndSaveCompanyApp(company); err != nil {
 		return ctrl.Result{}, err
 	}
@@ -61,6 +67,14 @@ func (r *CompanyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		fmt.Sprintf("Reconciling company %s", company.Spec.CompanyName),
 		env.Config.GithubSvcAccntName,
 		env.Config.GithubSvcAccntEmail)
+
+	owner := github.GetZlifecycleOwner()
+	ilRepo := company.Name + "-il"
+	githubRepositoryApi := github.NewHttpClient(env.Config.GitHubAuthToken, ctx)
+	_, err := github.TryCreateRepository(r.Log, githubRepositoryApi, owner, ilRepo)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
 
 	return ctrl.Result{}, nil
 }

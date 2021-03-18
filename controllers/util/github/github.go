@@ -48,6 +48,45 @@ var (
 var client *github.Client
 var ctx = context.Background()
 
+// TryCreateRepository tries to create a private repository in a organization (enter blank string for owner if it is a user repo)
+// It returns true if repository is created, false if repository already exists, or any kind of error.
+func TryCreateRepository(log logr.Logger, api RepositoryApi, owner string, repo string) (bool, error) {
+	log.Info("Checking does repo exist", "owner", owner, "repo", repo)
+	r, resp1, err := api.GetRepository(owner, repo)
+	if err != nil {
+		log.Error(err, "Error while fetching repository",
+			"owner", owner,
+			"repo", repo,
+		)
+		return false, err
+	}
+	defer resp1.Body.Close()
+
+	log.Info("Call to get repo succeeded", "code", resp1.StatusCode)
+
+	if r != nil {
+		log.Info("Repository already exists", "owner", owner, "repo", repo)
+		return false, nil
+	}
+
+	log.Info("Creating new repository", "owner", owner, "repo", repo)
+
+	nr, resp2, err := api.CreateRepository(owner, repo)
+	if err != nil {
+		log.Error(err, "Error while creating repository",
+			"owner", owner,
+			"repo", repo,
+		)
+		return false, err
+	}
+
+	log.Info("Call to create repo succeeded", "code", resp2.StatusCode)
+
+	defer resp2.Body.Close()
+
+	return nr != nil, nil
+}
+
 // CreateRepoWebhook tries to create a repository webhook
 // It returns true if webhook already exists, false if new webhook was created, or any kind of error.
 func CreateRepoWebhook(log logr.Logger, api RepositoryApi, repoUrl string, payloadUrl string) (bool, error) {
@@ -143,13 +182,12 @@ func checkIsHookRegistered(log logr.Logger, hooks []*github.Hook, payloadUrl str
 }
 
 func newHook(payloadUrl string) github.Hook {
-	isActive := true
 	events := []string{"push"}
 	cfg := map[string]interface{}{
 		"url":          payloadUrl,
 		"content_type": "json",
 	}
-	return github.Hook{Events: events, Active: &isActive, Config: cfg}
+	return github.Hook{Events: events, Active: github.Bool(true), Config: cfg}
 }
 
 // getRef returns the commit branch reference object if it exists or return error

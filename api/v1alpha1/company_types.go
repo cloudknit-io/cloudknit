@@ -22,6 +22,7 @@ import (
 type CompanyConfigRepo struct {
 	Source string `json:"source"`
 	Path   string `json:"path"`
+	RepoSecret string `json:"repoSecret"`
 }
 
 // CompanySpec defines the desired state of Company
