@@ -24,7 +24,7 @@ func TestRegisterRepoNewRepo(t *testing.T) {
 	mockApi.EXPECT().CreateRepository(createRepoBody, gomock.Any()).Return(common.CreateMockResponse(200), nil)
 
 	log := ctrl.Log.WithName("TestRegisterRepoNewRepo")
-	registered, err := registerRepo(log, mockApi, repoOpts)
+	registered, err := RegisterRepo(log, mockApi, repoOpts)
 	assert.True(t, registered)
 	assert.NoError(t, err)
 }
@@ -43,7 +43,7 @@ func TestRegisterRepoExistingRepo(t *testing.T) {
 	log := ctrl.Log.WithName("TestRegisterRepoExistingRepo")
 
 	repoOpts := RepoOpts{RepoUrl: "git@github.com:CompuZest/test_repo.git", SshPrivateKey: "test_key"}
-	registered, err := registerRepo(log, mockArgocdAPI, repoOpts)
+	registered, err := RegisterRepo(log, mockArgocdAPI, repoOpts)
 	assert.False(t, registered)
 	assert.NoError(t, err)
 }

@@ -51,10 +51,10 @@ var ctx = context.Background()
 // TryCreateRepository tries to create a private repository in a organization (enter blank string for owner if it is a user repo)
 // It returns true if repository is created, false if repository already exists, or any kind of error.
 func TryCreateRepository(log logr.Logger, api RepositoryApi, owner string, repo string) (bool, error) {
-	log.Info("Checking does repo exist", "owner", owner, "repo", repo)
+	log.Info("Checking does repo exist on GitHub", "owner", owner, "repo", repo)
 	r, resp1, err := api.GetRepository(owner, repo)
 	if err != nil {
-		log.Error(err, "Error while fetching repository",
+		log.Error(err, "Error while fetching repository from GitHub API",
 			"owner", owner,
 			"repo", repo,
 		)
@@ -62,25 +62,25 @@ func TryCreateRepository(log logr.Logger, api RepositoryApi, owner string, repo 
 	}
 	defer resp1.Body.Close()
 
-	log.Info("Call to get repo succeeded", "code", resp1.StatusCode)
+	log.Info("Call to GitHub API get repo succeeded", "code", resp1.StatusCode)
 
 	if r != nil {
-		log.Info("Repository already exists", "owner", owner, "repo", repo)
+		log.Info("GitHub repository already exists", "owner", owner, "repo", repo)
 		return false, nil
 	}
 
-	log.Info("Creating new repository", "owner", owner, "repo", repo)
+	log.Info("Creating new private repository in GitHub", "owner", owner, "repo", repo)
 
 	nr, resp2, err := api.CreateRepository(owner, repo)
 	if err != nil {
-		log.Error(err, "Error while creating repository",
+		log.Error(err, "Error while creating private repository on GitHub",
 			"owner", owner,
 			"repo", repo,
 		)
 		return false, err
 	}
 
-	log.Info("Call to create repo succeeded", "code", resp2.StatusCode)
+	log.Info("Call to GitHub API create repo succeeded", "code", resp2.StatusCode)
 
 	defer resp2.Body.Close()
 

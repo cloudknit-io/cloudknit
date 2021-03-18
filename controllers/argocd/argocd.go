@@ -13,13 +13,8 @@
 package argocd
 
 import (
-	"context"
-	"errors"
 	"fmt"
 	"github.com/go-logr/logr"
-	coreV1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strings"
 
 	appv1 "github.com/argoproj/argo-cd/pkg/apis/application/v1alpha1"
@@ -341,56 +336,13 @@ func GenerateCompanyConfigWatcherApp(customerName string, companyConfigRepo stri
 	}
 }
 
-func TryRegisterRepo(
-	c client.Client,
-	log logr.Logger,
-	ctx context.Context,
-	teamRepo string,
-	namespace string,
-	repoSecret string,
-) error {
-	secret := &coreV1.Secret{}
-	secretNamespacedName :=
-		types.NamespacedName{Namespace: namespace, Name: repoSecret}
-	if err := c.Get(ctx, secretNamespacedName, secret); err != nil {
-		log.Info(
-			"Secret %s does not exist in namespace %s\n",
-			repoSecret,
-			namespace,
-		)
-		return err
-	}
-
-	sshPrivateKeyField := "sshPrivateKey"
-	sshPrivateKey := string(secret.Data[sshPrivateKeyField])
-	if sshPrivateKey == "" {
-		errMsg := fmt.Sprintf("Secret is missing %s data field!", sshPrivateKeyField)
-		err := errors.New(errMsg)
-		log.Error(err, errMsg)
-		return err
-	}
-
-	repoOpts := RepoOpts{
-		RepoUrl:       teamRepo,
-		SshPrivateKey: sshPrivateKey,
-	}
-
-	argocdApi := NewHttpClient(log, env.Config.ArgocdServerUrl)
-	if _, err := registerRepo(log, argocdApi, repoOpts); err != nil {
-		log.Error(err, "Error while calling ArgoCD Repo API")
-		return err
-	}
-
-	return nil
-}
-
-func registerRepo(log logr.Logger, api Api, repoOpts RepoOpts) (bool, error) {
+func RegisterRepo(log logr.Logger, api Api, repoOpts RepoOpts) (bool, error) {
 	repoUri := repoOpts.RepoUrl[strings.LastIndex(repoOpts.RepoUrl, "/")+1:]
 	repoName := strings.TrimSuffix(repoUri, ".git")
 
 	tokenResponse, err := api.GetAuthToken()
 	if err != nil {
-		log.Error(err, "Error while calling get auth token")
+		log.Error(err, "Error while calling ArgoCD API get auth token")
 		return false, err
 	}
 
@@ -401,8 +353,10 @@ func registerRepo(log logr.Logger, api Api, repoOpts RepoOpts) (bool, error) {
 	}
 	defer resp1.Body.Close()
 
+	log.Info("List of repositories registered on ArgoCD", "repos", repositories)
+
 	if isRepoRegistered(*repositories, repoOpts.RepoUrl) {
-		log.Info("Repository already registered",
+		log.Info("Repository already registered on ArgoCD",
 			"repos", repositories.Items,
 			"repoName", repoName,
 			"repoUrl", repoOpts.RepoUrl,
@@ -410,17 +364,21 @@ func registerRepo(log logr.Logger, api Api, repoOpts RepoOpts) (bool, error) {
 		return false, nil
 	}
 
-	log.Info("Repository is not registered, registering now...", "repos", repositories, "repoName", repoName)
+	log.Info(
+		"Repository is not registered on ArgoCD, registering now...",
+		"repoName", repoName,
+		"repoUrl", repoOpts.RepoUrl,
+	)
 
 	createRepoBody := CreateRepoBody{Repo: repoOpts.RepoUrl, Name: repoName, SshPrivateKey: repoOpts.SshPrivateKey}
 	resp2, err2 := api.CreateRepository(createRepoBody, bearer)
 	if err2 != nil {
-		log.Error(err2, "Error while calling post create repository")
+		log.Error(err2, "Error while calling ArgoCD API post create repository")
 		return false, err2
 	}
 	defer resp2.Body.Close()
 
-	log.Info("Successfully registered repository", "repo", repoOpts.RepoUrl)
+	log.Info("Successfully registered repository on ArgoCD", "repo", repoOpts.RepoUrl)
 
 	return true, nil
 }
