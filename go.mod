@@ -37,6 +37,7 @@ require (
 	k8s.io/apimachinery v0.19.3
 	k8s.io/client-go v0.18.6
 	sigs.k8s.io/controller-runtime v0.6.3
+	sigs.k8s.io/controller-tools v0.2.0-beta.4 // indirect
 )
 
 replace (
