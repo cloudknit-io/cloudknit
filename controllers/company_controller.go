@@ -45,9 +45,9 @@ func (r *CompanyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	company := &stablev1alpha1.Company{}
 	r.Get(ctx, req.NamespacedName, company)
 
-	teamRepo := company.Spec.ConfigRepo.Source
+	companyRepo := company.Spec.ConfigRepo.Source
 	repoSecret := company.Spec.ConfigRepo.RepoSecret
-	if err := argocd.TryRegisterTeamRepo(r.Client, r.Log, ctx, teamRepo, req.Namespace, repoSecret); err != nil {
+	if err := argocd.TryRegisterRepo(r.Client, r.Log, ctx, companyRepo, req.Namespace, repoSecret); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -59,6 +59,17 @@ func (r *CompanyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, err
 	}
 
+	ilRepo := company.Name + "-il"
+	githubRepositoryApi := github.NewHttpClient(env.Config.GitHubAuthToken, ctx)
+	_, err := github.TryCreateRepository(r.Log, githubRepositoryApi, env.Config.ZlifecycleOwner, ilRepo)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	if err := argocd.TryRegisterRepo(r.Client, r.Log, ctx, ilRepo, req.Namespace, repoSecret); err != nil {
+		return ctrl.Result{}, err
+	}
+
 	github.CommitAndPushFiles(
 		env.Config.ILRepoSourceOwner,
 		env.Config.ILRepoName,
@@ -67,14 +78,6 @@ func (r *CompanyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		fmt.Sprintf("Reconciling company %s", company.Spec.CompanyName),
 		env.Config.GithubSvcAccntName,
 		env.Config.GithubSvcAccntEmail)
-
-	owner := github.GetZlifecycleOwner()
-	ilRepo := company.Name + "-il"
-	githubRepositoryApi := github.NewHttpClient(env.Config.GitHubAuthToken, ctx)
-	_, err := github.TryCreateRepository(r.Log, githubRepositoryApi, owner, ilRepo)
-	if err != nil {
-		return ctrl.Result{}, err
-	}
 
 	return ctrl.Result{}, nil
 }

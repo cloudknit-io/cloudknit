@@ -55,7 +55,7 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	teamRepo := team.Spec.ConfigRepo.Source
 	repoSecret := team.Spec.ConfigRepo.RepoSecret
-	if err := argocd.TryRegisterTeamRepo(r.Client, r.Log, ctx, teamRepo, req.Namespace, repoSecret); err != nil {
+	if err := argocd.TryRegisterRepo(r.Client, r.Log, ctx, teamRepo, req.Namespace, repoSecret); err != nil {
 		return ctrl.Result{}, err
 	}
 

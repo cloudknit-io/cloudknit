@@ -341,7 +341,50 @@ func GenerateCompanyConfigWatcherApp(customerName string, companyConfigRepo stri
 	}
 }
 
-func RegisterRepo(log logr.Logger, api Api, repoOpts RepoOpts) (bool, error) {
+func TryRegisterRepo(
+	c client.Client,
+	log logr.Logger,
+	ctx context.Context,
+	teamRepo string,
+	namespace string,
+	repoSecret string,
+) error {
+	secret := &coreV1.Secret{}
+	secretNamespacedName :=
+		types.NamespacedName{Namespace: namespace, Name: repoSecret}
+	if err := c.Get(ctx, secretNamespacedName, secret); err != nil {
+		log.Info(
+			"Secret %s does not exist in namespace %s\n",
+			repoSecret,
+			namespace,
+		)
+		return err
+	}
+
+	sshPrivateKeyField := "sshPrivateKey"
+	sshPrivateKey := string(secret.Data[sshPrivateKeyField])
+	if sshPrivateKey == "" {
+		errMsg := fmt.Sprintf("Secret is missing %s data field!", sshPrivateKeyField)
+		err := errors.New(errMsg)
+		log.Error(err, errMsg)
+		return err
+	}
+
+	repoOpts := RepoOpts{
+		RepoUrl:       teamRepo,
+		SshPrivateKey: sshPrivateKey,
+	}
+
+	argocdApi := NewHttpClient(log, env.Config.ArgocdServerUrl)
+	if _, err := registerRepo(log, argocdApi, repoOpts); err != nil {
+		log.Error(err, "Error while calling ArgoCD Repo API")
+		return err
+	}
+
+	return nil
+}
+
+func registerRepo(log logr.Logger, api Api, repoOpts RepoOpts) (bool, error) {
 	repoUri := repoOpts.RepoUrl[strings.LastIndex(repoOpts.RepoUrl, "/")+1:]
 	repoName := strings.TrimSuffix(repoUri, ".git")
 
@@ -380,47 +423,4 @@ func RegisterRepo(log logr.Logger, api Api, repoOpts RepoOpts) (bool, error) {
 	log.Info("Successfully registered repository", "repo", repoOpts.RepoUrl)
 
 	return true, nil
-}
-
-func TryRegisterTeamRepo(
-	c client.Client,
-	log logr.Logger,
-	ctx context.Context,
-	teamRepo string,
-	namespace string,
-	repoSecret string,
-) error {
-	secret := &coreV1.Secret{}
-	secretNamespacedName :=
-		types.NamespacedName{Namespace: namespace, Name: repoSecret}
-	if err := c.Get(ctx, secretNamespacedName, secret); err != nil {
-		log.Info(
-			"Secret %s does not exist in namespace %s\n",
-			repoSecret,
-			namespace,
-		)
-		return err
-	}
-
-	sshPrivateKeyField := "sshPrivateKey"
-	sshPrivateKey := string(secret.Data[sshPrivateKeyField])
-	if sshPrivateKey == "" {
-		errMsg := fmt.Sprintf("Secret is missing %s data field!", sshPrivateKeyField)
-		err := errors.New(errMsg)
-		log.Error(err, errMsg)
-		return err
-	}
-
-	repoOpts := RepoOpts{
-		RepoUrl:       teamRepo,
-		SshPrivateKey: sshPrivateKey,
-	}
-
-	argocdApi := NewHttpClient(log, GetArgocdServerAddr())
-	if _, err := RegisterRepo(log, argocdApi, repoOpts); err != nil {
-		log.Error(err, "Error while calling ArgoCD Repo API")
-		return err
-	}
-
-	return nil
 }
