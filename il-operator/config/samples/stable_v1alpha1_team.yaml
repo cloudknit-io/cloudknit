@@ -1,9 +1,0 @@
-apiVersion: stable.compuzest.com/v1alpha1
-kind: Team
-metadata:
-  name: team-sample
-spec:
-  teamName: "design"
-  configRepo:
-    source: "git@github.com:CompuZest/zmart-design-team-config.git"
-    path: "."

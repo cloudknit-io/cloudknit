@@ -1,7 +1,0 @@
-apiVersion: stable.compuzest.com/v1alpha1
-kind: Environment
-metadata:
-  name: environment-sample
-spec:
-  # Add fields here
-  foo: bar
