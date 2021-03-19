@@ -70,11 +70,6 @@ endif
 	docker tag $(DOCKER_IMG) $(ECR_REPO)/$(DOCKER_IMG)
 	docker push $(ECR_REPO)/$(DOCKER_IMG)
 
-# Deploy controller in the configured Kubernetes cluster in ~/.kube/config
-deploy: manifests kustomize
-	cd config/manager && kustomize edit set image controller=$(ECR_REPO)/$(DOCKER_IMG)
-	kustomize build config/default | kubectl apply -f -
-
 .PHONY: clean
 clean:
 	rm -rf build testbin test-results
@@ -87,20 +82,14 @@ generate: controller-gen
 manifests: controller-gen
 	# Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 	controller-gen crd:trivialVersions=true rbac:roleName=manager-role webhook \
-		paths="./..." output:crd:artifacts:config=config/crd/bases
+		paths="./..." output:crd:artifacts:config=helm/zlifecycle-il-operator/crds output:rbac:artifacts:config=helm/zlifecycle-il-operator/templates
+	@{ sed -i "" "s/manager-role/zlifecycle-il-operator-manager-role/" helm/zlifecycle-il-operator/templates/role.yaml; }
+	
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
 # without first building the binary
 run: generate manifests
 	go run ./main.go
-
-# Install CRDs into a cluster
-install: manifests kustomize
-	kustomize build config/crd | kubectl apply -f -
-
-# Uninstall CRDs from a cluster
-uninstall: manifests kustomize
-	kustomize build config/crd | kubectl delete -f -
 
 # Ensure controller-gen is available
 .PHONY: controller-gen
