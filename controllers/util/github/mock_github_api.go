@@ -50,6 +50,38 @@ func (mr *MockRepositoryApiMockRecorder) CreateHook(arg0, arg1, arg2 interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateHook", reflect.TypeOf((*MockRepositoryApi)(nil).CreateHook), arg0, arg1, arg2)
 }
 
+// CreateRepository mocks base method.
+func (m *MockRepositoryApi) CreateRepository(arg0, arg1 string) (*github.Repository, *github.Response, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateRepository", arg0, arg1)
+	ret0, _ := ret[0].(*github.Repository)
+	ret1, _ := ret[1].(*github.Response)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// CreateRepository indicates an expected call of CreateRepository.
+func (mr *MockRepositoryApiMockRecorder) CreateRepository(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRepository", reflect.TypeOf((*MockRepositoryApi)(nil).CreateRepository), arg0, arg1)
+}
+
+// GetRepository mocks base method.
+func (m *MockRepositoryApi) GetRepository(arg0, arg1 string) (*github.Repository, *github.Response, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRepository", arg0, arg1)
+	ret0, _ := ret[0].(*github.Repository)
+	ret1, _ := ret[1].(*github.Response)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetRepository indicates an expected call of GetRepository.
+func (mr *MockRepositoryApiMockRecorder) GetRepository(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRepository", reflect.TypeOf((*MockRepositoryApi)(nil).GetRepository), arg0, arg1)
+}
+
 // ListHooks mocks base method.
 func (m *MockRepositoryApi) ListHooks(arg0, arg1 string, arg2 *github.ListOptions) ([]*github.Hook, *github.Response, error) {
 	m.ctrl.T.Helper()

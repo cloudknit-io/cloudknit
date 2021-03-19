@@ -15,6 +15,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/repo"
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -45,11 +46,34 @@ func (r *CompanyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	company := &stablev1alpha1.Company{}
 	r.Get(ctx, req.NamespacedName, company)
 
+	companyRepo := company.Spec.ConfigRepo.Source
+	repoSecret := company.Spec.ConfigRepo.RepoSecret
+
+	argocdApi := argocd.NewHttpClient(r.Log, env.Config.ArgocdServerUrl)
+
+	if err := repo.TryRegisterRepo(r.Client, r.Log, ctx, argocdApi, companyRepo, req.Namespace, repoSecret); err != nil {
+		return ctrl.Result{}, err
+	}
+
 	if err := generateAndSaveCompanyApp(company); err != nil {
 		return ctrl.Result{}, err
 	}
 
 	if err := generateAndSaveCompanyConfigWatcher(company); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	owner := env.Config.ZlifecycleOwner
+	ilRepo := company.Name + "-il"
+	githubRepositoryApi := github.NewHttpClient(env.Config.GitHubAuthToken, ctx)
+	_, err := github.TryCreateRepository(r.Log, githubRepositoryApi, owner, ilRepo)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	ilRepoUrl := fmt.Sprintf("git@github.com:%s/%s.git", owner, ilRepo)
+	masterRepoSshSecret := env.Config.MasterRepoSshSecret
+	if err := repo.TryRegisterRepo(r.Client, r.Log, ctx, argocdApi, ilRepoUrl, req.Namespace, masterRepoSshSecret); err != nil {
 		return ctrl.Result{}, err
 	}
 
