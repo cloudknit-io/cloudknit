@@ -6,6 +6,8 @@ import (
 )
 
 type RepositoryApi interface {
+	CreateRepository(owner string, repo string) (*github.Repository, *github.Response, error)
+	GetRepository(owner string, repo string) (*github.Repository, *github.Response, error)
 	ListHooks(owner string, repo string, opts *github.ListOptions) ([]*github.Hook, *github.Response, error)
 	CreateHook(owner string, repo string, hook *github.Hook) (*github.Hook, *github.Response, error)
 }

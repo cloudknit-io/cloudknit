@@ -10,6 +10,48 @@ import (
 	"testing"
 )
 
+func TestTryCreateRepositoryExisting(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockRepositoryApi := NewMockRepositoryApi(mockCtrl)
+
+	testOwner := "compuzest"
+	testRepo  := "test_repo"
+	testURL   := fmt.Sprintf("git@github.com:%s/%s", testOwner, testRepo)
+	testGitHubRepo := github.Repository{Name: &testRepo, URL: &testURL}
+	mockResponse := github.Response{Response: common.CreateMockResponse(200)}
+	mockRepositoryApi.EXPECT().GetRepository(testOwner, testRepo).Return(&testGitHubRepo, &mockResponse, nil)
+
+	log := ctrl.Log.WithName("TestTryCreateRepositoryExisting")
+
+	created, err := TryCreateRepository(log, mockRepositoryApi, testOwner, testRepo)
+	assert.False(t, created)
+	assert.NoError(t, err)
+}
+
+func TestTryCreateRepositoryNew(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockRepositoryApi := NewMockRepositoryApi(mockCtrl)
+
+	testOwner := "compuzest"
+	testRepo  := "test_repo"
+	testURL   := fmt.Sprintf("git@github.com:%s/%s", testOwner, testRepo)
+	mockResponse1 := github.Response{Response: common.CreateMockResponse(200)}
+	mockRepositoryApi.EXPECT().GetRepository(testOwner, testRepo).Return(nil, &mockResponse1, nil)
+	testGitHubRepo := github.Repository{Name: &testRepo, URL: &testURL}
+	mockResponse2 := github.Response{Response: common.CreateMockResponse(200)}
+	mockRepositoryApi.EXPECT().CreateRepository(testOwner, testRepo).Return(&testGitHubRepo, &mockResponse2, nil)
+
+	log := ctrl.Log.WithName("TestTryCreateRepositoryNew")
+
+	created, err := TryCreateRepository(log, mockRepositoryApi, testOwner, testRepo)
+	assert.True(t, created)
+	assert.NoError(t, err)
+}
+
 func TestCreateRepoWebhookNew(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()

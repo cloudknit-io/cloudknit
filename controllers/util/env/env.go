@@ -1,12 +1,17 @@
 package env
 
-import "os"
+import (
+	"os"
+)
 
 type config struct {
-	CompanyName       string
-	ILRepoName        string
-	ILRepoURL         string
-	ILRepoSourceOwner string
+	ZlifecycleOwner     string
+	MasterRepoSshSecret string
+	WebhookSecret       string
+	CompanyName         string
+	ILRepoName          string
+	ILRepoURL           string
+	ILRepoSourceOwner   string
 
 	GithubSvcAccntName  string
 	GithubSvcAccntEmail string
@@ -18,22 +23,68 @@ type config struct {
 
 	ArgocdServerUrl string
 	ArgocdHookUrl   string
+	ArgocdUsername  string
+	ArgocdPassword  string
 }
 
 // Various config vars used throughout the operator
 var Config = config{
-	CompanyName:       os.Getenv("companyName"),
-	ILRepoName:        os.Getenv("ilRepoName"),
-	ILRepoURL:         os.Getenv("ilRepo"),
-	ILRepoSourceOwner: os.Getenv("ilRepoSourceOwner"),
+	ZlifecycleOwner:     getZlifecycleOwner(),
+	MasterRepoSshSecret: getMasterRepoSshSecret(),
+	WebhookSecret:       getWebhookSecret(),
+	CompanyName:         os.Getenv("companyName"),
+	ILRepoName:          os.Getenv("ilRepoName"),
+	ILRepoURL:           os.Getenv("ilRepo"),
+	ILRepoSourceOwner:   os.Getenv("ilRepoSourceOwner"),
 
 	GithubSvcAccntName:  "zLifecycle",
 	GithubSvcAccntEmail: "zLifecycle@compuzest.com",
 	GitHubAuthToken:     os.Getenv("GITHUB_AUTH_TOKEN"),
 	RepoBranch:          "main",
 
-	HelmChartsRepo: os.Getenv("helmChartsRepo"),
-	K8sAPIURL:      os.Getenv("K8s_API_URL"),
+	HelmChartsRepo:  os.Getenv("helmChartsRepo"),
+	K8sAPIURL:       os.Getenv("K8s_API_URL"),
 
-	ArgocdHookUrl: os.Getenv("ARGOCD_WEBHOOK_URL"),
+	ArgocdServerUrl:  getArgocdServerAddr(),
+	ArgocdHookUrl:    os.Getenv("ARGOCD_WEBHOOK_URL"),
+	ArgocdUsername:   os.Getenv("ARGOCD_USERNAME"),
+	ArgocdPassword:   os.Getenv("ARGOCD_PASSWORD"),
 }
+
+func getMasterRepoSshSecret() string {
+	val, exists := os.LookupEnv("ZLIFECYCLE_MASTER_SSH")
+	if exists {
+		return val
+	} else {
+		return "zlifecycle-master-ssh"
+	}
+}
+
+
+func getWebhookSecret() string {
+	val, exists := os.LookupEnv("GITHUB_WEBHOOK_SECRET")
+	if exists {
+		return val
+	} else {
+		return ""
+	}
+}
+
+func getZlifecycleOwner() string {
+	val, exists := os.LookupEnv("GITHUB_ZLIFECYCLE_OWNER")
+	if exists {
+		return val
+	} else {
+		return "CompuZest"
+	}
+}
+
+func getArgocdServerAddr() string {
+	val, exists := os.LookupEnv("ARGOCD_URL")
+	if exists {
+		return val
+	} else {
+		return "http://argocd-server.argocd.svc.cluster.local"
+	}
+}
+

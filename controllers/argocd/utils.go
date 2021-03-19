@@ -1,22 +1,13 @@
 package argocd
 
+import "errors"
 import (
-	"errors"
-	"os"
+	env "github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 )
 
-func GetArgocdServerAddr() string {
-	addr, exists := os.LookupEnv("ARGOCD_URL")
-	if exists {
-		return addr
-	} else {
-		return "http://argocd-server.argocd.svc.cluster.local"
-	}
-}
-
 func getArgocdCredentialsFromEnv() (*Credentials, error) {
-	username := os.Getenv("ARGOCD_USERNAME")
-	password := os.Getenv("ARGOCD_PASSWORD")
+	username := env.Config.ArgocdUsername
+	password := env.Config.ArgocdPassword
 	if username == "" || password == "" {
 		return nil, errors.New("missing 'ARGOCD_USERNAME' or 'ARGOCD_PASSWORD' env variables")
 	}
