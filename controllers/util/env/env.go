@@ -5,12 +5,13 @@ import (
 )
 
 type config struct {
-	ZlifecycleOwner   string
-	WebhookSecret     string
-	CompanyName       string
-	ILRepoName        string
-	ILRepoURL         string
-	ILRepoSourceOwner string
+	ZlifecycleOwner     string
+	MasterRepoSshSecret string
+	WebhookSecret       string
+	CompanyName         string
+	ILRepoName          string
+	ILRepoURL           string
+	ILRepoSourceOwner   string
 
 	GithubSvcAccntName  string
 	GithubSvcAccntEmail string
@@ -28,12 +29,13 @@ type config struct {
 
 // Various config vars used throughout the operator
 var Config = config{
-	ZlifecycleOwner:   getZlifecycleOwner(),
-	WebhookSecret:     getWebhookSecret(),
-	CompanyName:       os.Getenv("companyName"),
-	ILRepoName:        os.Getenv("ilRepoName"),
-	ILRepoURL:         os.Getenv("ilRepo"),
-	ILRepoSourceOwner: os.Getenv("ilRepoSourceOwner"),
+	ZlifecycleOwner:     getZlifecycleOwner(),
+	MasterRepoSshSecret: getMasterRepoSshSecret(),
+	WebhookSecret:       getWebhookSecret(),
+	CompanyName:         os.Getenv("companyName"),
+	ILRepoName:          os.Getenv("ilRepoName"),
+	ILRepoURL:           os.Getenv("ilRepo"),
+	ILRepoSourceOwner:   os.Getenv("ilRepoSourceOwner"),
 
 	GithubSvcAccntName:  "zLifecycle",
 	GithubSvcAccntEmail: "zLifecycle@compuzest.com",
@@ -49,28 +51,38 @@ var Config = config{
 	ArgocdPassword:   os.Getenv("ARGOCD_PASSWORD"),
 }
 
-func getWebhookSecret() string {
-	secret, exists := os.LookupEnv("GITHUB_WEBHOOK_SECRET")
+func getMasterRepoSshSecret() string {
+	val, exists := os.LookupEnv("ZLIFECYCLE_MASTER_SSH")
 	if exists {
-		return secret
+		return val
+	} else {
+		return "zlifecycle-master-ssh"
+	}
+}
+
+
+func getWebhookSecret() string {
+	val, exists := os.LookupEnv("GITHUB_WEBHOOK_SECRET")
+	if exists {
+		return val
 	} else {
 		return ""
 	}
 }
 
 func getZlifecycleOwner() string {
-	secret, exists := os.LookupEnv("GITHUB_ZLIFECYCLE_OWNER")
+	val, exists := os.LookupEnv("GITHUB_ZLIFECYCLE_OWNER")
 	if exists {
-		return secret
+		return val
 	} else {
 		return "CompuZest"
 	}
 }
 
 func getArgocdServerAddr() string {
-	addr, exists := os.LookupEnv("ARGOCD_URL")
+	val, exists := os.LookupEnv("ARGOCD_URL")
 	if exists {
-		return addr
+		return val
 	} else {
 		return "http://argocd-server.argocd.svc.cluster.local"
 	}

@@ -72,7 +72,8 @@ func (r *CompanyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	ilRepoUrl := fmt.Sprintf("git@github.com:%s/%s.git", owner, ilRepo)
-	if err := repo.TryRegisterRepo(r.Client, r.Log, ctx, argocdApi, ilRepoUrl, req.Namespace, repoSecret); err != nil {
+	masterRepoSshSecret := env.Config.MasterRepoSshSecret
+	if err := repo.TryRegisterRepo(r.Client, r.Log, ctx, argocdApi, ilRepoUrl, req.Namespace, masterRepoSshSecret); err != nil {
 		return ctrl.Result{}, err
 	}
 
