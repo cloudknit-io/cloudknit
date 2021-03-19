@@ -3,8 +3,9 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
-  name: zlifecycle-il-operator-manager-role
+  name: {{ template "core.fullname" . }}-manager-role
+  labels:
+    {{- include "core.labels" . | indent 4 }}
 rules:
 - apiGroups:
   - ""

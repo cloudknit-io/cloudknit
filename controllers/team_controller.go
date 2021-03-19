@@ -47,6 +47,9 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	team := &stablev1alpha1.Team{}
 	r.Get(ctx, req.NamespacedName, team)
+	if team.DeletionTimestamp.IsZero() == false {
+
+	}
 
 	teamYAML := fmt.Sprintf("%s-team.yaml", team.Spec.TeamName)
 
