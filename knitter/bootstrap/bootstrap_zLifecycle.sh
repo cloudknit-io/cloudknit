@@ -58,11 +58,6 @@ main() {
     ./$PARENT_DIRECTORY/provision.sh $LOCATION;
     checkForFailures
 
-    # Deploy Operator
-    announcePhase "Deploying zlifecycle-il-operator"
-    ./common/deploy_operator.sh
-    checkForFailures
-
     # Bootstrap customers
     announcePhase "Bootstrap customer Environments"
     ./common/bootstrap_customers.sh $LOCATION $PARENT_DIRECTORY;
