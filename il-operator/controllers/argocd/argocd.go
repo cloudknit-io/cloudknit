@@ -342,7 +342,7 @@ func RegisterRepo(log logr.Logger, api Api, repoOpts RepoOpts) (bool, error) {
 
 	tokenResponse, err := api.GetAuthToken()
 	if err != nil {
-		log.Error(err, "Error while calling get auth token")
+		log.Error(err, "Error while calling ArgoCD API get auth token")
 		return false, err
 	}
 
@@ -353,8 +353,10 @@ func RegisterRepo(log logr.Logger, api Api, repoOpts RepoOpts) (bool, error) {
 	}
 	defer resp1.Body.Close()
 
+	log.Info("List of repositories registered on ArgoCD", "repos", repositories)
+
 	if isRepoRegistered(*repositories, repoOpts.RepoUrl) {
-		log.Info("Repository already registered",
+		log.Info("Repository already registered on ArgoCD",
 			"repos", repositories.Items,
 			"repoName", repoName,
 			"repoUrl", repoOpts.RepoUrl,
@@ -362,17 +364,21 @@ func RegisterRepo(log logr.Logger, api Api, repoOpts RepoOpts) (bool, error) {
 		return false, nil
 	}
 
-	log.Info("Repository is not registered, registering now...", "repos", repositories, "repoName", repoName)
+	log.Info(
+		"Repository is not registered on ArgoCD, registering now...",
+		"repoName", repoName,
+		"repoUrl", repoOpts.RepoUrl,
+	)
 
 	createRepoBody := CreateRepoBody{Repo: repoOpts.RepoUrl, Name: repoName, SshPrivateKey: repoOpts.SshPrivateKey}
 	resp2, err2 := api.CreateRepository(createRepoBody, bearer)
 	if err2 != nil {
-		log.Error(err2, "Error while calling post create repository")
+		log.Error(err2, "Error while calling ArgoCD API post create repository")
 		return false, err2
 	}
 	defer resp2.Body.Close()
 
-	log.Info("Successfully registered repository", "repo", repoOpts.RepoUrl)
+	log.Info("Successfully registered repository on ArgoCD", "repo", repoOpts.RepoUrl)
 
 	return true, nil
 }

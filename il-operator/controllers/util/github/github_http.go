@@ -16,6 +16,15 @@ func createGithubClient(token string, ctx context.Context) *github.Client {
 	return github.NewClient(tc)
 }
 
+func (api HttpRepositoryApi) CreateRepository(owner string, repo string) (*github.Repository, *github.Response, error) {
+	r := github.Repository{Name: github.String(repo), Private: github.Bool(true)}
+	return api.Client.Repositories.Create(api.Ctx, owner, &r)
+}
+
+func (api HttpRepositoryApi) GetRepository(owner string, repo string) (*github.Repository, *github.Response, error) {
+	return api.Client.Repositories.Get(api.Ctx, owner, repo)
+}
+
 func (api HttpRepositoryApi) ListHooks(owner string, repo string, opts *github.ListOptions) ([]*github.Hook, *github.Response, error) {
 	return api.Client.Repositories.ListHooks(api.Ctx, owner, repo, opts)
 }
