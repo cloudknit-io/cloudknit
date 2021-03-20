@@ -50,7 +50,7 @@ docker-build:
 	docker build -t $(DOCKER_IMG) .
 	docker tag $(DOCKER_IMG) $${DOCKER_IMG%:*}:latest
 
-.PHONY: docker-dev-build 
+.PHONY: docker-dev-build
 docker-dev-build:
 	docker build . -t ${DOCKER_IMG} --file Dockerfile.dev
 	docker tag $(DOCKER_IMG) $${DOCKER_IMG%:*}:latest
@@ -82,9 +82,9 @@ generate: controller-gen
 manifests: controller-gen
 	# Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 	controller-gen crd:trivialVersions=true rbac:roleName=manager-role webhook \
-		paths="./..." output:crd:artifacts:config=helm/zlifecycle-il-operator/crds output:rbac:artifacts:config=helm/zlifecycle-il-operator/templates
-	@{ sed -i "" "s/manager-role/zlifecycle-il-operator-manager-role/" helm/zlifecycle-il-operator/templates/role.yaml; }
-	
+		paths="./..." output:crd:artifacts:config=charts/zlifecycle-il-operator/crds output:rbac:artifacts:config=charts/zlifecycle-il-operator/templates
+	@{ sed -i "" "s/manager-role/zlifecycle-il-operator-manager-role/" charts/zlifecycle-il-operator/templates/role.yaml; }
+
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
 # without first building the binary

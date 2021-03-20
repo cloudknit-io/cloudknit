@@ -11,6 +11,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+// TODO: First check is the repo already registered
 func TryRegisterRepo(
 	c client.Client,
 	log logr.Logger,
@@ -25,9 +26,9 @@ func TryRegisterRepo(
 		types.NamespacedName{Namespace: namespace, Name: repoSecret}
 	if err := c.Get(ctx, secretNamespacedName, secret); err != nil {
 		log.Info(
-			"Secret %s does not exist in namespace %s\n",
-			repoSecret,
-			namespace,
+			"Secret does not exist in namespace\n",
+			"secret", repoSecret,
+			"namespace", namespace,
 		)
 		return err
 	}
