@@ -1,10 +1,10 @@
 
 ---
-apiVersion: apiextensions.k8s.io/v1
+apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: (unknown)
+    controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
   name: environments.stable.compuzest.com
 spec:
@@ -15,98 +15,99 @@ spec:
     plural: environments
     singular: environment
   scope: Namespaced
-  versions:
-  - name: v1alpha1
-    schema:
-      openAPIV3Schema:
-        description: Environment is the Schema for the environments API
-        properties:
-          apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
-            type: string
-          kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-            type: string
-          metadata:
-            type: object
-          spec:
-            description: EnvironmentSpec defines the desired state of Environment
-            properties:
-              components:
-                items:
-                  properties:
-                    cronSchedule:
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: Environment is the Schema for the environments API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: EnvironmentSpec defines the desired state of Environment
+          properties:
+            components:
+              items:
+                properties:
+                  cronSchedule:
+                    type: string
+                  dependsOn:
+                    items:
                       type: string
-                    dependsOn:
-                      items:
+                    type: array
+                  module:
+                    properties:
+                      name:
                         type: string
-                      type: array
-                    module:
+                      path:
+                        type: string
+                      source:
+                        type: string
+                    required:
+                    - source
+                    type: object
+                  name:
+                    type: string
+                  type:
+                    type: string
+                  variables:
+                    items:
                       properties:
                         name:
                           type: string
-                        path:
-                          type: string
-                        source:
+                        value:
                           type: string
                       required:
-                      - source
+                      - name
+                      - value
                       type: object
-                    name:
-                      type: string
-                    type:
-                      type: string
-                    variables:
-                      items:
-                        properties:
-                          name:
-                            type: string
-                          value:
-                            type: string
-                        required:
-                        - name
-                        - value
-                        type: object
-                      type: array
-                    variablesFile:
-                      properties:
-                        path:
-                          type: string
-                        source:
-                          type: string
-                      required:
-                      - path
-                      - source
-                      type: object
-                  required:
-                  - module
-                  - name
-                  - type
-                  type: object
-                type: array
-              description:
-                type: string
-              envName:
-                type: string
-              teamName:
-                type: string
-            required:
-            - components
-            - envName
-            - teamName
-            type: object
-          status:
-            description: EnvironmentStatus defines the observed state of Environment
-            type: object
-        type: object
+                    type: array
+                  variablesFile:
+                    properties:
+                      path:
+                        type: string
+                      source:
+                        type: string
+                    required:
+                    - path
+                    - source
+                    type: object
+                required:
+                - module
+                - name
+                - type
+                type: object
+              type: array
+            description:
+              type: string
+            envName:
+              type: string
+            teamName:
+              type: string
+          required:
+          - components
+          - envName
+          - teamName
+          type: object
+        status:
+          description: EnvironmentStatus defines the observed state of Environment
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
     served: true
     storage: true
-    subresources:
-      status: {}
 status:
   acceptedNames:
     kind: ""
