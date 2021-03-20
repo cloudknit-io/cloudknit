@@ -15,13 +15,6 @@ The name of the core.
 {{- end -}}
 
 {{/*
-The name of the service.
-*/}}
-{{- define "svc.name" -}}
-{{- default .Release.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-
-{{/*
 Create a default fully qualified core name with an optional suffix
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
