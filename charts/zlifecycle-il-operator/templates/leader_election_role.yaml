@@ -2,7 +2,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: {{ template "core.fullname" . }}-leader-election-role
+  name: zlifecycle-il-operator-leader-election-role
   labels:
     {{- include "core.labels" . | indent 4 }}
 rules:

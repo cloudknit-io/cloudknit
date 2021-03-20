@@ -32,7 +32,6 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 {{- end -}}
 
-
 {{ define "core.deployment.container-env"}}
 {{- if .Values.env }}
 {{- range $key, $value := .Values.env }}

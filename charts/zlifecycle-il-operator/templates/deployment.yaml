@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "core.fullname" . }}-controller-manager
+  name: zlifecycle-il-operator-controller-manager
   labels:
     {{- include "core.labels" . | indent 4 }}
     control-plane: controller-manager

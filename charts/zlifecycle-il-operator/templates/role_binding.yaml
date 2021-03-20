@@ -1,13 +1,13 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ template "core.fullname" . }}-manager-rolebinding
+  name: zlifecycle-il-operator-manager-rolebinding
   labels:
     {{- include "core.labels" . | indent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: {{ template "core.fullname" . }}-manager-role
+  name: zlifecycle-il-operator-manager-role
 subjects:
 - kind: ServiceAccount
   name: default
