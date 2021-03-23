@@ -89,7 +89,7 @@ func TryCreateRepository(log logr.Logger, api RepositoryApi, owner string, repo 
 
 // CreateRepoWebhook tries to create a repository webhook
 // It returns true if webhook already exists, false if new webhook was created, or any kind of error.
-func CreateRepoWebhook(log logr.Logger, api RepositoryApi, repoUrl string, payloadUrl string) (bool, error) {
+func CreateRepoWebhook(log logr.Logger, api RepositoryApi, repoUrl string, payloadUrl string, webhookSecret string) (bool, error) {
 	owner, repo, err := parseRepoUrl(repoUrl)
 	if err != nil {
 		log.Error(err, "Error while parsing owner and repo name from repo url", "url", repoUrl)
@@ -128,7 +128,7 @@ func CreateRepoWebhook(log logr.Logger, api RepositoryApi, repoUrl string, paylo
 		return false, err
 	}
 
-	h := newHook(payloadUrl)
+	h := newHook(payloadUrl, webhookSecret)
 	hook, resp2, err := api.CreateHook(owner, repo, &h)
 	if err != nil {
 		log.Error(
@@ -181,11 +181,12 @@ func checkIsHookRegistered(log logr.Logger, hooks []*github.Hook, payloadUrl str
 	return false, nil
 }
 
-func newHook(payloadUrl string) github.Hook {
+func newHook(payloadUrl string, secret string) github.Hook {
 	events := []string{"push"}
 	cfg := map[string]interface{}{
 		"url":          payloadUrl,
 		"content_type": "json",
+		"secret":       secret,
 	}
 	return github.Hook{Events: events, Active: github.Bool(true), Config: cfg}
 }

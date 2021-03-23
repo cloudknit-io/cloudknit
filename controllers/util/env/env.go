@@ -7,7 +7,6 @@ import (
 type config struct {
 	ZlifecycleOwner     string
 	MasterRepoSshSecret string
-	WebhookSecret       string
 	CompanyName         string
 	ILRepoName          string
 	ILRepoURL           string
@@ -16,6 +15,7 @@ type config struct {
 	GithubSvcAccntName  string
 	GithubSvcAccntEmail string
 	GitHubAuthToken     string
+	GitHubWebhookSecret string
 	RepoBranch          string
 
 	HelmChartsRepo string
@@ -31,7 +31,7 @@ type config struct {
 var Config = config{
 	ZlifecycleOwner:     getZlifecycleOwner(),
 	MasterRepoSshSecret: getMasterRepoSshSecret(),
-	WebhookSecret:       getWebhookSecret(),
+
 	CompanyName:         os.Getenv("companyName"),
 	ILRepoName:          os.Getenv("ilRepoName"),
 	ILRepoURL:           os.Getenv("ilRepo"),
@@ -40,6 +40,7 @@ var Config = config{
 	GithubSvcAccntName:  "zLifecycle",
 	GithubSvcAccntEmail: "zLifecycle@compuzest.com",
 	GitHubAuthToken:     os.Getenv("GITHUB_AUTH_TOKEN"),
+	GitHubWebhookSecret: getWebhookSecret(),
 	RepoBranch:          "main",
 
 	HelmChartsRepo:  os.Getenv("helmChartsRepo"),
@@ -66,7 +67,7 @@ func getWebhookSecret() string {
 	if exists {
 		return val
 	} else {
-		return ""
+		return "D3f4u1tZ1if3cyc13"
 	}
 }
 
