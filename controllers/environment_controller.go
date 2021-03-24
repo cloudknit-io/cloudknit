@@ -25,7 +25,6 @@ import (
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
 	argocd "github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
 	argoWorkflow "github.com/compuzest/zlifecycle-il-operator/controllers/argoworkflow"
-	k8s "github.com/compuzest/zlifecycle-il-operator/controllers/kubernetes"
 	env "github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	file "github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
 	github "github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
@@ -63,10 +62,6 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	}
 
 	if err := generateAndSaveWorkflowOfWorkflows(environment, envComponentDirectory); err != nil {
-		return ctrl.Result{}, err
-	}
-
-	if err := generateAndSavePresyncJob(environment, envComponentDirectory); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -133,15 +128,6 @@ func generateAndSaveEnvironmentApp(environment *stablev1alpha1.Environment, envD
 	envYAML := fmt.Sprintf("%s-environment.yaml", environment.Spec.EnvName)
 
 	if err := file.SaveYamlFile(*envApp, envDirectory, envYAML); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func generateAndSavePresyncJob(environment *stablev1alpha1.Environment, envComponentDirectory string) error {
-	presyncJob := k8s.GeneratePreSyncJob(*environment)
-	if err := file.SaveYamlFile(*presyncJob, envComponentDirectory, "/presync-job.yaml"); err != nil {
 		return err
 	}
 
