@@ -6,7 +6,8 @@ import (
 
 type config struct {
 	ZlifecycleOwner     string
-	MasterRepoSshSecret string
+	ZlifecycleMasterRepoSshSecret string
+	ZlifecycleOperatorNamespace   string
 	CompanyName         string
 	ILRepoName          string
 	ILRepoURL           string
@@ -29,8 +30,9 @@ type config struct {
 
 // Various config vars used throughout the operator
 var Config = config{
-	ZlifecycleOwner:     getZlifecycleOwner(),
-	MasterRepoSshSecret: getMasterRepoSshSecret(),
+	ZlifecycleOwner:               getZlifecycleOwner(),
+	ZlifecycleMasterRepoSshSecret: getZlifecyleMasterRepoSshSecret(),
+	ZlifecycleOperatorNamespace:   os.Getenv("ZLIFECYCLE_OPERATOR_NAMESPACE"),
 
 	CompanyName:         os.Getenv("companyName"),
 	ILRepoName:          os.Getenv("ilRepoName"),
@@ -40,7 +42,7 @@ var Config = config{
 	GithubSvcAccntName:  "zLifecycle",
 	GithubSvcAccntEmail: "zLifecycle@compuzest.com",
 	GitHubAuthToken:     os.Getenv("GITHUB_AUTH_TOKEN"),
-	GitHubWebhookSecret: getWebhookSecret(),
+	GitHubWebhookSecret: os.Getenv("GITHUB_WEBHOOK_SECRET"),
 	RepoBranch:          "main",
 
 	HelmChartsRepo:  os.Getenv("helmChartsRepo"),
@@ -52,22 +54,12 @@ var Config = config{
 	ArgocdPassword:   os.Getenv("ARGOCD_PASSWORD"),
 }
 
-func getMasterRepoSshSecret() string {
+func getZlifecyleMasterRepoSshSecret() string {
 	val, exists := os.LookupEnv("ZLIFECYCLE_MASTER_SSH")
 	if exists {
 		return val
 	} else {
 		return "zlifecycle-master-ssh"
-	}
-}
-
-
-func getWebhookSecret() string {
-	val, exists := os.LookupEnv("GITHUB_WEBHOOK_SECRET")
-	if exists {
-		return val
-	} else {
-		return "D3f4u1tZ1if3cyc13"
 	}
 }
 

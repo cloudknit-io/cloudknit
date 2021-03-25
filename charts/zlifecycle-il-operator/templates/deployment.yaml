@@ -30,6 +30,8 @@ spec:
               secretKeyRef:
                 name: github-auth-token
                 key: token
+          - name: ZLIFECYCLE_OPERATOR_NAMESPACE
+            value: {{ .Release.Namespace }}
           {{- include "core.deployment.container-env" . | indent 10 }}
         envFrom:
           - configMapRef:

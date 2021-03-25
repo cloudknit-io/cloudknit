@@ -72,8 +72,9 @@ func (r *CompanyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	ilRepoUrl := fmt.Sprintf("git@github.com:%s/%s.git", owner, ilRepo)
-	masterRepoSshSecret := env.Config.MasterRepoSshSecret
-	if err := repo.TryRegisterRepo(r.Client, r.Log, ctx, argocdApi, ilRepoUrl, req.Namespace, masterRepoSshSecret); err != nil {
+	masterRepoSshSecret := env.Config.ZlifecycleMasterRepoSshSecret
+	operatorNamespace := env.Config.ZlifecycleOperatorNamespace
+	if err := repo.TryRegisterRepo(r.Client, r.Log, ctx, argocdApi, ilRepoUrl, operatorNamespace, masterRepoSshSecret); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -85,6 +86,12 @@ func (r *CompanyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		fmt.Sprintf("Reconciling company %s", company.Spec.CompanyName),
 		env.Config.GithubSvcAccntName,
 		env.Config.GithubSvcAccntEmail)
+
+	githubApi := github.NewHttpClient(env.Config.GitHubAuthToken, ctx)
+	_, err = github.CreateRepoWebhook(r.Log, githubApi, companyRepo, env.Config.ArgocdHookUrl, env.Config.GitHubWebhookSecret)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
 
 	return ctrl.Result{}, nil
 }
