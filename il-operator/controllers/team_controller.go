@@ -15,12 +15,14 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"time"
+
+	file "github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/repo"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"time"
 
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
 	env "github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
@@ -28,7 +30,6 @@ import (
 	il "github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
 
 	argocd "github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
-	fileutil "github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
 )
 
 // TeamReconciler reconciles a Team object
@@ -46,6 +47,7 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 
 	team := &stablev1alpha1.Team{}
+	fileUtil := &file.UtilFileService{}
 	r.Get(ctx, req.NamespacedName, team)
 	if team.DeletionTimestamp.IsZero() == false {
 
@@ -53,7 +55,7 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	teamYAML := fmt.Sprintf("%s-team.yaml", team.Spec.TeamName)
 
-	if err := fileutil.CreateEmptyDirectory(il.EnvironmentDirectory(team.Spec.TeamName)); err != nil {
+	if err := fileUtil.CreateEmptyDirectory(il.EnvironmentDirectory(team.Spec.TeamName)); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -105,8 +107,9 @@ func (r *TeamReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 func generateAndSaveTeamApp(team *stablev1alpha1.Team, teamYAML string) error {
 	teamApp := argocd.GenerateTeamApp(*team)
+	fileUtil := &file.UtilFileService{}
 
-	if err := fileutil.SaveYamlFile(*teamApp, il.Config.TeamDirectory, teamYAML); err != nil {
+	if err := fileUtil.SaveYamlFile(*teamApp, il.Config.TeamDirectory, teamYAML); err != nil {
 		return err
 	}
 
@@ -115,8 +118,9 @@ func generateAndSaveTeamApp(team *stablev1alpha1.Team, teamYAML string) error {
 
 func generateAndSaveConfigWatchers(team *stablev1alpha1.Team, teamYAML string) error {
 	teamConfigWatcherApp := argocd.GenerateTeamConfigWatcherApp(*team)
+	fileUtil := &file.UtilFileService{}
 
-	if err := fileutil.SaveYamlFile(*teamConfigWatcherApp, il.Config.ConfigWatcherDirectory, teamYAML); err != nil {
+	if err := fileUtil.SaveYamlFile(*teamConfigWatcherApp, il.Config.ConfigWatcherDirectory, teamYAML); err != nil {
 		return err
 	}
 
