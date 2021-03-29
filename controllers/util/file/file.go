@@ -16,14 +16,32 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"text/template"
+
+	"github.com/go-logr/logr"
 
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
 	"github.com/ghodss/yaml"
 	"k8s.io/apimachinery/pkg/util/json"
 )
 
+//go:generate mockgen -source=./file.go -destination=../../../mocks/mock_file.go -package=mocks github.com/compuzest/zlifecycle-il-operator/mocks
+
+type UtilFile interface {
+	SaveFileFromString(jsonString string, folderName string, fileName string) error
+	SaveYamlFile(obj interface{}, folderName string, fileName string) error
+	SaveVarsToFile(variables []*stablev1alpha1.Variable, folderName string, fileName string) error
+	CreateEmptyDirectory(folderName string) error
+	SaveFileFromTemplate(t *template.Template, vars interface{}, folderName string, fileName string) error
+}
+
+type UtilFileService struct {
+	UtilFile
+	log logr.Logger
+}
+
 // CreateEmptyDirectory creates empty directory with a .keep file
-func CreateEmptyDirectory(folderName string) error {
+func (f UtilFileService) CreateEmptyDirectory(folderName string) error {
 	if err := os.MkdirAll(folderName, os.ModePerm); err != nil {
 		return fmt.Errorf("error: failed to create directory: %s", err.Error())
 	}
@@ -35,7 +53,40 @@ func CreateEmptyDirectory(folderName string) error {
 	return nil
 }
 
-func SaveYamlFile(obj interface{}, folderName string, fileName string) error {
+// SaveFileFromTemplate creates a file with variables
+func (f UtilFileService) SaveFileFromTemplate(t *template.Template, vars interface{}, folderName string, fileName string) error {
+	if err := os.MkdirAll(folderName, os.ModePerm); err != nil {
+		return fmt.Errorf("error: failed to create directory: %s", err.Error())
+	}
+	createdFile, err := os.Create(folderName + "/" + fileName)
+
+	if err != nil {
+		return err
+	}
+	err = t.Execute(createdFile, vars)
+
+	if err != nil {
+		return err
+	}
+	createdFile.Close()
+	return nil
+}
+
+// SaveFileFromString Create file
+func (f UtilFileService) SaveFileFromString(str string, folderName string, fileName string) error {
+	if err := os.MkdirAll(folderName, os.ModePerm); err != nil {
+		return fmt.Errorf("error: failed to create directory: %s", err.Error())
+	}
+
+	if err := ioutil.WriteFile(folderName+"/"+fileName, []byte(str), 0644); err != nil {
+		return fmt.Errorf("error: failed to write file: %s", err.Error())
+	}
+
+	return nil
+}
+
+// SaveYamlFile creates file and directory, does not validate yaml
+func (f UtilFileService) SaveYamlFile(obj interface{}, folderName string, fileName string) error {
 	jsonBytes, err := json.Marshal(obj)
 	if err != nil {
 		return fmt.Errorf("error: failed to marshal json: %s", err.Error())
@@ -57,7 +108,7 @@ func SaveYamlFile(obj interface{}, folderName string, fileName string) error {
 	return nil
 }
 
-func SaveVarsToFile(variables []*stablev1alpha1.Variable, folderName string, fileName string) error {
+func (f UtilFileService) SaveVarsToFile(variables []*stablev1alpha1.Variable, folderName string, fileName string) error {
 	if err := os.MkdirAll(folderName, os.ModePerm); err != nil {
 		return fmt.Errorf("error: failed to create directory: %s", err.Error())
 	}
