@@ -1,13 +1,12 @@
 terraform {
-    required_version: "{{ .Version }}"
+    required_version = "{{ .Version }}"
 
     backend "s3" {
-            region = "{{ .Region }}"
-            bucket = "{{ .Bucket }}"
-            encrypt = "true"
-            key = "{{ .TeamName }}/{{ .EnvName }}/{{ .ComponentName }}/terraform.tfstate"
-            profile = "{{ .Profile }}"
-            dynamodb_table = "{{ .DynamoDBTable }}"
-        }
+        region = "{{ .Region }}"
+        bucket = "{{ .Bucket }}"
+        encrypt = "true"
+        key = "{{ .TeamName }}/{{ .EnvName }}/{{ .ComponentName }}/terraform.tfstate"
+        profile = "{{ .Profile }}"
+        dynamodb_table = "{{ .DynamoDBTable }}"
     }
 }
