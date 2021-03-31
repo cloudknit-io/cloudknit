@@ -15,6 +15,8 @@ package controllers
 import (
 	"context"
 	"fmt"
+
+	file "github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/repo"
 
 	"github.com/go-logr/logr"
@@ -25,7 +27,6 @@ import (
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
 	argocd "github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
 	env "github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
-	fileutil "github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
 	github "github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
 	il "github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
 )
@@ -104,8 +105,9 @@ func (r *CompanyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 func generateAndSaveCompanyApp(company *stablev1alpha1.Company) error {
 	companyApp := argocd.GenerateCompanyApp(*company)
+	fileUtil := &file.UtilFileService{}
 
-	if err := fileutil.SaveYamlFile(*companyApp, il.Config.CompanyDirectory, company.Spec.CompanyName+".yaml"); err != nil {
+	if err := fileUtil.SaveYamlFile(*companyApp, il.Config.CompanyDirectory, company.Spec.CompanyName+".yaml"); err != nil {
 		return err
 	}
 
@@ -114,8 +116,9 @@ func generateAndSaveCompanyApp(company *stablev1alpha1.Company) error {
 
 func generateAndSaveCompanyConfigWatcher(company *stablev1alpha1.Company) error {
 	companyConfigWatcherApp := argocd.GenerateCompanyConfigWatcherApp(company.Spec.CompanyName, company.Spec.ConfigRepo.Source)
+	fileUtil := &file.UtilFileService{}
 
-	if err := fileutil.SaveYamlFile(*companyConfigWatcherApp, il.Config.ConfigWatcherDirectory, company.Spec.CompanyName+".yaml"); err != nil {
+	if err := fileUtil.SaveYamlFile(*companyConfigWatcherApp, il.Config.ConfigWatcherDirectory, company.Spec.CompanyName+".yaml"); err != nil {
 		return err
 	}
 
