@@ -1,7 +1,8 @@
 SHELL = /bin/bash
 
 export CGO_ENABLED = 0
-export DOCKER_IMG = zlifecycle-il-operator:latest
+export DOCKER_TAG = latest
+export DOCKER_IMG = zlifecycle-il-operator
 export VERSION = $(shell git describe --always --tags 2>/dev/null || echo "initial")
 
 BUILD_CMD = go build -a -o build/zlifecycle-il-operator-$${GOOS}-$${GOARCH}
@@ -47,13 +48,13 @@ check test: generate manifests
 
 .PHONY: docker-build
 docker-build:
-	docker build -t $(DOCKER_IMG) .
-	docker tag $(DOCKER_IMG) $${DOCKER_IMG%:*}:latest
+	go generate ./...
+	docker build -t $(DOCKER_IMG):$(DOCKER_TAG) .
 
 .PHONY: docker-dev-build
 docker-dev-build:
-	docker build . -t ${DOCKER_IMG} --file Dockerfile.dev
-	docker tag $(DOCKER_IMG) $${DOCKER_IMG%:*}:latest
+	go generate ./...
+	docker build . -t $(DOCKER_IMG):$(DOCKER_TAG) --file Dockerfile.dev
 
 # Push the docker image to ECR -- reminder: never push 'latest'
 .PHONY: docker-push
@@ -67,8 +68,8 @@ endif
 	aws --version
 	aws ecr get-login-password --region us-east-1 \
 		| docker login --username AWS --password-stdin $(ECR_REPO)
-	docker tag $(DOCKER_IMG) $(ECR_REPO)/$(DOCKER_IMG)
-	docker push $(ECR_REPO)/$(DOCKER_IMG)
+	docker tag $(DOCKER_IMG):$(DOCKER_TAG) $(ECR_REPO)/$(DOCKER_IMG):$(DOCKER_TAG)
+	docker push $(ECR_REPO)/$(DOCKER_IMG):$(DOCKER_TAG)
 
 .PHONY: clean
 clean:
