@@ -11,7 +11,7 @@ BUILD_CMD = go build -a -o build/zlifecycle-il-operator-$${GOOS}-$${GOARCH}
 all: deps check docker-build
 
 .PHONY: deps
-deps: download-controller-gen download-kustomize
+deps: download-controller-gen download-mockgen
 
 .PHONY: check test
 .ONESHELL:
@@ -86,6 +86,11 @@ manifests: controller-gen
 		paths="./..." output:crd:artifacts:config=charts/zlifecycle-il-operator/crds output:rbac:artifacts:config=charts/zlifecycle-il-operator/templates
 	@{ sed -i "s/manager-role/zlifecycle-il-operator-manager-role/" charts/zlifecycle-il-operator/templates/role.yaml; }
 
+manifests-local: controller-gen
+	# Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
+	controller-gen crd:trivialVersions=true rbac:roleName=manager-role webhook \
+		paths="./..." output:crd:artifacts:config=charts/zlifecycle-il-operator/crds output:rbac:artifacts:config=charts/zlifecycle-il-operator/templates
+	@{ sed -i "" "s/manager-role/zlifecycle-il-operator-manager-role/" charts/zlifecycle-il-operator/templates/role.yaml; }
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
 # without first building the binary
@@ -107,16 +112,16 @@ ifeq (, $(shell command -v controller-gen))
 	}
 endif
 
-.PHONY: kustomize
-download-kustomize:
-ifeq (, $(shell command -v kustomize))
+.PHONY: mockgen
+download-mockgen:
+ifeq (, $(shell command -v mockgen))
 	@{ \
-	echo "Downloading kustomize..."
+	echo "Downloading mockgen..."
 	set -e ;\
-	KUSTOMIZE_GEN_TMP_DIR=$$(mktemp -d) ;\
-	cd $$KUSTOMIZE_GEN_TMP_DIR ;\
+	MOCKGEN_TMP_DIR=$$(mktemp -d) ;\
+	cd $$MOCKGEN_TMP_DIR ;\
 	go mod init tmp ;\
-	go get sigs.k8s.io/kustomize/kustomize/v3@v3.5.4 ;\
-	rm -rf $$KUSTOMIZE_GEN_TMP_DIR ;\
+	go get github.com/golang/mock/mockgen@v1.5.0 ;\
+	rm -rf $$MOCKGEN_TMP_DIR ;\
 	}
 endif
