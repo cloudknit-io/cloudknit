@@ -51,6 +51,6 @@ jobs:
         if: always()
         with:
           status: ${{ job.status }}
-          notify_when: 'success,failure,warnings' # default is 'success,failure,warnings'
+          notify_when: 'failure,warnings' # default is 'success,failure,warnings'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
