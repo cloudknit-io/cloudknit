@@ -34,12 +34,15 @@ type TerraformGenerator struct {
 	UtilTerraformGenerator
 }
 
+// DefaultTerraformVersion for provisioning components
+var DefaultTerraformVersion = "= 0.13.2"
+
 // GenerateTerraform save all terraform files needed for a module
 func (tf TerraformGenerator) GenerateTerraform(fileUtil file.UtilFile, environmentComponent *stablev1alpha1.EnvironmentComponent, environment *stablev1alpha1.Environment, environmentComponentDirectory string) error {
 	backendConfig := TerraformBackendConfig{
 		Region:        "us-east-1",
 		Profile:       "compuzest-shared",
-		Version:       "= 0.13.2",
+		Version:       DefaultTerraformVersion,
 		Bucket:        "compuzest-zlifecycle-tfstate",
 		DynamoDBTable: "compuzest-zlifecycle-tflock",
 		TeamName:      environment.Spec.TeamName,
