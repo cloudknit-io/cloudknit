@@ -5,6 +5,20 @@ import (
 	"github.com/google/go-github/v32/github"
 )
 
+type GitApi interface {
+	GetRef(owner string, repo string, ref string) (*github.Reference, *github.Response, error)
+	UpdateRef(owner string, repo string, ref *github.Reference, force bool) (*github.Reference, *github.Response, error)
+	GetCommit(owner string, repo string, sha string) (*github.Commit, *github.Response, error)
+	CreateCommit(owner string, repo string, commit *github.Commit) (*github.Commit, *github.Response, error)
+	GetTree(owner string, repo string, sha string, recursive bool) (*github.Tree, *github.Response, error)
+	CreateTree(owner string, repo string, baseTree string, entries []*github.TreeEntry) (*github.Tree, *github.Response, error)
+}
+
+type HttpGitApi struct {
+	Ctx    context.Context
+	Client *github.GitService
+}
+
 type RepositoryApi interface {
 	CreateRepository(owner string, repo string) (*github.Repository, *github.Response, error)
 	GetRepository(owner string, repo string) (*github.Repository, *github.Response, error)
@@ -14,7 +28,7 @@ type RepositoryApi interface {
 
 type HttpRepositoryApi struct {
 	Ctx    context.Context
-	Client *github.Client
+	Client *github.RepositoriesService
 }
 
 type Package struct {

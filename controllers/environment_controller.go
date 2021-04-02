@@ -15,6 +15,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	github2 "github.com/google/go-github/v32/github"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -51,6 +52,48 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	r.Get(ctx, req.NamespacedName, environment)
 
+	owner := env.Config.ZlifecycleOwner
+	ilRepo := "zmart-il"
+	githubGitApi := github.NewHttpGitClient(env.Config.GitHubAuthToken, ctx)
+	branch := env.Config.RepoBranch
+	now := time.Now()
+	commitAuthor := &github2.CommitAuthor{Date: &now, Name: &env.Config.GithubSvcAccntName, Email: &env.Config.GithubSvcAccntEmail}
+	paths := []string{"test/test.txt"}
+	err := github.RemoveObjectsFromBranch(
+		r.Log,
+		githubGitApi,
+		owner,
+		ilRepo,
+		branch,
+		paths,
+		commitAuthor,
+		"Running finalizer to clean il repo",
+		)
+	if err != nil { r.Log.Error(err, "Debug error") }
+	//finalizer := env.Config.GithubFinalizer
+	//
+	//if environment.DeletionTimestamp.IsZero() {
+	//	if !common.ContainsString(environment.GetFinalizers(), finalizer) {
+	//		environment.SetFinalizers(append(environment.GetFinalizers(), finalizer))
+	//		if err := r.Update(ctx, environment); err != nil {
+	//			return ctrl.Result{}, err
+	//		}
+	//	}
+	//} else {
+	//	if common.ContainsString(environment.GetFinalizers(), finalizer) {
+	//		if err := r.deleteExternalResources(environment); err != nil {
+	//			return ctrl.Result{}, err
+	//		}
+	//
+	//		environment.SetFinalizers(common.RemoveString(environment.GetFinalizers(), finalizer))
+	//		if err := r.Update(ctx, environment); err != nil {
+	//			return ctrl.Result{}, err
+	//		}
+	//	}
+	//
+	//	return ctrl.Result{}, nil
+	//}
+
 	envDirectory := il.EnvironmentDirectory(environment.Spec.TeamName)
 	envComponentDirectory := il.EnvironmentComponentDirectory(environment.Spec.TeamName, environment.Spec.EnvName)
 
@@ -85,6 +128,10 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	}
 
 	return ctrl.Result{}, nil
+}
+
+func (r *EnvironmentReconciler) deleteExternalResources(environment *stablev1alpha1.Environment) error {
+	return nil
 }
 
 // SetupWithManager sets up the Environment Controller with Manager
