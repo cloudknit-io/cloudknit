@@ -65,23 +65,23 @@ func (r *CompanyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	owner := env.Config.ZlifecycleOwner
-	ilRepo := company.Name + "-il"
-	githubRepositoryApi := github.NewHttpClient(env.Config.GitHubAuthToken, ctx)
-	_, err := github.TryCreateRepository(r.Log, githubRepositoryApi, owner, ilRepo)
+	ilRepo := il.RepoName(company.Name)
+	githubRepositoryAPI := github.NewHttpClient(env.Config.GitHubAuthToken, ctx)
+	_, err := github.TryCreateRepository(r.Log, githubRepositoryAPI, owner, ilRepo)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 
-	ilRepoUrl := fmt.Sprintf("git@github.com:%s/%s.git", owner, ilRepo)
-	masterRepoSshSecret := env.Config.ZlifecycleMasterRepoSshSecret
+	ilRepoURL := il.RepoURL(owner, company.Name)
+	masterRepoSSHSecret := env.Config.ZlifecycleMasterRepoSshSecret
 	operatorNamespace := env.Config.ZlifecycleOperatorNamespace
-	if err := repo.TryRegisterRepo(r.Client, r.Log, ctx, argocdApi, ilRepoUrl, operatorNamespace, masterRepoSshSecret); err != nil {
+	if err := repo.TryRegisterRepo(r.Client, r.Log, ctx, argocdApi, ilRepoURL, operatorNamespace, masterRepoSSHSecret); err != nil {
 		return ctrl.Result{}, err
 	}
 
 	github.CommitAndPushFiles(
 		env.Config.ILRepoSourceOwner,
-		env.Config.ILRepoName,
+		ilRepo,
 		[]string{il.Config.CompanyDirectory, il.Config.ConfigWatcherDirectory},
 		env.Config.RepoBranch,
 		fmt.Sprintf("Reconciling company %s", company.Spec.CompanyName),
