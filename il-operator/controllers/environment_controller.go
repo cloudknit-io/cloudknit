@@ -129,7 +129,11 @@ func generateAndSaveEnvironmentComponents(fileUtil file.UtilFile, environment *s
 }
 
 func generateAndSaveWorkflowOfWorkflows(fileUtil file.UtilFile, environment *stablev1alpha1.Environment, envComponentDirectory string) error {
-	workflow := argoWorkflow.GenerateWorkflowOfWorkflows(*environment)
+	workflow := argoWorkflow.GenerateLegacyWorkflowOfWorkflows(*environment)
+
+	// WIP, below command is for testing
+	argoWorkflow.GenerateWorkflowOfWorkflows(*environment)
+
 	if err := fileUtil.SaveYamlFile(*workflow, envComponentDirectory, "/wofw.yaml"); err != nil {
 		return err
 	}
