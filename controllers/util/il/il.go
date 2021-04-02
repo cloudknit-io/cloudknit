@@ -1,5 +1,7 @@
 package il
 
+import "fmt"
+
 type config struct {
 	TeamDirectory          string
 	CompanyDirectory       string
@@ -14,6 +16,14 @@ var Config = config{
 
 func EnvironmentComponentDirectory(teamName string, envName string) string {
 	return EnvironmentDirectory(teamName) + "/" + envName + "-environment-component"
+}
+
+func RepoName(companyName string) string {
+	return companyName + "-il"
+}
+
+func RepoURL(owner string, companyName string) string {
+	return fmt.Sprintf("git@github.com:%s/%s.git", owner, RepoName(companyName))
 }
 
 func EnvironmentDirectory(teamName string) string {

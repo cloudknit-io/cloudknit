@@ -25,6 +25,7 @@ import (
 )
 
 func GenerateCompanyApp(company stablev1alpha1.Company) *appv1.Application {
+	ilRepoName := il.RepoName(company.Name)
 	return &appv1.Application{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "argoproj.io/v1alpha1",
@@ -49,7 +50,7 @@ func GenerateCompanyApp(company stablev1alpha1.Company) *appv1.Application {
 				Namespace: "default",
 			},
 			Source: appv1.ApplicationSource{
-				RepoURL:        env.Config.ILRepoURL,
+				RepoURL:        ilRepoName,
 				Path:           "./" + il.Config.TeamDirectory,
 				TargetRevision: "HEAD",
 			},
@@ -58,7 +59,7 @@ func GenerateCompanyApp(company stablev1alpha1.Company) *appv1.Application {
 			Sync: appv1.SyncStatus{
 				ComparedTo: appv1.ComparedTo{
 					Source: appv1.ApplicationSource{
-						RepoURL: env.Config.ILRepoURL,
+						RepoURL: ilRepoName,
 					},
 				},
 				Status: "Synced",
