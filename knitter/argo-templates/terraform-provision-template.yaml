@@ -16,6 +16,11 @@ metadata:
   namespace: argocd
 spec:
   entrypoint: provision
+  volumes:
+    - name: github-ssh-key-mount
+      secret:
+        secretName: github-ssh-key
+        defaultMode: 384
   podGC:
     strategy: OnWorkflowSuccess
   ttlStrategy:
@@ -47,3 +52,7 @@ spec:
             value: "home/terraform-config/{{inputs.parameters.terraform_il_path}}"
           - name: TERRAFORM_VERSION
             value: "{{inputs.parameters.terraform_version}}"
+        volumeMounts:
+          - name: github-ssh-key-mount
+            mountPath: "/root/.ssh"
+            readOnly: false
