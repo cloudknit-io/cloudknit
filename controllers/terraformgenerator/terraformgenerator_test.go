@@ -3,7 +3,7 @@ package terraformgenerator_test
 import (
 	"testing"
 
-	terraformgenerator "github.com/compuzest/zlifecycle-il-operator/controllers/terraform_generator"
+	terraformgenerator "github.com/compuzest/zlifecycle-il-operator/controllers/terraformgenerator"
 	"github.com/compuzest/zlifecycle-il-operator/mocks"
 	"github.com/golang/mock/gomock"
 )
