@@ -15,7 +15,7 @@ package argoworkflow
 import (
 	workflow "github.com/argoproj/argo/pkg/apis/workflow/v1alpha1"
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
-	terraformgenerator "github.com/compuzest/zlifecycle-il-operator/controllers/terraform_generator/terraform_generator"
+	terraformgenerator "github.com/compuzest/zlifecycle-il-operator/controllers/terraformgenerator"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -25,6 +25,7 @@ import (
 func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workflow.Workflow {
 	envComponentDirectory := il.EnvironmentComponentDirectory(environment.Spec.TeamName, environment.Spec.EnvName)
 	workflowTemplate := "terraform-provision-template"
+	tfPath := terraformgenerator.TerraformIlPath(envComponentDirectory)
 
 	var tasks []workflow.DAGTask
 
@@ -32,7 +33,7 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 		task := workflow.DAGTask{
 			Name: environmentComponent.Name,
 			TemplateRef: &workflow.TemplateRef{
-				Name:     "workflow-trigger-template",
+				Name:     "provisioner-trigger-template",
 				Template: "run",
 			},
 			Dependencies: environmentComponent.DependsOn,
@@ -44,11 +45,11 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 					},
 					{
 						Name:  "terraform_version",
-						Value: terraformgenerator.DefaultTerraformVersion,
+						Value: &terraformgenerator.DefaultTerraformVersion,
 					},
 					{
 						Name:  "terraform_il_path",
-						Value: terraformgenerator.TerraformIlPath(envComponentDirectory),
+						Value: &tfPath,
 					},
 					{
 						Name:  "il_repo",
@@ -68,7 +69,7 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 			Kind:       "Workflow",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      environment.Spec.TeamName + "-" + environment.Spec.EnvName,
+			Name:      "experimental-" + environment.Spec.TeamName + "-" + environment.Spec.EnvName,
 			Namespace: "argocd",
 			Annotations: map[string]string{
 				"argocd.argoproj.io/hook":               "PreSync",

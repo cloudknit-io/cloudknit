@@ -37,6 +37,10 @@ type TerraformGenerator struct {
 // DefaultTerraformVersion for provisioning components
 var DefaultTerraformVersion = "= 0.13.2"
 
+func TerraformIlPath(envComponentDirectory string) string {
+	return envComponentDirectory + "/terraform"
+}
+
 // GenerateTerraform save all terraform files needed for a module
 func (tf TerraformGenerator) GenerateTerraform(fileUtil file.UtilFile, environmentComponent *stablev1alpha1.EnvironmentComponent, environment *stablev1alpha1.Environment, environmentComponentDirectory string) error {
 	backendConfig := TerraformBackendConfig{
