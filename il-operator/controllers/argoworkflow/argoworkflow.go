@@ -15,11 +15,87 @@ package argoworkflow
 import (
 	workflow "github.com/argoproj/argo/pkg/apis/workflow/v1alpha1"
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
+	terraformgenerator "github.com/compuzest/zlifecycle-il-operator/controllers/terraformgenerator"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// GenerateWorkflowOfWorkflows create WoW
 func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workflow.Workflow {
+	envComponentDirectory := il.EnvironmentComponentDirectory(environment.Spec.TeamName, environment.Spec.EnvName)
+	workflowTemplate := "terraform-provision-template"
+	tfPath := terraformgenerator.TerraformIlPath(envComponentDirectory)
+
+	var tasks []workflow.DAGTask
+
+	for _, environmentComponent := range environment.Spec.EnvironmentComponent {
+		task := workflow.DAGTask{
+			Name: environmentComponent.Name,
+			TemplateRef: &workflow.TemplateRef{
+				Name:     "provisioner-trigger-template",
+				Template: "run",
+			},
+			Dependencies: environmentComponent.DependsOn,
+			Arguments: workflow.Arguments{
+				Parameters: []workflow.Parameter{
+					{
+						Name:  "workflowtemplate",
+						Value: &workflowTemplate,
+					},
+					{
+						Name:  "terraform_version",
+						Value: &terraformgenerator.DefaultTerraformVersion,
+					},
+					{
+						Name:  "terraform_il_path",
+						Value: &tfPath,
+					},
+					{
+						Name:  "il_repo",
+						Value: &env.Config.ILRepoURL,
+						// to be replaced with reference to il.RepoURL(owner, companyName) once company can be extrapolated here
+					},
+				},
+			},
+		}
+
+		tasks = append(tasks, task)
+	}
+
+	return &workflow.Workflow{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "argoproj.io/v1alpha1",
+			Kind:       "Workflow",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "experimental-" + environment.Spec.TeamName + "-" + environment.Spec.EnvName,
+			Namespace: "argocd",
+			Annotations: map[string]string{
+				"argocd.argoproj.io/hook":               "PreSync",
+				"argocd.argoproj.io/hook-delete-policy": "BeforeHookCreation",
+			},
+			Labels: map[string]string{
+				"workflows.argoproj.io/completed": "false",
+				"terraform/sync":                  "true",
+				"zlifecycle.com/model":            "environment-sync-flow",
+			},
+		},
+		Spec: workflow.WorkflowSpec{
+			Entrypoint: "main",
+			Templates: []workflow.Template{
+				{
+					Name: "main",
+					DAG: &workflow.DAGTemplate{
+						Tasks: tasks,
+					},
+				},
+			},
+		},
+	}
+}
+
+func GenerateLegacyWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workflow.Workflow {
 
 	workflowTemplate := "terraform-sync-template"
 

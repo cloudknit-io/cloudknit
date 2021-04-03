@@ -26,7 +26,7 @@ import (
 	argocd "github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
 	argoWorkflow "github.com/compuzest/zlifecycle-il-operator/controllers/argoworkflow"
 	k8s "github.com/compuzest/zlifecycle-il-operator/controllers/kubernetes"
-	terraformgenerator "github.com/compuzest/zlifecycle-il-operator/controllers/terraform_generator"
+	terraformgenerator "github.com/compuzest/zlifecycle-il-operator/controllers/terraformgenerator"
 	env "github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	file "github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
 	github "github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
@@ -129,7 +129,14 @@ func generateAndSaveEnvironmentComponents(fileUtil file.UtilFile, environment *s
 }
 
 func generateAndSaveWorkflowOfWorkflows(fileUtil file.UtilFile, environment *stablev1alpha1.Environment, envComponentDirectory string) error {
-	workflow := argoWorkflow.GenerateWorkflowOfWorkflows(*environment)
+	workflow := argoWorkflow.GenerateLegacyWorkflowOfWorkflows(*environment)
+
+	// WIP, below command is for testing
+	experimentalworkflow := argoWorkflow.GenerateWorkflowOfWorkflows(*environment)
+	if err := fileUtil.SaveYamlFile(*experimentalworkflow, envComponentDirectory, "/experimental_wofw.yaml"); err != nil {
+		return err
+	}
+
 	if err := fileUtil.SaveYamlFile(*workflow, envComponentDirectory, "/wofw.yaml"); err != nil {
 		return err
 	}

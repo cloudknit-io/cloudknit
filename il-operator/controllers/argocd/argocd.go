@@ -14,8 +14,9 @@ package argocd
 
 import (
 	"fmt"
-	"github.com/go-logr/logr"
 	"strings"
+
+	"github.com/go-logr/logr"
 
 	appv1 "github.com/argoproj/argo-cd/pkg/apis/application/v1alpha1"
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
