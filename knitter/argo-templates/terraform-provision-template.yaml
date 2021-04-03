@@ -1,0 +1,49 @@
+# Copyright (C) 2020 CompuZest, Inc. - All Rights Reserved
+#
+# Unauthorized copying of this file, via any medium, is strictly prohibited
+# Proprietary and confidential
+#
+# NOTICE: All information contained herein is, and remains the property of
+# CompuZest, Inc. The intellectual and technical concepts contained herein are
+# proprietary to CompuZest, Inc. and are protected by trade secret or copyright
+# law. Dissemination of this information or reproduction of this material is
+# strictly forbidden unless prior written permission is obtained from CompuZest, Inc.
+---
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: terraform-provision-template
+  namespace: argocd
+spec:
+  entrypoint: provision
+  podGC:
+    strategy: OnWorkflowSuccess
+  ttlStrategy:
+    secondsAfterSuccess: 600
+    secondsAfterCompletion: 600
+
+  templates:
+    - name: provision
+      inputs:
+        parameters:
+          - name: terraform_version
+          - name: terraform_il_path
+          - name: il_repo
+        artifacts:
+          - name: terraform-module
+            path: "/home/terraform-config"
+            git:
+              repo: "{{inputs.parameters.il_repo}}"
+              sshPrivateKeySecret:
+                name: github-ssh-key
+                key: id_rsa
+              insecureIgnoreHostKey: true
+      serviceAccountName: argo
+      script:
+        imagePullPolicy: Always
+        image: 413422438110.dkr.ecr.us-east-1.amazonaws.com/terraform-component-provisioner:latest
+        env:
+          - name: TERRAFORM_IL_PATH
+            value: "/home/terraform-config/{{inputs.parameters.terraform_il_path}}"
+          - name: TERRAFORM_VERSION
+            value: "{{inputs.parameters.terraform_version}}"
