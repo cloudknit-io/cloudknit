@@ -44,6 +44,6 @@ spec:
         image: 413422438110.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-terraform-provisioner:latest
         env:
           - name: TERRAFORM_IL_PATH
-            value: "/home/terraform-config/{{inputs.parameters.terraform_il_path}}"
+            value: "home/terraform-config/{{inputs.parameters.terraform_il_path}}"
           - name: TERRAFORM_VERSION
             value: "{{inputs.parameters.terraform_version}}"
