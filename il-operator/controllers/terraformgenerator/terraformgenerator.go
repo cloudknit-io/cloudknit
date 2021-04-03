@@ -35,7 +35,7 @@ type TerraformGenerator struct {
 }
 
 // DefaultTerraformVersion for provisioning components
-var DefaultTerraformVersion = "= 0.13.2"
+var DefaultTerraformVersion = "0.13.2"
 
 func TerraformIlPath(envComponentDirectory string) string {
 	return envComponentDirectory + "/terraform"
