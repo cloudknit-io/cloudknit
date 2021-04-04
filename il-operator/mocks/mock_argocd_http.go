@@ -8,6 +8,7 @@ import (
 	http "net/http"
 	reflect "reflect"
 
+	v1alpha1 "github.com/argoproj/argo-cd/pkg/apis/application/v1alpha1"
 	argocd "github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
 	gomock "github.com/golang/mock/gomock"
 )
@@ -35,6 +36,21 @@ func (m *MockApi) EXPECT() *MockApiMockRecorder {
 	return m.recorder
 }
 
+// CreateApplication mocks base method.
+func (m *MockApi) CreateApplication(arg0 *v1alpha1.Application, arg1 string) (*http.Response, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateApplication", arg0, arg1)
+	ret0, _ := ret[0].(*http.Response)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateApplication indicates an expected call of CreateApplication.
+func (mr *MockApiMockRecorder) CreateApplication(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateApplication", reflect.TypeOf((*MockApi)(nil).CreateApplication), arg0, arg1)
+}
+
 // CreateRepository mocks base method.
 func (m *MockApi) CreateRepository(arg0 argocd.CreateRepoBody, arg1 string) (*http.Response, error) {
 	m.ctrl.T.Helper()
@@ -48,6 +64,21 @@ func (m *MockApi) CreateRepository(arg0 argocd.CreateRepoBody, arg1 string) (*ht
 func (mr *MockApiMockRecorder) CreateRepository(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRepository", reflect.TypeOf((*MockApi)(nil).CreateRepository), arg0, arg1)
+}
+
+// DoesApplicationExist mocks base method.
+func (m *MockApi) DoesApplicationExist(arg0, arg1 string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DoesApplicationExist", arg0, arg1)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DoesApplicationExist indicates an expected call of DoesApplicationExist.
+func (mr *MockApiMockRecorder) DoesApplicationExist(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DoesApplicationExist", reflect.TypeOf((*MockApi)(nil).DoesApplicationExist), arg0, arg1)
 }
 
 // GetAuthToken mocks base method.
