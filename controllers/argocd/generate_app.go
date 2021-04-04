@@ -64,6 +64,7 @@ func GenerateCompanyApp(company stablev1alpha1.Company) *appv1.Application {
 		},
 	}
 }
+
 func GenerateTeamApp(team stablev1alpha1.Team) *appv1.Application {
 	return &appv1.Application{
 		TypeMeta: metav1.TypeMeta{
@@ -361,7 +362,7 @@ func GenerateConfigWatcherBootstrapApp() *appv1.Application {
 			Kind:       "Application",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "configer-watcher-bootstrap",
+			Name:      "config-watcher-bootstrap",
 			Namespace: "argocd",
 			Labels: map[string]string{
 				"zlifecycle.com/model":                   "bootstrap",

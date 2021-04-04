@@ -58,9 +58,18 @@ func RegisterRepo(log logr.Logger, api Api, repoOpts RepoOpts) (bool, error) {
 	log.Info("Successfully registered repository on ArgoCD", "repo", repoOpts.RepoUrl)
 	return true, nil
 }
+
 func TryCreateBootstrapApps(log logr.Logger) error {
-	argocdApi := NewHttpClient(log, env.Config.ArgocdServerUrl)
-	exists, err := argocdApi.DoesApplicationExist("company-bootstrap", env.Config.GitHubAuthToken)
+	argocdAPI := NewHttpClient(log, env.Config.ArgocdServerUrl)
+
+	tokenResponse, err := argocdAPI.GetAuthToken()
+	if err != nil {
+		log.Error(err, "Error while calling ArgoCD API get auth token")
+		return err
+	}
+	bearer := "Bearer " + tokenResponse.Token
+
+	exists, err := argocdAPI.DoesApplicationExist("company-bootstrap", bearer)
 	if err != nil {
 		log.Error(err, "Error while calling ArgoCD API to check if Application Exists")
 		return err
@@ -69,22 +78,38 @@ func TryCreateBootstrapApps(log logr.Logger) error {
 		log.Info("Application already registered on ArgoCD",
 			"application", "company-bootstrap",
 		)
-		return nil
 	} else {
-		argocdApi.CreateApplication(GenerateCompanyBootstrapApp(), env.Config.GitHubAuthToken)
+		companyResp, companyErr := argocdAPI.CreateApplication(GenerateCompanyBootstrapApp(), bearer)
+		if companyErr != nil {
+			log.Error(companyErr, "Error while creating Company Bootstrap Application")
+			return companyErr
+		}
+		defer companyResp.Body.Close()
+		log.Info("Successfully registered application on ArgoCD",
+			"application", "company-bootstrap",
+		)
 	}
-	exists2, err2 := argocdApi.DoesApplicationExist("config-watcher-bootstrap", env.Config.GitHubAuthToken)
+
+	exists2, err2 := argocdAPI.DoesApplicationExist("config-watcher-bootstrap", bearer)
 	if err2 != nil {
-		log.Error(err, "Error while calling ArgoCD API to check if Application Exists")
+		log.Error(err2, "Error while calling ArgoCD API to check if Application Exists")
 		return err2
 	}
 	if exists2 {
 		log.Info("Application already registered on ArgoCD",
 			"application", "config-watcher-bootstrap",
 		)
-		return nil
 	} else {
-		argocdApi.CreateApplication(GenerateConfigWatcherBootstrapApp(), env.Config.GitHubAuthToken)
+		companyResp2, companyErr2 := argocdAPI.CreateApplication(GenerateConfigWatcherBootstrapApp(), bearer)
+		if companyErr2 != nil {
+			log.Error(companyErr2, "Error while creating Config Watcher Bootstrap Application")
+			return companyErr2
+		}
+		defer companyResp2.Body.Close()
+		log.Info("Successfully registered application on ArgoCD",
+			"application", "config-watcher-bootstrap",
+		)
 	}
+
 	return nil
 }
