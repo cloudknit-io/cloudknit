@@ -1,22 +1,27 @@
 package argocd
 
 import (
-	"github.com/go-logr/logr"
 	"net/http"
+
+	appv1 "github.com/argoproj/argo-cd/pkg/apis/application/v1alpha1"
+	"github.com/go-logr/logr"
 )
 
 type Api interface {
 	GetAuthToken() (*GetTokenResponse, error)
 	ListRepositories(bearerToken string) (*RepositoryList, *http.Response, error)
 	CreateRepository(body CreateRepoBody, bearerToken string) (*http.Response, error)
+	CreateApplication(application *appv1.Application, bearerToken string) (*http.Response, error)
+	DoesApplicationExist(string, string) (bool, error)
 }
 
 type HttpApi struct {
+	Api
 	ServerUrl string
-	Log logr.Logger
+	Log       logr.Logger
 }
 
-type MockAPI struct {}
+type MockAPI struct{}
 
 type Credentials struct {
 	Username string

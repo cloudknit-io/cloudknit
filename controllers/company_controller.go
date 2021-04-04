@@ -72,6 +72,8 @@ func (r *CompanyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, err
 	}
 
+	argocd.TryCreateBootstrapApps(r.Log)
+
 	ilRepoURL := il.RepoURL(owner, company.Name)
 	masterRepoSSHSecret := env.Config.ZlifecycleMasterRepoSshSecret
 	operatorNamespace := env.Config.ZlifecycleOperatorNamespace

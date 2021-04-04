@@ -14,9 +14,6 @@ package argocd
 
 import (
 	"fmt"
-	"strings"
-
-	"github.com/go-logr/logr"
 
 	appv1 "github.com/argoproj/argo-cd/pkg/apis/application/v1alpha1"
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
@@ -26,7 +23,6 @@ import (
 )
 
 func GenerateCompanyApp(company stablev1alpha1.Company) *appv1.Application {
-	ilRepoName := il.RepoName(company.Name)
 	return &appv1.Application{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "argoproj.io/v1alpha1",
@@ -51,7 +47,7 @@ func GenerateCompanyApp(company stablev1alpha1.Company) *appv1.Application {
 				Namespace: "default",
 			},
 			Source: appv1.ApplicationSource{
-				RepoURL:        ilRepoName,
+				RepoURL:        env.Config.ILRepoURL,
 				Path:           "./" + il.Config.TeamDirectory,
 				TargetRevision: "HEAD",
 			},
@@ -60,7 +56,7 @@ func GenerateCompanyApp(company stablev1alpha1.Company) *appv1.Application {
 			Sync: appv1.SyncStatus{
 				ComparedTo: appv1.ComparedTo{
 					Source: appv1.ApplicationSource{
-						RepoURL: ilRepoName,
+						RepoURL: env.Config.ILRepoURL,
 					},
 				},
 				Status: "Synced",
@@ -111,9 +107,7 @@ func GenerateTeamApp(team stablev1alpha1.Team) *appv1.Application {
 		},
 	}
 }
-
 func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Application {
-
 	return &appv1.Application{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "argoproj.io/v1alpha1",
@@ -158,11 +152,8 @@ func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Appli
 		},
 	}
 }
-
 func GenerateEnvironmentComponentApps(environment stablev1alpha1.Environment, environmentComponent stablev1alpha1.EnvironmentComponent) *appv1.Application {
-
 	helmValues := getHelmValues(environment, environmentComponent)
-
 	return &appv1.Application{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Application",
@@ -215,9 +206,7 @@ func GenerateEnvironmentComponentApps(environment stablev1alpha1.Environment, en
 		},
 	}
 }
-
 func getHelmValues(environment stablev1alpha1.Environment, environmentComponent stablev1alpha1.EnvironmentComponent) string {
-
 	helmValues := fmt.Sprintf(`
         team_name: "%s"
         env_name: %s
@@ -229,21 +218,17 @@ func getHelmValues(environment stablev1alpha1.Environment, environmentComponent 
 		environmentComponent.Name,
 		il.EnvComponentModuleSource(environmentComponent.Module.Source, environmentComponent.Module.Name),
 		il.EnvComponentModulePath(environmentComponent.Module.Path))
-
 	if environmentComponent.CronSchedule != "" {
 		helmValues += fmt.Sprintf(`
         cron_schedule: "%s"`, environmentComponent.CronSchedule)
 	}
-
 	helmValues += fmt.Sprintf(`
         variables_file:
             source: %s
             path: %s`, environmentComponent.VariablesFile.Source, environmentComponent.VariablesFile.Path)
 	return helmValues
 }
-
 func GenerateTeamConfigWatcherApp(team stablev1alpha1.Team) *appv1.Application {
-
 	return &appv1.Application{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "argoproj.io/v1alpha1",
@@ -289,9 +274,7 @@ func GenerateTeamConfigWatcherApp(team stablev1alpha1.Team) *appv1.Application {
 		},
 	}
 }
-
 func GenerateCompanyConfigWatcherApp(customerName string, companyConfigRepo string) *appv1.Application {
-
 	return &appv1.Application{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "argoproj.io/v1alpha1",
@@ -338,49 +321,69 @@ func GenerateCompanyConfigWatcherApp(customerName string, companyConfigRepo stri
 	}
 }
 
-func RegisterRepo(log logr.Logger, api Api, repoOpts RepoOpts) (bool, error) {
-	repoUri := repoOpts.RepoUrl[strings.LastIndex(repoOpts.RepoUrl, "/")+1:]
-	repoName := strings.TrimSuffix(repoUri, ".git")
-
-	tokenResponse, err := api.GetAuthToken()
-	if err != nil {
-		log.Error(err, "Error while calling ArgoCD API get auth token")
-		return false, err
+func GenerateCompanyBootstrapApp() *appv1.Application {
+	return &appv1.Application{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "argoproj.io/v1alpha1",
+			Kind:       "Application",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "company-bootstrap",
+			Namespace: "argocd",
+			Labels: map[string]string{
+				"zlifecycle.com/model":                   "bootstrap",
+				"zlifecycle.com/watched-custom-resource": "company",
+			},
+		},
+		Spec: appv1.ApplicationSpec{
+			Project: "default",
+			SyncPolicy: &appv1.SyncPolicy{
+				Automated: &appv1.SyncPolicyAutomated{
+					Prune: true,
+				},
+			},
+			Destination: appv1.ApplicationDestination{
+				Server:    "https://kubernetes.default.svc",
+				Namespace: "default",
+			},
+			Source: appv1.ApplicationSource{
+				RepoURL:        env.Config.ILRepoURL,
+				Path:           "company",
+				TargetRevision: "HEAD",
+			},
+		},
 	}
-
-	bearer := "Bearer " + tokenResponse.Token
-	repositories, resp1, err1 := api.ListRepositories(bearer)
-	if err1 != nil {
-		return false, err1
+}
+func GenerateConfigWatcherBootstrapApp() *appv1.Application {
+	return &appv1.Application{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "argoproj.io/v1alpha1",
+			Kind:       "Application",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "configer-watcher-bootstrap",
+			Namespace: "argocd",
+			Labels: map[string]string{
+				"zlifecycle.com/model":                   "bootstrap",
+				"zlifecycle.com/watched-custom-resource": "config-watcher",
+			},
+		},
+		Spec: appv1.ApplicationSpec{
+			Project: "default",
+			SyncPolicy: &appv1.SyncPolicy{
+				Automated: &appv1.SyncPolicyAutomated{
+					Prune: true,
+				},
+			},
+			Destination: appv1.ApplicationDestination{
+				Server:    "https://kubernetes.default.svc",
+				Namespace: "default",
+			},
+			Source: appv1.ApplicationSource{
+				RepoURL:        env.Config.ILRepoURL,
+				Path:           "config-watcher",
+				TargetRevision: "HEAD",
+			},
+		},
 	}
-	defer resp1.Body.Close()
-
-	log.Info("List of repositories registered on ArgoCD", "repos", repositories)
-
-	if isRepoRegistered(*repositories, repoOpts.RepoUrl) {
-		log.Info("Repository already registered on ArgoCD",
-			"repos", repositories.Items,
-			"repoName", repoName,
-			"repoUrl", repoOpts.RepoUrl,
-		)
-		return false, nil
-	}
-
-	log.Info(
-		"Repository is not registered on ArgoCD, registering now...",
-		"repoName", repoName,
-		"repoUrl", repoOpts.RepoUrl,
-	)
-
-	createRepoBody := CreateRepoBody{Repo: repoOpts.RepoUrl, Name: repoName, SshPrivateKey: repoOpts.SshPrivateKey}
-	resp2, err2 := api.CreateRepository(createRepoBody, bearer)
-	if err2 != nil {
-		log.Error(err2, "Error while calling ArgoCD API post create repository")
-		return false, err2
-	}
-	defer resp2.Body.Close()
-
-	log.Info("Successfully registered repository on ArgoCD", "repo", repoOpts.RepoUrl)
-
-	return true, nil
 }
