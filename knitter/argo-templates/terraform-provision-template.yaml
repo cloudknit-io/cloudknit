@@ -21,6 +21,10 @@ spec:
       secret:
         secretName: github-ssh-key
         defaultMode: 384
+    - name: aws-credentials-mount
+      secret:
+        secretName: aws-credentials-file
+        defaultMode: 384
   podGC:
     strategy: OnWorkflowSuccess
   ttlStrategy:
@@ -55,4 +59,7 @@ spec:
         volumeMounts:
           - name: github-ssh-key-mount
             mountPath: "/root/.ssh"
+            readOnly: false
+          - name: aws-credentials-mount
+            mountPath: "/root/.aws"
             readOnly: false
