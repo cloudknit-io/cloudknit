@@ -29,20 +29,19 @@ type UtilTerraformGenerator interface {
 	GenerateFromTemplate(vars interface{}, environmentComponentDirectory string, fileUtil file.UtilFile, templateName string, filePath string) error
 }
 
-// TerraformGenerator struct implementing UtilTerraformGenerator interface
 type TerraformGenerator struct {
 	UtilTerraformGenerator
 }
 
-// DefaultTerraformVersion for provisioning components
 var DefaultTerraformVersion = "0.13.2"
 
 func TerraformIlPath(envComponentDirectory string) string {
 	return envComponentDirectory + "/terraform"
 }
 
-// GenerateTerraform save all terraform files needed for a module
 func (tf TerraformGenerator) GenerateTerraform(fileUtil file.UtilFile, environmentComponent *stablev1alpha1.EnvironmentComponent, environment *stablev1alpha1.Environment, environmentComponentDirectory string) error {
+	componentName := environmentComponent.Module.Name
+
 	backendConfig := TerraformBackendConfig{
 		Region:        "us-east-1",
 		Profile:       "compuzest-shared",
@@ -51,28 +50,28 @@ func (tf TerraformGenerator) GenerateTerraform(fileUtil file.UtilFile, environme
 		DynamoDBTable: "compuzest-zlifecycle-tflock",
 		TeamName:      environment.Spec.TeamName,
 		EnvName:       environment.Spec.EnvName,
-		ComponentName: environmentComponent.Module.Name,
+		ComponentName: componentName,
 	}
 
 	moduleConfig := TerraformModuleConfig{
-		ComponentName: environmentComponent.Module.Name,
-		Source:        il.EnvComponentModuleSource(environmentComponent.Module.Source, environmentComponent.Module.Name),
+		ComponentName: componentName,
+		Source:        il.EnvComponentModuleSource(environmentComponent.Module.Source, componentName),
 		Path:          il.EnvComponentModulePath(environmentComponent.Module.Path),
 		Variables:     environmentComponent.Variables,
 	}
 
-	err := tf.GenerateProvider(fileUtil, environmentComponentDirectory)
+	err := tf.GenerateProvider(fileUtil, environmentComponentDirectory, componentName)
 	if err != nil {
 		return err
 	}
 
 	workingDir, err := os.Getwd()
-	err = tf.GenerateFromTemplate(backendConfig, environmentComponentDirectory, fileUtil, filepath.Join(workingDir, "templates/terraform_backend.tmpl"), "terraform")
+	err = tf.GenerateFromTemplate(backendConfig, environmentComponentDirectory, componentName, fileUtil, filepath.Join(workingDir, "templates/terraform_backend.tmpl"), "terraform")
 	if err != nil {
 		return err
 	}
 
-	err = tf.GenerateFromTemplate(moduleConfig, environmentComponentDirectory, fileUtil, filepath.Join(workingDir, "templates/terraform_module.tmpl"), "module")
+	err = tf.GenerateFromTemplate(moduleConfig, environmentComponentDirectory, componentName, fileUtil, filepath.Join(workingDir, "templates/terraform_module.tmpl"), "module")
 	if err != nil {
 		return err
 	}
@@ -101,13 +100,14 @@ type TerraformModuleConfig struct {
 }
 
 // GenerateProvider save provider file to be executed by terraform
-func (tf TerraformGenerator) GenerateProvider(file file.UtilFile, environmentComponentDirectory string) error {
+func (tf TerraformGenerator) GenerateProvider(file file.UtilFile, environmentComponentDirectory string, componentName string) error {
+	terraformDirectory := tf.generateTerraformDirectory(environmentComponentDirectory, componentName)
 	err := file.SaveFileFromString(`
 provider "aws" {
 	region = "us-east-1"
 	version = "~> 3.0"
 }
-	`, environmentComponentDirectory+"/terraform", "provider.tf")
+	`, terraformDirectory, "provider.tf")
 	if err != nil {
 		return err
 	}
@@ -115,12 +115,16 @@ provider "aws" {
 }
 
 // GenerateFromTemplate save terraform backend config
-func (tf TerraformGenerator) GenerateFromTemplate(vars interface{}, environmentComponentDirectory string, fileUtil file.UtilFile, templatePath string, fileName string) error {
+func (tf TerraformGenerator) generateTerraformDirectory(environmentComponentDirectory string, environmentComponentName string) string {
+	return environmentComponentDirectory + "/" + environmentComponentName + "/terraform"
+}
+
+func (tf TerraformGenerator) GenerateFromTemplate(vars interface{}, environmentComponentDirectory string, componentName string, fileUtil file.UtilFile, templatePath string, fileName string) error {
 	template, err := template.ParseFiles(templatePath)
 	if err != nil {
 		return err
 	}
-	terraformDirectory := environmentComponentDirectory + "/terraform"
+	terraformDirectory := tf.generateTerraformDirectory(environmentComponentDirectory, componentName)
 	err = fileUtil.SaveFileFromTemplate(template, vars, terraformDirectory, fileName+".tf")
 	if err != nil {
 		return err
