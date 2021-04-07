@@ -25,11 +25,12 @@ import (
 func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workflow.Workflow {
 	envComponentDirectory := il.EnvironmentComponentDirectory(environment.Spec.TeamName, environment.Spec.EnvName)
 	workflowTemplate := "terraform-provision-template"
-	tfPath := terraformgenerator.TerraformIlPath(envComponentDirectory)
 
 	var tasks []workflow.DAGTask
 
 	for _, environmentComponent := range environment.Spec.EnvironmentComponent {
+		tf := terraformgenerator.TerraformGenerator{}
+		tfPath := tf.GenerateTerraformIlPath(envComponentDirectory, environmentComponent.Name)
 		task := workflow.DAGTask{
 			Name: environmentComponent.Name,
 			TemplateRef: &workflow.TemplateRef{
