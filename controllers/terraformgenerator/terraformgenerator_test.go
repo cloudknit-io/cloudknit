@@ -17,8 +17,8 @@ func TestGenerateProvider(t *testing.T) {
 
 	m.
 		EXPECT().
-		SaveFileFromString(gomock.Any(), gomock.Eq("dev-environment-components/terraform"), gomock.Eq("provider.tf"))
-	tf.GenerateProvider(m, "dev-environment-components")
+		SaveFileFromString(gomock.Any(), gomock.Eq("dev-environment-components/component-name/terraform"), gomock.Eq("provider.tf"))
+	tf.GenerateProvider(m, "dev-environment-components", "component-name")
 }
 
 func TestGenerateTemplate(t *testing.T) {
@@ -40,7 +40,7 @@ func TestGenerateTemplate(t *testing.T) {
 
 	m.
 		EXPECT().
-		SaveFileFromTemplate(gomock.Any(), dummyConfig, gomock.Eq("env-dir/terraform"), gomock.Eq("file-name.tf"))
+		SaveFileFromTemplate(gomock.Any(), dummyConfig, gomock.Eq("env-dir/comp-name/terraform"), gomock.Eq("file-name.tf"))
 
-	tf.GenerateFromTemplate(dummyConfig, "env-dir", m, "../../templates/terraform_backend.tmpl", "file-name")
+	tf.GenerateFromTemplate(dummyConfig, "env-dir", "comp-name", m, "../../templates/terraform_backend.tmpl", "file-name")
 }
