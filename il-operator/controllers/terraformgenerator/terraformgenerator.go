@@ -35,10 +35,6 @@ type TerraformGenerator struct {
 
 var DefaultTerraformVersion = "0.13.2"
 
-func TerraformIlPath(envComponentDirectory string) string {
-	return envComponentDirectory + "/terraform"
-}
-
 func (tf TerraformGenerator) GenerateTerraform(fileUtil file.UtilFile, environmentComponent *stablev1alpha1.EnvironmentComponent, environment *stablev1alpha1.Environment, environmentComponentDirectory string) error {
 	componentName := environmentComponent.Module.Name
 
@@ -101,7 +97,7 @@ type TerraformModuleConfig struct {
 
 // GenerateProvider save provider file to be executed by terraform
 func (tf TerraformGenerator) GenerateProvider(file file.UtilFile, environmentComponentDirectory string, componentName string) error {
-	terraformDirectory := tf.generateTerraformDirectory(environmentComponentDirectory, componentName)
+	terraformDirectory := tf.GenerateTerraformIlPath(environmentComponentDirectory, componentName)
 	err := file.SaveFileFromString(`
 provider "aws" {
 	region = "us-east-1"
@@ -115,7 +111,7 @@ provider "aws" {
 }
 
 // GenerateFromTemplate save terraform backend config
-func (tf TerraformGenerator) generateTerraformDirectory(environmentComponentDirectory string, environmentComponentName string) string {
+func (tf TerraformGenerator) GenerateTerraformIlPath(environmentComponentDirectory string, environmentComponentName string) string {
 	return environmentComponentDirectory + "/" + environmentComponentName + "/terraform"
 }
 
@@ -124,7 +120,7 @@ func (tf TerraformGenerator) GenerateFromTemplate(vars interface{}, environmentC
 	if err != nil {
 		return err
 	}
-	terraformDirectory := tf.generateTerraformDirectory(environmentComponentDirectory, componentName)
+	terraformDirectory := tf.GenerateTerraformIlPath(environmentComponentDirectory, componentName)
 	err = fileUtil.SaveFileFromTemplate(template, vars, terraformDirectory, fileName+".tf")
 	if err != nil {
 		return err
