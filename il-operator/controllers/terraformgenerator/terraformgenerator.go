@@ -25,8 +25,8 @@ import (
 // UtilTerraformGenerator package interface for generating terraform files
 type UtilTerraformGenerator interface {
 	GenerateTerraform(fileUtil file.UtilFile, environmentComponent *stablev1alpha1.EnvironmentComponent, environment *stablev1alpha1.Environment, environmentComponentDirectory string) error
-	GenerateProvider(file file.UtilFile, environmentComponentDirectory string) error
-	GenerateFromTemplate(vars interface{}, environmentComponentDirectory string, fileUtil file.UtilFile, templateName string, filePath string) error
+	GenerateProvider(file file.UtilFile, environmentComponentDirectory string, componentName string) error
+	GenerateFromTemplate(vars interface{}, environmentComponentDirectory string, componentName string, fileUtil file.UtilFile, templateName string, filePath string) error
 }
 
 type TerraformGenerator struct {
