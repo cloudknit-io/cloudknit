@@ -36,7 +36,7 @@ type TerraformGenerator struct {
 var DefaultTerraformVersion = "0.13.2"
 
 func (tf TerraformGenerator) GenerateTerraform(fileUtil file.UtilFile, environmentComponent *stablev1alpha1.EnvironmentComponent, environment *stablev1alpha1.Environment, environmentComponentDirectory string) error {
-	componentName := environmentComponent.Module.Name
+	componentName := environmentComponent.Name
 
 	backendConfig := TerraformBackendConfig{
 		Region:        "us-east-1",
@@ -51,7 +51,7 @@ func (tf TerraformGenerator) GenerateTerraform(fileUtil file.UtilFile, environme
 
 	moduleConfig := TerraformModuleConfig{
 		ComponentName: componentName,
-		Source:        il.EnvComponentModuleSource(environmentComponent.Module.Source, componentName),
+		Source:        il.EnvComponentModuleSource(environmentComponent.Module.Source, environmentComponent.Module.Name),
 		Path:          il.EnvComponentModulePath(environmentComponent.Module.Path),
 		Variables:     environmentComponent.Variables,
 	}
