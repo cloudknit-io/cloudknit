@@ -32,7 +32,7 @@ if [ $result -eq 0 ]
 then
     if [ $config_sync_status == "OutOfSync" ]
     then
-        argocd app sync $team_env_config_name || Error "Failed syncing env component"
+        argocd app sync $team_env_config_name || true
     fi
 elif [ $result -eq 2 ]
 then
@@ -43,7 +43,7 @@ then
             sh /argocd/patch_env_component.sh $team_env_config_name || Error "Failed patching env component"
             if [ $env_sync_status != "OutOfSync" ]
             then
-                argocd app sync $team_env_name || Error "Failed syncing env"
+                argocd app sync $team_env_name || true
             fi
         fi
     fi
