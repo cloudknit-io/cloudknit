@@ -146,7 +146,7 @@ func CreateRepoWebhook(log logr.Logger, api RepositoryApi, repoUrl string, paylo
 		"Successfully created repository webhook",
 		"url", repoUrl,
 		"owner", owner,
-		"repo",	repo,
+		"repo", repo,
 		"hookId", *hook.ID,
 		"payloadUrl", *hook.URL,
 		"cfg", h.Config,

@@ -72,8 +72,6 @@ func (r *CompanyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, err
 	}
 
-	argocd.TryCreateBootstrapApps(r.Log)
-
 	ilRepoURL := il.RepoURL(owner, company.Name)
 	masterRepoSSHSecret := env.Config.ZlifecycleMasterRepoSshSecret
 	operatorNamespace := env.Config.ZlifecycleOperatorNamespace
@@ -89,6 +87,8 @@ func (r *CompanyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		fmt.Sprintf("Reconciling company %s", company.Spec.CompanyName),
 		env.Config.GithubSvcAccntName,
 		env.Config.GithubSvcAccntEmail)
+
+	argocd.TryCreateBootstrapApps(r.Log)
 
 	githubApi := github.NewHttpClient(env.Config.GitHubAuthToken, ctx)
 	_, err = github.CreateRepoWebhook(r.Log, githubApi, companyRepo, env.Config.ArgocdHookUrl, env.Config.GitHubWebhookSecret)
