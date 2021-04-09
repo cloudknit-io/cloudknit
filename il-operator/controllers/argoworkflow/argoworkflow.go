@@ -158,10 +158,6 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1alpha1.Environment) *
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      environment.Spec.TeamName + "-" + environment.Spec.EnvName,
 			Namespace: "argocd",
-			Annotations: map[string]string{
-				"argocd.argoproj.io/hook":               "PreSync",
-				"argocd.argoproj.io/hook-delete-policy": "BeforeHookCreation",
-			},
 			Labels: map[string]string{
 				"workflows.argoproj.io/completed": "false",
 				"terraform/sync":                  "true",
