@@ -20,6 +20,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
@@ -55,6 +56,7 @@ func RemoveObjectsFromBranch(
 	owner string,
 	repo string,
 	branch string,
+	baseDir string,
 	paths []string,
 	commitAuthor *github.CommitAuthor,
 	commitMessage string,
@@ -68,20 +70,53 @@ func RemoveObjectsFromBranch(
 	defer refResp.Body.Close()
 
 	log.Info("Fetching git tree...", "owner", owner, "repo", repo, "ref", *ref.Ref)
-	baseTree, baseTreeResp, baseTreeErr := api.GetTree(owner, repo, *ref.Ref, true)
-	if baseTreeErr != nil {
-		return baseTreeErr
+	tree, treeResp, treeErr := api.GetTree(owner, repo, *ref.Ref, true)
+	if treeErr != nil {
+		return treeErr
 	}
-	defer baseTreeResp.Body.Close()
+	defer treeResp.Body.Close()
 
-	log.Info("Deleting paths from tree...", "baseTreeSha", baseTree.SHA, "paths", paths)
-	entries := removePathsFromTree(log, baseTree, paths)
+	var subtree *github.Tree
 
-	log.Info("DEBUG", "old entries", entries)
-	log.Info("DEBUG", "new entries", entries)
+	if baseDir != "" {
+		var subtreeSHA string
+		for _, entry := range tree.Entries {
+			if baseDir == *entry.Path {
+				log.Info("Found subtree", "tree", tree.SHA, "subtree", entry.Path)
+				subtreeSHA = *entry.SHA
+				break
+			}
+		}
+		tree, treeResp, treeErr := api.GetTree(owner, repo, subtreeSHA, true)
+		if treeErr != nil {
+			return treeErr
+		}
+		defer treeResp.Body.Close()
 
-	log.Info("Creating new tree without the excluded values...")
-	newTree, newTreeResp, newTreeErr := api.CreateTree(owner, repo, *ref.Object.SHA, entries)
+		log.Info("Deleting paths from tree...", "sha", tree.SHA, "paths", paths)
+		entries := removePathsFromTree(log, tree, paths)
+
+		log.Info("Creating new subtree without the excluded values...")
+		newTree, newTreeResp, newTreeErr := api.CreateTree(owner, repo, "", entries)
+		if newTreeErr != nil {
+			return newTreeErr
+		}
+		defer newTreeResp.Body.Close()
+
+		subtree = newTree
+	}
+
+	//for _, entry := range tree.Entries {
+	//	if baseDir == *entry.Path {
+	//		log.Info("Updating subtree", "path", *entry.Path, "oldSHA", *entry.SHA, "newSHA", subtree.SHA)
+	//		entry.SHA = subtree.SHA
+	//		entry.Content = subtree.Con
+	//		break
+	//	}
+	//}
+
+	log.Info("Creating new subtree without the excluded values...")
+	newTree, newTreeResp, newTreeErr := api.CreateTree(owner, repo, *tree.SHA, subtree.Entries)
 	if newTreeErr != nil {
 		return newTreeErr
 	}
@@ -99,29 +134,29 @@ func RemoveObjectsFromBranch(
 		"parentSha", parentCommit.SHA,
 	)
 
-	if !hasChangesToCommit(parentCommit, newTree) {
-		log.Info(
-			"No git changes to commit, no-op reconciliation.",
-			"parentCommitSha", parentCommit.SHA,
-			"parentTreeSha", parentCommit.Tree.SHA,
-			"baseTreeSha", baseTree.SHA,
-			"newTreeSha", newTree.SHA,
-		)
-		return nil
-	}
-
 	commit := gitCommit(newTree, commitAuthor, commitMessage, parentCommit)
 
 	log.Info(
 		"Creating commit for updated tree...",
 		"parentCommitSha", parentCommit.SHA,
 		"parentTreeSha", parentCommit.Tree.SHA,
-		"baseTreeSha", baseTree.SHA,
+		"baseTreeSha", tree.SHA,
 		"newTreeSha", newTree.SHA,
 	)
 	newCommit, _, commitErr := api.CreateCommit(owner, repo, commit)
 	if commitErr != nil {
 		return commitErr
+	}
+
+	if !hasChangesToCommit(parentCommit, newTree) {
+		log.Info(
+			"No changes in il repo for deletion. Ignoring empty commit.",
+			"parentCommitSha", parentCommit.SHA,
+			"parentTreeSha", parentCommit.Tree.SHA,
+			"baseTreeSha", tree.SHA,
+			"newTreeSha", newTree.SHA,
+		)
+		return nil
 	}
 
 	log.Info("Updating ref with new commit SHA...", "oldSha", ref.Object.SHA, "newSha", newCommit.SHA)
@@ -149,34 +184,31 @@ func gitCommit(tree *github.Tree, author *github.CommitAuthor, message string, p
 func removePathsFromTree(log logr.Logger, tree *github.Tree, paths []string) []*github.TreeEntry {
 	var entries []*github.TreeEntry
 	for _, entry := range tree.Entries {
-		e := &github.TreeEntry{
-			SHA:     entry.SHA,
-			Content: entry.Content,
-			Path:    entry.Path,
-			Size:    entry.Size,
-			URL:     entry.URL,
-			Type:    entry.Type,
-			Mode:    entry.Mode,
-		}
-		if path, exclude := shouldExclude(entry, paths); exclude {
-			log.Info("Object to be deleted found", "path", path)
-			e.SHA = nil
-			e.Content = nil
-			entries = append(entries, e)
+		if shouldExclude(entry, paths) {
+			log.Info("Excluding path from base tree", "path", entry.Path)
 		} else {
+			e := &github.TreeEntry{
+				SHA:     entry.SHA,
+				Content: entry.Content,
+				Path:    entry.Path,
+				Size:    entry.Size,
+				URL:     entry.URL,
+				Type:    entry.Type,
+				Mode:    entry.Mode,
+			}
 			entries = append(entries, e)
 		}
 	}
 	return entries
 }
 
-func shouldExclude(entry *github.TreeEntry, paths []string) (string, bool) {
-	for _, path := range paths {
-		if *entry.Path == path {
-			return path, true
+func shouldExclude(entry *github.TreeEntry, paths []string) bool {
+	for _, pathPattern := range paths {
+		if exclude, _ := regexp.MatchString(pathPattern, *entry.Path); exclude {
+			return true
 		}
 	}
-	return "", false
+	return  false
 }
 
 // TryCreateRepository tries to create a private repository in a organization (enter blank string for owner if it is a user repo)

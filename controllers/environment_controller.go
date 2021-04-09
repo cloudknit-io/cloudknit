@@ -15,6 +15,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	github2 "github.com/google/go-github/v32/github"
 	"time"
 
@@ -50,49 +51,33 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	environment := &stablev1alpha1.Environment{}
 
-	r.Get(ctx, req.NamespacedName, environment)
+	if err := r.Get(ctx, req.NamespacedName, environment); err != nil {
+		return ctrl.Result{}, nil
+	}
 
-	owner := env.Config.ZlifecycleOwner
-	ilRepo := "zmart-il"
-	githubGitApi := github.NewHttpGitClient(env.Config.GitHubAuthToken, ctx)
-	branch := env.Config.RepoBranch
-	now := time.Now()
-	commitAuthor := &github2.CommitAuthor{Date: &now, Name: &env.Config.GithubSvcAccntName, Email: &env.Config.GithubSvcAccntEmail}
-	paths := []string{"test/test.txt"}
-	err := github.RemoveObjectsFromBranch(
-		r.Log,
-		githubGitApi,
-		owner,
-		ilRepo,
-		branch,
-		paths,
-		commitAuthor,
-		"Running finalizer to clean il repo",
-		)
-	if err != nil { r.Log.Error(err, "Debug error") }
-	//finalizer := env.Config.GithubFinalizer
-	//
-	//if environment.DeletionTimestamp.IsZero() {
-	//	if !common.ContainsString(environment.GetFinalizers(), finalizer) {
-	//		environment.SetFinalizers(append(environment.GetFinalizers(), finalizer))
-	//		if err := r.Update(ctx, environment); err != nil {
-	//			return ctrl.Result{}, err
-	//		}
-	//	}
-	//} else {
-	//	if common.ContainsString(environment.GetFinalizers(), finalizer) {
-	//		if err := r.deleteExternalResources(environment); err != nil {
-	//			return ctrl.Result{}, err
-	//		}
-	//
-	//		environment.SetFinalizers(common.RemoveString(environment.GetFinalizers(), finalizer))
-	//		if err := r.Update(ctx, environment); err != nil {
-	//			return ctrl.Result{}, err
-	//		}
-	//	}
-	//
-	//	return ctrl.Result{}, nil
-	//}
+	finalizer := env.Config.GithubFinalizer
+
+	if environment.DeletionTimestamp.IsZero() {
+		if !common.ContainsString(environment.GetFinalizers(), finalizer) {
+			environment.SetFinalizers(append(environment.GetFinalizers(), finalizer))
+			if err := r.Update(ctx, environment); err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+	} else {
+		if common.ContainsString(environment.GetFinalizers(), finalizer) {
+			if err := r.deleteExternalResources(ctx, environment); err != nil {
+				return ctrl.Result{}, err
+			}
+
+			environment.SetFinalizers(common.RemoveString(environment.GetFinalizers(), finalizer))
+			if err := r.Update(ctx, environment); err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+
+		return ctrl.Result{}, nil
+	}
 
 	envDirectory := il.EnvironmentDirectory(environment.Spec.TeamName)
 	envComponentDirectory := il.EnvironmentComponentDirectory(environment.Spec.TeamName, environment.Spec.EnvName)
@@ -130,8 +115,30 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	return ctrl.Result{}, nil
 }
 
-func (r *EnvironmentReconciler) deleteExternalResources(environment *stablev1alpha1.Environment) error {
+func (r *EnvironmentReconciler) deleteExternalResources(ctx context.Context, e *stablev1alpha1.Environment) error {
+	owner         := env.Config.ZlifecycleOwner
+	ilRepo        := "zmart-il"
+	api           := github.NewHttpGitClient(env.Config.GitHubAuthToken, ctx)
+	branch        := env.Config.RepoBranch
+	now           := time.Now()
+	paths         := extractPathsToRemove(*e)
+	baseDir       := "team"
+	commitAuthor  := &github2.CommitAuthor{Date: &now, Name: &env.Config.GithubSvcAccntName, Email: &env.Config.GithubSvcAccntEmail}
+	commitMessage := fmt.Sprintf("Cleaning il objects in %s team for environment %s", e.Spec.TeamName, e.Spec.EnvName)
+	if err := github.RemoveObjectsFromBranch(r.Log, api, owner, ilRepo, branch, baseDir, paths, commitAuthor, commitMessage); err != nil {
+		return err
+	}
 	return nil
+}
+
+func extractPathsToRemove(e stablev1alpha1.Environment) []string {
+	teamPath   := fmt.Sprintf("%s-team-environment", e.Spec.TeamName)
+	envPath    := fmt.Sprintf("%s-environment-component", e.Spec.EnvName)
+	envAppPath := fmt.Sprintf("%s-environment.yaml", e.Spec.EnvName)
+	return []string{
+		fmt.Sprintf("^%s/%s*", teamPath, envPath),
+		fmt.Sprintf("^%s/%s$", teamPath, envAppPath),
+	}
 }
 
 // SetupWithManager sets up the Environment Controller with Manager
