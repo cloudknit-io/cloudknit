@@ -12,6 +12,7 @@ deployment:
 
 env:
   ARGOCD_SERVER_URL: "argocd-server"
+  ARGOCD_WEBHOOK_URL: "https://xxx.zlifecycle.com/api/webhook"
   GITHUB_ZLIFECYCLE_OWNER: CompuZest
   GITHUB_WEBHOOK_SECRET: !!!CHANGEME!!!
   ZLIFECYCLE_MASTER_SSH: zlifecycle-ssh
