@@ -124,7 +124,7 @@ func (r *EnvironmentReconciler) deleteExternalResources(ctx context.Context, e *
 	paths         := extractPathsToRemove(*e)
 	team          := fmt.Sprintf("%s-team-environment", e.Spec.TeamName)
 	commitAuthor  := &github2.CommitAuthor{Date: &now, Name: &env.Config.GithubSvcAccntName, Email: &env.Config.GithubSvcAccntEmail}
-	commitMessage := fmt.Sprintf("Cleaning il objects in %s team for environment %s", e.Spec.TeamName, e.Spec.EnvName)
+	commitMessage := fmt.Sprintf("Cleaning il objects for %s team in %s environment", e.Spec.TeamName, e.Spec.EnvName)
 	if err := github.RemoveObjectsFromBranch(r.Log, api, owner, ilRepo, branch, team, paths, commitAuthor, commitMessage); err != nil {
 		return err
 	}
