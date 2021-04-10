@@ -122,22 +122,21 @@ func (r *EnvironmentReconciler) deleteExternalResources(ctx context.Context, e *
 	branch        := env.Config.RepoBranch
 	now           := time.Now()
 	paths         := extractPathsToRemove(*e)
-	baseDir       := "team"
+	team          := fmt.Sprintf("%s-team-environment", e.Spec.TeamName)
 	commitAuthor  := &github2.CommitAuthor{Date: &now, Name: &env.Config.GithubSvcAccntName, Email: &env.Config.GithubSvcAccntEmail}
 	commitMessage := fmt.Sprintf("Cleaning il objects in %s team for environment %s", e.Spec.TeamName, e.Spec.EnvName)
-	if err := github.RemoveObjectsFromBranch(r.Log, api, owner, ilRepo, branch, baseDir, paths, commitAuthor, commitMessage); err != nil {
+	if err := github.RemoveObjectsFromBranch(r.Log, api, owner, ilRepo, branch, team, paths, commitAuthor, commitMessage); err != nil {
 		return err
 	}
 	return nil
 }
 
 func extractPathsToRemove(e stablev1alpha1.Environment) []string {
-	teamPath   := fmt.Sprintf("%s-team-environment", e.Spec.TeamName)
 	envPath    := fmt.Sprintf("%s-environment-component", e.Spec.EnvName)
 	envAppPath := fmt.Sprintf("%s-environment.yaml", e.Spec.EnvName)
 	return []string{
-		fmt.Sprintf("^%s/%s*", teamPath, envPath),
-		fmt.Sprintf("^%s/%s$", teamPath, envAppPath),
+		envPath,
+		envAppPath,
 	}
 }
 

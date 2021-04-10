@@ -56,11 +56,12 @@ func RemoveObjectsFromBranch(
 	owner string,
 	repo string,
 	branch string,
-	baseDir string,
-	paths []string,
+	team string,
+	patterns []string,
 	commitAuthor *github.CommitAuthor,
 	commitMessage string,
 ) error {
+	// get base tree
 	refFormat := fmt.Sprintf("refs/heads/%s", branch)
 	log.Info("Fetching ref...", "owner", owner, "repo", repo, "ref", refFormat)
 	ref, refResp, refErr := api.GetRef(owner, repo, refFormat)
@@ -69,60 +70,93 @@ func RemoveObjectsFromBranch(
 	}
 	defer refResp.Body.Close()
 
-	log.Info("Fetching git tree...", "owner", owner, "repo", repo, "ref", *ref.Ref)
-	tree, treeResp, treeErr := api.GetTree(owner, repo, *ref.Ref, true)
-	if treeErr != nil {
-		return treeErr
+	log.Info("Fetching base tree...", "owner", owner, "repo", repo, "ref", *ref.Ref)
+	baseTree, baseTreeResp, baseTreeErr := api.GetTree(owner, repo, *ref.Ref, false)
+	if baseTreeErr != nil {
+		return baseTreeErr
 	}
-	defer treeResp.Body.Close()
+	defer baseTreeResp.Body.Close()
 
-	var subtree *github.Tree
-
-	if baseDir != "" {
-		var subtreeSHA string
-		for _, entry := range tree.Entries {
-			if baseDir == *entry.Path {
-				log.Info("Found subtree", "tree", tree.SHA, "subtree", entry.Path)
-				subtreeSHA = *entry.SHA
-				break
+	// team root tree
+	teamRootPath := "team"
+	log.Info("Fetching team root tree...", "owner", owner, "repo", repo, "path", teamRootPath)
+	var teamRootTree *github.Tree
+	for _, entry := range baseTree.Entries {
+		if *entry.Path == teamRootPath {
+			tree, treeResp, treeErr := api.GetTree(owner, repo, *entry.SHA, false)
+			if treeErr != nil {
+				return treeErr
 			}
+			treeResp.Body.Close()
+			teamRootTree = tree
 		}
-		tree, treeResp, treeErr := api.GetTree(owner, repo, subtreeSHA, true)
-		if treeErr != nil {
-			return treeErr
-		}
-		defer treeResp.Body.Close()
-
-		log.Info("Deleting paths from tree...", "sha", tree.SHA, "paths", paths)
-		entries := removePathsFromTree(log, tree, paths)
-
-		log.Info("Creating new subtree without the excluded values...")
-		newTree, newTreeResp, newTreeErr := api.CreateTree(owner, repo, "", entries)
-		if newTreeErr != nil {
-			return newTreeErr
-		}
-		defer newTreeResp.Body.Close()
-
-		subtree = newTree
+	}
+	if teamRootTree == nil {
+		return errors.New("missing team root tree")
 	}
 
-	//for _, entry := range tree.Entries {
-	//	if baseDir == *entry.Path {
-	//		log.Info("Updating subtree", "path", *entry.Path, "oldSHA", *entry.SHA, "newSHA", subtree.SHA)
-	//		entry.SHA = subtree.SHA
-	//		entry.Content = subtree.Con
-	//		break
-	//	}
-	//}
-
-	log.Info("Creating new subtree without the excluded values...")
-	newTree, newTreeResp, newTreeErr := api.CreateTree(owner, repo, *tree.SHA, subtree.Entries)
-	if newTreeErr != nil {
-		return newTreeErr
+	// team tree
+	teamPath := team
+	log.Info("Fetching team tree...", "owner", owner, "repo", repo, "path", teamPath)
+	var teamTree *github.Tree
+	for _, entry := range teamRootTree.Entries {
+		if *entry.Path == teamPath {
+			tree, treeResp, treeErr := api.GetTree(owner, repo, *entry.SHA, false)
+			if treeErr != nil {
+				return treeErr
+			}
+			treeResp.Body.Close()
+			teamTree = tree
+		}
 	}
-	defer newTreeResp.Body.Close()
+	if teamTree == nil {
+		return errors.New("missing team tree")
+	}
 
-	log.Info("Getting parent commit...", "parentSha", ref.Object.SHA)
+	// exclude entries
+	entries := removePathsFromTree(log, teamTree, patterns)
+
+	// update team tree
+	log.Info("Creating new team subtree...")
+	newTeamTree, newTeamTreeResp, newTeamTreeErr := api.CreateTree(owner, repo, "", entries)
+	if newTeamTreeErr != nil {
+		return newTeamTreeErr
+	}
+	defer newTeamTreeResp.Body.Close()
+
+	// update root team tree
+	for _, entry := range teamRootTree.Entries {
+		if teamPath == *entry.Path {
+			log.Info("Updating SHA value for team subtree", "path", *entry.Path, "oldSHA", *entry.SHA, "newSHA", newTeamTree.SHA)
+			entry.SHA = newTeamTree.SHA
+			entry.URL = nil
+		}
+	}
+
+	log.Info("Creating new team root tree...")
+	newTeamRootTree, newTeamRootTreeResp, newTeamRootTreeErr := api.CreateTree(owner, repo, "", teamRootTree.Entries)
+	if newTeamRootTreeErr != nil {
+		return newTeamRootTreeErr
+	}
+	defer newTeamRootTreeResp.Body.Close()
+
+	// update base tree
+	for _, entry := range baseTree.Entries {
+		if teamRootPath == *entry.Path {
+			log.Info("Updating SHA value for root team subtree", "path", *entry.Path, "oldSHA", *entry.SHA, "newSHA", newTeamRootTree.SHA)
+			entry.SHA = newTeamRootTree.SHA
+			entry.URL = nil
+		}
+	}
+
+	log.Info("Creating new base tree...")
+	newBaseTree, newBaseTreeResp, newBaseTreeErr := api.CreateTree(owner, repo, "", baseTree.Entries)
+	if newBaseTreeErr != nil {
+		return newBaseTreeErr
+	}
+	defer newBaseTreeResp.Body.Close()
+
+	log.Info("Getting parent commit...", "parentSHA", ref.Object.SHA)
 	parentCommit, commitResp, commitErr := api.GetCommit(owner, repo, *ref.Object.SHA)
 	if commitErr != nil {
 		return commitErr
@@ -134,33 +168,34 @@ func RemoveObjectsFromBranch(
 		"parentSha", parentCommit.SHA,
 	)
 
-	commit := gitCommit(newTree, commitAuthor, commitMessage, parentCommit)
+	c := gitCommit(newBaseTree, commitAuthor, commitMessage, parentCommit)
 
 	log.Info(
-		"Creating commit for updated tree...",
+		"Creating commit for updated baseTree...",
 		"parentCommitSha", parentCommit.SHA,
 		"parentTreeSha", parentCommit.Tree.SHA,
-		"baseTreeSha", tree.SHA,
-		"newTreeSha", newTree.SHA,
+		"baseTreeSha", baseTree.SHA,
+		"newTreeSha", newBaseTree.SHA,
 	)
-	newCommit, _, commitErr := api.CreateCommit(owner, repo, commit)
+	commit, commitResp, commitErr := api.CreateCommit(owner, repo, c)
 	if commitErr != nil {
 		return commitErr
 	}
+	defer commitResp.Body.Close()
 
-	if !hasChangesToCommit(parentCommit, newTree) {
+	if !hasChangesToCommit(parentCommit, newBaseTree) {
 		log.Info(
 			"No changes in il repo for deletion. Ignoring empty commit.",
 			"parentCommitSha", parentCommit.SHA,
 			"parentTreeSha", parentCommit.Tree.SHA,
-			"baseTreeSha", tree.SHA,
-			"newTreeSha", newTree.SHA,
+			"baseTreeSha", baseTree.SHA,
+			"newTreeSha", newBaseTree.SHA,
 		)
 		return nil
 	}
 
-	log.Info("Updating ref with new commit SHA...", "oldSha", ref.Object.SHA, "newSha", newCommit.SHA)
-	ref.Object.SHA = newCommit.SHA
+	log.Info("Updating ref with new commit SHA...", "oldSha", ref.Object.SHA, "newSha", commit.SHA)
+	ref.Object.SHA = commit.SHA
 	_, newRefResp, newRefErr := api.UpdateRef(owner, repo, ref, false)
 	if newRefErr != nil {
 		return newRefErr
