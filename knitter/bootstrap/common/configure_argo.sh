@@ -10,6 +10,8 @@
 # law. Dissemination of this information or reproduction of this material is
 # strictly forbidden unless prior written permission is obtained from CompuZest, Inc.
 
+LOCATION=$1
+
 cd ../../zlifecycle-provisioner/k8s-addons/argo-workflow
 
 if [[ $(lsof -i :8080 | wc -l) -eq 0 ]]
@@ -23,7 +25,7 @@ argoPassword=$(kubectl get secret argocd-server-login -n argocd -o json | jq '.d
 yes Y | argocd login --insecure localhost:8080 --grpc-web --username admin --password $argoPassword
 
 # this script is run from zlifecycle-provisioner/k8s-addons/argo-workflow, so path is zlifecycle-provisioner/k8s-addons/argo-workflow
-zlifecycleSSHKeyPath=zlifecycle
+zlifecycleSSHKeyPath=zlifecycle-$LOCATION
 
 sleep 10s
 helmChartsRepo=$(kubectl get ConfigMap company-config -n zlifecycle-il-operator-system -o jsonpath='{.data.helmChartsRepo}')
@@ -36,9 +38,3 @@ if [[ $(lsof -i :8081 | wc -l) > 0 ]]
 then
     kubectl port-forward service/argo-workflow-server 8081:2746 -n argocd &
 fi
-
-ilRepo=$(kubectl get ConfigMap company-config -n zlifecycle-il-operator-system -o jsonpath='{.data.ilRepo}')
-ilRepoName=$(kubectl get ConfigMap company-config -n zlifecycle-il-operator-system -o jsonpath='{.data.ilRepoName}')
-
-argocd app create config-watcher-bootstrap --upsert --repo $ilRepo --path config-watcher --dest-server https://kubernetes.default.svc --dest-namespace default --sync-policy automated --auto-prune
-argocd app create company-bootstrap --upsert --repo $ilRepo --path company --dest-server https://kubernetes.default.svc --dest-namespace default --sync-policy automated --auto-prune

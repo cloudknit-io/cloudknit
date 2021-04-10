@@ -75,7 +75,7 @@ main() {
 
     #Set up Argo
     announcePhase "Set up Argo"
-    ./common/configure_argo.sh
+    ./common/configure_argo.sh $LOCATION
     checkForFailures
 
     #Configure Cluster
