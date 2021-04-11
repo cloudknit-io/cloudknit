@@ -1,6 +1,10 @@
 package il
 
-import "fmt"
+import (
+	"fmt"
+
+	env "github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
+)
 
 type config struct {
 	TeamDirectory          string
@@ -16,6 +20,10 @@ var Config = config{
 
 func EnvironmentComponentDirectory(teamName string, envName string) string {
 	return EnvironmentDirectory(teamName) + "/" + envName + "-environment-component"
+}
+
+func SSHKeyName() string {
+	return env.Config.CompanyName + "-ssh"
 }
 
 func RepoName(companyName string) string {

@@ -17,9 +17,8 @@ import (
 )
 
 type Repo struct {
-	Source     string `json:"source"`
-	RepoSecret string `json:"repoSecret"`
-	Path       string `json:"path"`
+	Source string `json:"source"`
+	Path   string `json:"path"`
 }
 
 // TeamSpec defines the desired state of Team
