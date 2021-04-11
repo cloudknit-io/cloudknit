@@ -12,10 +12,6 @@ the default value http://argocd-server.argocd.svc.cluster.local.
 Check LastPass for secret values.
 TODO: Refactor ARGOCD_WEBHOOK_URL and ARGOCD_API_URL to be a config variable instead of a secret value
 
-### Auto-registration of team config repos
-`Team` resource has a `repoSecret` field which is the name of the secret which holds the SSH key for the team config repo.
-The secret should have the private SSH key stored in base64 format in the `sshPrivateKey` field.
-
 ## Vendoring
 
 We are using `go mod vendor` for our code so that all dependencies are available to the operator without relying on external sources. 

@@ -14,7 +14,7 @@ env:
   ARGOCD_SERVER_URL: "argocd-server"
   GITHUB_ZLIFECYCLE_OWNER: CompuZest
   GITHUB_WEBHOOK_SECRET: !!!CHANGEME!!!
-  ZLIFECYCLE_MASTER_SSH: zlifecycle-ssh
+  ZLIFECYCLE_MASTER_SSH: zlifecycle-operator-ssh
 
 resources:
   limits:

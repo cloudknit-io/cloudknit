@@ -48,7 +48,7 @@ func (r *CompanyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	r.Get(ctx, req.NamespacedName, company)
 
 	companyRepo := company.Spec.ConfigRepo.Source
-	repoSecret := company.Spec.ConfigRepo.RepoSecret
+	repoSecret := il.SSHKeyName()
 
 	argocdApi := argocd.NewHttpClient(r.Log, env.Config.ArgocdServerUrl)
 
