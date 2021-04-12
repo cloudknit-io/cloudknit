@@ -15,7 +15,7 @@ metadata:
   name: company-config
   namespace: zlifecycle-il-operator-system
 data:
-  companyName: "zmart"
+  companyName: "zmart-sandbox"
   adminEmail: "admin@compuzest.com"
   teamsConfigPath: "teams"
   configRepo: "git@github.com:zmart-tech-sandbox/zmart-config.git"
