@@ -6,8 +6,38 @@ import (
 	"golang.org/x/oauth2"
 )
 
-func NewHttpClient(token string, ctx context.Context) RepositoryApi {
-	return HttpRepositoryApi{Client: createGithubClient(token, ctx), Ctx: ctx}
+func NewHttpRepositoryClient(token string, ctx context.Context) RepositoryApi {
+	client := createGithubClient(token, ctx).Repositories
+	return HttpRepositoryApi{Client: client, Ctx: ctx}
+}
+
+func NewHttpGitClient(token string, ctx context.Context) GitApi {
+	client := createGithubClient(token, ctx).Git
+	return HttpGitApi{Client: client, Ctx: ctx}
+}
+
+func (api HttpGitApi) GetRef(owner string, repo string, ref string) (*github.Reference, *github.Response, error) {
+	return api.Client.GetRef(api.Ctx, owner, repo, ref)
+}
+
+func (api HttpGitApi) UpdateRef(owner string, repo string, ref *github.Reference, force bool) (*github.Reference, *github.Response, error) {
+	return api.Client.UpdateRef(api.Ctx, owner, repo, ref, force)
+}
+
+func (api HttpGitApi) GetCommit(owner string, repo string, sha string) (*github.Commit, *github.Response, error) {
+	return api.Client.GetCommit(api.Ctx, owner, repo, sha)
+}
+
+func (api HttpGitApi) CreateCommit(owner string, repo string, commit *github.Commit) (*github.Commit, *github.Response, error) {
+	return api.Client.CreateCommit(api.Ctx, owner, repo, commit)
+}
+
+func (api HttpGitApi) GetTree(owner string, repo string, sha string, recursive bool) (*github.Tree, *github.Response, error) {
+	return api.Client.GetTree(api.Ctx, owner, repo, sha, recursive)
+}
+
+func (api HttpGitApi) CreateTree(owner string, repo string, baseTree string, entries []*github.TreeEntry) (*github.Tree, *github.Response, error) {
+	return api.Client.CreateTree(api.Ctx, owner, repo, baseTree, entries)
 }
 
 func createGithubClient(token string, ctx context.Context) *github.Client {
@@ -18,17 +48,17 @@ func createGithubClient(token string, ctx context.Context) *github.Client {
 
 func (api HttpRepositoryApi) CreateRepository(owner string, repo string) (*github.Repository, *github.Response, error) {
 	r := github.Repository{Name: github.String(repo), Private: github.Bool(true)}
-	return api.Client.Repositories.Create(api.Ctx, owner, &r)
+	return api.Client.Create(api.Ctx, owner, &r)
 }
 
 func (api HttpRepositoryApi) GetRepository(owner string, repo string) (*github.Repository, *github.Response, error) {
-	return api.Client.Repositories.Get(api.Ctx, owner, repo)
+	return api.Client.Get(api.Ctx, owner, repo)
 }
 
 func (api HttpRepositoryApi) ListHooks(owner string, repo string, opts *github.ListOptions) ([]*github.Hook, *github.Response, error) {
-	return api.Client.Repositories.ListHooks(api.Ctx, owner, repo, opts)
+	return api.Client.ListHooks(api.Ctx, owner, repo, opts)
 }
 
 func (api HttpRepositoryApi) CreateHook(owner string, repo string, hook *github.Hook) (*github.Hook, *github.Response, error) {
-	return api.Client.Repositories.CreateHook(api.Ctx, owner, repo, hook)
+	return api.Client.CreateHook(api.Ctx, owner, repo, hook)
 }

@@ -15,6 +15,7 @@ type config struct {
 
 	GithubSvcAccntName  string
 	GithubSvcAccntEmail string
+	GithubFinalizer     string
 	GitHubAuthToken     string
 	GitHubWebhookSecret string
 	RepoBranch          string
@@ -41,6 +42,7 @@ var Config = config{
 
 	GithubSvcAccntName:  "zLifecycle",
 	GithubSvcAccntEmail: "zLifecycle@compuzest.com",
+	GithubFinalizer:     "zlifecycle.compuzest.com/github-finalizer",
 	GitHubAuthToken:     os.Getenv("GITHUB_AUTH_TOKEN"),
 	GitHubWebhookSecret: os.Getenv("GITHUB_WEBHOOK_SECRET"),
 	RepoBranch:          "main",
