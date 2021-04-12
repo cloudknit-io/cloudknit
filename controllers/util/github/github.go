@@ -50,7 +50,7 @@ var (
 var client *github.Client
 var ctx = context.Background()
 
-func RemoveObjectsFromBranch(
+func DeletePatternsFromRootTree(
 	log logr.Logger,
 	api GitApi,
 	owner string,
@@ -60,20 +60,33 @@ func RemoveObjectsFromBranch(
 	patterns []string,
 	commitAuthor *github.CommitAuthor,
 	commitMessage string,
-) error {
-	// get base tree
-	refFormat := fmt.Sprintf("refs/heads/%s", branch)
-	log.Info("Fetching ref...", "owner", owner, "repo", repo, "ref", refFormat)
-	ref, refResp, refErr := api.GetRef(owner, repo, refFormat)
-	if refErr != nil {
-		return refErr
+	) error {
+	tree, err := removeEnvironmentObjectsFromTree(log, api, owner, repo, branch, team, patterns)
+	if err != nil {
+		return err
 	}
-	defer refResp.Body.Close()
+	err = commitAndPushTree(log, api, owner, repo, branch, tree, commitAuthor, commitMessage)
+	if err != nil {
+		return err
+	}
 
-	log.Info("Fetching base tree...", "owner", owner, "repo", repo, "ref", *ref.Ref)
-	baseTree, baseTreeResp, baseTreeErr := api.GetTree(owner, repo, *ref.Ref, false)
+	return nil
+}
+
+func removeEnvironmentObjectsFromTree(
+	log logr.Logger,
+	api GitApi,
+	owner string,
+	repo string,
+	branch string,
+	team string,
+	patterns []string,
+) (*github.Tree, error) {
+	// get base tree
+	log.Info("Fetching base tree...", "owner", owner, "repo", repo, "branch", branch)
+	baseTree, baseTreeResp, baseTreeErr := api.GetTree(owner, repo, branch, false)
 	if baseTreeErr != nil {
-		return baseTreeErr
+		return nil, baseTreeErr
 	}
 	defer baseTreeResp.Body.Close()
 
@@ -85,14 +98,14 @@ func RemoveObjectsFromBranch(
 		if *entry.Path == teamRootPath {
 			tree, treeResp, treeErr := api.GetTree(owner, repo, *entry.SHA, false)
 			if treeErr != nil {
-				return treeErr
+				return nil, treeErr
 			}
 			treeResp.Body.Close()
 			teamRootTree = tree
 		}
 	}
 	if teamRootTree == nil {
-		return errors.New("missing team root tree")
+		return nil, errors.New("missing team root tree")
 	}
 
 	// team tree
@@ -103,14 +116,14 @@ func RemoveObjectsFromBranch(
 		if *entry.Path == teamPath {
 			tree, treeResp, treeErr := api.GetTree(owner, repo, *entry.SHA, false)
 			if treeErr != nil {
-				return treeErr
+				return nil, treeErr
 			}
 			treeResp.Body.Close()
 			teamTree = tree
 		}
 	}
 	if teamTree == nil {
-		return errors.New("missing team tree")
+		return nil, errors.New("missing team tree")
 	}
 
 	// exclude entries
@@ -120,7 +133,7 @@ func RemoveObjectsFromBranch(
 	log.Info("Creating new team subtree...")
 	newTeamTree, newTeamTreeResp, newTeamTreeErr := api.CreateTree(owner, repo, "", entries)
 	if newTeamTreeErr != nil {
-		return newTeamTreeErr
+		return nil, newTeamTreeErr
 	}
 	defer newTeamTreeResp.Body.Close()
 
@@ -136,7 +149,7 @@ func RemoveObjectsFromBranch(
 	log.Info("Creating new team root tree...")
 	newTeamRootTree, newTeamRootTreeResp, newTeamRootTreeErr := api.CreateTree(owner, repo, "", teamRootTree.Entries)
 	if newTeamRootTreeErr != nil {
-		return newTeamRootTreeErr
+		return nil, newTeamRootTreeErr
 	}
 	defer newTeamRootTreeResp.Body.Close()
 
@@ -152,9 +165,31 @@ func RemoveObjectsFromBranch(
 	log.Info("Creating new base tree...")
 	newBaseTree, newBaseTreeResp, newBaseTreeErr := api.CreateTree(owner, repo, "", baseTree.Entries)
 	if newBaseTreeErr != nil {
-		return newBaseTreeErr
+		return nil, newBaseTreeErr
 	}
 	defer newBaseTreeResp.Body.Close()
+
+	return newBaseTree, nil
+}
+
+func commitAndPushTree(
+	log logr.Logger,
+	api GitApi,
+	owner string,
+	repo string,
+	branch string,
+	tree *github.Tree,
+	commitAuthor *github.CommitAuthor,
+	commitMessage string,
+	) error {
+	// get base tree
+	refFormat := fmt.Sprintf("refs/heads/%s", branch)
+	log.Info("Fetching ref...", "owner", owner, "repo", repo, "ref", refFormat)
+	ref, refResp, refErr := api.GetRef(owner, repo, refFormat)
+	if refErr != nil {
+		return refErr
+	}
+	defer refResp.Body.Close()
 
 	log.Info("Getting parent commit...", "parentSHA", ref.Object.SHA)
 	parentCommit, commitResp, commitErr := api.GetCommit(owner, repo, *ref.Object.SHA)
@@ -168,14 +203,13 @@ func RemoveObjectsFromBranch(
 		"parentSha", parentCommit.SHA,
 	)
 
-	c := gitCommit(newBaseTree, commitAuthor, commitMessage, parentCommit)
+	c := gitCommit(tree, commitAuthor, commitMessage, parentCommit)
 
 	log.Info(
-		"Creating commit for updated baseTree...",
+		"Creating commit for tree...",
 		"parentCommitSha", parentCommit.SHA,
 		"parentTreeSha", parentCommit.Tree.SHA,
-		"baseTreeSha", baseTree.SHA,
-		"newTreeSha", newBaseTree.SHA,
+		"newTreeSha", tree.SHA,
 	)
 	commit, commitResp, commitErr := api.CreateCommit(owner, repo, c)
 	if commitErr != nil {
@@ -183,13 +217,12 @@ func RemoveObjectsFromBranch(
 	}
 	defer commitResp.Body.Close()
 
-	if !hasChangesToCommit(parentCommit, newBaseTree) {
+	if !hasChangesToCommit(parentCommit, tree) {
 		log.Info(
 			"No changes in il repo for deletion. Ignoring empty commit.",
 			"parentCommitSha", parentCommit.SHA,
 			"parentTreeSha", parentCommit.Tree.SHA,
-			"baseTreeSha", baseTree.SHA,
-			"newTreeSha", newBaseTree.SHA,
+			"newTreeSha", tree.SHA,
 		)
 		return nil
 	}

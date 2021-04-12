@@ -117,7 +117,7 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 func (r *EnvironmentReconciler) deleteExternalResources(ctx context.Context, e *stablev1alpha1.Environment) error {
 	owner         := env.Config.ZlifecycleOwner
-	ilRepo        := "zmart-il"
+	ilRepo        := env.Config.ILRepoName
 	api           := github.NewHttpGitClient(env.Config.GitHubAuthToken, ctx)
 	branch        := env.Config.RepoBranch
 	now           := time.Now()
@@ -125,7 +125,7 @@ func (r *EnvironmentReconciler) deleteExternalResources(ctx context.Context, e *
 	team          := fmt.Sprintf("%s-team-environment", e.Spec.TeamName)
 	commitAuthor  := &github2.CommitAuthor{Date: &now, Name: &env.Config.GithubSvcAccntName, Email: &env.Config.GithubSvcAccntEmail}
 	commitMessage := fmt.Sprintf("Cleaning il objects for %s team in %s environment", e.Spec.TeamName, e.Spec.EnvName)
-	if err := github.RemoveObjectsFromBranch(r.Log, api, owner, ilRepo, branch, team, paths, commitAuthor, commitMessage); err != nil {
+	if err := github.DeletePatternsFromRootTree(r.Log, api, owner, ilRepo, branch, team, paths, commitAuthor, commitMessage); err != nil {
 		return err
 	}
 	return nil
