@@ -19,7 +19,7 @@ spec:
   volumes:
     - name: github-ssh-key-mount
       secret:
-        secretName: github-ssh-key
+        secretName: zlifecycle-provisioner-ssh
         defaultMode: 384
     - name: aws-credentials-mount
       secret:
@@ -44,7 +44,7 @@ spec:
             git:
               repo: "{{inputs.parameters.il_repo}}"
               sshPrivateKeySecret:
-                name: github-ssh-key
+                name: zlifecycle-provisioner-ssh
                 key: id_rsa
               insecureIgnoreHostKey: true
       serviceAccountName: argo

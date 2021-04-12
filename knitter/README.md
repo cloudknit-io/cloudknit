@@ -49,3 +49,14 @@ docker push 413422438110.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-terraform:la
 ```
 aws eks --region us-east-1 update-kubeconfig --name sandbox-eks
 ```
+
+## SSH key overview
+
+1. A customer provide SSH _read_ access to their company config repo and team _config repos_.
+- For now there is one key per customer and it is `${company-name}-ssh` stored in the `argocd` namespace
+2. Zlifeycle operator needs _write_ access to zlifecycle il repos
+- This key is called `zlifecycle-provisioner-ssh` and is stored in the operator's namespace `argocd`
+- The kubernetes secret is used to mount files so it stores keys `id_rsa`
+3. Zlifeycle provisioner services needs _read_ access to zlifecycle il repos
+- This kubernetes secret storing the key is called `zlifecycle-operator-ssh` and is stored in the operator's namespace `zlifecycle-il-operator-system`
+- The kubernetes secret is parsed by operator code and the key is `sshPrivateKey`

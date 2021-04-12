@@ -44,7 +44,7 @@ spec:
             git:
               repo: "{{inputs.parameters.module_source}}"
               sshPrivateKeySecret:
-                name: github-ssh-key
+                name: zlifecycle-provisioner-ssh
                 key: id_rsa
               insecureIgnoreHostKey: true
           - name: terraform-variables
@@ -52,7 +52,7 @@ spec:
             git:
               repo: "{{inputs.parameters.variables_file_source}}"
               sshPrivateKeySecret:
-                name: github-ssh-key
+                name: zlifecycle-provisioner-ssh
                 key: id_rsa
               insecureIgnoreHostKey: true
       serviceAccountName: argo

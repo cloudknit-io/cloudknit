@@ -19,7 +19,7 @@ spec:
   volumes:
     - name: github-ssh-key-mount
       secret:
-        secretName: github-ssh-key
+        secretName: zlifecycle-provisioner-ssh
         defaultMode: 384
   templates:
     - name: update
