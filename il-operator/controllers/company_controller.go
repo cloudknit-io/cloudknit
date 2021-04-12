@@ -66,7 +66,7 @@ func (r *CompanyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	owner := env.Config.ZlifecycleOwner
 	ilRepo := il.RepoName(company.Name)
-	githubRepositoryAPI := github.NewHttpClient(env.Config.GitHubAuthToken, ctx)
+	githubRepositoryAPI := github.NewHttpRepositoryClient(env.Config.GitHubAuthToken, ctx)
 	_, err := github.TryCreateRepository(r.Log, githubRepositoryAPI, owner, ilRepo)
 	if err != nil {
 		return ctrl.Result{}, err
@@ -90,8 +90,7 @@ func (r *CompanyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	argocd.TryCreateBootstrapApps(r.Log)
 
-	githubApi := github.NewHttpClient(env.Config.GitHubAuthToken, ctx)
-	_, err = github.CreateRepoWebhook(r.Log, githubApi, companyRepo, env.Config.ArgocdHookUrl, env.Config.GitHubWebhookSecret)
+	_, err = github.CreateRepoWebhook(r.Log, githubRepositoryAPI, companyRepo, env.Config.ArgocdHookUrl, env.Config.GitHubWebhookSecret)
 	if err != nil {
 		return ctrl.Result{}, err
 	}

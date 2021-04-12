@@ -15,6 +15,8 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
+	github2 "github.com/google/go-github/v32/github"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -49,7 +51,33 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	environment := &stablev1alpha1.Environment{}
 
-	r.Get(ctx, req.NamespacedName, environment)
+	if err := r.Get(ctx, req.NamespacedName, environment); err != nil {
+		return ctrl.Result{}, nil
+	}
+
+	finalizer := env.Config.GithubFinalizer
+
+	if environment.DeletionTimestamp.IsZero() {
+		if !common.ContainsString(environment.GetFinalizers(), finalizer) {
+			environment.SetFinalizers(append(environment.GetFinalizers(), finalizer))
+			if err := r.Update(ctx, environment); err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+	} else {
+		if common.ContainsString(environment.GetFinalizers(), finalizer) {
+			if err := r.deleteExternalResources(ctx, environment); err != nil {
+				return ctrl.Result{}, err
+			}
+
+			environment.SetFinalizers(common.RemoveString(environment.GetFinalizers(), finalizer))
+			if err := r.Update(ctx, environment); err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+
+		return ctrl.Result{}, nil
+	}
 
 	envDirectory := il.EnvironmentDirectory(environment.Spec.TeamName)
 	envComponentDirectory := il.EnvironmentComponentDirectory(environment.Spec.TeamName, environment.Spec.EnvName)
@@ -82,6 +110,31 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	}
 
 	return ctrl.Result{}, nil
+}
+
+func (r *EnvironmentReconciler) deleteExternalResources(ctx context.Context, e *stablev1alpha1.Environment) error {
+	owner         := env.Config.ZlifecycleOwner
+	ilRepo        := env.Config.ILRepoName
+	api           := github.NewHttpGitClient(env.Config.GitHubAuthToken, ctx)
+	branch        := env.Config.RepoBranch
+	now           := time.Now()
+	paths         := extractPathsToRemove(*e)
+	team          := fmt.Sprintf("%s-team-environment", e.Spec.TeamName)
+	commitAuthor  := &github2.CommitAuthor{Date: &now, Name: &env.Config.GithubSvcAccntName, Email: &env.Config.GithubSvcAccntEmail}
+	commitMessage := fmt.Sprintf("Cleaning il objects for %s team in %s environment", e.Spec.TeamName, e.Spec.EnvName)
+	if err := github.DeletePatternsFromRootTree(r.Log, api, owner, ilRepo, branch, team, paths, commitAuthor, commitMessage); err != nil {
+		return err
+	}
+	return nil
+}
+
+func extractPathsToRemove(e stablev1alpha1.Environment) []string {
+	envPath    := fmt.Sprintf("%s-environment-component", e.Spec.EnvName)
+	envAppPath := fmt.Sprintf("%s-environment.yaml", e.Spec.EnvName)
+	return []string{
+		envPath,
+		envAppPath,
+	}
 }
 
 // SetupWithManager sets up the Environment Controller with Manager

@@ -89,7 +89,7 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, err
 	}
 
-	githubApi := github.NewHttpClient(env.Config.GitHubAuthToken, ctx)
+	githubApi := github.NewHttpRepositoryClient(env.Config.GitHubAuthToken, ctx)
 	_, err := github.CreateRepoWebhook(r.Log, githubApi, teamRepo, env.Config.ArgocdHookUrl, env.Config.GitHubWebhookSecret)
 	if err != nil {
 		return ctrl.Result{}, err

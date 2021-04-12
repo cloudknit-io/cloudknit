@@ -15,10 +15,12 @@ package github
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
@@ -47,6 +49,235 @@ var (
 
 var client *github.Client
 var ctx = context.Background()
+
+func DeletePatternsFromRootTree(
+	log logr.Logger,
+	api GitApi,
+	owner string,
+	repo string,
+	branch string,
+	team string,
+	patterns []string,
+	commitAuthor *github.CommitAuthor,
+	commitMessage string,
+	) error {
+	tree, err := removeEnvironmentObjectsFromTree(log, api, owner, repo, branch, team, patterns)
+	if err != nil {
+		return err
+	}
+	err = commitAndPushTree(log, api, owner, repo, branch, tree, commitAuthor, commitMessage)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func removeEnvironmentObjectsFromTree(
+	log logr.Logger,
+	api GitApi,
+	owner string,
+	repo string,
+	branch string,
+	team string,
+	patterns []string,
+) (*github.Tree, error) {
+	// get base tree
+	log.Info("Fetching base tree...", "owner", owner, "repo", repo, "branch", branch)
+	baseTree, baseTreeResp, baseTreeErr := api.GetTree(owner, repo, branch, false)
+	if baseTreeErr != nil {
+		return nil, baseTreeErr
+	}
+	defer baseTreeResp.Body.Close()
+
+	// team root tree
+	teamRootPath := "team"
+	log.Info("Fetching team root tree...", "owner", owner, "repo", repo, "path", teamRootPath)
+	var teamRootTree *github.Tree
+	for _, entry := range baseTree.Entries {
+		if *entry.Path == teamRootPath {
+			tree, treeResp, treeErr := api.GetTree(owner, repo, *entry.SHA, false)
+			if treeErr != nil {
+				return nil, treeErr
+			}
+			treeResp.Body.Close()
+			teamRootTree = tree
+		}
+	}
+	if teamRootTree == nil {
+		return nil, errors.New("missing team root tree")
+	}
+
+	// team tree
+	teamPath := team
+	log.Info("Fetching team tree...", "owner", owner, "repo", repo, "path", teamPath)
+	var teamTree *github.Tree
+	for _, entry := range teamRootTree.Entries {
+		if *entry.Path == teamPath {
+			tree, treeResp, treeErr := api.GetTree(owner, repo, *entry.SHA, false)
+			if treeErr != nil {
+				return nil, treeErr
+			}
+			treeResp.Body.Close()
+			teamTree = tree
+		}
+	}
+	if teamTree == nil {
+		return nil, errors.New("missing team tree")
+	}
+
+	// exclude entries
+	entries := removePathsFromTree(log, teamTree, patterns)
+
+	// update team tree
+	log.Info("Creating new team subtree...")
+	newTeamTree, newTeamTreeResp, newTeamTreeErr := api.CreateTree(owner, repo, "", entries)
+	if newTeamTreeErr != nil {
+		return nil, newTeamTreeErr
+	}
+	defer newTeamTreeResp.Body.Close()
+
+	// update root team tree
+	for _, entry := range teamRootTree.Entries {
+		if teamPath == *entry.Path {
+			log.Info("Updating SHA value for team subtree", "path", *entry.Path, "oldSHA", *entry.SHA, "newSHA", newTeamTree.SHA)
+			entry.SHA = newTeamTree.SHA
+			entry.URL = nil
+		}
+	}
+
+	log.Info("Creating new team root tree...")
+	newTeamRootTree, newTeamRootTreeResp, newTeamRootTreeErr := api.CreateTree(owner, repo, "", teamRootTree.Entries)
+	if newTeamRootTreeErr != nil {
+		return nil, newTeamRootTreeErr
+	}
+	defer newTeamRootTreeResp.Body.Close()
+
+	// update base tree
+	for _, entry := range baseTree.Entries {
+		if teamRootPath == *entry.Path {
+			log.Info("Updating SHA value for root team subtree", "path", *entry.Path, "oldSHA", *entry.SHA, "newSHA", newTeamRootTree.SHA)
+			entry.SHA = newTeamRootTree.SHA
+			entry.URL = nil
+		}
+	}
+
+	log.Info("Creating new base tree...")
+	newBaseTree, newBaseTreeResp, newBaseTreeErr := api.CreateTree(owner, repo, "", baseTree.Entries)
+	if newBaseTreeErr != nil {
+		return nil, newBaseTreeErr
+	}
+	defer newBaseTreeResp.Body.Close()
+
+	return newBaseTree, nil
+}
+
+func commitAndPushTree(
+	log logr.Logger,
+	api GitApi,
+	owner string,
+	repo string,
+	branch string,
+	tree *github.Tree,
+	commitAuthor *github.CommitAuthor,
+	commitMessage string,
+	) error {
+	// get base tree
+	refFormat := fmt.Sprintf("refs/heads/%s", branch)
+	log.Info("Fetching ref...", "owner", owner, "repo", repo, "ref", refFormat)
+	ref, refResp, refErr := api.GetRef(owner, repo, refFormat)
+	if refErr != nil {
+		return refErr
+	}
+	defer refResp.Body.Close()
+
+	log.Info("Getting parent commit...", "parentSHA", ref.Object.SHA)
+	parentCommit, commitResp, commitErr := api.GetCommit(owner, repo, *ref.Object.SHA)
+	if commitErr != nil {
+		return commitErr
+	}
+	defer commitResp.Body.Close()
+
+	log.Info("Parent commit info",
+		"parentTreeSha", parentCommit.Tree.SHA,
+		"parentSha", parentCommit.SHA,
+	)
+
+	c := gitCommit(tree, commitAuthor, commitMessage, parentCommit)
+
+	log.Info(
+		"Creating commit for tree...",
+		"parentCommitSha", parentCommit.SHA,
+		"parentTreeSha", parentCommit.Tree.SHA,
+		"newTreeSha", tree.SHA,
+	)
+	commit, commitResp, commitErr := api.CreateCommit(owner, repo, c)
+	if commitErr != nil {
+		return commitErr
+	}
+	defer commitResp.Body.Close()
+
+	if !hasChangesToCommit(parentCommit, tree) {
+		log.Info(
+			"No changes in il repo for deletion. Ignoring empty commit.",
+			"parentCommitSha", parentCommit.SHA,
+			"parentTreeSha", parentCommit.Tree.SHA,
+			"newTreeSha", tree.SHA,
+		)
+		return nil
+	}
+
+	log.Info("Updating ref with new commit SHA...", "oldSha", ref.Object.SHA, "newSha", commit.SHA)
+	ref.Object.SHA = commit.SHA
+	_, newRefResp, newRefErr := api.UpdateRef(owner, repo, ref, false)
+	if newRefErr != nil {
+		return newRefErr
+	}
+	defer newRefResp.Body.Close()
+
+	return nil
+}
+
+func hasChangesToCommit(parent *github.Commit, tree *github.Tree) bool {
+	parentSha := *parent.Tree.SHA
+	newSha := *tree.SHA
+
+	return parentSha != newSha
+}
+
+func gitCommit(tree *github.Tree, author *github.CommitAuthor, message string, parentCommit *github.Commit) *github.Commit {
+	return &github.Commit{Author: author, Message: &message, Tree: tree, Parents: []*github.Commit{parentCommit}}
+}
+
+func removePathsFromTree(log logr.Logger, tree *github.Tree, paths []string) []*github.TreeEntry {
+	var entries []*github.TreeEntry
+	for _, entry := range tree.Entries {
+		if shouldExclude(entry, paths) {
+			log.Info("Excluding path from base tree", "path", entry.Path)
+		} else {
+			e := &github.TreeEntry{
+				SHA:     entry.SHA,
+				Content: entry.Content,
+				Path:    entry.Path,
+				Size:    entry.Size,
+				URL:     entry.URL,
+				Type:    entry.Type,
+				Mode:    entry.Mode,
+			}
+			entries = append(entries, e)
+		}
+	}
+	return entries
+}
+
+func shouldExclude(entry *github.TreeEntry, paths []string) bool {
+	for _, pathPattern := range paths {
+		if exclude, _ := regexp.MatchString(pathPattern, *entry.Path); exclude {
+			return true
+		}
+	}
+	return  false
+}
 
 // TryCreateRepository tries to create a private repository in a organization (enter blank string for owner if it is a user repo)
 // It returns true if repository is created, false if repository already exists, or any kind of error.
@@ -196,7 +427,6 @@ func getRef() (ref *github.Reference, err error) {
 	if commitBranch == "" {
 		return nil, errors.New("The `-commit-branch` should not be set to an empty string")
 	}
-
 	if ref, _, err = client.Git.GetRef(ctx, sourceOwner, sourceRepo, "refs/heads/"+commitBranch); err == nil {
 		return ref, nil
 	}
