@@ -1,0 +1,6 @@
+module "{{ .ComponentName }}" {
+    source = "{{ .Source }}//{{ .Path }}"
+{{ range .Variables }}
+    {{ .Name }} = "{{ .Value }}"
+{{end}}
+}

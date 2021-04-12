@@ -1,7 +1,8 @@
 SHELL = /bin/bash
 
 export CGO_ENABLED = 0
-export DOCKER_IMG = zlifecycle-il-operator:latest
+export DOCKER_TAG = latest
+export DOCKER_IMG = zlifecycle-il-operator
 export VERSION = $(shell git describe --always --tags 2>/dev/null || echo "initial")
 
 BUILD_CMD = go build -a -o build/zlifecycle-il-operator-$${GOOS}-$${GOARCH}
@@ -10,7 +11,7 @@ BUILD_CMD = go build -a -o build/zlifecycle-il-operator-$${GOOS}-$${GOARCH}
 all: deps check docker-build
 
 .PHONY: deps
-deps: download-controller-gen download-kustomize
+deps: download-controller-gen download-mockgen
 
 .PHONY: check test
 .ONESHELL:
@@ -47,13 +48,13 @@ check test: generate manifests
 
 .PHONY: docker-build
 docker-build:
-	docker build -t $(DOCKER_IMG) .
-	docker tag $(DOCKER_IMG) $${DOCKER_IMG%:*}:latest
+	go generate ./...
+	docker build -t $(DOCKER_IMG):$(DOCKER_TAG) .
 
 .PHONY: docker-dev-build
 docker-dev-build:
-	docker build . -t ${DOCKER_IMG} --file Dockerfile.dev
-	docker tag $(DOCKER_IMG) $${DOCKER_IMG%:*}:latest
+	go generate ./...
+	docker build . -t $(DOCKER_IMG):$(DOCKER_TAG) --file Dockerfile.dev
 
 # Push the docker image to ECR -- reminder: never push 'latest'
 .PHONY: docker-push
@@ -67,8 +68,8 @@ endif
 	aws --version
 	aws ecr get-login-password --region us-east-1 \
 		| docker login --username AWS --password-stdin $(ECR_REPO)
-	docker tag $(DOCKER_IMG) $(ECR_REPO)/$(DOCKER_IMG)
-	docker push $(ECR_REPO)/$(DOCKER_IMG)
+	docker tag $(DOCKER_IMG):$(DOCKER_TAG) $(ECR_REPO)/$(DOCKER_IMG):$(DOCKER_TAG)
+	docker push $(ECR_REPO)/$(DOCKER_IMG):$(DOCKER_TAG)
 
 .PHONY: clean
 clean:
@@ -85,6 +86,11 @@ manifests: controller-gen
 		paths="./..." output:crd:artifacts:config=charts/zlifecycle-il-operator/crds output:rbac:artifacts:config=charts/zlifecycle-il-operator/templates
 	@{ sed -i "s/manager-role/zlifecycle-il-operator-manager-role/" charts/zlifecycle-il-operator/templates/role.yaml; }
 
+manifests-local: controller-gen
+	# Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
+	controller-gen crd:trivialVersions=true rbac:roleName=manager-role webhook \
+		paths="./..." output:crd:artifacts:config=charts/zlifecycle-il-operator/crds output:rbac:artifacts:config=charts/zlifecycle-il-operator/templates
+	@{ sed -i "" "s/manager-role/zlifecycle-il-operator-manager-role/" charts/zlifecycle-il-operator/templates/role.yaml; }
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
 # without first building the binary
@@ -106,16 +112,16 @@ ifeq (, $(shell command -v controller-gen))
 	}
 endif
 
-.PHONY: kustomize
-download-kustomize:
-ifeq (, $(shell command -v kustomize))
+.PHONY: mockgen
+download-mockgen:
+ifeq (, $(shell command -v mockgen))
 	@{ \
-	echo "Downloading kustomize..."
+	echo "Downloading mockgen..."
 	set -e ;\
-	KUSTOMIZE_GEN_TMP_DIR=$$(mktemp -d) ;\
-	cd $$KUSTOMIZE_GEN_TMP_DIR ;\
+	MOCKGEN_TMP_DIR=$$(mktemp -d) ;\
+	cd $$MOCKGEN_TMP_DIR ;\
 	go mod init tmp ;\
-	go get sigs.k8s.io/kustomize/kustomize/v3@v3.5.4 ;\
-	rm -rf $$KUSTOMIZE_GEN_TMP_DIR ;\
+	go get github.com/golang/mock/mockgen@v1.5.0 ;\
+	rm -rf $$MOCKGEN_TMP_DIR ;\
 	}
 endif

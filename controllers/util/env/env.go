@@ -5,13 +5,13 @@ import (
 )
 
 type config struct {
-	ZlifecycleOwner     string
+	ZlifecycleOwner               string
 	ZlifecycleMasterRepoSshSecret string
 	ZlifecycleOperatorNamespace   string
-	CompanyName         string
-	ILRepoName          string
-	ILRepoURL           string
-	ILRepoSourceOwner   string
+	CompanyName                   string
+	ILRepoName                    string
+	ILRepoURL                     string
+	ILRepoSourceOwner             string
 
 	GithubSvcAccntName  string
 	GithubSvcAccntEmail string
@@ -35,10 +35,10 @@ var Config = config{
 	ZlifecycleMasterRepoSshSecret: getZlifecyleMasterRepoSshSecret(),
 	ZlifecycleOperatorNamespace:   os.Getenv("ZLIFECYCLE_OPERATOR_NAMESPACE"),
 
-	CompanyName:         os.Getenv("companyName"),
-	ILRepoName:          os.Getenv("ilRepoName"),
-	ILRepoURL:           os.Getenv("ilRepo"),
-	ILRepoSourceOwner:   os.Getenv("ilRepoSourceOwner"),
+	CompanyName:       os.Getenv("companyName"),
+	ILRepoName:        os.Getenv("ilRepoName"),
+	ILRepoURL:         os.Getenv("ilRepo"),
+	ILRepoSourceOwner: os.Getenv("ilRepoSourceOwner"),
 
 	GithubSvcAccntName:  "zLifecycle",
 	GithubSvcAccntEmail: "zLifecycle@compuzest.com",
@@ -47,13 +47,13 @@ var Config = config{
 	GitHubWebhookSecret: os.Getenv("GITHUB_WEBHOOK_SECRET"),
 	RepoBranch:          "main",
 
-	HelmChartsRepo:  os.Getenv("helmChartsRepo"),
-	K8sAPIURL:       os.Getenv("K8s_API_URL"),
+	HelmChartsRepo: os.Getenv("helmChartsRepo"),
+	K8sAPIURL:      os.Getenv("K8S_API_URL"),
 
-	ArgocdServerUrl:  getArgocdServerAddr(),
-	ArgocdHookUrl:    os.Getenv("ARGOCD_WEBHOOK_URL"),
-	ArgocdUsername:   os.Getenv("ARGOCD_USERNAME"),
-	ArgocdPassword:   os.Getenv("ARGOCD_PASSWORD"),
+	ArgocdServerUrl: getArgocdServerAddr(),
+	ArgocdHookUrl:   os.Getenv("ARGOCD_WEBHOOK_URL"),
+	ArgocdUsername:  os.Getenv("ARGOCD_USERNAME"),
+	ArgocdPassword:  os.Getenv("ARGOCD_PASSWORD"),
 }
 
 func getZlifecyleMasterRepoSshSecret() string {
@@ -82,4 +82,3 @@ func getArgocdServerAddr() string {
 		return "http://argocd-server.argocd.svc.cluster.local"
 	}
 }
-

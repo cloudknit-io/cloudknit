@@ -15,6 +15,8 @@ package controllers
 import (
 	"context"
 	"fmt"
+
+	file "github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/repo"
 
 	"github.com/go-logr/logr"
@@ -25,7 +27,6 @@ import (
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
 	argocd "github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
 	env "github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
-	fileutil "github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
 	github "github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
 	il "github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
 )
@@ -47,7 +48,7 @@ func (r *CompanyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	r.Get(ctx, req.NamespacedName, company)
 
 	companyRepo := company.Spec.ConfigRepo.Source
-	repoSecret := company.Spec.ConfigRepo.RepoSecret
+	repoSecret := il.SSHKeyName()
 
 	argocdApi := argocd.NewHttpClient(r.Log, env.Config.ArgocdServerUrl)
 
@@ -64,31 +65,32 @@ func (r *CompanyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	owner := env.Config.ZlifecycleOwner
-	ilRepo := company.Name + "-il"
-	githubRepositoryApi := github.NewHttpRepositoryClient(env.Config.GitHubAuthToken, ctx)
-	_, err := github.TryCreateRepository(r.Log, githubRepositoryApi, owner, ilRepo)
+	ilRepo := il.RepoName(company.Name)
+	githubRepositoryAPI := github.NewHttpRepositoryClient(env.Config.GitHubAuthToken, ctx)
+	_, err := github.TryCreateRepository(r.Log, githubRepositoryAPI, owner, ilRepo)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 
-	ilRepoUrl := fmt.Sprintf("git@github.com:%s/%s.git", owner, ilRepo)
-	masterRepoSshSecret := env.Config.ZlifecycleMasterRepoSshSecret
+	ilRepoURL := il.RepoURL(owner, company.Name)
+	masterRepoSSHSecret := env.Config.ZlifecycleMasterRepoSshSecret
 	operatorNamespace := env.Config.ZlifecycleOperatorNamespace
-	if err := repo.TryRegisterRepo(r.Client, r.Log, ctx, argocdApi, ilRepoUrl, operatorNamespace, masterRepoSshSecret); err != nil {
+	if err := repo.TryRegisterRepo(r.Client, r.Log, ctx, argocdApi, ilRepoURL, operatorNamespace, masterRepoSSHSecret); err != nil {
 		return ctrl.Result{}, err
 	}
 
 	github.CommitAndPushFiles(
 		env.Config.ILRepoSourceOwner,
-		env.Config.ILRepoName,
+		ilRepo,
 		[]string{il.Config.CompanyDirectory, il.Config.ConfigWatcherDirectory},
 		env.Config.RepoBranch,
 		fmt.Sprintf("Reconciling company %s", company.Spec.CompanyName),
 		env.Config.GithubSvcAccntName,
 		env.Config.GithubSvcAccntEmail)
 
-	githubRepoApi := github.NewHttpRepositoryClient(env.Config.GitHubAuthToken, ctx)
-	_, err = github.CreateRepoWebhook(r.Log, githubRepoApi, companyRepo, env.Config.ArgocdHookUrl, env.Config.GitHubWebhookSecret)
+	argocd.TryCreateBootstrapApps(r.Log)
+
+	_, err = github.CreateRepoWebhook(r.Log, githubRepositoryAPI, companyRepo, env.Config.ArgocdHookUrl, env.Config.GitHubWebhookSecret)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
@@ -104,8 +106,9 @@ func (r *CompanyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 func generateAndSaveCompanyApp(company *stablev1alpha1.Company) error {
 	companyApp := argocd.GenerateCompanyApp(*company)
+	fileUtil := &file.UtilFileService{}
 
-	if err := fileutil.SaveYamlFile(*companyApp, il.Config.CompanyDirectory, company.Spec.CompanyName+".yaml"); err != nil {
+	if err := fileUtil.SaveYamlFile(*companyApp, il.Config.CompanyDirectory, company.Spec.CompanyName+".yaml"); err != nil {
 		return err
 	}
 
@@ -114,8 +117,9 @@ func generateAndSaveCompanyApp(company *stablev1alpha1.Company) error {
 
 func generateAndSaveCompanyConfigWatcher(company *stablev1alpha1.Company) error {
 	companyConfigWatcherApp := argocd.GenerateCompanyConfigWatcherApp(company.Spec.CompanyName, company.Spec.ConfigRepo.Source)
+	fileUtil := &file.UtilFileService{}
 
-	if err := fileutil.SaveYamlFile(*companyConfigWatcherApp, il.Config.ConfigWatcherDirectory, company.Spec.CompanyName+".yaml"); err != nil {
+	if err := fileUtil.SaveYamlFile(*companyConfigWatcherApp, il.Config.ConfigWatcherDirectory, company.Spec.CompanyName+".yaml"); err != nil {
 		return err
 	}
 

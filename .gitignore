@@ -22,7 +22,5 @@ test-results/
 *.swp
 *.swo
 
-# HACK: git ignore this file to avoid AWS account id being committed to git
-config/manager/kustomization.yaml
-
 build/
+manager

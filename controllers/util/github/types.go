@@ -2,6 +2,7 @@ package github
 
 import (
 	"context"
+
 	"github.com/google/go-github/v32/github"
 )
 
@@ -27,6 +28,7 @@ type RepositoryApi interface {
 }
 
 type HttpRepositoryApi struct {
+	RepositoryApi
 	Ctx    context.Context
 	Client *github.RepositoriesService
 }

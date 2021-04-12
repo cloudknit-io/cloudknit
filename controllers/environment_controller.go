@@ -27,7 +27,7 @@ import (
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
 	argocd "github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
 	argoWorkflow "github.com/compuzest/zlifecycle-il-operator/controllers/argoworkflow"
-	k8s "github.com/compuzest/zlifecycle-il-operator/controllers/kubernetes"
+	terraformgenerator "github.com/compuzest/zlifecycle-il-operator/controllers/terraformgenerator"
 	env "github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	file "github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
 	github "github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
@@ -81,20 +81,17 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	envDirectory := il.EnvironmentDirectory(environment.Spec.TeamName)
 	envComponentDirectory := il.EnvironmentComponentDirectory(environment.Spec.TeamName, environment.Spec.EnvName)
+	var fileUtil file.UtilFile = &file.UtilFileService{}
 
-	if err := generateAndSaveEnvironmentApp(environment, envDirectory); err != nil {
+	if err := generateAndSaveEnvironmentApp(fileUtil, environment, envDirectory); err != nil {
 		return ctrl.Result{}, err
 	}
 
-	if err := generateAndSaveEnvironmentComponents(environment, envComponentDirectory); err != nil {
+	if err := generateAndSaveEnvironmentComponents(fileUtil, environment, envComponentDirectory); err != nil {
 		return ctrl.Result{}, err
 	}
 
-	if err := generateAndSaveWorkflowOfWorkflows(environment, envComponentDirectory); err != nil {
-		return ctrl.Result{}, err
-	}
-
-	if err := generateAndSavePresyncJob(environment, envComponentDirectory); err != nil {
+	if err := generateAndSaveWorkflowOfWorkflows(fileUtil, environment, envComponentDirectory); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -147,12 +144,12 @@ func (r *EnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func generateAndSaveEnvironmentComponents(environment *stablev1alpha1.Environment, envComponentDirectory string) error {
+func generateAndSaveEnvironmentComponents(fileUtil file.UtilFile, environment *stablev1alpha1.Environment, envComponentDirectory string) error {
 	for _, environmentComponent := range environment.Spec.EnvironmentComponent {
 		if environmentComponent.Variables != nil {
 			fileName := fmt.Sprintf("%s.tfvars", environmentComponent.Name)
 
-			if err := file.SaveVarsToFile(environmentComponent.Variables, envComponentDirectory, fileName); err != nil {
+			if err := fileUtil.SaveVarsToFile(environmentComponent.Variables, envComponentDirectory, fileName); err != nil {
 				return err
 			}
 
@@ -164,7 +161,14 @@ func generateAndSaveEnvironmentComponents(environment *stablev1alpha1.Environmen
 
 		application := argocd.GenerateEnvironmentComponentApps(*environment, *environmentComponent)
 
-		if err := file.SaveYamlFile(*application, envComponentDirectory, environmentComponent.Name+".yaml"); err != nil {
+		var tf terraformgenerator.UtilTerraformGenerator = terraformgenerator.TerraformGenerator{}
+		err := tf.GenerateTerraform(fileUtil, environmentComponent, environment, envComponentDirectory)
+
+		if err != nil {
+			return err
+		}
+
+		if err = fileUtil.SaveYamlFile(*application, envComponentDirectory, environmentComponent.Name+".yaml"); err != nil {
 			return err
 		}
 	}
@@ -172,29 +176,27 @@ func generateAndSaveEnvironmentComponents(environment *stablev1alpha1.Environmen
 	return nil
 }
 
-func generateAndSaveWorkflowOfWorkflows(environment *stablev1alpha1.Environment, envComponentDirectory string) error {
-	workflow := argoWorkflow.GenerateWorkflowOfWorkflows(*environment)
-	if err := file.SaveYamlFile(*workflow, envComponentDirectory, "/wofw.yaml"); err != nil {
+func generateAndSaveWorkflowOfWorkflows(fileUtil file.UtilFile, environment *stablev1alpha1.Environment, envComponentDirectory string) error {
+
+	// WIP, below command is for testing
+	// experimentalworkflow := argoWorkflow.GenerateWorkflowOfWorkflows(*environment)
+	// if err := fileUtil.SaveYamlFile(*experimentalworkflow, envComponentDirectory, "/experimental_wofw.yaml"); err != nil {
+	// 	return err
+	// }
+
+	workflow := argoWorkflow.GenerateLegacyWorkflowOfWorkflows(*environment)
+	if err := fileUtil.SaveYamlFile(*workflow, envComponentDirectory, "/wofw.yaml"); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func generateAndSaveEnvironmentApp(environment *stablev1alpha1.Environment, envDirectory string) error {
+func generateAndSaveEnvironmentApp(fileUtil file.UtilFile, environment *stablev1alpha1.Environment, envDirectory string) error {
 	envApp := argocd.GenerateEnvironmentApp(*environment)
 	envYAML := fmt.Sprintf("%s-environment.yaml", environment.Spec.EnvName)
 
-	if err := file.SaveYamlFile(*envApp, envDirectory, envYAML); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func generateAndSavePresyncJob(environment *stablev1alpha1.Environment, envComponentDirectory string) error {
-	presyncJob := k8s.GeneratePreSyncJob(*environment)
-	if err := file.SaveYamlFile(*presyncJob, envComponentDirectory, "/presync-job.yaml"); err != nil {
+	if err := fileUtil.SaveYamlFile(*envApp, envDirectory, envYAML); err != nil {
 		return err
 	}
 
