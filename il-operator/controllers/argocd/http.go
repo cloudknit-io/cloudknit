@@ -26,7 +26,7 @@ func (api HttpApi) GetAuthToken() (*GetTokenResponse, error) {
 	}
 
 	body := GetTokenBody{Username: creds.Username, Password: creds.Password}
-	jsonBody, err := common.ToJson(api.Log, body)
+	jsonBody, err := common.ToJson(body)
 
 	getTokenUrl := api.ServerUrl + "/api/v1/session"
 	resp, err := http.Post(getTokenUrl, "application/json", bytes.NewBuffer(jsonBody))
@@ -35,13 +35,13 @@ func (api HttpApi) GetAuthToken() (*GetTokenResponse, error) {
 		return nil, err
 	}
 
-	respBody, err := common.ReadBody(api.Log, resp.Body)
+	respBody, err := common.ReadBody(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
 	t := new(GetTokenResponse)
-	err = common.FromJson(api.Log, t, respBody)
+	err = common.FromJson(t, respBody)
 
 	return t, nil
 }
@@ -91,7 +91,7 @@ func (api HttpApi) ListRepositories(bearerToken string) (*RepositoryList, *http.
 }
 
 func (api HttpApi) CreateRepository(body CreateRepoBody, bearerToken string) (*http.Response, error) {
-	jsonBody, err := common.ToJson(api.Log, body)
+	jsonBody, err := common.ToJson(body)
 
 	addRepoUrl := api.ServerUrl + "/api/v1/repositories"
 	req, err := http.NewRequest("POST", addRepoUrl, bytes.NewBuffer(jsonBody))
@@ -165,7 +165,7 @@ func (api HttpApi) DoesApplicationExist(name string, bearerToken string) (bool, 
 }
 
 func (api HttpApi) CreateApplication(application *appv1.Application, bearerToken string) (*http.Response, error) {
-	jsonBody, err := common.ToJson(api.Log, application)
+	jsonBody, err := common.ToJson(application)
 
 	addAppURL := api.ServerUrl + "/api/v1/applications"
 	req, err := http.NewRequest("POST", addAppURL, bytes.NewBuffer(jsonBody))
