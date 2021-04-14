@@ -48,6 +48,9 @@ terraform init || Error "Cannot initialize terraform"
 
 sh /argocd/login.sh
 
+data='{"metadata":{"labels":{"component_status":"initializing"}}}'
+argocd app patch $team_env_config_name --patch $data --type merge
+
 if [ $is_apply -eq 0 ]
 then
 
@@ -59,6 +62,9 @@ then
         data='{"metadata":{"labels":{"last_workflow_run_id":"'$workflow_id'"}}}'
         argocd app patch $team_env_config_name --patch $data --type merge
     fi
+
+    data='{"metadata":{"labels":{"component_status":"running_plan"}}}'
+    argocd app patch $team_env_config_name --patch $data --type merge
 
     terraform plan -lock=$lock_state -parallelism=2 -input=false -no-color -out=terraform-plan -detailed-exitcode
     result=$?
@@ -72,9 +78,15 @@ then
     sh /argocd/control_loop.sh $is_sync $result $team_env_name $team_env_config_name $workflow_id || Error "There is an issue with ArgoCD CLI"
 
 else
+    data='{"metadata":{"labels":{"component_status":"provisioning"}}}'
+    argocd app patch $team_env_config_name --patch $data --type merge
 
     terraform apply -auto-approve -input=false -parallelism=2 -no-color || Error "Can not apply terraform plan"
     echo -n 0 > /tmp/plan_code.txt
+
+    data='{"metadata":{"labels":{"component_status":"provisioned"}}}'
+    argocd app patch $team_env_config_name --patch $data --type merge
+
     argocd app sync $team_env_config_name
 
 fi

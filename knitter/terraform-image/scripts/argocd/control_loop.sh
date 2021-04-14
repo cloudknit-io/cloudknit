@@ -30,6 +30,9 @@ config_sync_status=$(argocd app get $team_env_config_name -o json | jq -r '.stat
 
 if [ $result -eq 0 ]
 then
+    data='{"metadata":{"labels":{"component_status":"in_sync"}}}'
+    argocd app patch $team_env_config_name --patch $data --type merge
+
     if [ $config_sync_status == "OutOfSync" ]
     then
         argocd app sync $team_env_config_name || true
@@ -40,6 +43,9 @@ then
     then
         if [ $config_sync_status != "OutOfSync" ]
         then
+            data='{"metadata":{"labels":{"component_status":"out_of_sync"}}}'
+            argocd app patch $team_env_config_name --patch $data --type merge
+
             sh /argocd/patch_env_component.sh $team_env_config_name || Error "Failed patching env component"
             if [ $env_sync_status != "OutOfSync" ]
             then
