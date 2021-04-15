@@ -400,7 +400,7 @@ func parseRepoUrl(url string) (Owner, Repo, error) {
 func checkIsHookRegistered(log logr.Logger, hooks []*github.Hook, payloadUrl string) (bool, error) {
 	for _, h := range hooks {
 		cfg := new(HookCfg)
-		err := common.FromJsonMap(log, h.Config, cfg)
+		err := common.FromJsonMap(h.Config, cfg)
 		if err != nil {
 			return false, err
 		}
