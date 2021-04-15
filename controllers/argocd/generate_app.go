@@ -14,6 +14,7 @@ package argocd
 
 import (
 	"fmt"
+	"strings"
 
 	appv1 "github.com/argoproj/argo-cd/pkg/apis/application/v1alpha1"
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
@@ -170,6 +171,7 @@ func GenerateEnvironmentComponentApps(environment stablev1alpha1.Environment, en
 				"component_name":       environmentComponent.Name,
 				"project_id":           environment.Spec.TeamName,
 				"environment_id":       environment.Spec.TeamName + "-" + environment.Spec.EnvName,
+				"depends_on":           strings.Join(environmentComponent.DependsOn[:], ","),
 			},
 			Finalizers: []string{
 				"resources-finalizer.argocd.argoproj.io",
