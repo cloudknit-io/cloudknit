@@ -16,7 +16,6 @@ type Api interface {
 }
 
 type HttpApi struct {
-	Api
 	ServerUrl string
 	Log       logr.Logger
 }
