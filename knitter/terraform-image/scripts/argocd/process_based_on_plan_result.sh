@@ -52,5 +52,9 @@ then
                 argocd app sync $team_env_name || true
             fi
         fi
+    elif [ $is_sync -eq 1 ]
+    then
+        data='{"metadata":{"labels":{"component_status":"waiting_for_approval"}}}'
+        argocd app patch $team_env_config_name --patch $data --type merge
     fi
 fi

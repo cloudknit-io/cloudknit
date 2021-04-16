@@ -44,16 +44,15 @@ sh /terraform/terraform.tf.sh $ENV_COMPONENT_PATH $team_name $team_env_name $con
 
 cd $ENV_COMPONENT_PATH
 
-terraform init || Error "Cannot initialize terraform"
-
 sh /argocd/login.sh
 
 data='{"metadata":{"labels":{"component_status":"initializing"}}}'
 argocd app patch $team_env_config_name --patch $data --type merge
 
+terraform init || Error "Cannot initialize terraform"
+
 if [ $is_apply -eq 0 ]
 then
-
     if [ $is_sync -eq 1 ]
     then
         sh /argocd/patch_env_component.sh $team_env_config_name
@@ -75,7 +74,7 @@ then
         Error "There is issue with generating terraform plan"
     fi
 
-    sh /argocd/control_loop.sh $is_sync $result $team_env_name $team_env_config_name $workflow_id || Error "There is an issue with ArgoCD CLI"
+    sh /argocd/process_based_on_plan_result.sh $is_sync $result $team_env_name $team_env_config_name $workflow_id || Error "There is an issue with ArgoCD CLI"
 
 else
     data='{"metadata":{"labels":{"component_status":"provisioning"}}}'
