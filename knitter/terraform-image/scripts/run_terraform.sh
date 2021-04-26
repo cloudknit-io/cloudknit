@@ -69,6 +69,15 @@ then
     result=$?
     echo -n $result > /tmp/plan_code.txt
 
+    data='{"metadata":{"labels":{"component_status":"calculating_cost"}}}'
+    argocd app patch $team_env_config_name --patch $data --type merge
+
+    infracost breakdown --path . --format json >> output.json
+    estimated_cost=$(cat output.json | jq -r ".projects[0].breakdown.totalMonthlyCost")
+
+    data='{"metadata":{"labels":{"component_cost":"'$estimated_cost'"}}}'
+    argocd app patch $team_env_config_name --patch $data --type merge
+
     if [ $result -eq 1 ]
     then
         Error "There is issue with generating terraform plan"
