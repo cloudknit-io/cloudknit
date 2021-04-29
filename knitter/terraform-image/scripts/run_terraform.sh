@@ -40,7 +40,7 @@ sh /client/setup_aws.sh || Error "Cannot setup aws credentials"
 
 sh /terraform/provider.tf.sh $ENV_COMPONENT_PATH || Error "Cannot generate terraform provider"
 sh /terraform/module.tf.sh $ENV_COMPONENT_PATH $config_name $module_source $module_source_path $variables_file_path || Error "Cannot generate terraform module"
-sh /terraform/terraform.tf.sh $ENV_COMPONENT_PATH $team_name $team_env_name $config_name || Error "Cannot generate terraform state block"
+sh /terraform/terraform.tf.sh $ENV_COMPONENT_PATH $team_name $env_name $config_name || Error "Cannot generate terraform state block"
 
 cd $ENV_COMPONENT_PATH
 
