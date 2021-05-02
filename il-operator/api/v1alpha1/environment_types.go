@@ -16,6 +16,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+type Tags struct {
+}
+
 type Module struct {
 	Source string `json:"source"`
 	Path   string `json:"path,omitempty"`
@@ -44,6 +47,7 @@ type EnvironmentComponent struct {
 	CronSchedule  string         `json:"cronSchedule,omitempty"`
 	DependsOn     []string       `json:"dependsOn,omitempty"`
 	Module        *Module        `json:"module"`
+	Tags          *Tags          `json:"tags,omitempty"`
 	VariablesFile *VariablesFile `json:"variablesFile,omitempty"`
 	Variables     []*Variable    `json:"variables,omitempty"`
 	Outputs       []*Output      `json:"outputs,omitempty"`
