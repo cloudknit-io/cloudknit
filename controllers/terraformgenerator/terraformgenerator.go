@@ -61,6 +61,15 @@ func (tf TerraformGenerator) GenerateTerraform(fileUtil file.UtilFile, environme
 		Outputs:       environmentComponent.Outputs,
 	}
 
+	dataConfig := TerraformDataConfig{
+		Region:    "us-east-1",
+		Profile:   "compuzest-shared",
+		Bucket:    "compuzest-zlifecycle-tfstate",
+		TeamName:  environment.Spec.TeamName,
+		EnvName:   environment.Spec.EnvName,
+		DependsOn: environmentComponent.DependsOn,
+	}
+
 	err := tf.GenerateProvider(fileUtil, environmentComponentDirectory, componentName)
 	if err != nil {
 		return err
@@ -84,6 +93,12 @@ func (tf TerraformGenerator) GenerateTerraform(fileUtil file.UtilFile, environme
 		}
 	}
 
+	if len(dataConfig.DependsOn) > 0 {
+		err = tf.GenerateFromTemplate(dataConfig, environmentComponentDirectory, componentName, fileUtil, filepath.Join(workingDir, "templates/terraform_data.tmpl"), "data")
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -112,6 +127,16 @@ type TerraformModuleConfig struct {
 type TerraformOutputsConfig struct {
 	ComponentName string
 	Outputs       []*stablev1alpha1.Output
+}
+
+// TerraformDataConfig variables for creating tf backend
+type TerraformDataConfig struct {
+	Region    string
+	Bucket    string
+	Profile   string
+	TeamName  string
+	EnvName   string
+	DependsOn []string
 }
 
 // GenerateProvider save provider file to be executed by terraform
