@@ -56,6 +56,11 @@ func (tf TerraformGenerator) GenerateTerraform(fileUtil file.UtilFile, environme
 		Variables:     environmentComponent.Variables,
 	}
 
+	outputsConfig := TerraformOutputsConfig{
+		ComponentName: componentName,
+		Outputs:       environmentComponent.Outputs,
+	}
+
 	err := tf.GenerateProvider(fileUtil, environmentComponentDirectory, componentName)
 	if err != nil {
 		return err
@@ -71,6 +76,14 @@ func (tf TerraformGenerator) GenerateTerraform(fileUtil file.UtilFile, environme
 	if err != nil {
 		return err
 	}
+
+	if len(outputsConfig.Outputs) > 0 {
+		err = tf.GenerateFromTemplate(outputsConfig, environmentComponentDirectory, componentName, fileUtil, filepath.Join(workingDir, "templates/terraform_outputs.tmpl"), "outputs")
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -93,6 +106,12 @@ type TerraformModuleConfig struct {
 	Source        string
 	Path          string
 	Variables     []*stablev1alpha1.Variable
+}
+
+// TerraformOutputsConfig for creating tf module outputs
+type TerraformOutputsConfig struct {
+	ComponentName string
+	Outputs       []*stablev1alpha1.Output
 }
 
 // GenerateProvider save provider file to be executed by terraform
