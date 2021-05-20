@@ -28,8 +28,9 @@ type VariablesFile struct {
 }
 
 type Variable struct {
-	Name  string `json:"name"`
-	Value string `json:"value"`
+	Name      string `json:"name"`
+	Value     string `json:"value,omitempty"`
+	ValueFrom string `json:"valueFrom,omitempty"`
 }
 
 type Output struct {

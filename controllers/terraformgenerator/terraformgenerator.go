@@ -102,43 +102,6 @@ func (tf TerraformGenerator) GenerateTerraform(fileUtil file.UtilFile, environme
 	return nil
 }
 
-// TerraformBackendConfig variables for creating tf backend
-type TerraformBackendConfig struct {
-	Region        string
-	Version       string
-	Key           string
-	Bucket        string
-	DynamoDBTable string
-	Profile       string
-	TeamName      string
-	EnvName       string
-	ComponentName string
-}
-
-// TerraformModuleConfig variables for creating tf module
-type TerraformModuleConfig struct {
-	ComponentName string
-	Source        string
-	Path          string
-	Variables     []*stablev1alpha1.Variable
-}
-
-// TerraformOutputsConfig for creating tf module outputs
-type TerraformOutputsConfig struct {
-	ComponentName string
-	Outputs       []*stablev1alpha1.Output
-}
-
-// TerraformDataConfig variables for creating tf backend
-type TerraformDataConfig struct {
-	Region    string
-	Bucket    string
-	Profile   string
-	TeamName  string
-	EnvName   string
-	DependsOn []string
-}
-
 // GenerateProvider save provider file to be executed by terraform
 func (tf TerraformGenerator) GenerateProvider(file file.UtilFile, environmentComponentDirectory string, componentName string) error {
 	terraformDirectory := tf.GenerateTerraformIlPath(environmentComponentDirectory, componentName)

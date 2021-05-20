@@ -76,9 +76,10 @@ spec:
                           type: string
                         value:
                           type: string
+                        valueFrom:
+                          type: string
                       required:
                       - name
-                      - value
                       type: object
                     type: array
                   variablesFile:
