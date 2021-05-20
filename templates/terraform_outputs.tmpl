@@ -1,0 +1,6 @@
+{{ range .Outputs }}
+    output "{{ .Name }}" {
+        value       = module.{{ $.ComponentName}}.{{ .Name }}
+    }
+
+{{end}}

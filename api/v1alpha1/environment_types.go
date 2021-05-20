@@ -32,6 +32,10 @@ type Variable struct {
 	Value string `json:"value"`
 }
 
+type Output struct {
+	Name string `json:"name"`
+}
+
 type EnvironmentComponent struct {
 	Name          string         `json:"name"`
 	Type          string         `json:"type"`
@@ -40,6 +44,7 @@ type EnvironmentComponent struct {
 	Module        *Module        `json:"module"`
 	VariablesFile *VariablesFile `json:"variablesFile,omitempty"`
 	Variables     []*Variable    `json:"variables,omitempty"`
+	Outputs       []*Output      `json:"outputs,omitempty"`
 }
 
 // EnvironmentSpec defines the desired state of Environment
