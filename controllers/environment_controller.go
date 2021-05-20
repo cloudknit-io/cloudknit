@@ -15,9 +15,10 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	github2 "github.com/google/go-github/v32/github"
-	"time"
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
