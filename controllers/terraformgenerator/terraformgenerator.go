@@ -70,6 +70,20 @@ func (tf TerraformGenerator) GenerateTerraform(
 		Variables:     variables,
 	}
 
+	outputsConfig := TerraformOutputsConfig{
+		ComponentName: componentName,
+		Outputs:       environmentComponent.Outputs,
+	}
+
+	dataConfig := TerraformDataConfig{
+		Region:    "us-east-1",
+		Profile:   "compuzest-shared",
+		Bucket:    "compuzest-zlifecycle-tfstate",
+		TeamName:  environment.Spec.TeamName,
+		EnvName:   environment.Spec.EnvName,
+		DependsOn: environmentComponent.DependsOn,
+	}
+
 	err := tf.GenerateProvider(fileUtil, environmentComponentDirectory, componentName)
 	if err != nil {
 		return err
@@ -85,28 +99,21 @@ func (tf TerraformGenerator) GenerateTerraform(
 	if err != nil {
 		return err
 	}
+
+	if len(outputsConfig.Outputs) > 0 {
+		err = tf.GenerateFromTemplate(outputsConfig, environmentComponentDirectory, componentName, fileUtil, filepath.Join(workingDir, "templates/terraform_outputs.tmpl"), "outputs")
+		if err != nil {
+			return err
+		}
+	}
+
+	if len(dataConfig.DependsOn) > 0 {
+		err = tf.GenerateFromTemplate(dataConfig, environmentComponentDirectory, componentName, fileUtil, filepath.Join(workingDir, "templates/terraform_data.tmpl"), "data")
+		if err != nil {
+			return err
+		}
+	}
 	return nil
-}
-
-// TerraformBackendConfig variables for creating tf backend
-type TerraformBackendConfig struct {
-	Region        string
-	Version       string
-	Key           string
-	Bucket        string
-	DynamoDBTable string
-	Profile       string
-	TeamName      string
-	EnvName       string
-	ComponentName string
-}
-
-// TerraformModuleConfig variables for creating tf module
-type TerraformModuleConfig struct {
-	ComponentName string
-	Source        string
-	Path          string
-	Variables     []*stablev1alpha1.Variable
 }
 
 // GenerateProvider save provider file to be executed by terraform

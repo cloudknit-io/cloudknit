@@ -15,6 +15,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	github2 "github.com/google/go-github/v32/github"
 	"github.com/magiconair/properties"

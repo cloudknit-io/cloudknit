@@ -1,6 +1,10 @@
 module "{{ .ComponentName }}" {
     source = "{{ .Source }}//{{ .Path }}"
 {{ range .Variables }}
+    {{ if .ValueFrom }}
+    {{ .Name }} = {{ .ValueFrom }}
+    {{ else }}
     {{ .Name }} = "{{ .Value }}"
-{{end}}
+    {{ end }}
+{{ end }}
 }
