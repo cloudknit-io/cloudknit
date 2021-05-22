@@ -2,6 +2,7 @@ package github
 
 import (
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/mocks"
 	"testing"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
@@ -15,7 +16,7 @@ func TestTryCreateRepositoryExisting(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	mockRepositoryApi := NewMockRepositoryApi(mockCtrl)
+	mockRepositoryApi := mocks.NewMockRepositoryApi(mockCtrl)
 
 	testOwner := "compuzest"
 	testRepo := "test_repo"
@@ -35,7 +36,7 @@ func TestTryCreateRepositoryNew(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	mockRepositoryApi := NewMockRepositoryApi(mockCtrl)
+	mockRepositoryApi := mocks.NewMockRepositoryApi(mockCtrl)
 
 	testOwner := "compuzest"
 	testRepo := "test_repo"
@@ -57,7 +58,7 @@ func TestCreateRepoWebhookNew(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	mockRepositoryApi := NewMockRepositoryApi(mockCtrl)
+	mockRepositoryApi := mocks.NewMockRepositoryApi(mockCtrl)
 
 	active := true
 	events := []string{"push"}
@@ -98,7 +99,7 @@ func TestCreateRepoWebhookExisting(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	mockRepositoryApi := NewMockRepositoryApi(mockCtrl)
+	mockRepositoryApi := mocks.NewMockRepositoryApi(mockCtrl)
 
 	active := true
 	events := []string{"push"}

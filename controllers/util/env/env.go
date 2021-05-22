@@ -8,6 +8,7 @@ type config struct {
 	ZlifecycleOwner               string
 	ZlifecycleMasterRepoSshSecret string
 	ZlifecycleOperatorNamespace   string
+	ZlifecycleOperatorRepo        string
 	CompanyName                   string
 	ILRepoName                    string
 	ILRepoURL                     string
@@ -34,6 +35,7 @@ var Config = config{
 	ZlifecycleOwner:               getZlifecycleOwner(),
 	ZlifecycleMasterRepoSshSecret: getZlifecyleMasterRepoSshSecret(),
 	ZlifecycleOperatorNamespace:   os.Getenv("ZLIFECYCLE_OPERATOR_NAMESPACE"),
+	ZlifecycleOperatorRepo:        "zlifecycle-il-operator",
 
 	CompanyName:       os.Getenv("companyName"),
 	ILRepoName:        os.Getenv("ilRepoName"),

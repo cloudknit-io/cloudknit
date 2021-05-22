@@ -16,6 +16,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -49,6 +50,22 @@ var (
 
 var client *github.Client
 var ctx = context.Background()
+
+func DownloadFile(
+	log logr.Logger,
+	api RepositoryApi,
+	repoUrl string,
+	ref string,
+	path string,
+	) (io.ReadCloser, error) {
+	owner, repo, err := parseRepoUrl(repoUrl)
+	log.Info("Downloading file from GitHub", "owner", owner, "repo", repo, "ref", ref, "path", path)
+	rc, err := api.DownloadContents(owner, repo, ref, path)
+	if err != nil {
+		return nil, err
+	}
+	return rc, nil
+}
 
 func DeletePatternsFromRootTree(
 	log logr.Logger,

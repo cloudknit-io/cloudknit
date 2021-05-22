@@ -17,6 +17,8 @@ import (
 	"fmt"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	github2 "github.com/google/go-github/v32/github"
+	"github.com/magiconair/properties"
+	"io/ioutil"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -55,8 +57,9 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, nil
 	}
 
-	finalizer := env.Config.GithubFinalizer
-
+	finalizer     := env.Config.GithubFinalizer
+	githubGitApi  := github.NewHttpGitClient(env.Config.GitHubAuthToken, ctx)
+	githubRepoApi := github.NewHttpRepositoryClient(env.Config.GitHubAuthToken, ctx)
 	if environment.DeletionTimestamp.IsZero() {
 		if !common.ContainsString(environment.GetFinalizers(), finalizer) {
 			environment.SetFinalizers(append(environment.GetFinalizers(), finalizer))
@@ -66,7 +69,7 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		}
 	} else {
 		if common.ContainsString(environment.GetFinalizers(), finalizer) {
-			if err := r.deleteExternalResources(ctx, environment); err != nil {
+			if err := r.deleteExternalResources(ctx, environment, githubGitApi); err != nil {
 				return ctrl.Result{}, err
 			}
 
@@ -87,7 +90,13 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, err
 	}
 
-	if err := generateAndSaveEnvironmentComponents(fileUtil, environment, envComponentDirectory); err != nil {
+	if err := generateAndSaveEnvironmentComponents(
+		r.Log,
+		fileUtil,
+		environment,
+		envComponentDirectory,
+		githubRepoApi,
+		); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -112,17 +121,16 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	return ctrl.Result{}, nil
 }
 
-func (r *EnvironmentReconciler) deleteExternalResources(ctx context.Context, e *stablev1alpha1.Environment) error {
+func (r *EnvironmentReconciler) deleteExternalResources(ctx context.Context, e *stablev1alpha1.Environment, githubGitApi github.GitApi) error {
 	owner         := env.Config.ZlifecycleOwner
 	ilRepo        := env.Config.ILRepoName
-	api           := github.NewHttpGitClient(env.Config.GitHubAuthToken, ctx)
 	branch        := env.Config.RepoBranch
 	now           := time.Now()
 	paths         := extractPathsToRemove(*e)
 	team          := fmt.Sprintf("%s-team-environment", e.Spec.TeamName)
 	commitAuthor  := &github2.CommitAuthor{Date: &now, Name: &env.Config.GithubSvcAccntName, Email: &env.Config.GithubSvcAccntEmail}
 	commitMessage := fmt.Sprintf("Cleaning il objects for %s team in %s environment", e.Spec.TeamName, e.Spec.EnvName)
-	if err := github.DeletePatternsFromRootTree(r.Log, api, owner, ilRepo, branch, team, paths, commitAuthor, commitMessage); err != nil {
+	if err := github.DeletePatternsFromRootTree(r.Log, githubGitApi, owner, ilRepo, branch, team, paths, commitAuthor, commitMessage); err != nil {
 		return err
 	}
 	return nil
@@ -144,7 +152,13 @@ func (r *EnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func generateAndSaveEnvironmentComponents(fileUtil file.UtilFile, environment *stablev1alpha1.Environment, envComponentDirectory string) error {
+func generateAndSaveEnvironmentComponents(
+	log logr.Logger,
+	fileUtil file.UtilFile,
+	environment *stablev1alpha1.Environment,
+	envComponentDirectory string,
+	githubRepoApi github.RepositoryApi,
+	) error {
 	for _, environmentComponent := range environment.Spec.EnvironmentComponent {
 		if environmentComponent.Variables != nil {
 			fileName := fmt.Sprintf("%s.tfvars", environmentComponent.Name)
@@ -152,16 +166,26 @@ func generateAndSaveEnvironmentComponents(fileUtil file.UtilFile, environment *s
 			if err := fileUtil.SaveVarsToFile(environmentComponent.Variables, envComponentDirectory, fileName); err != nil {
 				return err
 			}
+		}
 
-			environmentComponent.VariablesFile = &stablev1alpha1.VariablesFile{
-				Source: env.Config.ILRepoURL,
-				Path:   envComponentDirectory + "/" + fileName,
+		vf := environmentComponent.VariablesFile
+		if vf != nil {
+			tfvars, err := getVariablesFromTfvarsFile(
+				log,
+				githubRepoApi,
+				vf.Source,
+				env.Config.RepoBranch,
+				vf.Path,
+				)
+			if err != nil {
+				return err
 			}
+			vf.Variables = tfvars
 		}
 
 		application := argocd.GenerateEnvironmentComponentApps(*environment, *environmentComponent)
 
-		var tf terraformgenerator.UtilTerraformGenerator = terraformgenerator.TerraformGenerator{}
+		tf  := terraformgenerator.TerraformGenerator{Log: log}
 		err := tf.GenerateTerraform(fileUtil, environmentComponent, environment, envComponentDirectory)
 
 		if err != nil {
@@ -174,6 +198,49 @@ func generateAndSaveEnvironmentComponents(fileUtil file.UtilFile, environment *s
 	}
 
 	return nil
+}
+
+func getVariablesFromTfvarsFile(log logr.Logger, api github.RepositoryApi, repoUrl string, ref string, path string) ([]*stablev1alpha1.Variable, error) {
+	log.Info("Downloading tfvars file", "repoUrl", repoUrl, "ref", ref, "path", path)
+	buff, err := downloadTfvarsFile(log, api, repoUrl, ref, path)
+	if err != nil {
+		return nil, err
+	}
+	log.Info("Parsing variables from tfvars file")
+	tfvars, err := parseTfvarsFile(buff)
+	if err != nil {
+		return nil, err
+	}
+	return tfvars, nil
+}
+
+func downloadTfvarsFile(log logr.Logger, api github.RepositoryApi, repoUrl string, ref string, path string) ([]byte, error)  {
+	rc, err := github.DownloadFile(log, api, repoUrl, ref, path)
+	if err != nil {
+		return nil, err
+	}
+	defer rc.Close()
+	buff, err := ioutil.ReadAll(rc)
+	if err != nil {
+		return nil, err
+	}
+	return buff, nil
+}
+
+func parseTfvarsFile(buff []byte) ([]*stablev1alpha1.Variable, error) {
+	props, err := properties.Load(buff, properties.UTF8)
+	if err != nil {
+		return nil, err
+	}
+	decoded := map[string]string{}
+	if err := props.Decode(decoded); err != nil {
+		return nil, err
+	}
+	var tfvars []*stablev1alpha1.Variable
+	for name, value := range decoded {
+		tfvars = append(tfvars, &stablev1alpha1.Variable{Name: name, Value: common.TrimQuotes(value)})
+	}
+	return tfvars, nil
 }
 
 func generateAndSaveWorkflowOfWorkflows(fileUtil file.UtilFile, environment *stablev1alpha1.Environment, envComponentDirectory string) error {

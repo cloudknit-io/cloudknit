@@ -89,8 +89,6 @@ github.com/googleapis/gnostic/extensions
 # github.com/hashicorp/golang-lru v0.5.1
 github.com/hashicorp/golang-lru
 github.com/hashicorp/golang-lru/simplelru
-# github.com/hashicorp/terraform-json v0.9.0
-github.com/hashicorp/terraform-json
 # github.com/imdario/mergo v0.3.6
 github.com/imdario/mergo
 # github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99
@@ -103,6 +101,8 @@ github.com/kballard/go-shellquote
 github.com/kevinburke/ssh_config
 # github.com/konsorten/go-windows-terminal-sequences v1.0.3
 github.com/konsorten/go-windows-terminal-sequences
+# github.com/magiconair/properties v1.8.0
+github.com/magiconair/properties
 # github.com/mailru/easyjson v0.7.0
 github.com/mailru/easyjson/buffer
 github.com/mailru/easyjson/jlexer
@@ -189,9 +189,6 @@ github.com/src-d/gcfg/types
 github.com/stretchr/testify/assert
 # github.com/xanzy/ssh-agent v0.2.1
 github.com/xanzy/ssh-agent
-# github.com/zclconf/go-cty v1.2.1
-github.com/zclconf/go-cty/cty
-github.com/zclconf/go-cty/cty/set
 # go.uber.org/atomic v1.4.0
 go.uber.org/atomic
 # go.uber.org/multierr v1.1.0
