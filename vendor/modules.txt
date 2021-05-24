@@ -101,8 +101,6 @@ github.com/kballard/go-shellquote
 github.com/kevinburke/ssh_config
 # github.com/konsorten/go-windows-terminal-sequences v1.0.3
 github.com/konsorten/go-windows-terminal-sequences
-# github.com/magiconair/properties v1.8.0
-github.com/magiconair/properties
 # github.com/mailru/easyjson v0.7.0
 github.com/mailru/easyjson/buffer
 github.com/mailru/easyjson/jlexer

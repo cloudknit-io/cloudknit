@@ -18,7 +18,6 @@ import (
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	github2 "github.com/google/go-github/v32/github"
-	"github.com/magiconair/properties"
 	"io/ioutil"
 	"time"
 
@@ -215,17 +214,14 @@ func generateAndSaveEnvironmentComponents(
 	return nil
 }
 
-func getVariablesFromTfvarsFile(log logr.Logger, api github.RepositoryApi, repoUrl string, ref string, path string) ([]*stablev1alpha1.Variable, error) {
+func getVariablesFromTfvarsFile(log logr.Logger, api github.RepositoryApi, repoUrl string, ref string, path string) (string, error) {
 	log.Info("Downloading tfvars file", "repoUrl", repoUrl, "ref", ref, "path", path)
 	buff, err := downloadTfvarsFile(log, api, repoUrl, ref, path)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	log.Info("Parsing variables from tfvars file")
-	tfvars, err := parseTfvars(buff)
-	if err != nil {
-		return nil, err
-	}
+	tfvars := string(buff)
+
 	return tfvars, nil
 }
 
@@ -240,19 +236,6 @@ func downloadTfvarsFile(log logr.Logger, api github.RepositoryApi, repoUrl strin
 		return nil, err
 	}
 	return buff, nil
-}
-
-func parseTfvars(buff []byte) ([]*stablev1alpha1.Variable, error) {
-	props, err := properties.Load(buff, properties.UTF8)
-	if err != nil {
-		return nil, err
-	}
-
-	var tfvars []*stablev1alpha1.Variable
-	for name, value := range props.Map() {
-		tfvars = append(tfvars, &stablev1alpha1.Variable{Name: name, Value: value})
-	}
-	return tfvars, nil
 }
 
 func generateAndSaveWorkflowOfWorkflows(fileUtil file.UtilFile, environment *stablev1alpha1.Environment, envComponentDirectory string) error {

@@ -56,18 +56,16 @@ func (tf TerraformGenerator) GenerateTerraform(
 		ComponentName: componentName,
 	}
 
-	var variables []*stablev1alpha1.Variable
-	if environmentComponent.Variables != nil {
-		variables = append(variables, environmentComponent.Variables...)
-	}
+	tfvars := ""
 	if environmentComponent.VariablesFile != nil {
-		variables = append(variables, environmentComponent.VariablesFile.Variables...)
+		tfvars = environmentComponent.VariablesFile.Variables
 	}
 	moduleConfig := TerraformModuleConfig{
 		ComponentName: componentName,
 		Source:        il.EnvComponentModuleSource(environmentComponent.Module.Source, environmentComponent.Module.Name),
 		Path:          il.EnvComponentModulePath(environmentComponent.Module.Path),
-		Variables:     variables,
+		Variables:     environmentComponent.Variables,
+		VariablesFile: tfvars,
 	}
 
 	outputsConfig := TerraformOutputsConfig{

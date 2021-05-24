@@ -7,4 +7,12 @@ module "{{ .ComponentName }}" {
     {{ .Name }} = {{ .Value }}
     {{- end }}
 {{- end }}
+{{- template "tfvars" . }}
 }
+
+{{- define "tfvars" }}
+{{- if .VariablesFile }}
+{{ .VariablesFile }}
+{{- end }}
+{{- end }}
+

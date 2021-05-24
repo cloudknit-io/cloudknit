@@ -25,7 +25,7 @@ type Module struct {
 type VariablesFile struct {
 	Source    string `json:"source"`
 	Path      string `json:"path"`
-	Variables []*Variable
+	Variables string
 }
 
 type Variable struct {

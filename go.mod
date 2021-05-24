@@ -21,7 +21,6 @@ require (
 	github.com/jcmturner/gofork v1.0.0 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/kyoh86/richgo v0.3.6 // indirect
-	github.com/magiconair/properties v1.8.0
 	github.com/onsi/ginkgo v1.12.1
 	github.com/onsi/gomega v1.10.1
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
