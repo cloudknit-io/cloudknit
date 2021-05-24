@@ -1,7 +1,7 @@
-SHELL = /usr/local/bin/zsh
+SHELL = /bin/bash
 
 export CGO_ENABLED = 0
-export DOCKER_TAG = vars-file
+export DOCKER_TAG = latest
 export DOCKER_IMG = zlifecycle-il-operator
 export VERSION = $(shell git describe --always --tags 2>/dev/null || echo "initial")
 
