@@ -3,6 +3,7 @@ package common
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/go-logr/logr"
 	"io"
 	"io/ioutil"
@@ -91,4 +92,8 @@ func TrimQuotes(s string) string {
 		}
 	}
 	return s
+}
+
+func Stringify(v interface{}) string {
+	return fmt.Sprintf("%v", v)
 }

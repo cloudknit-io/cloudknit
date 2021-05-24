@@ -225,10 +225,12 @@ func getHelmValues(environment stablev1alpha1.Environment, environmentComponent 
 		helmValues += fmt.Sprintf(`
         cron_schedule: "%s"`, environmentComponent.CronSchedule)
 	}
-	helmValues += fmt.Sprintf(`
+	if environmentComponent.VariablesFile != nil {
+		helmValues += fmt.Sprintf(`
         variables_file:
             source: %s
             path: %s`, environmentComponent.VariablesFile.Source, environmentComponent.VariablesFile.Path)
+	}
 	return helmValues
 }
 func GenerateTeamConfigWatcherApp(team stablev1alpha1.Team) *appv1.Application {

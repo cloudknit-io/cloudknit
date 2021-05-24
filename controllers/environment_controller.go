@@ -160,16 +160,30 @@ func generateAndSaveEnvironmentComponents(
 	envComponentDirectory string,
 	githubRepoApi github.RepositoryApi,
 	) error {
-	for _, environmentComponent := range environment.Spec.EnvironmentComponent {
-		if environmentComponent.Variables != nil {
-			fileName := fmt.Sprintf("%s.tfvars", environmentComponent.Name)
+	log.Info(
+		"Generating environment",
+		"name", environment.Name,
+		"env", environment.Spec.EnvName,
+		"team", environment.Spec.TeamName,
+		)
+	for _, ec := range environment.Spec.EnvironmentComponent {
+		log.Info("Generating environment component", "component", ec.Name, "type", ec.Type)
+		if ec.Variables != nil {
+			fileName := fmt.Sprintf("%s.tfvars", ec.Name)
 
-			if err := fileUtil.SaveVarsToFile(environmentComponent.Variables, envComponentDirectory, fileName); err != nil {
+			var variables []*stablev1alpha1.Variable
+			for _, v := range ec.Variables {
+				// TODO: This is a hack to just to make it work, needs to be revisited
+				v.Value = fmt.Sprintf("\"%s\"", v.Value)
+				variables = append(variables, v)
+			}
+
+			if err := fileUtil.SaveVarsToFile(variables, envComponentDirectory, fileName); err != nil {
 				return err
 			}
 		}
 
-		vf := environmentComponent.VariablesFile
+		vf := ec.VariablesFile
 		if vf != nil {
 			tfvars, err := getVariablesFromTfvarsFile(
 				log,
@@ -184,16 +198,16 @@ func generateAndSaveEnvironmentComponents(
 			vf.Variables = tfvars
 		}
 
-		application := argocd.GenerateEnvironmentComponentApps(*environment, *environmentComponent)
+		application := argocd.GenerateEnvironmentComponentApps(*environment, *ec)
 
 		tf  := terraformgenerator.TerraformGenerator{Log: log}
-		err := tf.GenerateTerraform(fileUtil, environmentComponent, environment, envComponentDirectory)
+		err := tf.GenerateTerraform(fileUtil, ec, environment, envComponentDirectory)
 
 		if err != nil {
 			return err
 		}
 
-		if err = fileUtil.SaveYamlFile(*application, envComponentDirectory, environmentComponent.Name+".yaml"); err != nil {
+		if err = fileUtil.SaveYamlFile(*application, envComponentDirectory, ec.Name+".yaml"); err != nil {
 			return err
 		}
 	}
@@ -208,7 +222,7 @@ func getVariablesFromTfvarsFile(log logr.Logger, api github.RepositoryApi, repoU
 		return nil, err
 	}
 	log.Info("Parsing variables from tfvars file")
-	tfvars, err := parseTfvarsFile(buff)
+	tfvars, err := parseTfvars(buff)
 	if err != nil {
 		return nil, err
 	}
@@ -228,18 +242,15 @@ func downloadTfvarsFile(log logr.Logger, api github.RepositoryApi, repoUrl strin
 	return buff, nil
 }
 
-func parseTfvarsFile(buff []byte) ([]*stablev1alpha1.Variable, error) {
+func parseTfvars(buff []byte) ([]*stablev1alpha1.Variable, error) {
 	props, err := properties.Load(buff, properties.UTF8)
 	if err != nil {
 		return nil, err
 	}
-	decoded := map[string]string{}
-	if err := props.Decode(decoded); err != nil {
-		return nil, err
-	}
+
 	var tfvars []*stablev1alpha1.Variable
-	for name, value := range decoded {
-		tfvars = append(tfvars, &stablev1alpha1.Variable{Name: name, Value: common.TrimQuotes(value)})
+	for name, value := range props.Map() {
+		tfvars = append(tfvars, &stablev1alpha1.Variable{Name: name, Value: value})
 	}
 	return tfvars, nil
 }
