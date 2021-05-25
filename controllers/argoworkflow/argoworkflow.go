@@ -94,13 +94,16 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 
 func GenerateLegacyWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workflow.Workflow {
 
+	envComponentDirectory := il.EnvironmentComponentDirectory(environment.Spec.TeamName, environment.Spec.EnvName)
 	workflowTemplate := "terraform-sync-template"
+	tf := terraformgenerator.TerraformGenerator{}
 
 	var tasks []workflow.DAGTask
 
 	for _, environmentComponent := range environment.Spec.EnvironmentComponent {
 		moduleSource := il.EnvComponentModuleSource(environmentComponent.Module.Source, environmentComponent.Module.Name)
 		modulePath := il.EnvComponentModulePath(environmentComponent.Module.Path)
+		tfPath := tf.GenerateTerraformIlPath(envComponentDirectory, environmentComponent.Name)
 
 		parameters := []workflow.Parameter{
 			{
@@ -127,21 +130,14 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1alpha1.Environment) *
 				Name:  "config_name",
 				Value: &environmentComponent.Name,
 			},
-		}
-
-		vf := environmentComponent.VariablesFile
-		if vf != nil {
-			variablesFileParams := []workflow.Parameter{
-				{
-					Name:  "variables_file_source",
-					Value: &vf.Source,
-				},
-				{
-					Name:  "variables_file_path",
-					Value: &vf.Path,
-				},
-			}
-			parameters = append(parameters, variablesFileParams...)
+			{
+				Name:  "il_repo",
+				Value: &env.Config.ILRepoURL,
+			},
+			{
+				Name:  "terraform_il_path",
+				Value: &tfPath,
+			},
 		}
 
 		task := workflow.DAGTask{
