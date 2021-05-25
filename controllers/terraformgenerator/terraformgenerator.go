@@ -13,6 +13,7 @@
 package terraformgenerator
 
 import (
+	"github.com/go-logr/logr"
 	"os"
 	"path/filepath"
 	"text/template"
@@ -31,11 +32,17 @@ type UtilTerraformGenerator interface {
 
 type TerraformGenerator struct {
 	UtilTerraformGenerator
+	Log logr.Logger
 }
 
 var DefaultTerraformVersion = "0.13.2"
 
-func (tf TerraformGenerator) GenerateTerraform(fileUtil file.UtilFile, environmentComponent *stablev1alpha1.EnvironmentComponent, environment *stablev1alpha1.Environment, environmentComponentDirectory string) error {
+func (tf TerraformGenerator) GenerateTerraform(
+	fileUtil file.UtilFile,
+	environmentComponent *stablev1alpha1.EnvironmentComponent,
+	environment *stablev1alpha1.Environment,
+	environmentComponentDirectory string,
+	) error {
 	componentName := environmentComponent.Name
 
 	backendConfig := TerraformBackendConfig{
@@ -49,11 +56,16 @@ func (tf TerraformGenerator) GenerateTerraform(fileUtil file.UtilFile, environme
 		ComponentName: componentName,
 	}
 
+	tfvars := ""
+	if environmentComponent.VariablesFile != nil {
+		tfvars = environmentComponent.VariablesFile.Variables
+	}
 	moduleConfig := TerraformModuleConfig{
 		ComponentName: componentName,
 		Source:        il.EnvComponentModuleSource(environmentComponent.Module.Source, environmentComponent.Module.Name),
 		Path:          il.EnvComponentModulePath(environmentComponent.Module.Path),
 		Variables:     environmentComponent.Variables,
+		VariablesFile: tfvars,
 	}
 
 	outputsConfig := TerraformOutputsConfig{

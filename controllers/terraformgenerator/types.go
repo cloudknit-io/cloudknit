@@ -21,6 +21,7 @@ type TerraformModuleConfig struct {
 	Source        string
 	Path          string
 	Variables     []*stablev1alpha1.Variable
+	VariablesFile string
 }
 
 // TerraformOutputsConfig for creating tf module outputs

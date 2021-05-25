@@ -171,7 +171,7 @@ func GenerateEnvironmentComponentApps(environment stablev1alpha1.Environment, en
 				"component_name":       environmentComponent.Name,
 				"project_id":           environment.Spec.TeamName,
 				"environment_id":       environment.Spec.TeamName + "-" + environment.Spec.EnvName,
-				"depends_on":           strings.Join(environmentComponent.DependsOn[:], ","),
+				"depends_on":           strings.Join(environmentComponent.DependsOn[:], ".."),
 			},
 			Finalizers: []string{
 				"resources-finalizer.argocd.argoproj.io",
@@ -225,10 +225,12 @@ func getHelmValues(environment stablev1alpha1.Environment, environmentComponent 
 		helmValues += fmt.Sprintf(`
         cron_schedule: "%s"`, environmentComponent.CronSchedule)
 	}
-	helmValues += fmt.Sprintf(`
+	if environmentComponent.VariablesFile != nil {
+		helmValues += fmt.Sprintf(`
         variables_file:
             source: %s
             path: %s`, environmentComponent.VariablesFile.Source, environmentComponent.VariablesFile.Path)
+	}
 	return helmValues
 }
 func GenerateTeamConfigWatcherApp(team stablev1alpha1.Team) *appv1.Application {

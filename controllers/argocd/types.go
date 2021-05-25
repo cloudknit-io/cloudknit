@@ -7,6 +7,8 @@ import (
 	"github.com/go-logr/logr"
 )
 
+//go:generate mockgen -destination=../../mocks/mock_argocd_api.go -package=mocks "github.com/compuzest/zlifecycle-il-operator/controllers/argocd" Api
+
 type Api interface {
 	GetAuthToken() (*GetTokenResponse, error)
 	ListRepositories(bearerToken string) (*RepositoryList, *http.Response, error)
