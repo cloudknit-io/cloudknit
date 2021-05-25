@@ -32,8 +32,8 @@ spec:
           - name: workflowtemplate
           - name: module_source
           - name: module_source_path
-          - name: variables_file_source
-          - name: variables_file_path
+          - name: il_repo
+          - name: terraform_il_path
       steps:
         - - name: validate
             template: validate_env_component
@@ -61,10 +61,10 @@ spec:
                   value: "{{inputs.parameters.module_source}}"
                 - name: module_source_path
                   value: "{{inputs.parameters.module_source_path}}"
-                - name: variables_file_source
-                  value: "{{inputs.parameters.variables_file_source}}"
-                - name: variables_file_path
-                  value: "{{inputs.parameters.variables_file_path}}"
+                - name: il_repo
+                  value: "{{inputs.parameters.il_repo}}"
+                - name: terraform_il_path
+                  value: "{{inputs.parameters.terraform_il_path}}"
             when: "{{steps.validate.outputs.parameters.errorCode}} != 20"
 
     - name: validate_env_component
@@ -99,8 +99,8 @@ spec:
           - name: workflowtemplate
           - name: module_source
           - name: module_source_path
-          - name: variables_file_source
-          - name: variables_file_path
+          - name: il_repo
+          - name: terraform_il_path
       resource:
         action: create
         manifest: |
@@ -124,10 +124,10 @@ spec:
                 value: {{inputs.parameters.module_source}}
               - name: module_source_path
                 value: {{inputs.parameters.module_source_path}}
-              - name: variables_file_source
-                value: {{inputs.parameters.variables_file_source}}
-              - name: variables_file_path
-                value: {{inputs.parameters.variables_file_path}}
+              - name: il_repo
+                value: {{inputs.parameters.il_repo}}
+              - name: terraform_il_path
+                value: {{inputs.parameters.terraform_il_path}}
             workflowTemplateRef:
               name: {{inputs.parameters.workflowtemplate}}
         successCondition: status.phase == Succeeded

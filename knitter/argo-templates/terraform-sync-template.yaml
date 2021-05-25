@@ -30,8 +30,8 @@ spec:
           - name: config_name
           - name: module_source
           - name: module_source_path
-          - name: variables_file_source
-          - name: variables_file_path
+          - name: il_repo
+          - name: terraform_il_path
       steps:
         - - name: plan
             templateRef:
@@ -49,10 +49,10 @@ spec:
                   value: "{{inputs.parameters.module_source}}"
                 - name: module_source_path
                   value: "{{inputs.parameters.module_source_path}}"
-                - name: variables_file_source
-                  value: "{{inputs.parameters.variables_file_source}}"
-                - name: variables_file_path
-                  value: "{{inputs.parameters.variables_file_path}}"
+                - name: il_repo
+                  value: "{{inputs.parameters.il_repo}}"
+                - name: terraform_il_path
+                  value: "{{inputs.parameters.terraform_il_path}}"
                 - name: is_apply
                   value: "0"
                 - name: is_sync
@@ -87,10 +87,10 @@ spec:
                   value: "{{inputs.parameters.module_source}}"
                 - name: module_source_path
                   value: "{{inputs.parameters.module_source_path}}"
-                - name: variables_file_source
-                  value: "{{inputs.parameters.variables_file_source}}"
-                - name: variables_file_path
-                  value: "{{inputs.parameters.variables_file_path}}"
+                - name: il_repo
+                  value: "{{inputs.parameters.il_repo}}"
+                - name: terraform_il_path
+                  value: "{{inputs.parameters.terraform_il_path}}"
                 - name: is_apply
                   value: "1"
                 - name: is_sync

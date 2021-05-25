@@ -31,8 +31,8 @@ spec:
           - name: config_name
           - name: module_source
           - name: module_source_path
-          - name: variables_file_source
-          - name: variables_file_path
+          - name: il_repo
+          - name: terraform_il_path
           - name: is_apply
           - name: lock_state
             value: "true"
@@ -47,10 +47,10 @@ spec:
                 name: zlifecycle-provisioner-ssh
                 key: id_rsa
               insecureIgnoreHostKey: true
-          - name: terraform-variables
-            path: "/home/terraform-config/vars"
+          - name: terraform
+            path: "/home/terraform-config"
             git:
-              repo: "{{inputs.parameters.variables_file_source}}"
+              repo: "{{inputs.parameters.il_repo}}"
               sshPrivateKeySecret:
                 name: zlifecycle-provisioner-ssh
                 key: id_rsa
@@ -62,7 +62,7 @@ spec:
         cmd:
           - sh
         source: |
-          ./run_terraform.sh "{{inputs.parameters.team_name}}" "{{inputs.parameters.env_name}}" "{{inputs.parameters.config_name}}" "{{inputs.parameters.module_source}}" "{{inputs.parameters.module_source_path}}" "{{inputs.parameters.variables_file_source}}" "{{inputs.parameters.variables_file_path}}" "{{inputs.parameters.is_apply}}" "{{inputs.parameters.lock_state}}" "{{inputs.parameters.is_sync}}" "{{workflow.name}}"
+          ./run_terraform.sh "{{inputs.parameters.team_name}}" "{{inputs.parameters.env_name}}" "{{inputs.parameters.config_name}}" "{{inputs.parameters.module_source}}" "{{inputs.parameters.module_source_path}}" "{{inputs.parameters.is_apply}}" "{{inputs.parameters.lock_state}}" "{{inputs.parameters.is_sync}}" "{{workflow.name}}" "{{inputs.parameters.terraform_il_path}}"
         env:
           - name: CUSTOMER_AWS_ACCESS_KEY_ID
             valueFrom:

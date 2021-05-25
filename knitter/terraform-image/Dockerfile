@@ -26,7 +26,7 @@ RUN apk add --update curl
 
 RUN apk update && apk upgrade && apk --no-cache add curl jq
 
-RUN curl -sL https://github.com/infracost/infracost/releases/download/v0.8.5/infracost-linux-amd64.tar.gz | tar xz -C /tmp
+RUN curl -sL https://github.com/infracost/infracost/releases/download/v0.8.6/infracost-linux-amd64.tar.gz | tar xz -C /tmp
 
 RUN mv /tmp/infracost-linux-amd64 /usr/local/bin/infracost
 

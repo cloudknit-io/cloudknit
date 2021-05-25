@@ -14,17 +14,16 @@ env_name=$2
 config_name=$3
 module_source=$4
 module_source_path=$5
-variables_file_source=$6
-variables_file_path=$7
-is_apply=$8
-lock_state=$9
-is_sync=$10
-workflow_id=$11
+is_apply=$6
+lock_state=$7
+is_sync=$8
+workflow_id=$9
+terraform_il_path=$10
 
 team_env_name=$team_name-$env_name
 team_env_config_name=$team_name-$env_name-$config_name
 
-ENV_COMPONENT_PATH=/home/terraform-config
+ENV_COMPONENT_PATH=/home/terraform-config/$terraform_il_path
 
 function Error() {
   if [ -n "$1" ];
@@ -37,10 +36,6 @@ function Error() {
 
 sh /client/setup_github.sh || Error "Cannot setup github ssh key"
 sh /client/setup_aws.sh || Error "Cannot setup aws credentials"
-
-sh /terraform/provider.tf.sh $ENV_COMPONENT_PATH || Error "Cannot generate terraform provider"
-sh /terraform/module.tf.sh $ENV_COMPONENT_PATH $config_name $module_source $module_source_path $variables_file_path || Error "Cannot generate terraform module"
-sh /terraform/terraform.tf.sh $ENV_COMPONENT_PATH $team_name $env_name $config_name || Error "Cannot generate terraform state block"
 
 cd $ENV_COMPONENT_PATH
 
