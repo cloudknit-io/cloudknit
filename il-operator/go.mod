@@ -3,6 +3,7 @@ module github.com/compuzest/zlifecycle-il-operator
 go 1.13
 
 require (
+	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/argoproj/argo v2.5.2+incompatible
 	github.com/argoproj/argo-cd v0.0.0-00010101000000-000000000000

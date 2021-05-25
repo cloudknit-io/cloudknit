@@ -3,6 +3,7 @@ package common
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/go-logr/logr"
 	"io"
 	"io/ioutil"
@@ -82,4 +83,17 @@ func RemoveString(slice []string, s string) (result []string) {
 		result = append(result, item)
 	}
 	return
+}
+
+func TrimQuotes(s string) string {
+	if len(s) >= 2 {
+		if s[0] == '"' && s[len(s)-1] == '"' {
+			return s[1 : len(s)-1]
+		}
+	}
+	return s
+}
+
+func Stringify(v interface{}) string {
+	return fmt.Sprintf("%v", v)
 }

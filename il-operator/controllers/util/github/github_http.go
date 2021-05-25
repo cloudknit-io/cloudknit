@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/google/go-github/v32/github"
 	"golang.org/x/oauth2"
+	"io"
 )
 
 func NewHttpRepositoryClient(token string, ctx context.Context) RepositoryApi {
@@ -14,6 +15,12 @@ func NewHttpRepositoryClient(token string, ctx context.Context) RepositoryApi {
 func NewHttpGitClient(token string, ctx context.Context) GitApi {
 	client := createGithubClient(token, ctx).Git
 	return HttpGitApi{Client: client, Ctx: ctx}
+}
+
+func createGithubClient(token string, ctx context.Context) *github.Client {
+	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
+	tc := oauth2.NewClient(ctx, ts)
+	return github.NewClient(tc)
 }
 
 func (api HttpGitApi) GetRef(owner string, repo string, ref string) (*github.Reference, *github.Response, error) {
@@ -40,12 +47,6 @@ func (api HttpGitApi) CreateTree(owner string, repo string, baseTree string, ent
 	return api.Client.CreateTree(api.Ctx, owner, repo, baseTree, entries)
 }
 
-func createGithubClient(token string, ctx context.Context) *github.Client {
-	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
-	tc := oauth2.NewClient(ctx, ts)
-	return github.NewClient(tc)
-}
-
 func (api HttpRepositoryApi) CreateRepository(owner string, repo string) (*github.Repository, *github.Response, error) {
 	r := github.Repository{Name: github.String(repo), Private: github.Bool(true)}
 	return api.Client.Create(api.Ctx, owner, &r)
@@ -61,4 +62,9 @@ func (api HttpRepositoryApi) ListHooks(owner string, repo string, opts *github.L
 
 func (api HttpRepositoryApi) CreateHook(owner string, repo string, hook *github.Hook) (*github.Hook, *github.Response, error) {
 	return api.Client.CreateHook(api.Ctx, owner, repo, hook)
+}
+
+func (api HttpRepositoryApi) DownloadContents(owner string, repo string, ref string, path string) (io.ReadCloser, error) {
+	opts := &github.RepositoryContentGetOptions{ Ref: ref }
+	return api.Client.DownloadContents(api.Ctx, owner, repo, path, opts)
 }
