@@ -49,6 +49,20 @@ func (mr *MockUtilFileMockRecorder) CreateEmptyDirectory(folderName interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateEmptyDirectory", reflect.TypeOf((*MockUtilFile)(nil).CreateEmptyDirectory), folderName)
 }
 
+// RemoveAll mocks base method.
+func (m *MockUtilFile) RemoveAll(path string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveAll", path)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveAll indicates an expected call of RemoveAll.
+func (mr *MockUtilFileMockRecorder) RemoveAll(path interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveAll", reflect.TypeOf((*MockUtilFile)(nil).RemoveAll), path)
+}
+
 // SaveFileFromString mocks base method.
 func (m *MockUtilFile) SaveFileFromString(jsonString, folderName, fileName string) error {
 	m.ctrl.T.Helper()
