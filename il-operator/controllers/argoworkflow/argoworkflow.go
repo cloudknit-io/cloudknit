@@ -140,6 +140,48 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1alpha1.Environment) *
 			},
 		}
 
+		parameters := []workflow.Parameter{
+			{
+				Name:  "workflowtemplate",
+				Value: &workflowTemplate,
+			},
+			{
+				Name:  "module_source",
+				Value: &moduleSource,
+			},
+			{
+				Name:  "module_source_path",
+				Value: &modulePath,
+			},
+			{
+				Name:  "team_name",
+				Value: &environment.Spec.TeamName,
+			},
+			{
+				Name:  "env_name",
+				Value: &environment.Spec.EnvName,
+			},
+			{
+				Name:  "config_name",
+				Value: &environmentComponent.Name,
+			},
+		}
+
+		vf := environmentComponent.VariablesFile
+		if vf != nil {
+			variablesFileParams := []workflow.Parameter{
+				{
+					Name:  "variables_file_source",
+					Value: &vf.Source,
+				},
+				{
+					Name:  "variables_file_path",
+					Value: &vf.Path,
+				},
+			}
+			parameters = append(parameters, variablesFileParams...)
+		}
+
 		task := workflow.DAGTask{
 			Name: environmentComponent.Name,
 			TemplateRef: &workflow.TemplateRef{
