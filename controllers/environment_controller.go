@@ -118,6 +118,12 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, err
 	}
 
+	r.Log.Info("Cleaning up local git files", "path", envDirectory)
+	if err := fileUtil.RemoveAll(envDirectory); err != nil {
+		return ctrl.Result{}, err
+	}
+
+
 	return ctrl.Result{}, nil
 }
 

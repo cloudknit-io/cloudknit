@@ -33,6 +33,7 @@ type UtilFile interface {
 	SaveVarsToFile(variables []*stablev1alpha1.Variable, folderName string, fileName string) error
 	CreateEmptyDirectory(folderName string) error
 	SaveFileFromTemplate(t *template.Template, vars interface{}, folderName string, fileName string) error
+	RemoveAll(path string) error
 }
 
 type UtilFileService struct {
@@ -125,4 +126,12 @@ func (f UtilFileService) SaveVarsToFile(variables []*stablev1alpha1.Variable, fo
 	}
 
 	return nil
+}
+
+// RemoveAll removes path and any children it contains.
+// It removes everything it can but returns the first error
+// it encounters. If the path does not exist, RemoveAll
+// returns nil (no error).
+func (f UtilFileService) RemoveAll(path string) error {
+	return os.RemoveAll(path)
 }
