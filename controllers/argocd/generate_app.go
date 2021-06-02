@@ -156,6 +156,18 @@ func GenerateEnvironmentApp(environment stablev1alpha1.Environment) *appv1.Appli
 }
 func GenerateEnvironmentComponentApps(environment stablev1alpha1.Environment, environmentComponent stablev1alpha1.EnvironmentComponent) *appv1.Application {
 	helmValues := getHelmValues(environment, environmentComponent)
+	labels := map[string]string{
+		"zlifecycle.com/model": "environment-component",
+		"component_type":       environmentComponent.Type,
+		"type":                 "config",
+		"component_name":       environmentComponent.Name,
+		"project_id":           environment.Spec.TeamName,
+		"environment_id":       environment.Spec.TeamName + "-" + environment.Spec.EnvName,
+		"depends_on":           strings.Join(environmentComponent.DependsOn[:], ","),
+	}
+	for _, tag := range environmentComponent.Tags {
+		labels[tag.Name] = tag.Value
+	}
 	return &appv1.Application{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Application",
@@ -164,15 +176,7 @@ func GenerateEnvironmentComponentApps(environment stablev1alpha1.Environment, en
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      environment.Spec.TeamName + "-" + environment.Spec.EnvName + "-" + environmentComponent.Name,
 			Namespace: "argocd",
-			Labels: map[string]string{
-				"zlifecycle.com/model": "environment-component",
-				"component_type":       environmentComponent.Type,
-				"type":                 "config",
-				"component_name":       environmentComponent.Name,
-				"project_id":           environment.Spec.TeamName,
-				"environment_id":       environment.Spec.TeamName + "-" + environment.Spec.EnvName,
-				"depends_on":           strings.Join(environmentComponent.DependsOn[:], ".."),
-			},
+			Labels:    labels,
 			Finalizers: []string{
 				"resources-finalizer.argocd.argoproj.io",
 			},
