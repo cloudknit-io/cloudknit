@@ -102,6 +102,56 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1alpha1.Environment) *
 		moduleSource := il.EnvComponentModuleSource(environmentComponent.Module.Source, environmentComponent.Module.Name)
 		modulePath := il.EnvComponentModulePath(environmentComponent.Module.Path)
 
+		parameters := []workflow.Parameter{
+			{
+				Name:  "workflowtemplate",
+				Value: &workflowTemplate,
+			},
+			{
+				Name:  "module_source",
+				Value: &moduleSource,
+			},
+			{
+				Name:  "module_source_path",
+				Value: &modulePath,
+			},
+			{
+				Name:  "variables_file_source",
+				Value: &environmentComponent.VariablesFile.Source,
+			},
+			{
+				Name:  "variables_file_path",
+				Value: &environmentComponent.VariablesFile.Path,
+			},
+			{
+				Name:  "team_name",
+				Value: &environment.Spec.TeamName,
+			},
+			{
+				Name:  "env_name",
+				Value: &environment.Spec.EnvName,
+			},
+			{
+				Name:  "config_name",
+				Value: &environmentComponent.Name,
+			},
+		}
+
+		vf := environmentComponent.VariablesFile
+		if vf != nil {
+			variablesFileParams := []workflow.Parameter{
+				{
+					Name:  "variables_file_source",
+					Value: &vf.Source,
+				},
+				{
+					Name:  "variables_file_path",
+					Value: &vf.Path,
+				},
+			}
+			parameters = append(parameters, variablesFileParams...)
+		}
+
 		task := workflow.DAGTask{
 			Name: environmentComponent.Name,
 			TemplateRef: &workflow.TemplateRef{
@@ -110,40 +160,7 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1alpha1.Environment) *
 			},
 			Dependencies: environmentComponent.DependsOn,
 			Arguments: workflow.Arguments{
-				Parameters: []workflow.Parameter{
-					{
-						Name:  "workflowtemplate",
-						Value: &workflowTemplate,
-					},
-					{
-						Name:  "module_source",
-						Value: &moduleSource,
-					},
-					{
-						Name:  "module_source_path",
-						Value: &modulePath,
-					},
-					{
-						Name:  "variables_file_source",
-						Value: &environmentComponent.VariablesFile.Source,
-					},
-					{
-						Name:  "variables_file_path",
-						Value: &environmentComponent.VariablesFile.Path,
-					},
-					{
-						Name:  "team_name",
-						Value: &environment.Spec.TeamName,
-					},
-					{
-						Name:  "env_name",
-						Value: &environment.Spec.EnvName,
-					},
-					{
-						Name:  "config_name",
-						Value: &environmentComponent.Name,
-					},
-				},
+				Parameters: parameters,
 			},
 		}
 
