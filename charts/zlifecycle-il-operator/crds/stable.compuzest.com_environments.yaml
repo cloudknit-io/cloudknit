@@ -93,9 +93,12 @@ spec:
                         type: string
                       source:
                         type: string
+                      variables:
+                        type: string
                     required:
                     - path
                     - source
+                    - variables
                     type: object
                 required:
                 - module
