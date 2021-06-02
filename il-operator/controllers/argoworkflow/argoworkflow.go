@@ -101,57 +101,6 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1alpha1.Environment) *
 	for _, environmentComponent := range environment.Spec.EnvironmentComponent {
 		moduleSource := il.EnvComponentModuleSource(environmentComponent.Module.Source, environmentComponent.Module.Name)
 		modulePath := il.EnvComponentModulePath(environmentComponent.Module.Path)
-		tfPath := tf.GenerateTerraformIlPath(envComponentDirectory, environmentComponent.Name)
-
-		parameters := []workflow.Parameter{
-			{
-				Name:  "workflowtemplate",
-				Value: &workflowTemplate,
-			},
-			{
-				Name:  "module_source",
-				Value: &moduleSource,
-			},
-			{
-				Name:  "module_source_path",
-				Value: &modulePath,
-			},
-			{
-				Name:  "team_name",
-				Value: &environment.Spec.TeamName,
-			},
-			{
-				Name:  "env_name",
-				Value: &environment.Spec.EnvName,
-			},
-			{
-				Name:  "config_name",
-				Value: &environmentComponent.Name,
-			},
-			{
-				Name:  "il_repo",
-				Value: &env.Config.ILRepoURL,
-			},
-			{
-				Name:  "terraform_il_path",
-				Value: &tfPath,
-			},
-		}
-
-		vf := environmentComponent.VariablesFile
-		if vf != nil {
-			variablesFileParams := []workflow.Parameter{
-				{
-					Name:  "variables_file_source",
-					Value: &vf.Source,
-				},
-				{
-					Name:  "variables_file_path",
-					Value: &vf.Path,
-				},
-			}
-			parameters = append(parameters, variablesFileParams...)
-		}
 
 		task := workflow.DAGTask{
 			Name: environmentComponent.Name,
