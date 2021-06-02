@@ -17,6 +17,8 @@ import (
 )
 
 type Tags struct {
+	Name  string `json:"name,omitempty"`
+	Value string `json:"value,omitempty"`
 }
 
 type Module struct {
@@ -42,12 +44,13 @@ type Output struct {
 }
 
 type EnvironmentComponent struct {
-	Name          string         `json:"name"`
-	Type          string         `json:"type"`
-	CronSchedule  string         `json:"cronSchedule,omitempty"`
-	DependsOn     []string       `json:"dependsOn,omitempty"`
-	Module        *Module        `json:"module"`
-	Tags          *Tags          `json:"tags,omitempty"`
+	Name         string   `json:"name"`
+	Type         string   `json:"type"`
+	CronSchedule string   `json:"cronSchedule,omitempty"`
+	DependsOn    []string `json:"dependsOn,omitempty"`
+	Module       *Module  `json:"module"`
+	Tags         []*Tags  `json:"tags,omitempty"`
+
 	VariablesFile *VariablesFile `json:"variablesFile,omitempty"`
 	Variables     []*Variable    `json:"variables,omitempty"`
 	Outputs       []*Output      `json:"outputs,omitempty"`
