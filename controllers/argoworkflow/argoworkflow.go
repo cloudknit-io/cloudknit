@@ -116,14 +116,6 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1alpha1.Environment) *
 				Value: &modulePath,
 			},
 			{
-				Name:  "variables_file_source",
-				Value: &environmentComponent.VariablesFile.Source,
-			},
-			{
-				Name:  "variables_file_path",
-				Value: &environmentComponent.VariablesFile.Path,
-			},
-			{
 				Name:  "team_name",
 				Value: &environment.Spec.TeamName,
 			},
