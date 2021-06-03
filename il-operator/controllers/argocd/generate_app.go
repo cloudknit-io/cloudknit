@@ -163,7 +163,7 @@ func GenerateEnvironmentComponentApps(environment stablev1alpha1.Environment, en
 		"component_name":       environmentComponent.Name,
 		"project_id":           environment.Spec.TeamName,
 		"environment_id":       environment.Spec.TeamName + "-" + environment.Spec.EnvName,
-		"depends_on":           strings.Join(environmentComponent.DependsOn[:], ","),
+		"depends_on":           strings.Join(environmentComponent.DependsOn[:], ".."),
 	}
 	for _, tag := range environmentComponent.Tags {
 		labels[tag.Name] = tag.Value
