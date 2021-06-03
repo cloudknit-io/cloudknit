@@ -16,6 +16,7 @@ import (
 	workflow "github.com/argoproj/argo/pkg/apis/workflow/v1alpha1"
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
 	terraformgenerator "github.com/compuzest/zlifecycle-il-operator/controllers/terraformgenerator"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -92,18 +93,37 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 	}
 }
 
-func GenerateLegacyWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workflow.Workflow {
+func buildInverseDependencies(components []*stablev1alpha1.EnvironmentComponent, component string) []string {
+	var dependencies []string
+	for _, c := range components {
+		if component == c.Name {
+			continue
+		} else if common.Contains(c.DependsOn, component) {
+			dependencies = append(dependencies, c.Name)
+		}
+	}
 
+	return dependencies
+}
+
+func GenerateLegacyWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workflow.Workflow {
 	workflowTemplate := "terraform-sync-template"
 	envComponentDirectory := il.EnvironmentComponentDirectory(environment.Spec.TeamName, environment.Spec.EnvName)
 	tf := terraformgenerator.TerraformGenerator{}
 
 	var tasks []workflow.DAGTask
 
-	for _, environmentComponent := range environment.Spec.EnvironmentComponent {
-		moduleSource := il.EnvComponentModuleSource(environmentComponent.Module.Source, environmentComponent.Module.Name)
-		modulePath := il.EnvComponentModulePath(environmentComponent.Module.Path)
-		tfPath := tf.GenerateTerraformIlPath(envComponentDirectory, environmentComponent.Name)
+	isDelete := !environment.DeletionTimestamp.IsZero()
+	ecs := environment.Spec.EnvironmentComponent
+	for _, ec := range ecs {
+		moduleSource := il.EnvComponentModuleSource(ec.Module.Source, ec.Module.Name)
+		modulePath := il.EnvComponentModulePath(ec.Module.Path)
+		tfPath := tf.GenerateTerraformIlPath(envComponentDirectory, ec.Name)
+
+		dependencies := ec.DependsOn
+		if isDelete {
+			dependencies = buildInverseDependencies(ecs, ec.Name)
+		}
 
 		parameters := []workflow.Parameter{
 			{
@@ -128,7 +148,7 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1alpha1.Environment) *
 			},
 			{
 				Name:  "config_name",
-				Value: &environmentComponent.Name,
+				Value: &ec.Name,
 			},
 			{
 				Name:  "il_repo",
@@ -140,13 +160,28 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1alpha1.Environment) *
 			},
 		}
 
+		vf := ec.VariablesFile
+		if vf != nil {
+			variablesFileParams := []workflow.Parameter{
+				{
+					Name:  "variables_file_source",
+					Value: &vf.Source,
+				},
+				{
+					Name:  "variables_file_path",
+					Value: &vf.Path,
+				},
+			}
+			parameters = append(parameters, variablesFileParams...)
+		}
+
 		task := workflow.DAGTask{
-			Name: environmentComponent.Name,
+			Name: ec.Name,
 			TemplateRef: &workflow.TemplateRef{
 				Name:     "workflow-trigger-template",
 				Template: "run",
 			},
-			Dependencies: environmentComponent.DependsOn,
+			Dependencies: dependencies,
 			Arguments: workflow.Arguments{
 				Parameters: parameters,
 			},
