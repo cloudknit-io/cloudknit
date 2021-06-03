@@ -113,7 +113,8 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1alpha1.Environment) *
 
 	var tasks []workflow.DAGTask
 
-	isDelete := !environment.DeletionTimestamp.IsZero()
+	destroy := !environment.DeletionTimestamp.IsZero()
+
 	ecs := environment.Spec.EnvironmentComponent
 	for _, ec := range ecs {
 		moduleSource := il.EnvComponentModuleSource(ec.Module.Source, ec.Module.Name)
@@ -121,8 +122,10 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1alpha1.Environment) *
 		tfPath := tf.GenerateTerraformIlPath(envComponentDirectory, ec.Name)
 
 		dependencies := ec.DependsOn
-		if isDelete {
+		destroyFlag := "false"
+		if destroy {
 			dependencies = buildInverseDependencies(ecs, ec.Name)
+			destroyFlag = "true"
 		}
 
 		parameters := []workflow.Parameter{
@@ -158,21 +161,10 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1alpha1.Environment) *
 				Name:  "terraform_il_path",
 				Value: &tfPath,
 			},
-		}
-
-		vf := ec.VariablesFile
-		if vf != nil {
-			variablesFileParams := []workflow.Parameter{
-				{
-					Name:  "variables_file_source",
-					Value: &vf.Source,
-				},
-				{
-					Name:  "variables_file_path",
-					Value: &vf.Path,
-				},
-			}
-			parameters = append(parameters, variablesFileParams...)
+			{
+				Name: "destroy_flag",
+				Value: &destroyFlag,
+			},
 		}
 
 		task := workflow.DAGTask{
