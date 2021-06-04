@@ -17,7 +17,6 @@ import (
 	"fmt"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
-	github2 "github.com/google/go-github/v32/github"
 	"io/ioutil"
 	"time"
 
@@ -58,7 +57,6 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	}
 
 	finalizer     := env.Config.GithubFinalizer
-	githubGitApi  := github.NewHttpGitClient(env.Config.GitHubAuthToken, ctx)
 	githubRepoApi := github.NewHttpRepositoryClient(env.Config.GitHubAuthToken, ctx)
 	if environment.DeletionTimestamp.IsZero() {
 		if !common.ContainsString(environment.GetFinalizers(), finalizer) {
@@ -69,7 +67,7 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		}
 	} else {
 		if common.ContainsString(environment.GetFinalizers(), finalizer) {
-			if err := r.deleteExternalResources(ctx, environment, githubGitApi); err != nil {
+			if err := r.postDeleteHook(environment); err != nil {
 				return ctrl.Result{}, err
 			}
 
@@ -127,18 +125,14 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	return ctrl.Result{}, nil
 }
 
-func (r *EnvironmentReconciler) deleteExternalResources(ctx context.Context, e *stablev1alpha1.Environment, githubGitApi github.GitApi) error {
-	owner         := env.Config.ZlifecycleOwner
-	ilRepo        := env.Config.ILRepoName
-	branch        := env.Config.RepoBranch
-	now           := time.Now()
-	paths         := extractPathsToRemove(*e)
-	team          := fmt.Sprintf("%s-team-environment", e.Spec.TeamName)
-	commitAuthor  := &github2.CommitAuthor{Date: &now, Name: &env.Config.GithubSvcAccntName, Email: &env.Config.GithubSvcAccntEmail}
-	commitMessage := fmt.Sprintf("Cleaning il objects for %s team in %s environment", e.Spec.TeamName, e.Spec.EnvName)
-	if err := github.DeletePatternsFromRootTree(r.Log, githubGitApi, owner, ilRepo, branch, team, paths, commitAuthor, commitMessage); err != nil {
-		return err
-	}
+func (r *EnvironmentReconciler) postDeleteHook(e *stablev1alpha1.Environment) error {
+	r.Log.Info(
+		"Executing post delete hook for environment finalizer",
+		"environment",
+		e.Spec.EnvName,
+		"team",
+		e.Spec.TeamName,
+		)
 	return nil
 }
 

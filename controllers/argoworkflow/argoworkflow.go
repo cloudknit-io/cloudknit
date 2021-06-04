@@ -162,7 +162,7 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1alpha1.Environment) *
 				Value: &tfPath,
 			},
 			{
-				Name: "destroy_flag",
+				Name: "is_destroy",
 				Value: &destroyFlag,
 			},
 		}
