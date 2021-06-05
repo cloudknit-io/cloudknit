@@ -53,6 +53,7 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	environment := &stablev1alpha1.Environment{}
 
 	if err := r.Get(ctx, req.NamespacedName, environment); err != nil {
+		r.Log.Info("Environment missing from cache, ending reconcile...", "name", req.Name)
 		return ctrl.Result{}, nil
 	}
 
@@ -60,6 +61,11 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	githubRepoApi := github.NewHttpRepositoryClient(env.Config.GitHubAuthToken, ctx)
 	if environment.DeletionTimestamp.IsZero() {
 		if !common.ContainsString(environment.GetFinalizers(), finalizer) {
+			r.Log.Info(
+				"Setting finalizer for environment",
+				"env", environment.Spec.EnvName,
+				"team", environment.Spec.TeamName,
+				)
 			environment.SetFinalizers(append(environment.GetFinalizers(), finalizer))
 			if err := r.Update(ctx, environment); err != nil {
 				return ctrl.Result{}, err
@@ -76,8 +82,6 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 				return ctrl.Result{}, err
 			}
 		}
-
-		return ctrl.Result{}, nil
 	}
 
 	envDirectory := il.EnvironmentDirectory(environment.Spec.TeamName)
