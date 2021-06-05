@@ -32,6 +32,7 @@ spec:
           - name: module_source_path
           - name: il_repo
           - name: terraform_il_path
+          - name: is_destroy
       steps:
         - - name: plan
             templateRef:
@@ -57,6 +58,8 @@ spec:
                   value: "0"
                 - name: is_sync
                   value: "1"
+                - name: is_destroy
+                  value: "{{inputs.parameters.is_destroy}}"
         - - name: notify
             template: notify
             arguments:
@@ -95,6 +98,8 @@ spec:
                   value: "1"
                 - name: is_sync
                   value: "1"
+                - name: is_destroy
+                  value: "{{inputs.parameters.is_destroy}}"
             when: "{{steps.plan.outputs.parameters.planCode}} == 2"
 
     - name: approve

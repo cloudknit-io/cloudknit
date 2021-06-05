@@ -38,6 +38,7 @@ spec:
             value: "true"
           - name: is_sync
             value: "0"
+          - name: is_destroy
         artifacts:
           - name: terraform-config
             path: "/home"
@@ -58,11 +59,11 @@ spec:
       serviceAccountName: argo
       script:
         imagePullPolicy: Always
-        image: 413422438110.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-terraform:latest
+        image: 413422438110.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-terraform:destroy
         cmd:
           - sh
         source: |
-          ./run_terraform.sh "{{inputs.parameters.team_name}}" "{{inputs.parameters.env_name}}" "{{inputs.parameters.config_name}}" "{{inputs.parameters.module_source}}" "{{inputs.parameters.module_source_path}}" "{{inputs.parameters.is_apply}}" "{{inputs.parameters.lock_state}}" "{{inputs.parameters.is_sync}}" "{{workflow.name}}" "{{inputs.parameters.terraform_il_path}}"
+          ./run_terraform.sh "{{inputs.parameters.team_name}}" "{{inputs.parameters.env_name}}" "{{inputs.parameters.config_name}}" "{{inputs.parameters.module_source}}" "{{inputs.parameters.module_source_path}}" "{{inputs.parameters.is_apply}}" "{{inputs.parameters.lock_state}}" "{{inputs.parameters.is_sync}}" "{{workflow.name}}" "{{inputs.parameters.terraform_il_path}}" "{{inputs.parameters.is_destroy}}"
         env:
           - name: CUSTOMER_AWS_ACCESS_KEY_ID
             valueFrom:

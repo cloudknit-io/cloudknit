@@ -19,6 +19,7 @@ lock_state=$7
 is_sync=$8
 workflow_id=$9
 terraform_il_path=$10
+is_destroy=$11
 
 team_env_name=$team_name-$env_name
 team_env_config_name=$team_name-$env_name-$config_name
@@ -57,21 +58,36 @@ then
         argocd app patch $team_env_config_name --patch $data --type merge
     fi
 
-    data='{"metadata":{"labels":{"component_status":"running_plan"}}}'
-    argocd app patch $team_env_config_name --patch $data --type merge
+    echo "DEBUG: is_destroy: $is_destroy"
 
-    terraform plan -lock=$lock_state -parallelism=2 -input=false -no-color -out=terraform-plan -detailed-exitcode
-    result=$?
-    echo -n $result > /tmp/plan_code.txt
+    result=1
+    if [ $is_destroy = true ]
+    then
+      echo "Executing destroy plan..."
+      data='{"metadata":{"labels":{"component_status":"running_destroy_plan"}}}'
+      argocd app patch $team_env_config_name --patch $data --type merge
 
-    data='{"metadata":{"labels":{"component_status":"calculating_cost"}}}'
-    argocd app patch $team_env_config_name --patch $data --type merge
+      terraform plan -destroy -lock=$lock_state -parallelism=2 -input=false -no-color -out=terraform-plan -detailed-exitcode
+      result=$?
+      echo -n $result > /tmp/plan_code.txt
+    else
+      echo "Executing apply plan..."
+      data='{"metadata":{"labels":{"component_status":"running_plan"}}}'
+      argocd app patch $team_env_config_name --patch $data --type merge
 
-    infracost breakdown --path . --format json >> output.json
-    estimated_cost=$(cat output.json | jq -r ".projects[0].breakdown.totalMonthlyCost")
+      terraform plan -lock=$lock_state -parallelism=2 -input=false -no-color -out=terraform-plan -detailed-exitcode
+      result=$?
+      echo -n $result > /tmp/plan_code.txt
 
-    data='{"metadata":{"labels":{"component_cost":"'$estimated_cost'"}}}'
-    argocd app patch $team_env_config_name --patch $data --type merge
+      data='{"metadata":{"labels":{"component_status":"calculating_cost"}}}'
+      argocd app patch $team_env_config_name --patch $data --type merge
+
+      infracost breakdown --path . --format json >> output.json
+      estimated_cost=$(cat output.json | jq -r ".projects[0].breakdown.totalMonthlyCost")
+
+      data='{"metadata":{"labels":{"component_cost":"'$estimated_cost'"}}}'
+      argocd app patch $team_env_config_name --patch $data --type merge
+    fi
 
     if [ $result -eq 1 ]
     then
@@ -81,15 +97,28 @@ then
     sh /argocd/process_based_on_plan_result.sh $is_sync $result $team_env_name $team_env_config_name $workflow_id || Error "There is an issue with ArgoCD CLI"
 
 else
-    data='{"metadata":{"labels":{"component_status":"provisioning"}}}'
-    argocd app patch $team_env_config_name --patch $data --type merge
+    if [ $is_destroy = true ]
+    then
+      echo "Executing terraform destroy..."
+      data='{"metadata":{"labels":{"component_status":"destroying"}}}'
+      argocd app patch $team_env_config_name --patch $data --type merge
 
-    terraform apply -auto-approve -input=false -parallelism=2 -no-color || Error "Can not apply terraform plan"
-    echo -n 0 > /tmp/plan_code.txt
+      terraform destroy -auto-approve -input=false -parallelism=2 -no-color || Error "Cannot run terraform destroy"
+      echo -n 0 > /tmp/plan_code.txt
 
-    data='{"metadata":{"labels":{"component_status":"provisioned"}}}'
-    argocd app patch $team_env_config_name --patch $data --type merge
+      data='{"metadata":{"labels":{"component_status":"destroyed"}}}'
+      argocd app patch $team_env_config_name --patch $data --type merge
+    else
+      echo "Executing terraform apply..."
+      data='{"metadata":{"labels":{"component_status":"provisioning"}}}'
+      argocd app patch $team_env_config_name --patch $data --type merge
+
+      terraform apply -auto-approve -input=false -parallelism=2 -no-color || Error "Can not apply terraform plan"
+      echo -n 0 > /tmp/plan_code.txt
+
+      data='{"metadata":{"labels":{"component_status":"provisioned"}}}'
+      argocd app patch $team_env_config_name --patch $data --type merge
+    fi
 
     argocd app sync $team_env_config_name
-
 fi
