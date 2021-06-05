@@ -12,8 +12,6 @@ import (
 	"github.com/go-logr/logr"
 )
 
-//go:generate mockgen -destination=../../mocks/mock_argocd_http.go -package=mocks github.com/compuzest/zlifecycle-il-operator/controllers/argocd Api
-
 func NewHttpClient(l logr.Logger, serverUrl string) Api {
 	return HttpApi{Log: l, ServerUrl: serverUrl}
 }
