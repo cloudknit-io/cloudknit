@@ -59,7 +59,7 @@ spec:
       serviceAccountName: argo
       script:
         imagePullPolicy: Always
-        image: 413422438110.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-terraform:destroy
+        image: 413422438110.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-terraform:latest
         cmd:
           - sh
         source: |

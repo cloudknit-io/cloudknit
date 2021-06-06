@@ -91,6 +91,9 @@ then
 
     if [ $result -eq 1 ]
     then
+        data='{"metadata":{"labels":{"component_status":"plan_failed"}}}'
+        argocd app patch $team_env_config_name --patch $data --type merge
+
         Error "There is issue with generating terraform plan"
     fi
 
@@ -104,20 +107,39 @@ else
       argocd app patch $team_env_config_name --patch $data --type merge
 
       terraform destroy -auto-approve -input=false -parallelism=2 -no-color || Error "Cannot run terraform destroy"
-      echo -n 0 > /tmp/plan_code.txt
+      result=$?
+      echo -n $result > /tmp/plan_code.txt
 
-      data='{"metadata":{"labels":{"component_status":"destroyed"}}}'
-      argocd app patch $team_env_config_name --patch $data --type merge
+      if [ $result -eq 0 ]
+      then
+        data='{"metadata":{"labels":{"component_status":"destroyed"}}}'
+        argocd app patch $team_env_config_name --patch $data --type merge
+      else
+        data='{"metadata":{"labels":{"component_status":"destroy_failed"}}}'
+        argocd app patch $team_env_config_name --patch $data --type merge
+
+        Error "There is issue with destroying"
+      fi
     else
       echo "Executing terraform apply..."
       data='{"metadata":{"labels":{"component_status":"provisioning"}}}'
       argocd app patch $team_env_config_name --patch $data --type merge
 
       terraform apply -auto-approve -input=false -parallelism=2 -no-color || Error "Can not apply terraform plan"
-      echo -n 0 > /tmp/plan_code.txt
+      result=$?
+      echo -n $result > /tmp/plan_code.txt
 
-      data='{"metadata":{"labels":{"component_status":"provisioned"}}}'
-      argocd app patch $team_env_config_name --patch $data --type merge
+      if [ $result -eq 0 ]
+      then
+        data='{"metadata":{"labels":{"component_status":"provisioned"}}}'
+        argocd app patch $team_env_config_name --patch $data --type merge
+      else
+        data='{"metadata":{"labels":{"component_status":"provision_failed"}}}'
+        argocd app patch $team_env_config_name --patch $data --type merge
+
+        Error "There is issue with provisioning"
+      fi
+
     fi
 
     argocd app sync $team_env_config_name
