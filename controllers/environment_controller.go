@@ -15,6 +15,8 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/state"
+	v1 "k8s.io/api/core/v1"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	"io/ioutil"
@@ -57,30 +59,10 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, nil
 	}
 
-	finalizer     := env.Config.GithubFinalizer
-	githubRepoApi := github.NewHttpRepositoryClient(env.Config.GitHubAuthToken, ctx)
+	finalizer := env.Config.GithubFinalizer
 	if environment.DeletionTimestamp.IsZero() {
-		if !common.ContainsString(environment.GetFinalizers(), finalizer) {
-			r.Log.Info(
-				"Setting finalizer for environment",
-				"env", environment.Spec.EnvName,
-				"team", environment.Spec.TeamName,
-				)
-			environment.SetFinalizers(append(environment.GetFinalizers(), finalizer))
-			if err := r.Update(ctx, environment); err != nil {
-				return ctrl.Result{}, err
-			}
-		}
-	} else {
-		if common.ContainsString(environment.GetFinalizers(), finalizer) {
-			if err := r.postDeleteHook(environment); err != nil {
-				return ctrl.Result{}, err
-			}
-
-			environment.SetFinalizers(common.RemoveString(environment.GetFinalizers(), finalizer))
-			if err := r.Update(ctx, environment); err != nil {
-				return ctrl.Result{}, err
-			}
+		if err := r.handleFinalizer(ctx, environment, finalizer); err != nil {
+			return ctrl.Result{}, err
 		}
 	}
 
@@ -92,6 +74,7 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, err
 	}
 
+	githubRepoApi := github.NewHttpRepositoryClient(env.Config.GitHubAuthToken, ctx)
 	if err := generateAndSaveEnvironmentComponents(
 		r.Log,
 		fileUtil,
@@ -125,8 +108,38 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, err
 	}
 
+	if err := r.saveEnvironmentState(ctx, environment); err != nil {
+		return ctrl.Result{}, err
+	}
 
 	return ctrl.Result{}, nil
+}
+
+func (r *EnvironmentReconciler) handleFinalizer(ctx context.Context, e *stablev1alpha1.Environment, finalizer string) error {
+	if !common.ContainsString(e.GetFinalizers(), finalizer) {
+		r.Log.Info(
+			"Setting finalizer for environment",
+			"env", e.Spec.EnvName,
+			"team", e.Spec.TeamName,
+		)
+		e.SetFinalizers(append(e.GetFinalizers(), finalizer))
+		if err := r.Update(ctx, e); err != nil {
+			return err
+		}
+	} else {
+		if common.ContainsString(e.GetFinalizers(), finalizer) {
+			if err := r.postDeleteHook(e); err != nil {
+				return err
+			}
+
+			e.SetFinalizers(common.RemoveString(e.GetFinalizers(), finalizer))
+			if err := r.Update(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 func (r *EnvironmentReconciler) postDeleteHook(e *stablev1alpha1.Environment) error {
@@ -140,14 +153,41 @@ func (r *EnvironmentReconciler) postDeleteHook(e *stablev1alpha1.Environment) er
 	return nil
 }
 
-func extractPathsToRemove(e stablev1alpha1.Environment) []string {
-	envPath    := fmt.Sprintf("%s-environment-component", e.Spec.EnvName)
-	envAppPath := fmt.Sprintf("%s-environment.yaml", e.Spec.EnvName)
-	return []string{
-		envPath,
-		envAppPath,
+func (r *EnvironmentReconciler) saveEnvironmentState(ctx context.Context, e *stablev1alpha1.Environment) error {
+	cm, err := r.getStateConfigMap(ctx)
+	if err != nil {
+		return err
 	}
+	if err := state.UpsertStateEntry(cm, e); err != nil {
+		return err
+	}
+	if err := r.Client.Update(ctx, cm); err != nil {
+		return err
+	}
+	return nil
 }
+
+func (r *EnvironmentReconciler) getStateConfigMap(ctx context.Context) (*v1.ConfigMap, error) {
+	objKey := kClient.ObjectKey{
+		Name: env.Config.EnvironmentStateConfigMap,
+		Namespace: env.Config.ZlifecycleOperatorNamespace,
+	}
+	cm := v1.ConfigMap{}
+	if err := r.Get(ctx, objKey, &cm); err != nil {
+		return nil, err
+	}
+
+	return &cm, nil
+}
+
+//func extractPathsToRemove(e stablev1alpha1.Environment) []string {
+//	envPath    := fmt.Sprintf("%s-environment-component", e.Spec.EnvName)
+//	envAppPath := fmt.Sprintf("%s-environment.yaml", e.Spec.EnvName)
+//	return []string{
+//		envPath,
+//		envAppPath,
+//	}
+//}
 
 // SetupWithManager sets up the Environment Controller with Manager
 func (r *EnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {

@@ -13,7 +13,9 @@
 package main
 
 import (
+	"context"
 	"flag"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/state"
 	"os"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -21,6 +23,7 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
@@ -96,4 +99,22 @@ func main() {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}
+
+	initEnvironmentController(mgr.GetClient())
+}
+
+func initEnvironmentController(c client.Client) error {
+	ctx := context.Background()
+	setupLog.Info("initializing environment controller...")
+
+	setupLog.Info("creating environment controller state configmap...")
+	cm := state.CreateEnvironmentStateConfigMap()
+	if err := c.Create(ctx, cm); err != nil {
+		setupLog.Error(err, "error creating environment controller state configmap")
+		return err
+	}
+
+	setupLog.Info("environment controller initialization completed")
+
+	return nil
 }

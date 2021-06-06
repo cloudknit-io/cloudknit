@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-logr/logr"
+	y "gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -114,4 +115,21 @@ func Find(s []string, e string) *string {
 		}
 	}
 	return nil
+}
+
+func FromYaml(yamlstring string, out interface{}) error {
+	if err := y.Unmarshal([]byte(yamlstring), out); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ToYaml(in interface{}) (ymlstring string, e error) {
+	out, err := y.Marshal(in)
+	if err != nil {
+		return "", e
+	}
+
+	return string(out), nil
 }
