@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "compuzest_tfstate" {
-  bucket = "compuzest-zlifecycle-tfstate"
+  bucket = "zlifecycle-tfstate-zmart-sandbox"
   acl    = "private"
 
   versioning {
