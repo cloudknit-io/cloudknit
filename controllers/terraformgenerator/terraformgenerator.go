@@ -13,12 +13,14 @@
 package terraformgenerator
 
 import (
-	"github.com/go-logr/logr"
 	"os"
 	"path/filepath"
 	"text/template"
 
+	"github.com/go-logr/logr"
+
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
+	env "github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
 )
@@ -42,15 +44,15 @@ func (tf TerraformGenerator) GenerateTerraform(
 	environmentComponent *stablev1alpha1.EnvironmentComponent,
 	environment *stablev1alpha1.Environment,
 	environmentComponentDirectory string,
-	) error {
+) error {
 	componentName := environmentComponent.Name
 
 	backendConfig := TerraformBackendConfig{
 		Region:        "us-east-1",
 		Profile:       "compuzest-shared",
 		Version:       DefaultTerraformVersion,
-		Bucket:        "compuzest-zlifecycle-tfstate",
-		DynamoDBTable: "compuzest-zlifecycle-tflock",
+		Bucket:        "zlifecycle-tfstate-" + env.Config.CompanyName,
+		DynamoDBTable: "zlifecycle-tflock-" + env.Config.CompanyName,
 		TeamName:      environment.Spec.TeamName,
 		EnvName:       environment.Spec.EnvName,
 		ComponentName: componentName,
@@ -76,7 +78,7 @@ func (tf TerraformGenerator) GenerateTerraform(
 	dataConfig := TerraformDataConfig{
 		Region:    "us-east-1",
 		Profile:   "compuzest-shared",
-		Bucket:    "compuzest-zlifecycle-tfstate",
+		Bucket:    "zlifecycle-tfstate-" + env.Config.CompanyName,
 		TeamName:  environment.Spec.TeamName,
 		EnvName:   environment.Spec.EnvName,
 		DependsOn: environmentComponent.DependsOn,
