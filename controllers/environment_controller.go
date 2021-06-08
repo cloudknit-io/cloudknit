@@ -67,7 +67,12 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	fileUtil := &file.UtilFileService{}
 	isDeleteEvent := !environment.DeletionTimestamp.IsZero()
 	if !isDeleteEvent {
-		r.Log.Info("Generating Environment application...")
+		r.Log.Info(
+			"Generating Environment application...",
+			"team", environment.Spec.TeamName,
+			"environment", environment.Spec.EnvName,
+			"is_delete_event", isDeleteEvent,
+			)
 		if err := generateAndSaveEnvironmentApp(fileUtil, environment, envDirectory); err != nil {
 			return ctrl.Result{}, err
 		}
@@ -84,6 +89,12 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		}
 	}
 
+	r.Log.Info(
+		"Generating workflow of workflows...",
+		"team", environment.Spec.TeamName,
+		"environment", environment.Spec.EnvName,
+		"is_delete_event", isDeleteEvent,
+		)
 	if err := generateAndSaveWorkflowOfWorkflows(fileUtil, environment, envComponentDirectory); err != nil {
 		return ctrl.Result{}, err
 	}
@@ -102,7 +113,12 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, err
 	}
 
-	r.Log.Info("Cleaning up local git files", "path", envDirectory)
+	r.Log.Info(
+		"Cleaning up local git files",
+		"team", environment.Spec.TeamName,
+		"environment", environment.Spec.EnvName,
+		"path", envDirectory,
+		)
 	if err := fileUtil.RemoveAll(envDirectory); err != nil {
 		return ctrl.Result{}, err
 	}
@@ -111,15 +127,17 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 }
 
 func (r *EnvironmentReconciler) handleFinalizer(ctx context.Context, e *stablev1alpha1.Environment, finalizer string) error {
-	if !common.ContainsString(e.GetFinalizers(), finalizer) {
-		r.Log.Info(
-			"Setting finalizer for environment",
-			"env", e.Spec.EnvName,
-			"team", e.Spec.TeamName,
-		)
-		e.SetFinalizers(append(e.GetFinalizers(), finalizer))
-		if err := r.Update(ctx, e); err != nil {
-			return err
+	if e.DeletionTimestamp.IsZero() {
+		if !common.ContainsString(e.GetFinalizers(), finalizer) {
+			r.Log.Info(
+				"Setting finalizer for environment",
+				"env", e.Spec.EnvName,
+				"team", e.Spec.TeamName,
+			)
+			e.SetFinalizers(append(e.GetFinalizers(), finalizer))
+			if err := r.Update(ctx, e); err != nil {
+				return err
+			}
 		}
 	} else {
 		if common.ContainsString(e.GetFinalizers(), finalizer) {
