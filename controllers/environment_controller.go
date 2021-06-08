@@ -60,29 +60,29 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	}
 
 	finalizer := env.Config.GithubFinalizer
-	if environment.DeletionTimestamp.IsZero() {
-		if err := r.handleFinalizer(ctx, environment, finalizer); err != nil {
-			return ctrl.Result{}, err
-		}
+	if err := r.handleFinalizer(ctx, environment, finalizer); err != nil {
+		return ctrl.Result{}, err
 	}
 
 	envDirectory := il.EnvironmentDirectory(environment.Spec.TeamName)
 	envComponentDirectory := il.EnvironmentComponentDirectory(environment.Spec.TeamName, environment.Spec.EnvName)
-	var fileUtil file.UtilFile = &file.UtilFileService{}
+	fileUtil := &file.UtilFileService{}
+	isDeleteEvent := !environment.DeletionTimestamp.IsZero()
+	if !isDeleteEvent {
+		if err := generateAndSaveEnvironmentApp(fileUtil, environment, envDirectory); err != nil {
+			return ctrl.Result{}, err
+		}
 
-	if err := generateAndSaveEnvironmentApp(fileUtil, environment, envDirectory); err != nil {
-		return ctrl.Result{}, err
-	}
-
-	githubRepoApi := github.NewHttpRepositoryClient(env.Config.GitHubAuthToken, ctx)
-	if err := generateAndSaveEnvironmentComponents(
-		r.Log,
-		fileUtil,
-		environment,
-		envComponentDirectory,
-		githubRepoApi,
+		githubRepoApi := github.NewHttpRepositoryClient(env.Config.GitHubAuthToken, ctx)
+		if err := generateAndSaveEnvironmentComponents(
+			r.Log,
+			fileUtil,
+			environment,
+			envComponentDirectory,
+			githubRepoApi,
 		); err != nil {
-		return ctrl.Result{}, err
+			return ctrl.Result{}, err
+		}
 	}
 
 	if err := generateAndSaveWorkflowOfWorkflows(fileUtil, environment, envComponentDirectory); err != nil {

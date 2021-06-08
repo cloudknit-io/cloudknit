@@ -100,7 +100,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	initEnvironmentController(mgr.GetClient())
+	if err := initEnvironmentController(mgr.GetClient()); err != nil {
+		setupLog.Error(
+			err,
+			"unable to init environment state tracking configmap",
+			"controller", "Environment",
+			)
+		os.Exit(1)
+	}
 }
 
 func initEnvironmentController(c client.Client) error {
@@ -110,7 +117,6 @@ func initEnvironmentController(c client.Client) error {
 	setupLog.Info("creating environment controller state configmap...")
 	cm := state.CreateEnvironmentStateConfigMap()
 	if err := c.Create(ctx, cm); err != nil {
-		setupLog.Error(err, "error creating environment controller state configmap")
 		return err
 	}
 

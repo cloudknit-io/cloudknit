@@ -76,15 +76,6 @@ func indexOf(ts TeamState, name string) int {
 	return -1
 }
 
-func find(ts TeamState, name string) *EnvironmentState {
-	for _, e := range ts.Environments {
-		if e.Name == name {
-			return &e
-		}
-	}
-	return nil
-}
-
 func buildNewEnvironmentState(e *stablev1alpha1.Environment) EnvironmentState {
 	var ecs []stablev1alpha1.EnvironmentComponent
 	for _, c := range e.Spec.EnvironmentComponent {
