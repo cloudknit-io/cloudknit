@@ -57,49 +57,31 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, nil
 	}
 
-	finalizer     := env.Config.GithubFinalizer
-	githubRepoApi := github.NewHttpRepositoryClient(env.Config.GitHubAuthToken, ctx)
-	if environment.DeletionTimestamp.IsZero() {
-		if !common.ContainsString(environment.GetFinalizers(), finalizer) {
-			r.Log.Info(
-				"Setting finalizer for environment",
-				"env", environment.Spec.EnvName,
-				"team", environment.Spec.TeamName,
-				)
-			environment.SetFinalizers(append(environment.GetFinalizers(), finalizer))
-			if err := r.Update(ctx, environment); err != nil {
-				return ctrl.Result{}, err
-			}
-		}
-	} else {
-		if common.ContainsString(environment.GetFinalizers(), finalizer) {
-			if err := r.postDeleteHook(environment); err != nil {
-				return ctrl.Result{}, err
-			}
-
-			environment.SetFinalizers(common.RemoveString(environment.GetFinalizers(), finalizer))
-			if err := r.Update(ctx, environment); err != nil {
-				return ctrl.Result{}, err
-			}
-		}
+	finalizer := env.Config.GithubFinalizer
+	if err := r.handleFinalizer(ctx, environment, finalizer); err != nil {
+		return ctrl.Result{}, err
 	}
 
 	envDirectory := il.EnvironmentDirectory(environment.Spec.TeamName)
 	envComponentDirectory := il.EnvironmentComponentDirectory(environment.Spec.TeamName, environment.Spec.EnvName)
-	var fileUtil file.UtilFile = &file.UtilFileService{}
+	fileUtil := &file.UtilFileService{}
+	isDeleteEvent := !environment.DeletionTimestamp.IsZero()
+	if !isDeleteEvent {
+		r.Log.Info("Generating Environment application...")
+		if err := generateAndSaveEnvironmentApp(fileUtil, environment, envDirectory); err != nil {
+			return ctrl.Result{}, err
+		}
 
-	if err := generateAndSaveEnvironmentApp(fileUtil, environment, envDirectory); err != nil {
-		return ctrl.Result{}, err
-	}
-
-	if err := generateAndSaveEnvironmentComponents(
-		r.Log,
-		fileUtil,
-		environment,
-		envComponentDirectory,
-		githubRepoApi,
+		githubRepoApi := github.NewHttpRepositoryClient(env.Config.GitHubAuthToken, ctx)
+		if err := generateAndSaveEnvironmentComponents(
+			r.Log,
+			fileUtil,
+			environment,
+			envComponentDirectory,
+			githubRepoApi,
 		); err != nil {
-		return ctrl.Result{}, err
+			return ctrl.Result{}, err
+		}
 	}
 
 	if err := generateAndSaveWorkflowOfWorkflows(fileUtil, environment, envComponentDirectory); err != nil {
@@ -125,8 +107,34 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, err
 	}
 
-
 	return ctrl.Result{}, nil
+}
+
+func (r *EnvironmentReconciler) handleFinalizer(ctx context.Context, e *stablev1alpha1.Environment, finalizer string) error {
+	if !common.ContainsString(e.GetFinalizers(), finalizer) {
+		r.Log.Info(
+			"Setting finalizer for environment",
+			"env", e.Spec.EnvName,
+			"team", e.Spec.TeamName,
+		)
+		e.SetFinalizers(append(e.GetFinalizers(), finalizer))
+		if err := r.Update(ctx, e); err != nil {
+			return err
+		}
+	} else {
+		if common.ContainsString(e.GetFinalizers(), finalizer) {
+			if err := r.postDeleteHook(e); err != nil {
+				return err
+			}
+
+			e.SetFinalizers(common.RemoveString(e.GetFinalizers(), finalizer))
+			if err := r.Update(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 func (r *EnvironmentReconciler) postDeleteHook(e *stablev1alpha1.Environment) error {
@@ -140,14 +148,14 @@ func (r *EnvironmentReconciler) postDeleteHook(e *stablev1alpha1.Environment) er
 	return nil
 }
 
-func extractPathsToRemove(e stablev1alpha1.Environment) []string {
-	envPath    := fmt.Sprintf("%s-environment-component", e.Spec.EnvName)
-	envAppPath := fmt.Sprintf("%s-environment.yaml", e.Spec.EnvName)
-	return []string{
-		envPath,
-		envAppPath,
-	}
-}
+//func extractPathsToRemove(e stablev1alpha1.Environment) []string {
+//	envPath    := fmt.Sprintf("%s-environment-component", e.Spec.EnvName)
+//	envAppPath := fmt.Sprintf("%s-environment.yaml", e.Spec.EnvName)
+//	return []string{
+//		envPath,
+//		envAppPath,
+//	}
+//}
 
 // SetupWithManager sets up the Environment Controller with Manager
 func (r *EnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
