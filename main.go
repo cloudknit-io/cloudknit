@@ -16,6 +16,7 @@ import (
 	"context"
 	"flag"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/state"
+	v1 "k8s.io/api/core/v1"
 	"os"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -114,10 +115,19 @@ func initEnvironmentController(c client.Client) error {
 	ctx := context.Background()
 	setupLog.Info("initializing environment controller...")
 
-	setupLog.Info("creating environment controller state configmap...")
-	cm := state.CreateEnvironmentStateConfigMap()
-	if err := c.Create(ctx, cm); err != nil {
+	cm := v1.ConfigMap{}
+	key := state.GetEnvironmentStateObjectKey()
+	if err := c.Get(ctx, key, &cm); err != nil {
 		return err
+	}
+	if cm.CreationTimestamp.IsZero() {
+		setupLog.Info("creating environment controller state configmap...")
+		newCm := state.GetEnvironmentStateConfigMap()
+		if err := c.Create(ctx, newCm); err != nil {
+			return err
+		}
+	} else {
+		setupLog.Info("environment config map already exists")
 	}
 
 	setupLog.Info("environment controller initialization completed")

@@ -6,15 +6,22 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	v1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func CreateEnvironmentStateConfigMap() *v1.ConfigMap {
+func GetEnvironmentStateObjectKey() client.ObjectKey {
+	return client.ObjectKey{
+		Name: env.Config.EnvironmentStateConfigMap,
+		Namespace: env.Config.ZlifecycleOperatorNamespace,
+	}
+}
+
+func GetEnvironmentStateConfigMap() *v1.ConfigMap {
 	return &v1.ConfigMap{
 		ObjectMeta: ctrl.ObjectMeta{
 			Name: env.Config.EnvironmentStateConfigMap,
 			Namespace: env.Config.ZlifecycleOperatorNamespace,
 		},
-		Data: make(map[string]string),
 	}
 }
 
