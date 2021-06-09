@@ -13,10 +13,7 @@
 package main
 
 import (
-	"context"
 	"flag"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/state"
-	v1 "k8s.io/api/core/v1"
 	"os"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -24,7 +21,6 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
@@ -100,37 +96,5 @@ func main() {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}
-
-	if err := initEnvironmentController(mgr.GetClient()); err != nil {
-		setupLog.Error(
-			err,
-			"unable to init environment state tracking configmap",
-			"controller", "Environment",
-			)
-		os.Exit(1)
-	}
 }
 
-func initEnvironmentController(c client.Client) error {
-	ctx := context.Background()
-	setupLog.Info("initializing environment controller...")
-
-	cm := v1.ConfigMap{}
-	key := state.GetEnvironmentStateObjectKey()
-	if err := c.Get(ctx, key, &cm); err != nil {
-		return err
-	}
-	if cm.CreationTimestamp.IsZero() {
-		setupLog.Info("creating environment controller state configmap...")
-		newCm := state.GetEnvironmentStateConfigMap()
-		if err := c.Create(ctx, newCm); err != nil {
-			return err
-		}
-	} else {
-		setupLog.Info("environment config map already exists")
-	}
-
-	setupLog.Info("environment controller initialization completed")
-
-	return nil
-}

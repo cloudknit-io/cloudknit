@@ -1,4 +1,4 @@
-package state
+package envstate
 
 import (
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
@@ -8,6 +8,35 @@ import (
 	controllerruntime "sigs.k8s.io/controller-runtime"
 	"testing"
 )
+
+func TestGetEnvironmentStateDiff(t *testing.T) {
+	mockEnv1 := mocks.GetMockEnv1(false)
+	cm := v1.ConfigMap{
+		ObjectMeta: controllerruntime.ObjectMeta{
+			Name: "environment-state-cm",
+			Namespace: "test",
+		},
+		Data: make(map[string]string),
+	}
+	err := UpsertStateEntry(&cm, &mockEnv1)
+	assert.NoError(t, err)
+
+	mockEnv2 := mocks.GetMockEnv2(false)
+
+	d, err := GetEnvironmentStateDiff(&cm, &mockEnv2)
+	assert.NoError(t, err)
+	assert.Len(t, d, 1)
+	assert.Equal(t, d[0].Name, "overlay")
+}
+
+func TestDiff(t *testing.T) {
+	mockComponents1 := mocks.GetMockEnv1(false).Spec.EnvironmentComponent
+	mockComponents2 := mocks.GetMockEnv2(false).Spec.EnvironmentComponent
+
+	d := diff(mockComponents1, mockComponents2)
+	assert.Len(t, d, 1)
+	assert.Equal(t, d[0].Name, "overlay")
+}
 
 func TestUpdateOrCreateStateEntryEmptyData(t *testing.T) {
 	mockEnv := mocks.GetMockEnv1(false)

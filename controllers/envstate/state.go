@@ -1,4 +1,4 @@
-package state
+package envstate
 
 import (
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
@@ -7,6 +7,11 @@ import (
 	v1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sync"
+)
+
+var (
+	mutex = sync.Mutex{}
 )
 
 func GetEnvironmentStateObjectKey() client.ObjectKey {
@@ -25,8 +30,55 @@ func GetEnvironmentStateConfigMap() *v1.ConfigMap {
 	}
 }
 
+func GetEnvironmentStateDiff(
+	cm *v1.ConfigMap,
+	e *stablev1alpha1.Environment,
+	) (d []*stablev1alpha1.EnvironmentComponent, err error) {
+	teamName := e.Spec.TeamName
+	envName := e.Spec.EnvName
+	ymlstr := cm.Data[teamName]
+	ts := TeamState{}
+	if err := common.FromYaml(ymlstr, &ts); err != nil {
+		return nil, err
+	}
+	var oldState []*stablev1alpha1.EnvironmentComponent
+	for _, es := range ts.Environments {
+		if es.Name == envName {
+			oldState = es.EnvironmentComponents
+		}
+	}
+	newState := e.Spec.EnvironmentComponent
+
+	return diff(oldState, newState), nil
+}
+
+func diff(
+	old []*stablev1alpha1.EnvironmentComponent,
+	new []*stablev1alpha1.EnvironmentComponent,
+	) []*stablev1alpha1.EnvironmentComponent {
+	var d []*stablev1alpha1.EnvironmentComponent
+	for _, oldEc := range old {
+		found := false
+		for _, newEc := range new {
+			if oldEc.Name == newEc.Name {
+				found = true
+				break
+			}
+		}
+		if !found {
+			d = append(d, oldEc)
+		}
+	}
+	return d
+}
+
 func UpsertStateEntry(cm *v1.ConfigMap, e *stablev1alpha1.Environment) error {
+	mutex.Lock()
+	defer mutex.Unlock()
 	team := e.Spec.TeamName
+	if cm.Data == nil {
+		cm.Data = make(map[string]string)
+	}
 	ymlstr := cm.Data[team]
 
 	entryExists := ymlstr != ""
@@ -84,24 +136,16 @@ func indexOf(ts TeamState, name string) int {
 }
 
 func buildNewEnvironmentState(e *stablev1alpha1.Environment) EnvironmentState {
-	var ecs []stablev1alpha1.EnvironmentComponent
-	for _, c := range e.Spec.EnvironmentComponent {
-		ecs = append(ecs, *c)
-	}
 	return EnvironmentState{
 		Name: e.Spec.EnvName,
-		EnvironmentComponents: ecs,
+		EnvironmentComponents: e.Spec.EnvironmentComponent,
 	}
 }
 
 func buildNewTeamState(e *stablev1alpha1.Environment) TeamState {
-	var ecs []stablev1alpha1.EnvironmentComponent
-	for _, c := range e.Spec.EnvironmentComponent {
-		ecs = append(ecs, *c)
-	}
 	es := EnvironmentState{
 		Name: e.Spec.EnvName,
-		EnvironmentComponents: ecs,
+		EnvironmentComponents: e.Spec.EnvironmentComponent,
 	}
 
 	return TeamState{
