@@ -43,7 +43,7 @@ cd $ENV_COMPONENT_PATH
 sh /argocd/login.sh
 
 data='{"metadata":{"labels":{"component_status":"initializing"}}}'
-argocd app patch $team_env_config_name --patch $data --type merge
+argocd app patch $team_env_config_name --patch $data --type merge > null
 
 terraform init || Error "Cannot initialize terraform"
 
@@ -55,7 +55,7 @@ then
 
         # add last argo workflow run id to config application so it can fetch workflow details on UI
         data='{"metadata":{"labels":{"last_workflow_run_id":"'$workflow_id'"}}}'
-        argocd app patch $team_env_config_name --patch $data --type merge
+        argocd app patch $team_env_config_name --patch $data --type merge > null
     fi
 
     echo "DEBUG: is_destroy: $is_destroy"
@@ -65,7 +65,7 @@ then
     then
       echo "Executing destroy plan..."
       data='{"metadata":{"labels":{"component_status":"running_destroy_plan"}}}'
-      argocd app patch $team_env_config_name --patch $data --type merge
+      argocd app patch $team_env_config_name --patch $data --type merge > null
 
       terraform plan -destroy -lock=$lock_state -parallelism=2 -input=false -no-color -out=terraform-plan -detailed-exitcode
       result=$?
@@ -73,26 +73,26 @@ then
     else
       echo "Executing apply plan..."
       data='{"metadata":{"labels":{"component_status":"running_plan"}}}'
-      argocd app patch $team_env_config_name --patch $data --type merge
+      argocd app patch $team_env_config_name --patch $data --type merge > null
 
       terraform plan -lock=$lock_state -parallelism=2 -input=false -no-color -out=terraform-plan -detailed-exitcode
       result=$?
       echo -n $result > /tmp/plan_code.txt
 
       data='{"metadata":{"labels":{"component_status":"calculating_cost"}}}'
-      argocd app patch $team_env_config_name --patch $data --type merge
+      argocd app patch $team_env_config_name --patch $data --type merge > null
 
       infracost breakdown --path . --format json >> output.json
       estimated_cost=$(cat output.json | jq -r ".projects[0].breakdown.totalMonthlyCost")
 
       data='{"metadata":{"labels":{"component_cost":"'$estimated_cost'"}}}'
-      argocd app patch $team_env_config_name --patch $data --type merge
+      argocd app patch $team_env_config_name --patch $data --type merge > null
     fi
 
     if [ $result -eq 1 ]
     then
         data='{"metadata":{"labels":{"component_status":"plan_failed"}}}'
-        argocd app patch $team_env_config_name --patch $data --type merge
+        argocd app patch $team_env_config_name --patch $data --type merge > null
 
         Error "There is issue with generating terraform plan"
     fi
@@ -104,7 +104,7 @@ else
     then
       echo "Executing terraform destroy..."
       data='{"metadata":{"labels":{"component_status":"destroying"}}}'
-      argocd app patch $team_env_config_name --patch $data --type merge
+      argocd app patch $team_env_config_name --patch $data --type merge > null
 
       terraform destroy -auto-approve -input=false -parallelism=2 -no-color || Error "Cannot run terraform destroy"
       result=$?
@@ -113,17 +113,17 @@ else
       if [ $result -eq 0 ]
       then
         data='{"metadata":{"labels":{"component_status":"destroyed"}}}'
-        argocd app patch $team_env_config_name --patch $data --type merge
+        argocd app patch $team_env_config_name --patch $data --type merge > null
       else
         data='{"metadata":{"labels":{"component_status":"destroy_failed"}}}'
-        argocd app patch $team_env_config_name --patch $data --type merge
+        argocd app patch $team_env_config_name --patch $data --type merge > null
 
         Error "There is issue with destroying"
       fi
     else
       echo "Executing terraform apply..."
       data='{"metadata":{"labels":{"component_status":"provisioning"}}}'
-      argocd app patch $team_env_config_name --patch $data --type merge
+      argocd app patch $team_env_config_name --patch $data --type merge > null
 
       terraform apply -auto-approve -input=false -parallelism=2 -no-color || Error "Can not apply terraform plan"
       result=$?
@@ -132,15 +132,15 @@ else
       if [ $result -eq 0 ]
       then
         data='{"metadata":{"labels":{"component_status":"provisioned"}}}'
-        argocd app patch $team_env_config_name --patch $data --type merge
+        argocd app patch $team_env_config_name --patch $data --type merge > null
       else
         data='{"metadata":{"labels":{"component_status":"provision_failed"}}}'
-        argocd app patch $team_env_config_name --patch $data --type merge
+        argocd app patch $team_env_config_name --patch $data --type merge > null
 
         Error "There is issue with provisioning"
       fi
 
     fi
 
-    argocd app sync $team_env_config_name
+    argocd app sync $team_env_config_name > null
 fi
