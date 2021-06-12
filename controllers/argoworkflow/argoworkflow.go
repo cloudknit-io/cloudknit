@@ -113,7 +113,7 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1alpha1.Environment) *
 
 	var tasks []workflow.DAGTask
 
-	destroy := !environment.DeletionTimestamp.IsZero()
+	destroyAll := !environment.DeletionTimestamp.IsZero()
 
 	ecs := environment.Spec.EnvironmentComponent
 	for _, ec := range ecs {
@@ -123,7 +123,10 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1alpha1.Environment) *
 
 		dependencies := ec.DependsOn
 		destroyFlag := "false"
-		if destroy {
+		if ec.MarkedForDeletion {
+			destroyFlag = "true"
+		}
+		if destroyAll {
 			dependencies = buildInverseDependencies(ecs, ec.Name)
 			destroyFlag = "true"
 		}

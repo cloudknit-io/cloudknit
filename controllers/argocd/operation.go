@@ -34,10 +34,8 @@ func RegisterRepo(log logr.Logger, api Api, repoOpts RepoOpts) (bool, error) {
 		return false, err1
 	}
 	defer resp1.Body.Close()
-	log.Info("List of repositories registered on ArgoCD", "repos", repositories)
 	if isRepoRegistered(*repositories, repoOpts.RepoUrl) {
 		log.Info("Repository already registered on ArgoCD",
-			"repos", repositories.Items,
 			"repoName", repoName,
 			"repoUrl", repoOpts.RepoUrl,
 		)
