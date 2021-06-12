@@ -15,10 +15,8 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/envstate"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	"io/ioutil"
-	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"time"
 
@@ -73,10 +71,11 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, nil
 	}
 
-	envTrackerCm, err := r.getEnvironmentTrackingConfigMap(ctx)
-	if err != nil {
-		return ctrl.Result{}, nil
-	}
+	// TODO: This will be enabled when we revisit validation
+	//envTrackerCm, err := r.getEnvironmentTrackingConfigMap(ctx)
+	//if err != nil {
+	//	return ctrl.Result{}, nil
+	//}
 
 	finalizer := env.Config.GithubFinalizer
 	if err := r.handleFinalizer(ctx, environment, finalizer); err != nil {
@@ -109,9 +108,10 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 			return ctrl.Result{}, err
 		}
 
-		if err := r.saveEnvironmentState(ctx, environment, envTrackerCm); err != nil {
-			return ctrl.Result{}, err
-		}
+		// TODO: This will be enabled when we revisit validation
+		//if err := r.saveEnvironmentState(ctx, environment, envTrackerCm); err != nil {
+		//	return ctrl.Result{}, err
+		//}
 	}
 
 	r.Log.Info(
@@ -197,45 +197,47 @@ func (r *EnvironmentReconciler) postDeleteHook(e *stablev1alpha1.Environment) er
 	return nil
 }
 
-func (r *EnvironmentReconciler) getEnvironmentTrackingConfigMap(ctx context.Context) (*v1.ConfigMap, error) {
-	cm := &v1.ConfigMap{}
-	envTrackingKey := envstate.GetEnvironmentStateObjectKey()
-	if err := r.Get(ctx, envTrackingKey, cm); err != nil {
-		if errors.IsNotFound(err) {
-			r.Log.Info("Environment tracking config map does not exist, will create it...")
-			cm, err = r.createEnvironmentTrackingConfigMap()
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			r.Log.Error(
-				err,
-				"Error getting environment tracking config map...",
-				"name", envTrackingKey.Name,
-				"namespace", envTrackingKey.Namespace,
-			)
-			return nil, err
-		}
-	}
+// TODO: This will be enabled when we revisit validation
+//func (r *EnvironmentReconciler) getEnvironmentTrackingConfigMap(ctx context.Context) (*v1.ConfigMap, error) {
+//	cm := &v1.ConfigMap{}
+//	envTrackingKey := envstate.GetEnvironmentStateObjectKey()
+//	if err := r.Get(ctx, envTrackingKey, cm); err != nil {
+//		if errors.IsNotFound(err) {
+//			r.Log.Info("Environment tracking config map does not exist, will create it...")
+//			cm, err = r.createEnvironmentTrackingConfigMap()
+//			if err != nil {
+//				return nil, err
+//			}
+//		} else {
+//			r.Log.Error(
+//				err,
+//				"Error getting environment tracking config map...",
+//				"name", envTrackingKey.Name,
+//				"namespace", envTrackingKey.Namespace,
+//			)
+//			return nil, err
+//		}
+//	}
+//
+//	return cm, nil
+//}
 
-	return cm, nil
-}
+// TODO: This will be enabled when we revisit validation
+//func (r *EnvironmentReconciler) createEnvironmentTrackingConfigMap() (*v1.ConfigMap, error) {
+//	ctx := context.Background()
+//	r.Log.Info("Creating environment tracking config map...")
+//
+//	cm := envstate.GetEnvironmentStateConfigMap()
+//	if err := r.Create(ctx, cm); err != nil {
+//		return nil, err
+//	}
+//
+//	r.Log.Info("Environment controller initialization completed")
+//
+//	return cm, nil
+//}
 
-func (r *EnvironmentReconciler) createEnvironmentTrackingConfigMap() (*v1.ConfigMap, error) {
-	ctx := context.Background()
-	r.Log.Info("Creating environment tracking config map...")
-
-	cm := envstate.GetEnvironmentStateConfigMap()
-	if err := r.Create(ctx, cm); err != nil {
-		return nil, err
-	}
-
-	r.Log.Info("Environment controller initialization completed")
-
-	return cm, nil
-}
-
-// TODO: Determine is this needed still
+// TODO: This will be enabled when we revisit validation
 //func (r *EnvironmentReconciler) cleanEnvironmentComponents(cm *v1.ConfigMap, e *stablev1alpha1.Environment) error {
 //	find := func(name string) *stablev1alpha1.EnvironmentComponent {
 //		for _, ec := range e.Spec.EnvironmentComponent {
@@ -268,20 +270,21 @@ func (r *EnvironmentReconciler) createEnvironmentTrackingConfigMap() (*v1.Config
 //	return nil
 //}
 
-func (r *EnvironmentReconciler) saveEnvironmentState(ctx context.Context, e *stablev1alpha1.Environment, cm *v1.ConfigMap) error {
-	r.Log.Info(
-		"Saving new environment state into environment tracking configmap...",
-		"environment", e.Spec.EnvName,
-		"team", e.Spec.TeamName,
-		)
-	if err := envstate.UpsertStateEntry(cm, e); err != nil {
-		return err
-	}
-	if err := r.Client.Update(ctx, cm); err != nil {
-		return err
-	}
-	return nil
-}
+// TODO: This will be enabled when we revisit validation
+//func (r *EnvironmentReconciler) saveEnvironmentState(ctx context.Context, e *stablev1alpha1.Environment, cm *v1.ConfigMap) error {
+//	r.Log.Info(
+//		"Saving new environment state into environment tracking configmap...",
+//		"environment", e.Spec.EnvName,
+//		"team", e.Spec.TeamName,
+//		)
+//	if err := envstate.UpsertStateEntry(cm, e); err != nil {
+//		return err
+//	}
+//	if err := r.Client.Update(ctx, cm); err != nil {
+//		return err
+//	}
+//	return nil
+//}
 
 //func extractPathsToRemove(e stablev1alpha1.Environment) []string {
 //	envPath    := fmt.Sprintf("%s-environment-component", e.Spec.EnvName)
