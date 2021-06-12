@@ -14,6 +14,8 @@ type config struct {
 	ILRepoURL                     string
 	ILRepoSourceOwner             string
 
+	EnvironmentStateConfigMap     string
+
 	GithubSvcAccntName  string
 	GithubSvcAccntEmail string
 	GithubFinalizer     string
@@ -41,6 +43,8 @@ var Config = config{
 	ILRepoName:        os.Getenv("ilRepoName"),
 	ILRepoURL:         os.Getenv("ilRepo"),
 	ILRepoSourceOwner: os.Getenv("ilRepoSourceOwner"),
+
+	EnvironmentStateConfigMap: "environment-state-cm",
 
 	GithubSvcAccntName:  "zLifecycle",
 	GithubSvcAccntEmail: "zLifecycle@compuzest.com",

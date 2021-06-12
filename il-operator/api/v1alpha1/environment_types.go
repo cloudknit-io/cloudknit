@@ -51,6 +51,8 @@ type EnvironmentComponent struct {
 	Module       *Module  `json:"module"`
 	Tags         []*Tags  `json:"tags,omitempty"`
 
+	MarkedForDeletion bool `json:"markedForDeletion,omitempty"`
+
 	VariablesFile *VariablesFile `json:"variablesFile,omitempty"`
 	Variables     []*Variable    `json:"variables,omitempty"`
 	Outputs       []*Output      `json:"outputs,omitempty"`
