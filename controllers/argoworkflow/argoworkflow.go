@@ -123,11 +123,11 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1alpha1.Environment) *
 
 		dependencies := ec.DependsOn
 		destroyFlag := "false"
-		if destroyAll {
-			dependencies = buildInverseDependencies(ecs, ec.Name)
+		if ec.MarkedForDeletion {
 			destroyFlag = "true"
 		}
-		if ec.MarkedForDeletion {
+		if destroyAll {
+			dependencies = buildInverseDependencies(ecs, ec.Name)
 			destroyFlag = "true"
 		}
 

@@ -28,13 +28,13 @@ import (
 	kClient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
-	argocd "github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
 	argoWorkflow "github.com/compuzest/zlifecycle-il-operator/controllers/argoworkflow"
-	terraformgenerator "github.com/compuzest/zlifecycle-il-operator/controllers/terraformgenerator"
-	env "github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
-	file "github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
-	github "github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
-	il "github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/terraformgenerator"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
 )
 
 // EnvironmentReconciler reconciles a Environment object
@@ -92,8 +92,11 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 			"Generating Environment application...",
 			"team", environment.Spec.TeamName,
 			"environment", environment.Spec.EnvName,
-			"is_delete_event", isDeleteEvent,
+			"isDeleteEvent", isDeleteEvent,
 			)
+		if err := generateAndSaveEnvironmentApp(fileUtil, environment, envDirectory); err != nil {
+			return ctrl.Result{}, err
+		}
 
 		githubRepoApi := github.NewHttpRepositoryClient(env.Config.GitHubAuthToken, ctx)
 		if err := generateAndSaveEnvironmentComponents(
@@ -105,13 +108,17 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		); err != nil {
 			return ctrl.Result{}, err
 		}
+
+		if err := r.saveEnvironmentState(ctx, environment, envTrackerCm); err != nil {
+			return ctrl.Result{}, err
+		}
 	}
 
 	r.Log.Info(
 		"Generating workflow of workflows...",
 		"team", environment.Spec.TeamName,
 		"environment", environment.Spec.EnvName,
-		"is_delete_event", isDeleteEvent,
+		"isDeleteEvent", isDeleteEvent,
 		)
 	if err := generateAndSaveWorkflowOfWorkflows(fileUtil, environment, envComponentDirectory); err != nil {
 		return ctrl.Result{}, err
@@ -138,10 +145,6 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		"path", envDirectory,
 		)
 	if err := fileUtil.RemoveAll(envDirectory); err != nil {
-		return ctrl.Result{}, err
-	}
-
-	if err := r.saveEnvironmentState(ctx, environment, envTrackerCm); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -185,6 +188,15 @@ func (r *EnvironmentReconciler) handleFinalizer(ctx context.Context, e *stablev1
 	return nil
 }
 
+func (r *EnvironmentReconciler) postDeleteHook(e *stablev1alpha1.Environment) error {
+	r.Log.Info(
+		"Executing post delete hook for environment finalizer",
+		"environment", e.Spec.EnvName,
+		"team", e.Spec.TeamName,
+	)
+	return nil
+}
+
 func (r *EnvironmentReconciler) getEnvironmentTrackingConfigMap(ctx context.Context) (*v1.ConfigMap, error) {
 	cm := &v1.ConfigMap{}
 	envTrackingKey := envstate.GetEnvironmentStateObjectKey()
@@ -198,7 +210,7 @@ func (r *EnvironmentReconciler) getEnvironmentTrackingConfigMap(ctx context.Cont
 		} else {
 			r.Log.Error(
 				err,
-				"Error getting environment tracking configmap",
+				"Error getting environment tracking config map...",
 				"name", envTrackingKey.Name,
 				"namespace", envTrackingKey.Namespace,
 			)
@@ -211,7 +223,7 @@ func (r *EnvironmentReconciler) getEnvironmentTrackingConfigMap(ctx context.Cont
 
 func (r *EnvironmentReconciler) createEnvironmentTrackingConfigMap() (*v1.ConfigMap, error) {
 	ctx := context.Background()
-	r.Log.Info("Creating environment tracking configmap...")
+	r.Log.Info("Creating environment tracking config map...")
 
 	cm := envstate.GetEnvironmentStateConfigMap()
 	if err := r.Create(ctx, cm); err != nil {
@@ -223,50 +235,45 @@ func (r *EnvironmentReconciler) createEnvironmentTrackingConfigMap() (*v1.Config
 	return cm, nil
 }
 
-func (r *EnvironmentReconciler) cleanEnvironmentComponents(cm *v1.ConfigMap, e *stablev1alpha1.Environment) error {
-	find := func(name string) *stablev1alpha1.EnvironmentComponent {
-		for _, ec := range e.Spec.EnvironmentComponent {
-			if ec.Name == name {
-				return ec
-			}
-		}
-		return nil
-	}
-	diff, err := envstate.GetEnvironmentStateDiff(cm, e)
-	if err != nil {
-		return err
-	}
-	r.Log.Info(
-		"Cleaning environment state...",
-		"team", e.Spec.TeamName,
-		"environment", e.Spec.EnvName,
-		"componentsToDelete", len(diff),
-	)
-	for _, ec := range diff {
-		r.Log.Info(
-			"Marking environment component for deletion",
-			"team", e.Spec.TeamName,
-			"env", e.Spec.EnvName,
-			"component", ec.Name,
-			)
-		ecToDelete := find(ec.Name)
-		ecToDelete.MarkedForDeletion = true
-	}
-	return nil
-}
-
-func (r *EnvironmentReconciler) postDeleteHook(e *stablev1alpha1.Environment) error {
-	r.Log.Info(
-		"Executing post delete hook for environment finalizer",
-		"environment",
-		e.Spec.EnvName,
-		"team",
-		e.Spec.TeamName,
-		)
-	return nil
-}
+// TODO: Determine is this needed still
+//func (r *EnvironmentReconciler) cleanEnvironmentComponents(cm *v1.ConfigMap, e *stablev1alpha1.Environment) error {
+//	find := func(name string) *stablev1alpha1.EnvironmentComponent {
+//		for _, ec := range e.Spec.EnvironmentComponent {
+//			if ec.Name == name {
+//				return ec
+//			}
+//		}
+//		return nil
+//	}
+//	diff, err := envstate.GetEnvironmentStateDiff(cm, e)
+//	if err != nil {
+//		return err
+//	}
+//	r.Log.Info(
+//		"Cleaning environment state...",
+//		"team", e.Spec.TeamName,
+//		"environment", e.Spec.EnvName,
+//		"componentsToDelete", len(diff),
+//	)
+//	for _, ec := range diff {
+//		r.Log.Info(
+//			"Marking environment component for deletion",
+//			"team", e.Spec.TeamName,
+//			"env", e.Spec.EnvName,
+//			"component", ec.Name,
+//			)
+//		ecToDelete := find(ec.Name)
+//		ecToDelete.MarkedForDeletion = true
+//	}
+//	return nil
+//}
 
 func (r *EnvironmentReconciler) saveEnvironmentState(ctx context.Context, e *stablev1alpha1.Environment, cm *v1.ConfigMap) error {
+	r.Log.Info(
+		"Saving new environment state into environment tracking configmap...",
+		"environment", e.Spec.EnvName,
+		"team", e.Spec.TeamName,
+		)
 	if err := envstate.UpsertStateEntry(cm, e); err != nil {
 		return err
 	}
@@ -274,19 +281,6 @@ func (r *EnvironmentReconciler) saveEnvironmentState(ctx context.Context, e *sta
 		return err
 	}
 	return nil
-}
-
-func (r *EnvironmentReconciler) getStateConfigMap(ctx context.Context) (*v1.ConfigMap, error) {
-	objKey := kClient.ObjectKey{
-		Name: env.Config.EnvironmentStateConfigMap,
-		Namespace: env.Config.ZlifecycleOperatorNamespace,
-	}
-	cm := v1.ConfigMap{}
-	if err := r.Get(ctx, objKey, &cm); err != nil {
-		return nil, err
-	}
-
-	return &cm, nil
 }
 
 //func extractPathsToRemove(e stablev1alpha1.Environment) []string {

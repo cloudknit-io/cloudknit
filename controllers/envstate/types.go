@@ -4,7 +4,7 @@ import "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
 
 type TeamState = struct {
 	Name string `yaml:"name"`
-	Environments []EnvironmentState `yaml:"environments"`
+	Environments map[string]EnvironmentState `yaml:"environments"`
 }
 
 type EnvironmentState = struct {

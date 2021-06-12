@@ -72,13 +72,26 @@ func diff(
 	return d
 }
 
+func DeleteStateEntry(cm *v1.ConfigMap, e *stablev1alpha1.Environment) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	if cm.Data == nil {
+		return
+	}
+	team := e.Spec.TeamName
+	cm.Data[team] = ""
+
+	return
+}
+
 func UpsertStateEntry(cm *v1.ConfigMap, e *stablev1alpha1.Environment) error {
 	mutex.Lock()
 	defer mutex.Unlock()
-	team := e.Spec.TeamName
 	if cm.Data == nil {
 		cm.Data = make(map[string]string)
 	}
+	team := e.Spec.TeamName
 	ymlstr := cm.Data[team]
 
 	entryExists := ymlstr != ""
@@ -105,11 +118,7 @@ func updateStateEntry(e *stablev1alpha1.Environment, ymlstr string) (string, err
 		return "", err
 	}
 	es := buildNewEnvironmentState(e)
-	if i := indexOf(ts, envName); i != -1 {
-		ts.Environments[i] = es
-	} else {
-		ts.Environments = append(ts.Environments, es)
-	}
+	ts.Environments[envName] = es
 	newYmlstr, err := common.ToYaml(&ts)
 	if err != nil {
 		return "", err
@@ -126,15 +135,6 @@ func createStateEntry(e *stablev1alpha1.Environment) (string, error) {
 	return ymlstr, nil
 }
 
-func indexOf(ts TeamState, name string) int {
-	for i, e := range ts.Environments {
-		if e.Name == name {
-			return i
-		}
-	}
-	return -1
-}
-
 func buildNewEnvironmentState(e *stablev1alpha1.Environment) EnvironmentState {
 	return EnvironmentState{
 		Name: e.Spec.EnvName,
@@ -148,8 +148,11 @@ func buildNewTeamState(e *stablev1alpha1.Environment) TeamState {
 		EnvironmentComponents: e.Spec.EnvironmentComponent,
 	}
 
+	m := make(map[string]EnvironmentState)
+	envName := e.Spec.EnvName
+	m[envName] = es
 	return TeamState{
 		Name: e.Spec.TeamName,
-		Environments: []EnvironmentState{es},
+		Environments: m,
 	}
 }

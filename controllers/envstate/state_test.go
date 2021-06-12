@@ -57,8 +57,8 @@ func TestUpdateOrCreateStateEntryEmptyData(t *testing.T) {
 	err = common.FromYaml(ymlstr, &ts)
 	assert.NoError(t, err, "Error parsing TeamState from yaml string")
 	assert.Equal(t, ts.Name, mockTeamName)
-	assert.Equal(t, ts.Environments[0].Name, mockEnvName)
-	assert.Len(t, ts.Environments[0].EnvironmentComponents, 3)
+	assert.Equal(t, ts.Environments[mockEnvName].Name, mockEnvName)
+	assert.Len(t, ts.Environments[mockEnvName].EnvironmentComponents, 3)
 }
 
 func TestUpdateOrCreateStateEntryExistingState(t *testing.T) {
@@ -86,8 +86,8 @@ func TestUpdateOrCreateStateEntryExistingState(t *testing.T) {
 	err = common.FromYaml(ymlstr, &ts)
 	assert.NoError(t, err, "Error parsing TeamState from yaml string")
 	assert.Equal(t, ts.Name, mockTeamName)
-	assert.Equal(t, ts.Environments[0].Name, mockEnvName)
-	assert.Len(t, ts.Environments[0].EnvironmentComponents, 2)
+	assert.Equal(t, ts.Environments[mockEnvName].Name, mockEnvName)
+	assert.Len(t, ts.Environments[mockEnvName].EnvironmentComponents, 2)
 }
 
 func TestUpdateOrCreateStateEntryExistingStateNewEnv(t *testing.T) {
