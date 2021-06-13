@@ -8,7 +8,7 @@ import (
 )
 
 func TestGenerateLegacyWorkflowOfWorkflows(t *testing.T) {
-	env := mocks.GetMockEnv(false)
+	env := mocks.GetMockEnv1(false)
 
 	wow := GenerateLegacyWorkflowOfWorkflows(env)
 
@@ -39,7 +39,7 @@ func TestGenerateLegacyWorkflowOfWorkflows(t *testing.T) {
 }
 
 func TestGenerateLegacyWorkflowOfWorkflowsDeletedEnvironment(t *testing.T) {
-	env := mocks.GetMockEnv(true)
+	env := mocks.GetMockEnv1(true)
 
 	wow := GenerateLegacyWorkflowOfWorkflows(env)
 
