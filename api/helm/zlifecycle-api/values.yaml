@@ -1,0 +1,9 @@
+image: 
+  name: zlifecycle-api
+  tag: latest
+  repository:
+database:
+  host:
+  username:
+  password:
+  name:

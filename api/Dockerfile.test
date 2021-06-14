@@ -1,0 +1,15 @@
+FROM node:14
+
+WORKDIR /app
+
+COPY package.json package.json
+
+RUN npm install && npm install tsc -g
+
+
+RUN tsc
+COPY . .
+
+EXPOSE 3000
+
+CMD [ "npm", "test" ]
