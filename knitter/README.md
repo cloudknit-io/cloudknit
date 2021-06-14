@@ -38,11 +38,14 @@ kubectl apply -f teams/account-team.yaml # Replace yaml file with team name for 
 
 ## Build Terraform Docker Image
 
-```bash
-cd terraform-image
-docker build -t 413422438110.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-terraform:latest .
-docker push 413422438110.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-terraform:latest
-```
+1. Manually trigger github action from the UI [here](https://github.com/CompuZest/zlifecycle/actions/workflows/main.yaml), passing `image_tag` value that indicates the feature you'd like to test, e.g. `update-argo`
+2. When the image is built, test it out in a demo or sandbox kubernetes environment.
+- First pull the latest `main` from your local clone of this repo and then locally update the `terraform-sync-template.yaml` file to point to your new image by changing the tag [here](https://github.com/CompuZest/zlifecycle/blob/4c536ee9223434d996449e1aa53345332d1a0ef9/argo-templates/terraform-sync-template.yaml#L117).
+- Then, update your local kubernetes context to the cluster you'd like to text with (using `kubectx`) and run the following from this repo's root folder.
+`kubectl apply -f ./argo-templates/terraform-sync-template.yaml`
+3. Once tested, re-trigger the github action from step one but this time with `image_tag` of `latest`
+4. Reset the file from step 2 to point to the `latest` tag (or just `git checkout` your local changes) and re-apply with step 3
+
 
 ## Connect to zLifecycle AWS environment
 - Configure proper credentials in `~/.aws/credentials` as a profile names `compuzest-shared`
