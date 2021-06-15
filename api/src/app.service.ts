@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Connection } from 'typeorm';
-import { User } from './auth/typeorm/entities/User';
+import { User } from './typeorm/entities/User';
 
 @Injectable()
 export class AppService {

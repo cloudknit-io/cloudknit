@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
 import { AppService } from './app.service';
 import { Request } from 'express';
-import { User } from './auth/typeorm/entities/User';
+import { User } from './typeorm/entities/User';
 
 @Controller()
 export class AppController {
