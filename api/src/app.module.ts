@@ -5,6 +5,8 @@ import { Connection } from 'typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
+import { CostingModule } from './costing/costing.module';
+
 
 @Module({
   imports: [
@@ -22,11 +24,9 @@ import { AuthModule } from './auth/auth.module';
         entities: ["dist/**/**.entity{.ts,.js}"],
         synchronize: true
     }),
+    CostingModule
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {
-  constructor(public readonly connection: Connection) {
-  }
-}
+export class AppModule {}
