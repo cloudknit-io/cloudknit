@@ -6,6 +6,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { CostingModule } from './costing/costing.module';
+import { entities } from './typeorm';
 
 
 @Module({
@@ -21,7 +22,7 @@ import { CostingModule } from './costing/costing.module';
         username: process.env.TYPEORM_USERNAME || "root",
         password: process.env.TYPEORM_PASSWORD || "password",
         database: process.env.TYPEORM_DATABASE || "nestjsrealworld",
-        entities: ["dist/**/**.entity{.ts,.js}"],
+        entities: entities,
         synchronize: true
     }),
     CostingModule
