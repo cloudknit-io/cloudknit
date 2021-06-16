@@ -3,41 +3,31 @@ import { CostingDto } from './dtos/Costing.dto';
 import { ComponentService } from './services/component.service'
 
 @Controller({
-  path: 'costing',
+  path: 'costing/api/v1',
 })
 export class CostingController {
   constructor(
     private readonly componentService: ComponentService,
   ) {}
 
-  // @Get('team/:name')
-  // async getTeam(@Param('name') name: string): Promise<TeamDto> {
-  //   return await this.teamService.getTeam(name)
-  // }
-
-  // @Get('environment/:name')
-  // async getEnvironment(@Param('name') name: string): Promise<EnvironmentDto> {
-  //   return await this.environmentService.getEnvironment(name)
-  // }
-
   @Get('all')
   async getAll(): Promise<{}> {
     return await this.componentService.getAll();
   }
-
-  @Get('team-cost/:name')
-  async getComponent(@Param('name') name: string): Promise<number> {
+  
+  @Get('team/:name')
+  async getTeamCost(@Param('name') name: string): Promise<number> {
     return await this.componentService.getTeamCost(name);
   }
   
-  @Get('env-name/:name')
-  async getEnvironmentCost(@Param('name') name: string): Promise<number> {
-    return await this.componentService.getEnvironmentCost(name);
+  @Get('environment/:teamName/:environmentName')
+  async getEnvironmentCost(@Param('teamName') teamName: string, @Param('environmentName') environmentName: string): Promise<number> {
+    return await this.componentService.getEnvironmentCost(teamName, environmentName);
   }
   
-  @Get('config-cost/:name')
-  async getComponentCost(@Param('name') name: string): Promise<number> {
-    return await this.componentService.getComponentCost(name);
+  @Get('component/:componentId')
+  async getComponentCost(@Param('componentId') componentId: string): Promise<number> {
+    return await this.componentService.getComponentCost(componentId);
   }
 
   @Post('saveComponent')
