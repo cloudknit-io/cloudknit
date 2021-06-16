@@ -25,7 +25,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
 
       - uses: actions/checkout@v2
-      - run: docker build -t ${{ env.ECR_REPO }}/zlifecycle-terraform:${{ github.event.inputs.image_tag }} .
+      - run: docker build -t ${{ env.ECR_REPO }}/zlifecycle-terraform:${{ github.event.inputs.image_tag }} --build-arg INFRACOST_API_KEY=${{ secrets.INFRACOST_API_KEY }} .
         env:
           ECR_REPO: ${{ steps.login-ecr.outputs.registry }}
       - run: docker push ${{ env.ECR_REPO }}/zlifecycle-terraform:${{ github.event.inputs.image_tag }}

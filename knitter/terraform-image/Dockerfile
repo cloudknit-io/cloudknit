@@ -22,6 +22,8 @@ RUN apk del .build-deps
 RUN rm /tmp/*
 
 FROM hashicorp/terraform:0.13.2
+
+ARG INFRACOST_API_KEY
 RUN apk add --update curl
 
 RUN apk update && apk upgrade && apk --no-cache add curl jq
@@ -34,7 +36,7 @@ RUN mkdir ~/.config && mkdir ~/.config/infracost/
 
 # Replace infracost_key
 RUN echo $'https://pricing.api.infracost.io: \n\
-  api_key: ${infracost_key}' >> ~/.config/infracost/credentials.yml
+  api_key: ${INFRACOST_API_KEY}' >> ~/.config/infracost/credentials.yml
 
 RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
 RUN chmod +x ./kubectl
