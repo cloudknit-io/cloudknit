@@ -85,6 +85,8 @@ then
       infracost breakdown --path . --format json >> output.json
       estimated_cost=$(cat output.json | jq -r ".projects[0].breakdown.totalMonthlyCost")
 
+      curl -X 'POST' 'http://zlifecycle-api.zlifecycle-ui.svc.cluster.local/saveComponent' -H 'accept: */*' -H 'Content-Type: application/json' -d '{"teamName": "'$team_name'", "environmentName": "'$env_name'", "component": { "'$config_name'": "string", "cost": '$estimated_cost' }}'
+
       data='{"metadata":{"labels":{"component_cost":"'$estimated_cost'"}}}'
       argocd app patch $team_env_config_name --patch $data --type merge > null
     fi
