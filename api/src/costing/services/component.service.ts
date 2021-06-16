@@ -1,19 +1,22 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
+import { Subject } from 'rxjs'
 import { Component } from 'src/typeorm/costing/entities/Component'
 import { Repository } from 'typeorm'
 import { CostingDto } from '../dtos/Costing.dto'
 
 @Injectable()
 export class ComponentService {
+  readonly stream: Subject<{}> = new Subject<{}>()
   constructor(
     @InjectRepository(Component)
     private componentRepository: Repository<Component>,
   ) {}
 
   async getAll(): Promise<{}> {
-    const components = await this.componentRepository.find();
-    return components;
+    const components = await this.componentRepository.find()
+    this.stream.next(components)
+    return components
   }
 
   async getEnvironmentCost(teamName: string, environmentName: string): Promise<number> {
@@ -23,7 +26,8 @@ export class ComponentService {
         environmentName: environmentName,
       },
     })
-    return (components).reduce((p, c, _i) => p + Number(c.cost), 0)
+    this.stream.next(components)
+    return components.reduce((p, c, _i) => p + Number(c.cost), 0)
   }
 
   async getComponentCost(componentId: string): Promise<number> {
@@ -32,7 +36,7 @@ export class ComponentService {
         id: componentId,
       },
     })
-    return (components).reduce((p, c, _i) => p + Number(c.cost), 0)
+    return components.reduce((p, c, _i) => p + Number(c.cost), 0)
   }
 
   async getTeamCost(name: string): Promise<number> {
@@ -41,18 +45,20 @@ export class ComponentService {
         teamName: name,
       },
     })
-    return (components).reduce((p, c, _i) => p + Number(c.cost), 0)
+    this.stream.next(components)
+    return components.reduce((p, c, _i) => p + Number(c.cost), 0)
   }
 
   async saveComponents(costing: CostingDto): Promise<boolean> {
     const entry: Component = {
       teamName: costing.teamName,
       environmentName: costing.environmentName,
-      id : `${costing.teamName}-${costing.environmentName}-${costing.component.componentName}`,
+      id: `${costing.teamName}-${costing.environmentName}-${costing.component.componentName}`,
       componentName: costing.component.componentName,
       cost: costing.component.cost,
-    };
-    await this.componentRepository.save(entry);
+    }
+    const savedComponent = await this.componentRepository.save(entry)
+    this.stream.next([savedComponent])
     return true
   }
 }
