@@ -20,9 +20,24 @@ export class CostingController {
   //   return await this.environmentService.getEnvironment(name)
   // }
 
+  @Get('all')
+  async getAll(): Promise<{}> {
+    return await this.componentService.getAll();
+  }
+
   @Get('team-cost/:name')
   async getComponent(@Param('name') name: string): Promise<number> {
     return await this.componentService.getTeamCost(name);
+  }
+  
+  @Get('env-name/:name')
+  async getEnvironmentCost(@Param('name') name: string): Promise<number> {
+    return await this.componentService.getEnvironmentCost(name);
+  }
+  
+  @Get('config-cost/:name')
+  async getComponentCost(@Param('name') name: string): Promise<number> {
+    return await this.componentService.getComponentCost(name);
   }
 
   @Post('saveComponent')

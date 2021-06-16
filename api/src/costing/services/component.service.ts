@@ -12,13 +12,18 @@ export class ComponentService {
     private componentRepository: Repository<Component>,
   ) {}
 
+  async getAll(): Promise<{}> {
+    const components = await this.componentRepository.find();
+    return components;
+  }
+
   async getEnvironmentCost(name: string): Promise<number> {
     const components = await this.componentRepository.find({
       where: {
         environmentName: name,
       },
     })
-    return (components).reduce((p, c, _i) => p + c.cost, 0)
+    return (components).reduce((p, c, _i) => p + Number(c.cost), 0)
   }
 
   async getComponentCost(name: string): Promise<number> {
@@ -27,7 +32,7 @@ export class ComponentService {
         componentName: name,
       },
     })
-    return (components).reduce((p, c, _i) => p + c.cost, 0)
+    return (components).reduce((p, c, _i) => p + Number(c.cost), 0)
   }
 
   async getTeamCost(name: string): Promise<number> {
@@ -36,7 +41,7 @@ export class ComponentService {
         teamName: name,
       },
     })
-    return (components).reduce((p, c, _i) => p + c.cost, 0)
+    return (components).reduce((p, c, _i) => p + Number(c.cost), 0)
   }
 
   async saveComponents(costing: CostingDto): Promise<boolean> {
