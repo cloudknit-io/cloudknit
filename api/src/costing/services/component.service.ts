@@ -8,6 +8,7 @@ import { CostingDto } from '../dtos/Costing.dto'
 @Injectable()
 export class ComponentService {
   readonly stream: Subject<{}> = new Subject<{}>()
+  readonly notifyStream: Subject<{}> = new Subject<{}>()
   constructor(
     @InjectRepository(Component)
     private componentRepository: Repository<Component>,
@@ -18,35 +19,38 @@ export class ComponentService {
     this.stream.next(components)
     return components
   }
-
-  async getEnvironmentCost(teamName: string, environmentName: string): Promise<number> {
-    const components = await this.componentRepository.find({
-      where: {
-        teamName: teamName,
-        environmentName: environmentName,
-      },
-    })
-    this.stream.next(components)
-    return components.reduce((p, c, _i) => p + Number(c.cost), 0)
+  async getEnvironmentCost(
+    teamName: string,
+    environmentName: string,
+  ): Promise<number> {
+    const raw = await this.componentRepository
+      .createQueryBuilder('components')
+      .select('SUM(components.cost) as cost')
+      .where(
+        `components.teamName = '${teamName}' and components.environmentName = '${environmentName}'`,
+      )
+      .getRawOne()
+    return Number(raw.cost || 0);
   }
 
   async getComponentCost(componentId: string): Promise<number> {
-    const components = await this.componentRepository.find({
-      where: {
-        id: componentId,
-      },
-    })
-    return components.reduce((p, c, _i) => p + Number(c.cost), 0)
+    const raw = await this.componentRepository
+      .createQueryBuilder('components')
+      .select('SUM(components.cost) as cost')
+      .where(
+        `components.id = '${componentId}'`,
+      )
+      .getRawOne()
+    return Number(raw.cost || 0);
   }
 
   async getTeamCost(name: string): Promise<number> {
-    const components = await this.componentRepository.find({
-      where: {
-        teamName: name,
-      },
-    })
-    this.stream.next(components)
-    return components.reduce((p, c, _i) => p + Number(c.cost), 0)
+    const raw = await this.componentRepository
+      .createQueryBuilder('components')
+      .select('SUM(components.cost) as cost')
+      .where(`components.teamName = '${name}'`)
+      .getRawOne()
+    return Number(raw.cost || 0)
   }
 
   async saveComponents(costing: CostingDto): Promise<boolean> {
@@ -58,7 +62,7 @@ export class ComponentService {
       cost: costing.component.cost,
     }
     const savedComponent = await this.componentRepository.save(entry)
-    this.stream.next([savedComponent])
+    this.notifyStream.next(savedComponent)
     return true
   }
 }
