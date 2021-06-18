@@ -15,9 +15,14 @@ import { Component } from '../costing/entities/Component'
 export class Resource {
   @PrimaryColumn()
   name: string
-  @Column()
+
+  @Column({
+    nullable: true
+  })
   hourlyCost?: string
-  @Column()
+  @Column({
+    nullable: true
+  })
   monthlyCost?: string
   @OneToMany((type) => Resource, (resource) => resource.resource, {
     cascade: true,
@@ -49,19 +54,34 @@ export class Resource {
 export class CostComponent {
   @PrimaryGeneratedColumn()
   id: number
-  @Column()
+
+  @Column({
+    nullable: true
+  })
   hourlyCost?: string
-  @Column()
+  @Column({
+    nullable: true
+  })
   hourlyQuantity?: string
-  @Column()
+  @Column({
+    nullable: true
+  })
   monthlyCost?: string
-  @Column()
+  @Column({
+    nullable: true
+  })
   monthlyQuantity?: string
-  @Column()
+  @Column({
+    nullable: true
+  })
   name?: string
-  @Column()
+  @Column({
+    nullable: true
+  })
   price?: string
-  @Column()
+  @Column({
+    nullable: true
+  })
   unit?: string
 
   @ManyToOne(() => Resource, resource => resource.resource)
