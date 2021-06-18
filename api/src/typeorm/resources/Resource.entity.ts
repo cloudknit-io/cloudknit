@@ -16,10 +16,9 @@ export class Resource {
   @PrimaryColumn()
   name: string
   @Column()
-  hourlyCost: string
+  hourlyCost?: string
   @Column()
-  monthlyCost: string
-
+  monthlyCost?: string
   @OneToMany((type) => Resource, (resource) => resource.resource, {
     cascade: true,
   })
@@ -51,19 +50,19 @@ export class CostComponent {
   @PrimaryGeneratedColumn()
   id: number
   @Column()
-  hourlyCost: string
+  hourlyCost?: string
   @Column()
-  hourlyQuantity: string
+  hourlyQuantity?: string
   @Column()
-  monthlyCost: string
+  monthlyCost?: string
   @Column()
-  monthlyQuantity: string
+  monthlyQuantity?: string
   @Column()
-  name: string
+  name?: string
   @Column()
-  price: string
+  price?: string
   @Column()
-  unit: string
+  unit?: string
 
   @ManyToOne(() => Resource, resource => resource.resource)
   @JoinColumn({
