@@ -1,10 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger'
+import { Resource } from 'src/typeorm/resources/Resource.entity';
 
 export class ComponentType {
   @ApiProperty()
   componentName: string;
   @ApiProperty()
   cost: number;
+  @ApiProperty()
+  resources: Resource[]
 }
 
 export class CostingDto {

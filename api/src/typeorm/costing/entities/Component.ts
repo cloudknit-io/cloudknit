@@ -1,6 +1,7 @@
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { Resource } from 'src/typeorm/resources/Resource.entity';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 
-@Entity({ name: 'Components' })
+@Entity({ name: 'components' })
 export class Component {
   @Column({
     primary: true,
@@ -30,4 +31,9 @@ export class Component {
     scale: 3,
   })
   cost: number = 0;
+
+  @OneToMany(type => Resource, resource => resource.component, {
+    cascade: true,
+  })
+  resources: Resource[];
 }

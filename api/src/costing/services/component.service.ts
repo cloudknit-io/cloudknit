@@ -2,16 +2,37 @@ import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Subject } from 'rxjs'
 import { Component } from 'src/typeorm/costing/entities/Component'
+import { Resource } from 'src/typeorm/resources/Resource.entity'
 import { Repository } from 'typeorm'
 import { CostingDto } from '../dtos/Costing.dto'
 
 @Injectable()
 export class ComponentService {
+  
+  private readonly recursiveResourceQuery = (componentId: string) => `with recursive cte (name, hourlyCost, monthlyCost, resourceName) as (
+    select     name,
+               hourlyCost, 
+               monthlyCost,
+               resourceName
+    from       resources
+    where      componentId = '${componentId}'
+    union all
+    select     r.name,
+               r.hourlyCost,
+               r.monthlyCost,
+               r.resourceName
+    from       resources r
+    inner join cte
+            on r.resourceName = cte.name
+  )
+  select * from cte;`
   readonly stream: Subject<{}> = new Subject<{}>()
   readonly notifyStream: Subject<{}> = new Subject<{}>()
   constructor(
     @InjectRepository(Component)
     private componentRepository: Repository<Component>,
+    @InjectRepository(Resource)
+    private resourceRepository: Repository<Resource>,
   ) {}
 
   async getAll(): Promise<{}> {
@@ -60,9 +81,14 @@ export class ComponentService {
       id: `${costing.teamName}-${costing.environmentName}-${costing.component.componentName}`,
       componentName: costing.component.componentName,
       cost: costing.component.cost,
+      resources: costing.component.resources
     }
     const savedComponent = await this.componentRepository.save(entry)
     this.notifyStream.next(savedComponent)
     return true
+  }
+
+  async getResourceData(id: string) {
+    return await this.resourceRepository.query(this.recursiveResourceQuery(id));
   }
 }
