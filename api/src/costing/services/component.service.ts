@@ -117,7 +117,7 @@ export class ComponentService {
   }
 
   async getCostComponents(resourceName: string) {
-    return await this.costComponentRepository.query(`select * from costComponents where resourceName = '${resourceName}'`);
+    return await this.costComponentRepository.query(`select * from costcomponents where resourceName = '${resourceName}'`);
   }
 }
 
