@@ -43,6 +43,6 @@ export class CostingController {
 
   @Get('resources/:id')
   async getResources(@Param('id') id: string): Promise<any> {
-    return await this.componentService.getResourceData(id)
+    return await this.componentService.execute(id)
   }
 }

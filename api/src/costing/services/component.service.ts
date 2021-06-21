@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { Subject } from 'rxjs'
 import { Component } from 'src/typeorm/costing/entities/Component'
 import { CostComponent, Resource } from 'src/typeorm/resources/Resource.entity'
-import { Repository } from 'typeorm'
+import { Connection, Repository } from 'typeorm'
 import { CostingDto } from '../dtos/Costing.dto'
 import { Mapper } from '../utilities/mapper'
 
@@ -32,6 +32,7 @@ export class ComponentService {
   readonly stream: Subject<{}> = new Subject<{}>()
   readonly notifyStream: Subject<{}> = new Subject<{}>()
   constructor(
+    private readonly connection: Connection,
     @InjectRepository(Component)
     private componentRepository: Repository<Component>,
     @InjectRepository(Resource)
@@ -101,7 +102,7 @@ export class ComponentService {
     const resources = new Map<string, Resource>()
     for (let i = 0; i < resultSet.length; i++) {
       const resource = Mapper.getResource(resultSet[i])
-      resource.costComponents = ((await this.getCostComponents(resource.name)) || []).map(row => Mapper.getCostComponent(row));
+      resource.costComponents = ((await this.getCostComponents(resource.name)) || []).map(Mapper.getCostComponent);
       if (!resultSet[i].resourceName) {
         roots.push(resource)
         resources.set(resource.name, resource)
@@ -118,6 +119,10 @@ export class ComponentService {
 
   async getCostComponents(resourceName: string) {
     return await this.costComponentRepository.query(`select * from costcomponents where resourceName = '${resourceName}'`);
+  }
+
+  async execute(query: string) {
+    return await this.connection.query(query);
   }
 }
 
