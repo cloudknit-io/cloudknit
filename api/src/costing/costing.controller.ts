@@ -10,12 +10,12 @@ export class CostingController {
 
   @Get('all')
   async getAll(): Promise<{}> {
-    return await this.componentService.getAll();
+    return await this.componentService.getAll()
   }
-  
+
   @Get('team/:name')
   async getTeamCost(@Param('name') name: string): Promise<number> {
-    return await this.componentService.getTeamCost(name);
+    return await this.componentService.getTeamCost(name)
   }
 
   @Get('environment/:teamName/:environmentName')
@@ -38,11 +38,11 @@ export class CostingController {
 
   @Post('saveComponent')
   async saveComponent(@Body() costing: CostingDto): Promise<boolean> {
-    return await this.componentService.saveComponents(costing);
+    return await this.componentService.saveComponents(costing)
   }
 
-  @Get('getResources/:id')
-  async getComponent(@Param('id') id: string): Promise<any> {
-    return await this.componentService.getResourceData(id);
+  @Get('resources/:id')
+  async getResources(@Param('id') id: string): Promise<any> {
+    return await this.componentService.getResourceData(id)
   }
 }

@@ -1,4 +1,5 @@
 import { Component } from 'src/typeorm/costing/entities/Component'
+import { Resource } from 'src/typeorm/resources/Resource.entity'
 
 export class Mapper {
   static Map<T1, T2>(mapFrom: T1, mapTo: T2): T2 {
@@ -45,5 +46,16 @@ export class Mapper {
     }))
 
     return data
+  }
+
+  static getResource(data: any[]) {
+    if (data.length === 0) return {};
+    data = data[0];
+    const resource = new Resource();
+    resource.name = data["name"];
+    resource.hourlyCost = data["hourlyCost"];
+    resource.monthlyCost = data["monthlyCost"];
+    resource.subresources = [];
+    return resource;
   }
 }
