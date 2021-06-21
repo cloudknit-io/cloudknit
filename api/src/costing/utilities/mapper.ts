@@ -48,14 +48,13 @@ export class Mapper {
     return data
   }
 
-  static getResource(data: any[]) {
-    if (data.length === 0) return {};
-    data = data[0];
-    const resource = new Resource();
-    resource.name = data["name"];
-    resource.hourlyCost = data["hourlyCost"];
-    resource.monthlyCost = data["monthlyCost"];
-    resource.subresources = [];
-    return resource;
+  static getResource(data: any) {
+    return {
+      name: data['name'],
+      hourlyCost: data['hourlyCost'],
+      monthlyCost: data['monthlyCost'],
+      subresources: [],
+      resourceName: data.resourceName,
+    };
   }
 }

@@ -28,18 +28,7 @@ export class ComponentService {
             on r.resourceName = cte.name
   )
   select * from cte;`
-
-  private readonly resourceQuery = (componentId: string) => {
-    return ''.concat(
-      'select r1.name as n0, r2.name as n1, r3.name as n2, r4.name as n3, r5.name as n4 ',
-      'from resources r1 left join resources r2 on (r1.name = r2.resourceName) ',
-      'left join resources r3 on (r2.name = r3.resourceName) ',
-      'left join resources r4 on (r3.name = r4.resourceName) ',
-      'left join resources r5 on (r4.name = r5.resourceName) ',
-      `where r1.componentId = "${componentId}";`,
-    )
-  }
-
+  
   readonly stream: Subject<{}> = new Subject<{}>()
   readonly notifyStream: Subject<{}> = new Subject<{}>()
   constructor(
@@ -101,35 +90,24 @@ export class ComponentService {
   }
 
   async getResourceData(id: string) {
-    // return await this.resourceRepository.query(this.recursiveResourceQuery(id));
-    const getResourceInfo = (resourceName: string) =>
-      this.resourceRepository.query(
-        `Select name, hourlyCost, monthlyCost from resources where name = '${resourceName}'`,
-      )
-    const query = this.resourceQuery(id)
-    const resultSet: [] = (await this.resourceRepository.query(query)) || []
+    const resultSet = await this.resourceRepository.query(
+      this.recursiveResourceQuery(id),
+    )
+    const roots = []
     const resources = new Map<string, Resource>()
     for (let i = 0; i < resultSet.length; i++) {
-      const hierarchy = Object.keys(resultSet[i])
-        .filter((c) => resultSet[i][c])
-        .map((c) => resultSet[i][c])
-      let par = null
-      if (resources.has(hierarchy[0])) {
-        par = resources.get(hierarchy[0])
+      const resource = Mapper.getResource(resultSet[i])
+      if (!resultSet[i].resourceName) {
+        roots.push(resource)
+        resources.set(resource.name, resource)
       } else {
-        par = Mapper.getResource(await getResourceInfo(hierarchy[0]))
-        resources.set(hierarchy[0], par)
-      }
-      for (let j = 1; j < hierarchy.length; j++) {
-        const data = Mapper.getResource(await getResourceInfo(hierarchy[j]))
-        par.subresources.push(data)
-        par = data
+        resources.set(resource.name, resource)
+        resources.get(resource.resourceName).subresources.push(resource)
       }
     }
-    
     return {
       componentId: id,
-      resources: [...resources.values()],
+      resources: roots,
     }
   }
 }
