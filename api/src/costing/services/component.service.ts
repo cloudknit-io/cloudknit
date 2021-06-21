@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Subject } from 'rxjs'
 import { Component } from 'src/typeorm/costing/entities/Component'
-import { Resource } from 'src/typeorm/resources/Resource.entity'
+import { CostComponent, Resource } from 'src/typeorm/resources/Resource.entity'
 import { Repository } from 'typeorm'
 import { CostingDto } from '../dtos/Costing.dto'
 import { Mapper } from '../utilities/mapper'
@@ -36,6 +36,8 @@ export class ComponentService {
     private componentRepository: Repository<Component>,
     @InjectRepository(Resource)
     private resourceRepository: Repository<Resource>,
+    @InjectRepository(CostComponent)
+    private costComponentRepository: Repository<CostComponent>,
   ) {}
 
   async getAll(): Promise<{}> {
@@ -85,6 +87,8 @@ export class ComponentService {
       resources: costing.component.resources,
     }
     const savedComponent = await this.componentRepository.save(entry)
+    const resourceData = await this.getResourceData(savedComponent.id);
+    savedComponent.resources = resourceData.resources;
     this.notifyStream.next(savedComponent)
     return true
   }
@@ -97,6 +101,7 @@ export class ComponentService {
     const resources = new Map<string, Resource>()
     for (let i = 0; i < resultSet.length; i++) {
       const resource = Mapper.getResource(resultSet[i])
+      resource.costComponents = ((await this.getCostComponents(resource.name)) || []).map(row => Mapper.getCostComponent(row));
       if (!resultSet[i].resourceName) {
         roots.push(resource)
         resources.set(resource.name, resource)
@@ -110,4 +115,9 @@ export class ComponentService {
       resources: roots,
     }
   }
+
+  async getCostComponents(resourceName: string) {
+    return await this.costComponentRepository.query(`select * from costComponents where resourceName = '${resourceName}'`);
+  }
 }
+

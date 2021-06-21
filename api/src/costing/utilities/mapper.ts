@@ -55,6 +55,19 @@ export class Mapper {
       monthlyCost: data['monthlyCost'],
       subresources: [],
       resourceName: data.resourceName,
+      costComponents: [],
+    };
+  }
+
+  static getCostComponent(data: any) {
+    return {
+      hourlyCost: data['hourlyCost'],
+      hourlyQuantity: data['hourlyQuantity'],
+      monthlyCost: data['monthlyCost'],
+      monthlyQuantity: data['monthlyQuantity'],
+      name: data['name'],
+      price: data['price'],
+      unit: data['unit'],
     };
   }
 }
