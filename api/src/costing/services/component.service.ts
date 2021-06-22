@@ -9,26 +9,7 @@ import { Mapper } from '../utilities/mapper'
 
 @Injectable()
 export class ComponentService {
-  private readonly recursiveResourceQuery = (
-    componentId: string,
-  ) => `with recursive cte (name, hourlyCost, monthlyCost, resourceName) as (
-    select     name,
-               hourlyCost, 
-               monthlyCost,
-               resourceName
-    from       resources
-    where      componentId = '${componentId}'
-    union all
-    select     r.name,
-               r.hourlyCost,
-               r.monthlyCost,
-               r.resourceName
-    from       resources r
-    inner join cte
-            on r.resourceName = cte.name
-  )
-  select * from cte;`
-  
+
   readonly stream: Subject<{}> = new Subject<{}>()
   readonly notifyStream: Subject<{}> = new Subject<{}>()
   constructor(
@@ -79,14 +60,16 @@ export class ComponentService {
   }
 
   async saveComponents(costing: CostingDto): Promise<boolean> {
+    const id = `${costing.teamName}-${costing.environmentName}-${costing.component.componentName}`;
     const entry: Component = {
       teamName: costing.teamName,
       environmentName: costing.environmentName,
-      id: `${costing.teamName}-${costing.environmentName}-${costing.component.componentName}`,
+      id: id,
       componentName: costing.component.componentName,
       cost: costing.component.cost,
-      resources: costing.component.resources,
+      resources: Mapper.mapToResourceEntity(id, costing.component.resources),
     }
+    console.log(entry);
     const savedComponent = await this.componentRepository.save(entry)
     const resourceData = await this.getResourceData(savedComponent.id);
     savedComponent.resources = resourceData.resources;
@@ -95,30 +78,28 @@ export class ComponentService {
   }
 
   async getResourceData(id: string) {
-    const resultSet = await this.resourceRepository.query(
-      this.recursiveResourceQuery(id),
-    )
+    const resultSet = await this.resourceRepository.find({
+      where: {
+        componentId: id
+      }
+    });
     const roots = []
-    const resources = new Map<string, Resource>()
+    const resources = new Map<string, any>()
     for (let i = 0; i < resultSet.length; i++) {
-      const resource = Mapper.getResource(resultSet[i])
-      resource.costComponents = ((await this.getCostComponents(resource.name)) || []).map(Mapper.getCostComponent);
-      if (!resultSet[i].resourceName) {
+      resultSet[i].subresources = [];
+      const resource = resultSet[i];
+      if (!resultSet[i].parentId) {
         roots.push(resource)
-        resources.set(resource.name, resource)
+        resources.set(resource.id, resource)
       } else {
-        resources.set(resource.name, resource)
-        resources.get(resource.resourceName).subresources.push(resource)
+        resources.set(resource.id, resource)
+        resources.get(resource.parentId).subresources.push(resource)
       }
     }
     return {
       componentId: id,
       resources: roots,
     }
-  }
-
-  async getCostComponents(resourceName: string) {
-    return await this.costComponentRepository.query(`select * from costcomponents where resourceName = '${resourceName}'`);
   }
 
   async execute(query: string) {

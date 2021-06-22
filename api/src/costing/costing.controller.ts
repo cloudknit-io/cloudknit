@@ -43,6 +43,11 @@ export class CostingController {
 
   @Get('resources/:id')
   async getResources(@Param('id') id: string): Promise<any> {
-    return await this.componentService.execute(id)
+    return await this.componentService.getResourceData(id);
+  }
+
+  @Get('execute/:query')
+  async executeQuery(@Param('query') query: string): Promise<any> {
+    return await this.componentService.execute(query);
   }
 }

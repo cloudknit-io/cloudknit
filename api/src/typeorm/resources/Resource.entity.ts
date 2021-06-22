@@ -5,7 +5,6 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryColumn,
-  PrimaryGeneratedColumn,
 } from 'typeorm'
 import { Component } from '../costing/entities/Component'
 
@@ -13,7 +12,11 @@ import { Component } from '../costing/entities/Component'
   name: 'resources',
 })
 export class Resource {
+
   @PrimaryColumn()
+  id: string;
+
+  @Column()
   name: string
 
   @Column({
@@ -24,6 +27,15 @@ export class Resource {
     nullable: true
   })
   monthlyCost?: string
+
+  @Column()
+  componentId: string;
+
+  @Column({
+    nullable: true
+  })
+  parentId?: string;
+  
   @OneToMany((type) => Resource, (resource) => resource.resource, {
     cascade: true,
   })
@@ -31,7 +43,7 @@ export class Resource {
 
   @ManyToOne((type) => Resource, (resource) => resource.subresources)
   @JoinColumn({
-    referencedColumnName: 'name'
+    referencedColumnName: 'id'
   })
   resource?: Resource
 
@@ -44,6 +56,7 @@ export class Resource {
 
   @OneToMany(() => CostComponent, (component) => component.resource, {
     cascade: true,
+    eager: true
   })
   costComponents?: CostComponent[]
 }
@@ -52,8 +65,8 @@ export class Resource {
   name: 'costcomponents',
 })
 export class CostComponent {
-  @PrimaryGeneratedColumn()
-  id: number
+  @PrimaryColumn()
+  id: string
 
   @Column({
     nullable: true
@@ -86,7 +99,7 @@ export class CostComponent {
 
   @ManyToOne(() => Resource, resource => resource.resource)
   @JoinColumn({
-    referencedColumnName: 'name'
+    referencedColumnName: 'id'
   })
   resource?: Resource
 }
