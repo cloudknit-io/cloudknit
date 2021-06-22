@@ -1,5 +1,5 @@
 import { Component } from 'src/typeorm/costing/entities/Component'
-import { Resource } from 'src/typeorm/resources/Resource.entity'
+import { CostComponent, Resource } from 'src/typeorm/resources/Resource.entity'
 
 export class Mapper {
   static Map<T1, T2>(mapFrom: T1, mapTo: T2): T2 {
@@ -56,7 +56,7 @@ export class Mapper {
       subresources: [],
       resourceName: data.resourceName,
       costComponents: [],
-    };
+    }
   }
 
   static getCostComponent(data: any) {
@@ -68,6 +68,47 @@ export class Mapper {
       name: data['name'],
       price: data['price'],
       unit: data['unit'],
-    };
+    }
+  }
+
+  static mapToResourceEntity(componentId, resources: any[] = [], parentId: string = null): Resource[] {
+    if (resources.length === 0) return []
+    return resources.map((resource) => {
+      const id = `${componentId}-${resource.name}`
+      return {
+        id: id,
+        name: resource.name,
+        componentId: componentId,
+        hourlyCost: resource.hourlyCost,
+        monthlyCost: resource.monthlyCost,
+        parentId: parentId,
+        subresources: this.mapToResourceEntity(
+          componentId,
+          resource.subresources,
+          id,
+        ),
+        costComponents: this.mapToCostComponentEntity(
+          id,
+          resource.costComponents,
+        ),
+      }
+    })
+  }
+
+  static mapToCostComponentEntity(
+    id: string,
+    costComponents: any[] = [],
+  ): CostComponent[] {
+    if (costComponents.length === 0) return []
+    return costComponents.map((cc) => ({
+      id: `${id}-${cc.name}`,
+      name: cc.name,
+      hourlyCost: cc.hourlyCost,
+      hourlyQuantity: cc.hourlyQuantity,
+      monthlyCost: cc.monthlyCost,
+      monthlyQuantity: cc.monthlyQuantity,
+      price: cc.price,
+      unit: cc.unit,
+    }))
   }
 }
