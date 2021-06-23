@@ -78,6 +78,8 @@ then
       terraform plan -lock=$lock_state -parallelism=2 -input=false -no-color -out=terraform-plan -detailed-exitcode
       result=$?
       echo -n $result > /tmp/plan_code.txt
+      aws s3 cp terraform-plan s3://zlifecycle-tfplan-zmart/$team_name/$env_name/$config_name
+
 
       data='{"metadata":{"labels":{"component_status":"calculating_cost"}}}'
       argocd app patch $team_env_config_name --patch $data --type merge > null
@@ -131,7 +133,8 @@ else
       data='{"metadata":{"labels":{"component_status":"provisioning"}}}'
       argocd app patch $team_env_config_name --patch $data --type merge > null
 
-      terraform apply -auto-approve -input=false -parallelism=2 -no-color || Error "Can not apply terraform plan"
+      aws s3 cp s3://zlifecycle-tfplan-zmart/$team_name/$env_name/$config_name terraform-plan
+      terraform apply -auto-approve -input=false -parallelism=2 -no-color terraform-plan || Error "Can not apply terraform plan"
       result=$?
       echo -n $result > /tmp/plan_code.txt
 

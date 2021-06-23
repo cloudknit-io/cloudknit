@@ -27,6 +27,8 @@ ARG INFRACOST_API_KEY
 RUN apk add --update curl
 
 RUN apk update && apk upgrade && apk --no-cache add curl jq
+RUN apk add --update --no-cache python3 && apk add --update py3-pip && apk add py3-setuptools
+RUN python3 -m pip --no-cache-dir install --upgrade awscli
 
 RUN curl -sL https://github.com/infracost/infracost/releases/download/v0.8.6/infracost-linux-amd64.tar.gz | tar xz -C /tmp
 
