@@ -84,7 +84,7 @@ then
       data='{"metadata":{"labels":{"component_status":"calculating_cost"}}}'
       argocd app patch $team_env_config_name --patch $data --type merge > null
 
-      infracost breakdown --path . --format json >> output.json
+      infracost breakdown --path . --format json >> output.json --log-level=warn
       estimated_cost=$(cat output.json | jq -r ".projects[0].breakdown.totalMonthlyCost")
       resources=$(cat output.json | jq -r ".projects[0].breakdown.resources")
 
