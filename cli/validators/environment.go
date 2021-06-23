@@ -6,7 +6,14 @@ import (
 	v1alpha1 "github.com/compuzest/zlifecycle-cli/types"
 )
 
-func ValidateEnvironmentComponents(ecs []*v1alpha1.EnvironmentComponent) error {
+func ValidateEnvironment(e v1alpha1.Environment) error {
+	if err := validateEnvironmentComponents(e.Spec.EnvironmentComponent); err != nil {
+		return err
+	}
+	return nil
+}
+
+func validateEnvironmentComponents(ecs []*v1alpha1.EnvironmentComponent) error {
 	for _, ec := range ecs {
 		name := ec.Name
 		dependsOn := ec.DependsOn

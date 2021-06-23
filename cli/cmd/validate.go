@@ -76,7 +76,7 @@ func validate(kind string, dat []byte) error {
 			fmt.Println("Error while unmarshalling Environment YAML file")
 			return err
 		}
-		if err := validators.ValidateEnvironmentComponents(env.Spec.EnvironmentComponent); err != nil {
+		if err := validators.ValidateEnvironment(env); err != nil {
 			fmt.Println("Error validating Environment resource")
 			return err
 		}
