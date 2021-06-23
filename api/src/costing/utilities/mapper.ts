@@ -71,19 +71,20 @@ export class Mapper {
     }
   }
 
-  static mapToResourceEntity(componentId, resources: any[] = [], parentId: string = null): Resource[] {
+  static mapToResourceEntity(component: Component, resources: any[] = [], parentId: string = null): Resource[] {
     if (resources.length === 0) return []
     return resources.map((resource) => {
-      const id = `${componentId}-${resource.name}`
+      const id = `${component.id}-${resource.name}`
       return {
         id: id,
         name: resource.name,
-        componentId: componentId,
+        componentId: component.id,
         hourlyCost: resource.hourlyCost,
         monthlyCost: resource.monthlyCost,
         parentId: parentId,
+        component: component,
         subresources: this.mapToResourceEntity(
-          componentId,
+          component,
           resource.subresources,
           id,
         ),

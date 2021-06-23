@@ -9,7 +9,6 @@ import { Mapper } from '../utilities/mapper'
 
 @Injectable()
 export class ComponentService {
-
   readonly stream: Subject<{}> = new Subject<{}>()
   readonly notifyStream: Subject<{}> = new Subject<{}>()
   constructor(
@@ -60,19 +59,16 @@ export class ComponentService {
   }
 
   async saveComponents(costing: CostingDto): Promise<boolean> {
-    const id = `${costing.teamName}-${costing.environmentName}-${costing.component.componentName}`;
-    const entry: Component = {
-      teamName: costing.teamName,
-      environmentName: costing.environmentName,
-      id: id,
-      componentName: costing.component.componentName,
-      cost: costing.component.cost,
-      resources: Mapper.mapToResourceEntity(id, costing.component.resources),
-    }
-    console.log(entry);
-    const savedComponent = await this.componentRepository.save(entry)
-    const resourceData = await this.getResourceData(savedComponent.id);
-    savedComponent.resources = resourceData.resources;
+    const id = `${costing.teamName}-${costing.environmentName}-${costing.component.componentName}`
+    const component = new Component()
+    component.teamName = costing.teamName
+    component.environmentName = costing.environmentName
+    component.id = id
+    component.componentName = costing.component.componentName
+    component.cost = costing.component.cost
+    const savedComponent = await this.componentRepository.save(component);
+    const resources = await this.resourceRepository.save(Mapper.mapToResourceEntity(component, costing.component.resources));
+    savedComponent.resources = resources;
     this.notifyStream.next(savedComponent)
     return true
   }
@@ -80,14 +76,14 @@ export class ComponentService {
   async getResourceData(id: string) {
     const resultSet = await this.resourceRepository.find({
       where: {
-        componentId: id
-      }
-    });
+        componentId: id,
+      },
+    })
     const roots = []
     const resources = new Map<string, any>()
     for (let i = 0; i < resultSet.length; i++) {
-      resultSet[i].subresources = [];
-      const resource = resultSet[i];
+      resultSet[i].subresources = []
+      const resource = resultSet[i]
       if (!resultSet[i].parentId) {
         roots.push(resource)
         resources.set(resource.id, resource)
@@ -103,7 +99,6 @@ export class ComponentService {
   }
 
   async execute(query: string) {
-    return await this.connection.query(query);
+    return await this.connection.query(query)
   }
 }
-
