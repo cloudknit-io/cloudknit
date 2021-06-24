@@ -37,17 +37,21 @@ export class Resource {
   parentId?: string;
   
   @OneToMany((type) => Resource, (resource) => resource.resource, {
-    cascade: true,
+    cascade: true
   })
   subresources?: Resource[]
 
-  @ManyToOne((type) => Resource, (resource) => resource.subresources)
+  @ManyToOne((type) => Resource, (resource) => resource.subresources, {
+    onDelete: "CASCADE"
+  })
   @JoinColumn({
     referencedColumnName: 'id'
   })
   resource?: Resource
 
-  @ManyToOne((type) => Component, (component) => component.resources)
+  @ManyToOne((type) => Component, (component) => component.resources, {
+    onDelete: "CASCADE"
+  })
   @JoinColumn({
     referencedColumnName: 'id'
   })
@@ -56,7 +60,7 @@ export class Resource {
 
   @OneToMany(() => CostComponent, (component) => component.resource, {
     cascade: true,
-    eager: true
+    eager: true,
   })
   costComponents?: CostComponent[]
 }
@@ -97,7 +101,9 @@ export class CostComponent {
   })
   unit?: string
 
-  @ManyToOne(() => Resource, resource => resource.resource)
+  @ManyToOne(() => Resource, resource => resource.resource, {
+    onDelete: "CASCADE"
+  })
   @JoinColumn({
     referencedColumnName: 'id'
   })

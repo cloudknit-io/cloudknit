@@ -66,6 +66,9 @@ export class ComponentService {
     component.id = id
     component.componentName = costing.component.componentName
     component.cost = costing.component.cost
+    await this.componentRepository.delete({
+      id: id
+    });
     const savedComponent = await this.componentRepository.save(component);
     const resources = await this.resourceRepository.save(Mapper.mapToResourceEntity(component, costing.component.resources));
     savedComponent.resources = resources;
