@@ -70,6 +70,7 @@ then
       terraform plan -destroy -lock=$lock_state -parallelism=2 -input=false -no-color -out=terraform-plan -detailed-exitcode
       result=$?
       echo -n $result > /tmp/plan_code.txt
+      aws s3 cp terraform-plan s3://zlifecycle-tfplan-zmart/$team_name/$env_name/$config_name
     else
       echo "Executing apply plan..."
       data='{"metadata":{"labels":{"component_status":"running_plan"}}}'
@@ -113,8 +114,8 @@ else
       echo "Executing terraform destroy..."
       data='{"metadata":{"labels":{"component_status":"destroying"}}}'
       argocd app patch $team_env_config_name --patch $data --type merge > null
-
-      terraform destroy -auto-approve -input=false -parallelism=2 -no-color || Error "Cannot run terraform destroy"
+      aws s3 cp s3://zlifecycle-tfplan-zmart/$team_name/$env_name/$config_name terraform-plan
+      terraform destroy -auto-approve -input=false -parallelism=2 -no-color terraform-plan || Error "Cannot run terraform destroy"
       result=$?
       echo -n $result > /tmp/plan_code.txt
 
