@@ -66,14 +66,33 @@ if [ $is_apply -eq 0 ]
 then
     if [ $is_sync -eq 1 ]
     then
+        if [ $is_debug -eq 0 ]
+        then
+          echo $hide_output_start
+        fi
         sh /argocd/patch_env_component.sh $team_env_config_name
 
         # add last argo workflow run id to config application so it can fetch workflow details on UI
         data='{"metadata":{"labels":{"last_workflow_run_id":"'$workflow_id'"}}}'
         argocd app patch $team_env_config_name --patch $data --type merge > null
+      
+        if [ $is_debug -eq 0 ]
+        then
+          echo $hide_output_end
+        fi
+    fi
+
+    if [ $is_debug -eq 0 ]
+    then
+      echo $hide_output_start
     fi
 
     echo "DEBUG: is_destroy: $is_destroy"
+
+    if [ $is_debug -eq 0 ]
+    then
+      echo $hide_output_end
+    fi
 
     result=1
     if [ $is_destroy = true ]
@@ -140,8 +159,16 @@ else
     then
       echo "Executing terraform destroy..."
       data='{"metadata":{"labels":{"component_status":"destroying"}}}'
+      if [ $is_debug -eq 0 ]
+      then
+        echo $hide_output_start
+      fi
       argocd app patch $team_env_config_name --patch $data --type merge > null
       aws s3 cp s3://zlifecycle-tfplan-zmart/$team_name/$env_name/$config_name terraform-plan
+      if [ $is_debug -eq 0 ]
+      then
+        echo $hide_output_end
+      fi
       terraform destroy -auto-approve -input=false -parallelism=2 -no-color terraform-plan || Error "Cannot run terraform destroy"
       result=$?
       echo -n $result > /tmp/plan_code.txt
@@ -159,9 +186,19 @@ else
     else
       echo "Executing terraform apply..."
       data='{"metadata":{"labels":{"component_status":"provisioning"}}}'
+
+      if [ $is_debug -eq 0 ]
+      then
+        echo $hide_output_start
+      fi
       argocd app patch $team_env_config_name --patch $data --type merge > null
 
       aws s3 cp s3://zlifecycle-tfplan-zmart/$team_name/$env_name/$config_name terraform-plan
+
+      if [ $is_debug -eq 0 ]
+      then
+        echo $hide_output_end
+      fi
       terraform apply -auto-approve -input=false -parallelism=2 -no-color terraform-plan || Error "Can not apply terraform plan"
       result=$?
       echo -n $result > /tmp/plan_code.txt
