@@ -38,7 +38,8 @@ function Error() {
     exit 1;
 }
 
-if [$is_debug -eq 0]
+
+if [ $is_debug -eq 0 ]
 then
   echo $hide_output_start
 fi
@@ -55,7 +56,8 @@ argocd app patch $team_env_config_name --patch $data --type merge > null
 
 terraform init || Error "Cannot initialize terraform"
 
-if [$is_debug -eq 0]
+
+if [ $is_debug -eq 0 ]
 then
   echo $hide_output_end
 fi
@@ -92,7 +94,8 @@ then
       terraform plan -lock=$lock_state -parallelism=2 -input=false -no-color -out=terraform-plan -detailed-exitcode
       result=$?
       echo -n $result > /tmp/plan_code.txt
-      if [$is_debug -eq 0]
+
+      if [ $is_debug -eq 0 ]
       then
         echo $hide_output_start
       fi
@@ -114,7 +117,8 @@ then
       data='{"metadata":{"labels":{"component_cost":"'$estimated_cost'"}}}'
       argocd app patch $team_env_config_name --patch $data --type merge > null
 
-      if [$is_debug -eq 0]
+
+      if [ $is_debug -eq 0 ]
       then
         echo $hide_output_end
       fi
