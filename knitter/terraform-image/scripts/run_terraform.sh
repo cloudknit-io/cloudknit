@@ -23,6 +23,9 @@ is_destroy=$11
 
 team_env_name=$team_name-$env_name
 team_env_config_name=$team_name-$env_name-$config_name
+hide_output_start='----->hide_output_start<-----'
+hide_output_end='----->hide_output_end<-----'
+is_debug=0
 
 ENV_COMPONENT_PATH=/home/terraform-config/$terraform_il_path
 
@@ -35,6 +38,11 @@ function Error() {
     exit 1;
 }
 
+if [$is_debug -eq 0]
+then
+  echo $hide_output_start
+fi
+
 sh /client/setup_github.sh || Error "Cannot setup github ssh key"
 sh /client/setup_aws.sh || Error "Cannot setup aws credentials"
 
@@ -46,6 +54,11 @@ data='{"metadata":{"labels":{"component_status":"initializing"}}}'
 argocd app patch $team_env_config_name --patch $data --type merge > null
 
 terraform init || Error "Cannot initialize terraform"
+
+if [$is_debug -eq 0]
+then
+  echo $hide_output_end
+fi
 
 if [ $is_apply -eq 0 ]
 then
@@ -79,6 +92,10 @@ then
       terraform plan -lock=$lock_state -parallelism=2 -input=false -no-color -out=terraform-plan -detailed-exitcode
       result=$?
       echo -n $result > /tmp/plan_code.txt
+      if [$is_debug -eq 0]
+      then
+        echo $hide_output_start
+      fi
       aws s3 cp terraform-plan s3://zlifecycle-tfplan-zmart/$team_name/$env_name/$config_name
 
 
@@ -96,6 +113,12 @@ then
 
       data='{"metadata":{"labels":{"component_cost":"'$estimated_cost'"}}}'
       argocd app patch $team_env_config_name --patch $data --type merge > null
+
+      if [$is_debug -eq 0]
+      then
+        echo $hide_output_end
+      fi
+
     fi
 
     if [ $result -eq 1 ]
