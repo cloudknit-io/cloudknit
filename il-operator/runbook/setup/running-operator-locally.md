@@ -16,6 +16,7 @@ When you want to test a piece of code by running the operator locally first
 ## Initial Steps Overview
 
 - [Create a local env file](#create-local-env-file)
+- [Proxy your machine to k8s cluster](#proxy-your-machine-to-k8s-cluster)
 - [Running the operator](#running-the-operator)
 
 ## Detailed Steps
@@ -27,6 +28,10 @@ POD_NAME=$(kubectl get pods --namespace zlifecycle-il-operator-system -l "app.ku
 kubectl exec --namespace zlifecycle-il-operator-system -it $POD_NAME -- env
 ```
 2. Save the environment variables into `PROJECT_ROOT/<environment_name>.env` (ex. `sandbox.env`)
+
+### Proxy your machine to k8s cluster
+1. Select kubecontext (ie. sandbox, demo...)
+2. Run `telepresence connect`
 
 ### Running the operator
 
