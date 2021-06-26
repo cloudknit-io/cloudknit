@@ -23,6 +23,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
@@ -33,6 +34,7 @@ import (
 )
 
 var (
+	mutex         sync.Mutex
 	sourceOwner   string
 	sourceRepo    string
 	commitMessage string
@@ -525,6 +527,8 @@ func pushCommit(ref *github.Reference, tree *github.Tree) (err error) {
 
 func CommitAndPushFiles(_sourceOwner string, _sourceRepo string, _sourceFolders []string,
 	_commitBranch string, _commitMessage string, _authorName string, _authorEmail string) (err error) {
+	mutex.Lock()
+	defer mutex.Unlock()
 	sourceOwner = _sourceOwner
 	sourceRepo = _sourceRepo
 	commitBranch = _commitBranch
