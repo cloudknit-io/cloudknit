@@ -1,17 +1,30 @@
 domain: compuzest.com
-layout: go.kubebuilder.io/v2
+layout:
+- go.kubebuilder.io/v3
+plugins:
+  go.sdk.operatorframework.io/v3: {}
 projectName: zlifecycle-il-operator
 repo: github.com/compuzest/zlifecycle-il-operator
 resources:
-- group: stable
+- controller: true
+  domain: compuzest.com
+  group: stable
   kind: Environment
+  path: github.com/compuzest/zlifecycle-il-operator/api/v1alpha1
   version: v1alpha1
-- group: stable
+  webhooks:
+    validation: true
+    webhookVersion: v1
+- controller: true
+  domain: compuzest.com
+  group: stable
   kind: Team
+  path: github.com/compuzest/zlifecycle-il-operator/api/v1alpha1
   version: v1alpha1
-- group: stable
+- controller: true
+  domain: compuzest.com
+  group: stable
   kind: Company
+  path: github.com/compuzest/zlifecycle-il-operator/api/v1alpha1
   version: v1alpha1
-version: 3-alpha
-plugins:
-  go.sdk.operatorframework.io/v2-alpha: {}
+version: "3"

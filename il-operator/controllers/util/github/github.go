@@ -59,7 +59,7 @@ func DownloadFile(
 	repoUrl string,
 	ref string,
 	path string,
-	) (io.ReadCloser, error) {
+) (io.ReadCloser, error) {
 	owner, repo, err := parseRepoUrl(repoUrl)
 	log.Info("Downloading file from GitHub", "owner", owner, "repo", repo, "ref", ref, "path", path)
 	rc, err := api.DownloadContents(owner, repo, ref, path)
@@ -79,7 +79,7 @@ func DeletePatternsFromRootTree(
 	patterns []string,
 	commitAuthor *github.CommitAuthor,
 	commitMessage string,
-	) error {
+) error {
 	tree, err := removeEnvironmentObjectsFromTree(log, api, owner, repo, branch, team, patterns)
 	if err != nil {
 		return err
@@ -200,7 +200,7 @@ func commitAndPushTree(
 	tree *github.Tree,
 	commitAuthor *github.CommitAuthor,
 	commitMessage string,
-	) error {
+) error {
 	// get base tree
 	refFormat := fmt.Sprintf("refs/heads/%s", branch)
 	log.Info("Fetching ref...", "owner", owner, "repo", repo, "ref", refFormat)
@@ -295,7 +295,7 @@ func shouldExclude(entry *github.TreeEntry, paths []string) bool {
 			return true
 		}
 	}
-	return  false
+	return false
 }
 
 // TryCreateRepository tries to create a private repository in a organization (enter blank string for owner if it is a user repo)

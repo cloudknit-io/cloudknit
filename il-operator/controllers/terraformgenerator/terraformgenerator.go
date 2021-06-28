@@ -37,15 +37,27 @@ type TerraformGenerator struct {
 	Log logr.Logger
 }
 
+type TemplateVariables struct {
+	TeamName             string
+	EnvName              string
+	EnvCompName          string
+	EnvCompVariables     []*stablev1alpha1.Variable
+	EnvCompVariablesFile string
+	EnvCompModuleSource  string
+	EnvCompModulePath    string
+	EnvCompModuleName    string
+	EnvCompOutputs       []*stablev1alpha1.Output
+	EnvCompDependsOn     []string
+}
+
 var DefaultTerraformVersion = "0.13.2"
 
 func (tf TerraformGenerator) GenerateTerraform(
 	fileUtil file.UtilFile,
-	environmentComponent *stablev1alpha1.EnvironmentComponent,
-	environment *stablev1alpha1.Environment,
+	vars TemplateVariables,
 	environmentComponentDirectory string,
 ) error {
-	componentName := environmentComponent.Name
+	componentName := vars.EnvCompName
 
 	backendConfig := TerraformBackendConfig{
 		Region:        "us-east-1",
@@ -53,35 +65,31 @@ func (tf TerraformGenerator) GenerateTerraform(
 		Version:       DefaultTerraformVersion,
 		Bucket:        "zlifecycle-tfstate-" + env.Config.CompanyName,
 		DynamoDBTable: "zlifecycle-tflock-" + env.Config.CompanyName,
-		TeamName:      environment.Spec.TeamName,
-		EnvName:       environment.Spec.EnvName,
+		TeamName:      vars.TeamName,
+		EnvName:       vars.EnvName,
 		ComponentName: componentName,
 	}
 
-	tfvars := ""
-	if environmentComponent.VariablesFile != nil {
-		tfvars = environmentComponent.VariablesFile.Variables
-	}
 	moduleConfig := TerraformModuleConfig{
 		ComponentName: componentName,
-		Source:        il.EnvComponentModuleSource(environmentComponent.Module.Source, environmentComponent.Module.Name),
-		Path:          il.EnvComponentModulePath(environmentComponent.Module.Path),
-		Variables:     environmentComponent.Variables,
-		VariablesFile: tfvars,
+		Source:        il.EnvComponentModuleSource(vars.EnvCompModuleSource, vars.EnvCompModuleName),
+		Path:          il.EnvComponentModulePath(vars.EnvCompModulePath),
+		Variables:     vars.EnvCompVariables,
+		VariablesFile: vars.EnvCompVariablesFile,
 	}
 
 	outputsConfig := TerraformOutputsConfig{
 		ComponentName: componentName,
-		Outputs:       environmentComponent.Outputs,
+		Outputs:       vars.EnvCompOutputs,
 	}
 
 	dataConfig := TerraformDataConfig{
 		Region:    "us-east-1",
 		Profile:   "compuzest-shared",
 		Bucket:    "zlifecycle-tfstate-" + env.Config.CompanyName,
-		TeamName:  environment.Spec.TeamName,
-		EnvName:   environment.Spec.EnvName,
-		DependsOn: environmentComponent.DependsOn,
+		TeamName:  vars.TeamName,
+		EnvName:   vars.EnvName,
+		DependsOn: vars.EnvCompDependsOn,
 	}
 
 	err := tf.GenerateProvider(fileUtil, environmentComponentDirectory, componentName)

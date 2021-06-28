@@ -89,6 +89,14 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Company")
 		os.Exit(1)
 	}
+
+	if os.Getenv("DISABLE_WEBHOOKS") != "true" {
+		if err = (&stablev1alpha1.Environment{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "Environment")
+			os.Exit(1)
+		}
+	}
+
 	// +kubebuilder:scaffold:builder
 
 	setupLog.Info("starting manager")
@@ -97,4 +105,3 @@ func main() {
 		os.Exit(1)
 	}
 }
-

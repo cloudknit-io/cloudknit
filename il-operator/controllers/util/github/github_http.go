@@ -65,6 +65,6 @@ func (api HttpRepositoryApi) CreateHook(owner string, repo string, hook *github.
 }
 
 func (api HttpRepositoryApi) DownloadContents(owner string, repo string, ref string, path string) (io.ReadCloser, error) {
-	opts := &github.RepositoryContentGetOptions{ Ref: ref }
+	opts := &github.RepositoryContentGetOptions{Ref: ref}
 	return api.Client.DownloadContents(api.Ctx, owner, repo, path, opts)
 }
