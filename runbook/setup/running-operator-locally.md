@@ -28,6 +28,7 @@ POD_NAME=$(kubectl get pods --namespace zlifecycle-il-operator-system -l "app.ku
 kubectl exec --namespace zlifecycle-il-operator-system -it $POD_NAME -- env
 ```
 2. Save the environment variables into `PROJECT_ROOT/<environment_name>.env` (ex. `sandbox.env`)
+3. Add `DISABLE_WEBHOOKS=true` so it doesn't run the webhook server locally, until we fix the local cert issue
 
 ### Proxy your machine to k8s cluster
 1. Select kubecontext (ie. sandbox, demo...)

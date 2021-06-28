@@ -1,13 +1,13 @@
 package argocd
 
 import (
-	"net/http"
-
 	appv1 "github.com/argoproj/argo-cd/pkg/apis/application/v1alpha1"
 	"github.com/go-logr/logr"
+	_ "github.com/golang/mock/mockgen/model"
+	"net/http"
 )
 
-//go:generate mockgen -destination=../../mocks/mock_argocd_api.go -package=mocks "github.com/compuzest/zlifecycle-il-operator/controllers/argocd" Api
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -destination=../../mocks/mock_argocd_api.go -package=mocks "github.com/compuzest/zlifecycle-il-operator/controllers/argocd" Api
 
 type Api interface {
 	GetAuthToken() (*GetTokenResponse, error)

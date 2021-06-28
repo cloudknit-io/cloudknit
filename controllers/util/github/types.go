@@ -2,12 +2,12 @@ package github
 
 import (
 	"context"
-	"io"
-
+	_ "github.com/golang/mock/mockgen/model"
 	"github.com/google/go-github/v32/github"
+	"io"
 )
 
-//go:generate mockgen -destination=../../../mocks/mock_github_api.go -package=mocks "github.com/compuzest/zlifecycle-il-operator/controllers/util/github" GitApi,RepositoryApi
+//go:generate go run github.com/golang/mock/mockgen -destination=../../../mocks/mock_github_api.go -package=mocks "github.com/compuzest/zlifecycle-il-operator/controllers/util/github" GitApi,RepositoryApi
 
 type GitApi interface {
 	GetRef(owner string, repo string, ref string) (*github.Reference, *github.Response, error)

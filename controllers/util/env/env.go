@@ -14,7 +14,7 @@ type config struct {
 	ILRepoURL                     string
 	ILRepoSourceOwner             string
 
-	EnvironmentStateConfigMap     string
+	EnvironmentStateConfigMap string
 
 	GithubSvcAccntName  string
 	GithubSvcAccntEmail string

@@ -1,0 +1,191 @@
+package v1alpha1
+
+import (
+	"errors"
+	"fmt"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/validation/field"
+)
+
+func ValidateEnvironmentCreate(e Environment) error {
+	var allErrs field.ErrorList
+
+	if err := validateEnvironmentCommon(e, true); err != nil {
+		allErrs = append(allErrs, err...)
+	}
+
+	if len(allErrs) == 0 {
+		return nil
+	}
+
+	return apierrors.NewInvalid(
+		schema.GroupKind{
+			Group: "stable.compuzest.com",
+			Kind:  "Environment",
+		},
+		e.Name,
+		allErrs,
+	)
+}
+
+func ValidateEnvironmentUpdate(e Environment) error {
+	var allErrs field.ErrorList
+
+	if err := validateEnvironmentCommon(e, false); err != nil {
+		allErrs = append(allErrs, err...)
+	}
+	if err := validateEnvironmentStatus(e); err != nil {
+		allErrs = append(allErrs, err...)
+	}
+
+	if len(allErrs) == 0 {
+		return nil
+	}
+
+	return apierrors.NewInvalid(
+		schema.GroupKind{
+			Group: "stable.compuzest.com",
+			Kind:  "Environment",
+		},
+		e.Name,
+		allErrs,
+	)
+}
+
+func validateEnvironmentCommon(e Environment, isCreate bool) field.ErrorList {
+	var allErrs field.ErrorList
+
+	if err := checkEnvironmentFields(e); err != nil {
+		allErrs = append(allErrs, err...)
+	}
+	if err := validateEnvironmentComponents(e.Spec.EnvironmentComponent, isCreate); err != nil {
+		allErrs = append(allErrs, err...)
+	}
+
+	if len(allErrs) == 0 {
+		return nil
+	}
+
+	return allErrs
+}
+
+func validateEnvironmentStatus(e Environment) field.ErrorList {
+	var allErrs field.ErrorList
+
+	if e.Spec.TeamName != e.Status.TeamName {
+		fldPath := field.NewPath("status").Child("teamName")
+		err := errors.New("environment property 'teamName' cannot be updated")
+		allErrs = append(allErrs, field.Invalid(fldPath, e.Spec.TeamName, err.Error()))
+	}
+	if e.Spec.EnvName != e.Status.EnvName {
+		fldPath := field.NewPath("status").Child("envName")
+		err := errors.New("environment property 'envName' cannot be updated")
+		allErrs = append(allErrs, field.Invalid(fldPath, e.Spec.EnvName, err.Error()))
+	}
+
+	if len(allErrs) == 0 {
+		return nil
+	}
+
+	return allErrs
+}
+
+func validateEnvironmentComponents(ecs []*EnvironmentComponent, isCreate bool) field.ErrorList {
+	var allErrs field.ErrorList
+
+	if err := checkEnvironmentComponentsNotEmpty(ecs); err != nil {
+		allErrs = append(allErrs, err)
+	}
+	for i, ec := range ecs {
+		name := ec.Name
+		dependsOn := ec.DependsOn
+		if err := checkEnvironmentComponentReferencesItself(name, dependsOn, i); err != nil {
+			allErrs = append(allErrs, err)
+		}
+		if err := checkEnvironmentComponentDependenciesExist(name, dependsOn, ecs, i); err != nil {
+			allErrs = append(allErrs, err)
+		}
+		if isCreate {
+			if err := checkEnvironmentComponentNotInitiallyMarkedForDeletion(ec, i); err != nil {
+				allErrs = append(allErrs, err)
+			}
+		}
+	}
+
+	if len(allErrs) == 0 {
+		return nil
+	}
+
+	return allErrs
+}
+
+func checkEnvironmentFields(e Environment) field.ErrorList {
+	var allErrs field.ErrorList
+
+	if e.Spec.TeamName == "" {
+		fldPath := field.NewPath("spec").Child("teamName")
+		err := errors.New("environment cannot have empty 'TeamName'")
+		fe := field.Invalid(fldPath, e.Spec.TeamName, err.Error())
+		allErrs = append(allErrs, fe)
+	}
+	if e.Spec.EnvName == "" {
+		fldPath := field.NewPath("spec").Child("envName")
+		err := errors.New("environment cannot have empty 'EnvName'")
+		fe := field.Invalid(fldPath, e.Spec.TeamName, err.Error())
+		allErrs = append(allErrs, fe)
+	}
+
+	if len(allErrs) == 0 {
+		return nil
+	}
+
+	return allErrs
+}
+
+func checkEnvironmentComponentsNotEmpty(ecs []*EnvironmentComponent) *field.Error {
+	if len(ecs) == 0 {
+		fldPath := field.NewPath("spec").Child("environmentComponent")
+		err := errors.New("environment must have at least 1 component")
+		return field.Invalid(fldPath, ecs, err.Error())
+	}
+	return nil
+}
+
+func checkEnvironmentComponentNotInitiallyMarkedForDeletion(ec *EnvironmentComponent, index int) *field.Error {
+	if ec.MarkedForDeletion == true {
+		fldPath := field.NewPath("spec").Child("environmentComponent").Index(index).Child("markedForDeletion")
+		err := errors.New("environment component cannot have be initialized with 'markForDeletion' equal to true")
+		return field.Invalid(fldPath, ec.MarkedForDeletion, err.Error())
+	}
+	return nil
+}
+
+func checkEnvironmentComponentReferencesItself(name string, deps []string, ecIndex int) *field.Error {
+	for _, dep := range deps {
+		if name == dep {
+			fldPath := field.NewPath("spec").Child("environmentComponent").Index(ecIndex).Child("dependsOn").Key(name)
+			err := errors.New(fmt.Sprintf("component '%s' has a dependency on itself", name))
+			return field.Invalid(fldPath, name, err.Error())
+		}
+	}
+	return nil
+}
+
+func checkEnvironmentComponentDependenciesExist(comp string, deps []string, ecs []*EnvironmentComponent, ecIndex int) *field.Error {
+	for _, dep := range deps {
+		exists := false
+		for _, ec := range ecs {
+			if dep == ec.Name {
+				exists = true
+				break
+			}
+		}
+		if !exists {
+			fldPath := field.NewPath("spec").Child("environmentComponent").Index(ecIndex).Child("dependsOn").Key(dep)
+			err := errors.New(fmt.Sprintf("component '%s' depends on non-existing component: '%s'", comp, dep))
+			return field.Invalid(fldPath, dep, err.Error())
+		}
+	}
+	return nil
+}
