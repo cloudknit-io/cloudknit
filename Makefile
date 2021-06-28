@@ -1,7 +1,7 @@
 SHELL = /bin/bash
 
 export CGO_ENABLED = 0
-export DOCKER_TAG = feature-environment-validate
+export DOCKER_TAG = latest
 export DOCKER_IMG = zlifecycle-il-operator
 export VERSION = $(shell git describe --always --tags 2>/dev/null || echo "initial")
 
@@ -68,7 +68,7 @@ ifndef ECR_REPO
 endif
 	set -e
 	aws --version
-	aws ecr get-login-password --profile compuzest --region us-east-1 \
+	aws ecr get-login-password --region us-east-1 \
 		| docker login --username AWS --password-stdin $(ECR_REPO)
 	docker tag $(DOCKER_IMG):$(DOCKER_TAG) $(ECR_REPO)/$(DOCKER_IMG):$(DOCKER_TAG)
 	docker push $(ECR_REPO)/$(DOCKER_IMG):$(DOCKER_TAG)
