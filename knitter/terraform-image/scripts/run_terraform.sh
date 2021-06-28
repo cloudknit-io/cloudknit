@@ -169,7 +169,8 @@ else
       then
         echo $hide_output_end
       fi
-      terraform destroy -auto-approve -input=false -parallelism=2 -no-color terraform-plan || Error "Cannot run terraform destroy"
+      terraform apply -auto-approve -input=false -parallelism=2 -no-color terraform-plan || Error "Can not apply terraform destroy"
+
       result=$?
       echo -n $result > /tmp/plan_code.txt
 
