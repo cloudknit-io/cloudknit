@@ -74,9 +74,8 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 			Name:      "experimental-" + environment.Spec.TeamName + "-" + environment.Spec.EnvName,
 			Namespace: "argocd",
 			Labels: map[string]string{
-				"workflows.argoproj.io/completed": "false",
-				"terraform/sync":                  "true",
-				"zlifecycle.com/model":            "environment-sync-flow",
+				"terraform/sync":       "true",
+				"zlifecycle.com/model": "environment-sync-flow",
 			},
 		},
 		Spec: workflow.WorkflowSpec{
@@ -194,9 +193,8 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1alpha1.Environment) *
 			Name:      environment.Spec.TeamName + "-" + environment.Spec.EnvName,
 			Namespace: "argocd",
 			Labels: map[string]string{
-				"workflows.argoproj.io/completed": "false",
-				"terraform/sync":                  "true",
-				"zlifecycle.com/model":            "environment-sync-flow",
+				"terraform/sync":       "true",
+				"zlifecycle.com/model": "environment-sync-flow",
 			},
 		},
 		Spec: workflow.WorkflowSpec{
