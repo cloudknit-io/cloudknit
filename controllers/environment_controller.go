@@ -71,11 +71,14 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, nil
 	}
 
-	// TODO: This will be enabled when we revisit validation
-	//envTrackerCm, err := r.getEnvironmentTrackingConfigMap(ctx)
-	//if err != nil {
-	//	return ctrl.Result{}, nil
-	//}
+	if err := r.updateStatus(ctx, environment); err != nil {
+		r.Log.Error(
+			err,
+			"Error occurred while updating Environment status...",
+			"name", environment.Name,
+		)
+		return ctrl.Result{}, nil
+	}
 
 	finalizer := env.Config.GithubFinalizer
 	if err := r.handleFinalizer(ctx, environment, finalizer); err != nil {
@@ -92,7 +95,7 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 			"team", environment.Spec.TeamName,
 			"environment", environment.Spec.EnvName,
 			"isDeleteEvent", isDeleteEvent,
-			)
+		)
 		if err := generateAndSaveEnvironmentApp(fileUtil, environment, envDirectory); err != nil {
 			return ctrl.Result{}, err
 		}
@@ -119,13 +122,10 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		"team", environment.Spec.TeamName,
 		"environment", environment.Spec.EnvName,
 		"isDeleteEvent", isDeleteEvent,
-		)
+	)
 	if err := generateAndSaveWorkflowOfWorkflows(fileUtil, environment, envComponentDirectory); err != nil {
 		return ctrl.Result{}, err
 	}
-
-	// Avoid race condition on initial Reconcile, collides with Team controller commit
-	time.Sleep(10 * time.Second)
 
 	if err := github.CommitAndPushFiles(
 		env.Config.ILRepoSourceOwner,
@@ -143,7 +143,7 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		"team", environment.Spec.TeamName,
 		"environment", environment.Spec.EnvName,
 		"path", envDirectory,
-		)
+	)
 	if err := fileUtil.RemoveAll(envDirectory); err != nil {
 		return ctrl.Result{}, err
 	}
@@ -154,9 +154,26 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		"duration", duration,
 		"team", environment.Spec.TeamName,
 		"environment", environment.Spec.EnvName,
-		)
+	)
 
 	return ctrl.Result{}, nil
+}
+
+// SetupWithManager sets up the Environment Controller with Manager
+func (r *EnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	return ctrl.NewControllerManagedBy(mgr).
+		For(&stablev1alpha1.Environment{}).
+		Complete(r)
+}
+
+func (r *EnvironmentReconciler) updateStatus(ctx context.Context, e *stablev1alpha1.Environment) error {
+	e.Status.TeamName = e.Spec.TeamName
+	e.Status.EnvName = e.Spec.EnvName
+	e.Status.EnvironmentComponent = e.Spec.EnvironmentComponent
+	if err := r.Status().Update(ctx, e); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (r *EnvironmentReconciler) handleFinalizer(ctx context.Context, e *stablev1alpha1.Environment, finalizer string) error {
@@ -197,95 +214,7 @@ func (r *EnvironmentReconciler) postDeleteHook(e *stablev1alpha1.Environment) er
 	return nil
 }
 
-// TODO: This will be enabled when we revisit validation
-//func (r *EnvironmentReconciler) getEnvironmentTrackingConfigMap(ctx context.Context) (*v1.ConfigMap, error) {
-//	cm := &v1.ConfigMap{}
-//	envTrackingKey := envstate.GetEnvironmentStateObjectKey()
-//	if err := r.Get(ctx, envTrackingKey, cm); err != nil {
-//		if errors.IsNotFound(err) {
-//			r.Log.Info("Environment tracking config map does not exist, will create it...")
-//			cm, err = r.createEnvironmentTrackingConfigMap()
-//			if err != nil {
-//				return nil, err
-//			}
-//		} else {
-//			r.Log.Error(
-//				err,
-//				"Error getting environment tracking config map...",
-//				"name", envTrackingKey.Name,
-//				"namespace", envTrackingKey.Namespace,
-//			)
-//			return nil, err
-//		}
-//	}
-//
-//	return cm, nil
-//}
-
-// TODO: This will be enabled when we revisit validation
-//func (r *EnvironmentReconciler) createEnvironmentTrackingConfigMap() (*v1.ConfigMap, error) {
-//	ctx := context.Background()
-//	r.Log.Info("Creating environment tracking config map...")
-//
-//	cm := envstate.GetEnvironmentStateConfigMap()
-//	if err := r.Create(ctx, cm); err != nil {
-//		return nil, err
-//	}
-//
-//	r.Log.Info("Environment controller initialization completed")
-//
-//	return cm, nil
-//}
-
-// TODO: This will be enabled when we revisit validation
-//func (r *EnvironmentReconciler) cleanEnvironmentComponents(cm *v1.ConfigMap, e *stablev1alpha1.Environment) error {
-//	find := func(name string) *stablev1alpha1.EnvironmentComponent {
-//		for _, ec := range e.Spec.EnvironmentComponent {
-//			if ec.Name == name {
-//				return ec
-//			}
-//		}
-//		return nil
-//	}
-//	diff, err := envstate.GetEnvironmentStateDiff(cm, e)
-//	if err != nil {
-//		return err
-//	}
-//	r.Log.Info(
-//		"Cleaning environment state...",
-//		"team", e.Spec.TeamName,
-//		"environment", e.Spec.EnvName,
-//		"componentsToDelete", len(diff),
-//	)
-//	for _, ec := range diff {
-//		r.Log.Info(
-//			"Marking environment component for deletion",
-//			"team", e.Spec.TeamName,
-//			"env", e.Spec.EnvName,
-//			"component", ec.Name,
-//			)
-//		ecToDelete := find(ec.Name)
-//		ecToDelete.MarkedForDeletion = true
-//	}
-//	return nil
-//}
-
-// TODO: This will be enabled when we revisit validation
-//func (r *EnvironmentReconciler) saveEnvironmentState(ctx context.Context, e *stablev1alpha1.Environment, cm *v1.ConfigMap) error {
-//	r.Log.Info(
-//		"Saving new environment state into environment tracking configmap...",
-//		"environment", e.Spec.EnvName,
-//		"team", e.Spec.TeamName,
-//		)
-//	if err := envstate.UpsertStateEntry(cm, e); err != nil {
-//		return err
-//	}
-//	if err := r.Client.Update(ctx, cm); err != nil {
-//		return err
-//	}
-//	return nil
-//}
-
+// TODO: Should we remove objects in IL repo?
 //func extractPathsToRemove(e stablev1alpha1.Environment) []string {
 //	envPath    := fmt.Sprintf("%s-environment-component", e.Spec.EnvName)
 //	envAppPath := fmt.Sprintf("%s-environment.yaml", e.Spec.EnvName)
@@ -295,26 +224,19 @@ func (r *EnvironmentReconciler) postDeleteHook(e *stablev1alpha1.Environment) er
 //	}
 //}
 
-// SetupWithManager sets up the Environment Controller with Manager
-func (r *EnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
-		For(&stablev1alpha1.Environment{}).
-		Complete(r)
-}
-
 func generateAndSaveEnvironmentComponents(
 	log logr.Logger,
 	fileUtil file.UtilFile,
 	environment *stablev1alpha1.Environment,
 	envComponentDirectory string,
 	githubRepoApi github.RepositoryApi,
-	) error {
+) error {
 	log.Info(
 		"Generating environment",
 		"name", environment.Name,
 		"env", environment.Spec.EnvName,
 		"team", environment.Spec.TeamName,
-		)
+	)
 	for _, ec := range environment.Spec.EnvironmentComponent {
 		log.Info("Generating environment component", "component", ec.Name, "type", ec.Type)
 		if ec.Variables != nil {
@@ -332,25 +254,38 @@ func generateAndSaveEnvironmentComponents(
 			}
 		}
 
+		tfvars := ""
 		vf := ec.VariablesFile
 		if vf != nil {
-			tfvars, err := getVariablesFromTfvarsFile(
+			tfv, err := getVariablesFromTfvarsFile(
 				log,
 				githubRepoApi,
 				vf.Source,
 				env.Config.RepoBranch,
 				vf.Path,
-				)
+			)
 			if err != nil {
 				return err
 			}
-			vf.Variables = tfvars
+			tfvars = tfv
 		}
 
 		application := argocd.GenerateEnvironmentComponentApps(*environment, *ec)
 
-		tf  := terraformgenerator.TerraformGenerator{Log: log}
-		err := tf.GenerateTerraform(fileUtil, ec, environment, envComponentDirectory)
+		tf := terraformgenerator.TerraformGenerator{Log: log}
+		vars := terraformgenerator.TemplateVariables{
+			TeamName:             environment.Spec.TeamName,
+			EnvName:              environment.Spec.EnvName,
+			EnvCompName:          ec.Name,
+			EnvCompModulePath:    ec.Module.Path,
+			EnvCompModuleSource:  ec.Module.Source,
+			EnvCompModuleName:    ec.Module.Name,
+			EnvCompOutputs:       ec.Outputs,
+			EnvCompDependsOn:     ec.DependsOn,
+			EnvCompVariablesFile: tfvars,
+			EnvCompVariables:     ec.Variables,
+		}
+		err := tf.GenerateTerraform(fileUtil, vars, envComponentDirectory)
 
 		if err != nil {
 			return err
@@ -375,7 +310,7 @@ func getVariablesFromTfvarsFile(log logr.Logger, api github.RepositoryApi, repoU
 	return tfvars, nil
 }
 
-func downloadTfvarsFile(log logr.Logger, api github.RepositoryApi, repoUrl string, ref string, path string) ([]byte, error)  {
+func downloadTfvarsFile(log logr.Logger, api github.RepositoryApi, repoUrl string, ref string, path string) ([]byte, error) {
 	rc, err := github.DownloadFile(log, api, repoUrl, ref, path)
 	if err != nil {
 		return nil, err

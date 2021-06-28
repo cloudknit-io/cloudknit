@@ -17,13 +17,21 @@ spec:
         control-plane: controller-manager
     spec:
       containers:
-      - command:
-        - /manager
+      - name: manager
+        command:
+          - /manager
         args:
-        - --enable-leader-election
+          - --enable-leader-election
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        name: manager
+        ports:
+          - containerPort: 9443
+            name: webhook-server
+            protocol: TCP
+        volumeMounts:
+          - mountPath: /tmp/k8s-webhook-server/serving-certs
+            name: cert
+            readOnly: true
         env:
           - name: GITHUB_AUTH_TOKEN
             valueFrom:
@@ -40,4 +48,9 @@ spec:
               name: argocd-creds
         resources:
           {{- toYaml .Values.resources | nindent 10 }}
+      volumes:
+        - name: cert
+          secret:
+            defaultMode: 420
+            secretName: webhook-server-cert
       terminationGracePeriodSeconds: 10

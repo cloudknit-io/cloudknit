@@ -18,14 +18,14 @@ import (
 	"os"
 	"text/template"
 
-	"github.com/go-logr/logr"
-
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
 	"github.com/ghodss/yaml"
+	"github.com/go-logr/logr"
+	_ "github.com/golang/mock/mockgen/model"
 	"k8s.io/apimachinery/pkg/util/json"
 )
 
-//go:generate mockgen -source=./file.go -destination=../../../mocks/mock_file.go -package=mocks github.com/compuzest/zlifecycle-il-operator/mocks
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -source=./file.go -destination=../../../mocks/mock_file.go -package=mocks github.com/compuzest/zlifecycle-il-operator/mocks
 
 type UtilFile interface {
 	SaveFileFromString(jsonString string, folderName string, fileName string) error

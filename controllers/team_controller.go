@@ -15,8 +15,6 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"time"
-
 	file "github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/repo"
 	"github.com/go-logr/logr"
@@ -74,9 +72,6 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	if err := generateAndSaveConfigWatchers(team, teamYAML); err != nil {
 		return ctrl.Result{}, err
 	}
-
-	// Avoid race condition on initial Reconcile, collides with Team controller commit
-	time.Sleep(5 * time.Second)
 
 	if err := github.CommitAndPushFiles(
 		env.Config.ILRepoSourceOwner,

@@ -28,9 +28,8 @@ type Module struct {
 }
 
 type VariablesFile struct {
-	Source    string `json:"source"`
-	Path      string `json:"path"`
-	Variables string `json:"-"`
+	Source string `json:"source"`
+	Path   string `json:"path"`
 }
 
 type Variable struct {
@@ -68,8 +67,9 @@ type EnvironmentSpec struct {
 
 // EnvironmentStatus defines the observed state of Environment
 type EnvironmentStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	TeamName             string                  `json:"teamName"`
+	EnvName              string                  `json:"EnvName"`
+	EnvironmentComponent []*EnvironmentComponent `json:"components"`
 }
 
 // +kubebuilder:object:root=true

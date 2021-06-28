@@ -1,6 +1,14 @@
 # IntelliJ
 .idea
 
+# Environment files
+*.env
+
+# Local Operator files
+company/
+team/
+config-watcher/
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
