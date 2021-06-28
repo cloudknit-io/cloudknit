@@ -7,7 +7,7 @@ import (
 	"io"
 )
 
-//go:generate go run github.com/golang/mock/mockgen -destination=../../../mocks/mock_github_api.go -package=mocks "github.com/compuzest/zlifecycle-il-operator/controllers/util/github" GitApi,RepositoryApi
+//go:generate go run --mod=mod github.com/golang/mock/mockgen -destination=../../../mocks/mock_github_api.go -package=mocks "github.com/compuzest/zlifecycle-il-operator/controllers/util/github" GitApi,RepositoryApi
 
 type GitApi interface {
 	GetRef(owner string, repo string, ref string) (*github.Reference, *github.Response, error)
