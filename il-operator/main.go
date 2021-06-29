@@ -65,12 +65,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.EnvironmentReconciler{
+	if err = (&controllers.CompanyReconciler{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Environment"),
+		Log:    ctrl.Log.WithName("controllers").WithName("Company"),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Environment")
+		setupLog.Error(err, "unable to create controller", "controller", "Company")
 		os.Exit(1)
 	}
 	if err = (&controllers.TeamReconciler{
@@ -81,12 +81,12 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Team")
 		os.Exit(1)
 	}
-	if err = (&controllers.CompanyReconciler{
+	if err = (&controllers.EnvironmentReconciler{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Company"),
+		Log:    ctrl.Log.WithName("controllers").WithName("Environment"),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Company")
+		setupLog.Error(err, "unable to create controller", "controller", "Environment")
 		os.Exit(1)
 	}
 

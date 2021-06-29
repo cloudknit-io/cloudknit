@@ -15,9 +15,9 @@ package controllers
 import (
 	"context"
 	"fmt"
-
 	file "github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/repo"
+	"time"
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -42,6 +42,7 @@ type CompanyReconciler struct {
 // +kubebuilder:rbac:groups=stable.compuzest.com,resources=companies/status,verbs=get;update;patch
 
 func (r *CompanyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+	start := time.Now()
 	ctx := context.Background()
 
 	company := &stablev1alpha1.Company{}
@@ -94,6 +95,13 @@ func (r *CompanyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	if err != nil {
 		return ctrl.Result{}, err
 	}
+
+	duration := time.Since(start)
+	r.Log.Info(
+		"Reconcile finished",
+		"duration", duration,
+		"company", company.Spec.CompanyName,
+	)
 
 	return ctrl.Result{}, nil
 }
