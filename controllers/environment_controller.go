@@ -16,14 +16,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
+	"go.uber.org/atomic"
 	"io/ioutil"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"time"
-
-	"github.com/go-logr/logr"
-	"k8s.io/apimachinery/pkg/runtime"
-	ctrl "sigs.k8s.io/controller-runtime"
-	kClient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
@@ -33,6 +29,10 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
+	"github.com/go-logr/logr"
+	"k8s.io/apimachinery/pkg/runtime"
+	ctrl "sigs.k8s.io/controller-runtime"
+	kClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // EnvironmentReconciler reconciles a Environment object
@@ -45,8 +45,11 @@ type EnvironmentReconciler struct {
 // +kubebuilder:rbac:groups=stable.compuzest.com,resources=environments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=stable.compuzest.com,resources=environments/status,verbs=get;update;patch
 
+var environmentInitialRun = atomic.NewBool(true)
+
 // Reconcile method called everytime there is a change in Environment Custom Resource
 func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+	delayEnvironmentReconcileOnInitialRun(r.Log, 25)
 	start := time.Now()
 	ctx := context.Background()
 
@@ -164,6 +167,17 @@ func (r *EnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&stablev1alpha1.Environment{}).
 		Complete(r)
+}
+
+func delayEnvironmentReconcileOnInitialRun(log logr.Logger, seconds int64) {
+	if environmentInitialRun.Load() == true {
+		log.Info(
+			"Delaying Environment reconcile on initial run to wait for Team operator",
+			"duration", fmt.Sprintf("%ds", seconds * 1000),
+		)
+		time.Sleep(time.Duration(seconds) * time.Second)
+		environmentInitialRun.Store(false)
+	}
 }
 
 func (r *EnvironmentReconciler) updateStatus(ctx context.Context, e *stablev1alpha1.Environment) error {

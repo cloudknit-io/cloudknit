@@ -18,9 +18,12 @@ import (
 	file "github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/repo"
 	"github.com/go-logr/logr"
+	"go.uber.org/atomic"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"time"
 
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
 	env "github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
@@ -40,15 +43,33 @@ type TeamReconciler struct {
 // +kubebuilder:rbac:groups=stable.compuzest.com,resources=teams,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=stable.compuzest.com,resources=teams/status,verbs=get;update;patch
 
+var teamReconcileInitialRun = atomic.NewBool(true)
+
 // Reconcile method called everytime there is a change in Team Custom Resource
 func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+	delayTeamReconcileOnInitialRun(r.Log, 10)
+	start := time.Now()
 	ctx := context.Background()
 
 	team := &stablev1alpha1.Team{}
 	fileUtil := &file.UtilFileService{}
-	r.Get(ctx, req.NamespacedName, team)
-	if team.DeletionTimestamp.IsZero() == false {
+	if err := r.Get(ctx, req.NamespacedName, team); err != nil {
+		if errors.IsNotFound(err) {
+			r.Log.Info(
+				"Team missing from cache, ending reconcile...",
+				"name", req.Name,
+				"namespace", req.Namespace,
+			)
+		} else {
+			r.Log.Error(
+				err,
+				"Error occurred while getting Team...",
+				"name", req.Name,
+				"namespace", req.Namespace,
+			)
+		}
 
+		return ctrl.Result{}, nil
 	}
 
 	teamYAML := fmt.Sprintf("%s-team.yaml", team.Spec.TeamName)
@@ -90,6 +111,13 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, err
 	}
 
+	duration := time.Since(start)
+	r.Log.Info(
+		"Reconcile finished",
+		"duration", duration,
+		"team", team.Spec.TeamName,
+	)
+
 	return ctrl.Result{}, nil
 }
 
@@ -98,6 +126,17 @@ func (r *TeamReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&stablev1alpha1.Team{}).
 		Complete(r)
+}
+
+func delayTeamReconcileOnInitialRun(log logr.Logger, seconds int64) {
+	if teamReconcileInitialRun.Load() == true {
+		log.Info(
+			"Delaying Team reconcile on initial run to wait for Company operator",
+			"duration", fmt.Sprintf("%ds", seconds * 1000),
+		)
+		time.Sleep(time.Duration(seconds) * time.Second)
+		teamReconcileInitialRun.Store(false)
+	}
 }
 
 func generateAndSaveTeamApp(team *stablev1alpha1.Team, teamYAML string) error {
