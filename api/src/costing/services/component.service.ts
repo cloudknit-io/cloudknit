@@ -86,9 +86,11 @@ export class ComponentService {
     this.notifyStream.next(savedComponent);
     return true;
   }
-
-  async softDelete(id: string) {
+  
+  async softDelete(id: string): Promise<Component> {
+    const component = this.componentRepository.findOne(id);
     return await this.componentRepository.save({
+      ...component,
       id: id,
       isDeleted: true,
     });
