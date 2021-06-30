@@ -1,7 +1,7 @@
 package argoworkflow
 
 import (
-	"github.com/argoproj/argo/pkg/apis/workflow/v1alpha1"
+	"github.com/argoproj/argo/v2/pkg/apis/workflow/v1alpha1"
 	"github.com/compuzest/zlifecycle-il-operator/mocks"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -21,21 +21,21 @@ func TestGenerateLegacyWorkflowOfWorkflows(t *testing.T) {
 	assert.ElementsMatch(t, task1.Dependencies, []string{})
 	destroyFlag1 := findParam(task1.Arguments.Parameters, "is_destroy")
 	assert.NotNil(t, destroyFlag1)
-	assert.Equal(t, *destroyFlag1.Value, "false")
+	assert.Equal(t, destroyFlag1.Value, anyStringPointer("false"))
 
 	task2 := findTasks(tasks, "rebrand")
 	assert.NotNil(t, task2)
 	assert.ElementsMatch(t, task2.Dependencies, []string{"networking"})
 	destroyFlag2 := findParam(task2.Arguments.Parameters, "is_destroy")
 	assert.NotNil(t, destroyFlag2)
-	assert.Equal(t, *destroyFlag2.Value, "false")
+	assert.Equal(t, destroyFlag2.Value, anyStringPointer("false"))
 
 	task3 := findTasks(tasks, "overlay")
 	assert.NotNil(t, task3)
 	assert.ElementsMatch(t, task3.Dependencies, []string{"networking", "rebrand"})
 	destroyFlag3 := findParam(task3.Arguments.Parameters, "is_destroy")
 	assert.NotNil(t, destroyFlag3)
-	assert.Equal(t, *destroyFlag3.Value, "false")
+	assert.Equal(t, destroyFlag3.Value, anyStringPointer("false"))
 }
 
 func TestGenerateLegacyWorkflowOfWorkflowsDeletedEnvironment(t *testing.T) {
@@ -52,21 +52,21 @@ func TestGenerateLegacyWorkflowOfWorkflowsDeletedEnvironment(t *testing.T) {
 	assert.ElementsMatch(t, task1.Dependencies, []string{"rebrand", "overlay"})
 	destroyFlag1 := findParam(task1.Arguments.Parameters, "is_destroy")
 	assert.NotNil(t, destroyFlag1)
-	assert.Equal(t, *destroyFlag1.Value, "true")
+	assert.Equal(t, destroyFlag1.Value, anyStringPointer("true"))
 
 	task2 := findTasks(tasks, "rebrand")
 	assert.NotNil(t, task2)
 	assert.ElementsMatch(t, task2.Dependencies, []string{"overlay"})
 	destroyFlag2 := findParam(task2.Arguments.Parameters, "is_destroy")
 	assert.NotNil(t, destroyFlag2)
-	assert.Equal(t, *destroyFlag2.Value, "true")
+	assert.Equal(t, destroyFlag2.Value, anyStringPointer("true"))
 
 	task3 := findTasks(tasks, "overlay")
 	assert.NotNil(t, task3)
 	assert.ElementsMatch(t, task3.Dependencies, []string{})
 	destroyFlag3 := findParam(task3.Arguments.Parameters, "is_destroy")
 	assert.NotNil(t, destroyFlag3)
-	assert.Equal(t, *destroyFlag3.Value, "true")
+	assert.Equal(t, destroyFlag3.Value, anyStringPointer("true"))
 }
 
 func findTasks(tasks []v1alpha1.DAGTask, name string) *v1alpha1.DAGTask {

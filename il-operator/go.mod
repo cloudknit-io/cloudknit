@@ -5,10 +5,10 @@ go 1.16
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
-	github.com/argoproj/argo v2.5.2+incompatible
+	github.com/argoproj/argo v2.5.2+incompatible // indirect
 	github.com/argoproj/argo-cd v0.0.0-00010101000000-000000000000
+	github.com/argoproj/argo/v2 v2.12.11
 	github.com/argoproj/pkg v0.3.0 // indirect
-	github.com/colinmarc/hdfs v1.1.3 // indirect
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v0.2.0
 	github.com/go-redis/cache v6.4.0+incompatible // indirect
@@ -37,11 +37,10 @@ require (
 	gopkg.in/src-d/go-git.v4 v4.13.1 // indirect
 	gopkg.in/yaml.v2 v2.3.0
 	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c // indirect
-	k8s.io/api v0.17.8
+	k8s.io/api v0.18.2
 	k8s.io/apimachinery v0.19.3
 	k8s.io/client-go v0.18.6
 	sigs.k8s.io/controller-runtime v0.6.3
-	sigs.k8s.io/controller-tools v0.2.0-beta.4 // indirect
 )
 
 replace (
