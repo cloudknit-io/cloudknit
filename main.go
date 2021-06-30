@@ -23,7 +23,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
+	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers"
 	// +kubebuilder:scaffold:imports
 )
@@ -38,7 +38,7 @@ var (
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
-	utilruntime.Must(stablev1alpha1.AddToScheme(scheme))
+	utilruntime.Must(stablev1.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
 }
 
@@ -91,7 +91,7 @@ func main() {
 	}
 
 	if os.Getenv("DISABLE_WEBHOOKS") != "true" {
-		if err = (&stablev1alpha1.Environment{}).SetupWebhookWithManager(mgr); err != nil {
+		if err = (&stablev1.Environment{}).SetupWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "Environment")
 			os.Exit(1)
 		}

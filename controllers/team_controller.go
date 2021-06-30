@@ -25,7 +25,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"time"
 
-	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
+	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	env "github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	github "github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
 	il "github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
@@ -51,7 +51,7 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	start := time.Now()
 	ctx := context.Background()
 
-	team := &stablev1alpha1.Team{}
+	team := &stablev1.Team{}
 	fileUtil := &file.UtilFileService{}
 	if err := r.Get(ctx, req.NamespacedName, team); err != nil {
 		if errors.IsNotFound(err) {
@@ -124,7 +124,7 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 // SetupWithManager sets up the Company Controller with Manager
 func (r *TeamReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&stablev1alpha1.Team{}).
+		For(&stablev1.Team{}).
 		Complete(r)
 }
 
@@ -139,7 +139,7 @@ func delayTeamReconcileOnInitialRun(log logr.Logger, seconds int64) {
 	}
 }
 
-func generateAndSaveTeamApp(team *stablev1alpha1.Team, teamYAML string) error {
+func generateAndSaveTeamApp(team *stablev1.Team, teamYAML string) error {
 	teamApp := argocd.GenerateTeamApp(*team)
 	fileUtil := &file.UtilFileService{}
 
@@ -150,7 +150,7 @@ func generateAndSaveTeamApp(team *stablev1alpha1.Team, teamYAML string) error {
 	return nil
 }
 
-func generateAndSaveConfigWatchers(team *stablev1alpha1.Team, teamYAML string) error {
+func generateAndSaveConfigWatchers(team *stablev1.Team, teamYAML string) error {
 	teamConfigWatcherApp := argocd.GenerateTeamConfigWatcherApp(*team)
 	fileUtil := &file.UtilFileService{}
 

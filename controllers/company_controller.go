@@ -24,7 +24,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
+	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	argocd "github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
 	env "github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	github "github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
@@ -45,7 +45,7 @@ func (r *CompanyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	start := time.Now()
 	ctx := context.Background()
 
-	company := &stablev1alpha1.Company{}
+	company := &stablev1.Company{}
 	r.Get(ctx, req.NamespacedName, company)
 
 	companyRepo := company.Spec.ConfigRepo.Source
@@ -108,11 +108,11 @@ func (r *CompanyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 func (r *CompanyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&stablev1alpha1.Company{}).
+		For(&stablev1.Company{}).
 		Complete(r)
 }
 
-func generateAndSaveCompanyApp(company *stablev1alpha1.Company) error {
+func generateAndSaveCompanyApp(company *stablev1.Company) error {
 	companyApp := argocd.GenerateCompanyApp(*company)
 	fileUtil := &file.UtilFileService{}
 
@@ -123,7 +123,7 @@ func generateAndSaveCompanyApp(company *stablev1alpha1.Company) error {
 	return nil
 }
 
-func generateAndSaveCompanyConfigWatcher(company *stablev1alpha1.Company) error {
+func generateAndSaveCompanyConfigWatcher(company *stablev1.Company) error {
 	companyConfigWatcherApp := argocd.GenerateCompanyConfigWatcherApp(company.Spec.CompanyName, company.Spec.ConfigRepo.Source)
 	fileUtil := &file.UtilFileService{}
 

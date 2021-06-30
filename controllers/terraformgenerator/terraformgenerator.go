@@ -19,7 +19,7 @@ import (
 
 	"github.com/go-logr/logr"
 
-	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
+	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	env "github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
@@ -27,7 +27,7 @@ import (
 
 // UtilTerraformGenerator package interface for generating terraform files
 type UtilTerraformGenerator interface {
-	GenerateTerraform(fileUtil file.UtilFile, environmentComponent *stablev1alpha1.EnvironmentComponent, environment *stablev1alpha1.Environment, environmentComponentDirectory string) error
+	GenerateTerraform(fileUtil file.UtilFile, environmentComponent *stablev1.EnvironmentComponent, environment *stablev1.Environment, environmentComponentDirectory string) error
 	GenerateProvider(file file.UtilFile, environmentComponentDirectory string, componentName string) error
 	GenerateFromTemplate(vars interface{}, environmentComponentDirectory string, componentName string, fileUtil file.UtilFile, templateName string, filePath string) error
 }
@@ -41,12 +41,12 @@ type TemplateVariables struct {
 	TeamName             string
 	EnvName              string
 	EnvCompName          string
-	EnvCompVariables     []*stablev1alpha1.Variable
+	EnvCompVariables     []*stablev1.Variable
 	EnvCompVariablesFile string
 	EnvCompModuleSource  string
 	EnvCompModulePath    string
 	EnvCompModuleName    string
-	EnvCompOutputs       []*stablev1alpha1.Output
+	EnvCompOutputs       []*stablev1.Output
 	EnvCompDependsOn     []string
 }
 
