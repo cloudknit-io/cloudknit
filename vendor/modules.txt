@@ -11,7 +11,7 @@ github.com/PuerkitoBio/purell
 github.com/PuerkitoBio/urlesc
 # github.com/argoproj/argo v2.5.2+incompatible
 ## explicit
-# github.com/argoproj/argo-cd v0.0.0-00010101000000-000000000000 => github.com/argoproj/argo-cd v1.5.8
+# github.com/argoproj/argo-cd v1.7.6 => github.com/argoproj/argo-cd v1.5.8
 ## explicit
 github.com/argoproj/argo-cd/common
 github.com/argoproj/argo-cd/pkg/apis/application
