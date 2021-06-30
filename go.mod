@@ -6,7 +6,7 @@ require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/argoproj/argo v2.5.2+incompatible // indirect
-	github.com/argoproj/argo-cd v0.0.0-00010101000000-000000000000
+	github.com/argoproj/argo-cd v1.7.6
 	github.com/argoproj/argo/v2 v2.12.11
 	github.com/argoproj/pkg v0.3.0 // indirect
 	github.com/ghodss/yaml v1.0.0
