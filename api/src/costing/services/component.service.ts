@@ -22,7 +22,11 @@ export class ComponentService {
   ) {}
 
   async getAll(): Promise<{}> {
-    const components = await this.componentRepository.find()
+    const components = await this.componentRepository.find({
+      where : {
+        isDeleted : 0
+      }
+    })
     this.stream.next(components)
     return components
   }
@@ -34,7 +38,7 @@ export class ComponentService {
       .createQueryBuilder('components')
       .select('SUM(components.cost) as cost')
       .where(
-        `components.teamName = '${teamName}' and components.environmentName = '${environmentName}'`,
+        `components.teamName = '${teamName}' and components.environmentName = '${environmentName}' and components.isDeleted = 0`,
       )
       .getRawOne()
     return Number(raw.cost || 0)
@@ -44,7 +48,7 @@ export class ComponentService {
     const raw = await this.componentRepository
       .createQueryBuilder('components')
       .select('SUM(components.cost) as cost')
-      .where(`components.id = '${componentId}'`)
+      .where(`components.id = '${componentId}' and components.isDeleted = 0`)
       .getRawOne()
     return Number(raw.cost || 0)
   }
@@ -53,7 +57,7 @@ export class ComponentService {
     const raw = await this.componentRepository
       .createQueryBuilder('components')
       .select('SUM(components.cost) as cost')
-      .where(`components.teamName = '${name}'`)
+      .where(`components.teamName = '${name}' and components.isDeleted = 0`)
       .getRawOne()
     return Number(raw.cost || 0)
   }
