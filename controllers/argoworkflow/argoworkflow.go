@@ -13,7 +13,7 @@
 package argoworkflow
 
 import (
-	workflow "github.com/argoproj/argo/pkg/apis/workflow/v1alpha1"
+	workflow "github.com/argoproj/argo/v2/pkg/apis/workflow/v1alpha1"
 	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
 	terraformgenerator "github.com/compuzest/zlifecycle-il-operator/controllers/terraformgenerator"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
@@ -43,19 +43,19 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 				Parameters: []workflow.Parameter{
 					{
 						Name:  "workflowtemplate",
-						Value: &workflowTemplate,
+						Value: anyStringPointer(workflowTemplate),
 					},
 					{
 						Name:  "terraform_version",
-						Value: &terraformgenerator.DefaultTerraformVersion,
+						Value: anyStringPointer(terraformgenerator.DefaultTerraformVersion),
 					},
 					{
 						Name:  "terraform_il_path",
-						Value: &tfPath,
+						Value: anyStringPointer(tfPath),
 					},
 					{
 						Name:  "il_repo",
-						Value: &env.Config.ILRepoURL,
+						Value: anyStringPointer(env.Config.ILRepoURL),
 						// to be replaced with reference to il.RepoURL(owner, companyName) once company can be extrapolated here
 					},
 				},
@@ -92,19 +92,6 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 	}
 }
 
-func buildInverseDependencies(components []*stablev1alpha1.EnvironmentComponent, component string) []string {
-	var dependencies []string
-	for _, c := range components {
-		if component == c.Name {
-			continue
-		} else if common.Contains(c.DependsOn, component) {
-			dependencies = append(dependencies, c.Name)
-		}
-	}
-
-	return dependencies
-}
-
 func GenerateLegacyWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workflow.Workflow {
 	workflowTemplate := "terraform-sync-template"
 	envComponentDirectory := il.EnvironmentComponentDirectory(environment.Spec.TeamName, environment.Spec.EnvName)
@@ -121,51 +108,51 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1alpha1.Environment) *
 		tfPath := tf.GenerateTerraformIlPath(envComponentDirectory, ec.Name)
 
 		dependencies := ec.DependsOn
-		destroyFlag := "false"
+		destroyFlag := false
 		if ec.MarkedForDeletion {
-			destroyFlag = "true"
+			destroyFlag = true
 		}
 		if destroyAll {
 			dependencies = buildInverseDependencies(ecs, ec.Name)
-			destroyFlag = "true"
+			destroyFlag = true
 		}
 
 		parameters := []workflow.Parameter{
 			{
 				Name:  "workflowtemplate",
-				Value: &workflowTemplate,
+				Value: anyStringPointer(workflowTemplate),
 			},
 			{
 				Name:  "module_source",
-				Value: &moduleSource,
+				Value: anyStringPointer(moduleSource),
 			},
 			{
 				Name:  "module_source_path",
-				Value: &modulePath,
+				Value: anyStringPointer(modulePath),
 			},
 			{
 				Name:  "team_name",
-				Value: &environment.Spec.TeamName,
+				Value: anyStringPointer(environment.Spec.TeamName),
 			},
 			{
 				Name:  "env_name",
-				Value: &environment.Spec.EnvName,
+				Value: anyStringPointer(environment.Spec.EnvName),
 			},
 			{
 				Name:  "config_name",
-				Value: &ec.Name,
+				Value: anyStringPointer(ec.Name),
 			},
 			{
 				Name:  "il_repo",
-				Value: &env.Config.ILRepoURL,
+				Value: anyStringPointer(env.Config.ILRepoURL),
 			},
 			{
 				Name:  "terraform_il_path",
-				Value: &tfPath,
+				Value: anyStringPointer(tfPath),
 			},
 			{
 				Name:  "is_destroy",
-				Value: &destroyFlag,
+				Value: anyStringPointer(destroyFlag),
 			},
 		}
 
@@ -209,4 +196,22 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1alpha1.Environment) *
 			},
 		},
 	}
+}
+
+func anyStringPointer(val interface{}) *workflow.AnyString {
+	s := workflow.ParseAnyString(val)
+	return &s
+}
+
+func buildInverseDependencies(components []*stablev1alpha1.EnvironmentComponent, component string) []string {
+	var dependencies []string
+	for _, c := range components {
+		if component == c.Name {
+			continue
+		} else if common.Contains(c.DependsOn, component) {
+			dependencies = append(dependencies, c.Name)
+		}
+	}
+
+	return dependencies
 }
