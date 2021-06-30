@@ -66,6 +66,7 @@ export class ComponentService {
     component.id = id
     component.componentName = costing.component.componentName
     component.cost = costing.component.cost
+    component.isDeleted = costing.component.isDeleted;
     await this.componentRepository.delete({
       id: id
     });

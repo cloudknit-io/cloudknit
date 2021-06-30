@@ -8,6 +8,8 @@ export class ComponentType {
   cost: number;
   @ApiProperty()
   resources: Resource[]
+  @ApiProperty()
+  isDeleted: boolean
 }
 
 export class CostingDto {

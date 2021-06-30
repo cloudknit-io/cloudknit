@@ -32,6 +32,12 @@ export class Component {
   })
   cost: number = 0;
 
+  @Column({
+    default: false,
+    type: 'boolean'
+  })
+  isDeleted?: boolean
+
   @OneToMany(type => Resource, resource => resource.component, {
     cascade: true,
   })
