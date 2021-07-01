@@ -60,7 +60,6 @@ then
         # add last argo workflow run id to config application so it can fetch workflow details on UI
         data='{"metadata":{"labels":{"last_workflow_run_id":"'$workflow_id'"}}}'
         argocd app patch $team_env_config_name --patch $data --type merge > null
-      
     fi
 
     echo "DEBUG: is_destroy: $is_destroy"
@@ -77,9 +76,10 @@ then
 
       echo $show_output_start
       terraform plan -destroy -lock=$lock_state -parallelism=2 -input=false -no-color -out=terraform-plan -detailed-exitcode
-      echo $show_output_end
       result=$?
       echo -n $result > /tmp/plan_code.txt
+      echo $show_output_end
+
       aws s3 cp terraform-plan s3://zlifecycle-tfplan-zmart/$team_name/$env_name/$config_name
 
       costing_payload='{"teamName": "'$team_name'", "environmentName": "'$env_name'", "component": { "componentName": "'$config_name'", "isDeleted" : '1'  }}'
@@ -95,12 +95,11 @@ then
 
       echo $show_output_start
       terraform plan -lock=$lock_state -parallelism=2 -input=false -no-color -out=terraform-plan -detailed-exitcode
-      echo $show_output_end
       result=$?
       echo -n $result > /tmp/plan_code.txt
+      echo $show_output_end
 
       aws s3 cp terraform-plan s3://zlifecycle-tfplan-zmart/$team_name/$env_name/$config_name
-
 
       data='{"metadata":{"labels":{"component_status":"calculating_cost"}}}'
       argocd app patch $team_env_config_name --patch $data --type merge > null
@@ -113,9 +112,6 @@ then
       echo $costing_payload > temp_costing_payload.json
 
       curl -X 'POST' 'http://zlifecycle-api.zlifecycle-ui.svc.cluster.local/costing/api/v1/saveComponent' -H 'accept: */*' -H 'Content-Type: application/json' -d @temp_costing_payload.json
-
-      data='{"metadata":{"labels":{"component_cost":"'$estimated_cost'"}}}'
-      argocd app patch $team_env_config_name --patch $data --type merge > null
 
     fi
 
@@ -142,10 +138,9 @@ else
 
       echo $show_output_start
       terraform apply -auto-approve -input=false -parallelism=2 -no-color terraform-plan || Error "Can not apply terraform destroy"
-      echo $show_output_end
-
       result=$?
       echo -n $result > /tmp/plan_code.txt
+      echo $show_output_end
 
       if [ $result -eq 0 ]
       then
@@ -169,9 +164,9 @@ else
 
       echo $show_output_start
       terraform apply -auto-approve -input=false -parallelism=2 -no-color terraform-plan || Error "Can not apply terraform plan"
-      echo $show_output_end
       result=$?
       echo -n $result > /tmp/plan_code.txt
+      echo $show_output_end
 
       if [ $result -eq 0 ]
       then
