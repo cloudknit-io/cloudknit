@@ -21,7 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"time"
 
-	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
+	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
 	argoWorkflow "github.com/compuzest/zlifecycle-il-operator/controllers/argoworkflow"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/terraformgenerator"
@@ -53,7 +53,7 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	start := time.Now()
 	ctx := context.Background()
 
-	environment := &stablev1alpha1.Environment{}
+	environment := &stablev1.Environment{}
 
 	if err := r.Get(ctx, req.NamespacedName, environment); err != nil {
 		if errors.IsNotFound(err) {
@@ -165,7 +165,7 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 // SetupWithManager sets up the Environment Controller with Manager
 func (r *EnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&stablev1alpha1.Environment{}).
+		For(&stablev1.Environment{}).
 		Complete(r)
 }
 
@@ -180,7 +180,7 @@ func delayEnvironmentReconcileOnInitialRun(log logr.Logger, seconds int64) {
 	}
 }
 
-func (r *EnvironmentReconciler) updateStatus(ctx context.Context, e *stablev1alpha1.Environment) error {
+func (r *EnvironmentReconciler) updateStatus(ctx context.Context, e *stablev1.Environment) error {
 	e.Status.TeamName = e.Spec.TeamName
 	e.Status.EnvName = e.Spec.EnvName
 	e.Status.EnvironmentComponent = e.Spec.EnvironmentComponent
@@ -190,7 +190,7 @@ func (r *EnvironmentReconciler) updateStatus(ctx context.Context, e *stablev1alp
 	return nil
 }
 
-func (r *EnvironmentReconciler) handleFinalizer(ctx context.Context, e *stablev1alpha1.Environment, finalizer string) error {
+func (r *EnvironmentReconciler) handleFinalizer(ctx context.Context, e *stablev1.Environment, finalizer string) error {
 	if e.DeletionTimestamp.IsZero() {
 		if !common.ContainsString(e.GetFinalizers(), finalizer) {
 			r.Log.Info(
@@ -219,7 +219,7 @@ func (r *EnvironmentReconciler) handleFinalizer(ctx context.Context, e *stablev1
 	return nil
 }
 
-func (r *EnvironmentReconciler) postDeleteHook(e *stablev1alpha1.Environment) error {
+func (r *EnvironmentReconciler) postDeleteHook(e *stablev1.Environment) error {
 	r.Log.Info(
 		"Executing post delete hook for environment finalizer",
 		"environment", e.Spec.EnvName,
@@ -229,7 +229,7 @@ func (r *EnvironmentReconciler) postDeleteHook(e *stablev1alpha1.Environment) er
 }
 
 // TODO: Should we remove objects in IL repo?
-//func extractPathsToRemove(e stablev1alpha1.Environment) []string {
+//func extractPathsToRemove(e stablev1.Environment) []string {
 //	envPath    := fmt.Sprintf("%s-environment-component", e.Spec.EnvName)
 //	envAppPath := fmt.Sprintf("%s-environment.yaml", e.Spec.EnvName)
 //	return []string{
@@ -241,7 +241,7 @@ func (r *EnvironmentReconciler) postDeleteHook(e *stablev1alpha1.Environment) er
 func generateAndSaveEnvironmentComponents(
 	log logr.Logger,
 	fileUtil file.UtilFile,
-	environment *stablev1alpha1.Environment,
+	environment *stablev1.Environment,
 	envComponentDirectory string,
 	githubRepoApi github.RepositoryApi,
 ) error {
@@ -256,7 +256,7 @@ func generateAndSaveEnvironmentComponents(
 		if ec.Variables != nil {
 			fileName := fmt.Sprintf("%s.tfvars", ec.Name)
 
-			var variables []*stablev1alpha1.Variable
+			var variables []*stablev1.Variable
 			for _, v := range ec.Variables {
 				// TODO: This is a hack to just to make it work, needs to be revisited
 				v.Value = fmt.Sprintf("\"%s\"", v.Value)
@@ -337,7 +337,7 @@ func downloadTfvarsFile(log logr.Logger, api github.RepositoryApi, repoUrl strin
 	return buff, nil
 }
 
-func generateAndSaveWorkflowOfWorkflows(fileUtil file.UtilFile, environment *stablev1alpha1.Environment, envComponentDirectory string) error {
+func generateAndSaveWorkflowOfWorkflows(fileUtil file.UtilFile, environment *stablev1.Environment, envComponentDirectory string) error {
 
 	// WIP, below command is for testing
 	// experimentalworkflow := argoWorkflow.GenerateWorkflowOfWorkflows(*environment)
@@ -353,7 +353,7 @@ func generateAndSaveWorkflowOfWorkflows(fileUtil file.UtilFile, environment *sta
 	return nil
 }
 
-func generateAndSaveEnvironmentApp(fileUtil file.UtilFile, environment *stablev1alpha1.Environment, envDirectory string) error {
+func generateAndSaveEnvironmentApp(fileUtil file.UtilFile, environment *stablev1.Environment, envDirectory string) error {
 	envApp := argocd.GenerateEnvironmentApp(*environment)
 	envYAML := fmt.Sprintf("%s-environment.yaml", environment.Spec.EnvName)
 

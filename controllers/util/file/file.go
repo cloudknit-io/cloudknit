@@ -18,7 +18,7 @@ import (
 	"os"
 	"text/template"
 
-	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
+	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/ghodss/yaml"
 	"github.com/go-logr/logr"
 	_ "github.com/golang/mock/mockgen/model"
@@ -30,7 +30,7 @@ import (
 type UtilFile interface {
 	SaveFileFromString(jsonString string, folderName string, fileName string) error
 	SaveYamlFile(obj interface{}, folderName string, fileName string) error
-	SaveVarsToFile(variables []*stablev1alpha1.Variable, folderName string, fileName string) error
+	SaveVarsToFile(variables []*stablev1.Variable, folderName string, fileName string) error
 	CreateEmptyDirectory(folderName string) error
 	SaveFileFromTemplate(t *template.Template, vars interface{}, folderName string, fileName string) error
 	RemoveAll(path string) error
@@ -109,7 +109,7 @@ func (f UtilFileService) SaveYamlFile(obj interface{}, folderName string, fileNa
 	return nil
 }
 
-func (f UtilFileService) SaveVarsToFile(variables []*stablev1alpha1.Variable, folderName string, fileName string) error {
+func (f UtilFileService) SaveVarsToFile(variables []*stablev1.Variable, folderName string, fileName string) error {
 	if err := os.MkdirAll(folderName, os.ModePerm); err != nil {
 		return fmt.Errorf("error: failed to create directory: %s", err.Error())
 	}

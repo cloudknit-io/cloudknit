@@ -14,7 +14,7 @@ package argoworkflow
 
 import (
 	workflow "github.com/argoproj/argo/v2/pkg/apis/workflow/v1alpha1"
-	stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
+	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	terraformgenerator "github.com/compuzest/zlifecycle-il-operator/controllers/terraformgenerator"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
@@ -23,7 +23,7 @@ import (
 )
 
 // GenerateWorkflowOfWorkflows create WoW
-func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workflow.Workflow {
+func GenerateWorkflowOfWorkflows(environment stablev1.Environment) *workflow.Workflow {
 	envComponentDirectory := il.EnvironmentComponentDirectory(environment.Spec.TeamName, environment.Spec.EnvName)
 	workflowTemplate := "terraform-provision-template"
 
@@ -92,7 +92,7 @@ func GenerateWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workfl
 	}
 }
 
-func GenerateLegacyWorkflowOfWorkflows(environment stablev1alpha1.Environment) *workflow.Workflow {
+func GenerateLegacyWorkflowOfWorkflows(environment stablev1.Environment) *workflow.Workflow {
 	workflowTemplate := "terraform-sync-template"
 	envComponentDirectory := il.EnvironmentComponentDirectory(environment.Spec.TeamName, environment.Spec.EnvName)
 	tf := terraformgenerator.TerraformGenerator{}
@@ -203,7 +203,7 @@ func anyStringPointer(val interface{}) *workflow.AnyString {
 	return &s
 }
 
-func buildInverseDependencies(components []*stablev1alpha1.EnvironmentComponent, component string) []string {
+func buildInverseDependencies(components []*stablev1.EnvironmentComponent, component string) []string {
 	var dependencies []string
 	for _, c := range components {
 		if component == c.Name {
