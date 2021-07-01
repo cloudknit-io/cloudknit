@@ -10,7 +10,7 @@
  * strictly forbidden unless prior written permission is obtained from CompuZest, Inc.
  */
 
-package v1alpha1
+package v1
 
 import (
 	"k8s.io/apimachinery/pkg/runtime"
@@ -28,7 +28,7 @@ func (in *Environment) SetupWebhookWithManager(mgr ctrl.Manager) error {
 		Complete()
 }
 
-//+kubebuilder:webhook:path=/validate-stable-compuzest-com-v1alpha1-environment,mutating=false,failurePolicy=fail,sideEffects=None,groups=stable.compuzest.com,resources=environments,verbs=create;update,versions=v1alpha1,name=venvironment.kb.io,admissionReviewVersions=v1beta1
+//+kubebuilder:webhook:path=/validate-stable-compuzest-com-v1-environment,mutating=false,failurePolicy=fail,sideEffects=None,groups=stable.compuzest.com,resources=environments,verbs=create;update,versions=v1,name=venvironment.kb.io,admissionReviewVersions=v1beta1
 
 var _ webhook.Validator = &Environment{}
 

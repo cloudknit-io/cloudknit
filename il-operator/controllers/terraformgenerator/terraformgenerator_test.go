@@ -1,7 +1,7 @@
 package terraformgenerator_test
 
 import (
-	"github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
+	"github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/stretchr/testify/assert"
 	"testing"
 
@@ -53,7 +53,7 @@ func TestGenerateModuleTemplate(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	tf := terraformgenerator.TerraformGenerator{}
-	testVariables := []*v1alpha1.Variable{
+	testVariables := []*v1.Variable{
 		{Name: "foo", Value: "bar"},
 		{Name: "bazz", Value: "fun"},
 	}

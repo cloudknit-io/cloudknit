@@ -8,7 +8,7 @@ import (
 	reflect "reflect"
 	template "text/template"
 
-	v1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
+	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -92,7 +92,7 @@ func (mr *MockUtilFileMockRecorder) SaveFileFromTemplate(t, vars, folderName, fi
 }
 
 // SaveVarsToFile mocks base method.
-func (m *MockUtilFile) SaveVarsToFile(variables []*v1alpha1.Variable, folderName, fileName string) error {
+func (m *MockUtilFile) SaveVarsToFile(variables []*v1.Variable, folderName, fileName string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveVarsToFile", variables, folderName, fileName)
 	ret0, _ := ret[0].(error)

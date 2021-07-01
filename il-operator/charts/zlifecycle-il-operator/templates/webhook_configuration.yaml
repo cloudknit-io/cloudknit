@@ -12,14 +12,14 @@ webhooks:
       service:
         name: webhook-service
         namespace: zlifecycle-il-operator-system
-        path: /validate-stable-compuzest-com-v1alpha1-environment
+        path: /validate-stable-compuzest-com-v1-environment
     failurePolicy: Fail
     name: venvironment.kb.io
     rules:
       - apiGroups:
           - stable.compuzest.com
         apiVersions:
-          - v1alpha1
+          - v1
         operations:
           - CREATE
           - UPDATE

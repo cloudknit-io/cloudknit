@@ -1,6 +1,6 @@
 package terraformgenerator
 
-import stablev1alpha1 "github.com/compuzest/zlifecycle-il-operator/api/v1alpha1"
+import stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 
 // TerraformBackendConfig variables for creating tf backend
 type TerraformBackendConfig struct {
@@ -20,14 +20,14 @@ type TerraformModuleConfig struct {
 	ComponentName string
 	Source        string
 	Path          string
-	Variables     []*stablev1alpha1.Variable
+	Variables     []*stablev1.Variable
 	VariablesFile string
 }
 
 // TerraformOutputsConfig for creating tf module outputs
 type TerraformOutputsConfig struct {
 	ComponentName string
-	Outputs       []*stablev1alpha1.Output
+	Outputs       []*stablev1.Output
 }
 
 // TerraformDataConfig variables for creating tf backend
