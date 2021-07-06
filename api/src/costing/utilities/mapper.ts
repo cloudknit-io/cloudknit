@@ -1,4 +1,7 @@
+import { ComponentReconcileDto } from 'src/reconciliation/dtos/reconcile.Dto'
 import { Component } from 'src/typeorm/costing/entities/Component'
+import { ComponentReconcile } from 'src/typeorm/reconciliation/component-reconcile.entity'
+import { EnvironmentReconcile } from 'src/typeorm/reconciliation/environment-reconcile.entity'
 import { CostComponent, Resource } from 'src/typeorm/resources/Resource.entity'
 
 export class Mapper {
@@ -71,7 +74,11 @@ export class Mapper {
     }
   }
 
-  static mapToResourceEntity(component: Component, resources: any[] = [], parentId: string = null): Resource[] {
+  static mapToResourceEntity(
+    component: Component,
+    resources: any[] = [],
+    parentId: string = null,
+  ): Resource[] {
     if (resources.length === 0) return []
     return resources.map((resource) => {
       const id = `${component.id}-${resource.name}`
@@ -111,5 +118,21 @@ export class Mapper {
       price: cc.price,
       unit: cc.unit,
     }))
+  }
+
+  static mapToComponentReconcile(
+    environmentReconcile: EnvironmentReconcile,
+    componentReconciles: ComponentReconcileDto[],
+  ): ComponentReconcile[] {
+    const mappedData: ComponentReconcile[] = componentReconciles.map((cr) => ({
+      reconcile_id: parseInt(cr.id) || null,
+      name: cr.name,
+      environmentReconcile: environmentReconcile,
+      start_date_time: cr.startDateTime,
+      status: cr.status,
+      end_date_time: cr.endDateTime,
+    }));
+
+    return mappedData;
   }
 }
