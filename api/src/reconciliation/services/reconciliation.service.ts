@@ -23,15 +23,26 @@ export class ReconciliationService {
     const reconcileId = Number.isNaN(parseInt(runData.reconcileId))
       ? null
       : parseInt(runData.reconcileId)
-    const entry: EnvironmentReconcile = {
-      reconcile_id: reconcileId,
-      name: runData.name,
-      start_date_time: runData.startDateTime,
-      team_name: runData.teamName,
-      status: runData.status,
-      end_date_time: runData.endDateTime,
+
+    let savedEntry = null
+    if (reconcileId) {
+      const existingEntry = await this.environmentReconcileRepository.findOne(
+        reconcileId,
+      )
+      existingEntry.end_date_time = runData.endDateTime
+      existingEntry.status = runData.status
+      savedEntry = await this.environmentReconcileRepository.save(existingEntry)
+    } else {
+      const entry: EnvironmentReconcile = {
+        reconcile_id: reconcileId,
+        name: runData.name,
+        start_date_time: runData.startDateTime,
+        team_name: runData.teamName,
+        status: runData.status,
+        end_date_time: runData.endDateTime,
+      }
+      savedEntry = await this.environmentReconcileRepository.save(entry)
     }
-    const savedEntry = await this.environmentReconcileRepository.save(entry)
     return savedEntry.reconcile_id
   }
 
@@ -45,11 +56,20 @@ export class ReconciliationService {
     const savedEntry = await this.environmentReconcileRepository.findOne(
       reconcileId,
     )
-    const componentEntries: ComponentReconcile[] = Mapper.mapToComponentReconcile(
+
+    let componentEntry: ComponentReconcile = Mapper.mapToComponentReconcile(
       savedEntry,
       runData.componentReconciles,
-    )
-    await this.componentReconcileRepository.save(componentEntries)
-    return componentEntries[0].reconcile_id;
+    )[0];
+    
+    if (componentEntry.reconcile_id) {
+      const existingEntry = await this.componentReconcileRepository.findOne(componentEntry.reconcile_id);
+      existingEntry.end_date_time = componentEntry.end_date_time;
+      existingEntry.status = componentEntry.status;
+      componentEntry = existingEntry;
+    }
+
+    const entry = await this.componentReconcileRepository.save(componentEntry);
+    return entry.reconcile_id;
   }
 }
