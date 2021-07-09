@@ -30,12 +30,11 @@ is_debug=0
 ENV_COMPONENT_PATH=/home/terraform-config/$terraform_il_path
 
 function Error() {
-  if [ -n "$1" ];
-  then
+  if [ -n "$1" ]; then
     echo "Error: "$1
   fi
 
-    exit 1;
+  exit 1
 }
 
 sh /client/setup_github.sh || Error "Cannot setup github ssh key"
@@ -46,140 +45,42 @@ cd $ENV_COMPONENT_PATH
 sh /argocd/login.sh
 
 data='{"metadata":{"labels":{"component_status":"initializing"}}}'
-argocd app patch $team_env_config_name --patch $data --type merge > null
+argocd app patch $team_env_config_name --patch $data --type merge >null
 
 terraform init || Error "Cannot initialize terraform"
 
+if [ $is_apply -eq 0 ]; then
+  if [ $is_sync -eq 1 ]; then
+    sh /argocd/patch_env_component.sh $team_env_config_name
 
-if [ $is_apply -eq 0 ]
-then
-    if [ $is_sync -eq 1 ]
-    then
-        sh /argocd/patch_env_component.sh $team_env_config_name
+    # add last argo workflow run id to config application so it can fetch workflow details on UI
+    data='{"metadata":{"labels":{"last_workflow_run_id":"'$workflow_id'"}}}'
+    argocd app patch $team_env_config_name --patch $data --type merge >null
+  fi
 
-        # add last argo workflow run id to config application so it can fetch workflow details on UI
-        data='{"metadata":{"labels":{"last_workflow_run_id":"'$workflow_id'"}}}'
-        argocd app patch $team_env_config_name --patch $data --type merge > null
-    fi
+  echo "DEBUG: is_destroy: $is_destroy"
 
-    echo "DEBUG: is_destroy: $is_destroy"
+  result=1
+  if [ $is_destroy = true ]; then
+    . /terraform_destroy_plan.sh
+  else
+    . /terraform_apply_plan.sh
+  fi
 
-    result=1
-    if [ $is_destroy = true ]
-    then
+  if [ $result -eq 1 ]; then
+    data='{"metadata":{"labels":{"component_status":"plan_failed"}}}'
+    argocd app patch $team_env_config_name --patch $data --type merge >null
 
-      echo $show_output_start
-      echo "Executing destroy plan..."
-      echo $show_output_end
-      data='{"metadata":{"labels":{"component_status":"running_destroy_plan"}}}'
-      argocd app patch $team_env_config_name --patch $data --type merge > null
+    Error "There is issue with generating terraform plan"
+  fi
 
-      echo $show_output_start
-      terraform plan -destroy -lock=$lock_state -parallelism=2 -input=false -no-color -out=terraform-plan -detailed-exitcode
-      result=$?
-      echo -n $result > /tmp/plan_code.txt
-      echo $show_output_end
-
-      aws s3 cp terraform-plan s3://zlifecycle-tfplan-zmart/$team_name/$env_name/$config_name
-
-      costing_payload='{"teamName": "'$team_name'", "environmentName": "'$env_name'", "component": { "componentName": "'$config_name'", "isDeleted" : '1'  }}'
-      echo $costing_payload > temp_costing_payload.json
-      curl -X 'POST' 'http://zlifecycle-api.zlifecycle-ui.svc.cluster.local/costing/api/v1/saveComponent' -H 'accept: */*' -H 'Content-Type: application/json' -d @temp_costing_payload.json
-      
-    else
-      echo $show_output_start
-      echo "Executing apply plan..."
-      echo $show_output_end
-      data='{"metadata":{"labels":{"component_status":"running_plan"}}}'
-      argocd app patch $team_env_config_name --patch $data --type merge > null
-
-      echo $show_output_start
-      terraform plan -lock=$lock_state -parallelism=2 -input=false -no-color -out=terraform-plan -detailed-exitcode
-      result=$?
-      echo -n $result > /tmp/plan_code.txt
-      echo $show_output_end
-
-      aws s3 cp terraform-plan s3://zlifecycle-tfplan-zmart/$team_name/$env_name/$config_name
-
-      data='{"metadata":{"labels":{"component_status":"calculating_cost"}}}'
-      argocd app patch $team_env_config_name --patch $data --type merge > null
-
-      infracost breakdown --path . --format json >> output.json --log-level=warn
-      estimated_cost=$(cat output.json | jq -r ".projects[0].breakdown.totalMonthlyCost")
-      resources=$(cat output.json | jq -r ".projects[0].breakdown.resources")
-
-      costing_payload='{"teamName": "'$team_name'", "environmentName": "'$env_name'", "component": { "componentName": "'$config_name'", "cost": '$estimated_cost', "resources" : '$resources'  }}'
-      echo $costing_payload > temp_costing_payload.json
-
-      curl -X 'POST' 'http://zlifecycle-api.zlifecycle-ui.svc.cluster.local/costing/api/v1/saveComponent' -H 'accept: */*' -H 'Content-Type: application/json' -d @temp_costing_payload.json
-
-    fi
-
-    if [ $result -eq 1 ]
-    then
-        data='{"metadata":{"labels":{"component_status":"plan_failed"}}}'
-        argocd app patch $team_env_config_name --patch $data --type merge > null
-
-        Error "There is issue with generating terraform plan"
-    fi
-
-    sh /argocd/process_based_on_plan_result.sh $is_sync $result $team_env_name $team_env_config_name $workflow_id || Error "There is an issue with ArgoCD CLI"
+  sh /argocd/process_based_on_plan_result.sh $is_sync $result $team_env_name $team_env_config_name $workflow_id || Error "There is an issue with ArgoCD CLI"
 
 else
-    if [ $is_destroy = true ]
-    then
-      echo $show_output_start
-      echo "Executing terraform destroy..."
-      echo $show_output_end
-      data='{"metadata":{"labels":{"component_status":"destroying"}}}'
-
-      argocd app patch $team_env_config_name --patch $data --type merge > null
-      aws s3 cp s3://zlifecycle-tfplan-zmart/$team_name/$env_name/$config_name terraform-plan
-
-      echo $show_output_start
-      terraform apply -auto-approve -input=false -parallelism=2 -no-color terraform-plan || Error "Can not apply terraform destroy"
-      result=$?
-      echo -n $result > /tmp/plan_code.txt
-      echo $show_output_end
-
-      if [ $result -eq 0 ]
-      then
-        data='{"metadata":{"labels":{"component_status":"destroyed"}}}'
-        argocd app patch $team_env_config_name --patch $data --type merge > null
-      else
-        data='{"metadata":{"labels":{"component_status":"destroy_failed"}}}'
-        argocd app patch $team_env_config_name --patch $data --type merge > null
-
-        Error "There is issue with destroying"
-      fi
-    else
-      echo $show_output_start
-      echo "Executing terraform apply..."
-      echo $show_output_end
-      data='{"metadata":{"labels":{"component_status":"provisioning"}}}'
-
-      argocd app patch $team_env_config_name --patch $data --type merge > null
-
-      aws s3 cp s3://zlifecycle-tfplan-zmart/$team_name/$env_name/$config_name terraform-plan
-
-      echo $show_output_start
-      terraform apply -auto-approve -input=false -parallelism=2 -no-color terraform-plan || Error "Can not apply terraform plan"
-      result=$?
-      echo -n $result > /tmp/plan_code.txt
-      echo $show_output_end
-
-      if [ $result -eq 0 ]
-      then
-        data='{"metadata":{"labels":{"component_status":"provisioned"}}}'
-        argocd app patch $team_env_config_name --patch $data --type merge > null
-      else
-        data='{"metadata":{"labels":{"component_status":"provision_failed"}}}'
-        argocd app patch $team_env_config_name --patch $data --type merge > null
-
-        Error "There is issue with provisioning"
-      fi
-
-    fi
-
-    argocd app sync $team_env_config_name > null
+  if [ $is_destroy = true ]; then
+    . /terraform_destroy.sh
+  else
+    . /terraform_apply.sh
+  fi
+  argocd app sync $team_env_config_name >null
 fi
