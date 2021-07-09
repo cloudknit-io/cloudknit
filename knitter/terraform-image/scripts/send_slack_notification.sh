@@ -27,3 +27,4 @@ data='{"channel": "slack-notification","message": "'$message'"}'
 echo $data
 
 curl -d "${data}" -H "Content-Type: application/json" -X POST http://terraform-diff-eventsource-svc.${namespace}.svc.cluster.local:12000/terraform-diff
+

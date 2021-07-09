@@ -18,8 +18,8 @@ team_env_component_name=$team_name-$env_name-$env_component_name
 
 sh /argocd/login.sh
 
-# Check if environment component application exists. If not then skip plan/apply and so that the
+# Check if environment component application exists. If not then skip plan/apply and so that the 
 # environment component application gets created
-argocd app get $team_env_component_name
+argocd app get $team_env_component_name 
 result=$?
-echo -n $result >/tmp/error_code.txt
+echo -n $result > /tmp/error_code.txt
