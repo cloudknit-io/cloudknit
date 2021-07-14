@@ -29,9 +29,16 @@ is_debug=0
 
 ENV_COMPONENT_PATH=/home/terraform-config/$terraform_il_path
 
+function PatchError() {
+    data='{"metadata":{"status":{"sync":{"status":"Failed"}}}}'
+    argocd app patch $team_env_name --patch $data --type merge > null
+    exit 1;
+}
+
 function Error() {
   if [ -n "$1" ]; then
     echo "Error: "$1
+    PatchError
   fi
 
   exit 1

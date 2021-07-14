@@ -15,10 +15,19 @@ team_env_name=$3
 team_env_config_name=$4
 workflow_id=$5
 
+function PatchError() {
+    data='{"metadata":{"labels":{"component_status":"plan_failed"}}}'
+    argocd app patch $team_env_config_name --patch $data --type merge > null
+    
+    data='{"metadata":{"labels":{"sub_status": "Failed"}}}'
+    argocd app patch $team_env_name --patch $data --type merge > null
+}
+
 function Error() {
   if [ -n "$1" ];
   then
     echo "Error: "$1
+    PatchError
   fi
 
     exit 1;
@@ -30,8 +39,14 @@ config_sync_status=$(argocd app get $team_env_config_name -o json | jq -r '.stat
 
 if [ $result -eq 0 ]
 then
-    data='{"metadata":{"labels":{"component_status":"in_sync"}}}'
+    if [ $is_destroy = true ]
+    then
+        data='{"metadata":{"labels":{"component_status":"destroyed"}}}'
+    else
+        data='{"metadata":{"labels":{"component_status":"provisioned"}}}'
+    fi
     argocd app patch $team_env_config_name --patch $data --type merge > null
+    Error "Testing for Env Status Update"
 
     if [ $config_sync_status == "OutOfSync" ]
     then
