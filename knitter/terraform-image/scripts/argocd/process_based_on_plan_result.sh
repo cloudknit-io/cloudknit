@@ -46,7 +46,6 @@ then
         data='{"metadata":{"labels":{"component_status":"provisioned"}}}'
     fi
     argocd app patch $team_env_config_name --patch $data --type merge > null
-    Error "Testing for Env Status Update"
 
     if [ $config_sync_status == "OutOfSync" ]
     then
