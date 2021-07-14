@@ -24,6 +24,7 @@ RUN rm /tmp/*
 FROM hashicorp/terraform:0.13.2
 
 ARG INFRACOST_API_KEY
+ENV INFRACOST_API_KEY=$INFRACOST_API_KEY
 RUN apk add --update curl
 
 RUN apk update && apk upgrade && apk --no-cache add curl jq
