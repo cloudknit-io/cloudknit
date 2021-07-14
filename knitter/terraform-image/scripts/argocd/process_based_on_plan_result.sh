@@ -20,7 +20,7 @@ function PatchError() {
     data='{"metadata":{"labels":{"component_status":"plan_failed"}}}'
     argocd app patch $team_env_config_name --patch $data --type merge > null
     
-    data='{"metadata":{"labels":{"sub_status": "Failed"}}}'
+    data='{"metadata":{"labels":{"env_status":"failed"}}}'
     argocd app patch $team_env_name --patch $data --type merge > null
 }
 
