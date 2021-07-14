@@ -14,6 +14,7 @@ result=$2
 team_env_name=$3
 team_env_config_name=$4
 workflow_id=$5
+is_destroy=$6
 
 function PatchError() {
     data='{"metadata":{"labels":{"component_status":"plan_failed"}}}'
