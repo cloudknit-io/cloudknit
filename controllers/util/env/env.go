@@ -82,7 +82,7 @@ func getZlifecycleOwner() string {
 
 func getArgocdServerAddr() string {
 	val, exists := os.LookupEnv("ARGOCD_URL")
-	if exists {
+	if exists && val != "" {
 		return val
 	} else {
 		return "http://argocd-server.argocd.svc.cluster.local"

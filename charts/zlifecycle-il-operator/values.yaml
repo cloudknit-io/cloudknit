@@ -28,7 +28,7 @@ resources:
 companyConfigMap:
   enabled: true
   data:
-    companyName: "zBank"
+    companyName: "zbank"
     adminEmail: "admin@compuzest.com"
     teamsConfigPath: "teams"
     configRepo: "git@github.com:zbank/zbank-config.git"
