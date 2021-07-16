@@ -17,7 +17,8 @@ When you want to bootstrap  zLifecycle on AWS or locally
 #### Bootstrap zLifecycle
 
 To bootstrap zLifecycle in a given environment (e.g. demo, dev-a, dev-b):
-1. Download the zlifecycle GitHub service account SSH key pair (from LastPass) to `zlifecycle-provisioner/k8s-addons/argo-workflow` folder on your machine and name the files `zlifecycle` and `zlifecycle.pub`. If you already have those files locally no need to do it again unless the key pair changed.
+1. Download the zlifecycle GitHub service account SSH key pair (from LastPass) to `zlifecycle-provisioner/k8s-addons/argo-workflow` folder on your machine and name the files `zlifecycle` and `zlifecycle.pub`. 
+If you already have those files locally no need to do it again unless the key pair changed.
 2. Create a `tfvars` file for your environment in `zlifecycle-provisioner/k8s-addons/tfvars` based on the example file. Non `.example` files will be git ignored. Add required values, such as the ArgoCD slack token.
 3. Run the bootstrap script:
 
