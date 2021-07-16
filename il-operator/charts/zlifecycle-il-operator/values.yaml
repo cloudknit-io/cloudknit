@@ -24,3 +24,15 @@ resources:
   requests:
     cpu: 100m
     memory: 20Mi
+
+companyConfigMap:
+  enabled: true
+  data:
+    companyName: "zBank"
+    adminEmail: "admin@compuzest.com"
+    teamsConfigPath: "teams"
+    configRepo: "git@github.com:zbank/zbank-config.git"
+    configRepoName: "zbank-config"
+    ilRepo: "git@github.com:CompuZest/zbank-il.git"
+    ilRepoName: "zbank-il"
+    helmChartsRepo: "git@github.com:CompuZest/helm-charts.git"
