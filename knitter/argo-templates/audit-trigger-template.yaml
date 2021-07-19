@@ -1,0 +1,53 @@
+# Copyright (C) 2020 CompuZest, Inc. - All Rights Reserved
+#
+# Unauthorized copying of this file, via any medium, is strictly prohibited
+# Proprietary and confidential
+#
+# NOTICE: All information contained herein is, and remains the property of
+# CompuZest, Inc. The intellectual and technical concepts contained herein are
+# proprietary to CompuZest, Inc. and are protected by trade secret or copyright
+# law. Dissemination of this information or reproduction of this material is
+# strictly forbidden unless prior written permission is obtained from CompuZest, Inc.
+---
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: audit-run-template
+  namespace: argocd
+spec:
+  entrypoint: run
+  podGC:
+    strategy: OnWorkflowSuccess
+  ttlStrategy:
+    secondsAfterSuccess: 600
+    secondsAfterCompletion: 600
+  templates:
+    - name: run_audit
+      inputs:
+        parameters:
+          - name: team_name
+          - name: env_name
+          - name: status
+          - name: is_destroy
+          - name: phase
+          - name: reconcile_id
+      serviceAccountName: argo
+      script:
+        imagePullPolicy: Always
+        image: 413422438110.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-terraform:latest
+        cmd:
+          - sh
+        source: |
+          ./audit.sh "{{inputs.parameters.team_name}}" "{{inputs.parameters.env_name}}" "0" "{{inputs.parameters.status}}" "0" "{{inputs.parameters.reconcile_id}}" "0" "{{inputs.parameters.is_destroy}}" "{{inputs.parameters.phase}}"
+        volumeMounts:
+          - name: tmp
+            mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      outputs:
+        parameters:
+          - name: reconcile_id
+            valueFrom:
+              path: /tmp/reconcile_id.txt
+            globalName: reconcile_id

@@ -1,0 +1,45 @@
+team_name=$1
+env_name=$2
+config_name=$3
+status=$4
+config_status=$5
+reconcile_id=$6
+config_reconcile_id=$7
+is_destroy=$8
+phase=$9
+
+team_env_name=$team_name-$env_name
+team_env_config_name=$team_name-$env_name-$config_name
+
+url_environment='http://zlifecycle-api.zlifecycle-ui.svc.cluster.local/reconciliation/api/v1/environment/save'
+url='http://zlifecycle-api.zlifecycle-ui.svc.cluster.local/reconciliation/api/v1/component/save'
+start_date=$(date)
+end_date='"'$(date)'"'
+
+if [ $config_reconcile_id -eq 0 ]; then
+    end_date=null
+    config_reconcile_id=null
+fi
+
+component_payload='[{"id" : '$config_reconcile_id', "name" : "'$team_env_config_name'", "status" : "'$config_status'", "startDateTime" : "'$start_date'", "endDateTime" : '$end_date'}]'
+
+end_date='"'$(date)'"'
+if [ $reconcile_id -eq 0 ]; then
+    end_date=null
+    reconcile_id=null
+fi
+
+if [ $config_name -eq 0 ]; then
+    component_payload=[]
+    url=$url_environment
+    . /patch_environment.sh
+fi
+
+payload='{"reconcileId": '$reconcile_id', "name" : "'$team_env_name'", "teamName" : "'$team_name'", "status" : "'$status'", "startDateTime" : "'$start_date'", "endDateTime" : '$end_date', "componentReconciles" : '$component_payload'}'
+
+echo $payload >reconcile_payload.txt
+
+result=$(curl -X 'POST' "$url" -H 'accept: */*' -H 'Content-Type: application/json' -d @reconcile_payload.txt)
+echo $result
+echo $result >/tmp/reconcile_id.txt
+
