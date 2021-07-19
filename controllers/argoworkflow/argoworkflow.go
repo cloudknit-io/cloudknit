@@ -38,7 +38,7 @@ func GenerateWorkflowOfWorkflows(environment stablev1.Environment) *workflow.Wor
 				Name:     "provisioner-trigger-template",
 				Template: "run",
 			},
-			Dependencies: environmentComponent.DependsOn,
+			Dependencies: append(environmentComponent.DependsOn, "trigger-audit"),
 			Arguments: workflow.Arguments{
 				Parameters: []workflow.Parameter{
 					{
@@ -101,13 +101,20 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1.Environment) *workfl
 
 	destroyAll := !environment.DeletionTimestamp.IsZero()
 
+	tasks = append(tasks, generateAuditTask(environment, destroyAll, "0", nil))
+
 	ecs := environment.Spec.EnvironmentComponent
+
+	var allComponents []string
+
 	for _, ec := range ecs {
+		allComponents = append(allComponents, ec.Name)
+
 		moduleSource := il.EnvComponentModuleSource(ec.Module.Source, ec.Module.Name)
 		modulePath := il.EnvComponentModulePath(ec.Module.Path)
 		tfPath := tf.GenerateTerraformIlPath(envComponentDirectory, ec.Name)
 
-		dependencies := ec.DependsOn
+		dependencies := append(ec.DependsOn, "trigger-audit")
 		destroyFlag := false
 		if ec.MarkedForDeletion {
 			destroyFlag = true
@@ -154,6 +161,14 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1.Environment) *workfl
 				Name:  "is_destroy",
 				Value: anyStringPointer(destroyFlag),
 			},
+			{
+				Name:  "reconcile_id",
+				Value: anyStringPointer("{{tasks.trigger-audit.outputs.parameters.reconcile_id}}"),
+			},
+			{
+				Name:  "status",
+				Value: anyStringPointer("initializing"),
+			},
 		}
 
 		task := workflow.DAGTask{
@@ -170,6 +185,8 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1.Environment) *workfl
 
 		tasks = append(tasks, task)
 	}
+
+	tasks = append(tasks, generateAuditTask(environment, destroyAll, "1", allComponents))
 
 	return &workflow.Workflow{
 		TypeMeta: metav1.TypeMeta{
@@ -196,6 +213,61 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1.Environment) *workfl
 			},
 		},
 	}
+}
+
+func generateAuditTask(environment stablev1.Environment, destroyAll bool, phase string, dependencies []string) workflow.DAGTask {
+	var name string
+	var reconcileId string
+	var status string
+
+	if phase == "0" {
+		name = "trigger-audit"
+		status = "initializing"
+		reconcileId = "0"
+	} else {
+		name = "end-audit"
+		status = "ended"
+		reconcileId = "{{tasks.trigger-audit.outputs.parameters.reconcile_id}}"
+	}
+
+	task := workflow.DAGTask{
+		Name: name,
+		TemplateRef: &workflow.TemplateRef{
+			Name:     "audit-run-template",
+			Template: "run_audit",
+		},
+		Dependencies: dependencies,
+		Arguments: workflow.Arguments{
+			Parameters: []workflow.Parameter{
+				{
+					Name:  "team_name",
+					Value: anyStringPointer(environment.Spec.TeamName),
+				},
+				{
+					Name:  "env_name",
+					Value: anyStringPointer(environment.Spec.EnvName),
+				},
+				{
+					Name:  "status",
+					Value: anyStringPointer(status),
+				},
+				{
+					Name:  "is_destroy",
+					Value: anyStringPointer(destroyAll),
+				},
+				{
+					Name:  "phase",
+					Value: anyStringPointer(phase),
+				},
+				{
+					Name:  "reconcile_id",
+					Value: anyStringPointer(reconcileId),
+				},
+			},
+		},
+	}
+
+	return task
 }
 
 func anyStringPointer(val interface{}) *workflow.AnyString {
