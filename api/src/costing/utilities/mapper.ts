@@ -143,9 +143,9 @@ export class Mapper {
     return components.map((c) => {
       let diff = -1;
       if (c.end_date_time) {
-        const ed = new Date(c.end_date_time).getMilliseconds();
-        const sd = new Date(c.start_date_time).getMilliseconds();
-        diff = Math.abs(ed - sd);
+        const ed = new Date(c.end_date_time).getTime();
+        const sd = new Date(c.start_date_time).getTime()
+        diff = ed - sd;
       }
 
       return {
@@ -154,6 +154,6 @@ export class Mapper {
         duration: diff,
         status: c.status,
       };
-    }).sort((a, b) => Math.abs(new Date(a.startDateTime) - new Date(b.startDateTime)));
+    });
   }
 }
