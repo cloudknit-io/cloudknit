@@ -19,8 +19,12 @@ is_destroy=$6
 function PatchError() {
     data='{"metadata":{"labels":{"component_status":"plan_failed"}}}'
     argocd app patch $team_env_config_name --patch $data --type merge > null
-    
-    data='{"metadata":{"labels":{"env_status":"failed"}}}'
+    if [ $is_destroy = true ]
+    then
+        data='{"metadata":{"labels":{"env_status":"destroy_failed"}}}'
+    else
+        data='{"metadata":{"labels":{"env_status":"provision_failed"}}}'
+    fi
     argocd app patch $team_env_name --patch $data --type merge > null
 }
 
