@@ -141,19 +141,19 @@ export class Mapper {
     components: ComponentReconcile[]
   ): ComponentAudit[] {
     return components.map((c) => {
-      let ed = 0,
-        sd = 1;
+      let diff = -1;
       if (c.end_date_time) {
-        ed = new Date(c.end_date_time).getMilliseconds();
-        sd = new Date(c.start_date_time).getMilliseconds();
+        const ed = new Date(c.end_date_time).getMilliseconds();
+        const sd = new Date(c.start_date_time).getMilliseconds();
+        diff = Math.abs(ed - sd);
       }
 
       return {
         reconcileId: c.reconcile_id,
         startDateTime: c.start_date_time,
-        duration: ed - sd,
+        duration: diff,
         status: c.status,
       };
-    }).sort((a, b) => new Date(a.startDateTime).getMilliseconds() - new Date(b.startDateTime).getMilliseconds());
+    }).sort((a, b) => Math.abs(new Date(a.startDateTime) - new Date(b.startDateTime)));
   }
 }
