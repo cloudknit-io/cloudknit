@@ -1,4 +1,8 @@
-import { Body, Controller, Post } from '@nestjs/common'
+import { Body, Controller, Get, Param, Post, Sse } from '@nestjs/common'
+import { Observable, Observer } from 'rxjs';
+import { Mapper } from 'src/costing/utilities/mapper';
+import { ComponentReconcile } from 'src/typeorm/reconciliation/component-reconcile.entity';
+import { ComponentAudit } from './dtos/componentAudit.dto';
 import { EvnironmentReconcileDto } from './dtos/reconcile.Dto';
 import { ReconciliationService } from './services/reconciliation.service'
 
@@ -19,4 +23,32 @@ export class ReconciliationController {
     return await this.reconciliationService.saveOrUpdateComponent(runData);
   }
 
+  @Get('component/:id')
+  async getComponents(@Param('id') id: string): Promise<ComponentAudit[]> {
+    return await this.reconciliationService.getComponentAuditList(id);
+  }
+
+  @Sse('components/notify/:id')
+  notify(@Param('id') id: string): Observable<MessageEvent> {
+    return new Observable((observer: Observer<MessageEvent>) => {
+      this.reconciliationService.notifyStream.subscribe(
+        async (component: ComponentReconcile) => {
+          if (component.name !== id) {
+            return;
+          }
+          const data: ComponentAudit[] = Mapper.getComponentAuditList([component]);
+          observer.next({
+            data: data[0],
+          })
+        },
+      )
+    });
+  }
+}
+
+export interface MessageEvent {
+  data: string | object
+  id?: string
+  type?: string
+  retry?: number
 }
