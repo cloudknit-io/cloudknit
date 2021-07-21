@@ -3,6 +3,7 @@ import { Observable, Observer } from 'rxjs';
 import { Mapper } from 'src/costing/utilities/mapper';
 import { ComponentReconcile } from 'src/typeorm/reconciliation/component-reconcile.entity';
 import { ComponentAudit } from './dtos/componentAudit.dto';
+import { EnvironmentAudit } from './dtos/environmentAudit.dto';
 import { EvnironmentReconcileDto } from './dtos/reconcile.Dto';
 import { ReconciliationService } from './services/reconciliation.service'
 
@@ -26,6 +27,11 @@ export class ReconciliationController {
   @Get('component/:id')
   async getComponents(@Param('id') id: string): Promise<ComponentAudit[]> {
     return await this.reconciliationService.getComponentAuditList(id);
+  }
+
+  @Get('environment/:id')
+  async getEnvironments(@Param('id') id: string): Promise<EnvironmentAudit[]> {
+    return await this.reconciliationService.getEnvironmentAuditList(id);
   }
 
   @Sse('components/notify/:id')

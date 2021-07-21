@@ -1,4 +1,5 @@
 import { ComponentAudit } from "src/reconciliation/dtos/componentAudit.dto";
+import { EnvironmentAudit } from "src/reconciliation/dtos/environmentAudit.dto";
 import { ComponentReconcileDto } from "src/reconciliation/dtos/reconcile.Dto";
 import { Component } from "src/typeorm/costing/entities/Component";
 import { ComponentReconcile } from "src/typeorm/reconciliation/component-reconcile.entity";
@@ -140,6 +141,26 @@ export class Mapper {
   static getComponentAuditList(
     components: ComponentReconcile[]
   ): ComponentAudit[] {
+    return components.map((c) => {
+      let diff = -1;
+      if (c.end_date_time) {
+        const ed = new Date(c.end_date_time).getTime();
+        const sd = new Date(c.start_date_time).getTime()
+        diff = ed - sd;
+      }
+
+      return {
+        reconcileId: c.reconcile_id,
+        startDateTime: c.start_date_time,
+        duration: diff,
+        status: c.status,
+      };
+    });
+  }
+
+  static getEnvironmentAuditList(
+    components: EnvironmentReconcile[]
+  ): EnvironmentAudit[] {
     return components.map((c) => {
       let diff = -1;
       if (c.end_date_time) {

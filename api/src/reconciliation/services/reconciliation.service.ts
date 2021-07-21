@@ -6,6 +6,7 @@ import { ComponentReconcile } from "src/typeorm/reconciliation/component-reconci
 import { EnvironmentReconcile } from "src/typeorm/reconciliation/environment-reconcile.entity";
 import { Repository } from "typeorm/repository/Repository";
 import { ComponentAudit } from "../dtos/componentAudit.dto";
+import { EnvironmentAudit } from "../dtos/environmentAudit.dto";
 import { EvnironmentReconcileDto } from "../dtos/reconcile.Dto";
 
 @Injectable()
@@ -84,5 +85,14 @@ export class ReconciliationService {
       },
     });
     return Mapper.getComponentAuditList(components);
+  }
+
+  async getEnvironmentAuditList(id: string): Promise<EnvironmentAudit[]> {
+    const environments = await this.environmentReconcileRepository.find({
+      where: {
+        name: id,
+      },
+    });
+    return Mapper.getEnvironmentAuditList(environments);
   }
 }
