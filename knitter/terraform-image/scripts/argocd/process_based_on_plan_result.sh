@@ -15,10 +15,16 @@ team_env_name=$3
 team_env_config_name=$4
 workflow_id=$5
 is_destroy=$6
+team_name=$7
+env_name=$8
+config_name=$9
+reconcile_id=$10
+config_reconcile_id=$11
 
 function PatchError() {
     data='{"metadata":{"labels":{"component_status":"plan_failed"}}}'
     argocd app patch $team_env_config_name --patch $data --type merge > null
+    sh ../audit.sh $team_name $env_name $config_name "" "Failed" $reconcile_id $config_reconcile_id $is_destroy 0
     if [ $is_destroy = true ]
     then
         data='{"metadata":{"labels":{"env_status":"destroy_failed"}}}'

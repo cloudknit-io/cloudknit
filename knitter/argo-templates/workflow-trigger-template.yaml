@@ -88,6 +88,10 @@ spec:
                   value: "{{inputs.parameters.terraform_il_path}}"
                 - name: is_destroy
                   value: "{{inputs.parameters.is_destroy}}"
+                - name: config_reconcile_id
+                  value: "{{steps.init-component-audit.outputs.parameters.reconcile_id}}"
+                - name: reconcile_id
+                  value: "{{inputs.parameters.reconcile_id}}"
             when: "{{steps.validate.outputs.parameters.errorCode}} != 20"           
         - - name: end-component-audit
             template: audit_sh
@@ -102,7 +106,7 @@ spec:
                 - name: status
                   value: "{{inputs.parameters.status}}"
                 - name: config_status
-                  value: "Ended"
+                  value: "Success"
                 - name: reconcile_id
                   value: "{{inputs.parameters.reconcile_id}}"
                 - name: config_reconcile_id
@@ -143,6 +147,8 @@ spec:
           - name: il_repo
           - name: terraform_il_path
           - name: is_destroy
+          - name: config_reconcile_id
+          - name: reconcile_id
       resource:
         action: create
         manifest: |
@@ -172,6 +178,10 @@ spec:
                 value: {{inputs.parameters.terraform_il_path}}
               - name: is_destroy
                 value: {{inputs.parameters.is_destroy}}
+              - name: reconcile_id
+                value: "{{inputs.parameters.reconcile_id}}"
+              - name: config_reconcile_id
+                value: "{{inputs.parameters.config_reconcile_id}}"
             workflowTemplateRef:
               name: {{inputs.parameters.workflowtemplate}}
         successCondition: status.phase == Succeeded

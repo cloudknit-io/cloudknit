@@ -39,6 +39,8 @@ spec:
           - name: is_sync
             value: "0"
           - name: is_destroy
+          - name: config_reconcile_id
+          - name: reconcile_id
         artifacts:
           - name: terraform-config
             path: "/home"
@@ -63,7 +65,7 @@ spec:
         cmd:
           - sh
         source: |
-          ./run_terraform.sh "{{inputs.parameters.team_name}}" "{{inputs.parameters.env_name}}" "{{inputs.parameters.config_name}}" "{{inputs.parameters.module_source}}" "{{inputs.parameters.module_source_path}}" "{{inputs.parameters.is_apply}}" "{{inputs.parameters.lock_state}}" "{{inputs.parameters.is_sync}}" "{{workflow.name}}" "{{inputs.parameters.terraform_il_path}}" "{{inputs.parameters.is_destroy}}"
+          ./run_terraform.sh "{{inputs.parameters.team_name}}" "{{inputs.parameters.env_name}}" "{{inputs.parameters.config_name}}" "{{inputs.parameters.module_source}}" "{{inputs.parameters.module_source_path}}" "{{inputs.parameters.is_apply}}" "{{inputs.parameters.lock_state}}" "{{inputs.parameters.is_sync}}" "{{workflow.name}}" "{{inputs.parameters.terraform_il_path}}" "{{inputs.parameters.is_destroy}}" "{{inputs.parameters.config_reconcile_id}}" "{{inputs.parameters.reconcile_id}}"
         env:
           - name: CUSTOMER_AWS_ACCESS_KEY_ID
             valueFrom:
