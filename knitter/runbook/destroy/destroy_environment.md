@@ -32,6 +32,10 @@ When you want to destroy an environment
 [Note] Make sure to change the Env Name instead of `payment-prod`
 
 ```bash
+kubectl get pods -n argocd | awk '/payment-demo-th/{print $1}'| xargs  kubectl delete -n argocd pod
+```
+
+```bash
 kubectl get workflow -n argocd | awk '/payment-prod/{print $1}'| xargs  kubectl delete -n argocd workflow
 ```
 
