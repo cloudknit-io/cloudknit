@@ -79,10 +79,11 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	teamRepo := team.Spec.ConfigRepo.Source
-	repoSecret := il.SSHKeyName()
+	operatorSshSecret := env.Config.ZlifecycleMasterRepoSshSecret
+	operatorNamespace := env.Config.ZlifecycleOperatorNamespace
 
 	argocdApi := argocd.NewHttpClient(r.Log, env.Config.ArgocdServerUrl)
-	if err := repo.TryRegisterRepo(r.Client, r.Log, ctx, argocdApi, teamRepo, req.Namespace, repoSecret); err != nil {
+	if err := repo.TryRegisterRepo(r.Client, r.Log, ctx, argocdApi, teamRepo, operatorNamespace, operatorSshSecret); err != nil {
 		return ctrl.Result{}, err
 	}
 
