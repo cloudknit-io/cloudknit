@@ -83,10 +83,10 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, nil
 	}
 
-	finalizer := env.Config.GithubFinalizer
-	if err := r.handleFinalizer(ctx, environment, finalizer); err != nil {
-		return ctrl.Result{}, err
-	}
+	//finalizer := env.Config.GithubFinalizer
+	//if err := r.handleFinalizer(ctx, environment, finalizer); err != nil {
+	//	return ctrl.Result{}, err
+	//}
 
 	envDirectory := il.EnvironmentDirectory(environment.Spec.TeamName)
 	envComponentDirectory := il.EnvironmentComponentDirectory(environment.Spec.TeamName, environment.Spec.EnvName)
