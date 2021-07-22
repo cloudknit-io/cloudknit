@@ -114,15 +114,19 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1.Environment) *workfl
 		modulePath := il.EnvComponentModulePath(ec.Module.Path)
 		tfPath := tf.GenerateTerraformIlPath(envComponentDirectory, ec.Name)
 
-		dependencies := append(ec.DependsOn, "trigger-audit")
 		destroyFlag := false
 		if ec.MarkedForDeletion {
 			destroyFlag = true
 		}
+		var dependencies []string
 		if destroyAll {
 			dependencies = buildInverseDependencies(ecs, ec.Name)
 			destroyFlag = true
+		} else {
+			dependencies = ec.DependsOn
 		}
+
+		dependencies = append(dependencies, "trigger-audit")
 
 		parameters := []workflow.Parameter{
 			{
