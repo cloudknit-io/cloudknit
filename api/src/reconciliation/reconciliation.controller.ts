@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Post, Sse } from '@nestjs/common'
 import { Observable, Observer } from 'rxjs';
 import { Mapper } from 'src/costing/utilities/mapper';
 import { ComponentReconcile } from 'src/typeorm/reconciliation/component-reconcile.entity';
+import { EnvironmentReconcile } from 'src/typeorm/reconciliation/environment-reconcile.entity';
 import { ComponentAudit } from './dtos/componentAudit.dto';
 import { EnvironmentAudit } from './dtos/environmentAudit.dto';
 import { EvnironmentReconcileDto } from './dtos/reconcile.Dto';
@@ -35,7 +36,7 @@ export class ReconciliationController {
   }
 
   @Sse('components/notify/:id')
-  notify(@Param('id') id: string): Observable<MessageEvent> {
+  notifyComponents(@Param('id') id: string): Observable<MessageEvent> {
     return new Observable((observer: Observer<MessageEvent>) => {
       this.reconciliationService.notifyStream.subscribe(
         async (component: ComponentReconcile) => {
@@ -44,13 +45,32 @@ export class ReconciliationController {
           }
           const data: ComponentAudit[] = Mapper.getComponentAuditList([component]);
           observer.next({
-            data: data[0],
+            data: data,
+          })
+        },
+      )
+    });
+  }
+
+  @Sse('environments/notify/:id')
+  notifyEnvironments(@Param('id') id: string): Observable<MessageEvent> {
+    return new Observable((observer: Observer<MessageEvent>) => {
+      this.reconciliationService.notifyStream.subscribe(
+        async (environment: EnvironmentReconcile) => {
+          if (environment.name !== id) {
+            return;
+          }
+          const data: EnvironmentAudit[] = Mapper.getEnvironmentAuditList([environment]);
+          observer.next({
+            data: data,
           })
         },
       )
     });
   }
 }
+
+
 
 export interface MessageEvent {
   data: string | object

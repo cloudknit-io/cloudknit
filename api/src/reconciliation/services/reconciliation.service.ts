@@ -45,6 +45,7 @@ export class ReconciliationService {
       };
       savedEntry = await this.environmentReconcileRepository.save(entry);
     }
+    this.notifyStream.next(savedEntry);
     return savedEntry.reconcile_id;
   }
 
