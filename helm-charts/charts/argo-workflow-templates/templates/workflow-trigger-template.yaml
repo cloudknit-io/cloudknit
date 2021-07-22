@@ -1,0 +1,140 @@
+# Copyright (C) 2020 CompuZest, Inc. - All Rights Reserved
+#
+# Unauthorized copying of this file, via any medium, is strictly prohibited
+# Proprietary and confidential
+#
+# NOTICE: All information contained herein is, and remains the property of
+# CompuZest, Inc. The intellectual and technical concepts contained herein are
+# proprietary to CompuZest, Inc. and are protected by trade secret or copyright
+# law. Dissemination of this information or reproduction of this material is
+# strictly forbidden unless prior written permission is obtained from CompuZest, Inc.
+---
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: workflow-trigger-template
+  namespace: argocd
+spec:
+  entrypoint: run
+  podGC:
+    strategy: OnWorkflowSuccess
+  ttlStrategy:
+    secondsAfterSuccess: 600
+    secondsAfterCompletion: 600
+  templates:
+    - name: run
+      serviceAccountName: argo
+      inputs:
+        parameters:
+          - name: team_name
+          - name: env_name
+          - name: config_name
+          - name: workflowtemplate
+          - name: module_source
+          - name: module_source_path
+          - name: il_repo
+          - name: terraform_il_path
+          - name: is_destroy
+      steps:
+        - - name: validate
+            template: validate_env_component
+            arguments:
+              parameters:
+                - name: team_name
+                  value: '{{ printf "{{inputs.parameters.team_name}}" }}'
+                - name: env_name
+                  value: '{{ printf "{{inputs.parameters.env_name}}" }}'
+                - name: config_name
+                  value: '{{ printf "{{inputs.parameters.config_name}}" }}'
+        - - name: run
+            template: run_env_component
+            arguments:
+              parameters:
+                - name: team_name
+                  value: '{{ printf "{{inputs.parameters.team_name}}" }}'
+                - name: env_name
+                  value: '{{ printf "{{inputs.parameters.env_name}}" }}'
+                - name: config_name
+                  value: '{{ printf "{{inputs.parameters.config_name}}" }}'
+                - name: workflowtemplate
+                  value: '{{ printf "{{inputs.parameters.workflowtemplate}}" }}'
+                - name: module_source
+                  value: '{{ printf "{{inputs.parameters.module_source}}" }}'
+                - name: module_source_path
+                  value: '{{ printf "{{inputs.parameters.module_source_path}}" }}'
+                - name: il_repo
+                  value: '{{ printf "{{inputs.parameters.il_repo}}" }}'
+                - name: terraform_il_path
+                  value: '{{ printf "{{inputs.parameters.terraform_il_path}}" }}'
+                - name: is_destroy
+                  value: '{{ printf "{{inputs.parameters.is_destroy}}" }}'
+            when: '{{ printf "{{steps.validate.outputs.parameters.errorCode}}" }} != 20'
+
+    - name: validate_env_component
+      inputs:
+        parameters:
+          - name: team_name
+          - name: env_name
+          - name: config_name
+      script:
+        imagePullPolicy: Always
+        image: 413422438110.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-terraform:latest
+        cmd:
+          - sh
+        source: |
+          ./validate_env_component.sh '{{ printf "{{inputs.parameters.team_name}}" }}' '{{ printf "{{inputs.parameters.env_name}}" }}' '{{ printf "{{inputs.parameters.config_name}}" }}'
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      outputs:
+        parameters:
+          - name: errorCode
+            valueFrom:
+              path: /tmp/error_code.txt
+            globalName: error-code
+
+    - name: run_env_component
+      inputs:
+        parameters:
+          - name: team_name
+          - name: env_name
+          - name: config_name
+          - name: workflowtemplate
+          - name: module_source
+          - name: module_source_path
+          - name: il_repo
+          - name: terraform_il_path
+          - name: is_destroy
+      resource:
+        action: create
+        manifest: |
+          apiVersion: argoproj.io/v1alpha1
+          kind: Workflow
+          metadata:
+            generateName: '{{ printf "{{inputs.parameters.team_name}}" }}-{{ printf "{{inputs.parameters.env_name}}" }}-{{ printf "{{inputs.parameters.config_name}}" }}'
+            namespace: argocd
+            labels:
+              terraform/sync: 'true'
+          spec:
+            arguments:
+              parameters:
+              - name: team_name
+                value: '{{ printf "{{inputs.parameters.team_name}}" }}'
+              - name: env_name
+                value: '{{ printf "{{inputs.parameters.env_name}}" }}'
+              - name: config_name
+                value: '{{ printf "{{inputs.parameters.config_name}}" }}'
+              - name: module_source
+                value: '{{ printf "{{inputs.parameters.module_source}}" }}'
+              - name: module_source_path
+                value: '{{ printf "{{inputs.parameters.module_source_path}}" }}'
+              - name: il_repo
+                value: '{{ printf "{{inputs.parameters.il_repo}}" }}'
+              - name: terraform_il_path
+                value: '{{ printf "{{inputs.parameters.terraform_il_path}}" }}'
+              - name: is_destroy
+                value: '{{ printf "{{inputs.parameters.is_destroy}}" }}'
+            workflowTemplateRef:
+              name: '{{ printf "{{inputs.parameters.workflowtemplate}}" }}'
+        successCondition: status.phase == Succeeded
+        failureCondition: status.phase in (Failed, Error)
