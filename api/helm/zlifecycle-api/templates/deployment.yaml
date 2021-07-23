@@ -23,6 +23,12 @@ spec:
               value: {{ .Values.database.username }}
             - name: TYPEORM_PASSWORD
               value: {{ .Values.database.password }}
+            - name: AWS_ACCESS_KEY_ID
+              value: {{ .Values.awsCredentials.accessKeyId}}
+            - name: AWS_SECRET_ACCESS_KEY
+              value: {{ .Values.awsCredentials.secretAccessKey}}
+            - name: AWS_REGION
+              value: {{ .Values.awsCredentials.region}}
           image: {{ .Values.image.repository }}/{{ .Values.image.name }}:{{ .Values.image.tag }}
           ports:
             - containerPort: 3000

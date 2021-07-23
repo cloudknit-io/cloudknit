@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, Post, Sse } from '@nestjs/common'
 import { Observable, Observer } from 'rxjs';
 import { Mapper } from 'src/costing/utilities/mapper';
+import { S3Handler } from 'src/costing/utilities/s3Handler';
 import { ComponentReconcile } from 'src/typeorm/reconciliation/component-reconcile.entity';
 import { EnvironmentReconcile } from 'src/typeorm/reconciliation/environment-reconcile.entity';
 import { ComponentAudit } from './dtos/componentAudit.dto';
@@ -33,6 +34,11 @@ export class ReconciliationController {
   @Get('environment/:id')
   async getEnvironments(@Param('id') id: string): Promise<EnvironmentAudit[]> {
     return await this.reconciliationService.getEnvironmentAuditList(id);
+  }
+
+  @Get('component/logs/:team/:environment/:component/:id')
+  async getLogs(@Param('team') team: string, @Param('environment') environment: string, @Param('component') component: string, @Param('id') id: number) {
+    return await this.reconciliationService.getLogs(team, environment, component, id);
   }
 
   @Sse('components/notify/:id')
