@@ -108,11 +108,20 @@ export class ReconciliationService {
     component: string,
     id: number,
   ) {
-    const prefix = `${team}/${environment}/${component}/${id}`;
-    const objects = await this.s3h.getObjects('zlifecycle-tfplan-zmart', prefix);
-    return objects.map(o => ({
-      key: o.key,
-      body: o.data.Body.toString()
-    }));
+    try {
+      const prefix = `${team}/${environment}/${component}/${id}/`
+      const objects = await this.s3h.getObjects(
+        'zlifecycle-tfplan-zmart',
+        prefix,
+      )
+      return objects.map((o) => ({
+        key: o.key,
+        body: o.data.Body.toString(),
+      }))
+    } catch (err) {
+      if (err === 'No Object was found') {
+        return err;
+      }
+    }
   }
 }
