@@ -17,6 +17,7 @@ import (
 	"fmt"
 	file "github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/repo"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -46,14 +47,32 @@ func (r *CompanyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 
 	company := &stablev1.Company{}
-	r.Get(ctx, req.NamespacedName, company)
+	if err := r.Get(ctx, req.NamespacedName, company); err != nil {
+		if errors.IsNotFound(err) {
+			r.Log.Info(
+				"Company missing from cache, ending reconcile...",
+				"name", req.Name,
+				"namespace", req.Namespace,
+			)
+		} else {
+			r.Log.Error(
+				err,
+				"Error occurred while getting Company...",
+				"name", req.Name,
+				"namespace", req.Namespace,
+			)
+		}
+
+		return ctrl.Result{}, nil
+	}
 
 	companyRepo := company.Spec.ConfigRepo.Source
-	repoSecret := il.SSHKeyName()
+	operatorSshSecret := env.Config.ZlifecycleMasterRepoSshSecret
+	operatorNamespace := env.Config.ZlifecycleOperatorNamespace
 
 	argocdApi := argocd.NewHttpClient(r.Log, env.Config.ArgocdServerUrl)
 
-	if err := repo.TryRegisterRepo(r.Client, r.Log, ctx, argocdApi, companyRepo, req.Namespace, repoSecret); err != nil {
+	if err := repo.TryRegisterRepo(r.Client, r.Log, ctx, argocdApi, companyRepo, operatorNamespace, operatorSshSecret); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -74,20 +93,20 @@ func (r *CompanyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	ilRepoURL := il.RepoURL(owner, company.Name)
-	masterRepoSSHSecret := env.Config.ZlifecycleMasterRepoSshSecret
-	operatorNamespace := env.Config.ZlifecycleOperatorNamespace
-	if err := repo.TryRegisterRepo(r.Client, r.Log, ctx, argocdApi, ilRepoURL, operatorNamespace, masterRepoSSHSecret); err != nil {
+	if err := repo.TryRegisterRepo(r.Client, r.Log, ctx, argocdApi, ilRepoURL, operatorNamespace, operatorSshSecret); err != nil {
 		return ctrl.Result{}, err
 	}
 
-	github.CommitAndPushFiles(
+	if err := github.CommitAndPushFiles(
 		env.Config.ILRepoSourceOwner,
 		ilRepo,
 		[]string{il.Config.CompanyDirectory, il.Config.ConfigWatcherDirectory},
 		env.Config.RepoBranch,
 		fmt.Sprintf("Reconciling company %s", company.Spec.CompanyName),
 		env.Config.GithubSvcAccntName,
-		env.Config.GithubSvcAccntEmail)
+		env.Config.GithubSvcAccntEmail); err != nil {
+		return ctrl.Result{}, err
+	}
 
 	argocd.TryCreateBootstrapApps(r.Log)
 
