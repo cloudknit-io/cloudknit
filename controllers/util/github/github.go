@@ -386,7 +386,6 @@ func CreateRepoWebhook(log logr.Logger, api RepositoryApi, repoUrl string, paylo
 			"url", repoUrl,
 			"owner", owner,
 			"repo", repo,
-			"cfg", h.Config,
 		)
 		return false, err
 	}
@@ -399,7 +398,6 @@ func CreateRepoWebhook(log logr.Logger, api RepositoryApi, repoUrl string, paylo
 		"repo", repo,
 		"hookId", *hook.ID,
 		"payloadUrl", *hook.URL,
-		"cfg", h.Config,
 	)
 	return false, nil
 }

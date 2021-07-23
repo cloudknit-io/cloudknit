@@ -35,7 +35,7 @@ type config struct {
 // Various config vars used throughout the operator
 var Config = config{
 	ZlifecycleOwner:               getZlifecycleOwner(),
-	ZlifecycleMasterRepoSshSecret: getZlifecyleMasterRepoSshSecret(),
+	ZlifecycleMasterRepoSshSecret: getZlifecyleOperatorSshSecret(),
 	ZlifecycleOperatorNamespace:   os.Getenv("ZLIFECYCLE_OPERATOR_NAMESPACE"),
 	ZlifecycleOperatorRepo:        "zlifecycle-il-operator",
 
@@ -62,12 +62,12 @@ var Config = config{
 	ArgocdPassword:  os.Getenv("ARGOCD_PASSWORD"),
 }
 
-func getZlifecyleMasterRepoSshSecret() string {
+func getZlifecyleOperatorSshSecret() string {
 	val, exists := os.LookupEnv("ZLIFECYCLE_MASTER_SSH")
-	if exists {
+	if exists && val != "" {
 		return val
 	} else {
-		return "zlifecycle-master-ssh"
+		return "zlifecycle-operator-ssh"
 	}
 }
 
