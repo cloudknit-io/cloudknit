@@ -28,12 +28,12 @@ resources:
 companyConfigMap:
   enabled: true
   data:
-    companyName: "zbank"
+    companyName: "zCustomer"
     adminEmail: "admin@compuzest.com"
     teamsConfigPath: "teams"
-    configRepo: "git@github.com:zbank-tech/zbank-config.git"
-    configRepoName: "zbank-config"
-    ilRepo: "git@github.com:CompuZest/zbank-il.git"
+    configRepo: "git@github.com:zbank-tech/zcustomer-config.git"
+    configRepoName: "zcustomer-config"
+    ilRepo: "git@github.com:CompuZest/zcustomer-il.git"
     ilRepoSourceOwner: "CompuZest"
-    ilRepoName: "zbank-il"
+    ilRepoName: "zcustomer-il"
     helmChartsRepo: "git@github.com:CompuZest/helm-charts.git"
