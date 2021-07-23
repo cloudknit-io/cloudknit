@@ -5,7 +5,7 @@ data='{"metadata":{"labels":{"component_status":"provisioning"}}}'
 
 argocd app patch $team_env_config_name --patch $data --type merge >null
 
-aws s3 cp s3://zlifecycle-tfplan-zmart/$team_name/$env_name/$config_name/$config_reconcile_id terraform-plan
+aws s3 cp s3://zlifecycle-tfplan-zmart/$team_name/$env_name/$config_name/tf_plans/$config_reconcile_id terraform-plan
 
 echo $show_output_start
 terraform apply -auto-approve -input=false -parallelism=2 -no-color terraform-plan || Error "Can not apply terraform plan" 2>&1 | tee -a /tmp/apply_output.txt
