@@ -58,21 +58,6 @@ main() {
     ./$PARENT_DIRECTORY/provision.sh $LOCATION;
     checkForFailures
 
-    # Bootstrap customers
-    announcePhase "Bootstrap customer Environments"
-    ./common/bootstrap_customers.sh $LOCATION $PARENT_DIRECTORY;
-    checkForFailures
-
-    #Prepare secrets
-    echo ""
-    echo ""
-    echo "-------------------------------------"
-    read -p "Please create secrets and enter Y to continue? " -n 1 -r
-    echo ""
-    echo "-------------------------------------"
-    echo ""
-    echo ""
-
     #Set up Argo
     announcePhase "Set up Argo"
     ./common/configure_argo.sh $LOCATION

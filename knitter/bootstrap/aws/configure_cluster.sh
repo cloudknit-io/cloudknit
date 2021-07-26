@@ -24,7 +24,7 @@ argocd cluster add arn:aws:eks:us-east-1:413422438110:cluster/$LOCATION-eks --na
 
 if [[ $LOCATION = "demo" ]]
 then
-    kubectl apply -f ../../zmart-tech/zmart-config/zmart.yaml
+    kubectl apply -f ../../../zmart-tech/zmart-config/zmart.yaml
 else
-    kubectl apply -f ../../zmart-tech-$LOCATION/zmart-config/zmart.yaml
+    kubectl apply -f ../../../zmart-tech-$LOCATION/zmart-config/zmart.yaml
 fi
