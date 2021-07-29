@@ -5,15 +5,14 @@ data='{"metadata":{"labels":{"component_status":"running_destroy_plan"}}}'
 argocd app patch $team_env_config_name --patch $data --type merge >null
 
 terraform plan -destroy -lock=$lock_state -parallelism=2 -input=false -no-color -out=terraform-plan -detailed-exitcode | tee -a /tmp/plan_output.txt
+aws s3 cp /tmp/plan_output.txt s3://zlifecycle-tfplan-zmart/$team_name/$env_name/$config_name/$config_reconcile_id/plan_output
+aws s3 cp terraform-plan s3://zlifecycle-tfplan-zmart/$team_name/$env_name/$config_name/tf_plans/$config_reconcile_id
 
 echo $show_output_start
 terraform plan -destroy -lock=$lock_state -parallelism=2 -input=false -no-color -out=terraform-plan -detailed-exitcode
 result=$?
 echo -n $result >/tmp/plan_code.txt
 echo $show_output_end
-
-aws s3 cp /tmp/plan_output.txt s3://zlifecycle-tfplan-zmart/$team_name/$env_name/$config_name/$config_reconcile_id/plan_output
-aws s3 cp terraform-plan s3://zlifecycle-tfplan-zmart/$team_name/$env_name/$config_name/tf_plans/$config_reconcile_id
 
 costing_payload='{"teamName": "'$team_name'", "environmentName": "'$env_name'", "component": { "componentName": "'$config_name'", "isDeleted" : '1'  }}'
 echo $costing_payload >temp_costing_payload.json
