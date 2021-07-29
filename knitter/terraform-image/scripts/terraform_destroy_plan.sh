@@ -4,8 +4,10 @@ echo $show_output_end
 data='{"metadata":{"labels":{"component_status":"running_destroy_plan"}}}'
 argocd app patch $team_env_config_name --patch $data --type merge >null
 
-echo $show_output_start
 terraform plan -destroy -lock=$lock_state -parallelism=2 -input=false -no-color -out=terraform-plan -detailed-exitcode | tee -a /tmp/plan_output.txt
+
+echo $show_output_start
+terraform plan -destroy -lock=$lock_state -parallelism=2 -input=false -no-color -out=terraform-plan -detailed-exitcode
 result=$?
 echo -n $result >/tmp/plan_code.txt
 echo $show_output_end
