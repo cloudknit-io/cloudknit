@@ -4,7 +4,7 @@ echo $show_output_end
 data='{"metadata":{"labels":{"component_status":"destroying"}}}'
 
 argocd app patch $team_env_config_name --patch $data --type merge >null
-aws s3 cp s3://zlifecycle-tfplan-zmart/$team_name/$env_name/$config_name/tf_plans/$config_reconcile_id terraform-plan --profile compuzest-shared
+aws s3 cp s3://zlifecycle-tfplan-zmart/$team_name/$env_name/$config_name/tfplans/$config_reconcile_id terraform-plan --profile compuzest-shared
 
 echo $show_output_start
 terraform apply -auto-approve -input=false -parallelism=2 -no-color terraform-plan || Error "Can not apply terraform destroy" 2>&1 | tee -a /tmp/apply_output.txt
