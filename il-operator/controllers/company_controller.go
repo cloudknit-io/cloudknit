@@ -46,6 +46,10 @@ func (r *CompanyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	start := time.Now()
 	ctx := context.Background()
 
+	if err := r.initOperator(ctx); err != nil {
+		r.Log.Error(err, "error running init function")
+	}
+
 	company := &stablev1.Company{}
 	if err := r.Get(ctx, req.NamespacedName, company); err != nil {
 		if errors.IsNotFound(err) {
@@ -54,16 +58,16 @@ func (r *CompanyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 				"name", req.Name,
 				"namespace", req.Namespace,
 			)
-		} else {
-			r.Log.Error(
-				err,
-				"Error occurred while getting Company...",
-				"name", req.Name,
-				"namespace", req.Namespace,
-			)
+			return ctrl.Result{}, nil
 		}
+		r.Log.Error(
+			err,
+			"Error occurred while getting Company...",
+			"name", req.Name,
+			"namespace", req.Namespace,
+		)
 
-		return ctrl.Result{}, nil
+		return ctrl.Result{}, err
 	}
 
 	companyRepo := company.Spec.ConfigRepo.Source
@@ -123,6 +127,19 @@ func (r *CompanyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	)
 
 	return ctrl.Result{}, nil
+}
+
+func (r *CompanyReconciler) initOperator(ctx context.Context) error {
+	r.Log.Info("running company operator init")
+	r.Log.Info("registering helm chart repo")
+	argocdApi := argocd.NewHttpClient(r.Log, env.Config.ArgocdServerUrl)
+	helmChartsRepo := env.Config.HelmChartsRepo
+	operatorSshSecret := env.Config.ZlifecycleMasterRepoSshSecret
+	operatorNamespace := env.Config.ZlifecycleOperatorNamespace
+	if err := repo.TryRegisterRepo(r.Client, r.Log, ctx, argocdApi, helmChartsRepo, operatorNamespace, operatorSshSecret); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (r *CompanyReconciler) SetupWithManager(mgr ctrl.Manager) error {

@@ -62,16 +62,16 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 				"name", req.Name,
 				"namespace", req.Namespace,
 			)
-		} else {
-			r.Log.Error(
-				err,
-				"Error occurred while getting Environment...",
-				"name", req.Name,
-				"namespace", req.Namespace,
-			)
+			return ctrl.Result{}, nil
 		}
+		r.Log.Error(
+			err,
+			"Error occurred while getting Environment...",
+			"name", req.Name,
+			"namespace", req.Namespace,
+		)
 
-		return ctrl.Result{}, nil
+		return ctrl.Result{}, err
 	}
 
 	if err := r.updateStatus(ctx, environment); err != nil {
