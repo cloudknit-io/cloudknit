@@ -56,20 +56,20 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	if err := r.Get(ctx, req.NamespacedName, team); err != nil {
 		if errors.IsNotFound(err) {
 			r.Log.Info(
-				"Team missing from cache, ending reconcile...",
+				"team missing from cache, ending reconcile...",
 				"name", req.Name,
 				"namespace", req.Namespace,
 			)
-		} else {
-			r.Log.Error(
-				err,
-				"Error occurred while getting Team...",
-				"name", req.Name,
-				"namespace", req.Namespace,
-			)
+			return ctrl.Result{}, nil
 		}
+		r.Log.Error(
+			err,
+			"error occurred while getting Team...",
+			"name", req.Name,
+			"namespace", req.Namespace,
+		)
 
-		return ctrl.Result{}, nil
+		return ctrl.Result{}, err
 	}
 
 	teamYAML := fmt.Sprintf("%s-team.yaml", team.Spec.TeamName)
