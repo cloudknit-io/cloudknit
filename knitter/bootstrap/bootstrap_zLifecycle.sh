@@ -57,16 +57,6 @@ main() {
     announcePhase "Provision"
     ./$PARENT_DIRECTORY/provision.sh $LOCATION;
     checkForFailures
-
-    #Set up Argo
-    announcePhase "Set up Argo"
-    ./common/configure_argo.sh $LOCATION
-    checkForFailures
-
-    #Configure Cluster
-    announcePhase "Configure cluster"
-    ./$PARENT_DIRECTORY/configure_cluster.sh $LOCATION $PARENT_DIRECTORY
-    checkForFailures
 }
 
 main
