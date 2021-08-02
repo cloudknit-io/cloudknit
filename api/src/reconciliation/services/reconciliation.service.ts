@@ -131,12 +131,13 @@ export class ReconciliationService {
     id: number,
     latest?: boolean
   ) {
-    const logs = await (latest
-      ? this.getLatestLogs(team, environment, component)
-      : this.getLogs(team, environment, component, id));
-    if (Array.isArray(logs))
+    const logs = latest
+      ? await this.getLatestLogs(team, environment, component)
+      : await this.getLogs(team, environment, component, id);
+    if (Array.isArray(logs)) {
       return logs.filter((e) => e.key.includes("apply_output"));
-    throw logs;
+    }
+    return logs;
   }
 
   async getPlanLogs(
@@ -146,13 +147,13 @@ export class ReconciliationService {
     id: number,
     latest?: boolean
   ) {
-    const logs = await (latest
-      ? this.getLatestLogs(team, environment, component)
-      : this.getLogs(team, environment, component, id));
+    const logs = latest
+      ? await this.getLatestLogs(team, environment, component)
+      : await this.getLogs(team, environment, component, id);
     if (Array.isArray(logs)) {
       return logs.filter((e) => e.key.includes("plan_output"));
     }
-    throw logs;
+    return logs;
   }
 
   async getLatestLogs(team: string, environment: string, component: string) {
@@ -166,7 +167,7 @@ export class ReconciliationService {
       take: 1,
     });
     if (latestAuditId.length === 0) {
-      throw this.notFound;
+      return this.notFound;
     }
     const logs = this.getLogs(
       team,
@@ -177,6 +178,6 @@ export class ReconciliationService {
     if (Array.isArray(logs)) {
       return logs;
     }
-    throw logs;
+    return logs;
   }
 }
