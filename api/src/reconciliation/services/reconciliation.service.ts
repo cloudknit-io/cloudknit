@@ -126,7 +126,7 @@ export class ReconciliationService {
   async getLatestLogs(team: string, environment: string, component: string) {
     const latestAuditId = await this.componentReconcileRepository.find({
       where: {
-        name: component,
+        name: `${team}-${environment}-${component}`,
       },
       order: {
         start_date_time: -1,
