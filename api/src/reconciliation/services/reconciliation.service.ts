@@ -169,7 +169,7 @@ export class ReconciliationService {
     if (latestAuditId.length === 0) {
       return this.notFound;
     }
-    const logs = this.getLogs(
+    const logs = await this.getLogs(
       team,
       environment,
       component,
