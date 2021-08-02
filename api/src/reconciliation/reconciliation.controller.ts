@@ -47,16 +47,14 @@ export class ReconciliationController {
   }
 
   @Get('component/plan/logs/:team/:environment/:component/:id/:latest')
-  async getPlanLogs(@Param('team') team: string, @Param('environment') environment: string, @Param('component') component: string, @Param('id') id: number, @Param('latest') latest: boolean) {
-    return await this.reconciliationService.getPlanLogs(team, environment, component, id, latest);
+  async getPlanLogs(@Param('team') team: string, @Param('environment') environment: string, @Param('component') component: string, @Param('id') id: number, @Param('latest') latest: string) {
+    return await this.reconciliationService.getPlanLogs(team, environment, component, id, latest === 'true');
   }
 
   @Get('component/apply/logs/:team/:environment/:component/:id/:latest')
-  async getApplyLogs(@Param('team') team: string, @Param('environment') environment: string, @Param('component') component: string, @Param('id') id: number, @Param('latest') latest: boolean) {
-    return await this.reconciliationService.getApplyLogs(team, environment, component, id, latest);
+  async getApplyLogs(@Param('team') team: string, @Param('environment') environment: string, @Param('component') component: string, @Param('id') id: number, @Param('latest') latest: string) {
+    return await this.reconciliationService.getApplyLogs(team, environment, component, id, latest === 'true');
   }
-
-
 
   @Sse('components/notify/:id')
   notifyComponents(@Param('id') id: string): Observable<MessageEvent> {
