@@ -129,9 +129,9 @@ export class ReconciliationService {
     environment: string,
     component: string,
     id: number,
-    latest?: boolean
+    latest: boolean
   ) {
-    const logs = latest
+    const logs = latest === true
       ? await this.getLatestLogs(team, environment, component)
       : await this.getLogs(team, environment, component, id);
     if (Array.isArray(logs)) {
@@ -145,9 +145,9 @@ export class ReconciliationService {
     environment: string,
     component: string,
     id: number,
-    latest?: boolean
+    latest: boolean
   ) {
-    const logs = latest
+    const logs = latest === true
       ? await this.getLatestLogs(team, environment, component)
       : await this.getLogs(team, environment, component, id);
     if (Array.isArray(logs)) {

@@ -46,13 +46,13 @@ export class ReconciliationController {
     return await this.reconciliationService.getLatestLogs(team, environment, component);
   }
 
-  @Get('component/plan/logs/:team/:environment/:component/:id/:latest?')
-  async getPlanLogs(@Param('team') team: string, @Param('environment') environment: string, @Param('component') component: string, @Param('id') id: number, @Param('latest') latest?: boolean) {
+  @Get('component/plan/logs/:team/:environment/:component/:id/:latest')
+  async getPlanLogs(@Param('team') team: string, @Param('environment') environment: string, @Param('component') component: string, @Param('id') id: number, @Param('latest') latest: boolean) {
     return await this.reconciliationService.getPlanLogs(team, environment, component, id, latest);
   }
 
-  @Get('component/apply/logs/:team/:environment/:component/:id/:latest?')
-  async getApplyLogs(@Param('team') team: string, @Param('environment') environment: string, @Param('component') component: string, @Param('id') id: number, @Param('latest') latest?: boolean) {
+  @Get('component/apply/logs/:team/:environment/:component/:id/:latest')
+  async getApplyLogs(@Param('team') team: string, @Param('environment') environment: string, @Param('component') component: string, @Param('id') id: number, @Param('latest') latest: boolean) {
     return await this.reconciliationService.getApplyLogs(team, environment, component, id, latest);
   }
 
