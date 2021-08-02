@@ -15,6 +15,7 @@ import { EvnironmentReconcileDto } from "../dtos/reconcile.Dto";
 export class ReconciliationService {
   readonly notifyStream: Subject<{}> = new Subject<{}>();
   private readonly s3h = S3Handler.instance();
+  private readonly notFound = "No Object was found";
   constructor(
     @InjectRepository(EnvironmentReconcile)
     private readonly environmentReconcileRepository: Repository<EnvironmentReconcile>,
@@ -117,10 +118,41 @@ export class ReconciliationService {
         body: o.data.Body.toString(),
       }));
     } catch (err) {
-      if (err === "No Object was found") {
+      if (err === this.notFound) {
         return err;
       }
     }
+  }
+
+  async getApplyLogs(
+    team: string,
+    environment: string,
+    component: string,
+    id: number,
+    latest?: boolean
+  ) {
+    const logs = await (latest
+      ? this.getLatestLogs(team, environment, component)
+      : this.getLogs(team, environment, component, id));
+    if (Array.isArray(logs))
+      return logs.filter((e) => e.key.includes("apply_output"));
+    throw logs;
+  }
+
+  async getPlanLogs(
+    team: string,
+    environment: string,
+    component: string,
+    id: number,
+    latest?: boolean
+  ) {
+    const logs = await (latest
+      ? this.getLatestLogs(team, environment, component)
+      : this.getLogs(team, environment, component, id));
+    if (Array.isArray(logs)) {
+      return logs.filter((e) => e.key.includes("plan_output"));
+    }
+    throw logs;
   }
 
   async getLatestLogs(team: string, environment: string, component: string) {
@@ -131,25 +163,20 @@ export class ReconciliationService {
       order: {
         start_date_time: -1,
       },
-      take: 1
+      take: 1,
     });
-    if (latestAuditId.length > 0) {
-      try {
-        const prefix = `${team}/${environment}/${component}/${latestAuditId[0].reconcile_id}/`;
-        const objects = await this.s3h.getObjects(
-          "zlifecycle-tfplan-zmart",
-          prefix
-        );
-        return objects.map((o) => ({
-          key: o.key,
-          body: o.data.Body.toString(),
-        }));
-      } catch (err) {
-        if (err === "No Object was found") {
-          return err;
-        }
-      }
+    if (latestAuditId.length === 0) {
+      throw this.notFound;
     }
-    return "No Object was found";
+    const logs = this.getLogs(
+      team,
+      environment,
+      component,
+      latestAuditId[0].reconcile_id
+    );
+    if (Array.isArray(logs)) {
+      return logs;
+    }
+    throw logs;
   }
 }
