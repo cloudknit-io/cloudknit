@@ -42,7 +42,7 @@ export class ReconciliationController {
   }
 
   @Get('component/latestLogs/:team/:environment/:component')
-  async getLatestLogs(@Param('team') team: string, @Param('environment') environment: string, @Param('component') component: string, @Param('id') id: number) {
+  async getLatestLogs(@Param('team') team: string, @Param('environment') environment: string, @Param('component') component: string) {
     return await this.reconciliationService.getLatestLogs(team, environment, component);
   }
 

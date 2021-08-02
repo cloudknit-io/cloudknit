@@ -124,20 +124,18 @@ export class ReconciliationService {
   }
 
   async getLatestLogs(team: string, environment: string, component: string) {
-    const latestAuditId = await this.componentReconcileRepository.findOne(
-      null,
-      {
-        where: {
-          name: component,
-        },
-        order: {
-          start_date_time: -1,
-        },
-      }
-    );
-    if (latestAuditId) {
+    const latestAuditId = await this.componentReconcileRepository.find({
+      where: {
+        name: component,
+      },
+      order: {
+        start_date_time: -1,
+      },
+      take: 1
+    });
+    if (latestAuditId.length > 0) {
       try {
-        const prefix = `${team}/${environment}/${component}/${latestAuditId.reconcile_id}/`;
+        const prefix = `${team}/${environment}/${component}/${latestAuditId[0].reconcile_id}/`;
         const objects = await this.s3h.getObjects(
           "zlifecycle-tfplan-zmart",
           prefix
