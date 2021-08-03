@@ -36,24 +36,24 @@ export class ReconciliationController {
     return await this.reconciliationService.getEnvironmentAuditList(id);
   }
 
-  @Get('component/logs/:team/:environment/:component/:id')
-  async getLogs(@Param('team') team: string, @Param('environment') environment: string, @Param('component') component: string, @Param('id') id: number) {
-    return await this.reconciliationService.getLogs(team, environment, component, id);
+  @Get('component/logs/:companyId/:team/:environment/:component/:id')
+  async getLogs(@Param('companyId') companyId: string, @Param('team') team: string, @Param('environment') environment: string, @Param('component') component: string, @Param('id') id: number) {
+    return await this.reconciliationService.getLogs(companyId, team, environment, component, id);
   }
 
-  @Get('component/latestLogs/:team/:environment/:component')
-  async getLatestLogs(@Param('team') team: string, @Param('environment') environment: string, @Param('component') component: string) {
-    return await this.reconciliationService.getLatestLogs(team, environment, component);
+  @Get('component/latestLogs/:companyId/:team/:environment/:component')
+  async getLatestLogs(@Param('companyId') companyId: string, @Param('team') team: string, @Param('environment') environment: string, @Param('component') component: string) {
+    return await this.reconciliationService.getLatestLogs(companyId, team, environment, component);
   }
 
-  @Get('component/plan/logs/:team/:environment/:component/:id/:latest')
-  async getPlanLogs(@Param('team') team: string, @Param('environment') environment: string, @Param('component') component: string, @Param('id') id: number, @Param('latest') latest: string) {
-    return await this.reconciliationService.getPlanLogs(team, environment, component, id, latest === 'true');
+  @Get('component/plan/logs/:companyId/:team/:environment/:component/:id/:latest')
+  async getPlanLogs(@Param('companyId') companyId: string, @Param('team') team: string, @Param('environment') environment: string, @Param('component') component: string, @Param('id') id: number, @Param('latest') latest: string) {
+    return await this.reconciliationService.getPlanLogs(companyId, team, environment, component, id, latest === 'true');
   }
 
-  @Get('component/apply/logs/:team/:environment/:component/:id/:latest')
-  async getApplyLogs(@Param('team') team: string, @Param('environment') environment: string, @Param('component') component: string, @Param('id') id: number, @Param('latest') latest: string) {
-    return await this.reconciliationService.getApplyLogs(team, environment, component, id, latest === 'true');
+  @Get('component/apply/logs/:companyId/:team/:environment/:component/:id/:latest')
+  async getApplyLogs(@Param('companyId') companyId: string, @Param('team') team: string, @Param('environment') environment: string, @Param('component') component: string, @Param('id') id: number, @Param('latest') latest: string) {
+    return await this.reconciliationService.getApplyLogs(companyId, team, environment, component, id, latest === 'true');
   }
 
   @Sse('components/notify/:id')
