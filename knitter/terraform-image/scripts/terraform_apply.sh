@@ -9,7 +9,7 @@ aws s3 cp s3://zlifecycle-tfplan-zmart/$team_name/$env_name/$config_name/tfplans
 
 echo $show_output_start
 terraform apply -auto-approve -input=false -parallelism=2 -no-color terraform-plan || Error "Can not apply terraform plan" 2>&1 | tee -a /tmp/apply_output.txt
-result=${PIPESTATUS[0]}
+result=$?
 echo -n $result >/tmp/plan_code.txt
 echo $show_output_end
 
