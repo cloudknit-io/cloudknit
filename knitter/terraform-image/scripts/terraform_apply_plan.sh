@@ -5,12 +5,16 @@ data='{"metadata":{"labels":{"component_status":"running_plan"}}}'
 argocd app patch $team_env_config_name --patch $data --type merge >null
 
 echo $show_output_start
-terraform plan -lock=$lock_state -parallelism=2 -input=false -no-color -out=terraform-plan -detailed-exitcode
+((((terraform plan -lock=$lock_state -parallelism=2 -input=false -no-color -out=terraform-plan -detailed-exitcode; echo $? >&3) | appendLogs "/tmp/plan_output.txt" >&4) 3>&1) | (read xs; exit $xs)) 4>&1
+# terraform plan -lock=$lock_state -parallelism=2 -input=false -no-color -out=terraform-plan -detailed-exitcode 2>&1 | tee -a /tmp/plan_output.txt
 result=$?
 echo -n $result >/tmp/plan_code.txt
+echo $result
+echo /tmp/plan_output.txt
+cat /tmp/plan_output.txt
 echo $show_output_end
 
-#aws s3 cp /tmp/plan_output.txt s3://zlifecycle-tfplan-zmart/$team_name/$env_name/$config_name/$config_reconcile_id/plan_output
+aws s3 cp /tmp/plan_output.txt s3://zlifecycle-tfplan-zmart/$team_name/$env_name/$config_name/$config_reconcile_id/plan_output
 aws s3 cp terraform-plan s3://zlifecycle-tfplan-zmart/$team_name/$env_name/$config_name/tfplans/$config_reconcile_id --profile compuzest-shared
 
 data='{"metadata":{"labels":{"component_status":"calculating_cost"}}}'

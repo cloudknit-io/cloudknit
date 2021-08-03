@@ -43,6 +43,12 @@ function PatchError() {
   sh /audit.sh $team_name $env_name $config_name "" "Failed" $reconcile_id $config_reconcile_id $is_destroy 0
 }
 
+function appendLogs() {
+  while read line; do
+    echo $line | tee -a $1 
+  done
+}
+
 function Error() {
   if [ -n "$1" ]; then
     echo "Error: "$1
