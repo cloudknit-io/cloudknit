@@ -26,6 +26,7 @@ spec:
       serviceAccountName: argo
       inputs:
         parameters:
+          - name: customer_id
           - name: team_name
           - name: env_name
           - name: config_name
@@ -92,6 +93,8 @@ spec:
                   value: '{{ printf "{{steps.init-component-audit.outputs.parameters.reconcile_id}}" }}'
                 - name: reconcile_id
                   value: '{{ printf "{{inputs.parameters.reconcile_id}}" }}'
+                - name: customer_id
+                  value: '{{ printf "{{inputs.parameters.customer_id}}" }}'
             when: '{{ printf "{{steps.validate.outputs.parameters.errorCode}}" }} != 20'
         - - name: end-component-audit
             template: audit_sh
@@ -149,6 +152,7 @@ spec:
           - name: is_destroy
           - name: config_reconcile_id
           - name: reconcile_id
+          - name: customer_id
       resource:
         action: create
         manifest: |
@@ -182,6 +186,8 @@ spec:
                 value: '{{ printf "{{inputs.parameters.reconcile_id}}" }}'
               - name: config_reconcile_id
                 value: '{{ printf "{{inputs.parameters.config_reconcile_id}}" }}'
+              - name: customer_id
+                value: '{{ printf "{{inputs.parameters.customer_id}}" }}'
             workflowTemplateRef:
               name: '{{ printf "{{inputs.parameters.workflowtemplate}}" }}'
         successCondition: status.phase == Succeeded

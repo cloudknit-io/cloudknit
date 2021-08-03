@@ -25,6 +25,7 @@ spec:
     - name: update
       inputs:
         parameters:
+          - name: customer_id
           - name: team_name
           - name: env_name
           - name: config_name
@@ -66,6 +67,8 @@ spec:
                   value: '{{ printf "{{inputs.parameters.config_reconcile_id}}" }}'
                 - name: reconcile_id
                   value: '{{ printf "{{inputs.parameters.reconcile_id}}" }}'
+                - name: customer_id
+                  value: '{{ printf "{{inputs.parameters.customer_id}}" }}'
         - - name: notify
             template: notify
             arguments:
@@ -110,6 +113,8 @@ spec:
                   value: '{{ printf "{{inputs.parameters.config_reconcile_id}}" }}'
                 - name: reconcile_id
                   value: '{{ printf "{{inputs.parameters.reconcile_id}}" }}'
+                - name: customer_id
+                  value: '{{ printf "{{inputs.parameters.customer_id}}" }}'
             when: '{{ printf "{{steps.plan.outputs.parameters.planCode}}" }} == 2'
 
     - name: approve
