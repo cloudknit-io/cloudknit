@@ -1,0 +1,22 @@
+image:
+  tag: crdv1
+
+env:
+  ilRepo: git@github.com:CompuZest/zmart-sandbox-il.git
+  GITHUB_WEBHOOK_SECRET: CompuZest1357#
+  ZLIFECYCLE_OPERATOR_NAMESPACE: zlifecycle-il-operator-system
+  K8S_API_URL: https://7D1798595CCCD94E5BAE49B85B7FBBA0.gr7.us-east-1.eks.amazonaws.com
+  ilRepoName: zmart-sandbox-il
+  adminEmail: admin@compuzest.com
+  companyName: zmart-sandbox
+  configRepoName: zmart-config
+  ARGOCD_USERNAME: admin
+  ARGOCD_SERVER_URL: argocd-server
+  GITHUB_ZLIFECYCLE_OWNER: CompuZest
+  ZLIFECYCLE_MASTER_SSH: zlifecycle-operator-ssh
+  configRepo: git@github.com:zmart-tech-sandbox/zmart-config.git
+  teamsConfigPath: teams
+  helmChartsRepo: git@github.com:CompuZest/helm-charts.git
+  ilRepoSourceOwner: CompuZest
+  ARGOCD_PASSWORD: CompuZest1357#
+  ARGOCD_WEBHOOK_URL: https://sandbox-admin.zlifecycle.com/api/webhook
