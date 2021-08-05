@@ -38,6 +38,11 @@ type Variable struct {
 	ValueFrom string `json:"valueFrom,omitempty"`
 }
 
+type Secret struct {
+	Name      string `json:"name"`
+	Key       string `json:"key"`
+}
+
 type Output struct {
 	Name string `json:"name"`
 }
@@ -54,6 +59,7 @@ type EnvironmentComponent struct {
 
 	VariablesFile *VariablesFile `json:"variablesFile,omitempty"`
 	Variables     []*Variable    `json:"variables,omitempty"`
+	Secrets       []*Secret      `json:"secrets,omitempty"`
 	Outputs       []*Output      `json:"outputs,omitempty"`
 }
 

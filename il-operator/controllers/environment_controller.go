@@ -16,6 +16,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
+	"github.com/google/go-cmp/cmp"
 	"go.uber.org/atomic"
 	"io/ioutil"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -113,11 +114,6 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		); err != nil {
 			return ctrl.Result{}, err
 		}
-
-		// TODO: This will be enabled when we revisit validation
-		//if err := r.saveEnvironmentState(ctx, environment, envTrackerCm); err != nil {
-		//	return ctrl.Result{}, err
-		//}
 	}
 
 	r.Log.Info(
@@ -181,12 +177,30 @@ func delayEnvironmentReconcileOnInitialRun(log logr.Logger, seconds int64) {
 }
 
 func (r *EnvironmentReconciler) updateStatus(ctx context.Context, e *stablev1.Environment) error {
-	e.Status.TeamName = e.Spec.TeamName
-	e.Status.EnvName = e.Spec.EnvName
-	e.Status.EnvironmentComponent = e.Spec.EnvironmentComponent
-	if err := r.Status().Update(ctx, e); err != nil {
-		return err
+	isStateDirty := e.Status.TeamName != e.Spec.TeamName ||
+		e.Status.EnvName != e.Spec.EnvName ||
+		!cmp.Equal(e.Status.EnvironmentComponent, e.Spec.EnvironmentComponent)
+
+	if isStateDirty {
+		r.Log.Info(
+			"Environment state is dirty and needs to be updated",
+			"team", e.Spec.TeamName,
+			"environment", e.Spec.EnvName,
+			)
+		e.Status.TeamName = e.Spec.TeamName
+		e.Status.EnvName = e.Spec.EnvName
+		e.Status.EnvironmentComponent = e.Spec.EnvironmentComponent
+		if err := r.Status().Update(ctx, e); err != nil {
+			return err
+		}
+	} else {
+		r.Log.Info(
+			"environment state is up-to-date",
+			"team", e.Spec.TeamName,
+			"environment", e.Spec.EnvName,
+		)
 	}
+
 	return nil
 }
 
@@ -298,6 +312,7 @@ func generateAndSaveEnvironmentComponents(
 			EnvCompDependsOn:     ec.DependsOn,
 			EnvCompVariablesFile: tfvars,
 			EnvCompVariables:     ec.Variables,
+			EnvCompSecrets:       ec.Secrets,
 		}
 		err := tf.GenerateTerraform(fileUtil, vars, envComponentDirectory)
 
