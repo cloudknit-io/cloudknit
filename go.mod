@@ -16,6 +16,7 @@ require (
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gogo/protobuf v1.3.1 // indirect
 	github.com/golang/mock v1.5.0
+	github.com/google/go-cmp v0.4.0
 	github.com/google/go-github/v32 v32.1.0
 	github.com/hashicorp/go-uuid v1.0.2 // indirect
 	github.com/jcmturner/gofork v1.0.0 // indirect
