@@ -33,7 +33,12 @@ type TerraformOutputsConfig struct {
 
 // TerraformSecretsConfig for creating tf secrets
 type TerraformSecretsConfig struct {
-	Secrets []*stablev1.Secret
+	Secrets []Secret
+}
+
+type Secret struct {
+	Key  string
+	Name string
 }
 
 // TerraformDataConfig variables for creating tf backend
