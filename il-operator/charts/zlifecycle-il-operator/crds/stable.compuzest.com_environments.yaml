@@ -72,9 +72,12 @@ spec:
                             type: string
                           name:
                             type: string
+                          scope:
+                            type: string
                         required:
                         - key
                         - name
+                        - scope
                         type: object
                       type: array
                     tags:
@@ -173,9 +176,12 @@ spec:
                             type: string
                           name:
                             type: string
+                          scope:
+                            type: string
                         required:
                         - key
                         - name
+                        - scope
                         type: object
                       type: array
                     tags:

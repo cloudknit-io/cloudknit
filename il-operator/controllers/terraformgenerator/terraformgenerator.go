@@ -13,6 +13,7 @@
 package terraformgenerator
 
 import (
+	"github.com/compuzest/zlifecycle-il-operator/controllers/secrets"
 	"os"
 	"path/filepath"
 	"text/template"
@@ -45,6 +46,7 @@ type TemplateVariables struct {
 	EnvCompVariables     []*stablev1.Variable
 	EnvCompVariablesFile string
 	EnvCompSecrets       []*stablev1.Secret
+	SecretScope          string
 	EnvCompModuleSource  string
 	EnvCompModulePath    string
 	EnvCompModuleName    string
@@ -95,9 +97,18 @@ func (tf TerraformGenerator) GenerateTerraform(
 		DependsOn: vars.EnvCompDependsOn,
 	}
 
-	secretsConfig := TerraformSecretsConfig{
-		Secrets: vars.EnvCompSecrets,
+
+	secretsMeta := secrets.SecretMeta{
+		Company:              env.Config.CompanyName,
+		Team:                 vars.TeamName,
+		Environment:          vars.EnvName,
+		EnvironmentComponent: vars.EnvCompName,
 	}
+	secretsConfig, err := createSecretsConfig(vars.EnvCompSecrets, secretsMeta)
+	if err != nil {
+		return err
+	}
+
 
 	if err := tf.GenerateProvider(fileUtil, environmentComponentDirectory, componentName); err != nil {
 		return err
@@ -137,6 +148,24 @@ func (tf TerraformGenerator) GenerateTerraform(
 	}
 
 	return nil
+}
+
+func createSecretsConfig(secretArray []*stablev1.Secret, meta secrets.SecretMeta) (*TerraformSecretsConfig, error) {
+	var scopedSecrets []Secret
+	for _, s := range secretArray {
+		scope := s.Scope
+		if scope == "" {
+			scope = "component"
+		}
+		key, err := secrets.CreateKey(s.Key, scope, meta)
+		if err != nil {
+			return nil, err
+		}
+		scopedSecrets = append(scopedSecrets, Secret{Key: key, Name: s.Name})
+	}
+	conf := TerraformSecretsConfig{ Secrets: scopedSecrets }
+
+	return &conf, nil
 }
 
 // GenerateSharedProvider save provider file to be executed by terraform

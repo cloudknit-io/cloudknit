@@ -40,6 +40,7 @@ type Variable struct {
 
 type Secret struct {
 	Name      string `json:"name"`
+	Scope     string `json:"scope"`
 	Key       string `json:"key"`
 }
 
