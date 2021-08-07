@@ -54,7 +54,7 @@ var Config = config{
 	RepoBranch:          "main",
 
 	HelmChartsRepo: os.Getenv("helmChartsRepo"),
-	K8sAPIURL:      os.Getenv("K8S_API_URL"),
+	K8sAPIURL:      "https://kubernetes.default.svc",
 
 	ArgocdServerUrl: getArgocdServerAddr(),
 	ArgocdHookUrl:   os.Getenv("ARGOCD_WEBHOOK_URL"),
