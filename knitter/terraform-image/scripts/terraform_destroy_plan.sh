@@ -10,7 +10,7 @@ result=$?
 echo -n $result >/tmp/plan_code.txt
 echo $show_output_end
 
-aws s3 cp /tmp/plan_output.txt s3://zlifecycle-tfplan-$customer_id/$team_name/$env_name/$config_name/$config_reconcile_id/plan_output
+aws s3 cp /tmp/plan_output.txt s3://zlifecycle-tfplan-$customer_id/$team_name/$env_name/$config_name/$config_reconcile_id/plan_output --profile compuzest-shared
 aws s3 cp terraform-plan s3://zlifecycle-tfplan-$customer_id/$team_name/$env_name/$config_name/tfplans/$config_reconcile_id --profile compuzest-shared
 
 costing_payload='{"teamName": "'$team_name'", "environmentName": "'$env_name'", "component": { "componentName": "'$config_name'", "isDeleted" : '1'  }}'
