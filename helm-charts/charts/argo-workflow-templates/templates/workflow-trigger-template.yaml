@@ -123,7 +123,7 @@ spec:
           - name: config_name
       script:
         imagePullPolicy: Always
-        image: 413422438110.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-terraform:latest
+        image: 413422438110.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-terraform:{{.Values.imageTag}}
         cmd:
           - sh
         source: |
@@ -205,7 +205,7 @@ spec:
           - name: config_reconcile_id
       script:
         imagePullPolicy: Always
-        image: 413422438110.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-terraform:latest
+        image: 413422438110.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-terraform:{{.Values.imageTag}}
         cmd:
           - sh
         source: |

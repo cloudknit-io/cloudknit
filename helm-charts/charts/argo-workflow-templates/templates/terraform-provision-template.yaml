@@ -50,7 +50,7 @@ spec:
       serviceAccountName: argo
       script:
         imagePullPolicy: Always
-        image: 413422438110.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-terraform-provisioner:latest
+        image: 413422438110.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-terraform-provisioner:{{.Values.imageTag}}
         env:
           - name: TERRAFORM_IL_PATH
             value: 'home/terraform-config/{{ printf "{{inputs.parameters.terraform_il_path}}" }}'
