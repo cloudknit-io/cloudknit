@@ -22,6 +22,7 @@ terraform_il_path=$10
 is_destroy=$11
 config_reconcile_id=$12
 reconcile_id=$13
+customer_id=$14
 
 team_env_name=$team_name-$env_name
 team_env_config_name=$team_name-$env_name-$config_name
