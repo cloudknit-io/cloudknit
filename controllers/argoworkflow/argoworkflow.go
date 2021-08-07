@@ -142,6 +142,10 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1.Environment) *workfl
 				Value: anyStringPointer(modulePath),
 			},
 			{
+				Name:  "customer_id",
+				Value: anyStringPointer(env.Config.CompanyName),
+			},
+			{
 				Name:  "team_name",
 				Value: anyStringPointer(environment.Spec.TeamName),
 			},
