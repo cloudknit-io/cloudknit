@@ -102,6 +102,7 @@ export class ReconciliationService {
   }
 
   async getLogs(
+    companyId: string,
     team: string,
     environment: string,
     component: string,
@@ -110,7 +111,7 @@ export class ReconciliationService {
     try {
       const prefix = `${team}/${environment}/${component}/${id}/`;
       const objects = await this.s3h.getObjects(
-        "zlifecycle-tfplan-zmart",
+        `zlifecycle-tfplan-${companyId}`,
         prefix
       );
       return objects.map((o) => ({
@@ -125,6 +126,7 @@ export class ReconciliationService {
   }
 
   async getApplyLogs(
+    companyId: string,
     team: string,
     environment: string,
     component: string,
@@ -132,8 +134,8 @@ export class ReconciliationService {
     latest: boolean
   ) {
     const logs = latest === true
-      ? await this.getLatestLogs(team, environment, component)
-      : await this.getLogs(team, environment, component, id);
+      ? await this.getLatestLogs(companyId, team, environment, component)
+      : await this.getLogs(companyId, team, environment, component, id);
     if (Array.isArray(logs)) {
       return logs.filter((e) => e.key.includes("apply_output"));
     }
@@ -141,6 +143,7 @@ export class ReconciliationService {
   }
 
   async getPlanLogs(
+    companyId: string,
     team: string,
     environment: string,
     component: string,
@@ -148,15 +151,15 @@ export class ReconciliationService {
     latest: boolean
   ) {
     const logs = latest === true
-      ? await this.getLatestLogs(team, environment, component)
-      : await this.getLogs(team, environment, component, id);
+      ? await this.getLatestLogs(companyId, team, environment, component)
+      : await this.getLogs(companyId, team, environment, component, id);
     if (Array.isArray(logs)) {
       return logs.filter((e) => e.key.includes("plan_output"));
     }
     return logs;
   }
 
-  async getLatestLogs(team: string, environment: string, component: string) {
+  async getLatestLogs(companyId: string, team: string, environment: string, component: string) {
     const latestAuditId = await this.componentReconcileRepository.find({
       where: {
         name: `${team}-${environment}-${component}`,
@@ -170,6 +173,7 @@ export class ReconciliationService {
       return this.notFound;
     }
     const logs = await this.getLogs(
+      companyId,
       team,
       environment,
       component,
