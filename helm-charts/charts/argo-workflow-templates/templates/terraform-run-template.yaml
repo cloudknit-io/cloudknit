@@ -26,6 +26,7 @@ spec:
     - name: run
       inputs:
         parameters:
+          - name: customer_id
           - name: team_name
           - name: env_name
           - name: config_name
@@ -65,7 +66,7 @@ spec:
         cmd:
           - sh
         source: |
-          ./run_terraform.sh '{{ printf "{{inputs.parameters.team_name}}" }}' '{{ printf "{{inputs.parameters.env_name}}" }}' '{{ printf "{{inputs.parameters.config_name}}" }}' '{{ printf "{{inputs.parameters.module_source}}" }}' '{{ printf "{{inputs.parameters.module_source_path}}" }}' '{{ printf "{{inputs.parameters.is_apply}}" }}' '{{ printf "{{inputs.parameters.lock_state}}" }}' '{{ printf "{{inputs.parameters.is_sync}}" }}' '{{ printf "{{workflow.name}}" }}' '{{ printf "{{inputs.parameters.terraform_il_path}}" }}' '{{ printf "{{inputs.parameters.is_destroy}}" }}' '{{ printf "{{inputs.parameters.config_reconcile_id}}" }}' '{{ printf "{{inputs.parameters.reconcile_id}}" }}'
+          ./run_terraform.sh '{{ printf "{{inputs.parameters.team_name}}" }}' '{{ printf "{{inputs.parameters.env_name}}" }}' '{{ printf "{{inputs.parameters.config_name}}" }}' '{{ printf "{{inputs.parameters.module_source}}" }}' '{{ printf "{{inputs.parameters.module_source_path}}" }}' '{{ printf "{{inputs.parameters.is_apply}}" }}' '{{ printf "{{inputs.parameters.lock_state}}" }}' '{{ printf "{{inputs.parameters.is_sync}}" }}' '{{ printf "{{workflow.name}}" }}' '{{ printf "{{inputs.parameters.terraform_il_path}}" }}' '{{ printf "{{inputs.parameters.is_destroy}}" }}' '{{ printf "{{inputs.parameters.config_reconcile_id}}" }}' '{{ printf "{{inputs.parameters.reconcile_id}}" }}' '{{ printf "{{inputs.parameters.customer_id}}" }}'
         env:
           - name: CUSTOMER_AWS_ACCESS_KEY_ID
             valueFrom:
