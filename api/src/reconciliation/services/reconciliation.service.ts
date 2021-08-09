@@ -88,8 +88,9 @@ export class ReconciliationService {
   }
 
   async updateSkippedWorkflows<T>(id: any, repo: Repository<T>) {
-    const entries = await repo.findByIds(id, {
+    const entries = await repo.find({
       where: {
+        name: id,
         end_date_time: null
       }
     });
