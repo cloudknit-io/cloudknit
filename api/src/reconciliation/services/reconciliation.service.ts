@@ -1,6 +1,5 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { S3 } from "aws-sdk";
 import { Subject } from "rxjs";
 import { Mapper } from "src/costing/utilities/mapper";
 import { S3Handler } from "src/costing/utilities/s3Handler";
@@ -47,6 +46,7 @@ export class ReconciliationService {
         status: runData.status,
         end_date_time: runData.endDateTime,
       };
+      await this.updateSkippedWorkflows<EnvironmentReconcile>(entry.name, this.environmentReconcileRepository);
       savedEntry = await this.environmentReconcileRepository.save(entry);
     }
     this.notifyStream.next(savedEntry);
@@ -69,6 +69,10 @@ export class ReconciliationService {
       runData.componentReconciles
     )[0];
 
+    if (!componentEntry.reconcile_id) {
+      await this.updateSkippedWorkflows<ComponentReconcile>(componentEntry.name, this.componentReconcileRepository);
+    }
+
     if (componentEntry.reconcile_id) {
       const existingEntry = await this.componentReconcileRepository.findOne(
         componentEntry.reconcile_id
@@ -81,6 +85,21 @@ export class ReconciliationService {
     const entry = await this.componentReconcileRepository.save(componentEntry);
     this.notifyStream.next(entry);
     return entry.reconcile_id;
+  }
+
+  async updateSkippedWorkflows<T>(id: any, repo: Repository<T>) {
+    const entries = await repo.findByIds(id, {
+      where: {
+        end_date_time: null
+      }
+    });
+    if (entries.length > 0) {
+      const newEntries = entries.map(entry => ({
+        ...entry,
+        status: 'Skipped'
+      }));
+      await repo.save(newEntries);
+    }
   }
 
   async getComponentAuditList(id: string): Promise<ComponentAudit[]> {
