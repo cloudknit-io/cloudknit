@@ -56,7 +56,7 @@ type EnvironmentComponent struct {
 	Module       *Module  `json:"module"`
 	Tags         []*Tags  `json:"tags,omitempty"`
 
-	MarkedForDeletion bool `json:"markedForDeletion,omitempty"`
+	Destroy      bool     `json:"destroy,omitempty"`
 
 	VariablesFile *VariablesFile `json:"variablesFile,omitempty"`
 	Variables     []*Variable    `json:"variables,omitempty"`
@@ -69,6 +69,7 @@ type EnvironmentSpec struct {
 	TeamName             string                  `json:"teamName"`
 	EnvName              string                  `json:"envName"`
 	Description          string                  `json:"description,omitempty"`
+	Teardown             bool                    `json:"teardown,omitempty"`
 	EnvironmentComponent []*EnvironmentComponent `json:"components"`
 }
 
