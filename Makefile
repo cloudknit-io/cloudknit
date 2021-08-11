@@ -1,9 +1,9 @@
-SHELL = /bin/bash
+SHELL = /bin/zsh
 
-export CGO_ENABLED = 0
-export DOCKER_TAG = latest
-export DOCKER_IMG = zlifecycle-il-operator
-export VERSION = $(shell git describe --always --tags 2>/dev/null || echo "initial")
+CGO_ENABLED = 0
+DOCKER_TAG ?= latest
+DOCKER_IMG = zlifecycle-il-operator
+VERSION = $(shell git describe --always --tags 2>/dev/null || echo "initial")
 
 CRD_OPTIONS ?= "crd:trivialVersions=true,preserveUnknownFields=false"
 
@@ -104,19 +104,9 @@ run: generate manifests
 	go run ./main.go
 
 # Ensure controller-gen is available
-.PHONY: controller-gen
-download-controller-gen:
-ifeq (, $(shell command -v controller-gen))
-	@{ \
-	echo "Downloading controller-gen..."
-	set -e ;\
-	CONTROLLER_GEN_TMP_DIR=$$(mktemp -d) ;\
-	cd $$CONTROLLER_GEN_TMP_DIR ;\
-	go mod init tmp ;\
-	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.6.1 ;\
-	rm -rf $$CONTROLLER_GEN_TMP_DIR ;\
-	}
-endif
+CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
+controller-gen: ## Download controller-gen locally if necessary.
+	$(call go-get-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@v0.4.1)
 
 .PHONY: mockgen
 download-mockgen:
@@ -131,3 +121,17 @@ ifeq (, $(shell command -v mockgen))
 	rm -rf $$MOCKGEN_TMP_DIR ;\
 	}
 endif
+
+# go-get-tool will 'go get' any package $2 and install it to $1.
+PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
+define go-get-tool
+@[ -f $(1) ] || { \
+set -e ;\
+TMP_DIR=$$(mktemp -d) ;\
+cd $$TMP_DIR ;\
+go mod init tmp ;\
+echo "Downloading $(2)" ;\
+GOBIN=$(PROJECT_DIR)/bin go get $(2) ;\
+rm -rf $$TMP_DIR ;\
+}
+endef
