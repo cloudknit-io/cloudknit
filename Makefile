@@ -3,7 +3,6 @@ SHELL = /bin/zsh
 CGO_ENABLED = 0
 DOCKER_TAG ?= latest
 DOCKER_IMG = zlifecycle-il-operator
-VERSION = $(shell git describe --always --tags 2>/dev/null || echo "initial")
 
 CRD_OPTIONS ?= "crd:trivialVersions=true,preserveUnknownFields=false"
 
