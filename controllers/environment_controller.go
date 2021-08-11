@@ -17,9 +17,11 @@ import (
 	"fmt"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	"github.com/google/go-cmp/cmp"
+	github2 "github.com/google/go-github/v32/github"
 	"go.uber.org/atomic"
 	"io/ioutil"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/types"
 	"time"
 
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
@@ -56,23 +58,12 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	environment := &stablev1.Environment{}
 
-	if err := r.Get(ctx, req.NamespacedName, environment); err != nil {
-		if errors.IsNotFound(err) {
-			r.Log.Info(
-				"Environment missing from cache, ending reconcile...",
-				"name", req.Name,
-				"namespace", req.Namespace,
-			)
-			return ctrl.Result{}, nil
-		}
-		r.Log.Error(
-			err,
-			"Error occurred while getting Environment...",
-			"name", req.Name,
-			"namespace", req.Namespace,
-		)
-
+	exists, err := r.tryGetEnvironment(ctx, req, environment)
+	if err != nil {
 		return ctrl.Result{}, err
+	}
+	if exists == false {
+		return ctrl.Result{}, nil
 	}
 
 	if err := r.updateStatus(ctx, environment); err != nil {
@@ -84,15 +75,20 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, nil
 	}
 
-	//finalizer := env.Config.GithubFinalizer
-	//if err := r.handleFinalizer(ctx, environment, finalizer); err != nil {
-	//	return ctrl.Result{}, err
-	//}
+	finalizer := env.Config.EnvironmentFinalizer
+	finalizerCompleted, err := r.handleFinalizer(ctx, environment, finalizer)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+	if finalizerCompleted {
+		return ctrl.Result{}, nil
+	}
 
 	envDirectory := il.EnvironmentDirectory(environment.Spec.TeamName)
 	envComponentDirectory := il.EnvironmentComponentDirectory(environment.Spec.TeamName, environment.Spec.EnvName)
 	fileUtil := &file.UtilFileService{}
-	isDeleteEvent := !environment.DeletionTimestamp.IsZero()
+
+	isDeleteEvent := !environment.DeletionTimestamp.IsZero() || environment.Spec.Teardown
 	if !isDeleteEvent {
 		r.Log.Info(
 			"Generating Environment application...",
@@ -158,6 +154,29 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	return ctrl.Result{}, nil
 }
 
+func (r *EnvironmentReconciler) tryGetEnvironment(ctx context.Context, req ctrl.Request, e *stablev1.Environment) (exists bool, err error) {
+	if err := r.Get(ctx, req.NamespacedName, e); err != nil {
+		if errors.IsNotFound(err) {
+			r.Log.Info(
+				"Environment missing from cache, ending reconcile...",
+				"name", req.Name,
+				"namespace", req.Namespace,
+			)
+			return false, nil
+		}
+		r.Log.Error(
+			err,
+			"Error occurred while getting Environment...",
+			"name", req.Name,
+			"namespace", req.Namespace,
+		)
+
+		return false, err
+	}
+
+	return true, nil
+}
+
 // SetupWithManager sets up the Environment Controller with Manager
 func (r *EnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
@@ -204,7 +223,7 @@ func (r *EnvironmentReconciler) updateStatus(ctx context.Context, e *stablev1.En
 	return nil
 }
 
-func (r *EnvironmentReconciler) handleFinalizer(ctx context.Context, e *stablev1.Environment, finalizer string) error {
+func (r *EnvironmentReconciler) handleFinalizer(ctx context.Context, e *stablev1.Environment, finalizer string) (completed bool, err error) {
 	if e.DeletionTimestamp.IsZero() {
 		if !common.ContainsString(e.GetFinalizers(), finalizer) {
 			r.Log.Info(
@@ -214,43 +233,72 @@ func (r *EnvironmentReconciler) handleFinalizer(ctx context.Context, e *stablev1
 			)
 			e.SetFinalizers(append(e.GetFinalizers(), finalizer))
 			if err := r.Update(ctx, e); err != nil {
-				return err
+				return false, err
 			}
 		}
 	} else {
 		if common.ContainsString(e.GetFinalizers(), finalizer) {
-			if err := r.postDeleteHook(e); err != nil {
-				return err
+			if err := r.postDeleteHook(ctx, e); err != nil {
+				return false, err
+			}
+
+			// hack in order to avoid error for stale cached object
+			// ref: https://github.com/operator-framework/operator-sdk/issues/3968
+			freshEnvironment := &stablev1.Environment{}
+			if err := r.Get(ctx, types.NamespacedName{Name: e.Name, Namespace: e.Namespace}, freshEnvironment); err != nil {
+				return false, err
 			}
 
 			e.SetFinalizers(common.RemoveString(e.GetFinalizers(), finalizer))
-			if err := r.Update(ctx, e); err != nil {
-				return err
+			if err := r.Update(ctx, freshEnvironment); err != nil {
+				return false, err
 			}
+
+			return true, nil
 		}
 	}
 
-	return nil
+	return false, nil
 }
 
-func (r *EnvironmentReconciler) postDeleteHook(e *stablev1.Environment) error {
+func (r *EnvironmentReconciler) postDeleteHook(ctx context.Context, e *stablev1.Environment) error {
 	r.Log.Info(
 		"Executing post delete hook for environment finalizer",
 		"environment", e.Spec.EnvName,
 		"team", e.Spec.TeamName,
 	)
+
+	if err := r.deleteExternalResources(ctx, e); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *EnvironmentReconciler) deleteExternalResources(ctx context.Context, e *stablev1.Environment) error {
+	owner         := env.Config.ZlifecycleOwner
+	ilRepo        := env.Config.ILRepoName
+	api           := github.NewHttpGitClient(env.Config.GitHubAuthToken, ctx)
+	branch        := env.Config.RepoBranch
+	now           := time.Now()
+	paths         := extractPathsToRemove(*e)
+	team          := fmt.Sprintf("%s-team-environment", e.Spec.TeamName)
+	commitAuthor  := &github2.CommitAuthor{Date: &now, Name: &env.Config.GithubSvcAccntName, Email: &env.Config.GithubSvcAccntEmail}
+	commitMessage := fmt.Sprintf("Cleaning il objects for %s team in %s environment", e.Spec.TeamName, e.Spec.EnvName)
+	if err := github.DeletePatternsFromRootTree(r.Log, api, owner, ilRepo, branch, team, paths, commitAuthor, commitMessage); err != nil {
+		return err
+	}
 	return nil
 }
 
 // TODO: Should we remove objects in IL repo?
-//func extractPathsToRemove(e stablev1.Environment) []string {
-//	envPath    := fmt.Sprintf("%s-environment-component", e.Spec.EnvName)
-//	envAppPath := fmt.Sprintf("%s-environment.yaml", e.Spec.EnvName)
-//	return []string{
-//		envPath,
-//		envAppPath,
-//	}
-//}
+func extractPathsToRemove(e stablev1.Environment) []string {
+	envPath    := fmt.Sprintf("%s-environment-component", e.Spec.EnvName)
+	envAppPath := fmt.Sprintf("%s-environment.yaml", e.Spec.EnvName)
+	return []string{
+		envPath,
+		envAppPath,
+	}
+}
 
 func generateAndSaveEnvironmentComponents(
 	log logr.Logger,
