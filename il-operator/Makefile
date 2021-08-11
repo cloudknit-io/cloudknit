@@ -1,9 +1,8 @@
-SHELL = /bin/bash
+SHELL = /bin/zsh
 
-export CGO_ENABLED = 0
-export DOCKER_TAG = latest
-export DOCKER_IMG = zlifecycle-il-operator
-export VERSION = $(shell git describe --always --tags 2>/dev/null || echo "initial")
+CGO_ENABLED = 0
+DOCKER_TAG ?= latest
+DOCKER_IMG = zlifecycle-il-operator
 
 CRD_OPTIONS ?= "crd:trivialVersions=true,preserveUnknownFields=false"
 
