@@ -56,7 +56,7 @@ func ValidateEnvironmentUpdate(e Environment) error {
 func validateEnvironmentCommon(e Environment, isCreate bool) field.ErrorList {
 	var allErrs field.ErrorList
 
-	if err := checkEnvironmentFields(e); err != nil {
+	if err := checkEnvironmentFields(e, isCreate); err != nil {
 		allErrs = append(allErrs, err...)
 	}
 	if err := validateEnvironmentComponents(e.Spec.EnvironmentComponent, isCreate); err != nil {
@@ -107,7 +107,7 @@ func validateEnvironmentComponents(ecs []*EnvironmentComponent, isCreate bool) f
 			allErrs = append(allErrs, err)
 		}
 		if isCreate {
-			if err := checkEnvironmentComponentNotInitiallyMarkedForDeletion(ec, i); err != nil {
+			if err := checkEnvironmentComponentNotInitiallyDestroyed(ec, i); err != nil {
 				allErrs = append(allErrs, err)
 			}
 		}
@@ -120,8 +120,17 @@ func validateEnvironmentComponents(ecs []*EnvironmentComponent, isCreate bool) f
 	return allErrs
 }
 
-func checkEnvironmentFields(e Environment) field.ErrorList {
+func checkEnvironmentFields(e Environment, isCreate bool) field.ErrorList {
 	var allErrs field.ErrorList
+
+	if isCreate {
+		if e.Spec.Teardown == true {
+			fldPath := field.NewPath("spec").Child("teardown")
+			err := errors.New("environment cannot be created with 'Teardown' equal to true")
+			fe := field.Invalid(fldPath, e.Spec.Teardown, err.Error())
+			allErrs = append(allErrs, fe)
+		}
+	}
 
 	if e.Spec.TeamName == "" {
 		fldPath := field.NewPath("spec").Child("teamName")
@@ -152,11 +161,11 @@ func checkEnvironmentComponentsNotEmpty(ecs []*EnvironmentComponent) *field.Erro
 	return nil
 }
 
-func checkEnvironmentComponentNotInitiallyMarkedForDeletion(ec *EnvironmentComponent, index int) *field.Error {
-	if ec.MarkedForDeletion == true {
-		fldPath := field.NewPath("spec").Child("environmentComponent").Index(index).Child("markedForDeletion")
-		err := errors.New("environment component cannot have be initialized with 'markForDeletion' equal to true")
-		return field.Invalid(fldPath, ec.MarkedForDeletion, err.Error())
+func checkEnvironmentComponentNotInitiallyDestroyed(ec *EnvironmentComponent, index int) *field.Error {
+	if ec.Destroy == true {
+		fldPath := field.NewPath("spec").Child("environmentComponent").Index(index).Child("destroy")
+		err := errors.New("environment component cannot be initialized with 'destroy' equal to true")
+		return field.Invalid(fldPath, ec.Destroy, err.Error())
 	}
 	return nil
 }

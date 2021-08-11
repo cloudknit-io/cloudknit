@@ -16,12 +16,12 @@ type config struct {
 
 	EnvironmentStateConfigMap string
 
-	GithubSvcAccntName  string
-	GithubSvcAccntEmail string
-	GithubFinalizer     string
-	GitHubAuthToken     string
-	GitHubWebhookSecret string
-	RepoBranch          string
+	GithubSvcAccntName   string
+	GithubSvcAccntEmail  string
+	EnvironmentFinalizer string
+	GitHubAuthToken      string
+	GitHubWebhookSecret  string
+	RepoBranch           string
 
 	HelmChartsRepo string
 	K8sAPIURL      string
@@ -46,12 +46,12 @@ var Config = config{
 
 	EnvironmentStateConfigMap: "environment-state-cm",
 
-	GithubSvcAccntName:  "zLifecycle",
-	GithubSvcAccntEmail: "zLifecycle@compuzest.com",
-	GithubFinalizer:     "zlifecycle.compuzest.com/github-finalizer",
-	GitHubAuthToken:     os.Getenv("GITHUB_AUTH_TOKEN"),
-	GitHubWebhookSecret: os.Getenv("GITHUB_WEBHOOK_SECRET"),
-	RepoBranch:          "main",
+	GithubSvcAccntName:   "zLifecycle",
+	GithubSvcAccntEmail:  "zLifecycle@compuzest.com",
+	EnvironmentFinalizer: "zlifecycle.compuzest.com/github-finalizer",
+	GitHubAuthToken:      os.Getenv("GITHUB_AUTH_TOKEN"),
+	GitHubWebhookSecret:  os.Getenv("GITHUB_WEBHOOK_SECRET"),
+	RepoBranch:           "main",
 
 	HelmChartsRepo: os.Getenv("helmChartsRepo"),
 	K8sAPIURL:      "https://kubernetes.default.svc",

@@ -99,7 +99,7 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1.Environment) *workfl
 
 	var tasks []workflow.DAGTask
 
-	destroyAll := !environment.DeletionTimestamp.IsZero()
+	destroyAll := !environment.DeletionTimestamp.IsZero() || environment.Spec.Teardown
 
 	tasks = append(tasks, generateAuditTask(environment, destroyAll, "0", nil))
 
@@ -114,10 +114,8 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1.Environment) *workfl
 		modulePath := il.EnvComponentModulePath(ec.Module.Path)
 		tfPath := tf.GenerateTerraformIlPath(envComponentDirectory, ec.Name)
 
-		destroyFlag := false
-		if ec.MarkedForDeletion {
-			destroyFlag = true
-		}
+		destroyFlag := ec.Destroy == true
+
 		var dependencies []string
 		if destroyAll {
 			dependencies = buildInverseDependencies(ecs, ec.Name)
