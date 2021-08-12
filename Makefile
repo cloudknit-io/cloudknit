@@ -1,4 +1,4 @@
-SHELL = /bin/zsh
+SHELL = /bin/bash
 
 CGO_ENABLED = 0
 DOCKER_TAG ?= latest
