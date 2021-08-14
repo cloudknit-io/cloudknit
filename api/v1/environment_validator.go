@@ -73,12 +73,12 @@ func validateEnvironmentCommon(e Environment, isCreate bool) field.ErrorList {
 func validateEnvironmentStatus(e Environment) field.ErrorList {
 	var allErrs field.ErrorList
 
-	if e.Spec.TeamName != e.Status.TeamName {
+	if e.Spec.TeamName != e.Status.TeamName && e.Status.TeamName != "" {
 		fldPath := field.NewPath("status").Child("teamName")
 		err := errors.New("environment property 'teamName' cannot be updated")
 		allErrs = append(allErrs, field.Invalid(fldPath, e.Spec.TeamName, err.Error()))
 	}
-	if e.Spec.EnvName != e.Status.EnvName {
+	if e.Spec.EnvName != e.Status.EnvName && e.Status.EnvName != "" {
 		fldPath := field.NewPath("status").Child("envName")
 		err := errors.New("environment property 'envName' cannot be updated")
 		allErrs = append(allErrs, field.Invalid(fldPath, e.Spec.EnvName, err.Error()))

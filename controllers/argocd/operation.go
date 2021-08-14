@@ -13,6 +13,7 @@
 package argocd
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/go-logr/logr"
@@ -20,12 +21,36 @@ import (
 	env "github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 )
 
+func DeleteApplication(log logr.Logger, api Api, name string) error {
+	tokenResponse, err := api.GetAuthToken()
+	if err != nil {
+		return err
+	}
+	bearer := "Bearer " + tokenResponse.Token
+
+	exists, err := api.DoesApplicationExist(name, bearer)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		log.Info(
+			"Application does not exist, probably it has been already deleted",
+			"application", name,
+		)
+		return nil
+	}
+	if err := api.DeleteApplication(name, bearer); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func RegisterRepo(log logr.Logger, api Api, repoOpts RepoOpts) (bool, error) {
 	repoUri := repoOpts.RepoUrl[strings.LastIndex(repoOpts.RepoUrl, "/")+1:]
 	repoName := strings.TrimSuffix(repoUri, ".git")
 	tokenResponse, err := api.GetAuthToken()
 	if err != nil {
-		log.Error(err, "Error while calling ArgoCD API get auth token")
 		return false, err
 	}
 	bearer := "Bearer " + tokenResponse.Token
@@ -49,7 +74,6 @@ func RegisterRepo(log logr.Logger, api Api, repoOpts RepoOpts) (bool, error) {
 	createRepoBody := CreateRepoBody{Repo: repoOpts.RepoUrl, Name: repoName, SshPrivateKey: repoOpts.SshPrivateKey}
 	resp2, err2 := api.CreateRepository(createRepoBody, bearer)
 	if err2 != nil {
-		log.Error(err2, "Error while calling ArgoCD API post create repository")
 		return false, err2
 	}
 	defer resp2.Body.Close()
@@ -62,15 +86,13 @@ func TryCreateBootstrapApps(log logr.Logger) error {
 
 	tokenResponse, err := argocdAPI.GetAuthToken()
 	if err != nil {
-		log.Error(err, "Error while calling ArgoCD API get auth token")
 		return err
 	}
 	bearer := "Bearer " + tokenResponse.Token
 
 	exists, err := argocdAPI.DoesApplicationExist("company-bootstrap", bearer)
 	if err != nil {
-		log.Error(err, "Error while calling ArgoCD API to check if Application Exists")
-		return err
+		return fmt.Errorf("error while calling ArgoCD API to check if Application Exists: %v", err)
 	}
 	if exists {
 		log.Info("Application already registered on ArgoCD",
@@ -79,8 +101,7 @@ func TryCreateBootstrapApps(log logr.Logger) error {
 	} else {
 		companyResp, companyErr := argocdAPI.CreateApplication(GenerateCompanyBootstrapApp(), bearer)
 		if companyErr != nil {
-			log.Error(companyErr, "Error while creating Company Bootstrap Application")
-			return companyErr
+			return fmt.Errorf("error while creating Company Bootstrap Application: %v", companyErr)
 		}
 		defer companyResp.Body.Close()
 		log.Info("Successfully registered application on ArgoCD",
@@ -90,7 +111,6 @@ func TryCreateBootstrapApps(log logr.Logger) error {
 
 	exists2, err2 := argocdAPI.DoesApplicationExist("config-watcher-bootstrap", bearer)
 	if err2 != nil {
-		log.Error(err2, "Error while calling ArgoCD API to check if Application Exists")
 		return err2
 	}
 	if exists2 {
@@ -101,7 +121,7 @@ func TryCreateBootstrapApps(log logr.Logger) error {
 		companyResp2, companyErr2 := argocdAPI.CreateApplication(GenerateConfigWatcherBootstrapApp(), bearer)
 		if companyErr2 != nil {
 			log.Error(companyErr2, "Error while creating Config Watcher Bootstrap Application")
-			return companyErr2
+			return fmt.Errorf("error while creating Config Watcher Bootstrap Application: %v", companyErr2)
 		}
 		defer companyResp2.Body.Close()
 		log.Info("Successfully registered application on ArgoCD",

@@ -3,7 +3,6 @@ package argocd
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -19,8 +18,7 @@ func NewHttpClient(l logr.Logger, serverUrl string) Api {
 func (api HttpApi) GetAuthToken() (*GetTokenResponse, error) {
 	creds, err := getArgocdCredentialsFromEnv()
 	if err != nil {
-		api.Log.Error(err, "Error getting argocd credentials")
-		return nil, err
+		return nil, fmt.Errorf("error getting argocd credentials: %v", err)
 	}
 
 	body := GetTokenBody{Username: creds.Username, Password: creds.Password}
@@ -29,8 +27,7 @@ func (api HttpApi) GetAuthToken() (*GetTokenResponse, error) {
 	getTokenUrl := api.ServerUrl + "/api/v1/session"
 	resp, err := http.Post(getTokenUrl, "application/json", bytes.NewBuffer(jsonBody))
 	if err != nil {
-		api.Log.Error(err, "Failed to send POST request to argocd server", "url", getTokenUrl)
-		return nil, err
+		return nil, fmt.Errorf("failed to send POST request to argocd server: %v", err)
 	}
 
 	respBody, err := common.ReadBody(resp.Body)
@@ -57,8 +54,7 @@ func (api HttpApi) ListRepositories(bearerToken string) (*RepositoryList, *http.
 	getRepoUrl := api.ServerUrl + "/api/v1/repositories"
 	req, err := http.NewRequest("GET", getRepoUrl, nil)
 	if err != nil {
-		api.Log.Error(err, "Failed to create GET request")
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("failed to create GET request: %v", err)
 	}
 
 	req.Header.Add("Authorization", bearerToken)
@@ -66,16 +62,12 @@ func (api HttpApi) ListRepositories(bearerToken string) (*RepositoryList, *http.
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		api.Log.Error(err, "Failed to send GET request to argocd server", "url", getRepoUrl)
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("failed to send GET request to argocd server: %v", err)
 	}
 
 	if resp.StatusCode != 200 {
-		err := errors.New(
-			fmt.Sprintf("list repositories returned a non-OK response: %d", resp.StatusCode),
-		)
 		resp.Body.Close()
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("list repositories returned a non-OK response: %d", resp.StatusCode)
 	}
 
 	repos := new(RepositoryList)
@@ -94,8 +86,7 @@ func (api HttpApi) CreateRepository(body CreateRepoBody, bearerToken string) (*h
 	addRepoUrl := api.ServerUrl + "/api/v1/repositories"
 	req, err := http.NewRequest("POST", addRepoUrl, bytes.NewBuffer(jsonBody))
 	if err != nil {
-		api.Log.Error(err, "Failed to create POST request")
-		return nil, err
+		return nil, fmt.Errorf("failed to create POST request: %v", err)
 	}
 
 	req.Header.Add("Authorization", bearerToken)
@@ -103,30 +94,23 @@ func (api HttpApi) CreateRepository(body CreateRepoBody, bearerToken string) (*h
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		api.Log.Error(
-			err, "Failed to send POST request to /repositories",
-			"serverUrl", api.ServerUrl,
-			"repoUrl", addRepoUrl,
-		)
-		return nil, err
+		return nil, fmt.Errorf("failed to send POST request to /repositories: %v", err)
 	}
 
 	if resp.StatusCode != 200 {
 		common.LogBody(api.Log, resp.Body)
-		err = errors.New(fmt.Sprintf("create repository returned non-OK status code: %d", resp.StatusCode))
 		resp.Body.Close()
-		return nil, err
+		return nil, fmt.Errorf("create repository returned non-OK status code: %d", resp.StatusCode)
 	}
 
 	return resp, nil
 }
 
 func (api HttpApi) DoesApplicationExist(name string, bearerToken string) (bool, error) {
-	getAppURL := api.ServerUrl + "/api/v1/applications/" + name
+	getAppURL := fmt.Sprintf("%s/api/v1/applications/%s", api.ServerUrl, name)
 	req, err := http.NewRequest("GET", getAppURL, nil)
 	if err != nil {
-		api.Log.Error(err, "Failed to create GET request")
-		return false, err
+		return false, fmt.Errorf("failed to create GET request: %v", err)
 	}
 
 	req.Header.Add("Authorization", bearerToken)
@@ -134,8 +118,7 @@ func (api HttpApi) DoesApplicationExist(name string, bearerToken string) (bool, 
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		api.Log.Error(err, "Failed to send GET request to argocd server", "url", getAppURL)
-		return false, err
+		return false, fmt.Errorf("failed to send GET request to applications/%s: %v", name, err)
 	}
 
 	if resp.StatusCode == 404 {
@@ -143,9 +126,8 @@ func (api HttpApi) DoesApplicationExist(name string, bearerToken string) (bool, 
 	}
 
 	if resp.StatusCode != 200 {
-		err := fmt.Errorf("get application returned a non-OK response: %d", resp.StatusCode)
 		resp.Body.Close()
-		return false, err
+		return false, fmt.Errorf("get application returned a non-OK response: %d", resp.StatusCode)
 	}
 
 	application := new(appv1.Application)
@@ -168,8 +150,7 @@ func (api HttpApi) CreateApplication(application *appv1.Application, bearerToken
 	addAppURL := api.ServerUrl + "/api/v1/applications"
 	req, err := http.NewRequest("POST", addAppURL, bytes.NewBuffer(jsonBody))
 	if err != nil {
-		api.Log.Error(err, "Failed to create POST request")
-		return nil, err
+		return nil, fmt.Errorf("failed to create POST request: %v", err)
 	}
 
 	req.Header.Add("Authorization", bearerToken)
@@ -177,20 +158,38 @@ func (api HttpApi) CreateApplication(application *appv1.Application, bearerToken
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		api.Log.Error(
-			err, "Failed to send POST request to /applications",
-			"serverUrl", api.ServerUrl,
-			"repoUrl", addAppURL,
-		)
-		return nil, err
+		return nil, fmt.Errorf("failed to send POST request to /applications: %v", err)
 	}
 
 	if resp.StatusCode != 200 {
 		common.LogBody(api.Log, resp.Body)
-		err = fmt.Errorf("create application returned non-OK status code: %d", resp.StatusCode)
 		resp.Body.Close()
-		return nil, err
+		return nil, fmt.Errorf("create application returned non-OK status code: %d", resp.StatusCode)
 	}
 
 	return resp, nil
+}
+
+func (api HttpApi) DeleteApplication(name string, bearerToken string) error {
+	deleteAppURL := fmt.Sprintf("%s/api/v1/applications/%s", api.ServerUrl, name)
+	req, err := http.NewRequest("DELETE", deleteAppURL, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create DELETE request: %v", err)
+	}
+
+	req.Header.Add("Authorization", bearerToken)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to send DELETE request to /applications/%s: %v", name, err)
+	}
+
+	if resp.StatusCode != 200 {
+		common.LogBody(api.Log, resp.Body)
+		resp.Body.Close()
+		return fmt.Errorf("delete application returned non-OK status code: %d", resp.StatusCode)
+	}
+
+	return nil
 }

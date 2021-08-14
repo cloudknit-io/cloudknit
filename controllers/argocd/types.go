@@ -14,6 +14,7 @@ type Api interface {
 	ListRepositories(bearerToken string) (*RepositoryList, *http.Response, error)
 	CreateRepository(body CreateRepoBody, bearerToken string) (*http.Response, error)
 	CreateApplication(application *appv1.Application, bearerToken string) (*http.Response, error)
+	DeleteApplication(name string, bearerToken string) error
 	DoesApplicationExist(name string, bearerToken string) (bool, error)
 }
 

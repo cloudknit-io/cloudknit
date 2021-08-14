@@ -39,9 +39,9 @@ type Variable struct {
 }
 
 type Secret struct {
-	Name      string `json:"name"`
-	Scope     string `json:"scope"`
-	Key       string `json:"key"`
+	Name  string `json:"name"`
+	Scope string `json:"scope"`
+	Key   string `json:"key"`
 }
 
 type Output struct {
@@ -56,7 +56,7 @@ type EnvironmentComponent struct {
 	Module       *Module  `json:"module"`
 	Tags         []*Tags  `json:"tags,omitempty"`
 
-	Destroy      bool     `json:"destroy,omitempty"`
+	Destroy bool `json:"destroy,omitempty"`
 
 	VariablesFile *VariablesFile `json:"variablesFile,omitempty"`
 	Variables     []*Variable    `json:"variables,omitempty"`
