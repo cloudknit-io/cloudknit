@@ -66,6 +66,20 @@ func (mr *MockApiMockRecorder) CreateRepository(arg0, arg1 interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRepository", reflect.TypeOf((*MockApi)(nil).CreateRepository), arg0, arg1)
 }
 
+// DeleteApplication mocks base method.
+func (m *MockApi) DeleteApplication(arg0, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteApplication", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteApplication indicates an expected call of DeleteApplication.
+func (mr *MockApiMockRecorder) DeleteApplication(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteApplication", reflect.TypeOf((*MockApi)(nil).DeleteApplication), arg0, arg1)
+}
+
 // DoesApplicationExist mocks base method.
 func (m *MockApi) DoesApplicationExist(arg0, arg1 string) (bool, error) {
 	m.ctrl.T.Helper()
