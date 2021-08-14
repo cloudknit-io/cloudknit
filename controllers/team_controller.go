@@ -133,7 +133,7 @@ func delayTeamReconcileOnInitialRun(log logr.Logger, seconds int64) {
 	if teamReconcileInitialRun.Load() == true {
 		log.Info(
 			"Delaying Team reconcile on initial run to wait for Company operator",
-			"duration", fmt.Sprintf("%ds", seconds * 1000),
+			"duration", fmt.Sprintf("%ds", seconds*1000),
 		)
 		time.Sleep(time.Duration(seconds) * time.Second)
 		teamReconcileInitialRun.Store(false)

@@ -66,15 +66,6 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, nil
 	}
 
-	if err := r.updateStatus(ctx, environment); err != nil {
-		r.Log.Error(
-			err,
-			"Error occurred while updating Environment status...",
-			"name", environment.Name,
-		)
-		return ctrl.Result{}, nil
-	}
-
 	finalizer := env.Config.EnvironmentFinalizer
 	finalizerCompleted, err := r.handleFinalizer(ctx, environment, finalizer)
 	if err != nil {
@@ -90,11 +81,19 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	isDeleteEvent := !environment.DeletionTimestamp.IsZero() || environment.Spec.Teardown
 	if !isDeleteEvent {
+		if err := r.updateStatus(ctx, environment); err != nil {
+			r.Log.Error(
+				err,
+				"Error occurred while updating Environment status...",
+				"name", environment.Name,
+			)
+			return ctrl.Result{}, nil
+		}
+
 		r.Log.Info(
 			"Generating Environment application...",
 			"team", environment.Spec.TeamName,
 			"environment", environment.Spec.EnvName,
-			"isDeleteEvent", isDeleteEvent,
 		)
 		if err := generateAndSaveEnvironmentApp(fileUtil, environment, envDirectory); err != nil {
 			return ctrl.Result{}, err
@@ -110,6 +109,12 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		); err != nil {
 			return ctrl.Result{}, err
 		}
+	} else {
+		r.Log.Info(
+			"Generating teardown workflow",
+			"team", environment.Spec.TeamName,
+			"environment", environment.Spec.EnvName,
+		)
 	}
 
 	r.Log.Info(
@@ -188,7 +193,7 @@ func delayEnvironmentReconcileOnInitialRun(log logr.Logger, seconds int64) {
 	if environmentInitialRun.Load() == true {
 		log.Info(
 			"Delaying Environment reconcile on initial run to wait for Team operator",
-			"duration", fmt.Sprintf("%ds", seconds * 1000),
+			"duration", fmt.Sprintf("%ds", seconds*1000),
 		)
 		time.Sleep(time.Duration(seconds) * time.Second)
 		environmentInitialRun.Store(false)
@@ -205,7 +210,7 @@ func (r *EnvironmentReconciler) updateStatus(ctx context.Context, e *stablev1.En
 			"Environment state is dirty and needs to be updated",
 			"team", e.Spec.TeamName,
 			"environment", e.Spec.EnvName,
-			)
+		)
 		e.Status.TeamName = e.Spec.TeamName
 		e.Status.EnvName = e.Spec.EnvName
 		e.Status.EnvironmentComponent = e.Spec.EnvironmentComponent
@@ -224,32 +229,37 @@ func (r *EnvironmentReconciler) updateStatus(ctx context.Context, e *stablev1.En
 }
 
 func (r *EnvironmentReconciler) handleFinalizer(ctx context.Context, e *stablev1.Environment, finalizer string) (completed bool, err error) {
-	if e.DeletionTimestamp.IsZero() {
-		if !common.ContainsString(e.GetFinalizers(), finalizer) {
+	// hack in order to avoid error for stale cached object
+	// ref: https://github.com/operator-framework/operator-sdk/issues/3968
+	freshEnvironment := &stablev1.Environment{}
+	if err := r.Get(ctx, types.NamespacedName{Name: e.Name, Namespace: e.Namespace}, freshEnvironment); err != nil {
+		return false, err
+	}
+
+	if freshEnvironment.DeletionTimestamp.IsZero() {
+		if !common.ContainsString(freshEnvironment.GetFinalizers(), finalizer) {
 			r.Log.Info(
 				"Setting finalizer for environment",
-				"env", e.Spec.EnvName,
-				"team", e.Spec.TeamName,
+				"environment", freshEnvironment.Spec.EnvName,
+				"team", freshEnvironment.Spec.TeamName,
 			)
-			e.SetFinalizers(append(e.GetFinalizers(), finalizer))
-			if err := r.Update(ctx, e); err != nil {
+			freshEnvironment.SetFinalizers(append(freshEnvironment.GetFinalizers(), finalizer))
+			if err := r.Update(ctx, freshEnvironment); err != nil {
 				return false, err
 			}
 		}
 	} else {
-		if common.ContainsString(e.GetFinalizers(), finalizer) {
-			if err := r.postDeleteHook(ctx, e); err != nil {
+		if common.ContainsString(freshEnvironment.GetFinalizers(), finalizer) {
+			if err := r.postDeleteHook(ctx, freshEnvironment); err != nil {
 				return false, err
 			}
 
-			// hack in order to avoid error for stale cached object
-			// ref: https://github.com/operator-framework/operator-sdk/issues/3968
-			freshEnvironment := &stablev1.Environment{}
-			if err := r.Get(ctx, types.NamespacedName{Name: e.Name, Namespace: e.Namespace}, freshEnvironment); err != nil {
-				return false, err
-			}
-
-			e.SetFinalizers(common.RemoveString(e.GetFinalizers(), finalizer))
+			r.Log.Info(
+				"Removing finalizer",
+				"team", freshEnvironment.Spec.TeamName,
+				"environment", freshEnvironment.Spec.EnvName,
+				)
+			freshEnvironment.SetFinalizers(common.RemoveString(freshEnvironment.GetFinalizers(), finalizer))
 			if err := r.Update(ctx, freshEnvironment); err != nil {
 				return false, err
 			}
@@ -268,21 +278,46 @@ func (r *EnvironmentReconciler) postDeleteHook(ctx context.Context, e *stablev1.
 		"team", e.Spec.TeamName,
 	)
 
+	argocdApi := argocd.NewHttpClient(r.Log, env.Config.ArgocdServerUrl)
+
 	if err := r.deleteExternalResources(ctx, e); err != nil {
 		return err
+	}
+	_ = r.deleteDanglingArgocdApps(e, argocdApi)
+	return nil
+}
+
+func (r *EnvironmentReconciler) deleteDanglingArgocdApps(e *stablev1.Environment, argocdApi argocd.Api) error {
+	r.Log.Info(
+		"Cleaning up dangling argocd apps",
+		"team", e.Spec.TeamName,
+		"environment", e.Spec.EnvName,
+	)
+	for _, ec := range e.Spec.EnvironmentComponent {
+		appName := fmt.Sprintf("%s-%s-%s", e.Spec.TeamName, e.Spec.EnvName, ec.Name)
+		r.Log.Info(
+			"Deleting argocd application",
+			"team", e.Spec.TeamName,
+			"environment", e.Spec.EnvName,
+			"component", ec.Name,
+			"app", appName,
+		)
+		if err := argocd.DeleteApplication(r.Log, argocdApi, appName); err != nil {
+			r.Log.Error(err, "error deleting argocd app")
+		}
 	}
 	return nil
 }
 
 func (r *EnvironmentReconciler) deleteExternalResources(ctx context.Context, e *stablev1.Environment) error {
-	owner         := env.Config.ZlifecycleOwner
-	ilRepo        := env.Config.ILRepoName
-	api           := github.NewHttpGitClient(env.Config.GitHubAuthToken, ctx)
-	branch        := env.Config.RepoBranch
-	now           := time.Now()
-	paths         := extractPathsToRemove(*e)
-	team          := fmt.Sprintf("%s-team-environment", e.Spec.TeamName)
-	commitAuthor  := &github2.CommitAuthor{Date: &now, Name: &env.Config.GithubSvcAccntName, Email: &env.Config.GithubSvcAccntEmail}
+	owner := env.Config.ZlifecycleOwner
+	ilRepo := env.Config.ILRepoName
+	api := github.NewHttpGitClient(env.Config.GitHubAuthToken, ctx)
+	branch := env.Config.RepoBranch
+	now := time.Now()
+	paths := extractPathsToRemove(*e)
+	team := fmt.Sprintf("%s-team-environment", e.Spec.TeamName)
+	commitAuthor := &github2.CommitAuthor{Date: &now, Name: &env.Config.GithubSvcAccntName, Email: &env.Config.GithubSvcAccntEmail}
 	commitMessage := fmt.Sprintf("Cleaning il objects for %s team in %s environment", e.Spec.TeamName, e.Spec.EnvName)
 	if err := github.DeletePatternsFromRootTree(r.Log, api, owner, ilRepo, branch, team, paths, commitAuthor, commitMessage); err != nil {
 		return err
@@ -292,7 +327,7 @@ func (r *EnvironmentReconciler) deleteExternalResources(ctx context.Context, e *
 
 // TODO: Should we remove objects in IL repo?
 func extractPathsToRemove(e stablev1.Environment) []string {
-	envPath    := fmt.Sprintf("%s-environment-component", e.Spec.EnvName)
+	envPath := fmt.Sprintf("%s-environment-component", e.Spec.EnvName)
 	envAppPath := fmt.Sprintf("%s-environment.yaml", e.Spec.EnvName)
 	return []string{
 		envPath,
@@ -310,7 +345,7 @@ func generateAndSaveEnvironmentComponents(
 	log.Info(
 		"Generating environment",
 		"name", environment.Name,
-		"env", environment.Spec.EnvName,
+		"environment", environment.Spec.EnvName,
 		"team", environment.Spec.TeamName,
 	)
 	for _, ec := range environment.Spec.EnvironmentComponent {

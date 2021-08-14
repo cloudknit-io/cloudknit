@@ -97,7 +97,6 @@ func (tf TerraformGenerator) GenerateTerraform(
 		DependsOn: vars.EnvCompDependsOn,
 	}
 
-
 	secretsMeta := secrets.SecretMeta{
 		Company:              env.Config.CompanyName,
 		Team:                 vars.TeamName,
@@ -108,7 +107,6 @@ func (tf TerraformGenerator) GenerateTerraform(
 	if err != nil {
 		return err
 	}
-
 
 	if err := tf.GenerateProvider(fileUtil, environmentComponentDirectory, componentName); err != nil {
 		return err
@@ -163,7 +161,7 @@ func createSecretsConfig(secretArray []*stablev1.Secret, meta secrets.SecretMeta
 		}
 		scopedSecrets = append(scopedSecrets, Secret{Key: key, Name: s.Name})
 	}
-	conf := TerraformSecretsConfig{ Secrets: scopedSecrets }
+	conf := TerraformSecretsConfig{Secrets: scopedSecrets}
 
 	return &conf, nil
 }
