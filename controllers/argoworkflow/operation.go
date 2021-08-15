@@ -31,7 +31,7 @@ func DeleteWorkflowsWithPrefix(log logr.Logger, prefix string, namespace string,
 		name := wf.Metadata.Name
 		if strings.HasPrefix(name, prefix) {
 			log.Info("Deleting Argo Workflow", "namespace", namespace, "name", name)
-			if err := deleteWorkflow(name, namespace, api); err != nil {
+			if err := DeleteWorkflow(name, namespace, api); err != nil {
 				return err
 			}
 		}
@@ -40,7 +40,7 @@ func DeleteWorkflowsWithPrefix(log logr.Logger, prefix string, namespace string,
 	return nil
 }
 
-func deleteWorkflow(name string, namespace string, api Api) error {
+func DeleteWorkflow(name string, namespace string, api Api) error {
 	deleteOpts := DeleteWorkflowOptions{Name: name, Namespace: namespace}
 	resp, err := api.DeleteWorkflow(deleteOpts)
 	if err != nil {
