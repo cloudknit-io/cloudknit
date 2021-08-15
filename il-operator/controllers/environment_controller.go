@@ -225,7 +225,7 @@ func delayEnvironmentReconcileOnInitialRun(log logr.Logger, seconds int64) {
 	if environmentInitialRun.Load() {
 		log.Info(
 			"Delaying Environment reconcile on initial run to wait for Team operator",
-			"duration", fmt.Sprintf("%ds", seconds*1000),
+			"duration", fmt.Sprintf("%ds", seconds),
 		)
 		time.Sleep(time.Duration(seconds) * time.Second)
 		environmentInitialRun.Store(false)
