@@ -39,12 +39,6 @@ var (
 	sourceRepo    string
 	commitMessage string
 	commitBranch  string
-	baseBranch    string
-	prRepoOwner   string
-	prRepo        string
-	prBranch      string
-	prSubject     string
-	prDescription string
 	sourceFiles   string
 	authorName    string
 	authorEmail   string
@@ -61,6 +55,9 @@ func DownloadFile(
 	path string,
 ) (io.ReadCloser, error) {
 	owner, repo, err := parseRepoUrl(repoUrl)
+	if err != nil {
+		return nil, err
+	}
 	log.Info("Downloading file from GitHub", "owner", owner, "repo", repo, "ref", ref, "path", path)
 	rc, err := api.DownloadContents(owner, repo, ref, path)
 	if err != nil {
@@ -107,7 +104,7 @@ func removeEnvironmentObjectsFromTree(
 	if baseTreeErr != nil {
 		return nil, baseTreeErr
 	}
-	defer baseTreeResp.Body.Close()
+	defer common.CloseBody(baseTreeResp.Body)
 
 	// team root tree
 	teamRootPath := "team"
@@ -119,7 +116,7 @@ func removeEnvironmentObjectsFromTree(
 			if treeErr != nil {
 				return nil, treeErr
 			}
-			treeResp.Body.Close()
+			common.CloseBody(treeResp.Body)
 			teamRootTree = tree
 		}
 	}
@@ -137,7 +134,7 @@ func removeEnvironmentObjectsFromTree(
 			if treeErr != nil {
 				return nil, treeErr
 			}
-			treeResp.Body.Close()
+			common.CloseBody(treeResp.Body)
 			teamTree = tree
 		}
 	}
@@ -154,7 +151,7 @@ func removeEnvironmentObjectsFromTree(
 	if newTeamTreeErr != nil {
 		return nil, newTeamTreeErr
 	}
-	defer newTeamTreeResp.Body.Close()
+	defer common.CloseBody(newTeamTreeResp.Body)
 
 	// update root team tree
 	for _, entry := range teamRootTree.Entries {
@@ -170,7 +167,7 @@ func removeEnvironmentObjectsFromTree(
 	if newTeamRootTreeErr != nil {
 		return nil, newTeamRootTreeErr
 	}
-	defer newTeamRootTreeResp.Body.Close()
+	defer common.CloseBody(newTeamRootTreeResp.Body)
 
 	// update base tree
 	for _, entry := range baseTree.Entries {
@@ -186,7 +183,7 @@ func removeEnvironmentObjectsFromTree(
 	if newBaseTreeErr != nil {
 		return nil, newBaseTreeErr
 	}
-	defer newBaseTreeResp.Body.Close()
+	defer common.CloseBody(newBaseTreeResp.Body)
 
 	return newBaseTree, nil
 }
@@ -208,14 +205,14 @@ func commitAndPushTree(
 	if refErr != nil {
 		return refErr
 	}
-	defer refResp.Body.Close()
+	defer common.CloseBody(refResp.Body)
 
 	log.Info("Getting parent commit...", "parentSHA", ref.Object.SHA)
 	parentCommit, commitResp, commitErr := api.GetCommit(owner, repo, *ref.Object.SHA)
 	if commitErr != nil {
 		return commitErr
 	}
-	defer commitResp.Body.Close()
+	defer common.CloseBody(commitResp.Body)
 
 	log.Info("Parent commit info",
 		"parentTreeSha", parentCommit.Tree.SHA,
@@ -234,7 +231,7 @@ func commitAndPushTree(
 	if commitErr != nil {
 		return commitErr
 	}
-	defer commitResp.Body.Close()
+	defer common.CloseBody(commitResp.Body)
 
 	if !hasChangesToCommit(parentCommit, tree) {
 		log.Info(
@@ -252,7 +249,7 @@ func commitAndPushTree(
 	if newRefErr != nil {
 		return newRefErr
 	}
-	defer newRefResp.Body.Close()
+	defer common.CloseBody(newRefResp.Body)
 
 	return nil
 }
@@ -310,7 +307,7 @@ func TryCreateRepository(log logr.Logger, api RepositoryApi, owner string, repo 
 		)
 		return false, err
 	}
-	defer resp1.Body.Close()
+	defer common.CloseBody(resp1.Body)
 
 	log.Info("Call to GitHub API get repo succeeded", "code", resp1.StatusCode)
 
@@ -332,7 +329,7 @@ func TryCreateRepository(log logr.Logger, api RepositoryApi, owner string, repo 
 
 	log.Info("Call to GitHub API create repo succeeded", "code", resp2.StatusCode)
 
-	defer resp2.Body.Close()
+	defer common.CloseBody(resp2.Body)
 
 	return nr != nil, nil
 }
@@ -356,10 +353,9 @@ func CreateRepoWebhook(log logr.Logger, api RepositoryApi, repoUrl string, paylo
 		)
 		return false, err
 	}
-	defer resp1.Body.Close()
+	defer common.CloseBody(resp1.Body)
 
 	exists, err := checkIsHookRegistered(
-		log,
 		hooks,
 		payloadUrl,
 	)
@@ -389,7 +385,7 @@ func CreateRepoWebhook(log logr.Logger, api RepositoryApi, repoUrl string, paylo
 		)
 		return false, err
 	}
-	defer resp2.Body.Close()
+	defer common.CloseBody(resp2.Body)
 
 	log.Info(
 		"Successfully created repository webhook",
@@ -414,7 +410,7 @@ func parseRepoUrl(url string) (Owner, Repo, error) {
 	return owner, repo, nil
 }
 
-func checkIsHookRegistered(log logr.Logger, hooks []*github.Hook, payloadUrl string) (bool, error) {
+func checkIsHookRegistered(hooks []*github.Hook, payloadUrl string) (bool, error) {
 	for _, h := range hooks {
 		cfg := new(HookCfg)
 		err := common.FromJsonMap(h.Config, cfg)
@@ -442,7 +438,7 @@ func newHook(payloadUrl string, secret string) github.Hook {
 // getRef returns the commit branch reference object if it exists or return error
 func getRef() (ref *github.Reference, err error) {
 	if commitBranch == "" {
-		return nil, errors.New("The `-commit-branch` should not be set to an empty string")
+		return nil, errors.New("the `-commit-branch` should not be set to an empty string")
 	}
 	if ref, _, err = client.Git.GetRef(ctx, sourceOwner, sourceRepo, "refs/heads/"+commitBranch); err == nil {
 		return ref, nil
@@ -455,7 +451,7 @@ func getRef() (ref *github.Reference, err error) {
 // of the ref you got in getRef.
 func getTree(ref *github.Reference) (tree *github.Tree, err error) {
 	// Create a tree with what to commit.
-	entries := []*github.TreeEntry{}
+	var entries []*github.TreeEntry
 
 	// Load each file into the tree.
 	for _, fileArg := range strings.Split(sourceFiles, ",") {
@@ -491,11 +487,12 @@ func getFileContent(fileArg string) (targetName string, b []byte, err error) {
 }
 
 // pushCommit creates the commit in the given reference using the given tree.
-func pushCommit(ref *github.Reference, tree *github.Tree) (err error) {
+func pushCommit(ref *github.Reference, tree *github.Tree) (dirty bool, err error) {
+	dirty = false
 	// Get the parent commit to attach the commit to.
 	parent, _, err := client.Repositories.GetCommit(ctx, sourceOwner, sourceRepo, *ref.Object.SHA)
 	if err != nil {
-		return err
+		return dirty, err
 	}
 	// This is not always populated, but is needed.
 	parent.Commit.SHA = parent.SHA
@@ -503,35 +500,35 @@ func pushCommit(ref *github.Reference, tree *github.Tree) (err error) {
 	parentSha := *parent.Commit.Tree.SHA
 	newSha := *tree.SHA
 	// log.Printf(string(json.Marshal(tree))) for debugging
-
-	if parentSha == newSha {
-		log.Printf("No git changes to commit, no-op reconciliation.")
-	} else {
+	if parentSha != newSha {
+		dirty = true
 		// Create the commit using the tree.
 		date := time.Now()
 		author := &github.CommitAuthor{Date: &date, Name: &authorName, Email: &authorEmail}
 		commit := &github.Commit{Author: author, Message: &commitMessage, Tree: tree, Parents: []*github.Commit{parent.Commit}}
 		newCommit, _, err := client.Git.CreateCommit(ctx, sourceOwner, sourceRepo, commit)
 		if err != nil {
-			return err
+			return dirty, err
 		}
 
 		// Attach the commit to the master branch.
 		ref.Object.SHA = newCommit.SHA
 		_, _, err = client.Git.UpdateRef(ctx, sourceOwner, sourceRepo, ref, false)
+		if err != nil {
+			return dirty, err
+		}
 	}
-	return err
+	return dirty, nil
 }
 
 func CommitAndPushFiles(_sourceOwner string, _sourceRepo string, _sourceFolders []string,
-	_commitBranch string, _commitMessage string, _authorName string, _authorEmail string) (err error) {
+	_commitBranch string, _commitMessage string, _authorName string, _authorEmail string) (dirty bool, err error) {
 	mutex.Lock()
 	defer mutex.Unlock()
 	sourceOwner = _sourceOwner
 	sourceRepo = _sourceRepo
 	commitBranch = _commitBranch
 	commitMessage = _commitMessage
-	baseBranch = _commitBranch
 	authorName = _authorName
 	authorEmail = _authorEmail
 
@@ -539,10 +536,10 @@ func CommitAndPushFiles(_sourceOwner string, _sourceRepo string, _sourceFolders 
 
 	token := os.Getenv("GITHUB_AUTH_TOKEN")
 	if token == "" {
-		log.Fatal("Unauthorized: No token present")
+		return false, fmt.Errorf("unauthorized: No token present")
 	}
 	if sourceOwner == "" || sourceRepo == "" || commitBranch == "" || sourceFiles == "" || authorName == "" || authorEmail == "" {
-		log.Fatal("You need to specify a non-empty value for the flags `-source-owner`, `-source-repo`, `-commit-branch`, `-files`, `-author-name` and `-author-email`")
+		return false, fmt.Errorf("you need to specify a non-empty value for the flags `-source-owner`, `-source-repo`, `-commit-branch`, `-files`, `-author-name` and `-author-email`")
 	}
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
 	tc := oauth2.NewClient(ctx, ts)
@@ -550,22 +547,23 @@ func CommitAndPushFiles(_sourceOwner string, _sourceRepo string, _sourceFolders 
 
 	ref, err := getRef()
 	if err != nil {
-		log.Fatalf("Unable to get/create the commit reference: %s\n", err)
+		return false, fmt.Errorf("unable to get/create the commit reference: %v", err)
 	}
 	if ref == nil {
-		log.Fatalf("No error where returned but the reference is nil")
+		return false, fmt.Errorf("no error where returned but the reference is nil")
 	}
 
 	tree, err := getTree(ref)
 	if err != nil {
-		log.Fatalf("Unable to create the tree based on the provided files: %s\n", err)
+		return false, fmt.Errorf("unable to create the tree based on the provided files: %v", err)
 	}
 
-	if err := pushCommit(ref, tree); err != nil {
-		log.Fatalf("Unable to create the commit: %s\n", err)
+	dirty, err = pushCommit(ref, tree)
+	if err != nil {
+		return false, fmt.Errorf("unable to create the commit: %v", err)
 	}
 
-	return err
+	return dirty, nil
 }
 
 func getFileNames(folderPaths []string) (fileNames string) {

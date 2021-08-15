@@ -30,6 +30,9 @@ type config struct {
 	ArgocdHookUrl   string
 	ArgocdUsername  string
 	ArgocdPassword  string
+
+	ArgoWorkflowsServerUrl string
+	ArgoWorkflowsNamespace string
 }
 
 // Various config vars used throughout the operator
@@ -56,10 +59,13 @@ var Config = config{
 	HelmChartsRepo: os.Getenv("helmChartsRepo"),
 	K8sAPIURL:      "https://kubernetes.default.svc",
 
-	ArgocdServerUrl: getArgocdServerAddr(),
+	ArgocdServerUrl: getArgocdServerUrl(),
 	ArgocdHookUrl:   os.Getenv("ARGOCD_WEBHOOK_URL"),
 	ArgocdUsername:  os.Getenv("ARGOCD_USERNAME"),
 	ArgocdPassword:  os.Getenv("ARGOCD_PASSWORD"),
+
+	ArgoWorkflowsServerUrl: getArgocdWorkflowsServerUrl(),
+	ArgoWorkflowsNamespace: "argocd",
 }
 
 func getZlifecyleOperatorSshSecret() string {
@@ -80,11 +86,20 @@ func getZlifecycleOwner() string {
 	}
 }
 
-func getArgocdServerAddr() string {
+func getArgocdServerUrl() string {
 	val, exists := os.LookupEnv("ARGOCD_URL")
 	if exists && val != "" {
 		return val
 	} else {
 		return "http://argocd-server.argocd.svc.cluster.local"
+	}
+}
+
+func getArgocdWorkflowsServerUrl() string {
+	val, exists := os.LookupEnv("ARGOWORKFLOWS_URL")
+	if exists && val != "" {
+		return val
+	} else {
+		return "http://argo-workflow-server.argocd.svc.cluster.local:2746"
 	}
 }

@@ -15,7 +15,7 @@ package controllers
 import (
 	"context"
 	"fmt"
-	file "github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/repo"
 	"github.com/go-logr/logr"
 	"go.uber.org/atomic"
@@ -26,11 +26,11 @@ import (
 	"time"
 
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
-	env "github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
-	github "github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
-	il "github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
 
-	argocd "github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
 )
 
 // TeamReconciler reconciles a Team object
@@ -95,19 +95,32 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, err
 	}
 
-	if err := github.CommitAndPushFiles(
+	dirty, err := github.CommitAndPushFiles(
 		env.Config.ILRepoSourceOwner,
 		env.Config.ILRepoName,
 		[]string{il.Config.TeamDirectory, il.Config.ConfigWatcherDirectory},
 		env.Config.RepoBranch,
 		fmt.Sprintf("Reconciling team %s", team.Spec.TeamName),
 		env.Config.GithubSvcAccntName,
-		env.Config.GithubSvcAccntEmail); err != nil {
+		env.Config.GithubSvcAccntEmail,
+	)
+	if err != nil {
 		return ctrl.Result{}, err
+	}
+	if dirty {
+		r.Log.Info(
+			"Committed new changes to IL repo",
+			"team", team.Spec.TeamName,
+		)
+	} else {
+		r.Log.Info(
+			"No git changes to commit, no-op reconciliation.",
+			"team", team.Spec.TeamName,
+		)
 	}
 
 	githubApi := github.NewHttpRepositoryClient(env.Config.GitHubAuthToken, ctx)
-	_, err := github.CreateRepoWebhook(r.Log, githubApi, teamRepo, env.Config.ArgocdHookUrl, env.Config.GitHubWebhookSecret)
+	_, err = github.CreateRepoWebhook(r.Log, githubApi, teamRepo, env.Config.ArgocdHookUrl, env.Config.GitHubWebhookSecret)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
@@ -130,7 +143,7 @@ func (r *TeamReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 func delayTeamReconcileOnInitialRun(log logr.Logger, seconds int64) {
-	if teamReconcileInitialRun.Load() == true {
+	if teamReconcileInitialRun.Load() {
 		log.Info(
 			"Delaying Team reconcile on initial run to wait for Company operator",
 			"duration", fmt.Sprintf("%ds", seconds*1000),

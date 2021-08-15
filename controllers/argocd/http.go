@@ -1,3 +1,15 @@
+/* Copyright (C) 2020 CompuZest, Inc. - All Rights Reserved
+ *
+ * Unauthorized copying of this file, via any medium, is strictly prohibited
+ * Proprietary and confidential
+ *
+ * NOTICE: All information contained herein is, and remains the property of
+ * CompuZest, Inc. The intellectual and technical concepts contained herein are
+ * proprietary to CompuZest, Inc. and are protected by trade secret or copyright
+ * law. Dissemination of this information or reproduction of this material is
+ * strictly forbidden unless prior written permission is obtained from CompuZest, Inc.
+ */
+
 package argocd
 
 import (
@@ -23,11 +35,14 @@ func (api HttpApi) GetAuthToken() (*GetTokenResponse, error) {
 
 	body := GetTokenBody{Username: creds.Username, Password: creds.Password}
 	jsonBody, err := common.ToJson(body)
+	if err != nil {
+		return nil, err
+	}
 
-	getTokenUrl := api.ServerUrl + "/api/v1/session"
+	getTokenUrl := fmt.Sprintf("%s/api/v1/session", api.ServerUrl)
 	resp, err := http.Post(getTokenUrl, "application/json", bytes.NewBuffer(jsonBody))
 	if err != nil {
-		return nil, fmt.Errorf("failed to send POST request to argocd server: %v", err)
+		return nil, fmt.Errorf("failed to send POST request to /api/v1/session: %v", err)
 	}
 
 	respBody, err := common.ReadBody(resp.Body)
@@ -36,7 +51,9 @@ func (api HttpApi) GetAuthToken() (*GetTokenResponse, error) {
 	}
 
 	t := new(GetTokenResponse)
-	err = common.FromJson(t, respBody)
+	if err := common.FromJson(t, respBody); err != nil {
+		return nil, err
+	}
 
 	return t, nil
 }
@@ -51,7 +68,7 @@ func isRepoRegistered(repos RepositoryList, repoUrl string) bool {
 }
 
 func (api HttpApi) ListRepositories(bearerToken string) (*RepositoryList, *http.Response, error) {
-	getRepoUrl := api.ServerUrl + "/api/v1/repositories"
+	getRepoUrl := fmt.Sprintf("%s/api/v1/repositories", api.ServerUrl)
 	req, err := http.NewRequest("GET", getRepoUrl, nil)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create GET request: %v", err)
@@ -62,18 +79,18 @@ func (api HttpApi) ListRepositories(bearerToken string) (*RepositoryList, *http.
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to send GET request to argocd server: %v", err)
+		return nil, nil, fmt.Errorf("failed to send GET request to /api/v1/repositories: %v", err)
 	}
 
 	if resp.StatusCode != 200 {
-		resp.Body.Close()
+		common.CloseBody(resp.Body)
 		return nil, nil, fmt.Errorf("list repositories returned a non-OK response: %d", resp.StatusCode)
 	}
 
 	repos := new(RepositoryList)
 	err = json.NewDecoder(resp.Body).Decode(repos)
 	if err != nil {
-		resp.Body.Close()
+		common.CloseBody(resp.Body)
 		return nil, nil, err
 	}
 
@@ -82,8 +99,11 @@ func (api HttpApi) ListRepositories(bearerToken string) (*RepositoryList, *http.
 
 func (api HttpApi) CreateRepository(body CreateRepoBody, bearerToken string) (*http.Response, error) {
 	jsonBody, err := common.ToJson(body)
+	if err != nil {
+		return nil, err
+	}
 
-	addRepoUrl := api.ServerUrl + "/api/v1/repositories"
+	addRepoUrl := fmt.Sprintf("%s/api/v1/repositories", api.ServerUrl)
 	req, err := http.NewRequest("POST", addRepoUrl, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create POST request: %v", err)
@@ -99,7 +119,7 @@ func (api HttpApi) CreateRepository(body CreateRepoBody, bearerToken string) (*h
 
 	if resp.StatusCode != 200 {
 		common.LogBody(api.Log, resp.Body)
-		resp.Body.Close()
+		common.CloseBody(resp.Body)
 		return nil, fmt.Errorf("create repository returned non-OK status code: %d", resp.StatusCode)
 	}
 
@@ -122,18 +142,18 @@ func (api HttpApi) DoesApplicationExist(name string, bearerToken string) (bool, 
 	}
 
 	if resp.StatusCode == 404 {
+		common.CloseBody(resp.Body)
 		return false, nil
 	}
 
 	if resp.StatusCode != 200 {
-		resp.Body.Close()
+		common.CloseBody(resp.Body)
 		return false, fmt.Errorf("get application returned a non-OK response: %d", resp.StatusCode)
 	}
 
 	application := new(appv1.Application)
-	err = json.NewDecoder(resp.Body).Decode(application)
-	if err != nil {
-		resp.Body.Close()
+	if err := json.NewDecoder(resp.Body).Decode(application); err != nil {
+		common.CloseBody(resp.Body)
 		return false, err
 	}
 
@@ -146,8 +166,11 @@ func (api HttpApi) DoesApplicationExist(name string, bearerToken string) (bool, 
 
 func (api HttpApi) CreateApplication(application *appv1.Application, bearerToken string) (*http.Response, error) {
 	jsonBody, err := common.ToJson(application)
+	if err != nil {
+		return nil, err
+	}
 
-	addAppURL := api.ServerUrl + "/api/v1/applications"
+	addAppURL := fmt.Sprintf("%s/api/v1/applications", api.ServerUrl)
 	req, err := http.NewRequest("POST", addAppURL, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create POST request: %v", err)
@@ -163,7 +186,7 @@ func (api HttpApi) CreateApplication(application *appv1.Application, bearerToken
 
 	if resp.StatusCode != 200 {
 		common.LogBody(api.Log, resp.Body)
-		resp.Body.Close()
+		common.CloseBody(resp.Body)
 		return nil, fmt.Errorf("create application returned non-OK status code: %d", resp.StatusCode)
 	}
 
@@ -187,7 +210,7 @@ func (api HttpApi) DeleteApplication(name string, bearerToken string) error {
 
 	if resp.StatusCode != 200 {
 		common.LogBody(api.Log, resp.Body)
-		resp.Body.Close()
+		common.CloseBody(resp.Body)
 		return fmt.Errorf("delete application returned non-OK status code: %d", resp.StatusCode)
 	}
 

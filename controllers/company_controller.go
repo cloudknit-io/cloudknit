@@ -15,7 +15,7 @@ package controllers
 import (
 	"context"
 	"fmt"
-	file "github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/repo"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"time"
@@ -26,10 +26,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
-	argocd "github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
-	env "github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
-	github "github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
-	il "github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
 )
 
 // CompanyReconciler reconciles a Company object
@@ -101,18 +101,33 @@ func (r *CompanyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, err
 	}
 
-	if err := github.CommitAndPushFiles(
+	dirty, err := github.CommitAndPushFiles(
 		env.Config.ILRepoSourceOwner,
 		ilRepo,
 		[]string{il.Config.CompanyDirectory, il.Config.ConfigWatcherDirectory},
 		env.Config.RepoBranch,
 		fmt.Sprintf("Reconciling company %s", company.Spec.CompanyName),
 		env.Config.GithubSvcAccntName,
-		env.Config.GithubSvcAccntEmail); err != nil {
+		env.Config.GithubSvcAccntEmail,
+	)
+	if err != nil {
 		return ctrl.Result{}, err
 	}
+	if dirty {
+		r.Log.Info(
+			"Committed new changes to IL repo",
+			"company", company.Spec.CompanyName,
+		)
+	} else {
+		r.Log.Info(
+			"No git changes to commit, no-op reconciliation.",
+			"company", company.Spec.CompanyName,
+		)
+	}
 
-	argocd.TryCreateBootstrapApps(r.Log)
+	if err := argocd.TryCreateBootstrapApps(r.Log); err != nil {
+		return ctrl.Result{}, err
+	}
 
 	_, err = github.CreateRepoWebhook(r.Log, githubRepositoryAPI, companyRepo, env.Config.ArgocdHookUrl, env.Config.GitHubWebhookSecret)
 	if err != nil {
