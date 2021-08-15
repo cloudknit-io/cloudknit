@@ -57,10 +57,15 @@ func (api HttpApi) DeleteWorkflow(opts DeleteWorkflowOptions) (*http.Response, e
 	if err != nil {
 		return nil, err
 	}
+	defer common.CloseBody(resp.Body)
+
+	if resp.StatusCode == 404 {
+		api.Log.Info("Argo Workflow does not exist", "namespace", opts.Namespace, "workflow", opts.Name)
+		return resp, nil
+	}
 
 	if resp.StatusCode != 200 {
 		common.LogBody(api.Log, resp.Body)
-		common.CloseBody(resp.Body)
 		return nil, fmt.Errorf("delete workflow returned non-OK response: %d", resp.StatusCode)
 	}
 
