@@ -66,8 +66,11 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, nil
 	}
 
+	argocdApi := argocd.NewHttpClient(r.Log, env.Config.ArgocdServerUrl)
+	argoworkflowApi := argoworkflow.NewHttpClient(r.Log, env.Config.ArgoWorkflowsServerUrl)
+
 	finalizer := env.Config.EnvironmentFinalizer
-	finalizerCompleted, err := r.handleFinalizer(ctx, environment, finalizer)
+	finalizerCompleted, err := r.handleFinalizer(ctx, environment, finalizer, argocdApi, argoworkflowApi)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
@@ -150,6 +153,15 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 			"team", environment.Spec.TeamName,
 			"environment", environment.Spec.EnvName,
 		)
+		r.Log.Info(
+			"Re-syncing Workflow of Workflows",
+			"team", environment.Spec.TeamName,
+			"environment", environment.Spec.EnvName,
+		)
+		wow := fmt.Sprintf("%s-%s", environment.Spec.TeamName, environment.Spec.EnvName)
+		if err := argoworkflow.DeleteWorkflow(wow, env.Config.ArgoWorkflowsNamespace, argoworkflowApi); err != nil {
+			return ctrl.Result{}, err
+		}
 	} else {
 		r.Log.Info(
 			"No git changes to commit, no-op reconciliation.",
@@ -248,7 +260,13 @@ func (r *EnvironmentReconciler) updateStatus(ctx context.Context, e *stablev1.En
 	return nil
 }
 
-func (r *EnvironmentReconciler) handleFinalizer(ctx context.Context, e *stablev1.Environment, finalizer string) (completed bool, err error) {
+func (r *EnvironmentReconciler) handleFinalizer(
+	ctx context.Context,
+	e *stablev1.Environment,
+	finalizer string,
+	argocdApi argocd.Api,
+	argoworkflowsApi argoworkflow.Api,
+) (completed bool, err error) {
 	// hack in order to avoid error for stale cached object
 	// ref: https://github.com/operator-framework/operator-sdk/issues/3968
 	freshEnvironment := &stablev1.Environment{}
@@ -270,7 +288,7 @@ func (r *EnvironmentReconciler) handleFinalizer(ctx context.Context, e *stablev1
 		}
 	} else {
 		if common.ContainsString(freshEnvironment.GetFinalizers(), finalizer) {
-			if err := r.postDeleteHook(ctx, freshEnvironment); err != nil {
+			if err := r.postDeleteHook(ctx, freshEnvironment, argocdApi, argoworkflowsApi); err != nil {
 				return false, err
 			}
 
@@ -292,15 +310,17 @@ func (r *EnvironmentReconciler) handleFinalizer(ctx context.Context, e *stablev1
 	return false, nil
 }
 
-func (r *EnvironmentReconciler) postDeleteHook(ctx context.Context, e *stablev1.Environment) error {
+func (r *EnvironmentReconciler) postDeleteHook(
+	ctx context.Context,
+	e *stablev1.Environment,
+	argocdApi argocd.Api,
+	argoworkflowApi argoworkflow.Api,
+) error {
 	r.Log.Info(
 		"Executing post delete hook for environment finalizer",
 		"environment", e.Spec.EnvName,
 		"team", e.Spec.TeamName,
 	)
-
-	argocdApi := argocd.NewHttpClient(r.Log, env.Config.ArgocdServerUrl)
-	argoworkflowApi := argoworkflow.NewHttpClient(r.Log, env.Config.ArgoWorkflowsServerUrl)
 
 	if err := r.cleanupIlRepo(ctx, e); err != nil {
 		return err
