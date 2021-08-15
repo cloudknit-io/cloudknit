@@ -14,11 +14,12 @@ package argocd
 
 import (
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	"strings"
 
 	"github.com/go-logr/logr"
 
-	env "github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 )
 
 func DeleteApplication(log logr.Logger, api Api, name string) error {
@@ -58,7 +59,7 @@ func RegisterRepo(log logr.Logger, api Api, repoOpts RepoOpts) (bool, error) {
 	if err1 != nil {
 		return false, err1
 	}
-	defer resp1.Body.Close()
+	defer common.CloseBody(resp1.Body)
 	if isRepoRegistered(*repositories, repoOpts.RepoUrl) {
 		log.Info("Repository already registered on ArgoCD",
 			"repoName", repoName,
@@ -76,7 +77,7 @@ func RegisterRepo(log logr.Logger, api Api, repoOpts RepoOpts) (bool, error) {
 	if err2 != nil {
 		return false, err2
 	}
-	defer resp2.Body.Close()
+	defer common.CloseBody(resp2.Body)
 	log.Info("Successfully registered repository on ArgoCD", "repo", repoOpts.RepoUrl)
 	return true, nil
 }
@@ -103,7 +104,7 @@ func TryCreateBootstrapApps(log logr.Logger) error {
 		if companyErr != nil {
 			return fmt.Errorf("error while creating Company Bootstrap Application: %v", companyErr)
 		}
-		defer companyResp.Body.Close()
+		defer common.CloseBody(companyResp.Body)
 		log.Info("Successfully registered application on ArgoCD",
 			"application", "company-bootstrap",
 		)
@@ -123,7 +124,7 @@ func TryCreateBootstrapApps(log logr.Logger) error {
 			log.Error(companyErr2, "Error while creating Config Watcher Bootstrap Application")
 			return fmt.Errorf("error while creating Config Watcher Bootstrap Application: %v", companyErr2)
 		}
-		defer companyResp2.Body.Close()
+		defer common.CloseBody(companyResp2.Body)
 		log.Info("Successfully registered application on ArgoCD",
 			"application", "config-watcher-bootstrap",
 		)

@@ -18,7 +18,7 @@ import (
 
 	appv1 "github.com/argoproj/argo-cd/pkg/apis/application/v1alpha1"
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
-	env "github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

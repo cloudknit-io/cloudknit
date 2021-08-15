@@ -15,7 +15,7 @@ package argoworkflow
 import (
 	workflow "github.com/argoproj/argo/v2/pkg/apis/workflow/v1alpha1"
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
-	terraformgenerator "github.com/compuzest/zlifecycle-il-operator/controllers/terraformgenerator"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/terraformgenerator"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
@@ -114,7 +114,7 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1.Environment) *workfl
 		modulePath := il.EnvComponentModulePath(ec.Module.Path)
 		tfPath := tf.GenerateTerraformIlPath(envComponentDirectory, ec.Name)
 
-		destroyFlag := ec.Destroy == true
+		destroyFlag := ec.Destroy
 
 		var dependencies []string
 		if destroyAll {
