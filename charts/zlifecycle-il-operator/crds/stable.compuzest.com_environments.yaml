@@ -36,9 +36,13 @@ spec:
           spec:
             description: EnvironmentSpec defines the desired state of Environment
             properties:
+              autoApprove:
+                type: boolean
               components:
                 items:
                   properties:
+                    autoApprove:
+                      type: boolean
                     cronSchedule:
                       type: string
                     dependsOn:
@@ -145,6 +149,8 @@ spec:
               components:
                 items:
                   properties:
+                    autoApprove:
+                      type: boolean
                     cronSchedule:
                       type: string
                     dependsOn:

@@ -99,7 +99,8 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1.Environment) *workfl
 
 	var tasks []workflow.DAGTask
 
-	destroyAll := !environment.DeletionTimestamp.IsZero() || environment.Spec.Teardown
+	autoApproveAll := environment.Spec.AutoApprove
+	destroyAll     := !environment.DeletionTimestamp.IsZero() || environment.Spec.Teardown
 
 	tasks = append(tasks, generateAuditTask(environment, destroyAll, "0", nil))
 
@@ -114,12 +115,16 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1.Environment) *workfl
 		modulePath := il.EnvComponentModulePath(ec.Module.Path)
 		tfPath := tf.GenerateTerraformIlPath(envComponentDirectory, ec.Name)
 
-		destroyFlag := ec.Destroy
+		autoApproveFlag := ec.AutoApprove
+		if autoApproveAll {
+			autoApproveFlag = true
+		}
 
 		var dependencies []string
+		destroyFlag := ec.Destroy
 		if destroyAll {
+			destroyFlag  = true
 			dependencies = buildInverseDependencies(ecs, ec.Name)
-			destroyFlag = true
 		} else {
 			dependencies = ec.DependsOn
 		}
@@ -174,6 +179,10 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1.Environment) *workfl
 			{
 				Name:  "status",
 				Value: anyStringPointer("initializing"),
+			},
+			{
+				Name:  "auto_approve",
+				Value: anyStringPointer(autoApproveFlag),
 			},
 		}
 
