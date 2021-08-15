@@ -37,6 +37,7 @@ spec:
           - name: status
           - name: terraform_il_path
           - name: is_destroy
+          - name: auto_approve
           - name: reconcile_id
       steps:
         - - name: init-component-audit
@@ -89,6 +90,8 @@ spec:
                   value: '{{ printf "{{inputs.parameters.terraform_il_path}}" }}'
                 - name: is_destroy
                   value: '{{ printf "{{inputs.parameters.is_destroy}}" }}'
+                - name: auto_approve
+                  value: '{{ printf "{{inputs.parameters.auto_approve}}" }}'
                 - name: config_reconcile_id
                   value: '{{ printf "{{steps.init-component-audit.outputs.parameters.reconcile_id}}" }}'
                 - name: reconcile_id
@@ -150,6 +153,7 @@ spec:
           - name: il_repo
           - name: terraform_il_path
           - name: is_destroy
+          - name: auto_approve
           - name: config_reconcile_id
           - name: reconcile_id
           - name: customer_id
@@ -159,7 +163,7 @@ spec:
           apiVersion: argoproj.io/v1alpha1
           kind: Workflow
           metadata:
-            generateName: '{{ printf "{{inputs.parameters.team_name}}" }}-{{ printf "{{inputs.parameters.env_name}}" }}-{{ printf "{{inputs.parameters.config_name}}" }}'
+            generateName: '{{ printf "{{inputs.parameters.team_name}}" }}-{{ printf "{{inputs.parameters.env_name}}" }}-{{ printf "{{inputs.parameters.config_name}}" }}-'
             namespace: argocd
             labels:
               terraform/sync: 'true'
@@ -182,6 +186,8 @@ spec:
                 value: '{{ printf "{{inputs.parameters.terraform_il_path}}" }}'
               - name: is_destroy
                 value: '{{ printf "{{inputs.parameters.is_destroy}}" }}'
+              - name: auto_approve
+                value: '{{ printf "{{inputs.parameters.auto_approve}}" }}'
               - name: reconcile_id
                 value: '{{ printf "{{inputs.parameters.reconcile_id}}" }}'
               - name: config_reconcile_id

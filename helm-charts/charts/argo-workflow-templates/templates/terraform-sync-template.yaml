@@ -34,6 +34,7 @@ spec:
           - name: il_repo
           - name: terraform_il_path
           - name: is_destroy
+          - name: auto_approve
           - name: config_reconcile_id
           - name: reconcile_id
       steps:
@@ -82,7 +83,11 @@ spec:
             when: '{{ printf "{{steps.plan.outputs.parameters.planCode}}" }} == 2'
         - - name: approve
             template: approve
-            when: '{{ printf "{{steps.plan.outputs.parameters.planCode}}" }} == 2'
+            arguments:
+              parameters:
+                - name: auto_approve
+                  value: '{{ printf "{{inputs.parameters.auto_approve}}" }}'
+            when: '{{ printf "{{steps.plan.outputs.parameters.planCode}}" }} == 2 && {{ printf "{{inputs.parameters.auto_approve}}" }} != true'
         - - name: apply
             templateRef:
               name: terraform-run-template
