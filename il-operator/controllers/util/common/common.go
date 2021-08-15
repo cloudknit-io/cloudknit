@@ -11,6 +11,12 @@ import (
 	"net/http"
 )
 
+func CloseBody(body io.ReadCloser) {
+	if body != nil {
+		body.Close()
+	}
+}
+
 func LogBody(log logr.Logger, body io.ReadCloser) {
 	bodyBytes, err := ioutil.ReadAll(body)
 	if err != nil {
