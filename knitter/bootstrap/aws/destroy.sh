@@ -31,9 +31,6 @@ checkForFailures() {
         fi
     fi
 }
-argocd cluster rm arn:aws:eks:us-east-1:413422438110:cluster/$LOCATION-eks
-argocd repo rm git@github.com:CompuZest/infra-deploy-terraform-config.git
-argocd repo rm git@github.com:CompuZest/helm-charts.git
 
 cd ../../zlifecycle-provisioner/zlifecycle-addons
 terraform init
@@ -41,6 +38,8 @@ terraform workspace select $LOCATION
 terraform init
 terraform destroy -auto-approve -var-file tfvars/$LOCATION.tfvars
 checkForFailures
+
+kubectl get application -n argocd | awk '//{print $1}'| xargs kubectl patch applications.argoproj.io -p '{"metadata":{"finalizers":[]}}' --type=merge -n argocd application
 
 cd ../k8s-addons
 terraform init
