@@ -15,7 +15,7 @@ package argoworkflow
 import (
 	"testing"
 
-	"github.com/argoproj/argo/v2/pkg/apis/workflow/v1alpha1"
+	"github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	"github.com/compuzest/zlifecycle-il-operator/mocks"
 	"github.com/stretchr/testify/assert"
 )

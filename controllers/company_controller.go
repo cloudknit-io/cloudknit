@@ -42,9 +42,8 @@ type CompanyReconciler struct {
 // +kubebuilder:rbac:groups=stable.compuzest.com,resources=companies,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=stable.compuzest.com,resources=companies/status,verbs=get;update;patch
 
-func (r *CompanyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	start := time.Now()
-	ctx := context.Background()
 
 	if err := r.initOperator(ctx); err != nil {
 		r.Log.Error(err, "error running init function")
@@ -54,7 +53,7 @@ func (r *CompanyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	if err := r.Get(ctx, req.NamespacedName, company); err != nil {
 		if errors.IsNotFound(err) {
 			r.Log.Info(
-				"Company missing from cache, ending reconcile...",
+				"Company missing from cache, ending reconcile",
 				"name", req.Name,
 				"namespace", req.Namespace,
 			)
@@ -62,7 +61,7 @@ func (r *CompanyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		}
 		r.Log.Error(
 			err,
-			"Error occurred while getting Company...",
+			"Error occurred while getting Company",
 			"name", req.Name,
 			"namespace", req.Namespace,
 		)

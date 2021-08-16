@@ -3,55 +3,55 @@ module github.com/compuzest/zlifecycle-il-operator
 go 1.16
 
 require (
-	github.com/BurntSushi/toml v0.3.1 // indirect
-	github.com/Masterminds/semver v1.5.0 // indirect
-	github.com/argoproj/argo v2.5.2+incompatible // indirect
-	github.com/argoproj/argo-cd v1.7.6
-	github.com/argoproj/argo/v2 v2.12.11
-	github.com/argoproj/pkg v0.3.0 // indirect
-	github.com/ghodss/yaml v1.0.0
-	github.com/go-logr/logr v0.2.0
-	github.com/go-redis/cache v6.4.0+incompatible // indirect
-	github.com/go-redis/redis v6.15.9+incompatible // indirect
-	github.com/gobwas/glob v0.2.3 // indirect
-	github.com/gogo/protobuf v1.3.1 // indirect
+	github.com/argoproj/argo-cd/v2 v2.0.5
+	github.com/argoproj/argo-workflows/v3 v3.1.6
+	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
+	github.com/go-logr/logr v0.4.0
 	github.com/golang/mock v1.5.0
-	github.com/google/go-cmp v0.4.0
+	github.com/google/go-cmp v0.5.5
 	github.com/google/go-github/v32 v32.1.0
-	github.com/hashicorp/go-uuid v1.0.2 // indirect
-	github.com/jcmturner/gofork v1.0.0 // indirect
-	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
-	github.com/kyoh86/richgo v0.3.6 // indirect
-	github.com/onsi/ginkgo v1.12.1
-	github.com/onsi/gomega v1.10.1
-	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
-	github.com/robfig/cron v1.2.0 // indirect
-	github.com/stretchr/testify v1.6.1
-	github.com/valyala/fasttemplate v1.2.1 // indirect
-	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
-	go.uber.org/atomic v1.4.0
-	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-	gopkg.in/jcmturner/aescts.v1 v1.0.1 // indirect
-	gopkg.in/jcmturner/dnsutils.v1 v1.0.1 // indirect
-	gopkg.in/jcmturner/gokrb5.v5 v5.3.0 // indirect
-	gopkg.in/jcmturner/rpc.v0 v0.0.2 // indirect
-	gopkg.in/src-d/go-git.v4 v4.13.1 // indirect
-	gopkg.in/yaml.v2 v2.3.0
-	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c // indirect
-	k8s.io/api v0.18.2
-	k8s.io/apimachinery v0.19.3
-	k8s.io/client-go v0.18.6
-	sigs.k8s.io/controller-runtime v0.6.3
+	github.com/onsi/ginkgo v1.16.4
+	github.com/onsi/gomega v1.14.0
+	github.com/stretchr/testify v1.7.0
+	go.uber.org/atomic v1.7.0
+	golang.org/x/oauth2 v0.0.0-20210810183815-faf39c7919d5
+	gopkg.in/yaml.v2 v2.4.0
+	k8s.io/api v0.21.4
+	k8s.io/apimachinery v0.21.4
+	k8s.io/client-go v11.0.1-0.20190816222228-6d55c1b1f1ca+incompatible
+	sigs.k8s.io/controller-runtime v0.9.6
 )
 
 replace (
-	github.com/argoproj/argo-cd => github.com/argoproj/argo-cd v1.5.8
-	github.com/colinmarc/hdfs => github.com/colinmarc/hdfs v1.1.4-0.20180805212432-9746310a4d31
-	github.com/go-logr/logr => github.com/go-logr/logr v0.1.0
-	github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.3.1
-	k8s.io/api => k8s.io/api v0.17.2
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.17.2
-	k8s.io/apimachinery => k8s.io/apimachinery v0.17.2
-	k8s.io/client-go => k8s.io/client-go v0.17.2
-	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.5.1
+	// k8s & argocd version roulette
+	// ISSUE - https://github.com/argoproj/argo-cd/issues/4055
+	// follow and replace to versions listed here - https://github.com/argoproj/argo-cd/blob/master/go.mod
+	// watch out for gitops engine also - https://github.com/argoproj/gitops-engine/blob/master/go.mod
+	github.com/argoproj/gitops-engine => github.com/argoproj/gitops-engine v0.4.0
+	k8s.io/api => k8s.io/api v0.21.0
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.21.4
+	k8s.io/apimachinery => k8s.io/apimachinery v0.21.4
+	k8s.io/apiserver => k8s.io/apiserver v0.21.4
+	k8s.io/cli-runtime => k8s.io/cli-runtime v0.21.4
+	k8s.io/client-go => k8s.io/client-go v0.21.4
+	k8s.io/cloud-provider => k8s.io/cloud-provider v0.21.4
+	k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.21.4
+	k8s.io/code-generator => k8s.io/code-generator v0.21.4
+	k8s.io/component-base => k8s.io/component-base v0.21.4
+	k8s.io/component-helpers => k8s.io/component-helpers v0.21.4
+	k8s.io/controller-manager => k8s.io/controller-manager v0.21.4
+	k8s.io/cri-api => k8s.io/cri-api v0.21.4
+	k8s.io/csi-translation-lib => k8s.io/csi-translation-lib v0.21.4
+	k8s.io/kube-aggregator => k8s.io/kube-aggregator v0.21.4
+	k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.21.4
+	k8s.io/kube-proxy => k8s.io/kube-proxy v0.21.4
+	k8s.io/kube-scheduler => k8s.io/kube-scheduler v0.21.4
+	k8s.io/kubectl => k8s.io/kubectl v0.21.4
+	k8s.io/kubelet => k8s.io/kubelet v0.21.4
+	k8s.io/kubernetes => k8s.io/kubernetes v1.21.0
+	k8s.io/legacy-cloud-providers => k8s.io/legacy-cloud-providers v0.21.4
+	k8s.io/metrics => k8s.io/metrics v0.21.4
+	k8s.io/mount-utils => k8s.io/mount-utils v0.21.4
+	k8s.io/pod-security-admission => k8s.io/pod-security-admission v0.22.0
+	k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.21.4
 )
