@@ -37,6 +37,8 @@ jobs:
 
       - run: make deps
         working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}
+      - run: make check
+        working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}
       - run: make docker-build
         working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}
       - run: make docker-push
