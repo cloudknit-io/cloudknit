@@ -34,6 +34,7 @@ var (
 )
 
 // +kubebuilder:rbac:groups="",resources=configmaps;secrets,verbs=get;list;watch;update;patch
+// +kubebuilder:rbac:groups=coordination.k8s.io,resources=leases,verbs=get;create;update
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
