@@ -20,6 +20,7 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"time"
 )
 
 // GenerateWorkflowOfWorkflows create WoW
@@ -203,7 +204,7 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1.Environment) *workfl
 
 	tasks = append(tasks, generateAuditTask(environment, destroyAll, "1", allComponents))
 
-	return &workflow.Workflow{
+	w := &workflow.Workflow{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "argoproj.io/v1alpha1",
 			Kind:       "Workflow",
@@ -227,7 +228,13 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1.Environment) *workfl
 				},
 			},
 		},
+		Status: workflow.WorkflowStatus{
+			StartedAt: metav1.Time{Time: time.Now()},
+			FinishedAt: metav1.Time{Time: time.Now()},
+		},
 	}
+
+	return w
 }
 
 func generateAuditTask(environment stablev1.Environment, destroyAll bool, phase string, dependencies []string) workflow.DAGTask {
