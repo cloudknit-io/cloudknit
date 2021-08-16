@@ -229,8 +229,8 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1.Environment) *workfl
 			},
 		},
 		Status: workflow.WorkflowStatus{
-			StartedAt: metav1.Time{Time: time.Now()},
-			FinishedAt: metav1.Time{Time: time.Now()},
+			StartedAt: metav1.Time{Time: getStaticDate()},
+			FinishedAt: metav1.Time{Time: getStaticDate()},
 		},
 	}
 
@@ -290,6 +290,15 @@ func generateAuditTask(environment stablev1.Environment, destroyAll bool, phase 
 	}
 
 	return task
+}
+
+func getStaticDate() time.Time {
+	layout   := "2006-01-02T15:04:05.000Z"
+	someDate := "2019-06-25T15:04:05.000Z"
+
+	t, _ := time.Parse(layout, someDate)
+
+	return t
 }
 
 func anyStringPointer(val interface{}) *workflow.AnyString {
