@@ -46,17 +46,16 @@ type TeamReconciler struct {
 var teamReconcileInitialRun = atomic.NewBool(true)
 
 // Reconcile method called everytime there is a change in Team Custom Resource
-func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	delayTeamReconcileOnInitialRun(r.Log, 10)
 	start := time.Now()
-	ctx := context.Background()
 
 	team := &stablev1.Team{}
 	fileUtil := &file.UtilFileService{}
 	if err := r.Get(ctx, req.NamespacedName, team); err != nil {
 		if errors.IsNotFound(err) {
 			r.Log.Info(
-				"team missing from cache, ending reconcile...",
+				"team missing from cache, ending reconcile",
 				"name", req.Name,
 				"namespace", req.Namespace,
 			)
@@ -64,7 +63,7 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		}
 		r.Log.Error(
 			err,
-			"error occurred while getting Team...",
+			"error occurred while getting Team",
 			"name", req.Name,
 			"namespace", req.Namespace,
 		)

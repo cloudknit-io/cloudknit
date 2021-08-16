@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"net/http"
 
-	appv1 "github.com/argoproj/argo-cd/pkg/apis/application/v1alpha1"
+	appv1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	"github.com/go-logr/logr"
 )

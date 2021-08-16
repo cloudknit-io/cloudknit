@@ -21,7 +21,6 @@ import (
 	"go.uber.org/atomic"
 	"io/ioutil"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/types"
 	"time"
 
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
@@ -51,10 +50,9 @@ type EnvironmentReconciler struct {
 var environmentInitialRun = atomic.NewBool(true)
 
 // Reconcile method called everytime there is a change in Environment Custom Resource
-func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	delayEnvironmentReconcileOnInitialRun(r.Log, 25)
 	start := time.Now()
-	ctx := context.Background()
 
 	environment := &stablev1.Environment{}
 
@@ -76,7 +74,7 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	}
 	if finalizerCompleted {
 		r.Log.Info(
-			"Finalizer completed, ending reconcile...",
+			"Finalizer completed, ending reconcile",
 			"team", environment.Spec.TeamName,
 			"environment", environment.Spec.EnvName,
 		)
@@ -92,14 +90,14 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		if err := r.updateStatus(ctx, environment); err != nil {
 			r.Log.Error(
 				err,
-				"Error occurred while updating Environment status...",
+				"Error occurred while updating Environment status",
 				"name", environment.Name,
 			)
 			return ctrl.Result{}, nil
 		}
 
 		r.Log.Info(
-			"Generating Environment application...",
+			"Generating Environment application",
 			"team", environment.Spec.TeamName,
 			"environment", environment.Spec.EnvName,
 		)
@@ -126,7 +124,7 @@ func (r *EnvironmentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	}
 
 	r.Log.Info(
-		"Generating workflow of workflows...",
+		"Generating workflow of workflows",
 		"team", environment.Spec.TeamName,
 		"environment", environment.Spec.EnvName,
 		"isDeleteEvent", isDeleteEvent,
@@ -195,7 +193,7 @@ func (r *EnvironmentReconciler) tryGetEnvironment(ctx context.Context, req ctrl.
 	if err := r.Get(ctx, req.NamespacedName, e); err != nil {
 		if errors.IsNotFound(err) {
 			r.Log.Info(
-				"Environment missing from cache, ending reconcile...",
+				"Environment missing from cache, ending reconcile",
 				"name", req.Name,
 				"namespace", req.Namespace,
 			)
@@ -203,7 +201,7 @@ func (r *EnvironmentReconciler) tryGetEnvironment(ctx context.Context, req ctrl.
 		}
 		r.Log.Error(
 			err,
-			"Error occurred while getting Environment...",
+			"Error occurred while getting Environment",
 			"name", req.Name,
 			"namespace", req.Namespace,
 		)
@@ -267,41 +265,34 @@ func (r *EnvironmentReconciler) handleFinalizer(
 	argocdApi argocd.Api,
 	argoworkflowsApi argoworkflow.Api,
 ) (completed bool, err error) {
-	// hack in order to avoid error for stale cached object
-	// ref: https://github.com/operator-framework/operator-sdk/issues/3968
-	freshEnvironment := &stablev1.Environment{}
-	if err := r.Get(ctx, types.NamespacedName{Name: e.Name, Namespace: e.Namespace}, freshEnvironment); err != nil {
-		return false, err
-	}
-
-	if freshEnvironment.DeletionTimestamp.IsZero() {
-		if !common.ContainsString(freshEnvironment.GetFinalizers(), finalizer) {
+	if e.DeletionTimestamp.IsZero() {
+		if !common.ContainsString(e.GetFinalizers(), finalizer) {
 			r.Log.Info(
 				"Setting finalizer for environment",
-				"environment", freshEnvironment.Spec.EnvName,
-				"team", freshEnvironment.Spec.TeamName,
+				"environment", e.Spec.EnvName,
+				"team", e.Spec.TeamName,
 			)
-			freshEnvironment.SetFinalizers(append(freshEnvironment.GetFinalizers(), finalizer))
-			if err := r.Update(ctx, freshEnvironment); err != nil {
+			e.SetFinalizers(append(e.GetFinalizers(), finalizer))
+			if err := r.Update(ctx, e); err != nil {
 				return false, err
 			}
 		}
 	} else {
-		if common.ContainsString(freshEnvironment.GetFinalizers(), finalizer) {
-			if err := r.postDeleteHook(ctx, freshEnvironment, argocdApi, argoworkflowsApi); err != nil {
+		if common.ContainsString(e.GetFinalizers(), finalizer) {
+			if err := r.postDeleteHook(ctx, e, argocdApi, argoworkflowsApi); err != nil {
 				return false, err
 			}
 
 			r.Log.Info(
 				"Removing finalizer",
-				"team", freshEnvironment.Spec.TeamName,
-				"environment", freshEnvironment.Spec.EnvName,
+				"team", e.Spec.TeamName,
+				"environment", e.Spec.EnvName,
 			)
-			freshEnvironment.SetFinalizers(common.RemoveString(freshEnvironment.GetFinalizers(), finalizer))
-			if err := r.Update(ctx, freshEnvironment); err != nil {
+			e.SetFinalizers(common.RemoveString(e.GetFinalizers(), finalizer))
+
+			if err := r.Update(ctx, e); err != nil {
 				return false, err
 			}
-
 			return true, nil
 		}
 		return true, nil
