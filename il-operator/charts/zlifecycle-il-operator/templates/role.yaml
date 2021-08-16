@@ -18,6 +18,14 @@ rules:
   - update
   - watch
 - apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+  - get
+  - update
+- apiGroups:
   - stable.compuzest.com
   resources:
   - companies
@@ -76,12 +84,4 @@ rules:
   verbs:
   - get
   - patch
-  - update
-- apiGroups:
-  - coordination.k8s.io
-  resources:
-  - leases
-  verbs:
-  - get
-  - create
   - update
