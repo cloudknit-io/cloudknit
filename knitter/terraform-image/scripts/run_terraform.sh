@@ -45,6 +45,7 @@ function PatchError() {
 }
 
 function appendLogs() {
+  IFS=''
   while read line; do
     echo $line | tee -a $1 
   done
@@ -57,6 +58,11 @@ function Error() {
   fi
 
   exit 1
+}
+
+function SaveAndExit() {
+  aws s3 cp /tmp/apply_output.txt s3://zlifecycle-tfplan-$customer_id/$team_name/$env_name/$config_name/$config_reconcile_id/apply_output --profile compuzest-shared
+  Error $1
 }
 
 sh /client/setup_github.sh || Error "Cannot setup github ssh key"
