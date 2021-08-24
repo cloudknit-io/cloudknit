@@ -35,6 +35,8 @@ jobs:
 
       - run: make deps
         working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}
+      - run: go mod vendor
+        working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}
       - run: make check
         working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}
       - run: DOCKER_TAG=stable make docker-build
