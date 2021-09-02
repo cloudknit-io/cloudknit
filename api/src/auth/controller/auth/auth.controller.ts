@@ -8,6 +8,18 @@ export class AuthController {
    */
   @Get('login')
   public login() {
+    const k8s = require("@kubernetes/client-node");
+    const kc = new k8s.KubeConfig();
+    kc.loadFromCluster();
+    const k8sApi = kc.makeApiClient(k8s.CoreV1Api);
+    k8sApi
+      .listNamespacedPod("zlifecycle-ui")
+      .then((res) => {
+        console.log(res.body.items[0].metadata);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
     return;
   }
 
