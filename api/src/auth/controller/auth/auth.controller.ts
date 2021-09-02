@@ -1,39 +1,52 @@
-import { Controller, Get, Res } from '@nestjs/common';
-import { Response } from 'express';
+import { Controller, Get, Res } from "@nestjs/common";
+import { Response } from "express";
 
-@Controller('auth')
+@Controller("auth")
 export class AuthController {
   /*
    * user will login via this route
    */
-  @Get('login')
-  public login() {
+  @Get("login")
+  public async login() {
     const k8s = require("@kubernetes/client-node");
     const kc = new k8s.KubeConfig();
     kc.loadFromCluster();
     const k8sApi = kc.makeApiClient(k8s.CoreV1Api);
-    k8sApi
-      .listNamespacedPod("zlifecycle-ui")
-      .then((res) => {
-        console.log(res.body.items[0].metadata);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-    return;
+
+    const secret1 = await k8sApi
+      .readNamespacedSecret("aws-credentials-file", 'argocd')
+      .then((x) => x.body)
+      .catch(() => null);
+
+    const secret2 = await k8sApi
+      .readNamespacedSecret("aws-creds", 'argocd')
+      .then((x) => x.body)
+      .catch(() => null);
+
+    // const res = await new Promise((r, e) =>
+    //   k8sApi
+    //     .listNamespacedPod("zlifecycle-ui")
+    //     .then((res) => {
+    //       r(res.body);
+    //     })
+    //     .catch((err) => {
+    //       r(err);
+    //     })
+    // );
+    return [secret1, secret2];
   }
 
   /*
    * Redirect route that OAuth2 will call
    */
-  @Get('redirect')
+  @Get("redirect")
   public redirect(@Res() res: Response) {
     return res.send(200);
   }
 
-  @Get('status')
+  @Get("status")
   public status() {}
 
-  @Get('logout')
+  @Get("logout")
   public logout() {}
 }
