@@ -46,12 +46,10 @@ export class AuthController {
       const splitTokens = decoded.split(separator);
       const updatedCreds = splitTokens[0].replace(
         /aws_access_key_id = \S+\naws_secret_access_key = \S+/,
-        `aws_access_key_id = ${atob(
-          accessKeyId
-        )}\naws_secret_access_key = ${atob(secretAccessKey)}`
+        `aws_access_key_id = ${Buffer.from(accessKeyId, 'base64').toString()}\naws_secret_access_key = ${Buffer.from(secretAccessKey, 'base64').toString()}`
       );
       splitTokens[0] = updatedCreds;
-      const encoded = btoa(splitTokens.join(separator));
+      const encoded = Buffer.from(splitTokens.join(separator)).toString('base64');
       updates.push(this.updateSecret(
         k8sApi,
         credentials,
