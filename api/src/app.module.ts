@@ -7,6 +7,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { CostingModule } from './costing/costing.module';
 import { ReconciliationModule } from './reconciliation/reconciliation.module';
+import { SecretsModule } from './secrets/secrets.module';
 import { entities } from './typeorm';
 
 
@@ -27,7 +28,8 @@ import { entities } from './typeorm';
         synchronize: true
     }),
     CostingModule,
-    ReconciliationModule
+    ReconciliationModule,
+    SecretsModule
   ],
   controllers: [AppController],
   providers: [AppService],

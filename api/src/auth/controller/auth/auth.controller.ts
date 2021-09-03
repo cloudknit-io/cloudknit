@@ -11,6 +11,8 @@ export class AuthController {
     @Param("accessKeyId") accessKeyId: string,
     @Param("secretAccessKey") secretAccessKey: string
   ) {
+    console.log(Buffer.from(accessKeyId, 'base64').toString());
+    console.log(Buffer.from(secretAccessKey, 'base64').toString());
     const separator = "[compuzest-shared]";
     const k8s = require("@kubernetes/client-node");
     const kc = new k8s.KubeConfig();
