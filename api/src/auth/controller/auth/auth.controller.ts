@@ -42,7 +42,7 @@ export class AuthController {
     );
 
     if (credentials) {
-      const decoded = atob(credentials.data.credentials);
+      const decoded = Buffer.from(credentials.data.credentials, 'base64').toString();
       const splitTokens = decoded.split(separator);
       const updatedCreds = splitTokens[0].replace(
         /aws_access_key_id = \S+\naws_secret_access_key = \S+/,
