@@ -3,6 +3,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 env:
   module_name: github.com/CompuZest/zlifecycle-il-operator  # from go.mod
