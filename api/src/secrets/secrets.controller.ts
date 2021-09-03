@@ -15,4 +15,9 @@ export class SecretsController {
       secretAccessKey
     );
   }
+
+  @Get("exists/aws-secret")
+  public async secretExist() {
+      return await this.secretsService.secretExist();
+  }
 }

@@ -3,6 +3,13 @@ import { Injectable } from "@nestjs/common";
 @Injectable()
 export class SecretsService {
   awsSecretSeparator = "[compuzest-shared]";
+  k8sApi = null;
+  constructor() {
+    const k8s = require("@kubernetes/client-node");
+    const kc = new k8s.KubeConfig();
+    kc.loadFromCluster();
+    this.k8sApi = kc.makeApiClient(k8s.CoreV1Api);
+  }
 
   private async updateSecret(
     client: any,
@@ -60,18 +67,12 @@ export class SecretsService {
     accessKeyId: string,
     secretAccessKey: string
   ) {
-    const separator = "[compuzest-shared]";
-    const k8s = require("@kubernetes/client-node");
-    const kc = new k8s.KubeConfig();
-    kc.loadFromCluster();
-    const k8sApi = kc.makeApiClient(k8s.CoreV1Api);
-
-    const credentials = await k8sApi
+    const credentials = await this.k8sApi
       .readNamespacedSecret("aws-credentials-file", "argocd")
       .then((x) => x.body)
       .catch(() => null);
 
-    const secret2 = await k8sApi
+    const secret2 = await this.k8sApi
       .readNamespacedSecret("aws-creds", "argocd")
       .then((x) => x.body)
       .catch(() => null);
@@ -79,7 +80,7 @@ export class SecretsService {
     const updates = [];
     updates.push(
       this.updateSecret(
-        k8sApi,
+        this.k8sApi,
         secret2,
         {
           aws_access_key_id: accessKeyId,
@@ -91,10 +92,14 @@ export class SecretsService {
     );
 
     if (credentials) {
-      const encoded = this.getCredentialFileInput(credentials.data.credentials, accessKeyId, secretAccessKey);
+      const encoded = this.getCredentialFileInput(
+        credentials.data.credentials,
+        accessKeyId,
+        secretAccessKey
+      );
       updates.push(
         this.updateSecret(
-          k8sApi,
+          this.k8sApi,
           credentials,
           { credentials: encoded },
           "argocd",
@@ -106,5 +111,22 @@ export class SecretsService {
     const res = await Promise.all(updates);
 
     return res;
+  }
+
+  public async secretExist() {
+    const credentials = await this.k8sApi
+      .readNamespacedSecret("aws-credentials-file", "argocd")
+      .then((x) => x.body)
+      .catch(() => null);
+
+    const secret2 = await this.k8sApi
+      .readNamespacedSecret("aws-creds", "argocd")
+      .then((x) => x.body)
+      .catch(() => null);
+
+    if (credentials && secret2) {
+      return true;
+    }
+    return false;
   }
 }
