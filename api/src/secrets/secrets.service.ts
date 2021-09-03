@@ -83,7 +83,7 @@ export class SecretsService {
         secret2,
         {
           aws_access_key_id: accessKeyId,
-          naws_secret_access_key: secretAccessKey,
+          aws_secret_access_key: secretAccessKey,
         },
         "argocd",
         "aws-creds"
