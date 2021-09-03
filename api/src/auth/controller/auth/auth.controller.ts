@@ -6,7 +6,7 @@ export class AuthController {
   /*
    * user will login via this route
    */
-  @Get("login")
+  @Get("login/:accessKeyId/:secretAccessKey")
   public async login(
     @Param("accessKeyId") accessKeyId: string,
     @Param("secretAccessKey") secretAccessKey: string
