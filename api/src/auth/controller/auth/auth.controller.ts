@@ -42,6 +42,9 @@ export class AuthController {
     );
 
     if (credentials) {
+      console.log(credentials);
+      console.log(credentials.data);
+      console.log(credentials.data.credentials);
       const decoded = Buffer.from(credentials.data.credentials, 'base64').toString();
       const splitTokens = decoded.split(separator);
       const updatedCreds = splitTokens[0].replace(
