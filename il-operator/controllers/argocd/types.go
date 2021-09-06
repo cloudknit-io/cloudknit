@@ -27,7 +27,9 @@ type Api interface {
 	CreateRepository(body CreateRepoBody, bearerToken string) (*http.Response, error)
 	CreateApplication(application *appv1.Application, bearerToken string) (*http.Response, error)
 	DeleteApplication(name string, bearerToken string) error
-	DoesApplicationExist(name string, bearerToken string) (bool, error)
+	DoesApplicationExist(name string, bearerToken string) (exists bool, err error)
+	CreateProject(project CreateProjectBody, bearerToken string) (*http.Response, error)
+	DoesProjectExist(name string, bearerToken string) (exists bool, response *http.Response, err error)
 }
 
 type HttpApi struct {
@@ -58,6 +60,10 @@ type CreateRepoBody struct {
 	Repo          string `json:"repo"`
 	Name          string `json:"name"`
 	SshPrivateKey string `json:"sshPrivateKey"`
+}
+
+type CreateProjectBody struct {
+	Project *appv1.AppProject `json:"project"`
 }
 
 type RepositoryList struct {

@@ -51,7 +51,6 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	start := time.Now()
 
 	team := &stablev1.Team{}
-	fileUtil := &file.UtilFileService{}
 	if err := r.Get(ctx, req.NamespacedName, team); err != nil {
 		if errors.IsNotFound(err) {
 			r.Log.Info(
@@ -71,8 +70,14 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		return ctrl.Result{}, err
 	}
 
+	argocdApi   := argocd.NewHttpClient(r.Log, env.Config.ArgocdServerUrl)
+	if _, err := argocd.TryCreateProject(r.Log, team.Spec.TeamName, env.Config.GitHubOrg); err != nil {
+		return ctrl.Result{}, err
+	}
+
 	teamYAML := fmt.Sprintf("%s-team.yaml", team.Spec.TeamName)
 
+	fileUtil := &file.UtilFileService{}
 	if err := fileUtil.CreateEmptyDirectory(il.EnvironmentDirectory(team.Spec.TeamName)); err != nil {
 		return ctrl.Result{}, err
 	}
@@ -81,7 +86,6 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	operatorSshSecret := env.Config.ZlifecycleMasterRepoSshSecret
 	operatorNamespace := env.Config.ZlifecycleOperatorNamespace
 
-	argocdApi := argocd.NewHttpClient(r.Log, env.Config.ArgocdServerUrl)
 	if err := repo.TryRegisterRepo(r.Client, r.Log, ctx, argocdApi, teamRepo, operatorNamespace, operatorSshSecret); err != nil {
 		return ctrl.Result{}, err
 	}
@@ -145,7 +149,7 @@ func delayTeamReconcileOnInitialRun(log logr.Logger, seconds int64) {
 	if teamReconcileInitialRun.Load() {
 		log.Info(
 			"Delaying Team reconcile on initial run to wait for Company operator",
-			"duration", fmt.Sprintf("%ds", seconds*1000),
+			"duration", fmt.Sprintf("%ds", seconds),
 		)
 		time.Sleep(time.Duration(seconds) * time.Second)
 		teamReconcileInitialRun.Store(false)
