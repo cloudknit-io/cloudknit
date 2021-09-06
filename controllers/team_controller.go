@@ -71,8 +71,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	}
 
 	argocdApi   := argocd.NewHttpClient(r.Log, env.Config.ArgocdServerUrl)
-	projectName := fmt.Sprintf("%s-team", team.Spec.TeamName)
-	if _, err := argocd.TryCreateProject(r.Log, projectName, env.Config.GitHubOrg); err != nil {
+	if _, err := argocd.TryCreateProject(r.Log, team.Spec.TeamName, env.Config.GitHubOrg); err != nil {
 		return ctrl.Result{}, err
 	}
 
