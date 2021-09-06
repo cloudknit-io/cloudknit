@@ -51,7 +51,7 @@ var environmentInitialRun = atomic.NewBool(true)
 
 // Reconcile method called everytime there is a change in Environment Custom Resource
 func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	delayEnvironmentReconcileOnInitialRun(r.Log, 25)
+	delayEnvironmentReconcileOnInitialRun(r.Log, 35)
 	start := time.Now()
 
 	environment := &stablev1.Environment{}
@@ -337,7 +337,7 @@ func (r *EnvironmentReconciler) deleteDanglingArgocdApps(e *stablev1.Environment
 			"app", appName,
 		)
 		if err := argocd.DeleteApplication(r.Log, argocdApi, appName); err != nil {
-			r.Log.Error(err, "error deleting argocd app")
+			r.Log.Error(err, "Error deleting argocd app")
 		}
 	}
 	return nil

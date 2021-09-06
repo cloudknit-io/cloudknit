@@ -51,6 +51,21 @@ func (mr *MockApiMockRecorder) CreateApplication(arg0, arg1 interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateApplication", reflect.TypeOf((*MockApi)(nil).CreateApplication), arg0, arg1)
 }
 
+// CreateProject mocks base method.
+func (m *MockApi) CreateProject(arg0 argocd.CreateProjectBody, arg1 string) (*http.Response, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateProject", arg0, arg1)
+	ret0, _ := ret[0].(*http.Response)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateProject indicates an expected call of CreateProject.
+func (mr *MockApiMockRecorder) CreateProject(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateProject", reflect.TypeOf((*MockApi)(nil).CreateProject), arg0, arg1)
+}
+
 // CreateRepository mocks base method.
 func (m *MockApi) CreateRepository(arg0 argocd.CreateRepoBody, arg1 string) (*http.Response, error) {
 	m.ctrl.T.Helper()
@@ -93,6 +108,22 @@ func (m *MockApi) DoesApplicationExist(arg0, arg1 string) (bool, error) {
 func (mr *MockApiMockRecorder) DoesApplicationExist(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DoesApplicationExist", reflect.TypeOf((*MockApi)(nil).DoesApplicationExist), arg0, arg1)
+}
+
+// DoesProjectExist mocks base method.
+func (m *MockApi) DoesProjectExist(arg0, arg1 string) (bool, *http.Response, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DoesProjectExist", arg0, arg1)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(*http.Response)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// DoesProjectExist indicates an expected call of DoesProjectExist.
+func (mr *MockApiMockRecorder) DoesProjectExist(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DoesProjectExist", reflect.TypeOf((*MockApi)(nil).DoesProjectExist), arg0, arg1)
 }
 
 // GetAuthToken mocks base method.
