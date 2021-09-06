@@ -21,6 +21,7 @@ type config struct {
 	EnvironmentFinalizer string
 	GitHubAuthToken      string
 	GitHubWebhookSecret  string
+	GitHubOrg            string
 	RepoBranch           string
 
 	HelmChartsRepo string
@@ -54,6 +55,7 @@ var Config = config{
 	EnvironmentFinalizer: "zlifecycle.compuzest.com/github-finalizer",
 	GitHubAuthToken:      os.Getenv("GITHUB_AUTH_TOKEN"),
 	GitHubWebhookSecret:  os.Getenv("GITHUB_WEBHOOK_SECRET"),
+	GitHubOrg:            os.Getenv("GITHUB_ORG"),
 	RepoBranch:           "main",
 
 	HelmChartsRepo: os.Getenv("helmChartsRepo"),

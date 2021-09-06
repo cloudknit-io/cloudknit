@@ -46,7 +46,7 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	start := time.Now()
 
 	if err := r.initOperator(ctx); err != nil {
-		r.Log.Error(err, "error running init function")
+		r.Log.Error(err, "Error running init function")
 	}
 
 	company := &stablev1.Company{}
@@ -144,8 +144,8 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 }
 
 func (r *CompanyReconciler) initOperator(ctx context.Context) error {
-	r.Log.Info("running company operator init")
-	r.Log.Info("registering helm chart repo")
+	r.Log.Info("Running company operator init")
+	r.Log.Info("Registering helm chart repo")
 	argocdApi := argocd.NewHttpClient(r.Log, env.Config.ArgocdServerUrl)
 	helmChartsRepo := env.Config.HelmChartsRepo
 	operatorSshSecret := env.Config.ZlifecycleMasterRepoSshSecret

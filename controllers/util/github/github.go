@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -532,7 +531,10 @@ func CommitAndPushFiles(_sourceOwner string, _sourceRepo string, _sourceFolders 
 	authorName = _authorName
 	authorEmail = _authorEmail
 
-	sourceFiles = getFileNames(_sourceFolders)
+	sourceFiles, err = getFileNames(_sourceFolders)
+	if err != nil {
+		return false, err
+	}
 
 	token := os.Getenv("GITHUB_AUTH_TOKEN")
 	if token == "" {
@@ -566,13 +568,12 @@ func CommitAndPushFiles(_sourceOwner string, _sourceRepo string, _sourceFolders 
 	return dirty, nil
 }
 
-func getFileNames(folderPaths []string) (fileNames string) {
+func getFileNames(folderPaths []string) (fileNames string, err error) {
 	var s, sep string
 	for _, f := range folderPaths {
 		err := filepath.Walk(f,
 			func(path string, info os.FileInfo, err error) error {
 				if err != nil {
-					log.Fatalf("Error fetching fileNames: %s\n", err)
 					return err
 				}
 
@@ -584,8 +585,8 @@ func getFileNames(folderPaths []string) (fileNames string) {
 			})
 
 		if err != nil {
-			log.Fatalf("Error fetching fileNames: %s\n", err)
+			return "", err
 		}
 	}
-	return s
+	return s, nil
 }
