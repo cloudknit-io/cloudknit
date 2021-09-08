@@ -1,14 +1,19 @@
 import { Injectable } from "@nestjs/common";
+import { AWSError } from "aws-sdk";
+import { AwsSecretDto } from "./dtos/aws-secret.dto";
+import { AWSSSMHandler } from "./utilities/awsSsmHandler";
 
 @Injectable()
 export class SecretsService {
   awsSecretSeparator = "[compuzest-shared]";
   k8sApi = null;
+  ssm: AWSSSMHandler = null;
   constructor() {
     const k8s = require("@kubernetes/client-node");
     const kc = new k8s.KubeConfig();
     kc.loadFromCluster();
     this.k8sApi = kc.makeApiClient(k8s.CoreV1Api);
+    this.ssm = AWSSSMHandler.instance();
   }
 
   private async updateSecret(
@@ -128,5 +133,66 @@ export class SecretsService {
       return true;
     }
     return false;
+  }
+
+  public async ssmSecretExists(pathName: string) {
+    try {
+      const awsRes = await this.ssm.getParameter({
+        Name: pathName,
+      });
+      return true;
+    } catch (err) {
+      const e = err as AWSError;
+      if (e.code === "ParameterNotFound") {
+        return false;
+      } else {
+        throw err;
+      }
+    }
+  }
+
+  public async ssmSecretsExists(pathNames: string[]) {
+    try {
+      const awsRes = await this.ssm.getParameters({
+        Names: pathNames
+      });
+      return awsRes.InvalidParameters.length === 0;
+    } catch (err) {
+      const e = err as AWSError;
+      if (e.code === "ParameterNotFound") {
+        return false;
+      } else {
+        throw err;
+      }
+    }
+  }
+
+  public async putSsmSecrets(awsSecrets: AwsSecretDto) {
+    const awsCalls = awsSecrets.secrets.map(secret => this.putSsmSecret(secret.pathName, secret.value, 'SecureString'));
+    const responses = await Promise.all(awsCalls);
+    return !responses.some(response => response === false);
+  }
+
+  public async putSsmSecret(
+    pathName: string,
+    value: string,
+    type: "SecureString" | "StringList" | "String"
+  ): Promise<boolean> {
+    try {
+      const awsRes = await this.ssm.putParameter({
+        Name: pathName,
+        Value: value,
+        Overwrite: true,
+        Type: type,
+      });
+      return true;
+    } catch (err) {
+      const e = err as AWSError;
+      if (e.code === "ParameterNotFound") {
+        return false;
+      } else {
+        throw err;
+      }
+    }
   }
 }
