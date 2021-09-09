@@ -46,10 +46,15 @@ spec:
                 - path
                 - source
                 type: object
+              permissions:
+                items:
+                  type: string
+                type: array
               teamName:
                 type: string
             required:
             - configRepo
+            - permissions
             - teamName
             type: object
           status:
