@@ -54,7 +54,6 @@ spec:
                 type: string
             required:
             - configRepo
-            - permissions
             - teamName
             type: object
           status:

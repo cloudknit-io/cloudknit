@@ -25,7 +25,7 @@ type Repo struct {
 type TeamSpec struct {
 	TeamName    string   `json:"teamName"`
 	ConfigRepo  *Repo    `json:"configRepo"`
-	Permissions []string `json:"permissions"`
+	Permissions []string `json:"permissions,omitempty"`
 }
 
 // TeamStatus defines the observed state of Team
