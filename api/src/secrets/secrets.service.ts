@@ -167,8 +167,8 @@ export class SecretsService {
     }
   }
 
-  public async putSsmSecrets(awsSecrets: AwsSecretDto) {
-    const awsCalls = awsSecrets.secrets.map(secret => this.putSsmSecret(secret.pathName, secret.value, 'SecureString'));
+  public async putSsmSecrets(awsSecrets: AwsSecretDto[]) {
+    const awsCalls = awsSecrets.map(secret => this.putSsmSecret(secret.path, secret.value, 'SecureString'));
     const responses = await Promise.all(awsCalls);
     return !responses.some(response => response === false);
   }

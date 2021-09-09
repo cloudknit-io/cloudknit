@@ -8,13 +8,15 @@ export class SecretsController {
 
   @Post("update/aws-secret")
   public async updateAwsSecret(
-    @Body() awsSecrets: AwsSecretDto
+    @Body() req: any
   ) {
+    const { awsSecrets } = req;
     return await this.secretsService.putSsmSecrets(awsSecrets);
   }
 
   @Post("exists/aws-secret")
-  public async secretsExist(@Body() pathNames: string[]) {
+  public async secretsExist(@Body() req: any) {
+    const { pathNames } = req;
     return await this.secretsService.ssmSecretsExists(pathNames);
   }
 }
