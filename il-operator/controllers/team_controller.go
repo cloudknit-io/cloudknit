@@ -19,8 +19,10 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/repo"
 	"github.com/go-logr/logr"
 	"go.uber.org/atomic"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"time"
@@ -47,7 +49,7 @@ var teamReconcileInitialRun = atomic.NewBool(true)
 
 // Reconcile method called everytime there is a change in Team Custom Resource
 func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	delayTeamReconcileOnInitialRun(r.Log, 10)
+	delayTeamReconcileOnInitialRun(r.Log, 15)
 	start := time.Now()
 
 	team := &stablev1.Team{}
@@ -70,7 +72,11 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		return ctrl.Result{}, err
 	}
 
-	argocdApi   := argocd.NewHttpClient(r.Log, env.Config.ArgocdServerUrl)
+	if err := r.updateArgocdRbac(ctx, team); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	argocdApi := argocd.NewHttpClient(r.Log, env.Config.ArgocdServerUrl)
 	if _, err := argocd.TryCreateProject(r.Log, team.Spec.TeamName, env.Config.GitHubOrg); err != nil {
 		return ctrl.Result{}, err
 	}
@@ -143,6 +149,28 @@ func (r *TeamReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&stablev1.Team{}).
 		Complete(r)
+}
+
+func (r *TeamReconciler) updateArgocdRbac(ctx context.Context, t *stablev1.Team) error {
+	rbacCm := v1.ConfigMap{}
+	if err := r.Client.Get(ctx, types.NamespacedName{Name: "argocd-rbac-cm", Namespace: "argocd"}, &rbacCm); err != nil {
+		return err
+	}
+	if rbacCm.Data == nil {
+		rbacCm.Data = make(map[string]string)
+	}
+	teamName := t.Spec.TeamName
+	oldPolicyCsv := rbacCm.Data["policy.csv"]
+	oidcGroup := fmt.Sprintf("%s:%s", env.Config.GitHubOrg, teamName)
+	newPolicyCsv, err := argocd.GenerateNewRbacConfig(r.Log, oldPolicyCsv, oidcGroup, teamName, t.Spec.Permissions)
+	if err != nil {
+		return err
+	}
+	rbacCm.Data["policy.csv"] = newPolicyCsv
+	if err := r.Client.Update(ctx, &rbacCm); err != nil {
+		return err
+	}
+	return nil
 }
 
 func delayTeamReconcileOnInitialRun(log logr.Logger, seconds int64) {

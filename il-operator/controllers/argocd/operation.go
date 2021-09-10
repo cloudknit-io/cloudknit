@@ -24,6 +24,27 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 )
 
+func GenerateNewRbacConfig(log logr.Logger, oldPolicyCsv string, oidcGroup string, role string, additionalRoles []string) (newPolicyCsv string, err error) {
+	rbacMap, err := parsePolicyCsv(oldPolicyCsv)
+	if err != nil {
+		return "", err
+	}
+	subject := fmt.Sprintf("role:%s", role)
+	var projects []string
+	projects = append(projects, role)
+	projects = append(projects, additionalRoles...)
+	log.Info(
+		"Generating new RBAC configuration",
+		"role", role,
+		"additionalRoles", additionalRoles,
+		"projects", projects,
+		"oidcGroup", oidcGroup,
+		)
+	rbacMap.updateRbac(subject, projects, oidcGroup)
+
+	return rbacMap.generatePolicyCsv(), nil
+}
+
 func DeleteApplication(log logr.Logger, api Api, name string) error {
 	tokenResponse, err := api.GetAuthToken()
 	if err != nil {
