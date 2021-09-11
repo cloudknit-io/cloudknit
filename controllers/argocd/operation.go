@@ -35,7 +35,7 @@ func GenerateNewRbacConfig(log logr.Logger, oldPolicyCsv string, oidcGroup strin
 	projects = append(projects, additionalRoles...)
 	log.Info(
 		"Generating new RBAC configuration",
-		"role", role,
+		"subject", subject,
 		"additionalRoles", additionalRoles,
 		"projects", projects,
 		"oidcGroup", oidcGroup,
@@ -43,6 +43,21 @@ func GenerateNewRbacConfig(log logr.Logger, oldPolicyCsv string, oidcGroup strin
 	rbacMap.updateRbac(subject, projects, oidcGroup)
 
 	return rbacMap.generatePolicyCsv(), nil
+}
+
+func GenerateAdminRbacConfig(log logr.Logger, oldPolicyCsv string, oidcGroup string, admin string) (newPolicyCsv string, err error) {
+	rbacMap, err := parsePolicyCsv(oldPolicyCsv)
+	if err != nil {
+		return "", err
+	}
+	adminSubject := fmt.Sprintf("role:%s", admin)
+	log.Info(
+		"Generating admin RBAC configuration",
+		"subject", adminSubject,
+		"oidcGroup", oidcGroup,
+	)
+
+	return rbacMap.generateAdminRbac(adminSubject, oidcGroup), nil
 }
 
 func DeleteApplication(log logr.Logger, api Api, name string) error {

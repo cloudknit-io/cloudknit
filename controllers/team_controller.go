@@ -25,6 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sync"
 	"time"
 
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
@@ -45,12 +46,24 @@ type TeamReconciler struct {
 // +kubebuilder:rbac:groups=stable.compuzest.com,resources=teams,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=stable.compuzest.com,resources=teams/status,verbs=get;update;patch
 
-var teamReconcileInitialRun = atomic.NewBool(true)
+var (
+	initArgocdAdminRbacLock     sync.Once
+	teamReconcileInitialRunLock = atomic.NewBool(true)
+)
+
 
 // Reconcile method called everytime there is a change in Team Custom Resource
 func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	delayTeamReconcileOnInitialRun(r.Log, 15)
 	start := time.Now()
+
+	var initError error
+	initArgocdAdminRbacLock.Do(func () {
+		initError = r.initArgocdAdminRbac(ctx)
+	})
+	if initError != nil {
+		return ctrl.Result{}, initError
+	}
 
 	team := &stablev1.Team{}
 	if err := r.Get(ctx, req.NamespacedName, team); err != nil {
@@ -151,6 +164,28 @@ func (r *TeamReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
+func (r *TeamReconciler) initArgocdAdminRbac(ctx context.Context) error {
+	rbacCm := v1.ConfigMap{}
+	if err := r.Client.Get(ctx, types.NamespacedName{Name: "argocd-rbac-cm", Namespace: "argocd"}, &rbacCm); err != nil {
+		return err
+	}
+	if rbacCm.Data == nil {
+		rbacCm.Data = make(map[string]string)
+	}
+	admin := "admin"
+	oldPolicyCsv := rbacCm.Data["policy.csv"]
+	oidcGroup := fmt.Sprintf("%s:%s", env.Config.GitHubOrg, admin)
+	newPolicyCsv, err := argocd.GenerateAdminRbacConfig(r.Log, oldPolicyCsv, oidcGroup, admin)
+	if err != nil {
+		return err
+	}
+	rbacCm.Data["policy.csv"] = newPolicyCsv
+	if err := r.Client.Update(ctx, &rbacCm); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (r *TeamReconciler) updateArgocdRbac(ctx context.Context, t *stablev1.Team) error {
 	rbacCm := v1.ConfigMap{}
 	if err := r.Client.Get(ctx, types.NamespacedName{Name: "argocd-rbac-cm", Namespace: "argocd"}, &rbacCm); err != nil {
@@ -174,13 +209,13 @@ func (r *TeamReconciler) updateArgocdRbac(ctx context.Context, t *stablev1.Team)
 }
 
 func delayTeamReconcileOnInitialRun(log logr.Logger, seconds int64) {
-	if teamReconcileInitialRun.Load() {
+	if teamReconcileInitialRunLock.Load() {
 		log.Info(
 			"Delaying Team reconcile on initial run to wait for Company operator",
 			"duration", fmt.Sprintf("%ds", seconds),
 		)
 		time.Sleep(time.Duration(seconds) * time.Second)
-		teamReconcileInitialRun.Store(false)
+		teamReconcileInitialRunLock.Store(false)
 	}
 }
 

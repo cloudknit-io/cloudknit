@@ -24,6 +24,76 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
+func TestGenerateNewRbacConfigEmptyPolicyCsv(t *testing.T) {
+	log := ctrl.Log.WithName("TestGenerateNewRbacConfigEmptyPolicyCsv")
+	policyCsv, err := argocd.GenerateNewRbacConfig(log, "", "test:payment", "payment", []string{"design"})
+	assert.NoError(t, err)
+	expectedPolicyCsv := `p,role:payment,repositories,get,*,allow
+p,role:payment,applications,*,payment/*,allow
+p,role:payment,applications,*,design/*,allow
+g,test:payment,role:payment
+`
+	assert.Equal(t, expectedPolicyCsv, policyCsv)
+}
+
+func TestGenerateNewRbacConfigExistingPolicyCsv(t *testing.T) {
+	log := ctrl.Log.WithName("TestGenerateNewRbacConfigExistingPolicyCsv")
+	existingPolicyCsv := `p,role:design,repositories,get,*,allow
+p,role:design,applications,*,design/*,allow
+g,test:design,role:design
+`
+	policyCsv, err := argocd.GenerateNewRbacConfig(log, existingPolicyCsv, "test:payment", "payment", []string{"design"})
+	assert.NoError(t, err)
+	expectedPolicyCsv := `p,role:design,repositories,get,*,allow
+p,role:design,applications,*,design/*,allow
+p,role:payment,repositories,get,*,allow
+p,role:payment,applications,*,payment/*,allow
+p,role:payment,applications,*,design/*,allow
+g,test:design,role:design
+g,test:payment,role:payment
+`
+	assert.Equal(t, expectedPolicyCsv, policyCsv)
+}
+
+func TestGenerateAdminRbacConfigEmptyPolicyCsv(t *testing.T) {
+	log := ctrl.Log.WithName("TestGenerateAdminRbacConfigEmptyPolicyCsv")
+	policyCsv, err := argocd.GenerateAdminRbacConfig(log, "", "test:admin", "admin")
+	assert.NoError(t, err)
+	expectedPolicyCsv := `p,role:admin,certificates,*,*,allow
+p,role:admin,applications,*,*/*,allow
+p,role:admin,repositories,*,*,allow
+p,role:admin,clusters,*,*,allow
+p,role:admin,accounts,*,*,allow
+p,role:admin,projects,*,*,allow
+p,role:admin,gpgkeys,*,*,allow
+g,test:admin,role:admin
+`
+	assert.Equal(t, expectedPolicyCsv, policyCsv)
+}
+
+func TestGenerateAdminRbacConfigExistingPolicyCsv(t *testing.T) {
+	existingPolicyCsv := `p,role:design,repositories,get,*,allow
+p,role:design,applications,*,design/*,allow
+g,zmart-tech-sandbox:design,role:design
+`
+	log := ctrl.Log.WithName("TestGenerateAdminRbacConfigEmptyPolicyCsv")
+	policyCsv, err := argocd.GenerateAdminRbacConfig(log, existingPolicyCsv, "test:admin", "admin")
+	assert.NoError(t, err)
+	expectedPolicyCsv := `p,role:design,repositories,get,*,allow
+p,role:design,applications,*,design/*,allow
+p,role:admin,certificates,*,*,allow
+p,role:admin,applications,*,*/*,allow
+p,role:admin,repositories,*,*,allow
+p,role:admin,clusters,*,*,allow
+p,role:admin,accounts,*,*,allow
+p,role:admin,projects,*,*,allow
+p,role:admin,gpgkeys,*,*,allow
+g,zmart-tech-sandbox:design,role:design
+g,test:admin,role:admin
+`
+	assert.Equal(t, expectedPolicyCsv, policyCsv)
+}
+
 func TestRegisterRepoNewRepo(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()

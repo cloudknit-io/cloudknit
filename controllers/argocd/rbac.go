@@ -66,6 +66,23 @@ func newRepositoryPolicy(subject string) *RbacPolicy {
 	return newPolicy(subject, "repositories", "get", "*", Allow)
 }
 
+func (rbacMap *RbacMap) generateAdminRbac(adminSubject string, oidcGroup string) (policyCsv string) {
+	certificates := newPolicy(adminSubject, "certificates", "*", "*", Allow)
+	repositories := newPolicy(adminSubject, "repositories", "*", "*", Allow)
+	applications := newPolicy(adminSubject, "applications", "*", "*/*", Allow)
+	clusters     := newPolicy(adminSubject, "clusters", "*", "*", Allow)
+	accounts     := newPolicy(adminSubject, "accounts", "*", "*", Allow)
+	projects     := newPolicy(adminSubject, "projects", "*", "*", Allow)
+	gpgkeys      := newPolicy(adminSubject, "gpgkeys", "*", "*", Allow)
+	policies     := []*RbacPolicy{certificates, applications, repositories, clusters, accounts, projects, gpgkeys}
+	group        := newGroup(oidcGroup, adminSubject)
+
+	rbacMap.Policies[adminSubject] = policies
+	rbacMap.Groups[oidcGroup]      = []*RbacGroup{group}
+
+	return rbacMap.generatePolicyCsv()
+}
+
 func newPolicy(subject string, resource string, action string, object string, permission Permission) *RbacPolicy {
 	p := RbacPolicy{
 		Identifier: Policy,
