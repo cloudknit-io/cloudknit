@@ -56,6 +56,7 @@ jobs:
   push:
     name: Push docker image
     runs-on: ubuntu-20.04
+    if: github.ref == 'ref/head/main'
     steps:
       - run: make docker-build
         working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}
@@ -71,4 +72,3 @@ jobs:
           notify_when: 'failure,warnings' # default is 'success,failure,warnings'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
-    if: { { github.ref == 'ref/head/main' } }
