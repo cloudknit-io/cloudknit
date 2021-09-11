@@ -51,14 +51,13 @@ var (
 	teamReconcileInitialRunLock = atomic.NewBool(true)
 )
 
-
 // Reconcile method called everytime there is a change in Team Custom Resource
 func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	delayTeamReconcileOnInitialRun(r.Log, 15)
 	start := time.Now()
 
 	var initError error
-	initArgocdAdminRbacLock.Do(func () {
+	initArgocdAdminRbacLock.Do(func() {
 		initError = r.initArgocdAdminRbac(ctx)
 	})
 	if initError != nil {

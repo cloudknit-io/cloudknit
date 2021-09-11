@@ -101,7 +101,7 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1.Environment) *workfl
 	var tasks []workflow.DAGTask
 
 	autoApproveAll := environment.Spec.AutoApprove
-	destroyAll     := !environment.DeletionTimestamp.IsZero() || environment.Spec.Teardown
+	destroyAll := !environment.DeletionTimestamp.IsZero() || environment.Spec.Teardown
 
 	tasks = append(tasks, generateAuditTask(environment, destroyAll, "0", nil))
 
@@ -124,7 +124,7 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1.Environment) *workfl
 		var dependencies []string
 		destroyFlag := ec.Destroy
 		if destroyAll {
-			destroyFlag  = true
+			destroyFlag = true
 			dependencies = buildInverseDependencies(ecs, ec.Name)
 		} else {
 			dependencies = ec.DependsOn
@@ -229,7 +229,7 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1.Environment) *workfl
 			},
 		},
 		Status: workflow.WorkflowStatus{
-			StartedAt: metav1.Time{Time: getStaticDate()},
+			StartedAt:  metav1.Time{Time: getStaticDate()},
 			FinishedAt: metav1.Time{Time: getStaticDate()},
 		},
 	}
@@ -293,7 +293,7 @@ func generateAuditTask(environment stablev1.Environment, destroyAll bool, phase 
 }
 
 func getStaticDate() time.Time {
-	layout   := "2006-01-02T15:04:05.000Z"
+	layout := "2006-01-02T15:04:05.000Z"
 	someDate := "2019-06-25T15:04:05.000Z"
 
 	t, _ := time.Parse(layout, someDate)

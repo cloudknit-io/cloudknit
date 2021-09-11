@@ -16,8 +16,8 @@ import (
 	"fmt"
 	appv1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
-	"strings"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"strings"
 
 	"github.com/go-logr/logr"
 
@@ -39,7 +39,7 @@ func GenerateNewRbacConfig(log logr.Logger, oldPolicyCsv string, oidcGroup strin
 		"additionalRoles", additionalRoles,
 		"projects", projects,
 		"oidcGroup", oidcGroup,
-		)
+	)
 	rbacMap.updateRbac(subject, projects, oidcGroup)
 
 	return rbacMap.generatePolicyCsv(), nil
@@ -204,15 +204,15 @@ func TryCreateProject(log logr.Logger, name string, group string) (exists bool, 
 }
 
 func toProject(name string, group string) *appv1.AppProject {
-	typeMeta   := metav1.TypeMeta{APIVersion: "argoproj.io/v1alpha1", Kind: "AppProject"}
+	typeMeta := metav1.TypeMeta{APIVersion: "argoproj.io/v1alpha1", Kind: "AppProject"}
 	objectMeta := metav1.ObjectMeta{Name: name, Namespace: "argocd"}
-	spec       := appv1.AppProjectSpec{
-		SourceRepos: []string{"*"},
-		Destinations: []appv1.ApplicationDestination{{Server: "https://kubernetes.default.svc", Namespace: "*"}},
+	spec := appv1.AppProjectSpec{
+		SourceRepos:              []string{"*"},
+		Destinations:             []appv1.ApplicationDestination{{Server: "https://kubernetes.default.svc", Namespace: "*"}},
 		ClusterResourceWhitelist: []metav1.GroupKind{{Group: "*", Kind: "*"}},
 		Roles: []appv1.ProjectRole{
 			{
-				Name: "frontend",
+				Name:   "frontend",
 				Groups: []string{fmt.Sprintf("%s:%s", group, name)},
 				Policies: []string{
 					fmt.Sprintf("p, proj:%s:frontend, applications, get, %s/*, allow", name, name),
