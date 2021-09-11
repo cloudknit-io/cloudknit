@@ -46,8 +46,10 @@ jobs:
         working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}
       - run: make docker-build
         working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}
+        if: {{ github.ref == 'ref/head/main' }}
       - run: make docker-push
         working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}
+        if: {{ github.ref == 'ref/head/main' }}
         env:
           ECR_REPO: ${{ steps.login-ecr.outputs.registry }}
 

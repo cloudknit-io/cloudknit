@@ -13,6 +13,7 @@
 package argocd_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
@@ -33,7 +34,7 @@ p,role:payment,applications,*,payment/*,allow
 p,role:payment,applications,*,design/*,allow
 g,test:payment,role:payment
 `
-	assert.Equal(t, expectedPolicyCsv, policyCsv)
+	assert.ElementsMatch(t, strings.Split(expectedPolicyCsv, "\n"), strings.Split(policyCsv, "\n"))
 }
 
 func TestGenerateNewRbacConfigExistingPolicyCsv(t *testing.T) {
@@ -52,7 +53,7 @@ p,role:payment,applications,*,design/*,allow
 g,test:design,role:design
 g,test:payment,role:payment
 `
-	assert.Equal(t, expectedPolicyCsv, policyCsv)
+	assert.ElementsMatch(t, strings.Split(expectedPolicyCsv, "\n"), strings.Split(policyCsv, "\n"))
 }
 
 func TestGenerateAdminRbacConfigEmptyPolicyCsv(t *testing.T) {
@@ -68,7 +69,7 @@ p,role:admin,projects,*,*,allow
 p,role:admin,gpgkeys,*,*,allow
 g,test:admin,role:admin
 `
-	assert.Equal(t, expectedPolicyCsv, policyCsv)
+	assert.ElementsMatch(t, strings.Split(expectedPolicyCsv, "\n"), strings.Split(policyCsv, "\n"))
 }
 
 func TestGenerateAdminRbacConfigExistingPolicyCsv(t *testing.T) {
@@ -91,7 +92,7 @@ p,role:admin,gpgkeys,*,*,allow
 g,zmart-tech-sandbox:design,role:design
 g,test:admin,role:admin
 `
-	assert.Equal(t, expectedPolicyCsv, policyCsv)
+	assert.ElementsMatch(t, strings.Split(expectedPolicyCsv, "\n"), strings.Split(policyCsv, "\n"))
 }
 
 func TestRegisterRepoNewRepo(t *testing.T) {
