@@ -18,6 +18,7 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/repo"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"sync"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -32,6 +33,8 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
 )
 
+var initOperatorLock sync.Once
+
 // CompanyReconciler reconciles a Company object
 type CompanyReconciler struct {
 	client.Client
@@ -45,8 +48,12 @@ type CompanyReconciler struct {
 func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	start := time.Now()
 
-	if err := r.initOperator(ctx); err != nil {
-		r.Log.Error(err, "Error running init function")
+	var initOperatorError error
+	initOperatorLock.Do(func() {
+		initOperatorError = r.initOperator(ctx)
+	})
+	if initOperatorError != nil {
+		return ctrl.Result{}, initOperatorError
 	}
 
 	company := &stablev1.Company{}

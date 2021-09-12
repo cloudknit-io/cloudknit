@@ -66,13 +66,30 @@ func newRepositoryPolicy(subject string) *RbacPolicy {
 	return newPolicy(subject, "repositories", "get", "*", Allow)
 }
 
+func (rbacMap *RbacMap) generateAdminRbac(adminSubject string, oidcGroup string) (policyCsv string) {
+	certificates := newPolicy(adminSubject, "certificates", "*", "*", Allow)
+	repositories := newPolicy(adminSubject, "repositories", "*", "*", Allow)
+	applications := newPolicy(adminSubject, "applications", "*", "*/*", Allow)
+	clusters := newPolicy(adminSubject, "clusters", "*", "*", Allow)
+	accounts := newPolicy(adminSubject, "accounts", "*", "*", Allow)
+	projects := newPolicy(adminSubject, "projects", "*", "*", Allow)
+	gpgkeys := newPolicy(adminSubject, "gpgkeys", "*", "*", Allow)
+	policies := []*RbacPolicy{certificates, applications, repositories, clusters, accounts, projects, gpgkeys}
+	group := newGroup(oidcGroup, adminSubject)
+
+	rbacMap.Policies[adminSubject] = policies
+	rbacMap.Groups[oidcGroup] = []*RbacGroup{group}
+
+	return rbacMap.generatePolicyCsv()
+}
+
 func newPolicy(subject string, resource string, action string, object string, permission Permission) *RbacPolicy {
 	p := RbacPolicy{
 		Identifier: Policy,
-		Subject: subject,
-		Resource: resource,
-		Action: action,
-		Object: object,
+		Subject:    subject,
+		Resource:   resource,
+		Action:     action,
+		Object:     object,
 		Permission: permission,
 	}
 	return &p
@@ -81,8 +98,8 @@ func newPolicy(subject string, resource string, action string, object string, pe
 func newGroup(group string, role string) *RbacGroup {
 	g := RbacGroup{
 		Identifier: Group,
-		Group: group,
-		Role: role,
+		Group:      group,
+		Role:       role,
 	}
 	return &g
 }
@@ -90,7 +107,7 @@ func newGroup(group string, role string) *RbacGroup {
 func newRbacMap() *RbacMap {
 	rbac := RbacMap{
 		Policies: make(map[string][]*RbacPolicy),
-		Groups: make(map[string][]*RbacGroup),
+		Groups:   make(map[string][]*RbacGroup),
 	}
 	return &rbac
 }
@@ -103,10 +120,10 @@ func parsePolicy(p string) (*RbacPolicy, error) {
 	}
 	parsed := RbacPolicy{
 		Identifier: matched[0][1],
-		Subject: matched[0][2],
-		Resource: matched[0][3],
-		Action: matched[0][4],
-		Object: matched[0][5],
+		Subject:    matched[0][2],
+		Resource:   matched[0][3],
+		Action:     matched[0][4],
+		Object:     matched[0][5],
 		Permission: matched[0][6],
 	}
 
@@ -121,8 +138,8 @@ func parseGroup(g string) (*RbacGroup, error) {
 	}
 	parsed := RbacGroup{
 		Identifier: matched[0][1],
-		Group: matched[0][2],
-		Role: matched[0][3],
+		Group:      matched[0][2],
+		Role:       matched[0][3],
 	}
 
 	return &parsed, nil

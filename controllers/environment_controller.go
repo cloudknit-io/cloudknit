@@ -47,7 +47,7 @@ type EnvironmentReconciler struct {
 // +kubebuilder:rbac:groups=stable.compuzest.com,resources=environments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=stable.compuzest.com,resources=environments/status,verbs=get;update;patch
 
-var environmentInitialRun = atomic.NewBool(true)
+var environmentInitialRunLock = atomic.NewBool(true)
 
 // Reconcile method called everytime there is a change in Environment Custom Resource
 func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -220,13 +220,13 @@ func (r *EnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 func delayEnvironmentReconcileOnInitialRun(log logr.Logger, seconds int64) {
-	if environmentInitialRun.Load() {
+	if environmentInitialRunLock.Load() {
 		log.Info(
 			"Delaying Environment reconcile on initial run to wait for Team operator",
 			"duration", fmt.Sprintf("%ds", seconds),
 		)
 		time.Sleep(time.Duration(seconds) * time.Second)
-		environmentInitialRun.Store(false)
+		environmentInitialRunLock.Store(false)
 	}
 }
 
