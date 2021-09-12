@@ -79,7 +79,7 @@ type Repository struct {
 /*           RBAC           */
 /****************************/
 type EntryIdentifier = string
-type Permission      = string
+type Permission = string
 
 const (
 	Policy EntryIdentifier = "p"

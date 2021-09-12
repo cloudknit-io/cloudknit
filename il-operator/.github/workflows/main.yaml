@@ -10,8 +10,8 @@ on:
 env:
   module_name: github.com/CompuZest/zlifecycle-il-operator  # from go.mod
 jobs:
-  build-test-push:
-    name: Build, test, and push
+  build-test:
+    name: Build and test code
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/setup-go@v1
@@ -27,6 +27,26 @@ jobs:
         with:
           path: ${{ env.GOPATH }}/src/${{ env.module_name }}
 
+      - run: make deps
+        working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}
+      - run: go mod vendor
+        working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}
+      - run: make check
+        working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}
+
+      - name: Send Slack Notfication
+        uses: ravsamhq/notify-slack-action@master
+        if: always()
+        with:
+          status: ${{ job.status }}
+          notify_when: 'failure,warnings' # default is 'success,failure,warnings'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
+  push:
+    name: Push docker image
+    runs-on: ubuntu-20.04
+    if: github.ref == 'ref/head/main'
+    steps:
       # Login to ECR
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -37,20 +57,12 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
-
-      - run: make deps
-        working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}
-      - run: go mod vendor
-        working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}
-      - run: make check
-        working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}
       - run: make docker-build
         working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}
       - run: make docker-push
         working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}
         env:
           ECR_REPO: ${{ steps.login-ecr.outputs.registry }}
-
       - name: Send Slack Notfication
         uses: ravsamhq/notify-slack-action@master
         if: always()
