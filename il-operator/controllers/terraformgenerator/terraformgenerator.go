@@ -28,10 +28,10 @@ import (
 
 // UtilTerraformGenerator package interface for generating terraform files
 type UtilTerraformGenerator interface {
-	GenerateTerraform(fileUtil file.UtilFile, environmentComponent *stablev1.EnvironmentComponent, environment *stablev1.Environment, environmentComponentDirectory string) error
-	GenerateProvider(file file.UtilFile, environmentComponentDirectory string, componentName string) error
-	GenerateSharedProvider(file file.UtilFile, environmentComponentDirectory string, componentName string) error
-	GenerateFromTemplate(vars interface{}, environmentComponentDirectory string, componentName string, fileUtil file.UtilFile, templateName string, filePath string) error
+	GenerateTerraform(fileUtil file.Service, environmentComponent *stablev1.EnvironmentComponent, environment *stablev1.Environment, environmentComponentDirectory string) error
+	GenerateProvider(file file.Service, environmentComponentDirectory string, componentName string) error
+	GenerateSharedProvider(file file.Service, environmentComponentDirectory string, componentName string) error
+	GenerateFromTemplate(vars interface{}, environmentComponentDirectory string, componentName string, fileUtil file.Service, templateName string, filePath string) error
 }
 
 type TerraformGenerator struct {
@@ -57,7 +57,7 @@ type TemplateVariables struct {
 var DefaultTerraformVersion = "0.13.2"
 
 func (tf TerraformGenerator) GenerateTerraform(
-	fileUtil file.UtilFile,
+	fileUtil file.Service,
 	vars TemplateVariables,
 	environmentComponentDirectory string,
 ) error {
@@ -167,7 +167,7 @@ func createSecretsConfig(secretArray []*stablev1.Secret, meta secrets.SecretMeta
 }
 
 // GenerateSharedProvider save provider file to be executed by terraform
-func (tf TerraformGenerator) GenerateSharedProvider(file file.UtilFile, environmentComponentDirectory string, componentName string) error {
+func (tf TerraformGenerator) GenerateSharedProvider(file file.Service, environmentComponentDirectory string, componentName string) error {
 	terraformDirectory := tf.GenerateTerraformIlPath(environmentComponentDirectory, componentName)
 	err := file.SaveFileFromString(`
 provider "aws" {
@@ -184,7 +184,7 @@ provider "aws" {
 }
 
 // GenerateProvider save provider file to be executed by terraform
-func (tf TerraformGenerator) GenerateProvider(file file.UtilFile, environmentComponentDirectory string, componentName string) error {
+func (tf TerraformGenerator) GenerateProvider(file file.Service, environmentComponentDirectory string, componentName string) error {
 	terraformDirectory := tf.GenerateTerraformIlPath(environmentComponentDirectory, componentName)
 	err := file.SaveFileFromString(`
 provider "aws" {
@@ -203,7 +203,7 @@ func (tf TerraformGenerator) GenerateTerraformIlPath(environmentComponentDirecto
 	return environmentComponentDirectory + "/" + environmentComponentName + "/terraform"
 }
 
-func (tf TerraformGenerator) GenerateFromTemplate(vars interface{}, environmentComponentDirectory string, componentName string, fileUtil file.UtilFile, templatePath string, fileName string) error {
+func (tf TerraformGenerator) GenerateFromTemplate(vars interface{}, environmentComponentDirectory string, componentName string, fileUtil file.Service, templatePath string, fileName string) error {
 	template, err := template.ParseFiles(templatePath)
 	if err != nil {
 		return err

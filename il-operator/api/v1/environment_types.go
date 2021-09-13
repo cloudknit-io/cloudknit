@@ -32,6 +32,17 @@ type VariablesFile struct {
 	Path   string `json:"path"`
 }
 
+type OverlayFile struct {
+	Source string `json:"source"`
+	Path   string `json:"path"`
+	Ref    string `json:"ref,omitempty"`
+}
+
+type OverlayData struct {
+	Name string `json:"name"`
+	Data string `json:"data"`
+}
+
 type Variable struct {
 	Name      string `json:"name"`
 	Value     string `json:"value,omitempty"`
@@ -60,6 +71,8 @@ type EnvironmentComponent struct {
 	Destroy     bool `json:"destroy,omitempty"`
 
 	VariablesFile *VariablesFile `json:"variablesFile,omitempty"`
+	OverlayFiles  []*OverlayFile `json:"overlayFiles,omitempty"`
+	OverlayData   []*OverlayData `json:"overlayData,omitempty"`
 	Variables     []*Variable    `json:"variables,omitempty"`
 	Secrets       []*Secret      `json:"secrets,omitempty"`
 	Outputs       []*Output      `json:"outputs,omitempty"`

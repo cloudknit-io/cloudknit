@@ -5,7 +5,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"testing"
 
-	terraformgenerator "github.com/compuzest/zlifecycle-il-operator/controllers/terraformgenerator"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/terraformgenerator"
 	"github.com/compuzest/zlifecycle-il-operator/mocks"
 	"github.com/golang/mock/gomock"
 )
@@ -15,12 +15,13 @@ func TestGenerateProvider(t *testing.T) {
 	defer ctrl.Finish()
 	tf := terraformgenerator.TerraformGenerator{}
 
-	m := mocks.NewMockUtilFile(ctrl)
+	m := mocks.NewMockService(ctrl)
 
 	m.
 		EXPECT().
 		SaveFileFromString(gomock.Any(), gomock.Eq("dev-environment-components/component-name/terraform"), gomock.Eq("provider.tf"))
-	tf.GenerateProvider(m, "dev-environment-components", "component-name")
+	err := tf.GenerateProvider(m, "dev-environment-components", "component-name")
+	assert.NoError(t, err)
 }
 
 func TestGenerateBackendTemplate(t *testing.T) {
@@ -38,7 +39,7 @@ func TestGenerateBackendTemplate(t *testing.T) {
 		ComponentName: "test-component",
 	}
 
-	m := mocks.NewMockUtilFile(ctrl)
+	m := mocks.NewMockService(ctrl)
 
 	m.
 		EXPECT().
@@ -64,7 +65,7 @@ func TestGenerateModuleTemplate(t *testing.T) {
 		Variables:     testVariables,
 	}
 
-	m := mocks.NewMockUtilFile(ctrl)
+	m := mocks.NewMockService(ctrl)
 
 	m.
 		EXPECT().
