@@ -28,7 +28,8 @@ import (
 //go:generate go run -mod=mod github.com/golang/mock/mockgen -source=./file.go -destination=../../../mocks/mock_file.go -package=mocks github.com/compuzest/zlifecycle-il-operator/mocks
 
 type UtilFile interface {
-	SaveFileFromString(jsonString string, folderName string, fileName string) error
+	SaveFileFromString(input string, folderName string, fileName string) error
+	SaveFileFromByteArray(input []byte, folderName string, fileName string) error
 	SaveYamlFile(obj interface{}, folderName string, fileName string) error
 	SaveVarsToFile(variables []*stablev1.Variable, folderName string, fileName string) error
 	CreateEmptyDirectory(folderName string) error
@@ -41,14 +42,17 @@ type UtilFileService struct {
 	log logr.Logger
 }
 
-// CreateEmptyDirectory creates empty directory with a .keep file
-func (f UtilFileService) CreateEmptyDirectory(folderName string) error {
-	if err := os.MkdirAll(folderName, os.ModePerm); err != nil {
-		return fmt.Errorf("error: failed to create directory: %s", err.Error())
+func (f UtilFileService) SaveVarsToFile(variables []*stablev1.Variable, folderName string, fileName string) error {
+	file, err := createFileRecursive(folderName, fileName)
+	if err != nil {
+		return err
 	}
+	defer file.Close()
 
-	if err := ioutil.WriteFile(folderName+"/.keep", nil, 0644); err != nil {
-		return fmt.Errorf("error: failed to write .keep file: %s", err.Error())
+	for _, variable := range variables {
+		if _, err := fmt.Fprintf(file, "%s = \"%s\"\n", variable.Name, variable.Value); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -56,31 +60,53 @@ func (f UtilFileService) CreateEmptyDirectory(folderName string) error {
 
 // SaveFileFromTemplate creates a file with variables
 func (f UtilFileService) SaveFileFromTemplate(t *template.Template, vars interface{}, folderName string, fileName string) error {
-	if err := os.MkdirAll(folderName, os.ModePerm); err != nil {
-		return fmt.Errorf("error: failed to create directory: %s", err.Error())
+	file, err := createFileRecursive(folderName, fileName)
+	if err != nil {
+		return err
 	}
-	createdFile, err := os.Create(folderName + "/" + fileName)
+	defer file.Close()
+	err = t.Execute(file, vars)
 
 	if err != nil {
 		return err
 	}
-	err = t.Execute(createdFile, vars)
-
-	if err != nil {
-		return err
-	}
-	createdFile.Close()
 	return nil
 }
 
-// SaveFileFromString Create file
-func (f UtilFileService) SaveFileFromString(str string, folderName string, fileName string) error {
+func createFileRecursive(folderName string, fileName string) (*os.File, error) {
 	if err := os.MkdirAll(folderName, os.ModePerm); err != nil {
-		return fmt.Errorf("error: failed to create directory: %s", err.Error())
+		return nil, fmt.Errorf("error: failed to create directory: %w", err)
+	}
+	file, err := os.Create(fmt.Sprintf("%s/%s", folderName, fileName))
+
+	if err != nil {
+		return nil, err
 	}
 
-	if err := ioutil.WriteFile(folderName+"/"+fileName, []byte(str), 0644); err != nil {
-		return fmt.Errorf("error: failed to write file: %s", err.Error())
+	return file, nil
+}
+
+// SaveFileFromString Create file
+func (f UtilFileService) SaveFileFromString(input string, folderName string, fileName string) error {
+	if err := saveBytesToFile(folderName, fileName, []byte(input)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (f UtilFileService) SaveFileFromByteArray(input []byte, folderName string, fileName string) error {
+	if err := saveBytesToFile(folderName, fileName, input); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// CreateEmptyDirectory creates empty directory with a .keep file
+func (f UtilFileService) CreateEmptyDirectory(folderName string) error {
+	if err := saveBytesToFile(folderName, ".keep", nil); err != nil {
+		return err
 	}
 
 	return nil
@@ -98,31 +124,20 @@ func (f UtilFileService) SaveYamlFile(obj interface{}, folderName string, fileNa
 		return fmt.Errorf("error: failed to convert json to yaml: %s", err.Error())
 	}
 
-	if err := os.MkdirAll(folderName, os.ModePerm); err != nil {
-		return fmt.Errorf("error: failed to create directory: %s", err.Error())
-	}
-
-	if err := ioutil.WriteFile(folderName+"/"+fileName, bytes, 0644); err != nil {
-		return fmt.Errorf("error: failed to write file: %s", err.Error())
+	if err := saveBytesToFile(folderName, fileName, bytes); err != nil {
+		return err
 	}
 
 	return nil
 }
 
-func (f UtilFileService) SaveVarsToFile(variables []*stablev1.Variable, folderName string, fileName string) error {
+func saveBytesToFile(folderName string, fileName string, bytes []byte) error {
 	if err := os.MkdirAll(folderName, os.ModePerm); err != nil {
-		return fmt.Errorf("error: failed to create directory: %s", err.Error())
+		return fmt.Errorf("error: failed to create directory: %w", err)
 	}
 
-	file, err := os.Create(folderName + "/" + fileName)
-	if err != nil {
-		return fmt.Errorf("error: failed to create vars file: %s", err.Error())
-	}
-
-	defer file.Close()
-
-	for _, variable := range variables {
-		fmt.Fprintf(file, "%s = \"%s\"\n", variable.Name, variable.Value)
+	if err := ioutil.WriteFile(fmt.Sprintf("%s/%s", folderName, fileName), bytes, 0644); err != nil {
+		return fmt.Errorf("error: failed to write file: %w", err)
 	}
 
 	return nil

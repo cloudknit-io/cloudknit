@@ -73,6 +73,29 @@ spec:
                         - name
                         type: object
                       type: array
+                    overlayFiles:
+                      items:
+                        properties:
+                          data:
+                            type: string
+                          gitFile:
+                            properties:
+                              path:
+                                type: string
+                              ref:
+                                type: string
+                              source:
+                                type: string
+                            required:
+                            - path
+                            - source
+                            type: object
+                          name:
+                            type: string
+                        required:
+                        - name
+                        type: object
+                      type: array
                     secrets:
                       items:
                         properties:
@@ -175,6 +198,29 @@ spec:
                     outputs:
                       items:
                         properties:
+                          name:
+                            type: string
+                        required:
+                        - name
+                        type: object
+                      type: array
+                    overlayFiles:
+                      items:
+                        properties:
+                          data:
+                            type: string
+                          gitFile:
+                            properties:
+                              path:
+                                type: string
+                              ref:
+                                type: string
+                              source:
+                                type: string
+                            required:
+                            - path
+                            - source
+                            type: object
                           name:
                             type: string
                         required:

@@ -249,7 +249,7 @@ func (r *EnvironmentReconciler) updateStatus(ctx context.Context, e *stablev1.En
 		}
 	} else {
 		r.Log.Info(
-			"environment state is up-to-date",
+			"Environment state is up-to-date",
 			"team", e.Spec.TeamName,
 			"environment", e.Spec.EnvName,
 		)
@@ -399,12 +399,6 @@ func generateAndSaveEnvironmentComponents(
 	envComponentDirectory string,
 	githubRepoApi github.RepositoryApi,
 ) error {
-	log.Info(
-		"Generating environment",
-		"name", environment.Name,
-		"environment", environment.Spec.EnvName,
-		"team", environment.Spec.TeamName,
-	)
 	for _, ec := range environment.Spec.EnvironmentComponent {
 		log.Info(
 			"Generating environment component",
@@ -415,15 +409,7 @@ func generateAndSaveEnvironmentComponents(
 		)
 		if ec.Variables != nil {
 			fileName := fmt.Sprintf("%s.tfvars", ec.Name)
-
-			var variables []*stablev1.Variable
-			for _, v := range ec.Variables {
-				// TODO: This is a hack to just to make it work, needs to be revisited
-				v.Value = fmt.Sprintf("\"%s\"", v.Value)
-				variables = append(variables, v)
-			}
-
-			if err := fileUtil.SaveVarsToFile(variables, envComponentDirectory, fileName); err != nil {
+			if err := saveTfVarsToFile(fileUtil, ec.Variables, envComponentDirectory, fileName); err != nil {
 				return err
 			}
 		}
@@ -460,15 +446,42 @@ func generateAndSaveEnvironmentComponents(
 			EnvCompVariables:     ec.Variables,
 			EnvCompSecrets:       ec.Secrets,
 		}
-		err := tf.GenerateTerraform(fileUtil, vars, envComponentDirectory)
-
-		if err != nil {
+		if err := tf.GenerateTerraform(fileUtil, vars, envComponentDirectory); err != nil {
 			return err
 		}
 
-		if err = fileUtil.SaveYamlFile(*application, envComponentDirectory, ec.Name+".yaml"); err != nil {
+		if err := fileUtil.SaveYamlFile(*application, envComponentDirectory, fmt.Sprintf("%s.yaml", ec.Name)); err != nil {
 			return err
 		}
+
+		if ec.OverlayFiles != nil {
+			log.Info(
+				"Generating overlay files for environment component",
+				"environment", environment.Spec.EnvName,
+				"team", environment.Spec.TeamName,
+				"component", ec.Name,
+				"type", ec.Type,
+			)
+			if err := generateOverlayFiles(log, fileUtil, githubRepoApi, ec.OverlayFiles, envComponentDirectory); err != nil {
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func saveTfVarsToFile(fileUtil file.UtilFile, ecVars []*stablev1.Variable, folderName string, fileName string) error {
+	var variables []*stablev1.Variable
+	for _, v := range ecVars {
+		// TODO: This is a hack to just to make it work, needs to be revisited
+		v.Value = fmt.Sprintf("\"%s\"", v.Value)
+		variables = append(variables, v)
+	}
+
+	if err := fileUtil.SaveVarsToFile(variables, folderName, fileName); err != nil {
+		return err
 	}
 
 	return nil
@@ -519,6 +532,69 @@ func generateAndSaveEnvironmentApp(fileUtil file.UtilFile, environment *stablev1
 	envYAML := fmt.Sprintf("%s-environment.yaml", environment.Spec.EnvName)
 
 	if err := fileUtil.SaveYamlFile(*envApp, envDirectory, envYAML); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func generateOverlayFiles(
+	log logr.Logger,
+	fileUtil file.UtilFile,
+	repoApi github.RepositoryApi,
+	files []*stablev1.OverlayFile,
+	folderName string,
+) error {
+	for _, overlay := range files {
+		if overlay.GitFile != nil {
+			log.Info(
+				"Generating overlay file from git file",
+				"overlay", overlay.Name,
+				"folder", folderName,
+				"source", overlay.GitFile.Source,
+				"path", overlay.GitFile.Path,
+			)
+			if err := saveOverlayFileFromGit(log, fileUtil, repoApi, overlay.GitFile, folderName, overlay.Name); err != nil {
+				return err
+			}
+		} else if overlay.Data != nil && *overlay.Data != "" {
+			log.Info(
+				"Generating overlay file from data field",
+				"overlay", overlay.Name,
+				"folder", folderName,
+			)
+			if err := fileUtil.SaveFileFromString(*overlay.Data, folderName, overlay.Name); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func saveOverlayFileFromGit(
+	log logr.Logger,
+	fileUtil file.UtilFile,
+	repoApi github.RepositoryApi,
+	gitFile *stablev1.GitFile,
+	folderName string,
+	fileName string,
+) error {
+	ref := gitFile.Ref
+	if ref == "" {
+		ref = "HEAD"
+	}
+	f, err := github.DownloadFile(log, repoApi, gitFile.Source, ref, gitFile.Path)
+	if err != nil {
+		return err
+	}
+
+	buff, err := ioutil.ReadAll(f)
+	if err != nil {
+		return err
+	}
+
+	if err := fileUtil.SaveFileFromByteArray(buff, folderName, fileName); err != nil {
 		return err
 	}
 
