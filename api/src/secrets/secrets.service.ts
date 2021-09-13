@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { AWSError } from "aws-sdk";
+import { GetParametersByPathRequest } from "aws-sdk/clients/ssm";
 import { AwsSecretDto } from "./dtos/aws-secret.dto";
 import { AWSSSMHandler } from "./utilities/awsSsmHandler";
 
@@ -8,6 +9,8 @@ export class SecretsService {
   awsSecretSeparator = "[compuzest-shared]";
   k8sApi = null;
   ssm: AWSSSMHandler = null;
+  constKeys = new Set(["aws_access_key_id", "aws_secret_access_key"]);
+
   constructor() {
     const k8s = require("@kubernetes/client-node");
     const kc = new k8s.KubeConfig();
@@ -49,6 +52,32 @@ export class SecretsService {
 
   private base64ToString(value: string) {
     return Buffer.from(value, "base64").toString();
+  }
+
+  private isConstKey(name: string) {
+    const lastToken = name.split("/").slice(-1);
+    return this.constKeys.has(lastToken[0]);
+  }
+
+  private mapToKeyValue(data: any) {
+    const { Name } = data;
+    const tokens = Name.split("/");
+    let key = "";
+    switch (tokens.length) {
+      case 3:
+        key = tokens[1];
+        break;
+      case 4:
+        key = `${tokens[1]}:${tokens[2]}`;
+        break;
+      case 5:
+        key = `${tokens[1]}:${tokens[2]}:${tokens[3]}`;
+        break;
+    }
+    return {
+      key,
+      value: tokens.slice(-1)[0],
+    };
   }
 
   private getCredentialFileInput(
@@ -154,7 +183,7 @@ export class SecretsService {
   public async ssmSecretsExists(pathNames: string[]) {
     try {
       const awsRes = await this.ssm.getParameters({
-        Names: pathNames
+        Names: pathNames,
       });
       return awsRes.InvalidParameters.length === 0;
     } catch (err) {
@@ -167,14 +196,17 @@ export class SecretsService {
     }
   }
 
-  public async getSsmSecretsByPath(path: string) {
+  public async getSsmSecretsByPath(path: string, recursive: boolean) {
     try {
-      const awsRes = await this.ssm.getParametersByPath({
+      const req: GetParametersByPathRequest = {
         Path: path,
-        Recursive: true,
         WithDecryption: false,
-      });
-      return awsRes.Parameters;
+        Recursive: false,
+      };
+      const awsRes = await this.ssm.getParametersByPath(req);
+      return awsRes.Parameters
+        .filter((e) => !this.isConstKey(e.Name))
+        .map((e) => this.mapToKeyValue(e));
     } catch (err) {
       const e = err as AWSError;
       if (e.code === "ParameterNotFound") {
@@ -186,9 +218,11 @@ export class SecretsService {
   }
 
   public async putSsmSecrets(awsSecrets: AwsSecretDto[]) {
-    const awsCalls = awsSecrets.map(secret => this.putSsmSecret(secret.path, secret.value, 'SecureString'));
+    const awsCalls = awsSecrets.map((secret) =>
+      this.putSsmSecret(secret.path, secret.value, "SecureString")
+    );
     const responses = await Promise.all(awsCalls);
-    return !responses.some(response => response === false);
+    return !responses.some((response) => response === false);
   }
 
   public async putSsmSecret(

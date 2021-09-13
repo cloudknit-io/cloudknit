@@ -7,9 +7,7 @@ export class SecretsController {
   constructor(private readonly secretsService: SecretsService) {}
 
   @Post("update/aws-secret")
-  public async updateAwsSecret(
-    @Body() req: any
-  ) {
+  public async updateAwsSecret(@Body() req: any) {
     const { awsSecrets } = req;
     return await this.secretsService.putSsmSecrets(awsSecrets);
   }
@@ -20,8 +18,13 @@ export class SecretsController {
     return await this.secretsService.ssmSecretsExists(pathNames);
   }
 
-  @Get("get/ssm-secrets/:path")
-  public async getSSMSecret(@Param('path') path: string) {
-    return await this.secretsService.getSsmSecretsByPath(path);
+  @Post("get/ssm-secrets")
+  public async getSSMSecrets(@Body() req: any) {
+    console.log(req);
+    const { path, recursive } = req;
+    return await this.secretsService.getSsmSecretsByPath(
+      path,
+      recursive === "true"
+    );
   }
 }
