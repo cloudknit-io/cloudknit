@@ -167,6 +167,24 @@ export class SecretsService {
     }
   }
 
+  public async getSsmSecretsByPath(path: string) {
+    try {
+      const awsRes = await this.ssm.getParametersByPath({
+        Path: path,
+        Recursive: true,
+        WithDecryption: false,
+      });
+      return awsRes.Parameters;
+    } catch (err) {
+      const e = err as AWSError;
+      if (e.code === "ParameterNotFound") {
+        return false;
+      } else {
+        throw err;
+      }
+    }
+  }
+
   public async putSsmSecrets(awsSecrets: AwsSecretDto[]) {
     const awsCalls = awsSecrets.map(secret => this.putSsmSecret(secret.path, secret.value, 'SecureString'));
     const responses = await Promise.all(awsCalls);

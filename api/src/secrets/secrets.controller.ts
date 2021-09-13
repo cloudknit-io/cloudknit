@@ -19,4 +19,9 @@ export class SecretsController {
     const { pathNames } = req;
     return await this.secretsService.ssmSecretsExists(pathNames);
   }
+
+  @Get("get/ssm-secrets/:path")
+  public async getSSMSecret(@Param('path') path: string) {
+    return await this.secretsService.getSsmSecretsByPath(path);
+  }
 }

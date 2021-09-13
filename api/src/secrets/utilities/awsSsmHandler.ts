@@ -45,6 +45,19 @@ export class AWSSSMHandler {
     });
   }
 
+  async getParametersByPath(
+    request: SSM.GetParametersByPathRequest
+  ): Promise<SSM.GetParametersByPathResult> {
+    return new Promise<SSM.GetParametersByPathResult>((done, error) => {
+      this.ssm.getParametersByPath(request, (err, data) => {
+        if (err) {
+          error(err);
+        }
+        done(data);
+      });
+    });
+  }
+
   async putParameter(
     request: SSM.PutParameterRequest
   ): Promise<SSM.PutParameterResult> {
