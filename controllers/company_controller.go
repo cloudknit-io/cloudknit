@@ -171,7 +171,7 @@ func (r *CompanyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 func generateAndSaveCompanyApp(company *stablev1.Company) error {
 	companyApp := argocd.GenerateCompanyApp(*company)
-	fileUtil := &file.UtilFileService{}
+	fileUtil := &file.OsFileService{}
 
 	if err := fileUtil.SaveYamlFile(*companyApp, il.Config.CompanyDirectory, company.Spec.CompanyName+".yaml"); err != nil {
 		return err
@@ -182,7 +182,7 @@ func generateAndSaveCompanyApp(company *stablev1.Company) error {
 
 func generateAndSaveCompanyConfigWatcher(company *stablev1.Company) error {
 	companyConfigWatcherApp := argocd.GenerateCompanyConfigWatcherApp(company.Spec.CompanyName, company.Spec.ConfigRepo.Source)
-	fileUtil := &file.UtilFileService{}
+	fileUtil := &file.OsFileService{}
 
 	if err := fileUtil.SaveYamlFile(*companyConfigWatcherApp, il.Config.ConfigWatcherDirectory, company.Spec.CompanyName+".yaml"); err != nil {
 		return err

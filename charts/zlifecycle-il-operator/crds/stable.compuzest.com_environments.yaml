@@ -73,6 +73,32 @@ spec:
                         - name
                         type: object
                       type: array
+                    overlayData:
+                      items:
+                        properties:
+                          data:
+                            type: string
+                          name:
+                            type: string
+                        required:
+                        - data
+                        - name
+                        type: object
+                      type: array
+                    overlayFiles:
+                      items:
+                        properties:
+                          path:
+                            type: string
+                          ref:
+                            type: string
+                          source:
+                            type: string
+                        required:
+                        - path
+                        - source
+                        type: object
+                      type: array
                     secrets:
                       items:
                         properties:
@@ -179,6 +205,32 @@ spec:
                             type: string
                         required:
                         - name
+                        type: object
+                      type: array
+                    overlayData:
+                      items:
+                        properties:
+                          data:
+                            type: string
+                          name:
+                            type: string
+                        required:
+                        - data
+                        - name
+                        type: object
+                      type: array
+                    overlayFiles:
+                      items:
+                        properties:
+                          path:
+                            type: string
+                          ref:
+                            type: string
+                          source:
+                            type: string
+                        required:
+                        - path
+                        - source
                         type: object
                       type: array
                     secrets:

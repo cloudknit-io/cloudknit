@@ -95,7 +95,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 
 	teamYAML := fmt.Sprintf("%s-team.yaml", team.Spec.TeamName)
 
-	fileUtil := &file.UtilFileService{}
+	fileUtil := &file.OsFileService{}
 	if err := fileUtil.CreateEmptyDirectory(il.EnvironmentDirectory(team.Spec.TeamName)); err != nil {
 		return ctrl.Result{}, err
 	}
@@ -220,7 +220,7 @@ func delayTeamReconcileOnInitialRun(log logr.Logger, seconds int64) {
 
 func generateAndSaveTeamApp(team *stablev1.Team, teamYAML string) error {
 	teamApp := argocd.GenerateTeamApp(*team)
-	fileUtil := &file.UtilFileService{}
+	fileUtil := &file.OsFileService{}
 
 	if err := fileUtil.SaveYamlFile(*teamApp, il.Config.TeamDirectory, teamYAML); err != nil {
 		return err
@@ -231,7 +231,7 @@ func generateAndSaveTeamApp(team *stablev1.Team, teamYAML string) error {
 
 func generateAndSaveConfigWatchers(team *stablev1.Team, teamYAML string) error {
 	teamConfigWatcherApp := argocd.GenerateTeamConfigWatcherApp(*team)
-	fileUtil := &file.UtilFileService{}
+	fileUtil := &file.OsFileService{}
 
 	if err := fileUtil.SaveYamlFile(*teamConfigWatcherApp, il.Config.ConfigWatcherDirectory, teamYAML); err != nil {
 		return err
