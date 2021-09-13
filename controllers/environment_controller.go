@@ -21,6 +21,7 @@ import (
 	"go.uber.org/atomic"
 	"io/ioutil"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"strings"
 	"time"
 
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
@@ -83,7 +84,7 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 
 	envDirectory := il.EnvironmentDirectory(environment.Spec.TeamName)
 	envComponentDirectory := il.EnvironmentComponentDirectory(environment.Spec.TeamName, environment.Spec.EnvName)
-	fileUtil := &file.UtilFileService{}
+	fileService := file.NewOsFileService()
 
 	isDeleteEvent := !environment.DeletionTimestamp.IsZero() || environment.Spec.Teardown
 	if !isDeleteEvent {
@@ -101,14 +102,14 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 			"team", environment.Spec.TeamName,
 			"environment", environment.Spec.EnvName,
 		)
-		if err := generateAndSaveEnvironmentApp(fileUtil, environment, envDirectory); err != nil {
+		if err := generateAndSaveEnvironmentApp(fileService, environment, envDirectory); err != nil {
 			return ctrl.Result{}, err
 		}
 
 		githubRepoApi := github.NewHttpRepositoryClient(env.Config.GitHubAuthToken, ctx)
 		if err := generateAndSaveEnvironmentComponents(
 			r.Log,
-			fileUtil,
+			fileService,
 			environment,
 			envComponentDirectory,
 			githubRepoApi,
@@ -129,7 +130,7 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		"environment", environment.Spec.EnvName,
 		"isDeleteEvent", isDeleteEvent,
 	)
-	if err := generateAndSaveWorkflowOfWorkflows(fileUtil, environment, envComponentDirectory); err != nil {
+	if err := generateAndSaveWorkflowOfWorkflows(fileService, environment, envComponentDirectory); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -174,7 +175,7 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		"environment", environment.Spec.EnvName,
 		"path", envDirectory,
 	)
-	if err := fileUtil.RemoveAll(envDirectory); err != nil {
+	if err := fileService.RemoveAll(envDirectory); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -394,7 +395,7 @@ func extractPathsToRemove(e stablev1.Environment) []string {
 
 func generateAndSaveEnvironmentComponents(
 	log logr.Logger,
-	fileUtil file.UtilFile,
+	fileService file.Service,
 	environment *stablev1.Environment,
 	envComponentDirectory string,
 	githubRepoApi github.RepositoryApi,
@@ -409,20 +410,19 @@ func generateAndSaveEnvironmentComponents(
 		)
 		if ec.Variables != nil {
 			fileName := fmt.Sprintf("%s.tfvars", ec.Name)
-			if err := saveTfVarsToFile(fileUtil, ec.Variables, envComponentDirectory, fileName); err != nil {
+			if err := saveTfVarsToFile(fileService, ec.Variables, envComponentDirectory, fileName); err != nil {
 				return err
 			}
 		}
 
 		tfvars := ""
-		vf := ec.VariablesFile
-		if vf != nil {
+		if ec.VariablesFile != nil {
 			tfv, err := getVariablesFromTfvarsFile(
 				log,
 				githubRepoApi,
-				vf.Source,
+				ec.VariablesFile.Source,
 				env.Config.RepoBranch,
-				vf.Path,
+				ec.VariablesFile.Path,
 			)
 			if err != nil {
 				return err
@@ -446,25 +446,16 @@ func generateAndSaveEnvironmentComponents(
 			EnvCompVariables:     ec.Variables,
 			EnvCompSecrets:       ec.Secrets,
 		}
-		if err := tf.GenerateTerraform(fileUtil, vars, envComponentDirectory); err != nil {
+		if err := tf.GenerateTerraform(fileService, vars, envComponentDirectory); err != nil {
 			return err
 		}
 
-		if err := fileUtil.SaveYamlFile(*application, envComponentDirectory, fmt.Sprintf("%s.yaml", ec.Name)); err != nil {
+		if err := fileService.SaveYamlFile(*application, envComponentDirectory, fmt.Sprintf("%s.yaml", ec.Name)); err != nil {
 			return err
 		}
 
-		if ec.OverlayFiles != nil {
-			log.Info(
-				"Generating overlay files for environment component",
-				"environment", environment.Spec.EnvName,
-				"team", environment.Spec.TeamName,
-				"component", ec.Name,
-				"type", ec.Type,
-			)
-			if err := generateOverlayFiles(log, fileUtil, githubRepoApi, ec.OverlayFiles, envComponentDirectory); err != nil {
-				return err
-			}
+		if err := generateOverlayFiles(log, fileService, githubRepoApi, ec, envComponentDirectory); err != nil {
+			return err
 		}
 
 	}
@@ -472,7 +463,7 @@ func generateAndSaveEnvironmentComponents(
 	return nil
 }
 
-func saveTfVarsToFile(fileUtil file.UtilFile, ecVars []*stablev1.Variable, folderName string, fileName string) error {
+func saveTfVarsToFile(fileService file.Service, ecVars []*stablev1.Variable, folderName string, fileName string) error {
 	var variables []*stablev1.Variable
 	for _, v := range ecVars {
 		// TODO: This is a hack to just to make it work, needs to be revisited
@@ -480,7 +471,7 @@ func saveTfVarsToFile(fileUtil file.UtilFile, ecVars []*stablev1.Variable, folde
 		variables = append(variables, v)
 	}
 
-	if err := fileUtil.SaveVarsToFile(variables, folderName, fileName); err != nil {
+	if err := fileService.SaveVarsToFile(variables, folderName, fileName); err != nil {
 		return err
 	}
 
@@ -511,27 +502,27 @@ func downloadTfvarsFile(log logr.Logger, api github.RepositoryApi, repoUrl strin
 	return buff, nil
 }
 
-func generateAndSaveWorkflowOfWorkflows(fileUtil file.UtilFile, environment *stablev1.Environment, envComponentDirectory string) error {
+func generateAndSaveWorkflowOfWorkflows(fileService file.Service, environment *stablev1.Environment, envComponentDirectory string) error {
 
 	// WIP, below command is for testing
 	// experimentalworkflow := argoWorkflow.GenerateWorkflowOfWorkflows(*environment)
-	// if err := fileUtil.SaveYamlFile(*experimentalworkflow, envComponentDirectory, "/experimental_wofw.yaml"); err != nil {
+	// if err := fileService.SaveYamlFile(*experimentalworkflow, envComponentDirectory, "/experimental_wofw.yaml"); err != nil {
 	// 	return err
 	// }
 
 	workflow := argoworkflow.GenerateLegacyWorkflowOfWorkflows(*environment)
-	if err := fileUtil.SaveYamlFile(*workflow, envComponentDirectory, "/wofw.yaml"); err != nil {
+	if err := fileService.SaveYamlFile(*workflow, envComponentDirectory, "/wofw.yaml"); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func generateAndSaveEnvironmentApp(fileUtil file.UtilFile, environment *stablev1.Environment, envDirectory string) error {
+func generateAndSaveEnvironmentApp(fileService file.Service, environment *stablev1.Environment, envDirectory string) error {
 	envApp := argocd.GenerateEnvironmentApp(*environment)
 	envYAML := fmt.Sprintf("%s-environment.yaml", environment.Spec.EnvName)
 
-	if err := fileUtil.SaveYamlFile(*envApp, envDirectory, envYAML); err != nil {
+	if err := fileService.SaveYamlFile(*envApp, envDirectory, envYAML); err != nil {
 		return err
 	}
 
@@ -540,51 +531,57 @@ func generateAndSaveEnvironmentApp(fileUtil file.UtilFile, environment *stablev1
 
 func generateOverlayFiles(
 	log logr.Logger,
-	fileUtil file.UtilFile,
+	fileService file.Service,
 	repoApi github.RepositoryApi,
-	files []*stablev1.OverlayFile,
+	ec *stablev1.EnvironmentComponent,
 	folderName string,
 ) error {
-	for _, overlay := range files {
-		if overlay.GitFile != nil {
+	if ec.OverlayFiles != nil {
+		for _, overlay := range ec.OverlayFiles {
+			tokens := strings.Split(overlay.Path, "/")
+			name := tokens[len(tokens)-1]
 			log.Info(
 				"Generating overlay file from git file",
-				"overlay", overlay.Name,
+				"overlay", name,
 				"folder", folderName,
-				"source", overlay.GitFile.Source,
-				"path", overlay.GitFile.Path,
+				"source", overlay.Source,
+				"path", overlay.Path,
+				"component", ec.Name,
 			)
-			if err := saveOverlayFileFromGit(log, fileUtil, repoApi, overlay.GitFile, folderName, overlay.Name); err != nil {
-				return err
-			}
-		} else if overlay.Data != nil && *overlay.Data != "" {
-			log.Info(
-				"Generating overlay file from data field",
-				"overlay", overlay.Name,
-				"folder", folderName,
-			)
-			if err := fileUtil.SaveFileFromString(*overlay.Data, folderName, overlay.Name); err != nil {
+			if err := saveOverlayFileFromGit(log, fileService, repoApi, overlay, folderName, name); err != nil {
 				return err
 			}
 		}
 	}
-
+	if ec.OverlayData != nil {
+		for _, overlay := range ec.OverlayData {
+			log.Info(
+				"Generating overlay file from data field",
+				"overlay", overlay.Name,
+				"folder", folderName,
+				"component", ec.Name,
+			)
+			if err := fileService.SaveFileFromString(overlay.Data, folderName, overlay.Name); err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
 
 func saveOverlayFileFromGit(
 	log logr.Logger,
-	fileUtil file.UtilFile,
+	fileUtil file.Service,
 	repoApi github.RepositoryApi,
-	gitFile *stablev1.GitFile,
+	file *stablev1.OverlayFile,
 	folderName string,
 	fileName string,
 ) error {
-	ref := gitFile.Ref
+	ref := file.Ref
 	if ref == "" {
 		ref = "HEAD"
 	}
-	f, err := github.DownloadFile(log, repoApi, gitFile.Source, ref, gitFile.Path)
+	f, err := github.DownloadFile(log, repoApi, file.Source, ref, file.Path)
 	if err != nil {
 		return err
 	}

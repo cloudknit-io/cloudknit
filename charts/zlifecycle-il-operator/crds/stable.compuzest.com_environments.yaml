@@ -73,27 +73,30 @@ spec:
                         - name
                         type: object
                       type: array
-                    overlayFiles:
+                    overlayData:
                       items:
                         properties:
                           data:
                             type: string
-                          gitFile:
-                            properties:
-                              path:
-                                type: string
-                              ref:
-                                type: string
-                              source:
-                                type: string
-                            required:
-                            - path
-                            - source
-                            type: object
                           name:
                             type: string
                         required:
+                        - data
                         - name
+                        type: object
+                      type: array
+                    overlayFiles:
+                      items:
+                        properties:
+                          path:
+                            type: string
+                          ref:
+                            type: string
+                          source:
+                            type: string
+                        required:
+                        - path
+                        - source
                         type: object
                       type: array
                     secrets:
@@ -204,27 +207,30 @@ spec:
                         - name
                         type: object
                       type: array
-                    overlayFiles:
+                    overlayData:
                       items:
                         properties:
                           data:
                             type: string
-                          gitFile:
-                            properties:
-                              path:
-                                type: string
-                              ref:
-                                type: string
-                              source:
-                                type: string
-                            required:
-                            - path
-                            - source
-                            type: object
                           name:
                             type: string
                         required:
+                        - data
                         - name
+                        type: object
+                      type: array
+                    overlayFiles:
+                      items:
+                        properties:
+                          path:
+                            type: string
+                          ref:
+                            type: string
+                          source:
+                            type: string
+                        required:
+                        - path
+                        - source
                         type: object
                       type: array
                     secrets:

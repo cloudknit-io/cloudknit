@@ -33,15 +33,14 @@ type VariablesFile struct {
 }
 
 type OverlayFile struct {
-	Name    string   `json:"name"`
-	Data    *string  `json:"data,omitempty"`
-	GitFile *GitFile `json:"gitFile,omitempty"`
-}
-
-type GitFile struct {
 	Source string `json:"source"`
 	Path   string `json:"path"`
 	Ref    string `json:"ref,omitempty"`
+}
+
+type OverlayData struct {
+	Name string `json:"name"`
+	Data string `json:"data"`
 }
 
 type Variable struct {
@@ -73,6 +72,7 @@ type EnvironmentComponent struct {
 
 	VariablesFile *VariablesFile `json:"variablesFile,omitempty"`
 	OverlayFiles  []*OverlayFile `json:"overlayFiles,omitempty"`
+	OverlayData   []*OverlayData `json:"overlayData,omitempty"`
 	Variables     []*Variable    `json:"variables,omitempty"`
 	Secrets       []*Secret      `json:"secrets,omitempty"`
 	Outputs       []*Output      `json:"outputs,omitempty"`
