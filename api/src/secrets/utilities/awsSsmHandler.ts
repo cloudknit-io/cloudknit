@@ -70,4 +70,15 @@ export class AWSSSMHandler {
       });
     });
   }
+
+  async deleteParameter(request: SSM.DeleteParameterRequest) {
+    return new Promise<SSM.DeleteParameterResult>((done, error) => {
+      this.ssm.deleteParameter(request, (err, data) => {
+        if (err) {
+          error(err);
+        }
+        done(data);
+      });
+    });
+  }
 }

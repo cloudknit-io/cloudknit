@@ -247,4 +247,22 @@ export class SecretsService {
       }
     }
   }
+
+  public async deleteSSMSecret(path: string) {
+    try {
+      const dp = await this.ssm.deleteParameter({
+        Name: path
+      });
+      console.log(dp);
+      return dp;
+    } catch (err) {
+      console.log(err);
+      const e = err as AWSError;
+      if (e.code === "ParameterNotFound") {
+        return false;
+      } else {
+        throw err;
+      }
+    }
+  }
 }

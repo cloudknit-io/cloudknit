@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Query } from "@nestjs/common";
 import { AwsSecretDto } from "./dtos/aws-secret.dto";
 import { SecretsService } from "./secrets.service";
 
@@ -20,11 +20,15 @@ export class SecretsController {
 
   @Post("get/ssm-secrets")
   public async getSSMSecrets(@Body() req: any) {
-    console.log(req);
     const { path, recursive } = req;
     return await this.secretsService.getSsmSecretsByPath(
       path,
       recursive === "true"
     );
+  }
+
+  @Delete("delete/ssm-secret")
+  public async deleteSSMParameter(@Query('path') path: string) {
+    return await this.secretsService.deleteSSMSecret(path);
   }
 }
