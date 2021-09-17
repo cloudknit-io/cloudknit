@@ -15,14 +15,15 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
+	"strings"
+	"time"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	"github.com/google/go-cmp/cmp"
 	github2 "github.com/google/go-github/v32/github"
 	"go.uber.org/atomic"
-	"io/ioutil"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"strings"
-	"time"
 
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
@@ -454,7 +455,8 @@ func generateAndSaveEnvironmentComponents(
 			return err
 		}
 
-		if err := generateOverlayFiles(log, fileService, githubRepoApi, ec, envComponentDirectory); err != nil {
+		terraformDirectory := tf.GenerateTerraformIlPath(envComponentDirectory, ec.Name)
+		if err := generateOverlayFiles(log, fileService, githubRepoApi, ec, terraformDirectory); err != nil {
 			return err
 		}
 
@@ -536,6 +538,7 @@ func generateOverlayFiles(
 	ec *stablev1.EnvironmentComponent,
 	folderName string,
 ) error {
+
 	if ec.OverlayFiles != nil {
 		for _, overlay := range ec.OverlayFiles {
 			tokens := strings.Split(overlay.Path, "/")
