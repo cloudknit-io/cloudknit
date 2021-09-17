@@ -45,7 +45,7 @@ jobs:
   push:
     name: Push docker image
     runs-on: ubuntu-20.04
-    if: github.ref == 'ref/head/main'
+    if: github.ref == 'refs/head/main'
     steps:
       # Login to ECR
       - name: Configure AWS credentials
