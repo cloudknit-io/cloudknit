@@ -66,8 +66,15 @@ function SaveAndExit() {
 }
 
 function setAWSCreds() {
+  aws_region=$(aws ssm get-parameter --profile compuzest-shared --region us-east-1 --name "/$1/aws_region" --with-decryption --query "Parameter.Value" | jq -r ".")
+  if [ ! -z $aws_region ];
+  then
+    export AWS_REGION=$aws_region
+  fi
+
   aws_access_key_id=$(aws ssm get-parameter --profile compuzest-shared --region us-east-1 --name "/$1/aws_access_key_id" --with-decryption --query "Parameter.Value" | jq -r ".")
   aws_secret_access_key=$(aws ssm get-parameter --profile compuzest-shared --region us-east-1 --name "/$1/aws_secret_access_key" --with-decryption --query "Parameter.Value" | jq -r ".")
+
   if [ ! -z $aws_access_key_id -a ! -z $aws_secret_access_key ];
   then
     aws configure set aws_access_key_id $aws_access_key_id 
@@ -76,7 +83,6 @@ function setAWSCreds() {
   fi
   return 0
 }
-
 
 sh /client/setup_github.sh || Error "Cannot setup github ssh key"
 sh /client/setup_aws.sh || Error "Cannot setup aws credentials"

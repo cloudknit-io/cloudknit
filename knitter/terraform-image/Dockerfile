@@ -26,7 +26,7 @@ FROM hashicorp/terraform:0.13.2
 ARG INFRACOST_API_KEY
 RUN apk add --update curl
 
-RUN apk update && apk upgrade && apk --no-cache add curl jq
+RUN apk update && apk upgrade && apk --no-cache add curl jq bash openssl
 RUN apk add --update --no-cache python3 && apk add --update py3-pip && apk add py3-setuptools
 RUN python3 -m pip --no-cache-dir install --upgrade awscli
 
@@ -56,5 +56,7 @@ RUN find /argocd -type f -iname "*.sh" -exec chmod +x {} \;
 RUN find /client -type f -iname "*.sh" -exec chmod +x {} \;
 
 COPY --from=aws-iam-authenticator /usr/local/bin/aws-iam-authenticator /usr/local/bin/aws-iam-authenticator
+
+RUN curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 && chmod 700 get_helm.sh && ./get_helm.sh && helm plugin install https://github.com/hypnoglow/helm-s3.git
 
 ENTRYPOINT ["sh"]
