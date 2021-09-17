@@ -3,6 +3,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 env:
   module_name: github.com/CompuZest/zlifecycle-il-operator  # from go.mod
@@ -42,8 +45,10 @@ jobs:
       - run: make check
         working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}
       - run: make docker-build
+        if: github.ref == 'refs/heads/main'
         working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}
       - run: make docker-push
+        if: github.ref == 'refs/heads/main'
         working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}
         env:
           ECR_REPO: ${{ steps.login-ecr.outputs.registry }}
