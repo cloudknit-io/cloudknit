@@ -320,6 +320,7 @@ func (r *EnvironmentReconciler) postDeleteHook(
 	}
 	_ = r.deleteDanglingArgocdApps(e, argocdApi)
 	_ = r.deleteDanglingArgoWorkflows(e, argoworkflowApi)
+	r.removeTfvarsReconcilerEntries(e)
 	return nil
 }
 
@@ -391,6 +392,20 @@ func extractPathsToRemove(e stablev1.Environment) []string {
 	return []string{
 		envPath,
 		envAppPath,
+	}
+}
+
+func (r *EnvironmentReconciler) removeTfvarsReconcilerEntries(e *stablev1.Environment) {
+	r.Log.Info(
+		"Removing entries from tfvars reconciler",
+		"team", e.Spec.TeamName,
+		"environment", e.Spec.EnvName,
+	)
+	tr := gotfvars.GetReconciler()
+	for _, ec := range e.Spec.EnvironmentComponent {
+		if ec.VariablesFile != nil {
+			tr.Remove(e.Namespace, e.Name, ec.Name)
+		}
 	}
 }
 

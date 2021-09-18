@@ -96,15 +96,13 @@ func exists(tfvs []*Tfvars, id string) bool {
 	return false
 }
 
-func (w *Reconciler) Remove(namespace string, environment string, component string) (successful bool, err error) {
+func (w *Reconciler) Remove(namespace string, environment string, component string) {
 	id := toId(namespace, environment, component)
 	for i, f := range w.requests {
 		if f.id == id {
 			w.requests = remove(w.requests, i)
 		}
 	}
-
-	return false, nil
 }
 
 func remove(s []*Tfvars, i int) []*Tfvars {
