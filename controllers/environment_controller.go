@@ -15,15 +15,15 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
-	"strings"
-	"time"
-
+	"github.com/compuzest/zlifecycle-il-operator/controllers/gotfvars"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	"github.com/google/go-cmp/cmp"
 	github2 "github.com/google/go-github/v32/github"
 	"go.uber.org/atomic"
+	"io/ioutil"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"strings"
+	"time"
 
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
@@ -107,13 +107,13 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 			return ctrl.Result{}, err
 		}
 
-		githubRepoApi := github.NewHttpRepositoryClient(env.Config.GitHubAuthToken, ctx)
+		repoApi := github.NewHttpRepositoryApi(ctx, env.Config.GitHubAuthToken)
 		if err := generateAndSaveEnvironmentComponents(
 			r.Log,
 			fileService,
 			environment,
 			envComponentDirectory,
-			githubRepoApi,
+			repoApi,
 		); err != nil {
 			return ctrl.Result{}, err
 		}
@@ -418,7 +418,7 @@ func generateAndSaveEnvironmentComponents(
 
 		tfvars := ""
 		if ec.VariablesFile != nil {
-			tfv, err := getVariablesFromTfvarsFile(
+			tfv, err := gotfvars.GetVariablesFromTfvarsFile(
 				log,
 				githubRepoApi,
 				ec.VariablesFile.Source,
@@ -428,6 +428,26 @@ func generateAndSaveEnvironmentComponents(
 			if err != nil {
 				return err
 			}
+
+			log.Info(
+				"Submitting tfvars file to tfvars reconciler",
+				"environment", environment.Spec.EnvName,
+				"team", environment.Spec.TeamName,
+				"component", ec.Name,
+				"type", ec.Type,
+				)
+			_, err = gotfvars.
+				GetReconciler().
+				Submit(&gotfvars.Tfvars{
+					EnvironmentComponent: ec.Name,
+					Source: ec.VariablesFile.Source,
+					Path: ec.VariablesFile.Path,
+					EnvironmentObject: kClient.ObjectKey{Name: environment.Name, Namespace: environment.Namespace},
+				})
+			if err != nil {
+				return err
+			}
+
 			tfvars = tfv
 		}
 
@@ -480,30 +500,6 @@ func saveTfVarsToFile(fileService file.Service, ecVars []*stablev1.Variable, fol
 	return nil
 }
 
-func getVariablesFromTfvarsFile(log logr.Logger, api github.RepositoryApi, repoUrl string, ref string, path string) (string, error) {
-	log.Info("Downloading tfvars file", "repoUrl", repoUrl, "ref", ref, "path", path)
-	buff, err := downloadTfvarsFile(log, api, repoUrl, ref, path)
-	if err != nil {
-		return "", err
-	}
-	tfvars := string(buff)
-
-	return tfvars, nil
-}
-
-func downloadTfvarsFile(log logr.Logger, api github.RepositoryApi, repoUrl string, ref string, path string) ([]byte, error) {
-	rc, err := github.DownloadFile(log, api, repoUrl, ref, path)
-	if err != nil {
-		return nil, err
-	}
-	defer common.CloseBody(rc)
-	buff, err := ioutil.ReadAll(rc)
-	if err != nil {
-		return nil, err
-	}
-	return buff, nil
-}
-
 func generateAndSaveWorkflowOfWorkflows(fileService file.Service, environment *stablev1.Environment, envComponentDirectory string) error {
 
 	// WIP, below command is for testing
@@ -538,7 +534,6 @@ func generateOverlayFiles(
 	ec *stablev1.EnvironmentComponent,
 	folderName string,
 ) error {
-
 	if ec.OverlayFiles != nil {
 		for _, overlay := range ec.OverlayFiles {
 			tokens := strings.Split(overlay.Path, "/")
@@ -551,7 +546,7 @@ func generateOverlayFiles(
 				"path", overlay.Path,
 				"component", ec.Name,
 			)
-			if err := saveOverlayFileFromGit(log, fileService, repoApi, overlay, folderName, name); err != nil {
+			if err := saveOverlayFileFromGit(fileService, repoApi, overlay, folderName, name); err != nil {
 				return err
 			}
 		}
@@ -573,7 +568,6 @@ func generateOverlayFiles(
 }
 
 func saveOverlayFileFromGit(
-	log logr.Logger,
 	fileUtil file.Service,
 	repoApi github.RepositoryApi,
 	file *stablev1.OverlayFile,
@@ -584,7 +578,7 @@ func saveOverlayFileFromGit(
 	if ref == "" {
 		ref = "HEAD"
 	}
-	f, err := github.DownloadFile(log, repoApi, file.Source, ref, file.Path)
+	f, err := github.DownloadFile(repoApi, file.Source, ref, file.Path)
 	if err != nil {
 		return err
 	}

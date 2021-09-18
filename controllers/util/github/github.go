@@ -47,17 +47,18 @@ var client *github.Client
 var ctx = context.Background()
 
 func DownloadFile(
-	log logr.Logger,
 	api RepositoryApi,
 	repoUrl string,
 	ref string,
 	path string,
 ) (io.ReadCloser, error) {
 	owner, repo, err := parseRepoUrl(repoUrl)
+	if ref == "" {
+		ref = "HEAD"
+	}
 	if err != nil {
 		return nil, err
 	}
-	log.Info("Downloading file from GitHub", "owner", owner, "repo", repo, "ref", ref, "path", path)
 	rc, err := api.DownloadContents(owner, repo, ref, path)
 	if err != nil {
 		return nil, err

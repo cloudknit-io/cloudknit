@@ -140,6 +140,8 @@ spec:
                       type: array
                     variablesFile:
                       properties:
+                        md5:
+                          type: string
                         path:
                           type: string
                         source:
@@ -274,6 +276,8 @@ spec:
                       type: array
                     variablesFile:
                       properties:
+                        md5:
+                          type: string
                         path:
                           type: string
                         source:

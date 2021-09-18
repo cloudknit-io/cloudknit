@@ -7,7 +7,7 @@ import (
 	"io"
 )
 
-func NewHttpRepositoryClient(token string, ctx context.Context) RepositoryApi {
+func NewHttpRepositoryApi(ctx context.Context, token string) RepositoryApi {
 	client := createGithubClient(token, ctx).Repositories
 	return HttpRepositoryApi{Client: client, Ctx: ctx}
 }
