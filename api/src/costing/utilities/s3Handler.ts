@@ -36,7 +36,7 @@ export class S3Handler {
       )
 
       if (!fileContents || fileContents.length === 0) {
-        throw 'No Logs available';
+        throw '';
       }
 
       const filesRequests = []
