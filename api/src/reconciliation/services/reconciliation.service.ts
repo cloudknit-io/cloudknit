@@ -14,7 +14,7 @@ import { EvnironmentReconcileDto } from "../dtos/reconcile.Dto";
 export class ReconciliationService {
   readonly notifyStream: Subject<{}> = new Subject<{}>();
   private readonly s3h = S3Handler.instance();
-  private readonly notFound = "No Object was found";
+  private readonly notFound = "No Logs available";
   constructor(
     @InjectRepository(EnvironmentReconcile)
     private readonly environmentReconcileRepository: Repository<EnvironmentReconcile>,

@@ -36,7 +36,7 @@ export class S3Handler {
       )
 
       if (!fileContents || fileContents.length === 0) {
-        throw 'No Object was found'
+        throw 'No Logs available';
       }
 
       const filesRequests = []
