@@ -24,3 +24,6 @@ costing_payload='{"teamName": "'$team_name'", "environmentName": "'$env_name'", 
 echo $costing_payload >temp_costing_payload.json
 
 curl -X 'POST' 'http://zlifecycle-api.zlifecycle-ui.svc.cluster.local/costing/api/v1/saveComponent' -H 'accept: */*' -H 'Content-Type: application/json' -d @temp_costing_payload.json
+
+data='{"metadata":{"labels":{"component_status":"provisioning"}}}'
+argocd app patch $team_env_config_name --patch $data --type merge >null

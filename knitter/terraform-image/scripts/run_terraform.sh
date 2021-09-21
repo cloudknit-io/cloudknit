@@ -23,6 +23,7 @@ is_destroy=$11
 config_reconcile_id=$12
 reconcile_id=$13
 customer_id=$14
+auto_approve=$15
 
 team_env_name=$team_name-$env_name
 team_env_config_name=$team_name-$env_name-$config_name
@@ -133,7 +134,7 @@ if [ $is_apply -eq 0 ]; then
     Error "There is an issue with generating terraform plan"
   fi
 
-  sh /argocd/process_based_on_plan_result.sh $is_sync $result $team_env_name $team_env_config_name $workflow_id $is_destroy $team_name $env_name $config_name $reconcile_id $config_reconcile_id || Error "There is an issue with ArgoCD CLI"
+  sh /argocd/process_based_on_plan_result.sh $is_sync $result $team_env_name $team_env_config_name $workflow_id $is_destroy $team_name $env_name $config_name $reconcile_id $config_reconcile_id $auto_approve || Error "There is an issue with ArgoCD CLI"
 
 else
   if [ $is_destroy = true ]; then

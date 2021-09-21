@@ -20,6 +20,7 @@ env_name=$8
 config_name=$9
 reconcile_id=$10
 config_reconcile_id=$11
+auto_approve=$12
 
 function PatchError() {
     data='{"metadata":{"labels":{"component_status":"plan_failed"}}}'
@@ -79,7 +80,17 @@ then
         fi
     elif [ $is_sync -eq 1 ]
     then
-        data='{"metadata":{"labels":{"component_status":"waiting_for_approval"}}}'
+        if [ $auto_approve = false ]
+        then
+            data='{"metadata":{"labels":{"component_status":"waiting_for_approval"}}}'
+        else
+            if [ $is_destroy = true ]
+            then
+                data='{"metadata":{"labels":{"component_status":"destroying"}}}'
+            else
+                data='{"metadata":{"labels":{"component_status":"provisioning"}}}'
+            fi
+        fi
         argocd app patch $team_env_config_name --patch $data --type merge > null
     fi
 fi

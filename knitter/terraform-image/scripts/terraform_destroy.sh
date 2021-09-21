@@ -20,6 +20,5 @@ if [ $result -eq 0 ]; then
 else
     data='{"metadata":{"labels":{"component_status":"destroy_failed"}}}'
     argocd app patch $team_env_config_name --patch $data --type merge >null
-
     Error "There is issue with destroying"
 fi
