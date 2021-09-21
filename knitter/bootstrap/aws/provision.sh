@@ -40,3 +40,10 @@ terraform init
 terraform workspace select $LOCATION || terraform workspace new $LOCATION
 terraform init
 terraform apply -auto-approve -var-file tfvars/$LOCATION.tfvars
+
+cd ../zl-base
+terraform init
+terraform workspace select $LOCATION || terraform workspace new $LOCATION
+terraform init
+
+terraform apply -auto-approve -var-file tfvars/$LOCATION.tfvars

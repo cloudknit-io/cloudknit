@@ -42,8 +42,8 @@ main() {
     fi
 
     echo "Please select the environment you wish to destroy:"
-    select LOCATION in "dev-a" "dev-b" "sandbox" "demo" "zbank"; do
-        if [[ $LOCATION == "sandbox" || $LOCATION == "demo" || $LOCATION == "zbank" ]]
+    select LOCATION in "dev-a" "dev-b" "sandbox" "demo" "zbank" "compuzest"; do
+        if [[ $LOCATION == "sandbox" || $LOCATION == "demo" || $LOCATION == "zbank" || $LOCATION == "compuzest" ]]
         then
             readonly PARENT_DIRECTORY=aws
             break;

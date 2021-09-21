@@ -25,16 +25,20 @@ This account will be used by zLifecycle to Read and Write to various repos:
     ```shell script
     ssh-keygen -b 2048 -t rsa -f <folder/to/generate/key> -q -N "" -C "<client>@compuzest.com"
     ```
+
+#### Setup by Customer
 - Add zLifecycle as an OAuth application by going `Repository Settings -> Developer Settings -> OAuth Apps -> New OAuth App`
     * Application name: `zLifecycle-<client>`
     * Homepage URL: `https://<client>-admin.zlifecycle.com`
     * Application description (OPTIONAL): `zLifecycle instance for <client>`
     * Authorization callback URL: `https://<client>-admin.zlifecycle.com/api/dex/callback`
 - Generate a new client secret from the Application OAuth page
-
-#### Setup by Customer
 - Create a repo `zlifecycle-config` in customer github org and give `<client>-zlifecycle` svc account admin access to the repo
 - Add Customer CR
 - Add Team CRD in `Teams` folder
 - Create team repo and give `<client>-zlifecycle` svc account admin access to the repo
 - Add Team CRD and push
+
+
+#### Setup AWS Creds
+- Go to <client>.zlifecycle.com and login with creds and go to settings page and setup aws creds
