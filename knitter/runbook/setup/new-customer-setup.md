@@ -25,6 +25,8 @@ This account will be used by zLifecycle to Read and Write to various repos:
     ```shell script
     ssh-keygen -b 2048 -t rsa -f <folder/to/generate/key> -q -N "" -C "<client>@compuzest.com"
     ```
+After generating the SSH key make sure you add the public key to the Github `<client>-zlifecycle` service account by going to `Settings -> SSH and GPG keys`
+- Save all the above secrets in LastPass under the svc account password entry in notes. See `compuzest@compuzest.com` entry as example 
 
 #### Setup by Customer
 - Add zLifecycle as an OAuth application by going `Repository Settings -> Developer Settings -> OAuth Apps -> New OAuth App`
@@ -33,6 +35,10 @@ This account will be used by zLifecycle to Read and Write to various repos:
     * Application description (OPTIONAL): `zLifecycle instance for <client>`
     * Authorization callback URL: `https://<client>-admin.zlifecycle.com/api/dex/callback`
 - Generate a new client secret from the Application OAuth page
+- Add Environment Config in `compuzest` zl env. See `https://github.com/compuzest-tech/zl-environment-config`
+-
+-
+
 - Create a repo `zlifecycle-config` in customer github org and give `<client>-zlifecycle` svc account admin access to the repo
 - Add Customer CR
 - Add Team CRD in `Teams` folder
