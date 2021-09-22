@@ -46,6 +46,11 @@ export class ReconciliationController {
     return await this.reconciliationService.getLatestLogs(companyId, team, environment, component);
   }
 
+  @Get('component/state-file/:companyId/:team/:environment/:component')
+  async getStateFile(@Param('companyId') companyId: string, @Param('team') team: string, @Param('environment') environment: string, @Param('component') component: string) {
+    return await this.reconciliationService.getStateFile(companyId, team, environment, component);
+  }
+
   @Get('component/plan/logs/:companyId/:team/:environment/:component/:id/:latest')
   async getPlanLogs(@Param('companyId') companyId: string, @Param('team') team: string, @Param('environment') environment: string, @Param('component') component: string, @Param('id') id: number, @Param('latest') latest: string) {
     return await this.reconciliationService.getPlanLogs(companyId, team, environment, component, id, latest === 'true');

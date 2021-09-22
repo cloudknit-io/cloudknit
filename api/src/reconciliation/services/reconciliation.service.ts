@@ -204,4 +204,22 @@ export class ReconciliationService {
     }
     return logs;
   }
+
+  async getStateFile(
+    companyId: string,
+    team: string,
+    environment: string,
+    component: string,
+  ) {
+    const prefix = `${team}/${environment}/${component}/terraform.tfstate`;
+    const resp = await this.s3h.getObject(
+      `zlifecycle-tfstate-${companyId}`,
+      prefix
+    );
+
+    return {
+      ...resp,
+      data: (resp.data?.Body || '').toString() || '',
+    }
+  }
 }

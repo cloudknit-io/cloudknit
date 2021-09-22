@@ -1,8 +1,9 @@
 import { S3 } from 'aws-sdk'
 
 export interface FileInfo {
-    data: S3.GetObjectOutput;
+    data?: S3.GetObjectOutput;
     key: string;
+    error?: any;
 }
 
 export class S3Handler {
@@ -28,6 +29,18 @@ export class S3Handler {
     return this._s3
   }
 
+  async getObject(bucket: string, fileName: string): Promise<FileInfo> {
+    try {
+      return await this.downloadFile(bucket, fileName);
+    } catch (err) {
+      return {
+        key: fileName,
+        error: err,
+      };
+    }
+    
+  }
+
   async getObjects(bucket: string, prefix: string): Promise<FileInfo[]> {
     try {
       const fileContents: S3.ObjectList = await this.getObjectList(
@@ -48,7 +61,7 @@ export class S3Handler {
 
       return await Promise.all(filesRequests)
     } catch (err) {
-      throw err
+      throw err;
     }
   }
 
