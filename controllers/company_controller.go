@@ -15,11 +15,12 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"sync"
+	"time"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/repo"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"sync"
-	"time"
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -77,12 +78,12 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	companyRepo := company.Spec.ConfigRepo.Source
-	operatorSshSecret := env.Config.ZlifecycleMasterRepoSshSecret
+	operatorSSHSecret := env.Config.ZlifecycleMasterRepoSSHSecret
 	operatorNamespace := env.Config.ZlifecycleOperatorNamespace
 
-	argocdApi := argocd.NewHttpClient(r.Log, env.Config.ArgocdServerUrl)
+	argocdAPI := argocd.NewHTTPClient(ctx, r.Log, env.Config.ArgocdServerURL)
 
-	if err := repo.TryRegisterRepo(r.Client, r.Log, ctx, argocdApi, companyRepo, operatorNamespace, operatorSshSecret); err != nil {
+	if err := repo.TryRegisterRepo(ctx, r.Client, r.Log, argocdAPI, companyRepo, operatorNamespace, operatorSSHSecret); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -96,14 +97,14 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	owner := env.Config.ZlifecycleOwner
 	ilRepo := il.RepoName(company.Name)
-	repoApi := github.NewHttpRepositoryApi(ctx, env.Config.GitHubAuthToken)
-	_, err := github.TryCreateRepository(r.Log, repoApi, owner, ilRepo)
+	repoAPI := github.NewHTTPRepositoryAPI(ctx, env.Config.GitHubAuthToken)
+	_, err := github.TryCreateRepository(r.Log, repoAPI, owner, ilRepo)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 
 	ilRepoURL := il.RepoURL(owner, company.Name)
-	if err := repo.TryRegisterRepo(r.Client, r.Log, ctx, argocdApi, ilRepoURL, operatorNamespace, operatorSshSecret); err != nil {
+	if err := repo.TryRegisterRepo(ctx, r.Client, r.Log, argocdAPI, ilRepoURL, operatorNamespace, operatorSSHSecret); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -131,11 +132,11 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		)
 	}
 
-	if err := argocd.TryCreateBootstrapApps(r.Log); err != nil {
+	if err := argocd.TryCreateBootstrapApps(ctx, r.Log); err != nil {
 		return ctrl.Result{}, err
 	}
 
-	_, err = github.CreateRepoWebhook(r.Log, repoApi, companyRepo, env.Config.ArgocdHookUrl, env.Config.GitHubWebhookSecret)
+	_, err = github.CreateRepoWebhook(r.Log, repoAPI, companyRepo, env.Config.ArgocdHookURL, env.Config.GitHubWebhookSecret)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
@@ -153,14 +154,12 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 func (r *CompanyReconciler) initOperator(ctx context.Context) error {
 	r.Log.Info("Running company operator init")
 	r.Log.Info("Registering helm chart repo")
-	argocdApi := argocd.NewHttpClient(r.Log, env.Config.ArgocdServerUrl)
+	argocdAPI := argocd.NewHTTPClient(ctx, r.Log, env.Config.ArgocdServerURL)
 	helmChartsRepo := env.Config.HelmChartsRepo
-	operatorSshSecret := env.Config.ZlifecycleMasterRepoSshSecret
+	operatorSSHSecret := env.Config.ZlifecycleMasterRepoSSHSecret
 	operatorNamespace := env.Config.ZlifecycleOperatorNamespace
-	if err := repo.TryRegisterRepo(r.Client, r.Log, ctx, argocdApi, helmChartsRepo, operatorNamespace, operatorSshSecret); err != nil {
-		return err
-	}
-	return nil
+
+	return repo.TryRegisterRepo(ctx, r.Client, r.Log, argocdAPI, helmChartsRepo, operatorNamespace, operatorSSHSecret)
 }
 
 func (r *CompanyReconciler) SetupWithManager(mgr ctrl.Manager) error {
@@ -170,23 +169,15 @@ func (r *CompanyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 func generateAndSaveCompanyApp(company *stablev1.Company) error {
-	companyApp := argocd.GenerateCompanyApp(*company)
+	companyApp := argocd.GenerateCompanyApp(company)
 	fileUtil := &file.OsFileService{}
 
-	if err := fileUtil.SaveYamlFile(*companyApp, il.Config.CompanyDirectory, company.Spec.CompanyName+".yaml"); err != nil {
-		return err
-	}
-
-	return nil
+	return fileUtil.SaveYamlFile(*companyApp, il.Config.CompanyDirectory, company.Spec.CompanyName+".yaml")
 }
 
 func generateAndSaveCompanyConfigWatcher(company *stablev1.Company) error {
 	companyConfigWatcherApp := argocd.GenerateCompanyConfigWatcherApp(company.Spec.CompanyName, company.Spec.ConfigRepo.Source)
 	fileUtil := &file.OsFileService{}
 
-	if err := fileUtil.SaveYamlFile(*companyConfigWatcherApp, il.Config.ConfigWatcherDirectory, company.Spec.CompanyName+".yaml"); err != nil {
-		return err
-	}
-
-	return nil
+	return fileUtil.SaveYamlFile(*companyConfigWatcherApp, il.Config.ConfigWatcherDirectory, company.Spec.CompanyName+".yaml")
 }

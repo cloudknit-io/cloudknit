@@ -12,8 +12,9 @@
 
 package argocd
 
-import "errors"
 import (
+	"errors"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 )
 

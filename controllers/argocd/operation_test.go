@@ -26,6 +26,8 @@ import (
 )
 
 func TestGenerateNewRbacConfigEmptyPolicyCsv(t *testing.T) {
+	t.Parallel()
+
 	log := ctrl.Log.WithName("TestGenerateNewRbacConfigEmptyPolicyCsv")
 	policyCsv, err := argocd.GenerateNewRbacConfig(log, "", "test:payment", "payment", []string{"design"})
 	assert.NoError(t, err)
@@ -38,6 +40,8 @@ g,test:payment,role:payment
 }
 
 func TestGenerateNewRbacConfigExistingPolicyCsv(t *testing.T) {
+	t.Parallel()
+
 	log := ctrl.Log.WithName("TestGenerateNewRbacConfigExistingPolicyCsv")
 	existingPolicyCsv := `p,role:design,repositories,get,*,allow
 p,role:design,applications,*,design/*,allow
@@ -57,6 +61,8 @@ g,test:payment,role:payment
 }
 
 func TestGenerateAdminRbacConfigEmptyPolicyCsv(t *testing.T) {
+	t.Parallel()
+
 	log := ctrl.Log.WithName("TestGenerateAdminRbacConfigEmptyPolicyCsv")
 	policyCsv, err := argocd.GenerateAdminRbacConfig(log, "", "test:admin", "admin")
 	assert.NoError(t, err)
@@ -73,6 +79,8 @@ g,test:admin,role:admin
 }
 
 func TestGenerateAdminRbacConfigExistingPolicyCsv(t *testing.T) {
+	t.Parallel()
+
 	existingPolicyCsv := `p,role:design,repositories,get,*,allow
 p,role:design,applications,*,design/*,allow
 g,zmart-tech-sandbox:design,role:design
@@ -96,27 +104,31 @@ g,test:admin,role:admin
 }
 
 func TestRegisterRepoNewRepo(t *testing.T) {
+	t.Parallel()
+
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	mockApi := mocks.NewMockApi(mockCtrl)
+	mockAPI := mocks.NewMockApi(mockCtrl)
 
-	repoOpts := argocd.RepoOpts{RepoUrl: "git@github.com:CompuZest/test_repo.git", SshPrivateKey: "test_key"}
+	repoOpts := argocd.RepoOpts{RepoURL: "git@github.com:CompuZest/test_repo.git", SSHPrivateKey: "test_key"}
 
-	mockApi.EXPECT().GetAuthToken().Return(&argocd.GetTokenResponse{Token: "test_token"}, nil)
+	mockAPI.EXPECT().GetAuthToken().Return(&argocd.GetTokenResponse{Token: "test_token"}, nil)
 	repo := argocd.Repository{Repo: "git@github.com:CompuZest/test_repo2.git", Name: "test_repo2"}
 	list := argocd.RepositoryList{Items: []argocd.Repository{repo}}
-	mockApi.EXPECT().ListRepositories(gomock.Any()).Return(&list, common.CreateMockResponse(200), nil)
-	createRepoBody := argocd.CreateRepoBody{Name: "test_repo", Repo: "git@github.com:CompuZest/test_repo.git", SshPrivateKey: "test_key"}
-	mockApi.EXPECT().CreateRepository(createRepoBody, gomock.Any()).Return(common.CreateMockResponse(200), nil)
+	mockAPI.EXPECT().ListRepositories(gomock.Any()).Return(&list, common.CreateMockResponse(200), nil)
+	createRepoBody := argocd.CreateRepoBody{Name: "test_repo", Repo: "git@github.com:CompuZest/test_repo.git", SSHPrivateKey: "test_key"}
+	mockAPI.EXPECT().CreateRepository(createRepoBody, gomock.Any()).Return(common.CreateMockResponse(200), nil)
 
 	log := ctrl.Log.WithName("TestRegisterRepoNewRepo")
-	registered, err := argocd.RegisterRepo(log, mockApi, repoOpts)
+	registered, err := argocd.RegisterRepo(log, mockAPI, repoOpts)
 	assert.True(t, registered)
 	assert.NoError(t, err)
 }
 
 func TestRegisterRepoExistingRepo(t *testing.T) {
+	t.Parallel()
+
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
@@ -129,7 +141,7 @@ func TestRegisterRepoExistingRepo(t *testing.T) {
 
 	log := ctrl.Log.WithName("TestRegisterRepoExistingRepo")
 
-	repoOpts := argocd.RepoOpts{RepoUrl: "git@github.com:CompuZest/test_repo.git", SshPrivateKey: "test_key"}
+	repoOpts := argocd.RepoOpts{RepoURL: "git@github.com:CompuZest/test_repo.git", SSHPrivateKey: "test_key"}
 	registered, err := argocd.RegisterRepo(log, mockArgocdAPI, repoOpts)
 	assert.False(t, registered)
 	assert.NoError(t, err)

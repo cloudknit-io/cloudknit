@@ -1,10 +1,8 @@
 SHELL = /bin/bash
 
 CGO_ENABLED = 0
-DOCKER_TAG ?= latest
+DOCKER_TAG ?= rbac
 DOCKER_IMG = zlifecycle-il-operator
-
-CRD_OPTIONS ?= "crd:trivialVersions=true,preserveUnknownFields=false"
 
 BUILD_CMD = go build -a -o build/zlifecycle-il-operator-$${GOOS}-$${GOARCH}
 
@@ -20,25 +18,12 @@ check test: generate manifests
 	set -e
 	set -o pipefail
 
-	@echo "Setting up envtest..."
-	ENVTEST_ASSETS_DIR="$${PWD}/testbin"
-	[[ ! -d $$ENVTEST_ASSETS_DIR ]] && mkdir -p $${ENVTEST_ASSETS_DIR}
-	if [[ ! -f $$ENVTEST_ASSETS_DIR/setup-envtest.sh ]]; then
-		pushd $$ENVTEST_ASSETS_DIR
-		curl -fsSLO https://raw.githubusercontent.com/kubernetes-sigs/controller-runtime/v0.6.3/hack/setup-envtest.sh
-		popd
-	fi
-
-	source $${ENVTEST_ASSETS_DIR}/setup-envtest.sh
-	fetch_envtest_tools $${ENVTEST_ASSETS_DIR}
-	setup_envtest_env $${ENVTEST_ASSETS_DIR}
-
 	@echo "Running static analysis..."
 	go vet ./...
 
 	@echo "Running tests..."
 	[[ ! -d test-results ]] && mkdir test-results || true
-	go test -parallel 2 -covermode=count -coverprofile test-results/cover.out ./... \
+	go test -parallel 4 -covermode=count -coverprofile test-results/cover.out ./... \
 		| tee test-results/go-test.out
 
 	# Generate a human-readable, detailed coverage report in HTML
@@ -83,12 +68,12 @@ generate: controller-gen
 # Generate manifests e.g. CRD, RBAC etc.
 manifests: controller-gen
 	# Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
-	controller-gen $(CRD_OPTIONS) rbac:roleName=zlifecycle-il-operator-manager-role webhook \
+	controller-gen crd rbac:roleName=zlifecycle-il-operator-manager-role webhook \
 		paths="./..." output:crd:artifacts:config=charts/zlifecycle-il-operator/crds output:rbac:artifacts:config=charts/zlifecycle-il-operator/templates
 
 manifests-local: controller-gen
 	# Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
-	controller-gen $(CRD_OPTIONS) rbac:roleName=zlifecycle-il-operator-manager-role webhook \
+	controller-gen crd rbac:roleName=zlifecycle-il-operator-manager-role webhook \
 		paths="./..." output:crd:artifacts:config=charts/zlifecycle-il-operator/crds output:rbac:artifacts:config=charts/zlifecycle-il-operator/templates
 
 fmt: ## Run go fmt against code.
@@ -112,7 +97,7 @@ ifeq (, $(shell command -v controller-gen))
 	CONTROLLER_GEN_TMP_DIR=$$(mktemp -d) ;\
 	cd $$CONTROLLER_GEN_TMP_DIR ;\
 	go mod init tmp ;\
-	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.6.1 ;\
+	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.7.0 ;\
 	rm -rf $$CONTROLLER_GEN_TMP_DIR ;\
 	}
 endif

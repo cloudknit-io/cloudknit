@@ -20,7 +20,7 @@ import (
 
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/ghodss/yaml"
-	_ "github.com/golang/mock/mockgen/model"
+	_ "github.com/golang/mock/mockgen/model" // workaround for mockgen failing
 	"k8s.io/apimachinery/pkg/util/json"
 )
 
@@ -36,7 +36,7 @@ type Service interface {
 	RemoveAll(path string) error
 }
 
-type OsFileService struct {}
+type OsFileService struct{}
 
 func NewOsFileService() *OsFileService {
 	return &OsFileService{}
@@ -82,7 +82,6 @@ func createFileRecursive(folderName string, fileName string) (*os.File, error) {
 		return nil, fmt.Errorf("error: failed to create directory: %w", err)
 	}
 	file, err := os.Create(fmt.Sprintf("%s/%s", folderName, fileName))
-
 	if err != nil {
 		return nil, err
 	}
@@ -92,47 +91,31 @@ func createFileRecursive(folderName string, fileName string) (*os.File, error) {
 
 // SaveFileFromString Create file
 func (f *OsFileService) SaveFileFromString(input string, folderName string, fileName string) error {
-	if err := saveBytesToFile([]byte(input), folderName, fileName); err != nil {
-		return err
-	}
-
-	return nil
+	return saveBytesToFile([]byte(input), folderName, fileName)
 }
 
 func (f *OsFileService) SaveFileFromByteArray(input []byte, folderName string, fileName string) error {
-	if err := saveBytesToFile(input, folderName, fileName); err != nil {
-		return err
-	}
-
-	return nil
+	return saveBytesToFile(input, folderName, fileName)
 }
 
 // CreateEmptyDirectory creates empty directory with a .keep file
 func (f *OsFileService) CreateEmptyDirectory(folderName string) error {
-	if err := saveBytesToFile(nil, folderName, ".keep"); err != nil {
-		return err
-	}
-
-	return nil
+	return saveBytesToFile(nil, folderName, ".keep")
 }
 
 // SaveYamlFile creates file and directory, does not validate yaml
 func (f *OsFileService) SaveYamlFile(obj interface{}, folderName string, fileName string) error {
 	jsonBytes, err := json.Marshal(obj)
 	if err != nil {
-		return fmt.Errorf("error: failed to marshal json: %s", err.Error())
+		return fmt.Errorf("error: failed to marshal json: %w", err)
 	}
 
 	bytes, err := yaml.JSONToYAML(jsonBytes)
 	if err != nil {
-		return fmt.Errorf("error: failed to convert json to yaml: %s", err.Error())
+		return fmt.Errorf("error: failed to convert json to yaml: %w", err)
 	}
 
-	if err := saveBytesToFile(bytes, folderName, fileName); err != nil {
-		return err
-	}
-
-	return nil
+	return saveBytesToFile(bytes, folderName, fileName)
 }
 
 func saveBytesToFile(bytes []byte, folderName string, fileName string) error {
@@ -140,11 +123,7 @@ func saveBytesToFile(bytes []byte, folderName string, fileName string) error {
 		return fmt.Errorf("error: failed to create directory: %w", err)
 	}
 
-	if err := ioutil.WriteFile(fmt.Sprintf("%s/%s", folderName, fileName), bytes, 0644); err != nil {
-		return fmt.Errorf("error: failed to write file: %w", err)
-	}
-
-	return nil
+	return ioutil.WriteFile(fmt.Sprintf("%s/%s", folderName, fileName), bytes, 0644)
 }
 
 // RemoveAll removes path and any children it contains.

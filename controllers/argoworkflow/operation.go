@@ -13,12 +13,13 @@
 package argoworkflow
 
 import (
+	"strings"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	"github.com/go-logr/logr"
-	"strings"
 )
 
-func DeleteWorkflowsWithPrefix(log logr.Logger, prefix string, namespace string, api Api) error {
+func DeleteWorkflowsWithPrefix(log logr.Logger, prefix string, namespace string, api API) error {
 	log.Info("Listing Argo Workflows", "prefix", prefix)
 	listOpts := ListWorkflowOptions{Namespace: namespace}
 	wfs, listResp, err := api.ListWorkflows(listOpts)
@@ -40,7 +41,7 @@ func DeleteWorkflowsWithPrefix(log logr.Logger, prefix string, namespace string,
 	return nil
 }
 
-func DeleteWorkflow(name string, namespace string, api Api) error {
+func DeleteWorkflow(name string, namespace string, api API) error {
 	deleteOpts := DeleteWorkflowOptions{Name: name, Namespace: namespace}
 	resp, err := api.DeleteWorkflow(deleteOpts)
 	if err != nil {

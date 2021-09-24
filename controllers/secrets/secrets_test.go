@@ -1,12 +1,15 @@
 package secrets_test
 
 import (
+	"testing"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/secrets"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestCreateKey(t *testing.T) {
+	t.Parallel()
+
 	meta1 := secrets.SecretMeta{
 		Company:              "zbank",
 		Team:                 "payments",

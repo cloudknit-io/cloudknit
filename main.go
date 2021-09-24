@@ -15,10 +15,11 @@ package main
 import (
 	"context"
 	"flag"
+	"os"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/gotfvars"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
-	"os"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -75,8 +76,8 @@ func main() {
 		ctx,
 		ctrl.Log.WithName("TfVarsReconciler"),
 		mgr.GetClient(),
-		github.NewHttpRepositoryApi(ctx, env.Config.GitHubAuthToken),
-		)
+		github.NewHTTPRepositoryAPI(ctx, env.Config.GitHubAuthToken),
+	)
 	if err := tfvarsReconciler.Start(); err != nil {
 		setupLog.Error(err, "failed to start tfvars reconciler")
 	}

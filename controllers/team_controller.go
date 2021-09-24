@@ -15,6 +15,9 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"sync"
+	"time"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/repo"
 	"github.com/go-logr/logr"
@@ -25,8 +28,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sync"
-	"time"
 
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
@@ -88,8 +89,8 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		return ctrl.Result{}, err
 	}
 
-	argocdApi := argocd.NewHttpClient(r.Log, env.Config.ArgocdServerUrl)
-	if _, err := argocd.TryCreateProject(r.Log, team.Spec.TeamName, env.Config.GitHubOrg); err != nil {
+	argocdAPI := argocd.NewHTTPClient(ctx, r.Log, env.Config.ArgocdServerURL)
+	if _, err := argocd.TryCreateProject(ctx, r.Log, team.Spec.TeamName, env.Config.GitHubOrg); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -101,10 +102,10 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	}
 
 	teamRepo := team.Spec.ConfigRepo.Source
-	operatorSshSecret := env.Config.ZlifecycleMasterRepoSshSecret
+	operatorSSHSecret := env.Config.ZlifecycleMasterRepoSSHSecret
 	operatorNamespace := env.Config.ZlifecycleOperatorNamespace
 
-	if err := repo.TryRegisterRepo(r.Client, r.Log, ctx, argocdApi, teamRepo, operatorNamespace, operatorSshSecret); err != nil {
+	if err := repo.TryRegisterRepo(ctx, r.Client, r.Log, argocdAPI, teamRepo, operatorNamespace, operatorSSHSecret); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -140,8 +141,8 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		)
 	}
 
-	repoApi := github.NewHttpRepositoryApi(ctx, env.Config.GitHubAuthToken)
-	_, err = github.CreateRepoWebhook(r.Log, repoApi, teamRepo, env.Config.ArgocdHookUrl, env.Config.GitHubWebhookSecret)
+	repoAPI := github.NewHTTPRepositoryAPI(ctx, env.Config.GitHubAuthToken)
+	_, err = github.CreateRepoWebhook(r.Log, repoAPI, teamRepo, env.Config.ArgocdHookURL, env.Config.GitHubWebhookSecret)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
@@ -179,10 +180,8 @@ func (r *TeamReconciler) initArgocdAdminRbac(ctx context.Context) error {
 		return err
 	}
 	rbacCm.Data["policy.csv"] = newPolicyCsv
-	if err := r.Client.Update(ctx, &rbacCm); err != nil {
-		return err
-	}
-	return nil
+
+	return r.Client.Update(ctx, &rbacCm)
 }
 
 func (r *TeamReconciler) updateArgocdRbac(ctx context.Context, t *stablev1.Team) error {
@@ -201,10 +200,7 @@ func (r *TeamReconciler) updateArgocdRbac(ctx context.Context, t *stablev1.Team)
 		return err
 	}
 	rbacCm.Data["policy.csv"] = newPolicyCsv
-	if err := r.Client.Update(ctx, &rbacCm); err != nil {
-		return err
-	}
-	return nil
+	return r.Client.Update(ctx, &rbacCm)
 }
 
 func delayTeamReconcileOnInitialRun(log logr.Logger, seconds int64) {
@@ -219,23 +215,15 @@ func delayTeamReconcileOnInitialRun(log logr.Logger, seconds int64) {
 }
 
 func generateAndSaveTeamApp(team *stablev1.Team, teamYAML string) error {
-	teamApp := argocd.GenerateTeamApp(*team)
+	teamApp := argocd.GenerateTeamApp(team)
 	fileUtil := &file.OsFileService{}
 
-	if err := fileUtil.SaveYamlFile(*teamApp, il.Config.TeamDirectory, teamYAML); err != nil {
-		return err
-	}
-
-	return nil
+	return fileUtil.SaveYamlFile(*teamApp, il.Config.TeamDirectory, teamYAML)
 }
 
 func generateAndSaveConfigWatchers(team *stablev1.Team, teamYAML string) error {
-	teamConfigWatcherApp := argocd.GenerateTeamConfigWatcherApp(*team)
+	teamConfigWatcherApp := argocd.GenerateTeamConfigWatcherApp(team)
 	fileUtil := &file.OsFileService{}
 
-	if err := fileUtil.SaveYamlFile(*teamConfigWatcherApp, il.Config.ConfigWatcherDirectory, teamYAML); err != nil {
-		return err
-	}
-
-	return nil
+	return fileUtil.SaveYamlFile(*teamConfigWatcherApp, il.Config.ConfigWatcherDirectory, teamYAML)
 }

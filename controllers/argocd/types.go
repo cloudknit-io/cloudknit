@@ -13,15 +13,17 @@
 package argocd
 
 import (
+	"context"
+	"net/http"
+
 	appv1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	"github.com/go-logr/logr"
-	_ "github.com/golang/mock/mockgen/model"
-	"net/http"
+	_ "github.com/golang/mock/mockgen/model" // workaround for mockgen failing
 )
 
 //go:generate go run -mod=mod github.com/golang/mock/mockgen -destination=../../mocks/mock_argocd_api.go -package=mocks "github.com/compuzest/zlifecycle-il-operator/controllers/argocd" Api
 
-type Api interface {
+type API interface {
 	GetAuthToken() (*GetTokenResponse, error)
 	ListRepositories(bearerToken string) (*RepositoryList, *http.Response, error)
 	CreateRepository(body CreateRepoBody, bearerToken string) (*http.Response, error)
@@ -32,9 +34,10 @@ type Api interface {
 	DoesProjectExist(name string, bearerToken string) (exists bool, response *http.Response, err error)
 }
 
-type HttpApi struct {
-	ServerUrl string
-	Log       logr.Logger
+type HTTPAPI struct {
+	ctx       context.Context
+	serverURL string
+	log       logr.Logger
 }
 
 type Credentials struct {
@@ -52,14 +55,14 @@ type GetTokenResponse struct {
 }
 
 type RepoOpts struct {
-	RepoUrl       string
-	SshPrivateKey string
+	RepoURL       string
+	SSHPrivateKey string
 }
 
 type CreateRepoBody struct {
 	Repo          string `json:"repo"`
 	Name          string `json:"name"`
-	SshPrivateKey string `json:"sshPrivateKey"`
+	SSHPrivateKey string `json:"sshPrivateKey"`
 }
 
 type CreateProjectBody struct {
@@ -78,8 +81,10 @@ type Repository struct {
 /****************************/
 /*           RBAC           */
 /****************************/
-type EntryIdentifier = string
-type Permission = string
+type (
+	EntryIdentifier = string
+	Permission      = string
+)
 
 const (
 	Policy EntryIdentifier = "p"

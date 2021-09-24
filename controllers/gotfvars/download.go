@@ -1,15 +1,16 @@
 package gotfvars
 
 import (
+	"io/ioutil"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
 	"github.com/go-logr/logr"
-	"io/ioutil"
 )
 
-func GetVariablesFromTfvarsFile(log logr.Logger, api github.RepositoryApi, repoUrl string, ref string, path string) (string, error) {
-	log.Info("Downloading tfvars file", "repoUrl", repoUrl, "ref", ref, "path", path)
-	buff, err := downloadTfvarsFile(api, repoUrl, ref, path)
+func GetVariablesFromTfvarsFile(log logr.Logger, api github.RepositoryAPI, repoURL string, ref string, path string) (string, error) {
+	log.Info("Downloading tfvars file", "repoUrl", repoURL, "ref", ref, "path", path)
+	buff, err := downloadTfvarsFile(api, repoURL, ref, path)
 	if err != nil {
 		return "", err
 	}
@@ -18,8 +19,8 @@ func GetVariablesFromTfvarsFile(log logr.Logger, api github.RepositoryApi, repoU
 	return tfvars, nil
 }
 
-func downloadTfvarsFile(api github.RepositoryApi, repoUrl string, ref string, path string) ([]byte, error) {
-	rc, err := github.DownloadFile(api, repoUrl, ref, path)
+func downloadTfvarsFile(api github.RepositoryAPI, repoURL string, ref string, path string) ([]byte, error) {
+	rc, err := github.DownloadFile(api, repoURL, ref, path)
 	if err != nil {
 		return nil, err
 	}

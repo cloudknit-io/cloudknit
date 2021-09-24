@@ -10,9 +10,10 @@
  * strictly forbidden unless prior written permission is obtained from CompuZest, Inc.
  */
 
-package argoworkflow
+package argoworkflow_test
 
 import (
+	"github.com/compuzest/zlifecycle-il-operator/controllers/argoworkflow"
 	"testing"
 
 	"github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
@@ -21,9 +22,11 @@ import (
 )
 
 func TestGenerateLegacyWorkflowOfWorkflows(t *testing.T) {
+	t.Parallel()
+
 	env := mocks.GetMockEnv1(false)
 
-	wow := GenerateLegacyWorkflowOfWorkflows(env)
+	wow := argoworkflow.GenerateLegacyWorkflowOfWorkflows(&env)
 
 	assert.Equal(t, wow.DeletionTimestamp.IsZero(), true)
 
@@ -34,27 +37,29 @@ func TestGenerateLegacyWorkflowOfWorkflows(t *testing.T) {
 	assert.ElementsMatch(t, task1.Dependencies, []string{"trigger-audit"})
 	destroyFlag1 := findParam(task1.Arguments.Parameters, "is_destroy")
 	assert.NotNil(t, destroyFlag1)
-	assert.Equal(t, destroyFlag1.Value, anyStringPointer("false"))
+	assert.Equal(t, destroyFlag1.Value, argoworkflow.AnyStringPointer("false"))
 
 	task2 := findTasks(tasks, "rebrand")
 	assert.NotNil(t, task2)
 	assert.ElementsMatch(t, task2.Dependencies, []string{"networking", "trigger-audit"})
 	destroyFlag2 := findParam(task2.Arguments.Parameters, "is_destroy")
 	assert.NotNil(t, destroyFlag2)
-	assert.Equal(t, destroyFlag2.Value, anyStringPointer("false"))
+	assert.Equal(t, destroyFlag2.Value, argoworkflow.AnyStringPointer("false"))
 
 	task3 := findTasks(tasks, "overlay")
 	assert.NotNil(t, task3)
 	assert.ElementsMatch(t, task3.Dependencies, []string{"networking", "rebrand", "trigger-audit"})
 	destroyFlag3 := findParam(task3.Arguments.Parameters, "is_destroy")
 	assert.NotNil(t, destroyFlag3)
-	assert.Equal(t, destroyFlag3.Value, anyStringPointer("false"))
+	assert.Equal(t, destroyFlag3.Value, argoworkflow.AnyStringPointer("false"))
 }
 
 func TestGenerateLegacyWorkflowOfWorkflowsDeletedEnvironment(t *testing.T) {
+	t.Parallel()
+
 	env := mocks.GetMockEnv1(true)
 
-	wow := GenerateLegacyWorkflowOfWorkflows(env)
+	wow := argoworkflow.GenerateLegacyWorkflowOfWorkflows(&env)
 
 	assert.Equal(t, wow.DeletionTimestamp.IsZero(), true)
 
@@ -65,21 +70,21 @@ func TestGenerateLegacyWorkflowOfWorkflowsDeletedEnvironment(t *testing.T) {
 	assert.ElementsMatch(t, task1.Dependencies, []string{"rebrand", "overlay", "trigger-audit"})
 	destroyFlag1 := findParam(task1.Arguments.Parameters, "is_destroy")
 	assert.NotNil(t, destroyFlag1)
-	assert.Equal(t, destroyFlag1.Value, anyStringPointer("true"))
+	assert.Equal(t, destroyFlag1.Value, argoworkflow.AnyStringPointer("true"))
 
 	task2 := findTasks(tasks, "rebrand")
 	assert.NotNil(t, task2)
 	assert.ElementsMatch(t, task2.Dependencies, []string{"overlay", "trigger-audit"})
 	destroyFlag2 := findParam(task2.Arguments.Parameters, "is_destroy")
 	assert.NotNil(t, destroyFlag2)
-	assert.Equal(t, destroyFlag2.Value, anyStringPointer("true"))
+	assert.Equal(t, destroyFlag2.Value, argoworkflow.AnyStringPointer("true"))
 
 	task3 := findTasks(tasks, "overlay")
 	assert.NotNil(t, task3)
 	assert.ElementsMatch(t, task3.Dependencies, []string{"trigger-audit"})
 	destroyFlag3 := findParam(task3.Arguments.Parameters, "is_destroy")
 	assert.NotNil(t, destroyFlag3)
-	assert.Equal(t, destroyFlag3.Value, anyStringPointer("true"))
+	assert.Equal(t, destroyFlag3.Value, argoworkflow.AnyStringPointer("true"))
 }
 
 func findTasks(tasks []v1alpha1.DAGTask, name string) *v1alpha1.DAGTask {

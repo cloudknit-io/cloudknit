@@ -4,30 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/go-logr/logr"
-	y "gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
 	"net/http"
+
+	y "gopkg.in/yaml.v2"
 )
 
-func CloseBody(body io.ReadCloser) {
-	if body != nil {
-		body.Close()
-	}
-}
-
-func LogBody(log logr.Logger, body io.ReadCloser) {
-	bodyBytes, err := ioutil.ReadAll(body)
-	if err != nil {
-		log.Error(err, "Error while deserializing body")
-		return
-	}
-	bodyString := string(bodyBytes)
-	log.Info(bodyString)
-}
-
-func ToJson(data interface{}) ([]byte, error) {
+func ToJSON(data interface{}) ([]byte, error) {
 	jsoned, err := json.Marshal(data)
 	if err != nil {
 		return nil, err
@@ -36,7 +20,7 @@ func ToJson(data interface{}) ([]byte, error) {
 	return jsoned, nil
 }
 
-func FromJson(s interface{}, jsonData []byte) error {
+func FromJSON(s interface{}, jsonData []byte) error {
 	err := json.Unmarshal(jsonData, s)
 	if err != nil {
 		return err
@@ -45,12 +29,12 @@ func FromJson(s interface{}, jsonData []byte) error {
 	return nil
 }
 
-func FromJsonMap(m map[string]interface{}, s interface{}) error {
-	jsoned, err := ToJson(m)
+func FromJSONMap(m map[string]interface{}, s interface{}) error {
+	jsoned, err := ToJSON(m)
 	if err != nil {
 		return err
 	}
-	err = FromJson(s, jsoned)
+	err = FromJSON(s, jsoned)
 	if err != nil {
 		return err
 	}
@@ -124,11 +108,7 @@ func Find(s []string, e string) *string {
 }
 
 func FromYaml(yamlstring string, out interface{}) error {
-	if err := y.Unmarshal([]byte(yamlstring), out); err != nil {
-		return err
-	}
-
-	return nil
+	return y.Unmarshal([]byte(yamlstring), out)
 }
 
 func ToYaml(in interface{}) (ymlstring string, e error) {

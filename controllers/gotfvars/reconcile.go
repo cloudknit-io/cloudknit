@@ -5,48 +5,56 @@ import (
 	"crypto/md5"
 	"errors"
 	"fmt"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"time"
+
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
 	"github.com/go-logr/logr"
 	"github.com/robfig/cron/v3"
 	kClient "sigs.k8s.io/controller-runtime/pkg/client"
-	"time"
 )
 
-var (
-	reconciler *Reconciler
-)
+var reconciler *Reconciler
 
 type Tfvars struct {
-	id                   string
-	Source               string
-	Path                 string
-	Ref                  string
-	EnvironmentObject    kClient.ObjectKey
-	EnvironmentComponent string
+	md5               string
+	reconciledAt      time.Time
+	Source            string
+	Path              string
+	Ref               string
+	EnvironmentObject kClient.ObjectKey
+	Environment       string
+	Component         string
 }
+
+type State = map[string]map[string]*Tfvars
+
 
 type Reconciler struct {
 	ctx           context.Context
 	log           logr.Logger
 	k8sClient     kClient.Client
-	githubRepoApi github.RepositoryApi
-	requests      []*Tfvars
+	githubRepoAPI github.RepositoryAPI
+	state         State
 }
 
-func NewReconciler(ctx context.Context, log logr.Logger, k8sClient kClient.Client, repoApi github.RepositoryApi) *Reconciler {
+func NewReconciler(ctx context.Context, log logr.Logger, k8sClient kClient.Client, repoAPI github.RepositoryAPI) *Reconciler {
 	if reconciler == nil {
+		state := map[string]map[string]*Tfvars{}
 		reconciler = &Reconciler{
-			ctx: ctx,
-			log: log,
-			k8sClient: k8sClient,
-			githubRepoApi: repoApi,
+			ctx:           ctx,
+			log:           log,
+			k8sClient:     k8sClient,
+			githubRepoAPI: repoAPI,
+			state:         state,
 		}
 	}
 
 	return reconciler
 }
 
+// GetReconciler returns the current singleton instance. Note that it needs to be initialized first by calling NewReconciler
 func GetReconciler() *Reconciler {
 	return reconciler
 }
@@ -56,10 +64,18 @@ func (w *Reconciler) Start() error {
 	c := cron.New()
 	c.Start()
 	_, err := c.AddFunc("@every 1m", func() {
+		start := time.Now()
 		w.log.Info("Running scheduled tfvars watcher iteration", "time", time.Now().String())
-		for _, r := range w.requests {
-			_ = w.reconcile(r)
+		allTfvars := w.AllTfvars()
+		for _, tfvars := range allTfvars {
+			_, _ = w.reconcile(tfvars)
 		}
+		duration := time.Since(start)
+		w.log.Info(
+			"Finished scheduled tfvars watcher iteration",
+			"started", time.Now().String(),
+				"duration", duration,
+			)
 	})
 	if err != nil {
 		return err
@@ -67,84 +83,106 @@ func (w *Reconciler) Start() error {
 	return nil
 }
 
+func (w *Reconciler) AllTfvars() []*Tfvars {
+	var allTfvars []*Tfvars
+	for _, envMap := range w.state {
+		for _, tfvars := range envMap {
+			allTfvars = append(allTfvars, tfvars)
+		}
+	}
+	return allTfvars
+}
+
+func (w *Reconciler) State() State {
+	return w.state
+}
+
 func (w *Reconciler) Submit(tfv *Tfvars) (added bool, err error) {
+	added = false
 	if tfv == nil {
-		return false, errors.New("nil pointer instead of git file encountered")
+		return added, errors.New("nil pointer instead of git file encountered")
 	}
 
-	id := toId(tfv.EnvironmentObject.Namespace, tfv.EnvironmentObject.Namespace, tfv.EnvironmentComponent)
+	environment := tfv.Environment
+	component := tfv.Component
 
-	if !exists(w.requests, id) {
-		tfv.id = id
-		w.requests = append(w.requests, tfv)
-		return true, nil
-	}
-
-	return false, nil
-}
-
-func toId(namespace string, environment string, component string) string {
-	return fmt.Sprintf("%s-%s-%s", namespace, environment, component)
-}
-
-func exists(tfvs []*Tfvars, id string) bool {
-	for _, tfv := range tfvs {
-		if tfv.id == id {
-			return true
+	if !w.exists(environment, component) {
+		if w.state[environment] == nil {
+			w.state[environment] = map[string]*Tfvars{}
 		}
+		w.state[environment][component] = tfv
+		added = true
 	}
-	return false
+
+	return added, nil
 }
 
-func (w *Reconciler) Remove(namespace string, environment string, component string) {
-	id := toId(namespace, environment, component)
-	for i, f := range w.requests {
-		if f.id == id {
-			w.requests = remove(w.requests, i)
-		}
+func (w *Reconciler) exists(environment string, component string) bool {
+	return w.state[environment] != nil && w.state[environment][component] != nil
+}
+
+func (w *Reconciler) Remove(environment string, component string) {
+	if w.state[environment] != nil && w.state[component] != nil {
+		w.state[environment][component] = nil
 	}
 }
 
-func remove(s []*Tfvars, i int) []*Tfvars {
-	s[i] = s[len(s)-1]
-	return s[:len(s)-1]
-}
-
-func (w *Reconciler) reconcile(tfv *Tfvars) error {
+func (w *Reconciler) reconcile(tfv *Tfvars) (updated bool, err error) {
+	updated = false
 	e := &v1.Environment{}
 	if err := w.k8sClient.Get(w.ctx, tfv.EnvironmentObject, e); err != nil {
-		return err
+		return updated, err
 	}
 
-	rc, err := downloadTfvarsFile(w.githubRepoApi, tfv.Source, tfv.Ref, tfv.Path)
+	rc, err := downloadTfvarsFile(w.githubRepoAPI, tfv.Source, tfv.Ref, tfv.Path)
 	if err != nil {
-		return err
+		return updated, err
 	}
 	newHash := fmt.Sprintf("%x", md5.Sum(rc))
 
-	ec := findEnvironmentComponent(e.Spec.EnvironmentComponent, tfv.EnvironmentComponent)
+	ec := findEnvironmentComponent(e.Spec.Components, tfv.Component)
 	if ec == nil {
-		w.log.Info("Missing environment component, ending reconcile", "component", tfv.EnvironmentComponent)
-		return nil
+		w.log.Info("Missing environment component, ending reconcile", "component", tfv.Component)
+		return updated, nil
 	}
-	oldHash := ec.VariablesFile.Md5
-	if oldHash != newHash {
+
+	if oldHash := tfv.md5; oldHash != newHash {
 		w.log.Info(
 			"Updating hash for environment component",
-			"component", ec.Name,
+			"component", tfv.Component,
 			"environment", e.Spec.EnvName,
 			"team", e.Spec.TeamName,
 			"oldHash", oldHash,
 			"newHash", newHash,
-			)
-
-		ec.VariablesFile.Md5 = newHash
-		if err := w.k8sClient.Update(w.ctx, e); err != nil {
-			return err
+		)
+		tfv.md5 = newHash
+		tfv.reconciledAt = time.Now()
+		e.Status.TfvarsState = w.buildDomainTfvarsState()
+		if err := w.k8sClient.Status().Update(w.ctx, e); err != nil {
+			return updated, err
 		}
+		updated = true
 	}
 
-	return nil
+	return updated, nil
+}
+
+func (w *Reconciler) buildDomainTfvarsState() map[string]map[string]*v1.Tfvars {
+	domainState := map[string]map[string]*v1.Tfvars{}
+	for envKey, environmentTfvars := range w.state {
+		if domainState[envKey] == nil {
+			domainState[envKey] = map[string]*v1.Tfvars{}
+		}
+		for compKey, tfvars := range environmentTfvars {
+			domainState[envKey][compKey] = toDomainTfvars(tfvars)
+		}
+	}
+	return domainState
+}
+
+func toDomainTfvars(tfv *Tfvars) *v1.Tfvars {
+	now := metav1.NewTime(time.Now())
+	return &v1.Tfvars{Source: tfv.Source, Path: tfv.Path, Ref: tfv.Ref, Md5: tfv.md5, ReconciledAt: now}
 }
 
 func findEnvironmentComponent(ecs []*v1.EnvironmentComponent, name string) *v1.EnvironmentComponent {
