@@ -51,7 +51,7 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	var initOperatorError error
 	initOperatorLock.Do(func() {
-		initOperatorError = r.initOperator(ctx)
+		initOperatorError = r.initCompany(ctx)
 	})
 	if initOperatorError != nil {
 		return ctrl.Result{}, initOperatorError
@@ -151,8 +151,15 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	return ctrl.Result{}, nil
 }
 
-func (r *CompanyReconciler) initOperator(ctx context.Context) error {
+func (r *CompanyReconciler) initCompany(ctx context.Context) error {
 	r.Log.Info("Running company operator init")
+
+	r.Log.Info("Creating webhook for IL repo")
+	repoAPI := github.NewHTTPRepositoryAPI(ctx, env.Config.GitHubAuthToken)
+	if _, err  := github.CreateRepoWebhook(r.Log, repoAPI, env.Config.ILRepoURL, env.Config.ArgocdHookURL, env.Config.GitHubWebhookSecret); err != nil {
+		return err
+	}
+
 	r.Log.Info("Registering helm chart repo")
 	argocdAPI := argocd.NewHTTPClient(ctx, r.Log, env.Config.ArgocdServerURL)
 	helmChartsRepo := env.Config.HelmChartsRepo
