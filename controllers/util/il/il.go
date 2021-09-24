@@ -42,7 +42,6 @@ func EnvComponentModuleSource(moduleSource string, moduleName string) string {
 func EnvComponentModulePath(modulePath string) string {
 	if modulePath == "" {
 		return "."
-	} else {
-		return modulePath
 	}
+	return modulePath
 }

@@ -35,8 +35,7 @@ type CompanySpec struct {
 }
 
 // CompanyStatus defines the observed state of Company
-type CompanyStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
+type CompanyStatus struct { // INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 }
 

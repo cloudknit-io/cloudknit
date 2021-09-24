@@ -3,12 +3,13 @@ package v1
 import (
 	"errors"
 	"fmt"
+
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 )
 
-func ValidateEnvironmentCreate(e Environment) error {
+func ValidateEnvironmentCreate(e *Environment) error {
 	var allErrs field.ErrorList
 
 	if err := validateEnvironmentCommon(e, true); err != nil {
@@ -29,7 +30,7 @@ func ValidateEnvironmentCreate(e Environment) error {
 	)
 }
 
-func ValidateEnvironmentUpdate(e Environment) error {
+func ValidateEnvironmentUpdate(e *Environment) error {
 	var allErrs field.ErrorList
 
 	if err := validateEnvironmentCommon(e, false); err != nil {
@@ -53,13 +54,13 @@ func ValidateEnvironmentUpdate(e Environment) error {
 	)
 }
 
-func validateEnvironmentCommon(e Environment, isCreate bool) field.ErrorList {
+func validateEnvironmentCommon(e *Environment, isCreate bool) field.ErrorList {
 	var allErrs field.ErrorList
 
 	if err := checkEnvironmentFields(e, isCreate); err != nil {
 		allErrs = append(allErrs, err...)
 	}
-	if err := validateEnvironmentComponents(e.Spec.EnvironmentComponent, isCreate); err != nil {
+	if err := validateEnvironmentComponents(e.Spec.Components, isCreate); err != nil {
 		allErrs = append(allErrs, err...)
 	}
 
@@ -70,7 +71,7 @@ func validateEnvironmentCommon(e Environment, isCreate bool) field.ErrorList {
 	return allErrs
 }
 
-func validateEnvironmentStatus(e Environment) field.ErrorList {
+func validateEnvironmentStatus(e *Environment) field.ErrorList {
 	var allErrs field.ErrorList
 
 	if e.Spec.TeamName != e.Status.TeamName && e.Status.TeamName != "" {
@@ -120,11 +121,11 @@ func validateEnvironmentComponents(ecs []*EnvironmentComponent, isCreate bool) f
 	return allErrs
 }
 
-func checkEnvironmentFields(e Environment, isCreate bool) field.ErrorList {
+func checkEnvironmentFields(e *Environment, isCreate bool) field.ErrorList {
 	var allErrs field.ErrorList
 
 	if isCreate {
-		if e.Spec.Teardown == true {
+		if e.Spec.Teardown {
 			fldPath := field.NewPath("spec").Child("teardown")
 			err := errors.New("environment cannot be created with 'Teardown' equal to true")
 			fe := field.Invalid(fldPath, e.Spec.Teardown, err.Error())
@@ -162,7 +163,7 @@ func checkEnvironmentComponentsNotEmpty(ecs []*EnvironmentComponent) *field.Erro
 }
 
 func checkEnvironmentComponentNotInitiallyDestroyed(ec *EnvironmentComponent, index int) *field.Error {
-	if ec.Destroy == true {
+	if ec.Destroy {
 		fldPath := field.NewPath("spec").Child("environmentComponent").Index(index).Child("destroy")
 		err := errors.New("environment component cannot be initialized with 'destroy' equal to true")
 		return field.Invalid(fldPath, ec.Destroy, err.Error())
@@ -174,7 +175,7 @@ func checkEnvironmentComponentReferencesItself(name string, deps []string, ecInd
 	for _, dep := range deps {
 		if name == dep {
 			fldPath := field.NewPath("spec").Child("environmentComponent").Index(ecIndex).Child("dependsOn").Key(name)
-			err := errors.New(fmt.Sprintf("component '%s' has a dependency on itself", name))
+			err := fmt.Errorf("component '%s' has a dependency on itself", name)
 			return field.Invalid(fldPath, name, err.Error())
 		}
 	}
@@ -192,7 +193,7 @@ func checkEnvironmentComponentDependenciesExist(comp string, deps []string, ecs 
 		}
 		if !exists {
 			fldPath := field.NewPath("spec").Child("environmentComponent").Index(ecIndex).Child("dependsOn").Key(dep)
-			err := errors.New(fmt.Sprintf("component '%s' depends on non-existing component: '%s'", comp, dep))
+			err := fmt.Errorf("component '%s' depends on non-existing component: '%s'", comp, dep)
 			return field.Invalid(fldPath, dep, err.Error())
 		}
 	}

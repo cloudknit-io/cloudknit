@@ -13,15 +13,16 @@
 package terraformgenerator
 
 import (
-	"github.com/compuzest/zlifecycle-il-operator/controllers/secrets"
 	"os"
 	"path/filepath"
 	"text/template"
 
+	"github.com/compuzest/zlifecycle-il-operator/controllers/secrets"
+
 	"github.com/go-logr/logr"
 
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
-	env "github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
 )
@@ -58,7 +59,7 @@ var DefaultTerraformVersion = "0.13.2"
 
 func (tf TerraformGenerator) GenerateTerraform(
 	fileUtil file.Service,
-	vars TemplateVariables,
+	vars *TemplateVariables,
 	environmentComponentDirectory string,
 ) error {
 	componentName := vars.EnvCompName
@@ -117,30 +118,31 @@ func (tf TerraformGenerator) GenerateTerraform(
 	}
 
 	workingDir, err := os.Getwd()
-	err = tf.GenerateFromTemplate(backendConfig, environmentComponentDirectory, componentName, fileUtil, filepath.Join(workingDir, "templates/terraform_backend.tmpl"), "terraform")
 	if err != nil {
 		return err
 	}
+	if err := tf.GenerateFromTemplate(backendConfig, environmentComponentDirectory, componentName, fileUtil, filepath.Join(workingDir, "templates", "terraform_backend.tmpl"), "terraform"); err != nil {
+		return err
+	}
 
-	err = tf.GenerateFromTemplate(moduleConfig, environmentComponentDirectory, componentName, fileUtil, filepath.Join(workingDir, "templates/terraform_module.tmpl"), "module")
-	if err != nil {
+	if err := tf.GenerateFromTemplate(moduleConfig, environmentComponentDirectory, componentName, fileUtil, filepath.Join(workingDir, "templates", "terraform_module.tmpl"), "module"); err != nil {
 		return err
 	}
 
 	if len(outputsConfig.Outputs) > 0 {
-		if err := tf.GenerateFromTemplate(outputsConfig, environmentComponentDirectory, componentName, fileUtil, filepath.Join(workingDir, "templates/terraform_outputs.tmpl"), "outputs"); err != nil {
+		if err := tf.GenerateFromTemplate(outputsConfig, environmentComponentDirectory, componentName, fileUtil, filepath.Join(workingDir, "templates", "terraform_outputs.tmpl"), "outputs"); err != nil {
 			return err
 		}
 	}
 
 	if len(dataConfig.DependsOn) > 0 {
-		if err := tf.GenerateFromTemplate(dataConfig, environmentComponentDirectory, componentName, fileUtil, filepath.Join(workingDir, "templates/terraform_data.tmpl"), "data"); err != nil {
+		if err := tf.GenerateFromTemplate(dataConfig, environmentComponentDirectory, componentName, fileUtil, filepath.Join(workingDir, "templates", "terraform_data.tmpl"), "data"); err != nil {
 			return err
 		}
 	}
 
 	if vars.EnvCompSecrets != nil && len(vars.EnvCompSecrets) > 0 {
-		if err := tf.GenerateFromTemplate(secretsConfig, environmentComponentDirectory, componentName, fileUtil, filepath.Join(workingDir, "templates/terraform_secrets.tmpl"), "secrets"); err != nil {
+		if err := tf.GenerateFromTemplate(secretsConfig, environmentComponentDirectory, componentName, fileUtil, filepath.Join(workingDir, "templates", "terraform_secrets.tmpl"), "secrets"); err != nil {
 			return err
 		}
 	}
@@ -149,7 +151,7 @@ func (tf TerraformGenerator) GenerateTerraform(
 }
 
 func createSecretsConfig(secretArray []*stablev1.Secret, meta secrets.SecretMeta) (*TerraformSecretsConfig, error) {
-	var scopedSecrets []Secret
+	scopedSecrets := make([]Secret, 0, len(secretArray))
 	for _, s := range secretArray {
 		scope := s.Scope
 		if scope == "" {
@@ -167,9 +169,9 @@ func createSecretsConfig(secretArray []*stablev1.Secret, meta secrets.SecretMeta
 }
 
 // GenerateSharedProvider save provider file to be executed by terraform
-func (tf TerraformGenerator) GenerateSharedProvider(file file.Service, environmentComponentDirectory string, componentName string) error {
+func (tf TerraformGenerator) GenerateSharedProvider(fs file.Service, environmentComponentDirectory string, componentName string) error {
 	terraformDirectory := tf.GenerateTerraformIlPath(environmentComponentDirectory, componentName)
-	err := file.SaveFileFromString(`
+	err := fs.SaveFileFromString(`
 provider "aws" {
 	region  = "us-east-1"
 	version = "~> 3.0"
@@ -184,9 +186,9 @@ provider "aws" {
 }
 
 // GenerateProvider save provider file to be executed by terraform
-func (tf TerraformGenerator) GenerateProvider(file file.Service, environmentComponentDirectory string, componentName string) error {
+func (tf TerraformGenerator) GenerateProvider(fs file.Service, environmentComponentDirectory string, componentName string) error {
 	terraformDirectory := tf.GenerateTerraformIlPath(environmentComponentDirectory, componentName)
-	err := file.SaveFileFromString(`
+	err := fs.SaveFileFromString(`
 provider "aws" {
 	region  = "us-east-1"
 	version = "~> 3.0"
@@ -204,12 +206,12 @@ func (tf TerraformGenerator) GenerateTerraformIlPath(environmentComponentDirecto
 }
 
 func (tf TerraformGenerator) GenerateFromTemplate(vars interface{}, environmentComponentDirectory string, componentName string, fileUtil file.Service, templatePath string, fileName string) error {
-	template, err := template.ParseFiles(templatePath)
+	tpl, err := template.ParseFiles(templatePath)
 	if err != nil {
 		return err
 	}
 	terraformDirectory := tf.GenerateTerraformIlPath(environmentComponentDirectory, componentName)
-	err = fileUtil.SaveFileFromTemplate(template, vars, terraformDirectory, fileName+".tf")
+	err = fileUtil.SaveFileFromTemplate(tpl, vars, terraformDirectory, fileName+".tf")
 	if err != nil {
 		return err
 	}

@@ -43,21 +43,24 @@ var (
 	authorEmail   string
 )
 
-var client *github.Client
-var ctx = context.Background()
+var (
+	client *github.Client
+	ctx    = context.Background()
+)
 
 func DownloadFile(
-	log logr.Logger,
-	api RepositoryApi,
-	repoUrl string,
+	api RepositoryAPI,
+	repoURL string,
 	ref string,
 	path string,
 ) (io.ReadCloser, error) {
-	owner, repo, err := parseRepoUrl(repoUrl)
+	owner, repo, err := parseRepoURL(repoURL)
+	if ref == "" {
+		ref = "HEAD"
+	}
 	if err != nil {
 		return nil, err
 	}
-	log.Info("Downloading file from GitHub", "owner", owner, "repo", repo, "ref", ref, "path", path)
 	rc, err := api.DownloadContents(owner, repo, ref, path)
 	if err != nil {
 		return nil, err
@@ -67,7 +70,7 @@ func DownloadFile(
 
 func DeletePatternsFromRootTree(
 	log logr.Logger,
-	api GitApi,
+	api GitAPI,
 	owner string,
 	repo string,
 	branch string,
@@ -90,7 +93,7 @@ func DeletePatternsFromRootTree(
 
 func removeEnvironmentObjectsFromTree(
 	log logr.Logger,
-	api GitApi,
+	api GitAPI,
 	owner string,
 	repo string,
 	branch string,
@@ -189,7 +192,7 @@ func removeEnvironmentObjectsFromTree(
 
 func commitAndPushTree(
 	log logr.Logger,
-	api GitApi,
+	api GitAPI,
 	owner string,
 	repo string,
 	branch string,
@@ -296,7 +299,7 @@ func shouldExclude(entry *github.TreeEntry, paths []string) bool {
 
 // TryCreateRepository tries to create a private repository in a organization (enter blank string for owner if it is a user repo)
 // It returns true if repository is created, false if repository already exists, or any kind of error.
-func TryCreateRepository(log logr.Logger, api RepositoryApi, owner string, repo string) (bool, error) {
+func TryCreateRepository(log logr.Logger, api RepositoryAPI, owner string, repo string) (bool, error) {
 	log.Info("Checking does repo exist on GitHub", "owner", owner, "repo", repo)
 	r, resp1, err := api.GetRepository(owner, repo)
 	if err != nil {
@@ -335,18 +338,18 @@ func TryCreateRepository(log logr.Logger, api RepositoryApi, owner string, repo 
 
 // CreateRepoWebhook tries to create a repository webhook
 // It returns true if webhook already exists, false if new webhook was created, or any kind of error.
-func CreateRepoWebhook(log logr.Logger, api RepositoryApi, repoUrl string, payloadUrl string, webhookSecret string) (bool, error) {
-	owner, repo, err := parseRepoUrl(repoUrl)
+func CreateRepoWebhook(log logr.Logger, api RepositoryAPI, repoURL string, payloadURL string, webhookSecret string) (bool, error) {
+	owner, repo, err := parseRepoURL(repoURL)
 	if err != nil {
-		log.Error(err, "Error while parsing owner and repo name from repo url", "url", repoUrl)
+		log.Error(err, "Error while parsing owner and repo name from repo url", "url", repoURL)
 		return false, err
 	}
-	log.Info("Parsed repo url", "url", repoUrl, "owner", owner, "repo", repo)
+	log.Info("Parsed repo url", "url", repoURL, "owner", owner, "repo", repo)
 
 	hooks, resp1, err := api.ListHooks(owner, repo, nil)
 	if err != nil {
 		log.Error(err, "Error while fetching list of webhooks",
-			"url", repoUrl,
+			"url", repoURL,
 			"owner", owner,
 			"repo", repo,
 		)
@@ -356,15 +359,15 @@ func CreateRepoWebhook(log logr.Logger, api RepositoryApi, repoUrl string, paylo
 
 	exists, err := checkIsHookRegistered(
 		hooks,
-		payloadUrl,
+		payloadURL,
 	)
 	if exists {
 		log.Info(
 			"Hook already exists",
-			"url", repoUrl,
+			"url", repoURL,
 			"owner", owner,
 			"repo", repo,
-			"payloadUrl", payloadUrl,
+			"payloadUrl", payloadURL,
 		)
 		return true, nil
 	}
@@ -373,12 +376,12 @@ func CreateRepoWebhook(log logr.Logger, api RepositoryApi, repoUrl string, paylo
 		return false, err
 	}
 
-	h := newHook(payloadUrl, webhookSecret)
+	h := newHook(payloadURL, webhookSecret)
 	hook, resp2, err := api.CreateHook(owner, repo, &h)
 	if err != nil {
 		log.Error(
 			err, "Error while calling create repository hook",
-			"url", repoUrl,
+			"url", repoURL,
 			"owner", owner,
 			"repo", repo,
 		)
@@ -388,7 +391,7 @@ func CreateRepoWebhook(log logr.Logger, api RepositoryApi, repoUrl string, paylo
 
 	log.Info(
 		"Successfully created repository webhook",
-		"url", repoUrl,
+		"url", repoURL,
 		"owner", owner,
 		"repo", repo,
 		"hookId", *hook.ID,
@@ -397,26 +400,26 @@ func CreateRepoWebhook(log logr.Logger, api RepositoryApi, repoUrl string, paylo
 	return false, nil
 }
 
-func parseRepoUrl(url string) (Owner, Repo, error) {
+func parseRepoURL(url string) (Owner, Repo, error) {
 	if url == "" {
 		return "", "", errors.New("URL cannot be empty")
 	}
 
 	owner := url[strings.LastIndex(url, ":")+1 : strings.LastIndex(url, "/")]
-	repoUri := url[strings.LastIndex(url, "/")+1:]
-	repo := strings.TrimSuffix(repoUri, ".git")
+	repoURI := url[strings.LastIndex(url, "/")+1:]
+	repo := strings.TrimSuffix(repoURI, ".git")
 
 	return owner, repo, nil
 }
 
-func checkIsHookRegistered(hooks []*github.Hook, payloadUrl string) (bool, error) {
+func checkIsHookRegistered(hooks []*github.Hook, payloadURL string) (bool, error) {
 	for _, h := range hooks {
 		cfg := new(HookCfg)
-		err := common.FromJsonMap(h.Config, cfg)
+		err := common.FromJSONMap(h.Config, cfg)
 		if err != nil {
 			return false, err
 		}
-		if cfg.Url == payloadUrl {
+		if cfg.URL == payloadURL {
 			return true, nil
 		}
 	}
@@ -424,10 +427,10 @@ func checkIsHookRegistered(hooks []*github.Hook, payloadUrl string) (bool, error
 	return false, nil
 }
 
-func newHook(payloadUrl string, secret string) github.Hook {
+func newHook(payloadURL string, secret string) github.Hook {
 	events := []string{"push"}
 	cfg := map[string]interface{}{
-		"url":          payloadUrl,
+		"url":          payloadURL,
 		"content_type": "json",
 		"secret":       secret,
 	}
@@ -439,7 +442,7 @@ func getRef() (ref *github.Reference, err error) {
 	if commitBranch == "" {
 		return nil, errors.New("the `-commit-branch` should not be set to an empty string")
 	}
-	if ref, _, err = client.Git.GetRef(ctx, sourceOwner, sourceRepo, "refs/heads/"+commitBranch); err == nil {
+	if ref, _, err = client.Git.GetRef(ctx, sourceOwner, sourceRepo, fmt.Sprintf("refs/heads/%s", commitBranch)); err == nil {
 		return ref, nil
 	}
 
@@ -450,10 +453,11 @@ func getRef() (ref *github.Reference, err error) {
 // of the ref you got in getRef.
 func getTree(ref *github.Reference) (tree *github.Tree, err error) {
 	// Create a tree with what to commit.
-	var entries []*github.TreeEntry
+	splittedFiles := strings.Split(sourceFiles, ",")
+	entries := make([]*github.TreeEntry, 0, len(splittedFiles))
 
 	// Load each file into the tree.
-	for _, fileArg := range strings.Split(sourceFiles, ",") {
+	for _, fileArg := range splittedFiles {
 		file, content, err := getFileContent(fileArg)
 		if err != nil {
 			return nil, err
@@ -497,9 +501,9 @@ func pushCommit(ref *github.Reference, tree *github.Tree) (dirty bool, err error
 	parent.Commit.SHA = parent.SHA
 
 	parentSha := *parent.Commit.Tree.SHA
-	newSha := *tree.SHA
+
 	// log.Printf(string(json.Marshal(tree))) for debugging
-	if parentSha != newSha {
+	if newSha := *tree.SHA; parentSha != newSha {
 		dirty = true
 		// Create the commit using the tree.
 		date := time.Now()
@@ -549,7 +553,7 @@ func CommitAndPushFiles(_sourceOwner string, _sourceRepo string, _sourceFolders 
 
 	ref, err := getRef()
 	if err != nil {
-		return false, fmt.Errorf("unable to get/create the commit reference: %v", err)
+		return false, fmt.Errorf("unable to get/create the commit reference: %w", err)
 	}
 	if ref == nil {
 		return false, fmt.Errorf("no error where returned but the reference is nil")
@@ -557,12 +561,12 @@ func CommitAndPushFiles(_sourceOwner string, _sourceRepo string, _sourceFolders 
 
 	tree, err := getTree(ref)
 	if err != nil {
-		return false, fmt.Errorf("unable to create the tree based on the provided files: %v", err)
+		return false, fmt.Errorf("unable to create the tree based on the provided files: %w", err)
 	}
 
 	dirty, err = pushCommit(ref, tree)
 	if err != nil {
-		return false, fmt.Errorf("unable to create the commit: %v", err)
+		return false, fmt.Errorf("unable to create the commit: %w", err)
 	}
 
 	return dirty, nil
@@ -583,7 +587,6 @@ func getFileNames(folderPaths []string) (fileNames string, err error) {
 				}
 				return nil
 			})
-
 		if err != nil {
 			return "", err
 		}

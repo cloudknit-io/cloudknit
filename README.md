@@ -4,6 +4,11 @@ zLifecycle Operator that generates Intermediate Language (ArgoCD Apps/Argo Workf
 
 ## Prerequisites
 
+### Linter
+This project uses [golangci-lint](https://github.com/golangci/golangci-lint) for running code linting,
+in conjunction with (File Watchers)[https://www.jetbrains.com/help/idea/using-file-watchers.html] plugin for IntelliJ
+Lint rules are configured in the `.golangci.yaml` file in the project root.
+
 ### ArgoCD credentials
 This project calls ArgoCD API endpoints, so it needs credentials from which it can request an Auth Token.
 Credentials should be stored in a secret called `argocd-creds` in the operator namespace, usually `zlifecycle-il-operator-system`.

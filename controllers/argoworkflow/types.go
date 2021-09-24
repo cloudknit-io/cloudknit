@@ -13,18 +13,18 @@
 package argoworkflow
 
 import (
-	"github.com/go-logr/logr"
+	"context"
 	"net/http"
 )
 
-type Api interface {
+type API interface {
 	ListWorkflows(opts ListWorkflowOptions) (*ListWorkflowsResponse, *http.Response, error)
 	DeleteWorkflow(opts DeleteWorkflowOptions) (*http.Response, error)
 }
 
-type HttpApi struct {
-	ServerUrl string
-	Log       logr.Logger
+type HTTPAPI struct {
+	ctx       context.Context
+	serverURL string
 }
 
 type ListWorkflowOptions struct {
