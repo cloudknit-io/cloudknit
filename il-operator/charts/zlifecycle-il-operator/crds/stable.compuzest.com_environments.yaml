@@ -4,7 +4,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.6.1
+    controller-gen.kubebuilder.io/version: v0.7.0
   creationTimestamp: null
   name: environments.stable.compuzest.com
 spec:
@@ -142,6 +142,8 @@ spec:
                       properties:
                         path:
                           type: string
+                        ref:
+                          type: string
                         source:
                           type: string
                       required:
@@ -170,8 +172,6 @@ spec:
           status:
             description: EnvironmentStatus defines the observed state of Environment
             properties:
-              EnvName:
-                type: string
               components:
                 items:
                   properties:
@@ -276,6 +276,8 @@ spec:
                       properties:
                         path:
                           type: string
+                        ref:
+                          type: string
                         source:
                           type: string
                       required:
@@ -288,12 +290,34 @@ spec:
                   - type
                   type: object
                 type: array
+              envName:
+                type: string
               teamName:
                 type: string
-            required:
-            - EnvName
-            - components
-            - teamName
+              tfvarsState:
+                additionalProperties:
+                  additionalProperties:
+                    properties:
+                      md5:
+                        type: string
+                      path:
+                        type: string
+                      reconciledAt:
+                        format: date-time
+                        type: string
+                      ref:
+                        type: string
+                      source:
+                        type: string
+                    required:
+                    - md5
+                    - path
+                    - reconciledAt
+                    - ref
+                    - source
+                    type: object
+                  type: object
+                type: object
             type: object
         type: object
     served: true

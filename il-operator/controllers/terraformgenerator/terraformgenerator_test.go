@@ -1,9 +1,10 @@
 package terraformgenerator_test
 
 import (
-	"github.com/compuzest/zlifecycle-il-operator/api/v1"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/terraformgenerator"
 	"github.com/compuzest/zlifecycle-il-operator/mocks"
@@ -11,6 +12,8 @@ import (
 )
 
 func TestGenerateProvider(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	tf := terraformgenerator.TerraformGenerator{}
@@ -25,6 +28,8 @@ func TestGenerateProvider(t *testing.T) {
 }
 
 func TestGenerateBackendTemplate(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	tf := terraformgenerator.TerraformGenerator{}
@@ -51,6 +56,8 @@ func TestGenerateBackendTemplate(t *testing.T) {
 }
 
 func TestGenerateModuleTemplate(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	tf := terraformgenerator.TerraformGenerator{}

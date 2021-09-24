@@ -6,7 +6,7 @@ import (
 
 type config struct {
 	ZlifecycleOwner               string
-	ZlifecycleMasterRepoSshSecret string
+	ZlifecycleMasterRepoSSHSecret string
 	ZlifecycleOperatorNamespace   string
 	ZlifecycleOperatorRepo        string
 	CompanyName                   string
@@ -27,19 +27,19 @@ type config struct {
 	HelmChartsRepo string
 	K8sAPIURL      string
 
-	ArgocdServerUrl string
-	ArgocdHookUrl   string
+	ArgocdServerURL string
+	ArgocdHookURL   string
 	ArgocdUsername  string
 	ArgocdPassword  string
 
-	ArgoWorkflowsServerUrl string
+	ArgoWorkflowsServerURL string
 	ArgoWorkflowsNamespace string
 }
 
-// Various config vars used throughout the operator
+// Config exposes vars used throughout the operator
 var Config = config{
 	ZlifecycleOwner:               getZlifecycleOwner(),
-	ZlifecycleMasterRepoSshSecret: getZlifecyleOperatorSshSecret(),
+	ZlifecycleMasterRepoSSHSecret: getZlifecyleOperatorSSHSecret(),
 	ZlifecycleOperatorNamespace:   os.Getenv("ZLIFECYCLE_OPERATOR_NAMESPACE"),
 	ZlifecycleOperatorRepo:        "zlifecycle-il-operator",
 
@@ -61,47 +61,43 @@ var Config = config{
 	HelmChartsRepo: os.Getenv("helmChartsRepo"),
 	K8sAPIURL:      "https://kubernetes.default.svc",
 
-	ArgocdServerUrl: getArgocdServerUrl(),
-	ArgocdHookUrl:   os.Getenv("ARGOCD_WEBHOOK_URL"),
+	ArgocdServerURL: getArgocdServerURL(),
+	ArgocdHookURL:   os.Getenv("ARGOCD_WEBHOOK_URL"),
 	ArgocdUsername:  os.Getenv("ARGOCD_USERNAME"),
 	ArgocdPassword:  os.Getenv("ARGOCD_PASSWORD"),
 
-	ArgoWorkflowsServerUrl: getArgocdWorkflowsServerUrl(),
+	ArgoWorkflowsServerURL: getArgocdWorkflowsServerURL(),
 	ArgoWorkflowsNamespace: "argocd",
 }
 
-func getZlifecyleOperatorSshSecret() string {
+func getZlifecyleOperatorSSHSecret() string {
 	val, exists := os.LookupEnv("ZLIFECYCLE_MASTER_SSH")
 	if exists && val != "" {
 		return val
-	} else {
-		return "zlifecycle-operator-ssh"
 	}
+	return "zlifecycle-operator-ssh"
 }
 
 func getZlifecycleOwner() string {
 	val, exists := os.LookupEnv("GITHUB_ZLIFECYCLE_OWNER")
 	if exists {
 		return val
-	} else {
-		return "CompuZest"
 	}
+	return "CompuZest"
 }
 
-func getArgocdServerUrl() string {
+func getArgocdServerURL() string {
 	val, exists := os.LookupEnv("ARGOCD_URL")
 	if exists && val != "" {
 		return val
-	} else {
-		return "http://argocd-server.argocd.svc.cluster.local"
 	}
+	return "http://argocd-server.argocd.svc.cluster.local"
 }
 
-func getArgocdWorkflowsServerUrl() string {
+func getArgocdWorkflowsServerURL() string {
 	val, exists := os.LookupEnv("ARGOWORKFLOWS_URL")
 	if exists && val != "" {
 		return val
-	} else {
-		return "http://argo-workflow-server.argocd.svc.cluster.local:2746"
 	}
+	return "http://argo-workflow-server.argocd.svc.cluster.local:2746"
 }

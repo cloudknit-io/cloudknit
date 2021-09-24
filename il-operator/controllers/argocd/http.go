@@ -14,6 +14,7 @@ package argocd
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -23,27 +24,34 @@ import (
 	"github.com/go-logr/logr"
 )
 
-func NewHttpClient(l logr.Logger, serverUrl string) Api {
-	return &HttpApi{Log: l, ServerUrl: serverUrl}
+func NewHTTPClient(ctx context.Context, l logr.Logger, serverURL string) API {
+	return &HTTPAPI{ctx: ctx, log: l, serverURL: serverURL}
 }
 
-func (api *HttpApi) GetAuthToken() (*GetTokenResponse, error) {
+func (api *HTTPAPI) GetAuthToken() (*GetTokenResponse, error) {
 	creds, err := getArgocdCredentialsFromEnv()
 	if err != nil {
-		return nil, fmt.Errorf("error getting argocd credentials: %v", err)
+		return nil, fmt.Errorf("error getting argocd credentials: %w", err)
 	}
 
 	body := GetTokenBody{Username: creds.Username, Password: creds.Password}
-	jsonBody, err := common.ToJson(body)
+	jsonBody, err := common.ToJSON(body)
 	if err != nil {
 		return nil, err
 	}
 
-	getTokenUrl := fmt.Sprintf("%s/api/v1/session", api.ServerUrl)
-	resp, err := http.Post(getTokenUrl, "application/json", bytes.NewBuffer(jsonBody))
+	getTokenURL := fmt.Sprintf("%s/api/v1/session", api.serverURL)
+	req, err := http.NewRequestWithContext(api.ctx, "POST", getTokenURL, bytes.NewBuffer(jsonBody))
 	if err != nil {
-		return nil, fmt.Errorf("failed to send POST request to /api/v1/session: %v", err)
+		return nil, err
 	}
+
+	client := common.GetHTTPClient()
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send POST request to %s: %w", getTokenURL, err)
+	}
+	defer common.CloseBody(resp.Body)
 
 	respBody, err := common.ReadBody(resp.Body)
 	if err != nil {
@@ -51,35 +59,35 @@ func (api *HttpApi) GetAuthToken() (*GetTokenResponse, error) {
 	}
 
 	t := new(GetTokenResponse)
-	if err := common.FromJson(t, respBody); err != nil {
+	if err := common.FromJSON(t, respBody); err != nil {
 		return nil, err
 	}
 
 	return t, nil
 }
 
-func isRepoRegistered(repos RepositoryList, repoUrl string) bool {
+func isRepoRegistered(repos RepositoryList, repoURL string) bool {
 	for _, r := range repos.Items {
-		if r.Repo == repoUrl {
+		if r.Repo == repoURL {
 			return true
 		}
 	}
 	return false
 }
 
-func (api *HttpApi) ListRepositories(bearerToken string) (*RepositoryList, *http.Response, error) {
-	getRepoUrl := fmt.Sprintf("%s/api/v1/repositories", api.ServerUrl)
-	req, err := http.NewRequest("GET", getRepoUrl, nil)
+func (api *HTTPAPI) ListRepositories(bearerToken string) (*RepositoryList, *http.Response, error) {
+	getRepoURL := fmt.Sprintf("%s/api/v1/repositories", api.serverURL)
+	req, err := http.NewRequestWithContext(api.ctx, "GET", getRepoURL, nil)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to create GET request: %v", err)
+		return nil, nil, fmt.Errorf("failed to create GET request: %w", err)
 	}
 
 	req.Header.Add("Authorization", bearerToken)
 
-	client := &http.Client{}
+	client := common.GetHTTPClient()
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to send GET request to /api/v1/repositories: %v", err)
+		return nil, nil, fmt.Errorf("failed to send GET request to /api/v1/repositories: %w", err)
 	}
 
 	if resp.StatusCode != 200 {
@@ -97,28 +105,28 @@ func (api *HttpApi) ListRepositories(bearerToken string) (*RepositoryList, *http
 	return repos, resp, nil
 }
 
-func (api *HttpApi) CreateRepository(body CreateRepoBody, bearerToken string) (*http.Response, error) {
-	jsonBody, err := common.ToJson(body)
+func (api *HTTPAPI) CreateRepository(body CreateRepoBody, bearerToken string) (*http.Response, error) {
+	jsonBody, err := common.ToJSON(body)
 	if err != nil {
 		return nil, err
 	}
 
-	addRepoUrl := fmt.Sprintf("%s/api/v1/repositories", api.ServerUrl)
-	req, err := http.NewRequest("POST", addRepoUrl, bytes.NewBuffer(jsonBody))
+	addRepoURL := fmt.Sprintf("%s/api/v1/repositories", api.serverURL)
+	req, err := http.NewRequest("POST", addRepoURL, bytes.NewBuffer(jsonBody))
 	if err != nil {
-		return nil, fmt.Errorf("failed to create POST request: %v", err)
+		return nil, fmt.Errorf("failed to create POST request: %w", err)
 	}
 
 	req.Header.Add("Authorization", bearerToken)
 
-	client := &http.Client{}
+	client := common.GetHTTPClient()
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to send POST request to /repositories: %v", err)
+		return nil, fmt.Errorf("failed to send POST request to /repositories: %w", err)
 	}
 
 	if resp.StatusCode != 200 {
-		common.LogBody(api.Log, resp.Body)
+		common.LogBody(api.log, resp.Body)
 		common.CloseBody(resp.Body)
 		return nil, fmt.Errorf("create repository returned non-OK status code: %d", resp.StatusCode)
 	}
@@ -126,20 +134,21 @@ func (api *HttpApi) CreateRepository(body CreateRepoBody, bearerToken string) (*
 	return resp, nil
 }
 
-func (api *HttpApi) DoesApplicationExist(name string, bearerToken string) (bool, error) {
-	getAppURL := fmt.Sprintf("%s/api/v1/applications/%s", api.ServerUrl, name)
-	req, err := http.NewRequest("GET", getAppURL, nil)
+func (api *HTTPAPI) DoesApplicationExist(name string, bearerToken string) (bool, error) {
+	getAppURL := fmt.Sprintf("%s/api/v1/applications/%s", api.serverURL, name)
+	req, err := http.NewRequestWithContext(api.ctx, "GET", getAppURL, nil)
 	if err != nil {
-		return false, fmt.Errorf("failed to create GET request: %v", err)
+		return false, fmt.Errorf("failed to create GET request: %w", err)
 	}
 
 	req.Header.Add("Authorization", bearerToken)
 
-	client := &http.Client{}
+	client := common.GetHTTPClient()
 	resp, err := client.Do(req)
 	if err != nil {
-		return false, fmt.Errorf("failed to send GET request to applications/%s: %v", name, err)
+		return false, fmt.Errorf("failed to send GET request to applications/%s: %w", name, err)
 	}
+	defer common.CloseBody(resp.Body)
 
 	if resp.StatusCode == 404 {
 		common.CloseBody(resp.Body)
@@ -164,28 +173,28 @@ func (api *HttpApi) DoesApplicationExist(name string, bearerToken string) (bool,
 	return false, nil
 }
 
-func (api *HttpApi) CreateApplication(application *appv1.Application, bearerToken string) (*http.Response, error) {
-	jsonBody, err := common.ToJson(application)
+func (api *HTTPAPI) CreateApplication(application *appv1.Application, bearerToken string) (*http.Response, error) {
+	jsonBody, err := common.ToJSON(application)
 	if err != nil {
 		return nil, err
 	}
 
-	addAppURL := fmt.Sprintf("%s/api/v1/applications", api.ServerUrl)
-	req, err := http.NewRequest("POST", addAppURL, bytes.NewBuffer(jsonBody))
+	addAppURL := fmt.Sprintf("%s/api/v1/applications", api.serverURL)
+	req, err := http.NewRequestWithContext(api.ctx, "POST", addAppURL, bytes.NewBuffer(jsonBody))
 	if err != nil {
-		return nil, fmt.Errorf("failed to create POST request: %v", err)
+		return nil, fmt.Errorf("failed to create POST request: %w", err)
 	}
 
 	req.Header.Add("Authorization", bearerToken)
 
-	client := &http.Client{}
+	client := common.GetHTTPClient()
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to send POST request to /applications: %v", err)
+		return nil, fmt.Errorf("failed to send POST request to /applications: %w", err)
 	}
 
 	if resp.StatusCode != 200 {
-		common.LogBody(api.Log, resp.Body)
+		common.LogBody(api.log, resp.Body)
 		common.CloseBody(resp.Body)
 		return nil, fmt.Errorf("create application returned non-OK status code: %d", resp.StatusCode)
 	}
@@ -193,52 +202,52 @@ func (api *HttpApi) CreateApplication(application *appv1.Application, bearerToke
 	return resp, nil
 }
 
-func (api *HttpApi) DeleteApplication(name string, bearerToken string) error {
-	url := fmt.Sprintf("%s/api/v1/applications/%s", api.ServerUrl, name)
-	req, err := http.NewRequest("DELETE", url, nil)
+func (api *HTTPAPI) DeleteApplication(name string, bearerToken string) error {
+	url := fmt.Sprintf("%s/api/v1/applications/%s", api.serverURL, name)
+	req, err := http.NewRequestWithContext(api.ctx, "DELETE", url, nil)
 	if err != nil {
-		return fmt.Errorf("failed to create DELETE request: %v", err)
+		return fmt.Errorf("failed to create DELETE request: %w", err)
 	}
 
 	req.Header.Add("Authorization", bearerToken)
 
-	client := &http.Client{}
+	client := common.GetHTTPClient()
 	resp, err := client.Do(req)
 	if err != nil {
-		return fmt.Errorf("failed to send DELETE request to %s: %v", url, err)
+		return fmt.Errorf("failed to send DELETE request to %s: %w", url, err)
 	}
 	defer common.CloseBody(resp.Body)
 
 	if resp.StatusCode != 200 {
-		common.LogBody(api.Log, resp.Body)
+		common.LogBody(api.log, resp.Body)
 		return fmt.Errorf("delete application returned non-OK status code: %d", resp.StatusCode)
 	}
 
 	return nil
 }
 
-func (api *HttpApi) CreateProject(project CreateProjectBody, bearerToken string) (*http.Response, error) {
-	jsonBody, err := common.ToJson(project)
+func (api *HTTPAPI) CreateProject(project CreateProjectBody, bearerToken string) (*http.Response, error) {
+	jsonBody, err := common.ToJSON(project)
 	if err != nil {
 		return nil, err
 	}
 
-	url := fmt.Sprintf("%s/api/v1/projects", api.ServerUrl)
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonBody))
+	url := fmt.Sprintf("%s/api/v1/projects", api.serverURL)
+	req, err := http.NewRequestWithContext(api.ctx, "POST", url, bytes.NewBuffer(jsonBody))
 	if err != nil {
-		return nil, fmt.Errorf("failed to create POST request: %v", err)
+		return nil, fmt.Errorf("failed to create POST request: %w", err)
 	}
 
 	req.Header.Add("Authorization", bearerToken)
 
-	client := &http.Client{}
+	client := common.GetHTTPClient()
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to send POST request to %s: %v", url, err)
+		return nil, fmt.Errorf("failed to send POST request to %s: %w", url, err)
 	}
 
 	if resp.StatusCode != 200 {
-		common.LogBody(api.Log, resp.Body)
+		common.LogBody(api.log, resp.Body)
 		common.CloseBody(resp.Body)
 		return nil, fmt.Errorf("create project returned non-OK status code: %d", resp.StatusCode)
 	}
@@ -246,23 +255,23 @@ func (api *HttpApi) CreateProject(project CreateProjectBody, bearerToken string)
 	return resp, nil
 }
 
-func (api *HttpApi) DoesProjectExist(name string, bearerToken string) (exists bool, response *http.Response, err error) {
-	url := fmt.Sprintf("%s/api/v1/projects/%s", api.ServerUrl, name)
-	req, err := http.NewRequest("GET", url, nil)
+func (api *HTTPAPI) DoesProjectExist(name string, bearerToken string) (exists bool, response *http.Response, err error) {
+	url := fmt.Sprintf("%s/api/v1/projects/%s", api.serverURL, name)
+	req, err := http.NewRequestWithContext(api.ctx, "GET", url, nil)
 	if err != nil {
-		return false, nil, fmt.Errorf("failed to create GET request: %v", err)
+		return false, nil, fmt.Errorf("failed to create GET request: %w", err)
 	}
 
 	req.Header.Add("Authorization", bearerToken)
 
-	client := &http.Client{}
+	client := common.GetHTTPClient()
 	resp, err := client.Do(req)
 	if err != nil {
-		return false, nil, fmt.Errorf("failed to send GET request to %s: %v", url, err)
+		return false, nil, fmt.Errorf("failed to send GET request to %s: %w", url, err)
 	}
 
 	if resp.StatusCode == 404 {
-		common.LogBody(api.Log, resp.Body)
+		common.LogBody(api.log, resp.Body)
 		return false, resp, nil
 	}
 

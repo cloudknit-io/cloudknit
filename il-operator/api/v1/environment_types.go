@@ -30,6 +30,7 @@ type Module struct {
 type VariablesFile struct {
 	Source string `json:"source"`
 	Path   string `json:"path"`
+	Ref    string `json:"ref,omitempty"`
 }
 
 type OverlayFile struct {
@@ -80,19 +81,28 @@ type EnvironmentComponent struct {
 
 // EnvironmentSpec defines the desired state of Environment
 type EnvironmentSpec struct {
-	TeamName             string                  `json:"teamName"`
-	EnvName              string                  `json:"envName"`
-	Description          string                  `json:"description,omitempty"`
-	AutoApprove          bool                    `json:"autoApprove,omitempty"`
-	Teardown             bool                    `json:"teardown,omitempty"`
-	EnvironmentComponent []*EnvironmentComponent `json:"components"`
+	TeamName    string                  `json:"teamName"`
+	EnvName     string                  `json:"envName"`
+	Description string                  `json:"description,omitempty"`
+	AutoApprove bool                    `json:"autoApprove,omitempty"`
+	Teardown    bool                    `json:"teardown,omitempty"`
+	Components  []*EnvironmentComponent `json:"components"`
 }
 
 // EnvironmentStatus defines the observed state of Environment
 type EnvironmentStatus struct {
-	TeamName             string                  `json:"teamName"`
-	EnvName              string                  `json:"EnvName"`
-	EnvironmentComponent []*EnvironmentComponent `json:"components"`
+	TeamName    string                        `json:"teamName,omitempty"`
+	EnvName     string                  	  `json:"envName,omitempty"`
+	Components  []*EnvironmentComponent 	  `json:"components,omitempty"`
+	TfvarsState map[string]map[string]*Tfvars `json:"tfvarsState,omitempty"`
+}
+
+type Tfvars struct {
+	Source       string      `json:"source"`
+	Path         string      `json:"path"`
+	Ref          string      `json:"ref"`
+	Md5          string      `json:"md5"`
+	ReconciledAt metav1.Time `json:"reconciledAt"`
 }
 
 // +kubebuilder:object:root=true

@@ -13,6 +13,8 @@
 package argoworkflow
 
 import (
+	"time"
+
 	workflow "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/terraformgenerator"
@@ -20,17 +22,16 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"time"
 )
 
 // GenerateWorkflowOfWorkflows create WoW
-func GenerateWorkflowOfWorkflows(environment stablev1.Environment) *workflow.Workflow {
+func GenerateWorkflowOfWorkflows(environment *stablev1.Environment) *workflow.Workflow {
 	envComponentDirectory := il.EnvironmentComponentDirectory(environment.Spec.TeamName, environment.Spec.EnvName)
 	workflowTemplate := "terraform-provision-template"
 
 	var tasks []workflow.DAGTask
 
-	for _, environmentComponent := range environment.Spec.EnvironmentComponent {
+	for _, environmentComponent := range environment.Spec.Components {
 		tf := terraformgenerator.TerraformGenerator{}
 		tfPath := tf.GenerateTerraformIlPath(envComponentDirectory, environmentComponent.Name)
 		task := workflow.DAGTask{
@@ -44,19 +45,19 @@ func GenerateWorkflowOfWorkflows(environment stablev1.Environment) *workflow.Wor
 				Parameters: []workflow.Parameter{
 					{
 						Name:  "workflowtemplate",
-						Value: anyStringPointer(workflowTemplate),
+						Value: AnyStringPointer(workflowTemplate),
 					},
 					{
 						Name:  "terraform_version",
-						Value: anyStringPointer(terraformgenerator.DefaultTerraformVersion),
+						Value: AnyStringPointer(terraformgenerator.DefaultTerraformVersion),
 					},
 					{
 						Name:  "terraform_il_path",
-						Value: anyStringPointer(tfPath),
+						Value: AnyStringPointer(tfPath),
 					},
 					{
 						Name:  "il_repo",
-						Value: anyStringPointer(env.Config.ILRepoURL),
+						Value: AnyStringPointer(env.Config.ILRepoURL),
 						// to be replaced with reference to il.RepoURL(owner, companyName) once company can be extrapolated here
 					},
 				},
@@ -93,7 +94,7 @@ func GenerateWorkflowOfWorkflows(environment stablev1.Environment) *workflow.Wor
 	}
 }
 
-func GenerateLegacyWorkflowOfWorkflows(environment stablev1.Environment) *workflow.Workflow {
+func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment) *workflow.Workflow {
 	workflowTemplate := "terraform-sync-template"
 	envComponentDirectory := il.EnvironmentComponentDirectory(environment.Spec.TeamName, environment.Spec.EnvName)
 	tf := terraformgenerator.TerraformGenerator{}
@@ -105,9 +106,9 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1.Environment) *workfl
 
 	tasks = append(tasks, generateAuditTask(environment, destroyAll, "0", nil))
 
-	ecs := environment.Spec.EnvironmentComponent
+	ecs := environment.Spec.Components
 
-	var allComponents []string
+	allComponents := make([]string, 0, len(ecs))
 
 	for _, ec := range ecs {
 		allComponents = append(allComponents, ec.Name)
@@ -135,55 +136,55 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1.Environment) *workfl
 		parameters := []workflow.Parameter{
 			{
 				Name:  "workflowtemplate",
-				Value: anyStringPointer(workflowTemplate),
+				Value: AnyStringPointer(workflowTemplate),
 			},
 			{
 				Name:  "module_source",
-				Value: anyStringPointer(moduleSource),
+				Value: AnyStringPointer(moduleSource),
 			},
 			{
 				Name:  "module_source_path",
-				Value: anyStringPointer(modulePath),
+				Value: AnyStringPointer(modulePath),
 			},
 			{
 				Name:  "customer_id",
-				Value: anyStringPointer(env.Config.CompanyName),
+				Value: AnyStringPointer(env.Config.CompanyName),
 			},
 			{
 				Name:  "team_name",
-				Value: anyStringPointer(environment.Spec.TeamName),
+				Value: AnyStringPointer(environment.Spec.TeamName),
 			},
 			{
 				Name:  "env_name",
-				Value: anyStringPointer(environment.Spec.EnvName),
+				Value: AnyStringPointer(environment.Spec.EnvName),
 			},
 			{
 				Name:  "config_name",
-				Value: anyStringPointer(ec.Name),
+				Value: AnyStringPointer(ec.Name),
 			},
 			{
 				Name:  "il_repo",
-				Value: anyStringPointer(env.Config.ILRepoURL),
+				Value: AnyStringPointer(env.Config.ILRepoURL),
 			},
 			{
 				Name:  "terraform_il_path",
-				Value: anyStringPointer(tfPath),
+				Value: AnyStringPointer(tfPath),
 			},
 			{
 				Name:  "is_destroy",
-				Value: anyStringPointer(destroyFlag),
+				Value: AnyStringPointer(destroyFlag),
 			},
 			{
 				Name:  "reconcile_id",
-				Value: anyStringPointer("{{tasks.trigger-audit.outputs.parameters.reconcile_id}}"),
+				Value: AnyStringPointer("{{tasks.trigger-audit.outputs.parameters.reconcile_id}}"),
 			},
 			{
 				Name:  "status",
-				Value: anyStringPointer("initializing"),
+				Value: AnyStringPointer("initializing"),
 			},
 			{
 				Name:  "auto_approve",
-				Value: anyStringPointer(autoApproveFlag),
+				Value: AnyStringPointer(autoApproveFlag),
 			},
 		}
 
@@ -237,19 +238,19 @@ func GenerateLegacyWorkflowOfWorkflows(environment stablev1.Environment) *workfl
 	return w
 }
 
-func generateAuditTask(environment stablev1.Environment, destroyAll bool, phase string, dependencies []string) workflow.DAGTask {
+func generateAuditTask(environment *stablev1.Environment, destroyAll bool, phase string, dependencies []string) workflow.DAGTask {
 	var name string
-	var reconcileId string
+	var reconcileID string
 	var status string
 
 	if phase == "0" {
 		name = "trigger-audit"
 		status = "initializing"
-		reconcileId = "0"
+		reconcileID = "0"
 	} else {
 		name = "end-audit"
 		status = "ended"
-		reconcileId = "{{tasks.trigger-audit.outputs.parameters.reconcile_id}}"
+		reconcileID = "{{tasks.trigger-audit.outputs.parameters.reconcile_id}}"
 	}
 
 	task := workflow.DAGTask{
@@ -263,27 +264,27 @@ func generateAuditTask(environment stablev1.Environment, destroyAll bool, phase 
 			Parameters: []workflow.Parameter{
 				{
 					Name:  "team_name",
-					Value: anyStringPointer(environment.Spec.TeamName),
+					Value: AnyStringPointer(environment.Spec.TeamName),
 				},
 				{
 					Name:  "env_name",
-					Value: anyStringPointer(environment.Spec.EnvName),
+					Value: AnyStringPointer(environment.Spec.EnvName),
 				},
 				{
 					Name:  "status",
-					Value: anyStringPointer(status),
+					Value: AnyStringPointer(status),
 				},
 				{
 					Name:  "is_destroy",
-					Value: anyStringPointer(destroyAll),
+					Value: AnyStringPointer(destroyAll),
 				},
 				{
 					Name:  "phase",
-					Value: anyStringPointer(phase),
+					Value: AnyStringPointer(phase),
 				},
 				{
 					Name:  "reconcile_id",
-					Value: anyStringPointer(reconcileId),
+					Value: AnyStringPointer(reconcileID),
 				},
 			},
 		},
@@ -301,7 +302,7 @@ func getStaticDate() time.Time {
 	return t
 }
 
-func anyStringPointer(val interface{}) *workflow.AnyString {
+func AnyStringPointer(val interface{}) *workflow.AnyString {
 	s := workflow.ParseAnyString(val)
 	return &s
 }

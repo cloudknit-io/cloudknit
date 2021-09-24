@@ -23,7 +23,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func GenerateCompanyApp(company stablev1.Company) *appv1.Application {
+func GenerateCompanyApp(company *stablev1.Company) *appv1.Application {
 	return &appv1.Application{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "argoproj.io/v1alpha1",
@@ -66,7 +66,7 @@ func GenerateCompanyApp(company stablev1.Company) *appv1.Application {
 	}
 }
 
-func GenerateTeamApp(team stablev1.Team) *appv1.Application {
+func GenerateTeamApp(team *stablev1.Team) *appv1.Application {
 	return &appv1.Application{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "argoproj.io/v1alpha1",
@@ -109,7 +109,8 @@ func GenerateTeamApp(team stablev1.Team) *appv1.Application {
 		},
 	}
 }
-func GenerateEnvironmentApp(environment stablev1.Environment) *appv1.Application {
+
+func GenerateEnvironmentApp(environment *stablev1.Environment) *appv1.Application {
 	return &appv1.Application{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "argoproj.io/v1alpha1",
@@ -154,7 +155,8 @@ func GenerateEnvironmentApp(environment stablev1.Environment) *appv1.Application
 		},
 	}
 }
-func GenerateEnvironmentComponentApps(environment stablev1.Environment, environmentComponent stablev1.EnvironmentComponent) *appv1.Application {
+
+func GenerateEnvironmentComponentApps(environment *stablev1.Environment, environmentComponent *stablev1.EnvironmentComponent) *appv1.Application {
 	helmValues := getHelmValues(environment, environmentComponent)
 	labels := map[string]string{
 		"zlifecycle.com/model": "environment-component",
@@ -163,7 +165,7 @@ func GenerateEnvironmentComponentApps(environment stablev1.Environment, environm
 		"component_name":       environmentComponent.Name,
 		"project_id":           environment.Spec.TeamName,
 		"environment_id":       environment.Spec.TeamName + "-" + environment.Spec.EnvName,
-		"depends_on":           strings.Join(environmentComponent.DependsOn[:], ".."),
+		"depends_on":           strings.Join(environmentComponent.DependsOn, ".."),
 	}
 	for _, tag := range environmentComponent.Tags {
 		labels[tag.Name] = tag.Value
@@ -213,7 +215,8 @@ func GenerateEnvironmentComponentApps(environment stablev1.Environment, environm
 		},
 	}
 }
-func getHelmValues(environment stablev1.Environment, environmentComponent stablev1.EnvironmentComponent) string {
+
+func getHelmValues(environment *stablev1.Environment, environmentComponent *stablev1.EnvironmentComponent) string {
 	helmValues := fmt.Sprintf(`
         team_name: "%s"
         env_name: %s
@@ -237,7 +240,8 @@ func getHelmValues(environment stablev1.Environment, environmentComponent stable
 	}
 	return helmValues
 }
-func GenerateTeamConfigWatcherApp(team stablev1.Team) *appv1.Application {
+
+func GenerateTeamConfigWatcherApp(team *stablev1.Team) *appv1.Application {
 	return &appv1.Application{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "argoproj.io/v1alpha1",
@@ -283,6 +287,7 @@ func GenerateTeamConfigWatcherApp(team stablev1.Team) *appv1.Application {
 		},
 	}
 }
+
 func GenerateCompanyConfigWatcherApp(customerName string, companyConfigRepo string) *appv1.Application {
 	return &appv1.Application{
 		TypeMeta: metav1.TypeMeta{
@@ -363,6 +368,7 @@ func GenerateCompanyBootstrapApp() *appv1.Application {
 		},
 	}
 }
+
 func GenerateConfigWatcherBootstrapApp() *appv1.Application {
 	return &appv1.Application{
 		TypeMeta: metav1.TypeMeta{
