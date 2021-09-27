@@ -1,0 +1,27 @@
+provider "aws" {
+    region  = "{{ .Region }}"
+    version = "~> 3.0"
+	{{- template "assume_role" . }}
+{{- if .Profile }}
+	profile = {{ .Profile }}
+{{- end }}
+{{- if .Alias }}
+	alias   = "shared"
+{{- end }}
+}
+
+{{- define "assume_role" }}
+{{- if .AssumeRole }}
+    assume_role {
+    {{- if .AssumeRole.RoleARN }}
+        role_arn     = "{{ .AssumeRole.RoleARN }}"
+    {{- end }}
+    {{- if .AssumeRole.SessionName }}
+        session_name = "{{ .AssumeRole.SessionName }}"
+    {{- end }}
+    {{- if .AssumeRole.ExternalID }}
+        external_id  = "{{ .AssumeRole.ExternalID }}"
+    {{- end }}
+    }
+{{- end }}
+{{- end }}

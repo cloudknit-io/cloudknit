@@ -68,6 +68,8 @@ type EnvironmentComponent struct {
 	Module       *Module  `json:"module"`
 	Tags         []*Tags  `json:"tags,omitempty"`
 
+	AWS *AWS `json:"aws,omitempty"`
+
 	AutoApprove bool `json:"autoApprove,omitempty"`
 	Destroy     bool `json:"destroy,omitempty"`
 
@@ -77,6 +79,17 @@ type EnvironmentComponent struct {
 	Variables     []*Variable    `json:"variables,omitempty"`
 	Secrets       []*Secret      `json:"secrets,omitempty"`
 	Outputs       []*Output      `json:"outputs,omitempty"`
+}
+
+type AWS struct {
+	Region     string      `json:"region"`
+	AssumeRole *AssumeRole `json:"assumeRole,omitempty"`
+}
+
+type AssumeRole struct {
+	RoleARN     string `json:"roleArn"`
+	SessionName string `json:"sessionName,omitempty"`
+	ExternalID  string `json:"externalId,omitempty"`
 }
 
 // EnvironmentSpec defines the desired state of Environment
@@ -92,8 +105,8 @@ type EnvironmentSpec struct {
 // EnvironmentStatus defines the observed state of Environment
 type EnvironmentStatus struct {
 	TeamName    string                        `json:"teamName,omitempty"`
-	EnvName     string                  	  `json:"envName,omitempty"`
-	Components  []*EnvironmentComponent 	  `json:"components,omitempty"`
+	EnvName     string                        `json:"envName,omitempty"`
+	Components  []*EnvironmentComponent       `json:"components,omitempty"`
 	TfvarsState map[string]map[string]*Tfvars `json:"tfvarsState,omitempty"`
 }
 

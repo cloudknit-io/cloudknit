@@ -10,7 +10,7 @@ module "{{ .ComponentName }}" {
 {{- range .Secrets }}
     {{ .Name }} = data.aws_ssm_parameter.{{ .Name }}.value
 {{- end }}
-{{- template "tfvars" . }}
+    {{- template "tfvars" . }}
 }
 
 {{- define "tfvars" }}

@@ -13,13 +13,12 @@
 package terraformgenerator
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"text/template"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/secrets"
-
-	"github.com/go-logr/logr"
 
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
@@ -27,35 +26,14 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
 )
 
-// UtilTerraformGenerator package interface for generating terraform files
-type UtilTerraformGenerator interface {
-	GenerateTerraform(fileUtil file.Service, environmentComponent *stablev1.EnvironmentComponent, environment *stablev1.Environment, environmentComponentDirectory string) error
-	GenerateProvider(file file.Service, environmentComponentDirectory string, componentName string) error
-	GenerateSharedProvider(file file.Service, environmentComponentDirectory string, componentName string) error
-	GenerateFromTemplate(vars interface{}, environmentComponentDirectory string, componentName string, fileUtil file.Service, templateName string, filePath string) error
-}
-
-type TerraformGenerator struct {
-	UtilTerraformGenerator
-	Log logr.Logger
-}
-
-type TemplateVariables struct {
-	TeamName             string
-	EnvName              string
-	EnvCompName          string
-	EnvCompVariables     []*stablev1.Variable
-	EnvCompVariablesFile string
-	EnvCompSecrets       []*stablev1.Secret
-	SecretScope          string
-	EnvCompModuleSource  string
-	EnvCompModulePath    string
-	EnvCompModuleName    string
-	EnvCompOutputs       []*stablev1.Output
-	EnvCompDependsOn     []string
-}
-
-var DefaultTerraformVersion = "0.13.2"
+const (
+	DefaultTerraformVersion = "0.13.2"
+	DefaultRegion           = "us-east-1"
+	DefaultBackendRegion    = "us-east-1"
+	DefaultSharedRegion     = "us-east-1"
+	DefaultSharedProfile    = "compuzest-shared"
+	DefaultSharedAlias      = "shared"
+)
 
 func (tf TerraformGenerator) GenerateTerraform(
 	fileUtil file.Service,
@@ -64,12 +42,17 @@ func (tf TerraformGenerator) GenerateTerraform(
 ) error {
 	componentName := vars.EnvCompName
 
+	region := DefaultRegion
+	if vars.EnvCompAWSConfig != nil && vars.EnvCompAWSConfig.Region != "" {
+		region = vars.EnvCompAWSConfig.Region
+	}
+
 	backendConfig := TerraformBackendConfig{
-		Region:        "us-east-1",
+		Region:        region,
 		Profile:       "compuzest-shared",
 		Version:       DefaultTerraformVersion,
-		Bucket:        "zlifecycle-tfstate-" + env.Config.CompanyName,
-		DynamoDBTable: "zlifecycle-tflock-" + env.Config.CompanyName,
+		Bucket:        fmt.Sprintf("zlifecycle-tfstate-%s", env.Config.CompanyName),
+		DynamoDBTable: fmt.Sprintf("zlifecycle-tflock-%s", env.Config.CompanyName),
 		TeamName:      vars.TeamName,
 		EnvName:       vars.EnvName,
 		ComponentName: componentName,
@@ -90,12 +73,32 @@ func (tf TerraformGenerator) GenerateTerraform(
 	}
 
 	dataConfig := TerraformDataConfig{
-		Region:    "us-east-1",
-		Profile:   "compuzest-shared",
-		Bucket:    "zlifecycle-tfstate-" + env.Config.CompanyName,
+		Region:    DefaultSharedRegion,
+		Profile:   DefaultSharedProfile,
+		Bucket:    fmt.Sprintf("zlifecycle-tfstate-%s", env.Config.CompanyName),
 		TeamName:  vars.TeamName,
 		EnvName:   vars.EnvName,
 		DependsOn: vars.EnvCompDependsOn,
+	}
+
+	var assumeRole *AssumeRole
+	if vars.EnvCompAWSConfig != nil && vars.EnvCompAWSConfig.AssumeRole != nil {
+		assumeRole = &AssumeRole{
+			RoleARN:     vars.EnvCompAWSConfig.AssumeRole.RoleARN,
+			SessionName: vars.EnvCompAWSConfig.AssumeRole.SessionName,
+			ExternalID:  vars.EnvCompAWSConfig.AssumeRole.ExternalID,
+		}
+	}
+
+	providerConfig := TerraformProviderConfig{
+		Region:     region,
+		AssumeRole: assumeRole,
+	}
+
+	sharedProviderConfig := TerraformProviderConfig{
+		Region:  DefaultSharedRegion,
+		Profile: DefaultSharedProfile,
+		Alias:   DefaultSharedAlias,
 	}
 
 	secretsMeta := secrets.SecretMeta{
@@ -109,40 +112,41 @@ func (tf TerraformGenerator) GenerateTerraform(
 		return err
 	}
 
-	if err := tf.GenerateProvider(fileUtil, environmentComponentDirectory, componentName); err != nil {
-		return err
-	}
-
-	if err := tf.GenerateSharedProvider(fileUtil, environmentComponentDirectory, componentName); err != nil {
-		return err
-	}
-
 	workingDir, err := os.Getwd()
 	if err != nil {
 		return err
 	}
-	if err := tf.GenerateFromTemplate(backendConfig, environmentComponentDirectory, componentName, fileUtil, filepath.Join(workingDir, "templates", "terraform_backend.tmpl"), "terraform"); err != nil {
+
+	if err := tf.GenerateFromTemplate(&providerConfig, environmentComponentDirectory, componentName, fileUtil, getTemplatePath(workingDir, "terraform_provider.tmpl"), "provider.tf"); err != nil {
 		return err
 	}
 
-	if err := tf.GenerateFromTemplate(moduleConfig, environmentComponentDirectory, componentName, fileUtil, filepath.Join(workingDir, "templates", "terraform_module.tmpl"), "module"); err != nil {
+	if err := tf.GenerateFromTemplate(&sharedProviderConfig, environmentComponentDirectory, componentName, fileUtil, getTemplatePath(workingDir, "terraform_provider.tmpl"), "provider_shared.tf"); err != nil {
+		return err
+	}
+
+	if err := tf.GenerateFromTemplate(&backendConfig, environmentComponentDirectory, componentName, fileUtil, getTemplatePath(workingDir, "terraform_backend.tmpl"), "terraform.tf"); err != nil {
+		return err
+	}
+
+	if err := tf.GenerateFromTemplate(&moduleConfig, environmentComponentDirectory, componentName, fileUtil, getTemplatePath(workingDir, "terraform_module.tmpl"), "module.tf"); err != nil {
 		return err
 	}
 
 	if len(outputsConfig.Outputs) > 0 {
-		if err := tf.GenerateFromTemplate(outputsConfig, environmentComponentDirectory, componentName, fileUtil, filepath.Join(workingDir, "templates", "terraform_outputs.tmpl"), "outputs"); err != nil {
+		if err := tf.GenerateFromTemplate(&outputsConfig, environmentComponentDirectory, componentName, fileUtil, getTemplatePath(workingDir, "terraform_outputs.tmpl"), "outputs.tf"); err != nil {
 			return err
 		}
 	}
 
 	if len(dataConfig.DependsOn) > 0 {
-		if err := tf.GenerateFromTemplate(dataConfig, environmentComponentDirectory, componentName, fileUtil, filepath.Join(workingDir, "templates", "terraform_data.tmpl"), "data"); err != nil {
+		if err := tf.GenerateFromTemplate(&dataConfig, environmentComponentDirectory, componentName, fileUtil, getTemplatePath(workingDir, "terraform_data.tmpl"), "data.tf"); err != nil {
 			return err
 		}
 	}
 
 	if vars.EnvCompSecrets != nil && len(vars.EnvCompSecrets) > 0 {
-		if err := tf.GenerateFromTemplate(secretsConfig, environmentComponentDirectory, componentName, fileUtil, filepath.Join(workingDir, "templates", "terraform_secrets.tmpl"), "secrets"); err != nil {
+		if err := tf.GenerateFromTemplate(&secretsConfig, environmentComponentDirectory, componentName, fileUtil, getTemplatePath(workingDir, "terraform_secrets.tmpl"), "secrets.tf"); err != nil {
 			return err
 		}
 	}
@@ -168,41 +172,13 @@ func createSecretsConfig(secretArray []*stablev1.Secret, meta secrets.SecretMeta
 	return &conf, nil
 }
 
-// GenerateSharedProvider save provider file to be executed by terraform
-func (tf TerraformGenerator) GenerateSharedProvider(fs file.Service, environmentComponentDirectory string, componentName string) error {
-	terraformDirectory := tf.GenerateTerraformIlPath(environmentComponentDirectory, componentName)
-	err := fs.SaveFileFromString(`
-provider "aws" {
-	region  = "us-east-1"
-	version = "~> 3.0"
-	profile = "compuzest-shared"
-	alias   = "shared"
-}
-	`, terraformDirectory, "provider_shared.tf")
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// GenerateProvider save provider file to be executed by terraform
-func (tf TerraformGenerator) GenerateProvider(fs file.Service, environmentComponentDirectory string, componentName string) error {
-	terraformDirectory := tf.GenerateTerraformIlPath(environmentComponentDirectory, componentName)
-	err := fs.SaveFileFromString(`
-provider "aws" {
-	region  = "us-east-1"
-	version = "~> 3.0"
-}
-	`, terraformDirectory, "provider.tf")
-	if err != nil {
-		return err
-	}
-	return nil
+func getTemplatePath(rootDir string, tpl string) string {
+	return filepath.Join(rootDir, "templates", tpl)
 }
 
 // GenerateFromTemplate save terraform backend config
 func (tf TerraformGenerator) GenerateTerraformIlPath(environmentComponentDirectory string, environmentComponentName string) string {
-	return environmentComponentDirectory + "/" + environmentComponentName + "/terraform"
+	return filepath.Join(environmentComponentDirectory, environmentComponentName, "terraform")
 }
 
 func (tf TerraformGenerator) GenerateFromTemplate(vars interface{}, environmentComponentDirectory string, componentName string, fileUtil file.Service, templatePath string, fileName string) error {
@@ -211,7 +187,7 @@ func (tf TerraformGenerator) GenerateFromTemplate(vars interface{}, environmentC
 		return err
 	}
 	terraformDirectory := tf.GenerateTerraformIlPath(environmentComponentDirectory, componentName)
-	err = fileUtil.SaveFileFromTemplate(tpl, vars, terraformDirectory, fileName+".tf")
+	err = fileUtil.SaveFileFromTemplate(tpl, vars, terraformDirectory, fileName)
 	if err != nil {
 		return err
 	}

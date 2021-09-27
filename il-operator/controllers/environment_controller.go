@@ -453,7 +453,7 @@ func generateAndSaveEnvironmentComponents(
 					Component:         ec.Name,
 					Source:            ec.VariablesFile.Source,
 					Path:              ec.VariablesFile.Path,
-					Ref: 			   ec.VariablesFile.Ref,
+					Ref:               ec.VariablesFile.Ref,
 					EnvironmentObject: kClient.ObjectKey{Name: environment.Name, Namespace: environment.Namespace},
 				})
 			if err != nil {
@@ -478,6 +478,7 @@ func generateAndSaveEnvironmentComponents(
 			EnvCompVariablesFile: tfvars,
 			EnvCompVariables:     ec.Variables,
 			EnvCompSecrets:       ec.Secrets,
+			EnvCompAWSConfig:     ec.AWS,
 		}
 		if err := tf.GenerateTerraform(fileService, vars, envComponentDirectory); err != nil {
 			return err

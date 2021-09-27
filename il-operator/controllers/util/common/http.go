@@ -33,7 +33,7 @@ func GetHTTPClient() *http.Client {
 	t.TLSHandshakeTimeout = 5 * time.Second
 
 	return &http.Client{
-		Timeout:   5 * time.Second,
+		Timeout:   10 * time.Second,
 		Transport: t,
 	}
 }
