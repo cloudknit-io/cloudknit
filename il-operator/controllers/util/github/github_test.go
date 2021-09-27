@@ -19,7 +19,7 @@ func TestTryCreateRepositoryExisting(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	mockRepositoryAPI := mocks.NewMockRepositoryApi(mockCtrl)
+	mockRepositoryAPI := mocks.NewMockRepositoryAPI(mockCtrl)
 
 	testOwner := "compuzest"
 	testRepo := "test_repo"
@@ -41,7 +41,7 @@ func TestTryCreateRepositoryNew(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	mockRepositoryAPI := mocks.NewMockRepositoryApi(mockCtrl)
+	mockRepositoryAPI := mocks.NewMockRepositoryAPI(mockCtrl)
 
 	testOwner := "compuzest"
 	testRepo := "test_repo"
@@ -65,7 +65,7 @@ func TestCreateRepoWebhookNew(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	mockRepositoryAPI := mocks.NewMockRepositoryApi(mockCtrl)
+	mockRepositoryAPI := mocks.NewMockRepositoryAPI(mockCtrl)
 
 	active := true
 	events := []string{"push"}
@@ -108,7 +108,7 @@ func TestCreateRepoWebhookExisting(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	mockRepositoryAPI := mocks.NewMockRepositoryApi(mockCtrl)
+	mockRepositoryAPI := mocks.NewMockRepositoryAPI(mockCtrl)
 
 	active := true
 	events := []string{"push"}

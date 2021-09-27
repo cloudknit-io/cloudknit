@@ -109,7 +109,7 @@ func TestRegisterRepoNewRepo(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	mockAPI := mocks.NewMockApi(mockCtrl)
+	mockAPI := mocks.NewMockAPI(mockCtrl)
 
 	repoOpts := argocd.RepoOpts{RepoURL: "git@github.com:CompuZest/test_repo.git", SSHPrivateKey: "test_key"}
 
@@ -132,7 +132,7 @@ func TestRegisterRepoExistingRepo(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	mockArgocdAPI := mocks.NewMockApi(mockCtrl)
+	mockArgocdAPI := mocks.NewMockAPI(mockCtrl)
 
 	mockArgocdAPI.EXPECT().GetAuthToken().Return(&argocd.GetTokenResponse{Token: "test_token"}, nil)
 	repo := argocd.Repository{Repo: "git@github.com:CompuZest/test_repo.git", Name: "test_repo"}
