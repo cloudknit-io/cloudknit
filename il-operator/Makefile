@@ -1,7 +1,7 @@
 SHELL = /bin/bash
 
 CGO_ENABLED = 0
-DOCKER_TAG ?= assume
+DOCKER_TAG ?= latest
 DOCKER_IMG = zlifecycle-il-operator
 
 BUILD_CMD = go build -a -o build/zlifecycle-il-operator-$${GOOS}-$${GOARCH}
@@ -52,7 +52,7 @@ ifndef ECR_REPO
 endif
 	set -e
 	aws --version
-	aws ecr get-login-password --profile compuzest --region us-east-1 \
+	aws ecr get-login-password --region us-east-1 \
 		| docker login --username AWS --password-stdin $(ECR_REPO)
 	docker tag $(DOCKER_IMG):$(DOCKER_TAG) $(ECR_REPO)/$(DOCKER_IMG):$(DOCKER_TAG)
 	docker push $(ECR_REPO)/$(DOCKER_IMG):$(DOCKER_TAG)
