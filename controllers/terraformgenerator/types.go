@@ -71,7 +71,6 @@ type TerraformDataConfig struct {
 // UtilTerraformGenerator package interface for generating terraform files
 type UtilTerraformGenerator interface {
 	GenerateTerraform(fileUtil file.Service, environmentComponent *stablev1.EnvironmentComponent, environment *stablev1.Environment, environmentComponentDirectory string) error
-	GenerateProvider(file file.Service, environmentComponentDirectory string, componentName string) error
 	GenerateSharedProvider(file file.Service, environmentComponentDirectory string, componentName string) error
 	GenerateFromTemplate(vars interface{}, environmentComponentDirectory string, componentName string, fileUtil file.Service, templateName string, filePath string) error
 }
