@@ -156,7 +156,7 @@ func (r *CompanyReconciler) initCompany(ctx context.Context) error {
 
 	r.Log.Info("Creating webhook for IL repo")
 	repoAPI := github.NewHTTPRepositoryAPI(ctx, env.Config.GitHubAuthToken)
-	if _, err  := github.CreateRepoWebhook(r.Log, repoAPI, env.Config.ILRepoURL, env.Config.ArgocdHookURL, env.Config.GitHubWebhookSecret); err != nil {
+	if _, err := github.CreateRepoWebhook(r.Log, repoAPI, env.Config.ILRepoURL, env.Config.ArgocdHookURL, env.Config.GitHubWebhookSecret); err != nil {
 		return err
 	}
 

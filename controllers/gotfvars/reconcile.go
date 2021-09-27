@@ -30,7 +30,6 @@ type Tfvars struct {
 
 type State = map[string]map[string]*Tfvars
 
-
 type Reconciler struct {
 	ctx           context.Context
 	log           logr.Logger
@@ -74,8 +73,8 @@ func (w *Reconciler) Start() error {
 		w.log.Info(
 			"Finished scheduled tfvars watcher iteration",
 			"started", time.Now().String(),
-				"duration", duration,
-			)
+			"duration", duration,
+		)
 	})
 	if err != nil {
 		return err

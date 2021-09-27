@@ -21,7 +21,7 @@ import (
 	_ "github.com/golang/mock/mockgen/model" // workaround for mockgen failing
 )
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -destination=../../mocks/mock_argocd_api.go -package=mocks "github.com/compuzest/zlifecycle-il-operator/controllers/argocd" Api
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -destination=../../mocks/mock_argocd_api.go -package=mocks "github.com/compuzest/zlifecycle-il-operator/controllers/argocd" API
 
 type API interface {
 	GetAuthToken() (*GetTokenResponse, error)
