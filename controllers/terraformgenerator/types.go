@@ -1,6 +1,10 @@
 package terraformgenerator
 
-import stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
+import (
+	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
+	"github.com/go-logr/logr"
+)
 
 // TerraformBackendConfig variables for creating tf backend
 type TerraformBackendConfig struct {
@@ -36,6 +40,19 @@ type TerraformSecretsConfig struct {
 	Secrets []Secret
 }
 
+type TerraformProviderConfig struct {
+	Region     string
+	AssumeRole *AssumeRole
+	Profile    string
+	Alias      string
+}
+
+type AssumeRole struct {
+	RoleARN     string
+	SessionName string
+	ExternalID  string
+}
+
 type Secret struct {
 	Key  string
 	Name string
@@ -49,4 +66,33 @@ type TerraformDataConfig struct {
 	TeamName  string
 	EnvName   string
 	DependsOn []string
+}
+
+// UtilTerraformGenerator package interface for generating terraform files
+type UtilTerraformGenerator interface {
+	GenerateTerraform(fileUtil file.Service, environmentComponent *stablev1.EnvironmentComponent, environment *stablev1.Environment, environmentComponentDirectory string) error
+	GenerateProvider(file file.Service, environmentComponentDirectory string, componentName string) error
+	GenerateSharedProvider(file file.Service, environmentComponentDirectory string, componentName string) error
+	GenerateFromTemplate(vars interface{}, environmentComponentDirectory string, componentName string, fileUtil file.Service, templateName string, filePath string) error
+}
+
+type TerraformGenerator struct {
+	UtilTerraformGenerator
+	Log logr.Logger
+}
+
+type TemplateVariables struct {
+	TeamName             string
+	EnvName              string
+	EnvCompName          string
+	EnvCompVariables     []*stablev1.Variable
+	EnvCompVariablesFile string
+	EnvCompSecrets       []*stablev1.Secret
+	SecretScope          string
+	EnvCompModuleSource  string
+	EnvCompModulePath    string
+	EnvCompModuleName    string
+	EnvCompOutputs       []*stablev1.Output
+	EnvCompDependsOn     []string
+	EnvCompAWSConfig     *stablev1.AWS
 }

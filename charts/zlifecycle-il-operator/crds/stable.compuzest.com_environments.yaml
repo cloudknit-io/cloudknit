@@ -43,6 +43,24 @@ spec:
                   properties:
                     autoApprove:
                       type: boolean
+                    aws:
+                      properties:
+                        assumeRole:
+                          properties:
+                            externalId:
+                              type: string
+                            roleArn:
+                              type: string
+                            sessionName:
+                              type: string
+                          required:
+                          - roleArn
+                          type: object
+                        region:
+                          type: string
+                      required:
+                      - region
+                      type: object
                     cronSchedule:
                       type: string
                     dependsOn:
@@ -177,6 +195,24 @@ spec:
                   properties:
                     autoApprove:
                       type: boolean
+                    aws:
+                      properties:
+                        assumeRole:
+                          properties:
+                            externalId:
+                              type: string
+                            roleArn:
+                              type: string
+                            sessionName:
+                              type: string
+                          required:
+                          - roleArn
+                          type: object
+                        region:
+                          type: string
+                      required:
+                      - region
+                      type: object
                     cronSchedule:
                       type: string
                     dependsOn:
