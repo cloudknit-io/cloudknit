@@ -42,13 +42,8 @@ func (tf TerraformGenerator) GenerateTerraform(
 ) error {
 	componentName := vars.EnvCompName
 
-	region := DefaultRegion
-	if vars.EnvCompAWSConfig != nil && vars.EnvCompAWSConfig.Region != "" {
-		region = vars.EnvCompAWSConfig.Region
-	}
-
 	backendConfig := TerraformBackendConfig{
-		Region:        region,
+		Region:        DefaultRegion,
 		Profile:       "compuzest-shared",
 		Version:       DefaultTerraformVersion,
 		Bucket:        fmt.Sprintf("zlifecycle-tfstate-%s", env.Config.CompanyName),
@@ -88,6 +83,11 @@ func (tf TerraformGenerator) GenerateTerraform(
 			SessionName: vars.EnvCompAWSConfig.AssumeRole.SessionName,
 			ExternalID:  vars.EnvCompAWSConfig.AssumeRole.ExternalID,
 		}
+	}
+
+	region := DefaultRegion
+	if vars.EnvCompAWSConfig != nil && vars.EnvCompAWSConfig.Region != "" {
+		region = vars.EnvCompAWSConfig.Region
 	}
 
 	providerConfig := TerraformProviderConfig{
