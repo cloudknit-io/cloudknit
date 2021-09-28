@@ -3,7 +3,7 @@ provider "aws" {
     version = "~> 3.0"
 	{{- template "assume_role" . }}
 {{- if .Profile }}
-	profile = {{ .Profile }}
+	profile = "{{ .Profile }}"
 {{- end }}
 {{- if .Alias }}
 	alias   = "shared"
