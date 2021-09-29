@@ -77,6 +77,8 @@ spec:
                           type: string
                         source:
                           type: string
+                        version:
+                          type: string
                       required:
                       - source
                       type: object
@@ -228,6 +230,8 @@ spec:
                         path:
                           type: string
                         source:
+                          type: string
+                        version:
                           type: string
                       required:
                       - source

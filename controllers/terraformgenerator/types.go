@@ -24,6 +24,7 @@ type TerraformModuleConfig struct {
 	ComponentName string
 	Source        string
 	Path          string
+	Version       string
 	Variables     []*stablev1.Variable
 	VariablesFile string
 	Secrets       []*stablev1.Secret
@@ -32,7 +33,7 @@ type TerraformModuleConfig struct {
 // TerraformOutputsConfig for creating tf module outputs
 type TerraformOutputsConfig struct {
 	ComponentName string
-	Outputs       []*stablev1.Output
+	Outputs       []string
 }
 
 // TerraformSecretsConfig for creating tf secrets
@@ -91,7 +92,13 @@ type TemplateVariables struct {
 	EnvCompModuleSource  string
 	EnvCompModulePath    string
 	EnvCompModuleName    string
+	EnvCompModuleVersion string
 	EnvCompOutputs       []*stablev1.Output
 	EnvCompDependsOn     []string
 	EnvCompAWSConfig     *stablev1.AWS
+}
+
+type terraformPath struct {
+	componentDirectory string
+	componentName      string
 }

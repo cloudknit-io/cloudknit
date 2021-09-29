@@ -33,6 +33,7 @@ type Service interface {
 	SaveVarsToFile(variables []*stablev1.Variable, folderName string, fileName string) error
 	CreateEmptyDirectory(folderName string) error
 	SaveFileFromTemplate(t *template.Template, vars interface{}, folderName string, fileName string) error
+	NewFile(folderName string, fileName string) (*os.File, error)
 	RemoveAll(path string) error
 }
 
@@ -40,6 +41,15 @@ type OsFileService struct{}
 
 func NewOsFileService() *OsFileService {
 	return &OsFileService{}
+}
+
+func (f *OsFileService) NewFile(folderName string, fileName string) (*os.File, error) {
+	file, err := createFileRecursive(folderName, fileName)
+	if err != nil {
+		return nil, err
+	}
+
+	return file, nil
 }
 
 func (f *OsFileService) SaveVarsToFile(variables []*stablev1.Variable, folderName string, fileName string) error {
