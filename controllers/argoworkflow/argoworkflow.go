@@ -32,8 +32,7 @@ func GenerateWorkflowOfWorkflows(environment *stablev1.Environment) *workflow.Wo
 	var tasks []workflow.DAGTask
 
 	for _, environmentComponent := range environment.Spec.Components {
-		tf := terraformgenerator.TerraformGenerator{}
-		tfPath := tf.GenerateTerraformIlPath(envComponentDirectory, environmentComponent.Name)
+		tfPath := il.TerraformIlPath(envComponentDirectory, environmentComponent.Name)
 		task := workflow.DAGTask{
 			Name: environmentComponent.Name,
 			TemplateRef: &workflow.TemplateRef{
@@ -97,7 +96,6 @@ func GenerateWorkflowOfWorkflows(environment *stablev1.Environment) *workflow.Wo
 func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment) *workflow.Workflow {
 	workflowTemplate := "terraform-sync-template"
 	envComponentDirectory := il.EnvironmentComponentDirectory(environment.Spec.TeamName, environment.Spec.EnvName)
-	tf := terraformgenerator.TerraformGenerator{}
 
 	var tasks []workflow.DAGTask
 
@@ -115,7 +113,7 @@ func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment) *workf
 
 		moduleSource := il.EnvComponentModuleSource(ec.Module.Source, ec.Module.Name)
 		modulePath := il.EnvComponentModulePath(ec.Module.Path)
-		tfPath := tf.GenerateTerraformIlPath(envComponentDirectory, ec.Name)
+		tfPath := il.TerraformIlPath(envComponentDirectory, ec.Name)
 
 		autoApproveFlag := ec.AutoApprove
 		if autoApproveAll {

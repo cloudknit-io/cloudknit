@@ -2,6 +2,7 @@ package il
 
 import (
 	"fmt"
+	"path/filepath"
 )
 
 type config struct {
@@ -20,6 +21,10 @@ func EnvironmentComponentDirectory(teamName string, envName string) string {
 	return EnvironmentDirectory(teamName) + "/" + envName + "-environment-component"
 }
 
+func TerraformIlPath(environmentComponentDirectory string, environmentComponentName string) string {
+	return filepath.Join(environmentComponentDirectory, environmentComponentName, "terraform")
+}
+
 func RepoName(companyName string) string {
 	return companyName + "-il"
 }
@@ -34,7 +39,7 @@ func EnvironmentDirectory(teamName string) string {
 
 func EnvComponentModuleSource(moduleSource string, moduleName string) string {
 	if moduleSource == "aws" {
-		return "git@github.com:terraform-aws-modules/terraform-aws-" + moduleName + ".git"
+		return fmt.Sprintf("git@github.com:terraform-aws-modules/terraform-aws-%s.git", moduleName)
 	}
 	return moduleSource
 }
