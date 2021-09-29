@@ -4,11 +4,7 @@ module "{{ .ComponentName }}" {
     version = "{{ .Version }}"
 {{- end }}
 {{- range .Variables }}
-    {{- if .ValueFrom }}
-    {{ .Name }} = {{ .ValueFrom }}
-    {{- else }}
     {{ .Name }} = {{ .Value }}
-    {{- end }}
 {{- end }}
 {{- range .Secrets }}
     {{ .Name }} = data.aws_ssm_parameter.{{ .Name }}.value
