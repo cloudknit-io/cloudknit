@@ -39,6 +39,7 @@ spec:
           - name: is_destroy
           - name: auto_approve
           - name: reconcile_id
+          - name: destroy_protection
       steps:
         - - name: init-component-audit
             template: audit_sh
@@ -98,6 +99,8 @@ spec:
                   value: '{{ printf "{{inputs.parameters.reconcile_id}}" }}'
                 - name: customer_id
                   value: '{{ printf "{{inputs.parameters.customer_id}}" }}'
+                - name: destroy_protection
+                  value: '{{ printf "{{inputs.parameters.destroy_protection}}" }}'
             when: '{{ printf "{{steps.validate.outputs.parameters.errorCode}}" }} != 20'
         - - name: end-component-audit
             template: audit_sh
@@ -126,7 +129,7 @@ spec:
           - name: config_name
       script:
         imagePullPolicy: Always
-        image: 413422438110.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-terraform:{{.Values.imageTag}}
+        image: "413422438110.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-terraform:{{.Values.imageTag}}"
         cmd:
           - sh
         source: |
@@ -157,6 +160,7 @@ spec:
           - name: config_reconcile_id
           - name: reconcile_id
           - name: customer_id
+          - name: destroy_protection
       resource:
         action: create
         manifest: |
@@ -194,6 +198,8 @@ spec:
                 value: '{{ printf "{{inputs.parameters.config_reconcile_id}}" }}'
               - name: customer_id
                 value: '{{ printf "{{inputs.parameters.customer_id}}" }}'
+              - name: destroy_protection
+                value: '{{ printf "{{inputs.parameters.destroy_protection}}" }}'
             workflowTemplateRef:
               name: '{{ printf "{{inputs.parameters.workflowtemplate}}" }}'
         successCondition: status.phase == Succeeded
@@ -211,7 +217,7 @@ spec:
           - name: config_reconcile_id
       script:
         imagePullPolicy: Always
-        image: 413422438110.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-terraform:{{.Values.imageTag}}
+        image: "413422438110.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-terraform:{{.Values.imageTag}}"
         cmd:
           - sh
         source: |
