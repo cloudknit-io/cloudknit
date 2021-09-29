@@ -70,8 +70,9 @@ type EnvironmentComponent struct {
 
 	AWS *AWS `json:"aws,omitempty"`
 
-	AutoApprove bool `json:"autoApprove,omitempty"`
-	Destroy     bool `json:"destroy,omitempty"`
+	AutoApprove       bool `json:"autoApprove,omitempty"`
+	Destroy           bool `json:"destroy,omitempty"`
+	DestroyProtection bool `json:"destroyProtection,omitempty"`
 
 	VariablesFile *VariablesFile `json:"variablesFile,omitempty"`
 	OverlayFiles  []*OverlayFile `json:"overlayFiles,omitempty"`

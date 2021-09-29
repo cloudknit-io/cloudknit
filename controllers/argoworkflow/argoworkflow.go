@@ -186,6 +186,10 @@ func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment) *workf
 				Name:  "auto_approve",
 				Value: AnyStringPointer(autoApproveFlag),
 			},
+			{
+				Name:  "destroy_protection",
+				Value: AnyStringPointer(ec.DestroyProtection),
+			},
 		}
 
 		task := workflow.DAGTask{

@@ -69,6 +69,8 @@ spec:
                       type: array
                     destroy:
                       type: boolean
+                    destroyProtection:
+                      type: boolean
                     module:
                       properties:
                         name:
@@ -220,6 +222,8 @@ spec:
                         type: string
                       type: array
                     destroy:
+                      type: boolean
+                    destroyProtection:
                       type: boolean
                     module:
                       properties:
