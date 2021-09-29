@@ -52,23 +52,23 @@ func GenerateTerraform(
 		ComponentName: componentName,
 	}
 
+	standardizedVariables, err := standardizeVariables(vars.EnvCompVariables)
+	if err != nil {
+		return err
+	}
 	moduleConfig := TerraformModuleConfig{
 		ComponentName: componentName,
 		Source:        il.EnvComponentModuleSource(vars.EnvCompModuleSource, vars.EnvCompModuleName),
 		Path:          il.EnvComponentModulePath(vars.EnvCompModulePath),
 		Version:       vars.EnvCompModuleVersion,
-		Variables:     vars.EnvCompVariables,
+		Variables:     standardizedVariables,
 		VariablesFile: vars.EnvCompVariablesFile,
 		Secrets:       vars.EnvCompSecrets,
 	}
 
-	parsedOutputs, err := parseOutputs(vars.EnvCompOutputs)
-	if err != nil {
-		return err
-	}
 	outputsConfig := TerraformOutputsConfig{
 		ComponentName: componentName,
-		Outputs:       parsedOutputs,
+		Outputs:       vars.EnvCompOutputs,
 	}
 
 	dataConfig := TerraformDataConfig{

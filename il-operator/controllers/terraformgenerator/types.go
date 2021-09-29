@@ -25,15 +25,20 @@ type TerraformModuleConfig struct {
 	Source        string
 	Path          string
 	Version       string
-	Variables     []*stablev1.Variable
+	Variables     []*Variable
 	VariablesFile string
 	Secrets       []*stablev1.Secret
+}
+
+type Variable struct {
+	Name  string
+	Value string
 }
 
 // TerraformOutputsConfig for creating tf module outputs
 type TerraformOutputsConfig struct {
 	ComponentName string
-	Outputs       []string
+	Outputs       []*stablev1.Output
 }
 
 // TerraformSecretsConfig for creating tf secrets
