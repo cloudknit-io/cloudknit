@@ -5,7 +5,7 @@ data='{"metadata":{"labels":{"component_status":"running_plan"}}}'
 argocd app patch $team_env_config_name --patch $data --type merge >null
 
 echo $show_output_start
-((((terraform plan -lock=$lock_state -parallelism=2 -input=false -no-color -out=terraform-plan -detailed-exitcode; echo $? >&3) | appendLogs "/tmp/plan_output.txt" >&4) 3>&1) | (read xs; exit $xs)) 4>&1
+((((terraform plan -lock=$lock_state -parallelism=2 -input=false -no-color -out=terraform-plan -detailed-exitcode; echo $? >&3) 2>&1 | appendLogs "/tmp/plan_output.txt" >&4) 3>&1) | (read xs; exit $xs)) 4>&1
 result=$?
 echo -n $result >/tmp/plan_code.txt
 echo $show_output_end
