@@ -5,6 +5,7 @@
 package mocks
 
 import (
+	os "os"
 	reflect "reflect"
 	template "text/template"
 
@@ -47,6 +48,21 @@ func (m *MockService) CreateEmptyDirectory(folderName string) error {
 func (mr *MockServiceMockRecorder) CreateEmptyDirectory(folderName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateEmptyDirectory", reflect.TypeOf((*MockService)(nil).CreateEmptyDirectory), folderName)
+}
+
+// NewFile mocks base method.
+func (m *MockService) NewFile(folderName, fileName string) (*os.File, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NewFile", folderName, fileName)
+	ret0, _ := ret[0].(*os.File)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NewFile indicates an expected call of NewFile.
+func (mr *MockServiceMockRecorder) NewFile(folderName, fileName interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewFile", reflect.TypeOf((*MockService)(nil).NewFile), folderName, fileName)
 }
 
 // RemoveAll mocks base method.

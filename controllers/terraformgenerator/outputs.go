@@ -6,15 +6,25 @@ import (
 	"strings"
 )
 
-func parseOutputs(outputs []*v1.Output) ([]string, error) {
-	parsedOutputs := make([]string, 0, len(outputs))
-	for _, o := range outputs {
-		tokens := strings.Split(o.Name, ".")
-		if len(tokens) != 2 {
-			return nil, fmt.Errorf("invalid output referenced: %s. Output should be in format <component>.<name>", o.Name)
+func standardizeVariables(vars []*v1.Variable) ([]*Variable, error) {
+	standardized := make([]*Variable, 0, len(vars))
+	for _, v := range vars {
+		var value string
+		if v.ValueFrom != "" {
+			tokens := strings.Split(v.ValueFrom, ".")
+			if len(tokens) != 2 {
+				return nil, fmt.Errorf("invalid output referenced: %s. Output should be in format <component>.<name>", v.Name)
+			}
+			value = referenceOutputFromRemoteState(tokens[0], tokens[1])
+		} else {
+			value = v.Value
 		}
-		parsed := fmt.Sprintf("data.terraform_remote_state.%s.outputs.%s", tokens[0], tokens[1])
-		parsedOutputs = append(parsedOutputs, parsed)
+		standardized = append(standardized, &Variable{Name: v.Name, Value: value})
+
 	}
-	return parsedOutputs, nil
+	return standardized, nil
+}
+
+func referenceOutputFromRemoteState(component string, output string) string {
+	return fmt.Sprintf("data.terraform_remote_state.%s.outputs.%s", component, output)
 }
