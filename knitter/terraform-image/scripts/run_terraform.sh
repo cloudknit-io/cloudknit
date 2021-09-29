@@ -66,6 +66,10 @@ function SaveAndExit() {
   Error $1
 }
 
+function returnErrorCode() {
+  return 99;
+}
+
 function setAWSCreds() {
   aws_region=$(aws ssm get-parameter --profile compuzest-shared --region us-east-1 --name "/$1/aws_region" --with-decryption --query "Parameter.Value" | jq -r ".")
   if [ ! -z $aws_region ];

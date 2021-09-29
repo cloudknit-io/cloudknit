@@ -40,6 +40,5 @@ payload='{"reconcileId": '$reconcile_id', "name" : "'$team_env_name'", "teamName
 echo $payload >reconcile_payload.txt
 
 result=$(curl -X 'POST' "$url" -H 'accept: */*' -H 'Content-Type: application/json' -d @reconcile_payload.txt)
-echo $result
 echo $result >/tmp/reconcile_id.txt
 
