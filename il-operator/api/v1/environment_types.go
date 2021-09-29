@@ -22,9 +22,10 @@ type Tags struct {
 }
 
 type Module struct {
-	Source string `json:"source"`
-	Path   string `json:"path,omitempty"`
-	Name   string `json:"name,omitempty"`
+	Source  string `json:"source"`
+	Path    string `json:"path,omitempty"`
+	Name    string `json:"name,omitempty"`
+	Version string `json:"version,omitempty"`
 }
 
 type VariablesFile struct {

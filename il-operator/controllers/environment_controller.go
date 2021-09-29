@@ -465,7 +465,6 @@ func generateAndSaveEnvironmentComponents(
 
 		application := argocd.GenerateEnvironmentComponentApps(environment, ec)
 
-		tf := terraformgenerator.TerraformGenerator{Log: log}
 		vars := &terraformgenerator.TemplateVariables{
 			TeamName:             environment.Spec.TeamName,
 			EnvName:              environment.Spec.EnvName,
@@ -473,6 +472,7 @@ func generateAndSaveEnvironmentComponents(
 			EnvCompModulePath:    ec.Module.Path,
 			EnvCompModuleSource:  ec.Module.Source,
 			EnvCompModuleName:    ec.Module.Name,
+			EnvCompModuleVersion: ec.Module.Version,
 			EnvCompOutputs:       ec.Outputs,
 			EnvCompDependsOn:     ec.DependsOn,
 			EnvCompVariablesFile: tfvars,
@@ -480,7 +480,7 @@ func generateAndSaveEnvironmentComponents(
 			EnvCompSecrets:       ec.Secrets,
 			EnvCompAWSConfig:     ec.AWS,
 		}
-		if err := tf.GenerateTerraform(fileService, vars, envComponentDirectory); err != nil {
+		if err := terraformgenerator.GenerateTerraform(fileService, vars, envComponentDirectory); err != nil {
 			return err
 		}
 
@@ -488,7 +488,7 @@ func generateAndSaveEnvironmentComponents(
 			return err
 		}
 
-		terraformDirectory := tf.GenerateTerraformIlPath(envComponentDirectory, ec.Name)
+		terraformDirectory := il.TerraformIlPath(envComponentDirectory, ec.Name)
 		if err := generateOverlayFiles(log, fileService, githubRepoAPI, ec, terraformDirectory); err != nil {
 			return err
 		}

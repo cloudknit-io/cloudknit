@@ -2,10 +2,10 @@
 data "terraform_remote_state" "{{ . }}" {
   backend = "s3"
   config = {
-    region = "{{ $.Region }}"
+    region  = "{{ $.Region }}"
     profile = "{{ $.Profile }}"
-    bucket = "{{ $.Bucket }}"
-    key = "{{ $.TeamName }}/{{ $.EnvName }}/{{ . }}/terraform.tfstate"
+    bucket  = "{{ $.Bucket }}"
+    key     = "{{ $.TeamName }}/{{ $.EnvName }}/{{ . }}/terraform.tfstate"
   }
 }
 {{end}}
