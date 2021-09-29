@@ -123,7 +123,7 @@ spec:
                   value: '{{ printf "{{inputs.parameters.customer_id}}" }}'
                 - name: destroy_protection
                   value: '{{ printf "{{inputs.parameters.destroy_protection}}" }}'
-            when: '{{ printf "{{steps.plan.outputs.parameters.planCode}}" }} == 2 && (({{ printf "{{steps.plan.outputs.parameters.is_destroy}}" }} == true && {{ printf "{{steps.plan.outputs.parameters.destroy_protection}}" }} == false) || {{ printf "{{steps.plan.outputs.parameters.is_destroy}}" }} == false)'
+            when: '{{ printf "{{steps.plan.outputs.parameters.planCode}}" }} == 2 && (({{ printf "{{inputs.parameters.is_destroy}}" }} == true && {{ printf "{{inputs.parameters.destroy_protection}}" }} == false) || {{ printf "{{inputs.parameters.is_destroy}}" }} == false)'
 
     - name: approve
       suspend: {}
