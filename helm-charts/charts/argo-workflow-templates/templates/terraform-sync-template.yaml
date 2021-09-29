@@ -37,6 +37,7 @@ spec:
           - name: auto_approve
           - name: config_reconcile_id
           - name: reconcile_id
+          - name: destroy_protection
       steps:
         - - name: plan
             templateRef:
@@ -120,7 +121,9 @@ spec:
                   value: '{{ printf "{{inputs.parameters.reconcile_id}}" }}'
                 - name: customer_id
                   value: '{{ printf "{{inputs.parameters.customer_id}}" }}'
-            when: '{{ printf "{{steps.plan.outputs.parameters.planCode}}" }} == 2'
+                - name: destroy_protection
+                  value: '{{ printf "{{inputs.parameters.destroy_protection}}" }}'
+            when: '{{ printf "{{steps.plan.outputs.parameters.planCode}}" }} == 2 && (({{ printf "{{steps.plan.outputs.parameters.is_destroy}}" }} == true && {{ printf "{{steps.plan.outputs.parameters.destroy_protection}}" }} == false) || {{ printf "{{steps.plan.outputs.parameters.is_destroy}}" }} == false)'
 
     - name: approve
       suspend: {}
@@ -134,7 +137,7 @@ spec:
       serviceAccountName: argo
       script:
         imagePullPolicy: Always
-        image: 413422438110.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-terraform:{{.Values.imageTag}}
+        image: "413422438110.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-terraform:{{.Values.imageTag}}"
         cmd:
           - sh
         source: |
