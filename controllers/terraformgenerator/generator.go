@@ -127,7 +127,7 @@ func GenerateTerraform(
 		return err
 	}
 
-	if err := generateFile(fileService, &backendConfig, terraformDirectory, "backend.tf", "terraform_backend"); err != nil {
+	if err := generateFile(fileService, &backendConfig, terraformDirectory, "terraform.tf", "terraform_backend"); err != nil {
 		return err
 	}
 
