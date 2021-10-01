@@ -65,7 +65,7 @@ export class ComponentService {
     const id = `${costing.teamName}-${costing.environmentName}-${costing.component.componentName}`;
     let savedComponent = null;
     if (costing.component.isDeleted) {
-      savedComponent = this.softDelete(id);
+      savedComponent = await this.softDelete(id);
     } else {
       const component = new Component();
       component.teamName = costing.teamName;
