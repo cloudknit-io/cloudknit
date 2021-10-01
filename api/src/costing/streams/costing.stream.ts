@@ -63,7 +63,7 @@ export class CostingStream {
             },
             component: {
               componentId: component.id,
-              cost: component.cost,
+              cost: component.isDeleted ? 0 : component.cost,
             },
           }
           observer.next({
