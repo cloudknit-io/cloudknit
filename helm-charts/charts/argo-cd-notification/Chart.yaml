@@ -1,7 +1,0 @@
-apiVersion: v1
-name: argo-cd-notification
-version: v1.0.0
-description: Install and configure Argo CD Notification
-home: https://argoproj-labs.github.io/argocd-notifications/
-sources:
-  - https://github.com/argoproj-labs/argocd-notifications/tree/master/manifests
