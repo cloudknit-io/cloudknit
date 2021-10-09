@@ -222,6 +222,7 @@ func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment) *workf
 		},
 		Spec: workflow.WorkflowSpec{
 			Entrypoint: "main",
+			PodGC:      &workflow.PodGC{Strategy: workflow.PodGCStrategy(workflow.PodGCOnPodSuccess)},
 			Templates: []workflow.Template{
 				{
 					Name: "main",
