@@ -1,5 +1,9 @@
 module "{{ .ComponentName }}" {
-    source  = "{{ .Source }}//{{ .Path }}"
+    {{- if .Path }}
+    	source  = "{{ .Source }}//{{ .Path }}"
+    {{- else }}
+    	source  = "{{ .Source }}"
+    {{- end }}
 {{- if .Version }}
     version = "{{ .Version }}"
 {{- end }}

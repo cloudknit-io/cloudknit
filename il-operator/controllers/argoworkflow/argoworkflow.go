@@ -111,8 +111,6 @@ func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment) *workf
 	for _, ec := range ecs {
 		allComponents = append(allComponents, ec.Name)
 
-		moduleSource := il.EnvComponentModuleSource(ec.Module.Source, ec.Module.Name)
-		modulePath := il.EnvComponentModulePath(ec.Module.Path)
 		tfPath := il.TerraformIlPath(envComponentDirectory, ec.Name)
 
 		autoApproveFlag := ec.AutoApprove
@@ -135,14 +133,6 @@ func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment) *workf
 			{
 				Name:  "workflowtemplate",
 				Value: AnyStringPointer(workflowTemplate),
-			},
-			{
-				Name:  "module_source",
-				Value: AnyStringPointer(moduleSource),
-			},
-			{
-				Name:  "module_source_path",
-				Value: AnyStringPointer(modulePath),
 			},
 			{
 				Name:  "customer_id",

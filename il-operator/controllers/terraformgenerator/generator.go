@@ -59,7 +59,7 @@ func GenerateTerraform(
 	moduleConfig := TerraformModuleConfig{
 		ComponentName: componentName,
 		Source:        il.EnvComponentModuleSource(vars.EnvCompModuleSource, vars.EnvCompModuleName),
-		Path:          il.EnvComponentModulePath(vars.EnvCompModulePath),
+		Path:          vars.EnvCompModulePath,
 		Version:       vars.EnvCompModuleVersion,
 		Variables:     standardizedVariables,
 		VariablesFile: vars.EnvCompVariablesFile,
