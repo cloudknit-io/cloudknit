@@ -17,8 +17,8 @@ func StateHandler(w http.ResponseWriter, r *http.Request) {
 	var resp       interface{}
 	var statusCode int
 	switch r.Method {
-	case "GET":
- 		resp, err  = GetStateHandler(r.Body)
+	case "POST":
+ 		resp, err  = PostStateHandler(r.Body)
  		statusCode = http.StatusOK
 	case "DELETE":
 		resp, err  = DeleteStateResourcesHandler(r.Body)
@@ -32,7 +32,7 @@ func StateHandler(w http.ResponseWriter, r *http.Request) {
 	Response(w, resp, statusCode)
 }
 
-func GetStateHandler(b io.ReadCloser) (*GetStateResponse, error) {
+func PostStateHandler(b io.ReadCloser) (*GetStateResponse, error) {
 	var body GetStateRequest
 	decoder := json.NewDecoder(b)
 	if err := decoder.Decode(&body); err != nil {
