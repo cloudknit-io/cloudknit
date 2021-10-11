@@ -7,8 +7,8 @@ import (
 )
 
 type Wrapper struct {
-	ctx context.Context
-	tf  *tfexec.Terraform
+	ctx    context.Context
+	tf     *tfexec.Terraform
 }
 
 type StateWrapper struct {

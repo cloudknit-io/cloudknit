@@ -2,7 +2,7 @@ package terraform
 
 import (
 	"context"
-	"github.com/compuzest/zlifecycle-state-manager/zlog"
+	"github.com/compuzest/zlifecycle-state-manager/app/zlog"
 	"github.com/hashicorp/terraform-exec/tfinstall"
 )
 

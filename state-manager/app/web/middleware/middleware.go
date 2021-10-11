@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"github.com/compuzest/zlifecycle-state-manager/web/controllers"
-	"github.com/compuzest/zlifecycle-state-manager/zlog"
+	"github.com/compuzest/zlifecycle-state-manager/app/web/controllers"
+	"github.com/compuzest/zlifecycle-state-manager/app/zlog"
 	"mime"
 	"net/http"
 	"time"
@@ -32,9 +32,14 @@ func EnforceJSONHandler(next http.Handler) http.Handler {
 	})
 }
 
+func TimeoutHandler(h http.Handler) http.Handler {
+	return http.TimeoutHandler(h, 60*time.Second, "Request timed out")
+}
+
 func LoggerHandler(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
+		zlog.Logger.Printf(">> %s %s", r.Method, r.URL.Path)
 		h.ServeHTTP(w, r)
 		zlog.Logger.Printf("<< %s %s %v", r.Method, r.URL.Path, time.Since(start))
 	})

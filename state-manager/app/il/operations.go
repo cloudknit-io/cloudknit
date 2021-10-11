@@ -2,10 +2,10 @@ package il
 
 import (
 	"context"
-	"github.com/compuzest/zlifecycle-state-manager/git"
-	"github.com/compuzest/zlifecycle-state-manager/terraform"
-	"github.com/compuzest/zlifecycle-state-manager/util"
-	"github.com/compuzest/zlifecycle-state-manager/zlog"
+	"github.com/compuzest/zlifecycle-state-manager/app/git"
+	"github.com/compuzest/zlifecycle-state-manager/app/terraform"
+	"github.com/compuzest/zlifecycle-state-manager/app/util"
+	"github.com/compuzest/zlifecycle-state-manager/app/zlog"
 	"github.com/sirupsen/logrus"
 	"os"
 	"path"

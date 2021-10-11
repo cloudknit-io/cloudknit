@@ -3,8 +3,8 @@ package controllers
 import (
 	"context"
 	"encoding/json"
-	"github.com/compuzest/zlifecycle-state-manager/il"
-	"github.com/compuzest/zlifecycle-state-manager/zlog"
+	"github.com/compuzest/zlifecycle-state-manager/app/il"
+	"github.com/compuzest/zlifecycle-state-manager/app/zlog"
 	tfjson "github.com/hashicorp/terraform-json"
 	"io"
 	"net/http"
