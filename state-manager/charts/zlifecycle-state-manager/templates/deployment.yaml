@@ -37,25 +37,16 @@ spec:
             - name: http
               containerPort: 80
               protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /
-              port: http
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
           volumeMounts:
-            - mountPath: /root/.aws
-              name: zlifecycle-state-manager-aws-creds
-            - mountPath: /root/.ssh
-              name: zlifecycle-state-manager-ssh
+            - name: zlifecycle-state-manager-aws-creds
+              mountPath: /root/.aws
+            - name: zlifecycle-state-manager-ssh
+              mountPath: /root/.ssh
           env:
             - name: GITHUB_TOKEN
               value: {{ .Values.env.GITHUB_TOKEN }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-      {{- with .Values.nodeSelector }}
       volumes:
         - name: zlifecycle-state-manager-aws-creds
           secret:
@@ -63,9 +54,6 @@ spec:
         - name: zlifecycle-state-manager-ssh
           secret:
             secretName: zlifecycle-state-manager-ssh
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       {{- with .Values.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
