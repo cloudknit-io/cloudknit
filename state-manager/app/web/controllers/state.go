@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/compuzest/zlifecycle-state-manager/app/il"
 	"github.com/compuzest/zlifecycle-state-manager/app/zlog"
 	tfjson "github.com/hashicorp/terraform-json"
@@ -23,6 +24,11 @@ func StateHandler(w http.ResponseWriter, r *http.Request) {
 	case "DELETE":
 		resp, err  = DeleteStateResourcesHandler(r.Body)
 		statusCode = http.StatusNoContent
+	default:
+		err := fmt.Errorf("endpoint not implemented")
+		zlog.Logger.Error(err)
+		ErrorResponse(w, err.Error(), http.StatusNotFound)
+		return
 	}
 	if err != nil {
 		zlog.Logger.Error(err)
