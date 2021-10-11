@@ -30,7 +30,7 @@ jobs:
       - run: docker build -t ${{ env.ECR_REPO }}/zlifecycle-state-manager:latest .
         env:
           ECR_REPO: ${{ steps.login-ecr.outputs.registry }}
-          - run: docker push ${{ env.ECR_REPO }}/zlifecycle-state-manager:latest
+      - run: docker push ${{ env.ECR_REPO }}/zlifecycle-state-manager:latest
         env:
           ECR_REPO: ${{ steps.login-ecr.outputs.registry }}
 
