@@ -45,12 +45,24 @@ spec:
             httpGet:
               path: /
               port: http
+          volumeMounts:
+            - mountPath: /root/.aws
+              name: zlifecycle-state-manager-aws-creds
+            - mountPath: /root/.ssh
+              name: zlifecycle-state-manager-ssh
           env:
             - name: GITHUB_TOKEN
               value: {{ .Values.env.GITHUB_TOKEN }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
+      volumes:
+        - name: zlifecycle-state-manager-aws-creds
+          secret:
+            secretName: zlifecycle-state-manager-aws-creds
+        - name: zlifecycle-state-manager-ssh
+          secret:
+            secretName: zlifecycle-state-manager-ssh
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
