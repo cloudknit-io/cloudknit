@@ -9,7 +9,7 @@ export class SecretsService {
   awsSecretSeparator = "[compuzest-shared]";
   k8sApi = null;
   ssm: AWSSSMHandler = null;
-  constKeys = new Set(["aws_access_key_id", "aws_secret_access_key"]);
+  constKeys = new Set(["aws_access_key_id", "aws_secret_access_key", "aws_session_token"]);
 
   constructor() {
     const k8s = require("@kubernetes/client-node");
