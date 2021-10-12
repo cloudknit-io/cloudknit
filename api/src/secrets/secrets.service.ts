@@ -185,7 +185,23 @@ export class SecretsService {
       const awsRes = await this.ssm.getParameters({
         Names: pathNames,
       });
-      return awsRes.InvalidParameters.length === 0;
+      const resp = [];
+
+      resp.push(
+        ...awsRes.Parameters.map((e) => ({
+          key: e.Name.split("/").slice(-1)[0],
+          exists: true,
+        }))
+      );
+
+      resp.push(
+        ...awsRes.InvalidParameters.map((e) => ({
+          key: e.split("/").slice(-1)[0],
+          exists: false,
+        }))
+      );
+      console.log(resp);
+      return resp;
     } catch (err) {
       const e = err as AWSError;
       if (e.code === "ParameterNotFound") {
@@ -204,9 +220,9 @@ export class SecretsService {
         Recursive: false,
       };
       const awsRes = await this.ssm.getParametersByPath(req);
-      return awsRes.Parameters
-        .filter((e) => !this.isConstKey(e.Name))
-        .map((e) => this.mapToKeyValue(e));
+      return awsRes.Parameters.filter((e) => !this.isConstKey(e.Name)).map(
+        (e) => this.mapToKeyValue(e)
+      );
     } catch (err) {
       const e = err as AWSError;
       if (e.code === "ParameterNotFound") {
@@ -251,7 +267,7 @@ export class SecretsService {
   public async deleteSSMSecret(path: string) {
     try {
       const dp = await this.ssm.deleteParameter({
-        Name: path
+        Name: path,
       });
       console.log(dp);
       return dp;
