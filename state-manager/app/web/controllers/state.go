@@ -23,7 +23,7 @@ func StateHandler(w http.ResponseWriter, r *http.Request) {
  		statusCode = http.StatusOK
 	case "DELETE":
 		resp, err  = DeleteStateResourcesHandler(r.Body)
-		statusCode = http.StatusNoContent
+		statusCode = http.StatusOK
 	default:
 		err := fmt.Errorf("endpoint not implemented")
 		zlog.Logger.Error(err)
