@@ -27,11 +27,11 @@ func FetchState(ctx context.Context, zs *ZState) (*terraform.StateWrapper, error
 
 	zlog.Logger.WithFields(
 		logrus.Fields{
-			"il": zs.Meta.IL,
-			"team": zs.Meta.Team,
+			"il":          zs.Meta.IL,
+			"team":        zs.Meta.Team,
 			"environment": zs.Meta.Environment,
-			"component": zs.Meta.Component,
-			"duration": time.Since(start),
+			"component":   zs.Meta.Component,
+			"duration":    time.Since(start),
 		},
 	).Info("Successfully fetched terraform state")
 
@@ -53,12 +53,12 @@ func RemoveStateResources(ctx context.Context, zs *ZState, resources []string) (
 
 	zlog.Logger.WithFields(
 		logrus.Fields{
-			"il": zs.Meta.IL,
-			"team": zs.Meta.Team,
+			"il":          zs.Meta.IL,
+			"team":        zs.Meta.Team,
 			"environment": zs.Meta.Environment,
-			"component": zs.Meta.Component,
-			"resources": resources,
-			"duration": time.Since(start),
+			"component":   zs.Meta.Component,
+			"resources":   resources,
+			"duration":    time.Since(start),
 		},
 	).Info("Successfully removed resources from terraform state")
 

@@ -18,4 +18,3 @@ func BuildILComponentPath(meta *ComponentMeta, prefix string) (path string, err 
 	}
 	return path, nil
 }
-

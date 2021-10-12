@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"github.com/compuzest/zlifecycle-state-manager/app/web/controllers"
+	http2 "github.com/compuzest/zlifecycle-state-manager/app/web/http"
 	"github.com/compuzest/zlifecycle-state-manager/app/zlog"
 	"mime"
 	"net/http"
@@ -15,16 +15,16 @@ func EnforceJSONHandler(next http.Handler) http.Handler {
 		if contentType != "" {
 			mt, _, err := mime.ParseMediaType(contentType)
 			if err != nil {
-				controllers.ErrorResponse(w, "Malformed Content-Type header", http.StatusBadRequest)
+				http2.ErrorResponse(w, "Malformed Content-Type header", http.StatusBadRequest)
 				return
 			}
 
 			if mt != "application/json" {
-				controllers.ErrorResponse(w, "Content-Type header must be application/json", http.StatusUnsupportedMediaType)
+				http2.ErrorResponse(w, "Content-Type header must be application/json", http.StatusUnsupportedMediaType)
 				return
 			}
 		} else {
-			controllers.ErrorResponse(w, "Content-Type header must be present", http.StatusBadRequest)
+			http2.ErrorResponse(w, "Content-Type header must be present", http.StatusBadRequest)
 			return
 		}
 

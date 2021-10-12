@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/compuzest/zlifecycle-state-manager/app/il"
+	http2 "github.com/compuzest/zlifecycle-state-manager/app/web/http"
 	"github.com/compuzest/zlifecycle-state-manager/app/zlog"
 	tfjson "github.com/hashicorp/terraform-json"
 	"io"
@@ -14,28 +15,28 @@ import (
 var ctx = context.Background()
 
 func StateHandler(w http.ResponseWriter, r *http.Request) {
-	var err        error
-	var resp       interface{}
+	var err error
+	var resp interface{}
 	var statusCode int
 	switch r.Method {
 	case "POST":
- 		resp, err  = PostStateHandler(r.Body)
- 		statusCode = http.StatusOK
+		resp, err = PostStateHandler(r.Body)
+		statusCode = http.StatusOK
 	case "DELETE":
-		resp, err  = DeleteStateResourcesHandler(r.Body)
+		resp, err = DeleteStateResourcesHandler(r.Body)
 		statusCode = http.StatusOK
 	default:
 		err := fmt.Errorf("endpoint not implemented")
 		zlog.Logger.Error(err)
-		ErrorResponse(w, err.Error(), http.StatusNotFound)
+		http2.ErrorResponse(w, err.Error(), http.StatusNotFound)
 		return
 	}
 	if err != nil {
 		zlog.Logger.Error(err)
-		ErrorResponse(w, err.Error(), http.StatusBadRequest)
+		http2.ErrorResponse(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	Response(w, resp, statusCode)
+	http2.Response(w, resp, statusCode)
 }
 
 func PostStateHandler(b io.ReadCloser) (*GetStateResponse, error) {

@@ -1,9 +1,10 @@
 package controllers
 
 import (
+	http2 "github.com/compuzest/zlifecycle-state-manager/app/web/http"
 	"net/http"
 )
 
 func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
-	ErrorResponse(w, "endpoint not implemented", 404)
+	http2.ErrorResponse(w, "endpoint not implemented", 404)
 }

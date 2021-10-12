@@ -1,4 +1,4 @@
-package controllers
+package http
 
 import (
 	"encoding/json"
@@ -8,7 +8,7 @@ import (
 func ErrorResponse(w http.ResponseWriter, message string, httpStatusCode int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(httpStatusCode)
-	err := HTTPError{Message: message}
+	err := Error{Message: message}
 	jsonResp, _ := json.Marshal(err)
 	w.Write(jsonResp)
 }

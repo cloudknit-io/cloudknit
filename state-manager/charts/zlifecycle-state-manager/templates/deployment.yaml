@@ -49,6 +49,8 @@ spec:
           env:
             - name: GITHUB_TOKEN
               value: {{ .Values.env.GITHUB_TOKEN }}
+            - name: NEWRELIC_LICENSE
+              value: {{ .Values.env.NEWRELIC_LICENSE }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       volumes:
