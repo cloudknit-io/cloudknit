@@ -82,6 +82,14 @@ function setAWSCreds() {
   then
     aws configure set aws_access_key_id $aws_access_key_id 
     aws configure set aws_secret_access_key $aws_secret_access_key
+
+    aws_session_token=$(aws ssm get-parameter --profile compuzest-shared --region us-east-1 --name "/$1/aws_session_token" --with-decryption --query "Parameter.Value" | jq -r ".")
+
+    if [ ! -z $aws_session_token ];
+    then
+      aws configure set aws_session_token $aws_session_token
+    fi
+
     return 1
   fi
   return 0
