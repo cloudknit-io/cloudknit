@@ -7,6 +7,9 @@ func NewStateWrapper(state *tfjson.State) *StateWrapper {
 }
 
 func (s *StateWrapper) ParseResources() []string {
+	if s.state.Values == nil {
+		return []string{}
+	}
 	return extractResources(s.state.Values.RootModule)
 }
 

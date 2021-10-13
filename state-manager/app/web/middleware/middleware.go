@@ -39,9 +39,9 @@ func TimeoutHandler(h http.Handler) http.Handler {
 func LoggerHandler(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-		zlog.Logger.Printf(">> %s %s", r.Method, r.URL.Path)
+		zlog.Logger.Printf("REQUEST START %s %s", r.Method, r.URL.Path)
 		h.ServeHTTP(w, r)
-		zlog.Logger.Printf("<< %s %s %v", r.Method, r.URL.Path, time.Since(start))
+		zlog.Logger.Printf("REQUEST END %s %s %v", r.Method, r.URL.Path, time.Since(start))
 	})
 }
 

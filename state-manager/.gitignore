@@ -3,6 +3,7 @@
 *.iml
 
 # .env
+.env
 *.env
 
 # Binaries for programs and plugins
