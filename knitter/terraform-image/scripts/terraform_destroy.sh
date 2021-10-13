@@ -12,6 +12,8 @@ result=$?
 if [ $result -eq 99 ]
 then
  echo $show_output_end
+ data='{"metadata":{"labels":{"component_status":"destroy_failed"}}}'
+ argocd app patch $team_env_config_name --patch $data --type merge >null
  SaveAndExit "Can not apply terraform destroy";
 fi
 echo -n $result >/tmp/plan_code.txt
