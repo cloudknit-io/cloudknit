@@ -49,8 +49,8 @@ func RecoverHandler(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
-				zlog.CtxLogger(r.Context()).Printf("panic: %+v", err)
-				http.Error(w, http.StatusText(500), 500)
+				zlog.CtxLogger(r.Context()).Errorf("panic: %+v", err)
+				http2.ErrorResponse(w, "An unknown error occurred.", 500)
 			}
 		}()
 		next.ServeHTTP(w, r)
