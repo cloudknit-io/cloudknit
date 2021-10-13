@@ -25,7 +25,7 @@ func FetchState(ctx context.Context, zs *ZState) (*terraform.StateWrapper, error
 		return nil, err
 	}
 
-	zlog.Logger.WithContext(ctx).WithFields(
+	zlog.CtxLogger(ctx).WithFields(
 		logrus.Fields{
 			"il":          zs.Meta.IL,
 			"team":        zs.Meta.Team,
@@ -51,7 +51,7 @@ func RemoveStateResources(ctx context.Context, zs *ZState, resources []string) (
 		return nil, err
 	}
 
-	zlog.Logger.WithContext(ctx).WithFields(
+	zlog.CtxLogger(ctx).WithFields(
 		logrus.Fields{
 			"il":          zs.Meta.IL,
 			"team":        zs.Meta.Team,

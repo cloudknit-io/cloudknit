@@ -34,14 +34,14 @@ func InitTerraform(ctx context.Context, workdir string, execPath string) (*Wrapp
 
 	setTfLogLevel(tf)
 
-	zlog.Logger.WithContext(ctx).WithFields(
+	zlog.CtxLogger(ctx).WithFields(
 		logrus.Fields{"workdir": workdir},
 	).Info("Running terraform init")
 	if err := tf.Init(deadlineCtx); err != nil {
 		return nil, err
 	}
 
-	zlog.Logger.WithContext(ctx).WithFields(
+	zlog.CtxLogger(ctx).WithFields(
 		logrus.Fields{"workdir": workdir},
 	).Info("Caching terraform instance")
 	if err := cache.Add(workdir, tf, gocache.DefaultExpiration); err != nil {
@@ -58,7 +58,7 @@ func checkCache(ctx context.Context, workdir string) (tf *tfexec.Terraform, err 
 		return nil, err
 	}
 	if v, found := cache.Get(workdir); found && isInitialized {
-		zlog.Logger.WithContext(ctx).WithFields(
+		zlog.CtxLogger(ctx).WithFields(
 			logrus.Fields{"workdir": workdir},
 		).Info("Terraform instance exists in cache and is initialized")
 		tf, ok := v.(*tfexec.Terraform)
@@ -67,7 +67,7 @@ func checkCache(ctx context.Context, workdir string) (tf *tfexec.Terraform, err 
 		}
 		return tf, nil
 	}
-	zlog.Logger.WithContext(ctx).WithFields(
+	zlog.CtxLogger(ctx).WithFields(
 		logrus.Fields{"workdir": workdir},
 	).Info("Terraform instance does not exist in cache and/or is not initialized")
 	return nil, nil

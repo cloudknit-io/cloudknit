@@ -39,9 +39,9 @@ func TimeoutHandler(h http.Handler) http.Handler {
 func LoggerHandler(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-		zlog.Logger.Printf("REQUEST START %s %s", r.Method, r.URL.Path)
+		zlog.CtxLogger.Printf("REQUEST START %s %s", r.Method, r.URL.Path)
 		h.ServeHTTP(w, r)
-		zlog.Logger.Printf("REQUEST END %s %s %v", r.Method, r.URL.Path, time.Since(start))
+		zlog.CtxLogger.Printf("REQUEST END %s %s %v", r.Method, r.URL.Path, time.Since(start))
 	})
 }
 
@@ -49,7 +49,7 @@ func RecoverHandler(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
-				zlog.Logger.Printf("panic: %+v", err)
+				zlog.CtxLogger.Printf("panic: %+v", err)
 				http.Error(w, http.StatusText(500), 500)
 			}
 		}()

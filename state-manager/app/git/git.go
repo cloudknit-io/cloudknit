@@ -67,7 +67,7 @@ func GetRepository(ctx context.Context, url string, workdir string) (repo *gogit
 		return nil, false, err
 	}
 	if exists && !empty {
-		zlog.Logger.WithContext(ctx).WithFields(
+		zlog.CtxLogger(ctx).WithFields(
 			logrus.Fields{"url": url, "workdir": workdir},
 		).Info("Opening existing repo from filesystem")
 		r, err = openRepo(workdir)
@@ -75,7 +75,7 @@ func GetRepository(ctx context.Context, url string, workdir string) (repo *gogit
 			return nil, false, err
 		}
 
-		zlog.Logger.WithContext(ctx).WithFields(
+		zlog.CtxLogger(ctx).WithFields(
 			logrus.Fields{"url": url, "workdir": workdir},
 		).Info("Pulling git changes")
 		dirty, err = pullRepo(r)
@@ -83,7 +83,7 @@ func GetRepository(ctx context.Context, url string, workdir string) (repo *gogit
 			return nil, false, err
 		}
 	} else {
-		zlog.Logger.WithContext(ctx).WithFields(
+		zlog.CtxLogger(ctx).WithFields(
 			logrus.Fields{"url": url, "workdir": workdir},
 		).Info("Cloning repo")
 		r, err = cloneRepoFS(url, workdir)

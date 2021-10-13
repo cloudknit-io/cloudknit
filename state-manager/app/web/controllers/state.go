@@ -25,12 +25,12 @@ func StateHandler(w http.ResponseWriter, r *http.Request) {
 		statusCode = http.StatusOK
 	default:
 		err := fmt.Errorf("endpoint not implemented")
-		zlog.Logger.Error(err)
+		zlog.CtxLogger.Error(err)
 		http2.ErrorResponse(w, err.Error(), http.StatusNotFound)
 		return
 	}
 	if err != nil {
-		zlog.Logger.Error(err)
+		zlog.CtxLogger.Error(err)
 		http2.ErrorResponse(w, err.Error(), http.StatusBadRequest)
 		return
 	}

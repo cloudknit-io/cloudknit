@@ -28,16 +28,16 @@ func NewServer() {
 
 	r, err := initRouter()
 	if err != nil {
-		zlog.Logger.Fatalf("Error initializing router: %v", err)
+		zlog.PlainLogger().Fatalf("Error initializing router: %v", err)
 	}
 	s := &http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
 		Handler: errorChain.Then(r),
 	}
 
-	zlog.Logger.WithFields(logrus.Fields{"port": port}).Info("Starting HTTP server")
+	zlog.PlainLogger().WithFields(logrus.Fields{"port": port}).Info("Starting HTTP server")
 	if err := s.ListenAndServe(); err != nil {
-		zlog.Logger.Fatalf("Error from webserver: %v", err)
+		zlog.PlainLogger().Fatalf("Error from webserver: %v", err)
 	}
 }
 
@@ -45,11 +45,11 @@ func initRouter() (*mux.Router, error) {
 	r := mux.NewRouter()
 
 	if os.Getenv("DEV_MODE") == "true" {
-		zlog.Logger.Info("Initializing application in dev mode")
+		zlog.PlainLogger().Info("Initializing application in dev mode")
 		r.HandleFunc("/state", controllers.StateHandler)
 	} else {
-		zlog.Logger.Info("Initializing application in cloud mode")
-		zlog.Logger.Info("Initializing NewRelic APM")
+		zlog.PlainLogger().Info("Initializing application in cloud mode")
+		zlog.PlainLogger().Info("Initializing NewRelic APM")
 		app, err := apm.Init()
 		if err != nil {
 			return nil, err

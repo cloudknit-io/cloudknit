@@ -19,7 +19,7 @@ func FindExecutable(ctx context.Context) (execPath string, err error) {
 // GetExecPath should always be used to get the terraform executable path as it reuses the global singleton variable
 func GetExecPath(ctx context.Context) (execPath string, err error) {
 	if globalExecPath == "" {
-		zlog.Logger.Info("Searching file system for terraform executable")
+		zlog.CtxLogger(ctx).Info("Searching file system for terraform executable")
 		globalExecPath, err = FindExecutable(ctx)
 		if err != nil {
 			return "", err
