@@ -45,8 +45,11 @@ func initRouter() (*mux.Router, error) {
 	r := mux.NewRouter()
 
 	if os.Getenv("DEV_MODE") == "true" {
+		zlog.Logger.Info("Initializing application in dev mode")
 		r.HandleFunc("/state", controllers.StateHandler)
 	} else {
+		zlog.Logger.Info("Initializing application in cloud mode")
+		zlog.Logger.Info("Initializing NewRelic APM")
 		app, err := apm.Init()
 		if err != nil {
 			return nil, err
