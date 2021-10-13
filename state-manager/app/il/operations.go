@@ -15,7 +15,7 @@ import (
 func FetchState(ctx context.Context, zs *ZState) (*terraform.StateWrapper, error) {
 	start := time.Now()
 
-	workdir, err := getTerraformWorkdir(zs)
+	workdir, err := getTerraformWorkdir(ctx, zs)
 	if err != nil {
 		return nil, err
 	}
@@ -25,7 +25,7 @@ func FetchState(ctx context.Context, zs *ZState) (*terraform.StateWrapper, error
 		return nil, err
 	}
 
-	zlog.Logger.WithFields(
+	zlog.Logger.WithContext(ctx).WithFields(
 		logrus.Fields{
 			"il":          zs.Meta.IL,
 			"team":        zs.Meta.Team,
@@ -41,7 +41,7 @@ func FetchState(ctx context.Context, zs *ZState) (*terraform.StateWrapper, error
 func RemoveStateResources(ctx context.Context, zs *ZState, resources []string) (*terraform.StateWrapper, error) {
 	start := time.Now()
 
-	workdir, err := getTerraformWorkdir(zs)
+	workdir, err := getTerraformWorkdir(ctx, zs)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func RemoveStateResources(ctx context.Context, zs *ZState, resources []string) (
 		return nil, err
 	}
 
-	zlog.Logger.WithFields(
+	zlog.Logger.WithContext(ctx).WithFields(
 		logrus.Fields{
 			"il":          zs.Meta.IL,
 			"team":        zs.Meta.Team,
@@ -65,7 +65,7 @@ func RemoveStateResources(ctx context.Context, zs *ZState, resources []string) (
 	return state, nil
 }
 
-func getTerraformWorkdir(zs *ZState) (string, error) {
+func getTerraformWorkdir(ctx context.Context, zs *ZState) (string, error) {
 	basedir := path.Join("/tmp", zs.Meta.IL)
 	exists, err := util.DirExists(basedir)
 	if err != nil {
@@ -79,7 +79,7 @@ func getTerraformWorkdir(zs *ZState) (string, error) {
 		}
 	}
 
-	_, _, err = git.GetRepository(zs.RepoURL, basedir)
+	_, _, err = git.GetRepository(ctx, zs.RepoURL, basedir)
 	if err != nil {
 		return "", err
 	}

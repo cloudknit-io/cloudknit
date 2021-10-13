@@ -187,6 +187,7 @@ github.com/mitchellh/go-homedir
 github.com/mitchellh/go-testing-interface
 # github.com/newrelic/go-agent/v3 v3.15.0
 ## explicit
+github.com/newrelic/go-agent/v3/integrations/logcontext
 github.com/newrelic/go-agent/v3/internal
 github.com/newrelic/go-agent/v3/internal/cat
 github.com/newrelic/go-agent/v3/internal/com_newrelic_trace_v1
@@ -195,6 +196,9 @@ github.com/newrelic/go-agent/v3/internal/logger
 github.com/newrelic/go-agent/v3/internal/sysinfo
 github.com/newrelic/go-agent/v3/internal/utilization
 github.com/newrelic/go-agent/v3/newrelic
+# github.com/newrelic/go-agent/v3/integrations/logcontext/nrlogrusplugin v1.0.1
+## explicit
+github.com/newrelic/go-agent/v3/integrations/logcontext/nrlogrusplugin
 # github.com/patrickmn/go-cache v2.1.0+incompatible
 ## explicit
 github.com/patrickmn/go-cache

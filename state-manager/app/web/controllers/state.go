@@ -12,18 +12,16 @@ import (
 	"net/http"
 )
 
-var ctx = context.Background()
-
 func StateHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
 	var resp interface{}
 	var statusCode int
 	switch r.Method {
 	case "POST":
-		resp, err = PostStateHandler(r.Body)
+		resp, err = PostStateHandler(r.Context(), r.Body)
 		statusCode = http.StatusOK
 	case "DELETE":
-		resp, err = DeleteStateResourcesHandler(r.Body)
+		resp, err = DeleteStateResourcesHandler(r.Context(), r.Body)
 		statusCode = http.StatusOK
 	default:
 		err := fmt.Errorf("endpoint not implemented")
@@ -39,7 +37,7 @@ func StateHandler(w http.ResponseWriter, r *http.Request) {
 	http2.Response(w, resp, statusCode)
 }
 
-func PostStateHandler(b io.ReadCloser) (*GetStateResponse, error) {
+func PostStateHandler(ctx context.Context, b io.ReadCloser) (*GetStateResponse, error) {
 	var body GetStateRequest
 	decoder := json.NewDecoder(b)
 	if err := decoder.Decode(&body); err != nil {
@@ -64,7 +62,7 @@ type GetStateResponse struct {
 	Resources []string      `json:"resources"`
 }
 
-func DeleteStateResourcesHandler(b io.ReadCloser) (*DeleteStateResourcesResponse, error) {
+func DeleteStateResourcesHandler(ctx context.Context, b io.ReadCloser) (*DeleteStateResourcesResponse, error) {
 	var body DeleteStateResourcesRequest
 	decoder := json.NewDecoder(b)
 	if err := decoder.Decode(&body); err != nil {

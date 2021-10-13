@@ -1,6 +1,7 @@
 package zlog
 
 import (
+	"github.com/newrelic/go-agent/v3/integrations/logcontext/nrlogrusplugin"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -8,10 +9,7 @@ var Logger = initLogger()
 
 func initLogger() *log.Logger {
 	l := log.New()
-	l.SetFormatter(&log.TextFormatter{
-		FullTimestamp:   true,
-		TimestampFormat: "2006-01-02 15:04:05",
-	})
+	l.SetFormatter(nrlogrusplugin.ContextFormatter{})
 
 	return l
 }

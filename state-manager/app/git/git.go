@@ -1,6 +1,7 @@
 package git
 
 import (
+	"context"
 	"errors"
 	"github.com/compuzest/zlifecycle-state-manager/app/util"
 	"github.com/compuzest/zlifecycle-state-manager/app/zlog"
@@ -53,7 +54,7 @@ func pullRepo(repo *gogit.Repository) (dirty bool, err error) {
 	return true, err
 }
 
-func GetRepository(url string, workdir string) (repo *gogit.Repository, dirty bool, err error) {
+func GetRepository(ctx context.Context, url string, workdir string) (repo *gogit.Repository, dirty bool, err error) {
 	var r *gogit.Repository
 	dirty = false
 
@@ -66,7 +67,7 @@ func GetRepository(url string, workdir string) (repo *gogit.Repository, dirty bo
 		return nil, false, err
 	}
 	if exists && !empty {
-		zlog.Logger.WithFields(
+		zlog.Logger.WithContext(ctx).WithFields(
 			logrus.Fields{"url": url, "workdir": workdir},
 		).Info("Opening existing repo from filesystem")
 		r, err = openRepo(workdir)
@@ -74,7 +75,7 @@ func GetRepository(url string, workdir string) (repo *gogit.Repository, dirty bo
 			return nil, false, err
 		}
 
-		zlog.Logger.WithFields(
+		zlog.Logger.WithContext(ctx).WithFields(
 			logrus.Fields{"url": url, "workdir": workdir},
 		).Info("Pulling git changes")
 		dirty, err = pullRepo(r)
@@ -82,7 +83,7 @@ func GetRepository(url string, workdir string) (repo *gogit.Repository, dirty bo
 			return nil, false, err
 		}
 	} else {
-		zlog.Logger.WithFields(
+		zlog.Logger.WithContext(ctx).WithFields(
 			logrus.Fields{"url": url, "workdir": workdir},
 		).Info("Cloning repo")
 		r, err = cloneRepoFS(url, workdir)

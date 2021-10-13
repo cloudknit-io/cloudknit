@@ -17,7 +17,7 @@ func GetState(ctx context.Context, workdir string) (*StateWrapper, error) {
 		return nil, err
 	}
 
-	zlog.Logger.WithFields(
+	zlog.Logger.WithContext(ctx).WithFields(
 		logrus.Fields{"workdir": workdir},
 	).Info("Fetching terraform state")
 	state, err := w.State()
@@ -39,7 +39,7 @@ func RemoveResources(ctx context.Context, workdir string, resources []string) (*
 		return nil, err
 	}
 
-	zlog.Logger.WithFields(
+	zlog.Logger.WithContext(ctx).WithFields(
 		logrus.Fields{"workdir": workdir, "resources": resources},
 	).Info("Removing resources from terraform state")
 	state, err := w.RemoveStateResources(resources)
