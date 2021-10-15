@@ -49,6 +49,8 @@ spec:
           env:
             - name: GITHUB_TOKEN
               value: {{ .Values.env.GITHUB_TOKEN }}
+            - name: ENABLE_NEWRELIC
+              value: {{ .Values.env.ENABLE_NEWRELIC }}
             - name: NEWRELIC_LICENSE
               value: {{ .Values.env.NEWRELIC_LICENSE }}
           resources:

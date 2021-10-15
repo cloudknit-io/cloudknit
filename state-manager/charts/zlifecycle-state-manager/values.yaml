@@ -12,6 +12,7 @@ image:
 
 env:
   GITHUB_TOKEN:
+  ENABLE_NEWRELIC:
 
 imagePullSecrets: []
 nameOverride: ""
