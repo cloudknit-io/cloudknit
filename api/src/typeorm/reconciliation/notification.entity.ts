@@ -29,6 +29,11 @@ export class Notification {
   timestamp: string;
 
   @Column({
+    default: ''
+  })
+  message_type?: string;
+
+  @Column({
       default: false
   })
   seen?: boolean;

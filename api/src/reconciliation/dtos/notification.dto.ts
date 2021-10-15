@@ -4,4 +4,5 @@ export class NotificationDto {
     environmentName: string;
     timestamp: string;
     message: string;
+    messageType?: string;
 }
