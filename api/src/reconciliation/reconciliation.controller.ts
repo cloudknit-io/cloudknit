@@ -1,11 +1,12 @@
 import { Body, Controller, Get, Param, Post, Sse } from '@nestjs/common'
 import { Observable, Observer } from 'rxjs';
 import { Mapper } from 'src/costing/utilities/mapper';
-import { S3Handler } from 'src/costing/utilities/s3Handler';
 import { ComponentReconcile } from 'src/typeorm/reconciliation/component-reconcile.entity';
 import { EnvironmentReconcile } from 'src/typeorm/reconciliation/environment-reconcile.entity';
+import { Notification } from 'src/typeorm/reconciliation/notification.entity';
 import { ComponentAudit } from './dtos/componentAudit.dto';
 import { EnvironmentAudit } from './dtos/environmentAudit.dto';
+import { NotificationDto } from './dtos/notification.dto';
 import { EvnironmentReconcileDto } from './dtos/reconcile.Dto';
 import { ReconciliationService } from './services/reconciliation.service'
 
@@ -21,6 +22,11 @@ export class ReconciliationController {
     return await this.reconciliationService.saveOrUpdateEnvironment(runData);
   }
 
+  @Post('notification/save')
+  async saveNotification(@Body() notification: NotificationDto) {
+    return await this.reconciliationService.saveNotification(notification);
+  }
+
   @Post('component/save')
   async saveComponent(@Body() runData: EvnironmentReconcileDto) {
     return await this.reconciliationService.saveOrUpdateComponent(runData);
@@ -29,6 +35,11 @@ export class ReconciliationController {
   @Get('component/:id')
   async getComponents(@Param('id') id: string): Promise<ComponentAudit[]> {
     return await this.reconciliationService.getComponentAuditList(id);
+  }
+
+  @Get('notification/seen/:id')
+  async setSeenStatusForNotification(@Param('id') id: string): Promise<void> {
+    return await this.reconciliationService.setSeenStatusForNotification(parseInt(id));
   }
 
   @Get('environment/:id')
@@ -59,6 +70,23 @@ export class ReconciliationController {
   @Get('component/apply/logs/:companyId/:team/:environment/:component/:id/:latest')
   async getApplyLogs(@Param('companyId') companyId: string, @Param('team') team: string, @Param('environment') environment: string, @Param('component') component: string, @Param('id') id: number, @Param('latest') latest: string) {
     return await this.reconciliationService.getApplyLogs(companyId, team, environment, component, id, latest === 'true');
+  }
+
+  @Sse('notifications/:companyId/:teamName')
+  sendNotification(@Param('companyId') companyId: string, @Param('teamName') teamName: string): Observable<MessageEvent> {
+    this.reconciliationService.getNotification(companyId, teamName);
+    return new Observable((observer: Observer<MessageEvent>) => {
+      this.reconciliationService.notificationStream.subscribe(
+        async (notification: Notification) => {
+          if (notification.company_id !== companyId || notification.team_name !== teamName) {
+            return;
+          }
+          observer.next({
+            data: notification,
+          })
+        },
+      )
+    });
   }
 
   @Sse('components/notify/:id')

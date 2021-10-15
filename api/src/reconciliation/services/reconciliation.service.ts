@@ -5,21 +5,26 @@ import { Mapper } from "src/costing/utilities/mapper";
 import { S3Handler } from "src/costing/utilities/s3Handler";
 import { ComponentReconcile } from "src/typeorm/reconciliation/component-reconcile.entity";
 import { EnvironmentReconcile } from "src/typeorm/reconciliation/environment-reconcile.entity";
+import { Notification } from "src/typeorm/reconciliation/notification.entity";
 import { Repository } from "typeorm/repository/Repository";
 import { ComponentAudit } from "../dtos/componentAudit.dto";
 import { EnvironmentAudit } from "../dtos/environmentAudit.dto";
+import { NotificationDto } from "../dtos/notification.dto";
 import { EvnironmentReconcileDto } from "../dtos/reconcile.Dto";
 
 @Injectable()
 export class ReconciliationService {
   readonly notifyStream: Subject<{}> = new Subject<{}>();
+  readonly notificationStream: Subject<Notification> = new Subject<Notification>();
   private readonly s3h = S3Handler.instance();
   private readonly notFound = "";
   constructor(
     @InjectRepository(EnvironmentReconcile)
     private readonly environmentReconcileRepository: Repository<EnvironmentReconcile>,
     @InjectRepository(ComponentReconcile)
-    private readonly componentReconcileRepository: Repository<ComponentReconcile>
+    private readonly componentReconcileRepository: Repository<ComponentReconcile>,
+    @InjectRepository(Notification)
+    private readonly notificationRepository: Repository<Notification>
   ) {}
 
   async saveOrUpdateEnvironment(runData: EvnironmentReconcileDto) {
@@ -46,7 +51,10 @@ export class ReconciliationService {
         status: runData.status,
         end_date_time: runData.endDateTime,
       };
-      await this.updateSkippedWorkflows<EnvironmentReconcile>(entry.name, this.environmentReconcileRepository);
+      await this.updateSkippedWorkflows<EnvironmentReconcile>(
+        entry.name,
+        this.environmentReconcileRepository
+      );
       savedEntry = await this.environmentReconcileRepository.save(entry);
     }
     this.notifyStream.next(savedEntry);
@@ -70,7 +78,10 @@ export class ReconciliationService {
     )[0];
 
     if (!componentEntry.reconcile_id) {
-      await this.updateSkippedWorkflows<ComponentReconcile>(componentEntry.name, this.componentReconcileRepository);
+      await this.updateSkippedWorkflows<ComponentReconcile>(
+        componentEntry.name,
+        this.componentReconcileRepository
+      );
     }
 
     if (componentEntry.reconcile_id) {
@@ -91,13 +102,13 @@ export class ReconciliationService {
     const entries = await repo.find({
       where: {
         name: id,
-        end_date_time: null
-      }
+        end_date_time: null,
+      },
     });
     if (entries.length > 0) {
-      const newEntries = entries.map(entry => ({
+      const newEntries = entries.map((entry) => ({
         ...entry,
-        status: 'Skipped'
+        status: "Skipped",
       }));
       await repo.save(newEntries);
     }
@@ -153,9 +164,10 @@ export class ReconciliationService {
     id: number,
     latest: boolean
   ) {
-    const logs = latest === true
-      ? await this.getLatestLogs(companyId, team, environment, component)
-      : await this.getLogs(companyId, team, environment, component, id);
+    const logs =
+      latest === true
+        ? await this.getLatestLogs(companyId, team, environment, component)
+        : await this.getLogs(companyId, team, environment, component, id);
     if (Array.isArray(logs)) {
       return logs.filter((e) => e.key.includes("apply_output"));
     }
@@ -170,16 +182,22 @@ export class ReconciliationService {
     id: number,
     latest: boolean
   ) {
-    const logs = latest === true
-      ? await this.getLatestLogs(companyId, team, environment, component)
-      : await this.getLogs(companyId, team, environment, component, id);
+    const logs =
+      latest === true
+        ? await this.getLatestLogs(companyId, team, environment, component)
+        : await this.getLogs(companyId, team, environment, component, id);
     if (Array.isArray(logs)) {
       return logs.filter((e) => e.key.includes("plan_output"));
     }
     return logs;
   }
 
-  async getLatestLogs(companyId: string, team: string, environment: string, component: string) {
+  async getLatestLogs(
+    companyId: string,
+    team: string,
+    environment: string,
+    component: string
+  ) {
     const latestAuditId = await this.componentReconcileRepository.find({
       where: {
         name: `${team}-${environment}-${component}`,
@@ -209,7 +227,7 @@ export class ReconciliationService {
     companyId: string,
     team: string,
     environment: string,
-    component: string,
+    component: string
   ) {
     const prefix = `${team}/${environment}/${component}/terraform.tfstate`;
     const resp = await this.s3h.getObject(
@@ -219,7 +237,42 @@ export class ReconciliationService {
 
     return {
       ...resp,
-      data: (resp.data?.Body || '').toString() || '',
-    }
+      data: (resp.data?.Body || "").toString() || "",
+    };
+  }
+
+  async saveNotification(notification: NotificationDto) {
+    const notificationEntity: Notification = {
+      company_id: notification.companyId,
+      environment_name: notification.environmentName,
+      message: notification.message,
+      team_name: notification.teamName,
+      timestamp: notification.timestamp,
+    };
+    const savedEntity = await this.notificationRepository.save(
+      notificationEntity
+    );
+    this.notificationStream.next(savedEntity);
+  }
+
+  getNotification(companyId: string, teamName: string) {
+    this.notificationRepository
+      .find({
+        where: {
+          company_id: companyId,
+          team_name: teamName,
+          seen: false,
+        },
+      })
+      .then((notification) => {
+        notification.forEach(e => this.notificationStream.next(e));
+      });
+  }
+
+  async setSeenStatusForNotification(notificationId: number) {
+    await this.notificationRepository.save({
+      notification_id: notificationId,
+      seen: true,
+    });
   }
 }
