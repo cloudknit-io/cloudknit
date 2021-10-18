@@ -72,9 +72,14 @@ export class ReconciliationController {
     return await this.reconciliationService.getApplyLogs(companyId, team, environment, component, id, latest === 'true');
   }
 
+  @Get('notifications/get/:companyId/:teamName')
+  async getNotifications(@Param('companyId') companyId: string, @Param('teamName') teamName: string) {
+    await this.reconciliationService.getNotification(companyId, teamName);
+    return true;
+  }
+
   @Sse('notifications/:companyId/:teamName')
   sendNotification(@Param('companyId') companyId: string, @Param('teamName') teamName: string): Observable<MessageEvent> {
-    this.reconciliationService.getNotification(companyId, teamName);
     return new Observable((observer: Observer<MessageEvent>) => {
       this.reconciliationService.notificationStream.subscribe(
         async (notification: Notification) => {
