@@ -75,7 +75,7 @@ export class ReconciliationController {
   @Get('notifications/get/:companyId/:teamName')
   async getNotifications(@Param('companyId') companyId: string, @Param('teamName') teamName: string) {
     await this.reconciliationService.getNotification(companyId, teamName);
-    return true;
+    return await this.reconciliationService.getAllNotification(companyId, teamName);
   }
 
   @Sse('notifications/:companyId/:teamName')

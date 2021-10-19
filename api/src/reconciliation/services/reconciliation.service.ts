@@ -15,7 +15,8 @@ import { EvnironmentReconcileDto } from "../dtos/reconcile.Dto";
 @Injectable()
 export class ReconciliationService {
   readonly notifyStream: Subject<{}> = new Subject<{}>();
-  readonly notificationStream: Subject<Notification> = new Subject<Notification>();
+  readonly notificationStream: Subject<Notification> =
+    new Subject<Notification>();
   private readonly s3h = S3Handler.instance();
   private readonly notFound = "";
   constructor(
@@ -266,8 +267,20 @@ export class ReconciliationService {
         },
       })
       .then((notification) => {
-        notification.forEach(e => this.notificationStream.next(e));
+        notification.forEach((e) => this.notificationStream.next(e));
       });
+  }
+
+  async getAllNotification(companyId: string, teamName: string) {
+    return await this.notificationRepository.find({
+      where: {
+        company_id: companyId,
+        team_name: teamName,
+      },
+      order: {
+        timestamp: "DESC",
+      },
+    });
   }
 
   async setSeenStatusForNotification(notificationId: number) {
