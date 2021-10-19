@@ -278,8 +278,9 @@ export class ReconciliationService {
         team_name: teamName,
       },
       order: {
-        timestamp: "DESC",
+        notification_id: "DESC",
       },
+      take: 20
     });
   }
 
