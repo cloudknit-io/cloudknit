@@ -22,7 +22,6 @@ func (u *UINotifier) Notify(ctx context.Context, n *notifier.Notification) error
 	notificationEndpoint := fmt.Sprintf("%s/reconciliation/api/v1/notification/save", u.apiURL)
 
 	jsonBody, err := common.ToJSON(n)
-	u.log.Info("Notification", "body", string(jsonBody))
 	if err != nil {
 		return err
 	}
@@ -43,9 +42,6 @@ func (u *UINotifier) Notify(ctx context.Context, n *notifier.Notification) error
 	if resp.StatusCode != 201 {
 		return fmt.Errorf("bad status code received: %d", resp.StatusCode)
 	}
-
-	b, _ := common.ReadBody(resp.Body)
-	u.log.Info("Response", "body", string(b))
 
 	return nil
 }
