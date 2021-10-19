@@ -250,6 +250,7 @@ export class ReconciliationService {
       team_name: notification.teamName,
       timestamp: notification.timestamp,
       message_type: notification.messageType,
+      debug: notification.debug
     };
     const savedEntity = await this.notificationRepository.save(
       notificationEntity

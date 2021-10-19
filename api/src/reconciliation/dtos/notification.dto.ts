@@ -5,4 +5,5 @@ export class NotificationDto {
     timestamp: string;
     message: string;
     messageType?: string;
+    debug?: {};
 }
