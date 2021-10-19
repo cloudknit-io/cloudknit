@@ -1,13 +1,40 @@
 package v1
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/notifier"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/notifier/uinotifier"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
+	"time"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+
+	ctrl "sigs.k8s.io/controller-runtime"
 )
+
+var (
+	log  = ctrl.Log.WithName("environment-validator")
+	ntfr = uinotifier.NewUINotifier(log, env.Config.APIURL)
+	ctx  = context.Background()
+)
+
+func notifyError(e *Environment, msg string, debug interface{}) error {
+	n := &notifier.Notification{
+		Company:     env.Config.CompanyName,
+		Team:        e.Spec.TeamName,
+		Environment: e.Spec.EnvName,
+		MessageType: notifier.ERROR,
+		Message:     msg,
+		Timestamp:   time.Now(),
+		Debug:       debug,
+	}
+
+	return ntfr.Notify(ctx, n)
+}
 
 func ValidateEnvironmentCreate(e *Environment) error {
 	var allErrs field.ErrorList
@@ -18,6 +45,11 @@ func ValidateEnvironmentCreate(e *Environment) error {
 
 	if len(allErrs) == 0 {
 		return nil
+	}
+
+	msg := fmt.Sprintf("error creating environment %s for team %s", e.Spec.EnvName, e.Spec.TeamName)
+	if err := notifyError(e, msg, allErrs); err != nil {
+		log.Error(err, "Error sending notification to UI")
 	}
 
 	return apierrors.NewInvalid(
@@ -42,6 +74,11 @@ func ValidateEnvironmentUpdate(e *Environment) error {
 
 	if len(allErrs) == 0 {
 		return nil
+	}
+
+	msg := fmt.Sprintf("error updating environment %s for team %s", e.Spec.EnvName, e.Spec.TeamName)
+	if err := notifyError(e, msg, allErrs); err != nil {
+		log.Error(err, "Error sending notification to UI")
 	}
 
 	return apierrors.NewInvalid(

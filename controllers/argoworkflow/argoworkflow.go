@@ -118,13 +118,11 @@ func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment) *workf
 			autoApproveFlag = true
 		}
 
-		var dependencies []string
+		dependencies := ec.DependsOn
 		destroyFlag := ec.Destroy
 		if destroyAll {
-			destroyFlag = true
+			destroyFlag  = true
 			dependencies = buildInverseDependencies(ecs, ec.Name)
-		} else {
-			dependencies = ec.DependsOn
 		}
 
 		dependencies = append(dependencies, "trigger-audit")
