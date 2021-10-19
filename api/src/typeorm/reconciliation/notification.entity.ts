@@ -37,4 +37,11 @@ export class Notification {
       default: false
   })
   seen?: boolean;
+
+  @Column({
+    default: null,
+    type: 'json',
+    nullable: true
+  })
+  debug?: {}
 }
