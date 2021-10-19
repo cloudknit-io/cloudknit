@@ -34,12 +34,14 @@ type config struct {
 
 	ArgoWorkflowsServerURL string
 	ArgoWorkflowsNamespace string
+
+	APIURL string
 }
 
 // Config exposes vars used throughout the operator
 var Config = config{
-	ZlifecycleOwner:               getZlifecycleOwner(),
-	ZlifecycleMasterRepoSSHSecret: getZlifecyleOperatorSSHSecret(),
+	ZlifecycleOwner:               getOr("GITHUB_ZLIFECYCLE_OWNER", "CompuZest"),
+	ZlifecycleMasterRepoSSHSecret: getOr("ZLIFECYCLE_MASTER_SSH", "zlifecycle-operator-ssh"),
 	ZlifecycleOperatorNamespace:   os.Getenv("ZLIFECYCLE_OPERATOR_NAMESPACE"),
 	ZlifecycleOperatorRepo:        "zlifecycle-il-operator",
 
@@ -61,43 +63,21 @@ var Config = config{
 	HelmChartsRepo: os.Getenv("helmChartsRepo"),
 	K8sAPIURL:      "https://kubernetes.default.svc",
 
-	ArgocdServerURL: getArgocdServerURL(),
+	ArgocdServerURL: getOr("ARGOCD_URL", "http://argocd-server.argocd.svc.cluster.local"),
 	ArgocdHookURL:   os.Getenv("ARGOCD_WEBHOOK_URL"),
 	ArgocdUsername:  os.Getenv("ARGOCD_USERNAME"),
 	ArgocdPassword:  os.Getenv("ARGOCD_PASSWORD"),
 
-	ArgoWorkflowsServerURL: getArgocdWorkflowsServerURL(),
+	ArgoWorkflowsServerURL: getOr("ARGOWORKFLOWS_URL", "http://argo-workflow-server.argocd.svc.cluster.local:2746"),
 	ArgoWorkflowsNamespace: "argocd",
+
+	APIURL: getOr("API_URL", "http://zlifecycle-api.zlifecycle-ui.svc.cluster.local"),
 }
 
-func getZlifecyleOperatorSSHSecret() string {
-	val, exists := os.LookupEnv("ZLIFECYCLE_MASTER_SSH")
+func getOr(key string, defaultValue string) string {
+	val, exists := os.LookupEnv(key)
 	if exists && val != "" {
 		return val
 	}
-	return "zlifecycle-operator-ssh"
-}
-
-func getZlifecycleOwner() string {
-	val, exists := os.LookupEnv("GITHUB_ZLIFECYCLE_OWNER")
-	if exists {
-		return val
-	}
-	return "CompuZest"
-}
-
-func getArgocdServerURL() string {
-	val, exists := os.LookupEnv("ARGOCD_URL")
-	if exists && val != "" {
-		return val
-	}
-	return "http://argocd-server.argocd.svc.cluster.local"
-}
-
-func getArgocdWorkflowsServerURL() string {
-	val, exists := os.LookupEnv("ARGOWORKFLOWS_URL")
-	if exists && val != "" {
-		return val
-	}
-	return "http://argo-workflow-server.argocd.svc.cluster.local:2746"
+	return defaultValue
 }

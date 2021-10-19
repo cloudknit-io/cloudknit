@@ -158,7 +158,6 @@ func TryCreateBootstrapApps(ctx context.Context, log logr.Logger) error {
 	} else {
 		companyResp2, companyErr2 := api.CreateApplication(GenerateConfigWatcherBootstrapApp(), bearer)
 		if companyErr2 != nil {
-			log.Error(companyErr2, "Error while creating Config Watcher Bootstrap Application")
 			return fmt.Errorf("error while creating Config Watcher Bootstrap Application: %w", companyErr2)
 		}
 		defer common.CloseBody(companyResp2.Body)
