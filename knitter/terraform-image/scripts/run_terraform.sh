@@ -102,15 +102,20 @@ cd $ENV_COMPONENT_PATH
 
 sh /argocd/login.sh
 
-setAWSCreds $customer_id/$team_name
+setAWSCreds $customer_id/$team_name/$env_name
 aws_response=$?
 if [ $aws_response -eq 0 ];
 then
-  setAWSCreds $customer_id
+  setAWSCreds $customer_id/$team_name
   aws_response=$?
   if [ $aws_response -eq 0 ];
   then
-    Error "Failed to retreive AWS Credentials."
+    setAWSCreds $customer_id
+    aws_response=$?
+    if [ $aws_response -eq 0 ];
+    then
+      Error "Failed to retreive AWS Credentials."
+    fi
   fi
 fi
 
