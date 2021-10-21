@@ -9,7 +9,11 @@ export class SecretsService {
   awsSecretSeparator = "[compuzest-shared]";
   k8sApi = null;
   ssm: AWSSSMHandler = null;
-  constKeys = new Set(["aws_access_key_id", "aws_secret_access_key", "aws_session_token"]);
+  constKeys = new Set([
+    "aws_access_key_id",
+    "aws_secret_access_key",
+    "aws_session_token",
+  ]);
 
   constructor() {
     const k8s = require("@kubernetes/client-node");
@@ -78,6 +82,15 @@ export class SecretsService {
       key,
       value: tokens.slice(-1)[0],
     };
+  }
+
+  private mapToEnvironments(data: any) {
+    const { Name } = data;
+    const tokens = Name.split("/");
+    if (tokens.length === 5) {
+      return [tokens[3], tokens[2]];
+    }
+    return null;
   }
 
   private getCredentialFileInput(
@@ -212,7 +225,7 @@ export class SecretsService {
     }
   }
 
-  public async getSsmSecretsByPath(path: string, recursive: boolean) {
+  public async getSsmSecretsByPath(path: string) {
     try {
       const req: GetParametersByPathRequest = {
         Path: path,
@@ -223,6 +236,40 @@ export class SecretsService {
       return awsRes.Parameters.filter((e) => !this.isConstKey(e.Name)).map(
         (e) => this.mapToKeyValue(e)
       );
+    } catch (err) {
+      const e = err as AWSError;
+      if (e.code === "ParameterNotFound") {
+        return false;
+      } else {
+        throw err;
+      }
+    }
+  }
+
+  public async getEnvironments(
+    path: string,
+    environments: Map<string, string> = new Map<string, string>(),
+    nextToken: string = null
+  ) {
+    try {
+      const req: GetParametersByPathRequest = {
+        Path: path,
+        WithDecryption: false,
+        Recursive: true,
+        NextToken: nextToken,
+      };
+      const awsRes = await this.ssm.getParametersByPath(req);
+      awsRes.Parameters.forEach((e) => {
+        const env = this.mapToEnvironments(e);
+        if (env) {
+          environments.set(env[0], env[1]);
+        }
+      });
+      nextToken = awsRes.NextToken;
+      if (nextToken) {
+        await this.getEnvironments(path, environments, nextToken);
+      }
+      return [...environments.entries()];
     } catch (err) {
       const e = err as AWSError;
       if (e.code === "ParameterNotFound") {

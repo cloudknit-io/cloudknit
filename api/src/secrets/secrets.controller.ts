@@ -20,11 +20,14 @@ export class SecretsController {
 
   @Post("get/ssm-secrets")
   public async getSSMSecrets(@Body() req: any) {
-    const { path, recursive } = req;
-    return await this.secretsService.getSsmSecretsByPath(
-      path,
-      recursive === "true"
-    );
+    const { path } = req;
+    return await this.secretsService.getSsmSecretsByPath(path);
+  }
+
+  @Post("get/environments")
+  public async getEnvironments(@Body() req: any) {
+    const { path } = req;
+    return await this.secretsService.getEnvironments(path);
   }
 
   @Delete("delete/ssm-secret")
