@@ -114,6 +114,8 @@ then
     aws_response=$?
     if [ $aws_response -eq 0 ];
     then
+      data='{"metadata":{"labels":{"component_status":"plan_failed"}}}'
+      argocd app patch $team_env_config_name --patch $data --type merge >null
       Error "Failed to retreive AWS Credentials."
     fi
   fi
