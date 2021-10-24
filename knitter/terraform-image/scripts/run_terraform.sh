@@ -40,7 +40,7 @@ function PatchError() {
   fi
   
   argocd app patch $team_env_name --patch $data --type merge > null
-  sh /audit.sh $team_name $env_name $config_name "" "Failed" $reconcile_id $config_reconcile_id $is_destroy 0
+  sh /audit.sh $team_name $env_name $config_name "Failed" "Failed" $reconcile_id $config_reconcile_id $is_destroy 0
 }
 
 function appendLogs() {
@@ -111,6 +111,16 @@ then
   if [ $aws_response -eq 0 ];
   then
     setAWSCreds $customer_id
+    aws_response=$?
+    if [ $aws_response -eq 0 ];
+    then
+      data='{"metadata":{"labels":{"component_status":"plan_failed"}}}'
+      argocd app patch $team_env_config_name --patch $data --type merge >null
+      echo $show_output_start
+      echo "No AWS Credentials available. Please set AWS Credentials in the Settings Page." 2>&1 | tee /tmp/plan_output.txt
+      echo $show_output_end
+      SaveAndExit "No AWS Credentials available."
+    fi
   fi
 fi
 
