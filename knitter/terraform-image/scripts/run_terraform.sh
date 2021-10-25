@@ -117,7 +117,7 @@ then
       data='{"metadata":{"labels":{"component_status":"plan_failed"}}}'
       argocd app patch $team_env_config_name --patch $data --type merge >null
       echo $show_output_start
-      echo "No AWS Credentials available. Please set AWS Credentials in the Settings Page." 2>&1 | tee /tmp/plan_output.txt
+      echo "No AWS Credentials available. Please set AWS Credentials in the Settings Page." 2>&1 | tee /tmp/apply_output.txt
       echo $show_output_end
       SaveAndExit "No AWS Credentials available."
     fi
