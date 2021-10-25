@@ -60,7 +60,7 @@ function Error() {
 }
 
 function SaveAndExit() {
-  aws s3 cp /tmp/apply_output.txt s3://zlifecycle-tfplan-$customer_id/$team_name/$env_name/$config_name/$config_reconcile_id/apply_output --profile compuzest-shared --quiet
+  aws s3 cp /tmp/$2.txt s3://zlifecycle-tfplan-$customer_id/$team_name/$env_name/$config_name/$config_reconcile_id/$2 --profile compuzest-shared --quiet
   Error $1
 }
 
@@ -117,9 +117,9 @@ then
       data='{"metadata":{"labels":{"component_status":"plan_failed"}}}'
       argocd app patch $team_env_config_name --patch $data --type merge >null
       echo $show_output_start
-      echo "No AWS Credentials available. Please set AWS Credentials in the Settings Page." 2>&1 | tee /tmp/apply_output.txt
+      echo "No AWS Credentials available. Please set AWS Credentials in the Settings Page." 2>&1 | tee /tmp/plan_output.txt
       echo $show_output_end
-      SaveAndExit "No AWS Credentials available."
+      SaveAndExit "No AWS Credentials available." "plan_output"
     fi
   fi
 fi

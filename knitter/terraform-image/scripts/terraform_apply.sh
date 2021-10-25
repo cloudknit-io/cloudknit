@@ -15,7 +15,7 @@ then
  echo $show_output_end
  data='{"metadata":{"labels":{"component_status":"provision_failed"}}}'
  argocd app patch $team_env_config_name --patch $data --type merge >null
- SaveAndExit "Can not apply terraform apply";
+ SaveAndExit "Can not apply terraform apply" "apply_output";
 fi
 echo -n $result >/tmp/plan_code.txt
 echo $show_output_end
