@@ -1,5 +1,5 @@
 echo $show_output_start
-echo "Executing destroy plan..." 2>&1 | tee /tmp/plan_output.txt
+echo "Executing destroy plan..." 2>&1 | appendLogs /tmp/plan_output.txt
 echo $show_output_end
 data='{"metadata":{"labels":{"component_status":"running_destroy_plan"}}}'
 argocd app patch $team_env_config_name --patch $data --type merge >null

@@ -28,6 +28,22 @@ team_env_config_name=$team_name-$env_name-$config_name
 show_output_start='----->show_output_start<-----'
 show_output_end='----->show_output_end<-----'
 is_debug=0
+if [ $is_apply -eq 0 ];
+then
+  component_error_status="plan_failed"
+  s3FileName="plan_output"
+else
+  s3FileName="apply_output"
+  if [ $is_destroy = true ]
+  then
+      component_error_status="destroy_failed"
+  else
+      component_error_status="provision_failed"
+  fi
+fi
+
+echo "Initializing..." 2>&1 | tee /tmp/$s3FileName.txt
+
 
 ENV_COMPONENT_PATH=/home/terraform-config/$terraform_il_path
 
@@ -38,8 +54,12 @@ function PatchError() {
   else
       data='{"metadata":{"labels":{"env_status":"provision_failed"}}}'
   fi
-  
+
   argocd app patch $team_env_name --patch $data --type merge > null
+
+  data='{"metadata":{"labels":{"component_status":"'$component_error_status'"}}}'
+  argocd app patch $team_env_config_name --patch $data --type merge >null
+
   sh /audit.sh $team_name $env_name $config_name "Failed" "Failed" $reconcile_id $config_reconcile_id $is_destroy 0
 }
 
@@ -60,7 +80,10 @@ function Error() {
 }
 
 function SaveAndExit() {
-  aws s3 cp /tmp/$2.txt s3://zlifecycle-tfplan-$customer_id/$team_name/$env_name/$config_name/$config_reconcile_id/$2 --profile compuzest-shared --quiet
+  echo $show_output_start
+  echo $1 2>&1 | appendLogs /tmp/$s3FileName.txt
+  echo $show_output_end
+  aws s3 cp /tmp/$s3FileName.txt s3://zlifecycle-tfplan-$customer_id/$team_name/$env_name/$config_name/$config_reconcile_id/$s3FileName --profile compuzest-shared --quiet
   Error $1
 }
 
@@ -95,8 +118,8 @@ function setAWSCreds() {
   return 0
 }
 
-sh /client/setup_github.sh || Error "Cannot setup github ssh key"
-sh /client/setup_aws.sh || Error "Cannot setup aws credentials"
+sh /client/setup_github.sh || SaveAndExit "Cannot setup github ssh key"
+sh /client/setup_aws.sh || SaveAndExit "Cannot setup aws credentials"
 
 cd $ENV_COMPONENT_PATH
 
@@ -114,12 +137,10 @@ then
     aws_response=$?
     if [ $aws_response -eq 0 ];
     then
-      data='{"metadata":{"labels":{"component_status":"plan_failed"}}}'
-      argocd app patch $team_env_config_name --patch $data --type merge >null
       echo $show_output_start
-      echo "No AWS Credentials available. Please set AWS Credentials in the Settings Page." 2>&1 | tee /tmp/plan_output.txt
+      echo "No AWS Credentials available. Please set AWS Credentials in the Settings Page."
       echo $show_output_end
-      SaveAndExit "No AWS Credentials available." "plan_output"
+      SaveAndExit "No AWS Credentials available."
     fi
   fi
 fi
@@ -127,7 +148,7 @@ fi
 data='{"metadata":{"labels":{"component_status":"initializing"}}}'
 argocd app patch $team_env_config_name --patch $data --type merge >null
 
-terraform init || Error "Cannot initialize terraform"
+terraform init || SaveAndExit "Cannot initialize terraform"
 
 if [ $is_apply -eq 0 ]; then
   if [ $is_sync -eq 1 ]; then
@@ -148,13 +169,10 @@ if [ $is_apply -eq 0 ]; then
   fi
 
   if [ $result -eq 1 ]; then
-    data='{"metadata":{"labels":{"component_status":"plan_failed"}}}'
-    argocd app patch $team_env_config_name --patch $data --type merge >null
-
-    Error "There is an issue with generating terraform plan"
+    SaveAndExit "There is an issue with generating terraform plan"
   fi
 
-  sh /argocd/process_based_on_plan_result.sh $is_sync $result $team_env_name $team_env_config_name $workflow_id $is_destroy $team_name $env_name $config_name $reconcile_id $config_reconcile_id $auto_approve || Error "There is an issue with ArgoCD CLI"
+  sh /argocd/process_based_on_plan_result.sh $is_sync $result $team_env_name $team_env_config_name $workflow_id $is_destroy $team_name $env_name $config_name $reconcile_id $config_reconcile_id $auto_approve || SaveAndExit "There is an issue with ArgoCD CLI"
 
 else
   if [ $is_destroy = true ]; then

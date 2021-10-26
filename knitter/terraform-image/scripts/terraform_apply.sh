@@ -1,5 +1,5 @@
 echo $show_output_start
-echo "Executing terraform apply..." 2>&1 | tee /tmp/apply_output.txt
+echo "Executing terraform apply..." 2>&1 | appendLogs /tmp/apply_output.txt
 echo $show_output_end
 data='{"metadata":{"labels":{"component_status":"provisioning"}}}'
 
@@ -13,9 +13,7 @@ result=$?
 if [ $result -eq 99 ]
 then
  echo $show_output_end
- data='{"metadata":{"labels":{"component_status":"provision_failed"}}}'
- argocd app patch $team_env_config_name --patch $data --type merge >null
- SaveAndExit "Can not apply terraform apply" "apply_output";
+ SaveAndExit "Can not apply terraform apply";
 fi
 echo -n $result >/tmp/plan_code.txt
 echo $show_output_end
@@ -26,8 +24,5 @@ if [ $result -eq 0 ]; then
     data='{"metadata":{"labels":{"component_status":"provisioned"}}}'
     argocd app patch $team_env_config_name --patch $data --type merge >null
 else
-    data='{"metadata":{"labels":{"component_status":"provision_failed"}}}'
-    argocd app patch $team_env_config_name --patch $data --type merge >null
-
-    Error "There is issue with provisioning"
+    SaveAndExit "There is issue with provisioning"
 fi
