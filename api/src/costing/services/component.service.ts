@@ -101,15 +101,12 @@ export class ComponentService {
       },
     });
     const roots = [];
-    const resources = new Map<string, any>();
+    var resources = new Map<string, any>(resultSet.map(e => [e.id, {...e, subresources: [] }]));
     for (let i = 0; i < resultSet.length; i++) {
-      resultSet[i].subresources = [];
-      const resource = resultSet[i];
-      if (!resultSet[i].parentId) {
+      const resource = resources.get(resultSet[i].id);
+      if (!resource.parentId) {
         roots.push(resource);
-        resources.set(resource.id, resource);
       } else {
-        resources.set(resource.id, resource);
         resources.get(resource.parentId).subresources.push(resource);
       }
     }
