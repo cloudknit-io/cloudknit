@@ -18,10 +18,10 @@ is_sync=$6
 workflow_id=$7
 terraform_il_path=$8
 is_destroy=$9
-config_reconcile_id=$10
-reconcile_id=$11
-customer_id=$12
-auto_approve=$13
+config_reconcile_id=${10}
+reconcile_id=${11}
+customer_id=${12}
+auto_approve=${13}
 
 team_env_name=$team_name-$env_name
 team_env_config_name=$team_name-$env_name-$config_name
