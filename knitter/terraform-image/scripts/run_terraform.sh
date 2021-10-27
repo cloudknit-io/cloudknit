@@ -126,6 +126,7 @@ cd $ENV_COMPONENT_PATH
 sh /argocd/login.sh
 cat ~/.aws/credentials
 
+sleep 5m
 setAWSCreds $customer_id/$team_name/$env_name
 aws_response=$?
 if [ $aws_response -eq 0 ];
