@@ -19,7 +19,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o zlifecyc
 # APPLICATION IMAGE
 FROM alpine
 
-ARG TERRAFORM_VERSION=1.0.9
+ARG TERRAFORM_VERSION=0.14.10
 
 RUN apk add --update --no-cache git openssh
 
