@@ -97,7 +97,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	teamYAML := fmt.Sprintf("%s-team.yaml", team.Spec.TeamName)
 
 	fileUtil := &file.OsFileService{}
-	if err := fileUtil.CreateEmptyDirectory(il.EnvironmentDirectory(team.Spec.TeamName)); err != nil {
+	if err := fileUtil.CreateEmptyDirectory(il.TeamDirectory(team.Spec.TeamName)); err != nil {
 		return ctrl.Result{}, err
 	}
 

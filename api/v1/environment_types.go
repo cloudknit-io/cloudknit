@@ -106,13 +106,13 @@ type EnvironmentSpec struct {
 
 // EnvironmentStatus defines the observed state of Environment
 type EnvironmentStatus struct {
-	TeamName    string                        `json:"teamName,omitempty"`
-	EnvName     string                        `json:"envName,omitempty"`
-	Components  []*EnvironmentComponent       `json:"components,omitempty"`
-	TfvarsState map[string]map[string]*Tfvars `json:"tfvarsState,omitempty"`
+	TeamName   string                             `json:"teamName,omitempty"`
+	EnvName    string                             `json:"envName,omitempty"`
+	Components []*EnvironmentComponent            `json:"components,omitempty"`
+	FileState  map[string]map[string]*WatchedFile `json:"fileState,omitempty"`
 }
 
-type Tfvars struct {
+type WatchedFile struct {
 	Source       string      `json:"source"`
 	Path         string      `json:"path"`
 	Ref          string      `json:"ref"`

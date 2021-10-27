@@ -1,4 +1,4 @@
-package gotfvars
+package filereconciler
 
 import (
 	"context"
@@ -17,9 +17,10 @@ import (
 
 var reconciler *Reconciler
 
-type Tfvars struct {
+type FileMeta struct {
 	md5               string
 	reconciledAt      time.Time
+	Handler           Handler
 	Source            string
 	Path              string
 	Ref               string
@@ -28,7 +29,7 @@ type Tfvars struct {
 	Component         string
 }
 
-type State = map[string]map[string]*Tfvars
+type State = map[string]map[string]*FileMeta
 
 type Reconciler struct {
 	ctx           context.Context
@@ -40,7 +41,7 @@ type Reconciler struct {
 
 func NewReconciler(ctx context.Context, log logr.Logger, k8sClient kClient.Client, repoAPI github.RepositoryAPI) *Reconciler {
 	if reconciler == nil {
-		state := map[string]map[string]*Tfvars{}
+		state := map[string]map[string]*FileMeta{}
 		reconciler = &Reconciler{
 			ctx:           ctx,
 			log:           log,
@@ -59,19 +60,19 @@ func GetReconciler() *Reconciler {
 }
 
 func (w *Reconciler) Start() error {
-	w.log.Info("Starting tfvars reconciler")
+	w.log.Info("Starting file reconciler")
 	c := cron.New()
 	c.Start()
 	_, err := c.AddFunc("@every 1m", func() {
 		start := time.Now()
-		w.log.Info("Running scheduled tfvars watcher iteration", "time", time.Now().String())
-		allTfvars := w.AllTfvars()
-		for _, tfvars := range allTfvars {
-			_, _ = w.reconcile(tfvars)
+		w.log.Info("Running scheduled file reconciler iteration", "time", time.Now().String())
+		allFiles := w.Files()
+		for _, file := range allFiles {
+			_, _ = w.reconcile(file)
 		}
 		duration := time.Since(start)
 		w.log.Info(
-			"Finished scheduled tfvars watcher iteration",
+			"Finished scheduled file reconciler iteration",
 			"started", time.Now().String(),
 			"duration", duration,
 		)
@@ -82,34 +83,34 @@ func (w *Reconciler) Start() error {
 	return nil
 }
 
-func (w *Reconciler) AllTfvars() []*Tfvars {
-	var allTfvars []*Tfvars
+func (w *Reconciler) Files() []*FileMeta {
+	var allFiles []*FileMeta
 	for _, envMap := range w.state {
-		for _, tfvars := range envMap {
-			allTfvars = append(allTfvars, tfvars)
+		for _, files := range envMap {
+			allFiles = append(allFiles, files)
 		}
 	}
-	return allTfvars
+	return allFiles
 }
 
 func (w *Reconciler) State() State {
 	return w.state
 }
 
-func (w *Reconciler) Submit(tfv *Tfvars) (added bool, err error) {
+func (w *Reconciler) Submit(fw *FileMeta) (added bool, err error) {
 	added = false
-	if tfv == nil {
+	if fw == nil {
 		return added, errors.New("nil pointer instead of git file encountered")
 	}
 
-	environment := tfv.Environment
-	component := tfv.Component
+	environment := fw.Environment
+	component := fw.Component
 
 	if !w.exists(environment, component) {
 		if w.state[environment] == nil {
-			w.state[environment] = map[string]*Tfvars{}
+			w.state[environment] = map[string]*FileMeta{}
 		}
-		w.state[environment][component] = tfv
+		w.state[environment][component] = fw
 		added = true
 	}
 
@@ -126,39 +127,58 @@ func (w *Reconciler) Remove(environment string, component string) {
 	}
 }
 
-func (w *Reconciler) reconcile(tfv *Tfvars) (updated bool, err error) {
+func (w *Reconciler) reconcile(fm *FileMeta) (updated bool, err error) {
 	updated = false
 	e := &v1.Environment{}
-	if err := w.k8sClient.Get(w.ctx, tfv.EnvironmentObject, e); err != nil {
+	if err := w.k8sClient.Get(w.ctx, fm.EnvironmentObject, e); err != nil {
 		return updated, err
 	}
 
-	rc, err := downloadTfvarsFile(w.githubRepoAPI, tfv.Source, tfv.Ref, tfv.Path)
+	rc, exists, err := downloadFile(w.githubRepoAPI, fm.Source, fm.Ref, fm.Path)
 	if err != nil {
 		return updated, err
 	}
-	newHash := fmt.Sprintf("%x", md5.Sum(rc))
 
-	ec := findEnvironmentComponent(e.Spec.Components, tfv.Component)
-	if ec == nil {
-		w.log.Info("Missing environment component, ending reconcile", "component", tfv.Component)
+	if !exists {
+		w.log.Info("File missing from git", "environment", fm.Environment, "component", fm.Component)
+		w.Remove(fm.Environment, fm.Component)
+		if err := fm.Handler.Cleanup(); err != nil {
+			return false, err
+		}
+		updated = true
 		return updated, nil
 	}
 
-	if oldHash := tfv.md5; oldHash != newHash {
+	if err := fm.Handler.Reconcile(); err != nil {
+		return false, err
+	}
+
+	newHash := fmt.Sprintf("%x", md5.Sum(rc))
+
+	ec := findEnvironmentComponent(e.Spec.Components, fm.Component)
+	if ec == nil {
+		w.log.Info(
+			"Missing environment component, ending reconcile",
+			"environment", fm.Environment,
+			"component", fm.Component,
+		)
+		return updated, nil
+	}
+
+	if oldHash := fm.md5; oldHash != newHash {
 		w.log.Info(
 			"Updating hash for environment component",
-			"component", tfv.Component,
+			"component", fm.Component,
 			"environment", e.Spec.EnvName,
 			"team", e.Spec.TeamName,
 			"oldHash", oldHash,
 			"newHash", newHash,
 		)
-		tfv.md5 = newHash
-		tfv.reconciledAt = time.Now()
-		e.Status.TfvarsState = w.buildDomainTfvarsState()
+		fm.md5 = newHash
+		fm.reconciledAt = time.Now()
+		e.Status.FileState = w.buildDomainFileState()
 		if err := w.k8sClient.Status().Update(w.ctx, e); err != nil {
-			return updated, err
+			return false, err
 		}
 		updated = true
 	}
@@ -166,22 +186,22 @@ func (w *Reconciler) reconcile(tfv *Tfvars) (updated bool, err error) {
 	return updated, nil
 }
 
-func (w *Reconciler) buildDomainTfvarsState() map[string]map[string]*v1.Tfvars {
-	domainState := map[string]map[string]*v1.Tfvars{}
-	for envKey, environmentTfvars := range w.state {
+func (w *Reconciler) buildDomainFileState() map[string]map[string]*v1.WatchedFile {
+	domainState := map[string]map[string]*v1.WatchedFile{}
+	for envKey, environmentFiles := range w.state {
 		if domainState[envKey] == nil {
-			domainState[envKey] = map[string]*v1.Tfvars{}
+			domainState[envKey] = map[string]*v1.WatchedFile{}
 		}
-		for compKey, tfvars := range environmentTfvars {
-			domainState[envKey][compKey] = toDomainTfvars(tfvars)
+		for compKey, files := range environmentFiles {
+			domainState[envKey][compKey] = toDomainFiles(files)
 		}
 	}
 	return domainState
 }
 
-func toDomainTfvars(tfv *Tfvars) *v1.Tfvars {
+func toDomainFiles(fm *FileMeta) *v1.WatchedFile {
 	now := metav1.NewTime(time.Now())
-	return &v1.Tfvars{Source: tfv.Source, Path: tfv.Path, Ref: tfv.Ref, Md5: tfv.md5, ReconciledAt: now}
+	return &v1.WatchedFile{Source: fm.Source, Path: fm.Path, Ref: fm.Ref, Md5: fm.md5, ReconciledAt: now}
 }
 
 func findEnvironmentComponent(ecs []*v1.EnvironmentComponent, name string) *v1.EnvironmentComponent {

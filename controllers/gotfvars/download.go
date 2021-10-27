@@ -1,6 +1,7 @@
 package gotfvars
 
 import (
+	"fmt"
 	"io/ioutil"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
@@ -10,24 +11,30 @@ import (
 
 func GetVariablesFromTfvarsFile(log logr.Logger, api github.RepositoryAPI, repoURL string, ref string, path string) (string, error) {
 	log.Info("Downloading tfvars file", "repoUrl", repoURL, "ref", ref, "path", path)
-	buff, err := downloadTfvarsFile(api, repoURL, ref, path)
+	buff, exists, err := downloadTfvarsFile(api, repoURL, ref, path)
 	if err != nil {
 		return "", err
+	}
+	if !exists {
+		return "", fmt.Errorf("file does not exist: %s/%s?ref=%s", repoURL, path, ref)
 	}
 	tfvars := string(buff)
 
 	return tfvars, nil
 }
 
-func downloadTfvarsFile(api github.RepositoryAPI, repoURL string, ref string, path string) ([]byte, error) {
-	rc, err := github.DownloadFile(api, repoURL, ref, path)
+func downloadTfvarsFile(api github.RepositoryAPI, repoURL string, ref string, path string) (file []byte, exists bool, err error) {
+	rc, exists, err := github.DownloadFile(api, repoURL, ref, path)
 	if err != nil {
-		return nil, err
+		return nil, false, err
+	}
+	if !exists {
+		return nil, false, nil
 	}
 	defer common.CloseBody(rc)
 	buff, err := ioutil.ReadAll(rc)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
-	return buff, nil
+	return buff, true,nil
 }

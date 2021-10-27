@@ -15,8 +15,7 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
-	"strings"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/overlay"
 	"time"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/gotfvars"
@@ -85,8 +84,8 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		return ctrl.Result{}, nil
 	}
 
-	envDirectory := il.EnvironmentDirectory(environment.Spec.TeamName)
-	envComponentDirectory := il.EnvironmentComponentDirectory(environment.Spec.TeamName, environment.Spec.EnvName)
+	envDirectory := il.TeamDirectory(environment.Spec.TeamName)
+	envComponentDirectory := il.EnvironmentDirectory(environment.Spec.TeamName, environment.Spec.EnvName)
 	fileService := file.NewOsFileService()
 
 	isDeleteEvent := !environment.DeletionTimestamp.IsZero() || environment.Spec.Teardown
@@ -488,11 +487,10 @@ func generateAndSaveEnvironmentComponents(
 			return err
 		}
 
-		terraformDirectory := il.TerraformIlPath(envComponentDirectory, ec.Name)
-		if err := generateOverlayFiles(log, fileService, githubRepoAPI, ec, terraformDirectory); err != nil {
+		terraformDirectory := il.EnvironmentComponentTerraformIlPath(environment.Spec.TeamName, environment.Spec.EnvName, ec.Name)
+		if err := overlay.GenerateOverlayFiles(log, fileService, githubRepoAPI, environment, ec, terraformDirectory); err != nil {
 			return err
 		}
-
 	}
 
 	return nil
@@ -525,68 +523,4 @@ func generateAndSaveEnvironmentApp(fileService file.Service, environment *stable
 	envYAML := fmt.Sprintf("%s-environment.yaml", environment.Spec.EnvName)
 
 	return fileService.SaveYamlFile(*envApp, envDirectory, envYAML)
-}
-
-func generateOverlayFiles(
-	log logr.Logger,
-	fileService file.Service,
-	repoAPI github.RepositoryAPI,
-	ec *stablev1.EnvironmentComponent,
-	folderName string,
-) error {
-	if ec.OverlayFiles != nil {
-		for _, overlay := range ec.OverlayFiles {
-			tokens := strings.Split(overlay.Path, "/")
-			name := tokens[len(tokens)-1]
-			log.Info(
-				"Generating overlay file from git file",
-				"overlay", name,
-				"folder", folderName,
-				"source", overlay.Source,
-				"path", overlay.Path,
-				"component", ec.Name,
-			)
-			if err := saveOverlayFileFromGit(fileService, repoAPI, overlay, folderName, name); err != nil {
-				return err
-			}
-		}
-	}
-	if ec.OverlayData != nil {
-		for _, overlay := range ec.OverlayData {
-			log.Info(
-				"Generating overlay file from data field",
-				"overlay", overlay.Name,
-				"folder", folderName,
-				"component", ec.Name,
-			)
-			if err := fileService.SaveFileFromString(overlay.Data, folderName, overlay.Name); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
-func saveOverlayFileFromGit(
-	fileUtil file.Service,
-	repoAPI github.RepositoryAPI,
-	of *stablev1.OverlayFile,
-	folderName string,
-	fileName string,
-) error {
-	ref := of.Ref
-	if ref == "" {
-		ref = "HEAD"
-	}
-	f, err := github.DownloadFile(repoAPI, of.Source, ref, of.Path)
-	if err != nil {
-		return err
-	}
-
-	buff, err := ioutil.ReadAll(f)
-	if err != nil {
-		return err
-	}
-
-	return fileUtil.SaveFileFromByteArray(buff, folderName, fileName)
 }

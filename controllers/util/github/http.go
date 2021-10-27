@@ -3,6 +3,7 @@ package github
 import (
 	"context"
 	"io"
+	"strings"
 
 	"github.com/google/go-github/v32/github"
 	"golang.org/x/oauth2"
@@ -65,7 +66,14 @@ func (api HTTPRepositoryAPI) CreateHook(owner string, repo string, hook *github.
 	return api.Client.CreateHook(api.Ctx, owner, repo, hook)
 }
 
-func (api HTTPRepositoryAPI) DownloadContents(owner string, repo string, ref string, path string) (io.ReadCloser, error) {
+func (api HTTPRepositoryAPI) DownloadContents(owner string, repo string, ref string, path string) (file io.ReadCloser, exists bool, err error) {
 	opts := &github.RepositoryContentGetOptions{Ref: ref}
-	return api.Client.DownloadContents(api.Ctx, owner, repo, path, opts)
+	f, err := api.Client.DownloadContents(api.Ctx, owner, repo, path, opts)
+	if err != nil {
+		if strings.HasPrefix(err.Error(), "No file named") {
+			return nil, false, nil
+		}
+		return nil, false, err
+	}
+	return f, true, nil
 }
