@@ -18,9 +18,9 @@ is_destroy=$6
 team_name=$7
 env_name=$8
 config_name=$9
-reconcile_id=$10
-config_reconcile_id=$11
-auto_approve=$12
+reconcile_id=${10}
+config_reconcile_id=${11}
+auto_approve=${12}
 
 function PatchError() {
     data='{"metadata":{"labels":{"component_status":"plan_failed"}}}'

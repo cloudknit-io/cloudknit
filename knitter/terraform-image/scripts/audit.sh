@@ -7,7 +7,7 @@ reconcile_id=$6
 config_reconcile_id=$7
 is_destroy=$8
 phase=$9
-destroy_protection=$10
+destroy_protection=${10}
 
 team_env_name=$team_name-$env_name
 team_env_config_name=$team_name-$env_name-$config_name
