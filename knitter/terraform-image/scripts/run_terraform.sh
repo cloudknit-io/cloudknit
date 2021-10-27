@@ -124,6 +124,7 @@ sh /client/setup_aws.sh || SaveAndExit "Cannot setup aws credentials"
 cd $ENV_COMPONENT_PATH
 
 sh /argocd/login.sh
+echo ~/.aws/credentials
 
 setAWSCreds $customer_id/$team_name/$env_name
 aws_response=$?
