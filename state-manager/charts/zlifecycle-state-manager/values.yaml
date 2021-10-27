@@ -6,7 +6,7 @@ replicaCount: 1
 
 image:
   repository: 413422438110.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-state-manager
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"
 
