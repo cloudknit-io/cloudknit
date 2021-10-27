@@ -27,7 +27,7 @@ import (
 )
 
 const (
-	DefaultTerraformVersion = "0.13.2"
+	DefaultTerraformVersion = "0.14.10"
 	DefaultRegion           = "us-east-1"
 	DefaultSharedRegion     = "us-east-1"
 	DefaultSharedProfile    = "compuzest-shared"
