@@ -21,7 +21,7 @@ RUN aws-iam-authenticator version
 RUN apk del .build-deps
 RUN rm /tmp/*
 
-FROM hashicorp/terraform:0.14.10
+FROM hashicorp/terraform:1.0.9
 
 ARG INFRACOST_API_KEY
 RUN apk add --update curl
