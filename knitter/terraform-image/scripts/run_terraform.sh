@@ -92,7 +92,6 @@ function returnErrorCode() {
 }
 
 function setAWSCreds() {
-  echo $1
   aws_region=$(aws ssm get-parameter --profile compuzest-shared --region us-east-1 --name "/$1/aws_region" --with-decryption --query "Parameter.Value" | jq -r ".")
   if [ ! -z $aws_region ];
   then
@@ -125,7 +124,6 @@ sh /client/setup_aws.sh || SaveAndExit "Cannot setup aws credentials"
 cd $ENV_COMPONENT_PATH
 
 sh /argocd/login.sh
-cat ~/.aws/credentials
 
 setAWSCreds $customer_id/$team_name/$env_name
 aws_response=$?
@@ -142,7 +140,6 @@ then
       echo $show_output_start
       echo "No AWS Credentials available. Please set AWS Credentials in the Settings Page."
       echo $show_output_end
-      sleep 5m
       SaveAndExit "No AWS Credentials available."
     fi
   fi
