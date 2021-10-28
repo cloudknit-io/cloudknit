@@ -30,7 +30,7 @@ RUN apk update && apk upgrade && apk --no-cache add curl jq bash openssl
 RUN apk add --update --no-cache python3 && apk add --update py3-pip && apk add py3-setuptools
 RUN python3 -m pip --no-cache-dir install --upgrade awscli
 
-RUN curl -sL https://github.com/infracost/infracost/releases/download/v0.9.3/infracost-linux-amd64.tar.gz | tar xz -C /tmp
+RUN curl -sL https://github.com/infracost/infracost/releases/download/v0.9.12/infracost-linux-amd64.tar.gz | tar xz -C /tmp
 
 RUN mv /tmp/infracost-linux-amd64 /usr/local/bin/infracost
 
