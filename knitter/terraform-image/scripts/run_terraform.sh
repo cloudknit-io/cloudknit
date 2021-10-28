@@ -137,10 +137,7 @@ then
     aws_response=$?
     if [ $aws_response -eq 0 ];
     then
-      echo $show_output_start
-      echo "No AWS Credentials available. Please set AWS Credentials in the Settings Page."
-      echo $show_output_end
-      SaveAndExit "No AWS Credentials available."
+      SaveAndExit "No AWS Credentials available. Please set AWS Credentials in the Settings Page."
     fi
   fi
 fi
