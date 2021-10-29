@@ -15,6 +15,8 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"strings"
 	"sync"
 	"time"
 
@@ -26,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apiserver/pkg/registry/generic/registry"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -62,6 +65,10 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		initError = r.initArgocdAdminRbac(ctx)
 	})
 	if initError != nil {
+		if strings.Contains(initError.Error(), registry.OptimisticLockErrorMsg) {
+			// do manual retry without error
+			return reconcile.Result{RequeueAfter: time.Second * 1}, nil
+		}
 		return ctrl.Result{}, initError
 	}
 
@@ -86,6 +93,10 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	}
 
 	if err := r.updateArgocdRbac(ctx, team); err != nil {
+		if strings.Contains(err.Error(), registry.OptimisticLockErrorMsg) {
+			// do manual retry without error
+			return reconcile.Result{RequeueAfter: time.Second * 1}, nil
+		}
 		return ctrl.Result{}, err
 	}
 

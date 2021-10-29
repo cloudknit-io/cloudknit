@@ -17,6 +17,9 @@ import (
 	"fmt"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/filereconciler"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/overlay"
+	"k8s.io/apiserver/pkg/registry/generic/registry"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"strings"
 	"time"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/gotfvars"
@@ -92,6 +95,10 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	isDeleteEvent := !environment.DeletionTimestamp.IsZero() || environment.Spec.Teardown
 	if !isDeleteEvent {
 		if err := r.updateStatus(ctx, environment); err != nil {
+			if strings.Contains(err.Error(), registry.OptimisticLockErrorMsg) {
+				// do manual retry without error
+				return reconcile.Result{RequeueAfter: time.Second * 1}, nil
+			}
 			r.Log.Error(
 				err,
 				"Error occurred while updating Environment status",
