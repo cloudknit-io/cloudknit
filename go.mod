@@ -19,20 +19,25 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.22.2
 	k8s.io/apiextensions-apiserver v0.22.2 // indirect
-	k8s.io/apiserver v0.22.2
 	k8s.io/apimachinery v0.22.2
+	k8s.io/apiserver v0.22.2
 	k8s.io/client-go v11.0.1-0.20190816222228-6d55c1b1f1ca+incompatible
 	sigs.k8s.io/controller-runtime v0.9.6
-	sigs.k8s.io/controller-tools v0.7.0 // indirect
 )
 
 replace (
+	// argocd
+	github.com/argoproj/gitops-engine => github.com/argoproj/gitops-engine v0.4.0
 	// k8s & argocd version roulette
 	// ISSUE - https://github.com/argoproj/argo-cd/issues/4055
 	// follow and replace to versions listed here - https://github.com/argoproj/argo-cd/blob/master/go.mod
 	// watch out for gitops engine also - https://github.com/argoproj/gitops-engine/blob/master/go.mod
-	github.com/argoproj/gitops-engine => github.com/argoproj/gitops-engine v0.4.0
-	k8s.io/api => k8s.io/api v0.21.0
+
+	// k8s api server registry
+	// ISSUE - https://github.com/etcd-io/etcd/issues/12124
+	google.golang.org/grpc => google.golang.org/grpc v1.29.0
+	// k8s
+	k8s.io/api => k8s.io/api v0.21.4
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.21.4
 	k8s.io/apimachinery => k8s.io/apimachinery v0.21.4
 	k8s.io/apiserver => k8s.io/apiserver v0.21.4
