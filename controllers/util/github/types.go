@@ -29,7 +29,7 @@ type RepositoryAPI interface {
 	GetRepository(owner string, repo string) (*github.Repository, *github.Response, error)
 	ListHooks(owner string, repo string, opts *github.ListOptions) ([]*github.Hook, *github.Response, error)
 	CreateHook(owner string, repo string, hook *github.Hook) (*github.Hook, *github.Response, error)
-	DownloadContents(owner string, repo string, ref string, path string) (io.ReadCloser, error)
+	DownloadContents(owner string, repo string, ref string, path string) (file io.ReadCloser, exists bool, err error)
 }
 
 type HTTPRepositoryAPI struct {

@@ -26,13 +26,12 @@ import (
 
 // GenerateWorkflowOfWorkflows create WoW
 func GenerateWorkflowOfWorkflows(environment *stablev1.Environment) *workflow.Workflow {
-	envComponentDirectory := il.EnvironmentComponentDirectory(environment.Spec.TeamName, environment.Spec.EnvName)
 	workflowTemplate := "terraform-provision-template"
 
 	var tasks []workflow.DAGTask
 
 	for _, environmentComponent := range environment.Spec.Components {
-		tfPath := il.TerraformIlPath(envComponentDirectory, environmentComponent.Name)
+		tfPath := il.EnvironmentComponentTerraformIlPath(environment.Spec.TeamName, environment.Spec.EnvName, environmentComponent.Name)
 		task := workflow.DAGTask{
 			Name: environmentComponent.Name,
 			TemplateRef: &workflow.TemplateRef{
@@ -95,7 +94,6 @@ func GenerateWorkflowOfWorkflows(environment *stablev1.Environment) *workflow.Wo
 
 func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment) *workflow.Workflow {
 	workflowTemplate := "terraform-sync-template"
-	envComponentDirectory := il.EnvironmentComponentDirectory(environment.Spec.TeamName, environment.Spec.EnvName)
 
 	var tasks []workflow.DAGTask
 
@@ -111,7 +109,7 @@ func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment) *workf
 	for _, ec := range ecs {
 		allComponents = append(allComponents, ec.Name)
 
-		tfPath := il.TerraformIlPath(envComponentDirectory, ec.Name)
+		tfPath := il.EnvironmentComponentTerraformIlPath(environment.Spec.TeamName, environment.Spec.EnvName, ec.Name)
 
 		autoApproveFlag := ec.AutoApprove
 		if autoApproveAll {
@@ -121,7 +119,7 @@ func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment) *workf
 		dependencies := ec.DependsOn
 		destroyFlag := ec.Destroy
 		if destroyAll {
-			destroyFlag  = true
+			destroyFlag = true
 			dependencies = buildInverseDependencies(ecs, ec.Name)
 		}
 

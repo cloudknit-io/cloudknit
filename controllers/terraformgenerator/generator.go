@@ -118,7 +118,7 @@ func GenerateTerraform(
 
 	tfPath := terraformPath{componentDirectory: componentDirectory, componentName: componentName}
 
-	terraformDirectory := il.TerraformIlPath(tfPath.componentDirectory, tfPath.componentName)
+	terraformDirectory := il.EnvironmentComponentTerraformIlPath(vars.TeamName, vars.EnvName, tfPath.componentName)
 	if err := generateFile(fileService, &providerConfig, terraformDirectory, "provider.tf", "terraform_provider"); err != nil {
 		return err
 	}
