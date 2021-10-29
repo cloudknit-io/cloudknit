@@ -17,12 +17,16 @@ var Config = config{
 	ConfigWatcherDirectory: "config-watcher",
 }
 
-func EnvironmentComponentDirectory(teamName string, envName string) string {
-	return EnvironmentDirectory(teamName) + "/" + envName + "-environment-component"
+func TeamDirectory(team string) string {
+	return Config.TeamDirectory + "/" + team + "-team-environment"
 }
 
-func TerraformIlPath(environmentComponentDirectory string, environmentComponentName string) string {
-	return filepath.Join(environmentComponentDirectory, environmentComponentName, "terraform")
+func EnvironmentDirectory(team string, environment string) string {
+	return TeamDirectory(team) + "/" + environment + "-environment-component"
+}
+
+func EnvironmentComponentTerraformIlPath(team string, environment string, component string) string {
+	return filepath.Join(EnvironmentDirectory(team, environment), component, "terraform")
 }
 
 func RepoName(companyName string) string {
@@ -31,10 +35,6 @@ func RepoName(companyName string) string {
 
 func RepoURL(owner string, companyName string) string {
 	return fmt.Sprintf("git@github.com:%s/%s.git", owner, RepoName(companyName))
-}
-
-func EnvironmentDirectory(teamName string) string {
-	return Config.TeamDirectory + "/" + teamName + "-team-environment"
 }
 
 func EnvComponentModuleSource(moduleSource string, moduleName string) string {

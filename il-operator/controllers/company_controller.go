@@ -138,7 +138,7 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	_, err = github.CreateRepoWebhook(r.Log, repoAPI, companyRepo, env.Config.ArgocdHookURL, env.Config.GitHubWebhookSecret)
 	if err != nil {
-		return ctrl.Result{}, err
+		r.Log.Error(err, "error creating Company webhook", "company", company.Spec.CompanyName)
 	}
 
 	duration := time.Since(start)
@@ -156,8 +156,9 @@ func (r *CompanyReconciler) initCompany(ctx context.Context) error {
 
 	r.Log.Info("Creating webhook for IL repo")
 	repoAPI := github.NewHTTPRepositoryAPI(ctx, env.Config.GitHubAuthToken)
-	if _, err := github.CreateRepoWebhook(r.Log, repoAPI, env.Config.ILRepoURL, env.Config.ArgocdHookURL, env.Config.GitHubWebhookSecret); err != nil {
-		return err
+	ilRepoURL := env.Config.ILRepoURL
+	if _, err := github.CreateRepoWebhook(r.Log, repoAPI, ilRepoURL, env.Config.ArgocdHookURL, env.Config.GitHubWebhookSecret); err != nil {
+		r.Log.Error(err, "error creating Company IL webhook", "repo", ilRepoURL)
 	}
 
 	r.Log.Info("Registering helm chart repo")

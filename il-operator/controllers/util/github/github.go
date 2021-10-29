@@ -53,19 +53,19 @@ func DownloadFile(
 	repoURL string,
 	ref string,
 	path string,
-) (io.ReadCloser, error) {
+) (file io.ReadCloser, exists bool, err error) {
 	owner, repo, err := parseRepoURL(repoURL)
 	if ref == "" {
 		ref = "HEAD"
 	}
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
-	rc, err := api.DownloadContents(owner, repo, ref, path)
+	rc, exists, err := api.DownloadContents(owner, repo, ref, path)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
-	return rc, nil
+	return rc, exists, nil
 }
 
 func DeletePatternsFromRootTree(

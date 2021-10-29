@@ -15,7 +15,10 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/filereconciler"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/overlay"
+	"k8s.io/apiserver/pkg/registry/generic/registry"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"strings"
 	"time"
 
@@ -85,13 +88,17 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		return ctrl.Result{}, nil
 	}
 
-	envDirectory := il.EnvironmentDirectory(environment.Spec.TeamName)
-	envComponentDirectory := il.EnvironmentComponentDirectory(environment.Spec.TeamName, environment.Spec.EnvName)
+	envDirectory := il.TeamDirectory(environment.Spec.TeamName)
+	envComponentDirectory := il.EnvironmentDirectory(environment.Spec.TeamName, environment.Spec.EnvName)
 	fileService := file.NewOsFileService()
 
 	isDeleteEvent := !environment.DeletionTimestamp.IsZero() || environment.Spec.Teardown
 	if !isDeleteEvent {
 		if err := r.updateStatus(ctx, environment); err != nil {
+			if strings.Contains(err.Error(), registry.OptimisticLockErrorMsg) {
+				// do manual retry without error
+				return reconcile.Result{RequeueAfter: time.Second * 1}, nil
+			}
 			r.Log.Error(
 				err,
 				"Error occurred while updating Environment status",
@@ -322,7 +329,7 @@ func (r *EnvironmentReconciler) postDeleteHook(
 	}
 	_ = r.deleteDanglingArgocdApps(e, argocdAPI)
 	_ = r.deleteDanglingArgoWorkflows(e, argoworkflowAPI)
-	r.removeTfvarsReconcilerEntries(e)
+	r.removeFileReconcilerEntries(e)
 	return nil
 }
 
@@ -390,16 +397,16 @@ func extractPathsToRemove(e *stablev1.Environment) []string {
 	}
 }
 
-func (r *EnvironmentReconciler) removeTfvarsReconcilerEntries(e *stablev1.Environment) {
+func (r *EnvironmentReconciler) removeFileReconcilerEntries(e *stablev1.Environment) {
 	r.Log.Info(
-		"Removing entries from tfvars reconciler",
+		"Removing entries from file reconciler",
 		"team", e.Spec.TeamName,
 		"environment", e.Spec.EnvName,
 	)
-	tr := gotfvars.GetReconciler()
+	fr := filereconciler.GetReconciler()
 	for _, ec := range e.Spec.Components {
 		if ec.VariablesFile != nil {
-			tr.Remove(e.Spec.EnvName, ec.Name)
+			fr.RemoveComponentFiles(e.Spec.EnvName, ec.Name)
 		}
 	}
 }
@@ -431,31 +438,9 @@ func generateAndSaveEnvironmentComponents(
 			tfv, err := gotfvars.GetVariablesFromTfvarsFile(
 				log,
 				githubRepoAPI,
-				ec.VariablesFile.Source,
-				env.Config.RepoBranch,
-				ec.VariablesFile.Path,
+				environment,
+				ec,
 			)
-			if err != nil {
-				return err
-			}
-
-			log.Info(
-				"Submitting tfvars file to tfvars reconciler",
-				"environment", environment.Spec.EnvName,
-				"team", environment.Spec.TeamName,
-				"component", ec.Name,
-				"type", ec.Type,
-			)
-			_, err = gotfvars.
-				GetReconciler().
-				Submit(&gotfvars.Tfvars{
-					Environment:       environment.Spec.EnvName,
-					Component:         ec.Name,
-					Source:            ec.VariablesFile.Source,
-					Path:              ec.VariablesFile.Path,
-					Ref:               ec.VariablesFile.Ref,
-					EnvironmentObject: kClient.ObjectKey{Name: environment.Name, Namespace: environment.Namespace},
-				})
 			if err != nil {
 				return err
 			}
@@ -488,11 +473,10 @@ func generateAndSaveEnvironmentComponents(
 			return err
 		}
 
-		terraformDirectory := il.TerraformIlPath(envComponentDirectory, ec.Name)
-		if err := generateOverlayFiles(log, fileService, githubRepoAPI, ec, terraformDirectory); err != nil {
+		terraformDirectory := il.EnvironmentComponentTerraformIlPath(environment.Spec.TeamName, environment.Spec.EnvName, ec.Name)
+		if err := overlay.GenerateOverlayFiles(log, fileService, githubRepoAPI, environment, ec, terraformDirectory); err != nil {
 			return err
 		}
-
 	}
 
 	return nil
@@ -525,68 +509,4 @@ func generateAndSaveEnvironmentApp(fileService file.Service, environment *stable
 	envYAML := fmt.Sprintf("%s-environment.yaml", environment.Spec.EnvName)
 
 	return fileService.SaveYamlFile(*envApp, envDirectory, envYAML)
-}
-
-func generateOverlayFiles(
-	log logr.Logger,
-	fileService file.Service,
-	repoAPI github.RepositoryAPI,
-	ec *stablev1.EnvironmentComponent,
-	folderName string,
-) error {
-	if ec.OverlayFiles != nil {
-		for _, overlay := range ec.OverlayFiles {
-			tokens := strings.Split(overlay.Path, "/")
-			name := tokens[len(tokens)-1]
-			log.Info(
-				"Generating overlay file from git file",
-				"overlay", name,
-				"folder", folderName,
-				"source", overlay.Source,
-				"path", overlay.Path,
-				"component", ec.Name,
-			)
-			if err := saveOverlayFileFromGit(fileService, repoAPI, overlay, folderName, name); err != nil {
-				return err
-			}
-		}
-	}
-	if ec.OverlayData != nil {
-		for _, overlay := range ec.OverlayData {
-			log.Info(
-				"Generating overlay file from data field",
-				"overlay", overlay.Name,
-				"folder", folderName,
-				"component", ec.Name,
-			)
-			if err := fileService.SaveFileFromString(overlay.Data, folderName, overlay.Name); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
-func saveOverlayFileFromGit(
-	fileUtil file.Service,
-	repoAPI github.RepositoryAPI,
-	of *stablev1.OverlayFile,
-	folderName string,
-	fileName string,
-) error {
-	ref := of.Ref
-	if ref == "" {
-		ref = "HEAD"
-	}
-	f, err := github.DownloadFile(repoAPI, of.Source, ref, of.Path)
-	if err != nil {
-		return err
-	}
-
-	buff, err := ioutil.ReadAll(f)
-	if err != nil {
-		return err
-	}
-
-	return fileUtil.SaveFileFromByteArray(buff, folderName, fileName)
 }

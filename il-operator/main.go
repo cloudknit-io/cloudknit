@@ -15,9 +15,9 @@ package main
 import (
 	"context"
 	"flag"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/filereconciler"
 	"os"
 
-	"github.com/compuzest/zlifecycle-il-operator/controllers/gotfvars"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
 
@@ -72,14 +72,14 @@ func main() {
 	}
 
 	ctx := context.Background()
-	tfvarsReconciler := gotfvars.NewReconciler(
+	fileReconciler := filereconciler.NewReconciler(
 		ctx,
-		ctrl.Log.WithName("TfVarsReconciler"),
+		ctrl.Log.WithName("FileReconciler"),
 		mgr.GetClient(),
 		github.NewHTTPRepositoryAPI(ctx, env.Config.GitHubAuthToken),
 	)
-	if err := tfvarsReconciler.Start(); err != nil {
-		setupLog.Error(err, "failed to start tfvars reconciler")
+	if err := fileReconciler.Start(); err != nil {
+		setupLog.Error(err, "failed to start file reconciler")
 	}
 
 	if err = (&controllers.CompanyReconciler{
