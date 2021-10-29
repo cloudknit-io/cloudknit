@@ -65,24 +65,34 @@ func (w *Reconciler) Start() error {
 	c := cron.New()
 	c.Start()
 	_, err := c.AddFunc("@every 1m", func() {
+		var reconciled []string
 		start := time.Now()
 		w.log.Info("Running scheduled file reconciler iteration", "time", time.Now().String())
+
 		allFiles := w.Files()
 		for _, file := range allFiles {
-			if _, err := w.reconcile(file); err != nil {
+			updated, err := w.reconcile(file)
+			if err != nil {
 				w.log.Error(err, "Error reconciling file")
 			}
+			if err == nil && updated {
+				reconciled = append(reconciled, file.Filename)
+			}
 		}
+
 		duration := time.Since(start)
 		w.log.Info(
 			"Finished scheduled file reconciler iteration",
 			"started", time.Now().String(),
 			"duration", duration,
+			"reconciled", reconciled,
 		)
 	})
+
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -158,6 +168,7 @@ func (w *Reconciler) reconcile(fm *FileMeta) (updated bool, err error) {
 		return updated, err
 	}
 
+	status := fm.EnvironmentObject.Status.FileState
 	if !exists {
 		w.log.Info(
 			"Marking file as soft deleted in environment status",
@@ -165,11 +176,8 @@ func (w *Reconciler) reconcile(fm *FileMeta) (updated bool, err error) {
 			"component", fm.Component,
 			"filename", fm.Filename,
 		)
-		status := fm.EnvironmentObject.Status.FileState
-		if status[fm.Environment] != nil && status[fm.Component] != nil {
-			for _, file := range status[fm.Environment][fm.Component] {
-				file.SoftDelete = true
-			}
+		if status[fm.Environment] != nil && status[fm.Environment][fm.Component] != nil && status[fm.Environment][fm.Component][fm.Filename] != nil {
+			status[fm.Environment][fm.Component][fm.Filename] = nil
 			if err := w.k8sClient.Status().Update(w.ctx, fm.EnvironmentObject); err != nil {
 				return false, err
 			}
@@ -204,20 +212,40 @@ func (w *Reconciler) reconcile(fm *FileMeta) (updated bool, err error) {
 		)
 		return updated, nil
 	}
+	if status[fm.Environment] != nil && status[fm.Environment][fm.Component] != nil && status[fm.Environment][fm.Component][fm.Filename] != nil {
+		fm.md5 = status[fm.Environment][fm.Component][fm.Filename].Md5
+	}
+
+	var newEnv v1.Environment
+	if err := w.k8sClient.Get(w.ctx, kClient.ObjectKeyFromObject(fm.EnvironmentObject), &newEnv); err != nil {
+		return false, err
+	}
 
 	if oldHash := fm.md5; oldHash != newHash {
 		w.log.Info(
 			"Updating hash for environment component",
 			"component", fm.Component,
-			"environment", fm.EnvironmentObject.Spec.EnvName,
-			"team", fm.EnvironmentObject.Spec.TeamName,
+			"environment", newEnv.Spec.EnvName,
+			"team", newEnv.Spec.TeamName,
 			"oldHash", oldHash,
 			"newHash", newHash,
 		)
+		tempMd5 := fm.md5
+		tempReconciledAt := fm.reconciledAt
 		fm.md5 = newHash
 		fm.reconciledAt = time.Now()
-		fm.EnvironmentObject.Status.FileState = w.buildDomainFileState()
-		if err := w.k8sClient.Status().Update(w.ctx, fm.EnvironmentObject); err != nil {
+		newEnv.Status.FileState = w.buildDomainFileState()
+		if err := w.k8sClient.Status().Update(w.ctx, &newEnv); err != nil {
+			w.log.Info(
+				"Reverting hash because of failed status update",
+				"component", fm.Component,
+				"environment", newEnv.Spec.EnvName,
+				"team", newEnv.Spec.TeamName,
+				"oldHash", fm.md5,
+				"newHash", tempMd5,
+			)
+			fm.md5 = tempMd5
+			fm.reconciledAt = tempReconciledAt
 			return false, err
 		}
 		updated = true
