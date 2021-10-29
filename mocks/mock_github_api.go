@@ -187,12 +187,13 @@ func (mr *MockRepositoryAPIMockRecorder) CreateRepository(arg0, arg1 interface{}
 }
 
 // DownloadContents mocks base method.
-func (m *MockRepositoryAPI) DownloadContents(arg0, arg1, arg2, arg3 string) (io.ReadCloser, error) {
+func (m *MockRepositoryAPI) DownloadContents(arg0, arg1, arg2, arg3 string) (io.ReadCloser, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DownloadContents", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(io.ReadCloser)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(bool)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // DownloadContents indicates an expected call of DownloadContents.

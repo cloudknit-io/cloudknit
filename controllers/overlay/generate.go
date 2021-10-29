@@ -8,8 +8,6 @@ import (
 	"github.com/go-logr/logr"
 	"io/ioutil"
 	"strings"
-
-	kClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func GenerateOverlayFiles(
@@ -31,17 +29,27 @@ func GenerateOverlayFiles(
 				"source", overlay.Source,
 				"path", overlay.Path,
 				"component", ec.Name,
+				"environment", e.Spec.EnvName,
+				"team", e.Spec.TeamName,
 			)
 			if err := saveOverlayFileFromGit(fileService, repoAPI, overlay, componentFolder, name); err != nil {
 				return err
 			}
+			log.Info(
+				"Submitting overlay file to file reconciler",
+				"filename", overlay.Path,
+				"component", ec.Name,
+				"environment", e.Spec.EnvName,
+				"team", e.Spec.TeamName,
+			)
 			fm := filereconciler.FileMeta{
+				Filename:          overlay.Path,
 				Environment:       e.Spec.EnvName,
 				Component:         ec.Name,
-				Source:            ec.VariablesFile.Source,
-				Path:              ec.VariablesFile.Path,
-				Ref:               ec.VariablesFile.Ref,
-				EnvironmentObject: kClient.ObjectKey{Name: e.Name, Namespace: e.Namespace},
+				Source:            overlay.Source,
+				Path:              overlay.Path,
+				Ref:               overlay.Ref,
+				EnvironmentObject: e,
 			}
 			if _, err := filereconciler.GetReconciler().Submit(&fm); err != nil {
 				return err

@@ -106,18 +106,20 @@ type EnvironmentSpec struct {
 
 // EnvironmentStatus defines the observed state of Environment
 type EnvironmentStatus struct {
-	TeamName   string                             `json:"teamName,omitempty"`
-	EnvName    string                             `json:"envName,omitempty"`
-	Components []*EnvironmentComponent            `json:"components,omitempty"`
-	FileState  map[string]map[string]*WatchedFile `json:"fileState,omitempty"`
+	TeamName   string                                        `json:"teamName,omitempty"`
+	EnvName    string                                        `json:"envName,omitempty"`
+	Components []*EnvironmentComponent                       `json:"components,omitempty"`
+	FileState  map[string]map[string]map[string]*WatchedFile `json:"fileState,omitempty"`
 }
 
 type WatchedFile struct {
-	Source       string      `json:"source"`
-	Path         string      `json:"path"`
-	Ref          string      `json:"ref"`
-	Md5          string      `json:"md5"`
-	ReconciledAt metav1.Time `json:"reconciledAt"`
+	Filename     string      `json:"filename,omitempty"`
+	Source       string      `json:"source,omitempty"`
+	Path         string      `json:"path,omitempty"`
+	Ref          string      `json:"ref,omitempty"`
+	Md5          string      `json:"md5,omitempty"`
+	ReconciledAt metav1.Time `json:"reconciledAt,omitempty"`
+	SoftDelete   bool        `json:"softDelete,omitempty"`
 }
 
 // +kubebuilder:object:root=true

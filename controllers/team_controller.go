@@ -144,7 +144,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	repoAPI := github.NewHTTPRepositoryAPI(ctx, env.Config.GitHubAuthToken)
 	_, err = github.CreateRepoWebhook(r.Log, repoAPI, teamRepo, env.Config.ArgocdHookURL, env.Config.GitHubWebhookSecret)
 	if err != nil {
-		return ctrl.Result{}, err
+		r.Log.Error(err, "error creating Team webhook", "team", team.Spec.TeamName)
 	}
 
 	duration := time.Since(start)

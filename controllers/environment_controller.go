@@ -15,6 +15,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/filereconciler"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/overlay"
 	"time"
 
@@ -321,7 +322,7 @@ func (r *EnvironmentReconciler) postDeleteHook(
 	}
 	_ = r.deleteDanglingArgocdApps(e, argocdAPI)
 	_ = r.deleteDanglingArgoWorkflows(e, argoworkflowAPI)
-	r.removeTfvarsReconcilerEntries(e)
+	r.removeFileReconcilerEntries(e)
 	return nil
 }
 
@@ -389,16 +390,16 @@ func extractPathsToRemove(e *stablev1.Environment) []string {
 	}
 }
 
-func (r *EnvironmentReconciler) removeTfvarsReconcilerEntries(e *stablev1.Environment) {
+func (r *EnvironmentReconciler) removeFileReconcilerEntries(e *stablev1.Environment) {
 	r.Log.Info(
-		"Removing entries from tfvars reconciler",
+		"Removing entries from file reconciler",
 		"team", e.Spec.TeamName,
 		"environment", e.Spec.EnvName,
 	)
-	tr := gotfvars.GetReconciler()
+	fr := filereconciler.GetReconciler()
 	for _, ec := range e.Spec.Components {
 		if ec.VariablesFile != nil {
-			tr.Remove(e.Spec.EnvName, ec.Name)
+			fr.RemoveComponentFiles(e.Spec.EnvName, ec.Name)
 		}
 	}
 }
@@ -430,31 +431,9 @@ func generateAndSaveEnvironmentComponents(
 			tfv, err := gotfvars.GetVariablesFromTfvarsFile(
 				log,
 				githubRepoAPI,
-				ec.VariablesFile.Source,
-				env.Config.RepoBranch,
-				ec.VariablesFile.Path,
+				environment,
+				ec,
 			)
-			if err != nil {
-				return err
-			}
-
-			log.Info(
-				"Submitting tfvars file to tfvars reconciler",
-				"environment", environment.Spec.EnvName,
-				"team", environment.Spec.TeamName,
-				"component", ec.Name,
-				"type", ec.Type,
-			)
-			_, err = gotfvars.
-				GetReconciler().
-				Submit(&gotfvars.Tfvars{
-					Environment:       environment.Spec.EnvName,
-					Component:         ec.Name,
-					Source:            ec.VariablesFile.Source,
-					Path:              ec.VariablesFile.Path,
-					Ref:               ec.VariablesFile.Ref,
-					EnvironmentObject: kClient.ObjectKey{Name: environment.Name, Namespace: environment.Namespace},
-				})
 			if err != nil {
 				return err
 			}

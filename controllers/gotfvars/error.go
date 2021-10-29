@@ -2,7 +2,7 @@ package gotfvars
 
 import "fmt"
 
-type FileNotExists struct{
+type FileNotExists struct {
 	Name string
 }
 

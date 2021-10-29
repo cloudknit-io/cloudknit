@@ -72,13 +72,13 @@ func main() {
 	}
 
 	ctx := context.Background()
-	tfvarsReconciler := filereconciler.NewReconciler(
+	fileReconciler := filereconciler.NewReconciler(
 		ctx,
 		ctrl.Log.WithName("FileReconciler"),
 		mgr.GetClient(),
 		github.NewHTTPRepositoryAPI(ctx, env.Config.GitHubAuthToken),
 	)
-	if err := tfvarsReconciler.Start(); err != nil {
+	if err := fileReconciler.Start(); err != nil {
 		setupLog.Error(err, "failed to start file reconciler")
 	}
 

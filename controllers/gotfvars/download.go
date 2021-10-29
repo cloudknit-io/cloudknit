@@ -2,6 +2,8 @@ package gotfvars
 
 import (
 	"fmt"
+	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/filereconciler"
 	"io/ioutil"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
@@ -9,15 +11,46 @@ import (
 	"github.com/go-logr/logr"
 )
 
-func GetVariablesFromTfvarsFile(log logr.Logger, api github.RepositoryAPI, repoURL string, ref string, path string) (string, error) {
-	log.Info("Downloading tfvars file", "repoUrl", repoURL, "ref", ref, "path", path)
-	buff, exists, err := downloadTfvarsFile(api, repoURL, ref, path)
+func GetVariablesFromTfvarsFile(
+	log logr.Logger,
+	api github.RepositoryAPI,
+	environment *v1.Environment,
+	ec *v1.EnvironmentComponent,
+) (string, error) {
+	log.Info(
+		"Downloading tfvars file",
+		"source", ec.VariablesFile.Source,
+		"ref", ec.VariablesFile.Ref,
+		"path", ec.VariablesFile.Path,
+	)
+	buff, exists, err := downloadTfvarsFile(api, ec.VariablesFile.Source, ec.VariablesFile.Ref, ec.VariablesFile.Path)
 	if err != nil {
 		return "", err
 	}
 	if !exists {
-		return "", fmt.Errorf("file does not exist: %s/%s?ref=%s", repoURL, path, ref)
+		return "", fmt.Errorf("file does not exist: %s/%s?ref=%s", ec.VariablesFile.Source, ec.VariablesFile.Path, ec.VariablesFile.Ref)
 	}
+
+	log.Info(
+		"Submitting terraform variables file to file reconciler",
+		"environment", environment.Spec.EnvName,
+		"team", environment.Spec.TeamName,
+		"component", ec.Name,
+		"type", ec.Type,
+	)
+	fm := &filereconciler.FileMeta{
+		Filename:          ec.VariablesFile.Path,
+		Environment:       environment.Spec.EnvName,
+		Component:         ec.Name,
+		Source:            ec.VariablesFile.Source,
+		Path:              ec.VariablesFile.Path,
+		Ref:               ec.VariablesFile.Ref,
+		EnvironmentObject: environment,
+	}
+	if _, err := filereconciler.GetReconciler().Submit(fm); err != nil {
+		return "", err
+	}
+
 	tfvars := string(buff)
 
 	return tfvars, nil
@@ -36,5 +69,5 @@ func downloadTfvarsFile(api github.RepositoryAPI, repoURL string, ref string, pa
 	if err != nil {
 		return nil, false, err
 	}
-	return buff, true,nil
+	return buff, true, nil
 }
