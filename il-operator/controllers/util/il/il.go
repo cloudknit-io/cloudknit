@@ -29,14 +29,6 @@ func EnvironmentComponentTerraformIlPath(team string, environment string, compon
 	return filepath.Join(EnvironmentDirectory(team, environment), component, "terraform")
 }
 
-func RepoName(companyName string) string {
-	return companyName + "-il"
-}
-
-func RepoURL(owner string, companyName string) string {
-	return fmt.Sprintf("git@github.com:%s/%s.git", owner, RepoName(companyName))
-}
-
 func EnvComponentModuleSource(moduleSource string, moduleName string) string {
 	if moduleSource == "aws" {
 		return fmt.Sprintf("git@github.com:terraform-aws-modules/terraform-aws-%s.git", moduleName)

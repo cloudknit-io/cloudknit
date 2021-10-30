@@ -96,14 +96,14 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	owner := env.Config.ZlifecycleOwner
-	ilRepo := il.RepoName(company.Name)
+	ilRepo := env.Config.ILRepoName
 	repoAPI := github.NewHTTPRepositoryAPI(ctx, env.Config.GitHubAuthToken)
 	_, err := github.TryCreateRepository(r.Log, repoAPI, owner, ilRepo)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 
-	ilRepoURL := il.RepoURL(owner, company.Name)
+	ilRepoURL := env.Config.ILRepoURL
 	if err := repo.TryRegisterRepo(ctx, r.Client, r.Log, argocdAPI, ilRepoURL, operatorNamespace, operatorSSHSecret); err != nil {
 		return ctrl.Result{}, err
 	}
