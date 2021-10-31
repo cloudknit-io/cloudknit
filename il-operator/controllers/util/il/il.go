@@ -13,10 +13,10 @@ type config struct {
 }
 
 var Config = config{
-	TeamTFDirectory:        "/team-tf",
-	TeamDirectory:          "/team",
-	CompanyDirectory:       "/company",
-	ConfigWatcherDirectory: "/config-watcher",
+	TeamTFDirectory:        "team-tf",
+	TeamDirectory:          "team",
+	CompanyDirectory:       "company",
+	ConfigWatcherDirectory: "config-watcher",
 }
 
 func TeamDirectory(team string) string {
