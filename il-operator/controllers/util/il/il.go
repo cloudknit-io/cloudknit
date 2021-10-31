@@ -6,17 +6,17 @@ import (
 )
 
 type config struct {
+	TeamTFDirectory        string
 	TeamDirectory          string
 	CompanyDirectory       string
 	ConfigWatcherDirectory string
 }
 
-var repoDir = "repos/zl-il"
-
 var Config = config{
-	TeamDirectory:          repoDir + "/team",
-	CompanyDirectory:       repoDir + "/company",
-	ConfigWatcherDirectory: repoDir + "/config-watcher",
+	TeamTFDirectory:        "/team-tf",
+	TeamDirectory:          "/team",
+	CompanyDirectory:       "/company",
+	ConfigWatcherDirectory: "/config-watcher",
 }
 
 func TeamDirectory(team string) string {
@@ -27,8 +27,16 @@ func EnvironmentDirectory(team string, environment string) string {
 	return TeamDirectory(team) + "/" + environment + "-environment-component"
 }
 
+func TeamTFDirectory(team string) string {
+	return Config.TeamTFDirectory + "/" + team + "-team-environment"
+}
+
+func EnvironmentTFDirectory(team string, environment string) string {
+	return TeamDirectory(team) + "/" + environment + "-environment-component"
+}
+
 func EnvironmentComponentTerraformIlPath(team string, environment string, component string) string {
-	return filepath.Join(EnvironmentDirectory(team, environment), component, "terraform")
+	return filepath.Join(EnvironmentTFDirectory(team, environment), component, "terraform")
 }
 
 func EnvComponentModuleSource(moduleSource string, moduleName string) string {
