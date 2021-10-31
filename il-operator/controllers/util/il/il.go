@@ -11,10 +11,12 @@ type config struct {
 	ConfigWatcherDirectory string
 }
 
+var repoDir = "repos/zl-il"
+
 var Config = config{
-	TeamDirectory:          "team",
-	CompanyDirectory:       "company",
-	ConfigWatcherDirectory: "config-watcher",
+	TeamDirectory:          repoDir + "/team",
+	CompanyDirectory:       repoDir + "/company",
+	ConfigWatcherDirectory: repoDir + "/config-watcher",
 }
 
 func TeamDirectory(team string) string {
