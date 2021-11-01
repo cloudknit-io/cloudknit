@@ -15,12 +15,13 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/filereconciler"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/overlay"
 	"k8s.io/apiserver/pkg/registry/generic/registry"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"strings"
-	"time"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/gotfvars"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
@@ -44,7 +45,7 @@ import (
 	kClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// EnvironmentReconciler reconciles a Environment object
+// EnvironmentReconciler reconciles a Environment object.
 type EnvironmentReconciler struct {
 	kClient.Client
 	Log    logr.Logger
@@ -56,7 +57,7 @@ type EnvironmentReconciler struct {
 
 var environmentInitialRunLock = atomic.NewBool(true)
 
-// Reconcile method called everytime there is a change in Environment Custom Resource
+// Reconcile method called everytime there is a change in Environment Custom Resource.
 func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	delayEnvironmentReconcileOnInitialRun(r.Log, 35)
 	start := time.Now()
@@ -223,7 +224,7 @@ func (r *EnvironmentReconciler) tryGetEnvironment(ctx context.Context, req ctrl.
 	return true, nil
 }
 
-// SetupWithManager sets up the Environment Controller with Manager
+// SetupWithManager sets up the Environment Controller with Manager.
 func (r *EnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&stablev1.Environment{}).
@@ -355,6 +356,10 @@ func (r *EnvironmentReconciler) deleteDanglingArgocdApps(e *stablev1.Environment
 	return nil
 }
 
+func (r *EnvironmentReconciler) cleanupDanglingOverlays(e *stablev1.Environment) error {
+	for e.Status.FileState
+}
+
 func (r *EnvironmentReconciler) deleteDanglingArgoWorkflows(e *stablev1.Environment, api argoworkflow.API) error {
 	prefix := fmt.Sprintf("%s-%s", e.Spec.TeamName, e.Spec.EnvName)
 	namespace := env.Config.ArgoWorkflowsNamespace
@@ -428,7 +433,7 @@ func generateAndSaveEnvironmentComponents(
 		)
 		if ec.Variables != nil {
 			fileName := fmt.Sprintf("%s.tfvars", ec.Name)
-			if err := saveTfVarsToFile(fileService, ec.Variables, envComponentDirectory, fileName); err != nil {
+			if err := gotfvars.SaveTfVarsToFile(fileService, ec.Variables, envComponentDirectory, fileName); err != nil {
 				return err
 			}
 		}
@@ -480,17 +485,6 @@ func generateAndSaveEnvironmentComponents(
 	}
 
 	return nil
-}
-
-func saveTfVarsToFile(fileService file.Service, ecVars []*stablev1.Variable, folderName string, fileName string) error {
-	variables := make([]*stablev1.Variable, 0, len(ecVars))
-	for _, v := range ecVars {
-		// TODO: This is a hack to just to make it work, needs to be revisited
-		v.Value = fmt.Sprintf("\"%s\"", v.Value)
-		variables = append(variables, v)
-	}
-
-	return fileService.SaveVarsToFile(variables, folderName, fileName)
 }
 
 func generateAndSaveWorkflowOfWorkflows(fileService file.Service, environment *stablev1.Environment, envComponentDirectory string) error {

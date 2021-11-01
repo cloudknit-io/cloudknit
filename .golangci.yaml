@@ -1,8 +1,11 @@
-run:
-  concurrency: 8
-  skip-dirs-use-default: true
-  skip-dirs:
-    - api
+issues:
+  exclude:
+    - 'shadow: declaration of "err" shadows declaration at line (\d+)'
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+output:
+  sort-results: true
 
 linters-settings:
   depguard:
@@ -15,8 +18,8 @@ linters-settings:
   gci:
     local-prefixes: github.com/golangci/golangci-lint
   goconst:
-    min-len: 4
-    min-occurrences: 5
+    min-len: 2
+    min-occurrences: 2
   gocritic:
     enabled-tags:
       - diagnostic
@@ -30,8 +33,6 @@ linters-settings:
       - unnamedResult
   gocyclo:
     min-complexity: 15
-  nestif:
-    min-complexity: 10
   goimports:
     local-prefixes: github.com/golangci/golangci-lint
   golint:
@@ -48,7 +49,6 @@ linters-settings:
           - return
   govet:
     check-shadowing: true
-
     settings:
       printf:
         funcs:
@@ -57,7 +57,7 @@ linters-settings:
           - (github.com/golangci/golangci-lint/pkg/logutils.Log).Errorf
           - (github.com/golangci/golangci-lint/pkg/logutils.Log).Fatalf
   lll:
-    line-length: 140
+    line-length: 160
   maligned:
     suggest-new: true
   misspell:
@@ -72,64 +72,63 @@ linters:
   disable-all: true
   enable:
     - asciicheck
-    # - bodyclose
+    - bodyclose
     # - cyclop
     - deadcode
     - depguard
     - dogsled
-    - dupl
+    # - dupl
+    - durationcheck
     - errcheck
     - errorlint
-    - exportloopref
     - exhaustive
     # - exhaustivestruct
     - exportloopref
     - forbidigo
     - forcetypeassert
-    # - funlen
+    - funlen
     # - gci
     # - gochecknoglobals
-    # - gochecknoinits
-    # - gocognit
+    - gochecknoinits
+    - gocognit
     - goconst
     - gocritic
-    # - gocyclo
-    # - godot
-    ###########- godox
-    # - goerr113
+    - gocyclo
+    - godot
+    - godox
+    - goerr113
     - gofmt
     - gofumpt
     - goheader
     - goimports
-    - golint
     # - gomnd
     # - gomoddirectives
     - gomodguard
     - goprintffuncname
-    # - gosec
+    - gosec
     - gosimple
     - govet
     - ifshort
     - importas
     - ineffassign
-    # - interfacer
-    # - lll
+    - lll
     - makezero
     - misspell
     - nakedret
-    - nestif
+    # - nestif
     - noctx
     - nolintlint
     - paralleltest
     - prealloc
     - predeclared
+    - promlinter
     - revive
     - rowserrcheck
-    # - scopelint
     - sqlclosecheck
     - staticcheck
     - structcheck
     - stylecheck
+    # - tagliatelle
     - testpackage
     - thelper
     - tparallel
@@ -142,7 +141,3 @@ linters:
     # - whitespace
     # - wrapcheck
     # - wsl
-
-issues:
-  exclude:
-    - 'declaration of "(err|ctx)" shadows declaration at'

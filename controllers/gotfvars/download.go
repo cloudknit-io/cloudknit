@@ -4,12 +4,25 @@ import (
 	"fmt"
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/filereconciler"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
 	"io/ioutil"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
 	"github.com/go-logr/logr"
 )
+
+func SaveTfVarsToFile(fileService file.Service, ecVars []*v1.Variable, folderName string, fileName string) error {
+	variables := make([]*v1.Variable, 0, len(ecVars))
+	for _, v := range ecVars {
+		// TODO: This is a hack to just to make it work, needs to be revisited
+		v.Value = fmt.Sprintf("\"%s\"", v.Value)
+		variables = append(variables, v)
+	}
+
+	return fileService.SaveVarsToFile(variables, folderName, fileName)
+}
 
 func GetVariablesFromTfvarsFile(
 	log logr.Logger,
@@ -39,13 +52,14 @@ func GetVariablesFromTfvarsFile(
 		"type", ec.Type,
 	)
 	fm := &filereconciler.FileMeta{
-		Filename:          ec.VariablesFile.Path,
-		Environment:       environment.Spec.EnvName,
-		Component:         ec.Name,
-		Source:            ec.VariablesFile.Source,
-		Path:              ec.VariablesFile.Path,
-		Ref:               ec.VariablesFile.Ref,
-		EnvironmentObject: environment,
+		Type:           "tfvars",
+		Filename:       ec.VariablesFile.Path,
+		Environment:    environment.Spec.EnvName,
+		Component:      ec.Name,
+		Source:         ec.VariablesFile.Source,
+		Path:           ec.VariablesFile.Path,
+		Ref:            ec.VariablesFile.Ref,
+		EnvironmentKey: client.ObjectKey{Name: environment.Name, Namespace: environment.Namespace},
 	}
 	if _, err := filereconciler.GetReconciler().Submit(fm); err != nil {
 		return "", err

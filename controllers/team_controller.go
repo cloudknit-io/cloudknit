@@ -15,10 +15,11 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"strings"
 	"sync"
 	"time"
+
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/repo"
@@ -40,7 +41,7 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
 )
 
-// TeamReconciler reconciles a Team object
+// TeamReconciler reconciles a Team object.
 type TeamReconciler struct {
 	client.Client
 	Log    logr.Logger
@@ -55,7 +56,7 @@ var (
 	teamReconcileInitialRunLock = atomic.NewBool(true)
 )
 
-// Reconcile method called everytime there is a change in Team Custom Resource
+// Reconcile method called everytime there is a change in Team Custom Resource.
 func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	delayTeamReconcileOnInitialRun(r.Log, 15)
 	start := time.Now()
@@ -168,7 +169,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	return ctrl.Result{}, nil
 }
 
-// SetupWithManager sets up the Company Controller with Manager
+// SetupWithManager sets up the Company Controller with Manager.
 func (r *TeamReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&stablev1.Team{}).

@@ -3,11 +3,12 @@ package overlay
 import (
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/filereconciler"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
 	"github.com/go-logr/logr"
 	"io/ioutil"
-	"strings"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func GenerateOverlayFiles(
@@ -20,8 +21,7 @@ func GenerateOverlayFiles(
 ) error {
 	if ec.OverlayFiles != nil {
 		for _, overlay := range ec.OverlayFiles {
-			tokens := strings.Split(overlay.Path, "/")
-			name := tokens[len(tokens)-1]
+			name := common.ExtractNameFromPath(overlay.Path)
 			log.Info(
 				"Generating overlay file from git file",
 				"overlay", name,
@@ -43,13 +43,14 @@ func GenerateOverlayFiles(
 				"team", e.Spec.TeamName,
 			)
 			fm := filereconciler.FileMeta{
-				Filename:          overlay.Path,
-				Environment:       e.Spec.EnvName,
-				Component:         ec.Name,
-				Source:            overlay.Source,
-				Path:              overlay.Path,
-				Ref:               overlay.Ref,
-				EnvironmentObject: e,
+				Type:           "overlay",
+				Filename:       overlay.Path,
+				Environment:    e.Spec.EnvName,
+				Component:      ec.Name,
+				Source:         overlay.Source,
+				Path:           overlay.Path,
+				Ref:            overlay.Ref,
+				EnvironmentKey: client.ObjectKey{Name: e.Name, Namespace: e.Namespace},
 			}
 			if _, err := filereconciler.GetReconciler().Submit(&fm); err != nil {
 				return err

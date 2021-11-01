@@ -94,7 +94,7 @@ type AssumeRole struct {
 	ExternalID  string `json:"externalId,omitempty"`
 }
 
-// EnvironmentSpec defines the desired state of Environment
+// EnvironmentSpec defines the desired state of Environment.
 type EnvironmentSpec struct {
 	TeamName    string                  `json:"teamName"`
 	EnvName     string                  `json:"envName"`
@@ -104,7 +104,7 @@ type EnvironmentSpec struct {
 	Components  []*EnvironmentComponent `json:"components"`
 }
 
-// EnvironmentStatus defines the observed state of Environment
+// EnvironmentStatus defines the observed state of Environment.
 type EnvironmentStatus struct {
 	TeamName   string                                        `json:"teamName,omitempty"`
 	EnvName    string                                        `json:"envName,omitempty"`
@@ -113,6 +113,7 @@ type EnvironmentStatus struct {
 }
 
 type WatchedFile struct {
+	Type         string      `json:"type"`
 	Filename     string      `json:"filename,omitempty"`
 	Source       string      `json:"source,omitempty"`
 	Path         string      `json:"path,omitempty"`
@@ -125,7 +126,7 @@ type WatchedFile struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 
-// Environment is the Schema for the environments API
+// Environment is the Schema for the environments API.
 type Environment struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -136,7 +137,7 @@ type Environment struct {
 
 // +kubebuilder:object:root=true
 
-// EnvironmentList contains a list of Environment
+// EnvironmentList contains a list of Environment.
 type EnvironmentList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

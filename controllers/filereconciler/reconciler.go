@@ -5,8 +5,10 @@ import (
 	"crypto/md5"
 	"errors"
 	"fmt"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"time"
+
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
@@ -18,16 +20,17 @@ import (
 var reconciler *Reconciler
 
 type FileMeta struct {
-	md5               string
-	reconciledAt      time.Time
-	softDelete        bool
-	Source            string
-	Path              string
-	Ref               string
-	EnvironmentObject *v1.Environment
-	Environment       string
-	Component         string
-	Filename          string
+	MD5            string
+	ReconciledAt   time.Time
+	SoftDelete     bool
+	Type           string
+	Source         string
+	Path           string
+	Ref            string
+	EnvironmentKey kClient.ObjectKey
+	Environment    string
+	Component      string
+	Filename       string
 }
 
 type State = map[string]map[string]map[string]*FileMeta
@@ -55,7 +58,7 @@ func NewReconciler(ctx context.Context, log logr.Logger, k8sClient kClient.Clien
 	return reconciler
 }
 
-// GetReconciler returns the current singleton instance. Note that it needs to be initialized first by calling NewReconciler
+// GetReconciler returns the current singleton instance. Note that it needs to be initialized first by calling NewReconciler.
 func GetReconciler() *Reconciler {
 	return reconciler
 }
@@ -76,7 +79,7 @@ func (w *Reconciler) Start() error {
 				w.log.Error(err, "Error reconciling file")
 			}
 			if err == nil && updated {
-				reconciled = append(reconciled, file.Filename)
+				reconciled = append(reconciled, fmt.Sprintf("%s:%s:%s", file.Environment, file.Component, file.Filename))
 			}
 		}
 
@@ -88,7 +91,6 @@ func (w *Reconciler) Start() error {
 			"reconciled", reconciled,
 		)
 	})
-
 	if err != nil {
 		return err
 	}
@@ -168,7 +170,12 @@ func (w *Reconciler) reconcile(fm *FileMeta) (updated bool, err error) {
 		return updated, err
 	}
 
-	status := fm.EnvironmentObject.Status.FileState
+	var environment v1.Environment
+	if err := w.k8sClient.Get(w.ctx, fm.EnvironmentKey, &environment); err != nil {
+		return false, err
+	}
+
+	status := environment.Status.FileState
 	if !exists {
 		w.log.Info(
 			"Marking file as soft deleted in environment status",
@@ -178,7 +185,7 @@ func (w *Reconciler) reconcile(fm *FileMeta) (updated bool, err error) {
 		)
 		if status[fm.Environment] != nil && status[fm.Environment][fm.Component] != nil && status[fm.Environment][fm.Component][fm.Filename] != nil {
 			status[fm.Environment][fm.Component][fm.Filename] = nil
-			if err := w.k8sClient.Status().Update(w.ctx, fm.EnvironmentObject); err != nil {
+			if err := w.k8sClient.Status().Update(w.ctx, &environment); err != nil {
 				return false, err
 			}
 		}
@@ -203,7 +210,7 @@ func (w *Reconciler) reconcile(fm *FileMeta) (updated bool, err error) {
 
 	newHash := fmt.Sprintf("%x", md5.Sum(rc))
 
-	ec := findEnvironmentComponent(fm.EnvironmentObject.Spec.Components, fm.Component)
+	ec := findEnvironmentComponent(environment.Spec.Components, fm.Component)
 	if ec == nil {
 		w.log.Info(
 			"Missing environment component, ending reconcile",
@@ -213,39 +220,34 @@ func (w *Reconciler) reconcile(fm *FileMeta) (updated bool, err error) {
 		return updated, nil
 	}
 	if status[fm.Environment] != nil && status[fm.Environment][fm.Component] != nil && status[fm.Environment][fm.Component][fm.Filename] != nil {
-		fm.md5 = status[fm.Environment][fm.Component][fm.Filename].Md5
+		fm.MD5 = status[fm.Environment][fm.Component][fm.Filename].Md5
 	}
 
-	var newEnv v1.Environment
-	if err := w.k8sClient.Get(w.ctx, kClient.ObjectKeyFromObject(fm.EnvironmentObject), &newEnv); err != nil {
-		return false, err
-	}
-
-	if oldHash := fm.md5; oldHash != newHash {
+	if oldHash := fm.MD5; oldHash != newHash {
 		w.log.Info(
 			"Updating hash for environment component",
 			"component", fm.Component,
-			"environment", newEnv.Spec.EnvName,
-			"team", newEnv.Spec.TeamName,
+			"environment", environment.Spec.EnvName,
+			"team", environment.Spec.TeamName,
 			"oldHash", oldHash,
 			"newHash", newHash,
 		)
-		tempMd5 := fm.md5
-		tempReconciledAt := fm.reconciledAt
-		fm.md5 = newHash
-		fm.reconciledAt = time.Now()
-		newEnv.Status.FileState = w.buildDomainFileState()
-		if err := w.k8sClient.Status().Update(w.ctx, &newEnv); err != nil {
+		tempMd5 := fm.MD5
+		tempReconciledAt := fm.ReconciledAt
+		fm.MD5 = newHash
+		fm.ReconciledAt = time.Now()
+		environment.Status.FileState = w.buildDomainFileState()
+		if err := w.k8sClient.Status().Update(w.ctx, &environment); err != nil {
 			w.log.Info(
 				"Reverting hash because of failed status update",
 				"component", fm.Component,
-				"environment", newEnv.Spec.EnvName,
-				"team", newEnv.Spec.TeamName,
-				"oldHash", fm.md5,
+				"environment", environment.Spec.EnvName,
+				"team", environment.Spec.TeamName,
+				"oldHash", fm.MD5,
 				"newHash", tempMd5,
 			)
-			fm.md5 = tempMd5
-			fm.reconciledAt = tempReconciledAt
+			fm.MD5 = tempMd5
+			fm.ReconciledAt = tempReconciledAt
 			return false, err
 		}
 		updated = true
@@ -280,9 +282,9 @@ func toDomainFiles(fm *FileMeta) *v1.WatchedFile {
 		Source:       fm.Source,
 		Path:         fm.Path,
 		Ref:          fm.Ref,
-		Md5:          fm.md5,
+		Md5:          fm.MD5,
 		ReconciledAt: now,
-		SoftDelete:   fm.softDelete,
+		SoftDelete:   fm.SoftDelete,
 	}
 }
 

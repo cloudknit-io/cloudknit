@@ -36,7 +36,7 @@ import (
 
 var initOperatorLock sync.Once
 
-// CompanyReconciler reconciles a Company object
+// CompanyReconciler reconciles a Company object.
 type CompanyReconciler struct {
 	client.Client
 	Log    logr.Logger
