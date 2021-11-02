@@ -37,7 +37,7 @@ export class ComponentService {
       .createQueryBuilder("components")
       .select("SUM(components.cost) as cost")
       .where(
-        `components.teamName = '${teamName}' and components.environmentName = '${environmentName}' and components.isDeleted = 0`
+        `components.cost != -1 and components.teamName = '${teamName}' and components.environmentName = '${environmentName}' and components.isDeleted = 0`
       )
       .getRawOne();
     return Number(raw.cost || 0);
@@ -56,7 +56,7 @@ export class ComponentService {
     const raw = await this.componentRepository
       .createQueryBuilder("components")
       .select("SUM(components.cost) as cost")
-      .where(`components.teamName = '${name}' and components.isDeleted = 0`)
+      .where(`components.teamName = '${name}' and components.isDeleted = 0 and components.cost != -1`)
       .getRawOne();
     return Number(raw.cost || 0);
   }
@@ -66,7 +66,6 @@ export class ComponentService {
     let savedComponent = null;
     if (costing.component.isDeleted) {
       savedComponent = await this.softDelete(id);
-      console.log('getting saved component upon delete ---------> ', JSON.stringify(savedComponent));
     } else {
       const component = new Component();
       component.teamName = costing.teamName;
