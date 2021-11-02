@@ -15,6 +15,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"k8s.io/apiserver/pkg/registry/generic/registry"
 	"strings"
 	"sync"
 	"time"
@@ -29,7 +30,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apiserver/pkg/registry/generic/registry"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 

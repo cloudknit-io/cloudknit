@@ -13,18 +13,18 @@ deployment:
 env:
   ARGOCD_SERVER_URL: "argocd-server"
   ARGOCD_WEBHOOK_URL: "https://xxx.zlifecycle.com/api/webhook"
-  GITHUB_ZLIFECYCLE_OWNER: CompuZest
+  GITHUB_ZLIFECYCLE_OWNER: zlifecycle-il
   GITHUB_WEBHOOK_SECRET: !!!CHANGEME!!!
   GITHUB_ORG: !!!CHANGEME!!!
   ZLIFECYCLE_MASTER_SSH: zlifecycle-operator-ssh
 
 resources:
   limits:
-    cpu: 100m
-    memory: 30Mi
+    cpu: 200m
+    memory: 300Mi
   requests:
     cpu: 100m
-    memory: 20Mi
+    memory: 150Mi
 
 companyConfigMap:
   enabled: true
@@ -35,6 +35,6 @@ companyConfigMap:
     configRepo: "git@github.com:zbank-tech/zcustomer-config.git"
     configRepoName: "zcustomer-config"
     ilRepo: "git@github.com:CompuZest/zcustomer-il.git"
-    ilRepoSourceOwner: "CompuZest"
+    ilRepoSourceOwner: "zlifecycle-il"
     ilRepoName: "zcustomer-il"
     helmChartsRepo: "git@github.com:CompuZest/helm-charts.git"

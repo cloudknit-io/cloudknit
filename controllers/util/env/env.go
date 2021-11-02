@@ -40,7 +40,7 @@ type config struct {
 
 // Config exposes vars used throughout the operator
 var Config = config{
-	ZlifecycleOwner:               getOr("GITHUB_ZLIFECYCLE_OWNER", "CompuZest"),
+	ZlifecycleOwner:               getOr("GITHUB_ZLIFECYCLE_OWNER", "zlifecycle-il"),
 	ZlifecycleMasterRepoSSHSecret: getOr("ZLIFECYCLE_MASTER_SSH", "zlifecycle-operator-ssh"),
 	ZlifecycleOperatorNamespace:   os.Getenv("ZLIFECYCLE_OPERATOR_NAMESPACE"),
 	ZlifecycleOperatorRepo:        "zlifecycle-il-operator",

@@ -6,12 +6,14 @@ import (
 )
 
 type config struct {
+	TeamTFDirectory        string
 	TeamDirectory          string
 	CompanyDirectory       string
 	ConfigWatcherDirectory string
 }
 
 var Config = config{
+	TeamTFDirectory:        "team-tf",
 	TeamDirectory:          "team",
 	CompanyDirectory:       "company",
 	ConfigWatcherDirectory: "config-watcher",
@@ -39,6 +41,14 @@ func EnvironmentComponentDirectoryPath(team string, environment string, componen
 
 func EnvironmentComponentTerraformDirectoryPath(team string, environment string, component string) string {
 	return filepath.Join(EnvironmentComponentDirectoryPath(team, environment, component), "terraform")
+}
+
+func TeamTFDirectory(team string) string {
+	return Config.TeamTFDirectory + "/" + team + "-team-environment"
+}
+
+func EnvironmentTFDirectory(team string, environment string) string {
+	return TeamDirectoryName(team) + "/" + environment + "-environment-component"
 }
 
 func RepoName(companyName string) string {

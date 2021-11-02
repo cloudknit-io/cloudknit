@@ -77,10 +77,10 @@ func ValidateEnvironmentUpdate(e *Environment) error {
 		return nil
 	}
 
-	msg := fmt.Sprintf("error updating environment %s for team %s", e.Spec.EnvName, e.Spec.TeamName)
-	if err := notifyError(e, msg, allErrs); err != nil {
-		log.Error(err, "Error sending notification to UI")
-	}
+	//msg := fmt.Sprintf("error updating environment %s for team %s", e.Spec.EnvName, e.Spec.TeamName)
+	//if err := notifyError(e, msg, allErrs); err != nil {
+	//	log.Error(err, "Error sending notification to UI")
+	//}
 
 	return apierrors.NewInvalid(
 		schema.GroupKind{
