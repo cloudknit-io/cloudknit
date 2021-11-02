@@ -19,7 +19,7 @@ spec:
   - name: v1
     schema:
       openAPIV3Schema:
-        description: Company is the Schema for the companies API
+        description: Company is the Schema for the companies API.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -34,7 +34,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: CompanySpec defines the desired state of Company
+            description: CompanySpec defines the desired state of Company.
             properties:
               companyName:
                 description: Foo is an example field of Company. Edit Company_types.go
@@ -55,7 +55,7 @@ spec:
             - configRepo
             type: object
           status:
-            description: CompanyStatus defines the observed state of Company
+            description: CompanyStatus defines the observed state of Company.
             type: object
         type: object
     served: true

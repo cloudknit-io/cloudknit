@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"time"
 
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
@@ -28,12 +27,20 @@ type FileMeta struct {
 	Path           string
 	Ref            string
 	EnvironmentKey kClient.ObjectKey
+	Team           string
 	Environment    string
 	Component      string
 	Filename       string
 }
 
-type State = map[string]map[string]map[string]*FileMeta
+type Filename = string
+type Component = string
+type Environment = string
+type Team = string
+type ComponentState = map[Filename]*FileMeta
+type EnvironmentState = map[Component]ComponentState
+type TeamState = map[Environment]EnvironmentState
+type State = map[Team]TeamState
 
 type Reconciler struct {
 	ctx           context.Context
@@ -45,7 +52,7 @@ type Reconciler struct {
 
 func NewReconciler(ctx context.Context, log logr.Logger, k8sClient kClient.Client, repoAPI github.RepositoryAPI) *Reconciler {
 	if reconciler == nil {
-		state := map[string]map[string]map[string]*FileMeta{}
+		state := State{}
 		reconciler = &Reconciler{
 			ctx:           ctx,
 			log:           log,
@@ -100,10 +107,12 @@ func (w *Reconciler) Start() error {
 
 func (w *Reconciler) Files() []*FileMeta {
 	var allFiles []*FileMeta
-	for _, envMap := range w.state {
-		for _, fileMap := range envMap {
-			for _, file := range fileMap {
-				allFiles = append(allFiles, file)
+	for _, teamMap := range w.state {
+		for _, envMap := range teamMap {
+			for _, fileMap := range envMap {
+				for _, file := range fileMap {
+					allFiles = append(allFiles, file)
+				}
 			}
 		}
 	}
@@ -120,46 +129,51 @@ func (w *Reconciler) Submit(fw *FileMeta) (added bool, err error) {
 		return added, errors.New("nil pointer instead of git file encountered")
 	}
 
+	team := fw.Team
 	environment := fw.Environment
 	component := fw.Component
 	filename := fw.Filename
 
-	if !w.exists(environment, component, filename) {
-		if w.state[environment] == nil {
-			w.state[environment] = map[string]map[string]*FileMeta{}
+	if !w.exists(team, environment, component, filename) {
+		if w.state[team] == nil {
+			w.state[team] = TeamState{}
 		}
-		if w.state[environment][component] == nil {
-			w.state[environment][component] = map[string]*FileMeta{}
+		if w.state[team][environment] == nil {
+			w.state[team][environment] = EnvironmentState{}
 		}
-		w.state[environment][component][filename] = fw
+		if w.state[team][environment][component] == nil {
+			w.state[team][environment][component] = ComponentState{}
+		}
+		w.state[team][environment][component][filename] = fw
 		added = true
 	}
 
 	return added, nil
 }
 
-func (w *Reconciler) exists(environment string, component string, filename string) bool {
-	return w.state[environment] != nil &&
-		w.state[environment][component] != nil &&
-		w.state[environment][component][filename] != nil
+func (w *Reconciler) exists(team string, environment string, component string, filename string) bool {
+	return w.state[team] != nil &&
+		w.state[team][environment] != nil &&
+		w.state[team][environment][component] != nil &&
+		w.state[team][environment][component][filename] != nil
 }
 
-func (w *Reconciler) RemoveFile(environment string, component string, filename string) (success bool) {
-	if w.exists(environment, component, filename) {
-		w.state[environment][component][filename] = nil
+func (w *Reconciler) RemoveFile(team string, environment string, component string, filename string) (success bool) {
+	if w.exists(team, environment, component, filename) {
+		w.state[team][environment][component][filename] = nil
 		return true
 	}
 	return false
 }
 
-func (w *Reconciler) RemoveComponentFiles(environment string, component string) {
-	if w.state[environment] != nil && w.state[component] != nil {
-		w.state[environment][component] = nil
+func (w *Reconciler) RemoveComponentFiles(team string, environment string, component string) {
+	if w.state[team][environment] != nil && w.state[team][environment][component] != nil {
+		w.state[team][environment][component] = nil
 	}
 }
 
-func (w *Reconciler) RemoveEnvironmentFiles(environment string) {
-	w.state[environment] = nil
+func (w *Reconciler) RemoveEnvironmentFiles(team string, environment string) {
+	w.state[team][environment] = nil
 }
 
 func (w *Reconciler) reconcile(fm *FileMeta) (updated bool, err error) {
@@ -183,13 +197,13 @@ func (w *Reconciler) reconcile(fm *FileMeta) (updated bool, err error) {
 			"component", fm.Component,
 			"filename", fm.Filename,
 		)
-		if status[fm.Environment] != nil && status[fm.Environment][fm.Component] != nil && status[fm.Environment][fm.Component][fm.Filename] != nil {
-			status[fm.Environment][fm.Component][fm.Filename] = nil
+		if status[fm.Component] != nil && status[fm.Component][fm.Filename] != nil {
+			status[fm.Component][fm.Filename] = nil
 			if err := w.k8sClient.Status().Update(w.ctx, &environment); err != nil {
 				return false, err
 			}
 		}
-		if succcess := w.RemoveFile(fm.Environment, fm.Component, fm.Filename); !succcess {
+		if success := w.RemoveFile(fm.Team, fm.Environment, fm.Component, fm.Filename); !success {
 			w.log.Info(
 				"File missing in file reconciler",
 				"environment", fm.Environment,
@@ -219,11 +233,13 @@ func (w *Reconciler) reconcile(fm *FileMeta) (updated bool, err error) {
 		)
 		return updated, nil
 	}
-	if status[fm.Environment] != nil && status[fm.Environment][fm.Component] != nil && status[fm.Environment][fm.Component][fm.Filename] != nil {
-		fm.MD5 = status[fm.Environment][fm.Component][fm.Filename].Md5
+
+	// get MD5 if it was already calculated from the Status, so we don't have a redundant reconcile
+	if status[fm.Component] != nil && status[fm.Component][fm.Filename] != nil {
+		fm.MD5 = status[fm.Component][fm.Filename].MD5
 	}
 
-	if oldHash := fm.MD5; oldHash != newHash {
+	if oldHash, oldReconciledAt := fm.MD5, fm.ReconciledAt; oldHash != newHash {
 		w.log.Info(
 			"Updating hash for environment component",
 			"component", fm.Component,
@@ -232,22 +248,20 @@ func (w *Reconciler) reconcile(fm *FileMeta) (updated bool, err error) {
 			"oldHash", oldHash,
 			"newHash", newHash,
 		)
-		tempMd5 := fm.MD5
-		tempReconciledAt := fm.ReconciledAt
 		fm.MD5 = newHash
 		fm.ReconciledAt = time.Now()
-		environment.Status.FileState = w.buildDomainFileState()
+		environment.Status.FileState = w.buildDomainFileState(environment.Spec.TeamName, environment.Spec.EnvName)
 		if err := w.k8sClient.Status().Update(w.ctx, &environment); err != nil {
 			w.log.Info(
 				"Reverting hash because of failed status update",
 				"component", fm.Component,
 				"environment", environment.Spec.EnvName,
 				"team", environment.Spec.TeamName,
-				"oldHash", fm.MD5,
-				"newHash", tempMd5,
+				"oldHash", newHash,
+				"newHash", oldHash,
 			)
-			fm.MD5 = tempMd5
-			fm.ReconciledAt = tempReconciledAt
+			fm.MD5 = oldHash
+			fm.ReconciledAt = oldReconciledAt
 			return false, err
 		}
 		updated = true
@@ -256,20 +270,14 @@ func (w *Reconciler) reconcile(fm *FileMeta) (updated bool, err error) {
 	return updated, nil
 }
 
-func (w *Reconciler) buildDomainFileState() map[string]map[string]map[string]*v1.WatchedFile {
-	domainState := map[string]map[string]map[string]*v1.WatchedFile{}
-	for envKey, environmentFiles := range w.state {
-		if domainState[envKey] == nil {
-			domainState[envKey] = map[string]map[string]*v1.WatchedFile{}
+func (w *Reconciler) buildDomainFileState(team string, environment string) map[string]map[string]*v1.WatchedFile {
+	domainState := map[string]map[string]*v1.WatchedFile{}
+	for compKey, componentFiles := range w.state[team][environment] {
+		if domainState[compKey] == nil {
+			domainState[compKey] = map[string]*v1.WatchedFile{}
 		}
-		for compKey, componentFiles := range environmentFiles {
-			if domainState[envKey][compKey] == nil {
-				domainState[envKey][compKey] = map[string]*v1.WatchedFile{}
-			}
-			for _, file := range componentFiles {
-				domainState[envKey][compKey][file.Filename] = toDomainFiles(file)
-			}
-
+		for _, file := range componentFiles {
+			domainState[compKey][file.Filename] = toDomainFiles(file)
 		}
 	}
 	return domainState
@@ -282,7 +290,7 @@ func toDomainFiles(fm *FileMeta) *v1.WatchedFile {
 		Source:       fm.Source,
 		Path:         fm.Path,
 		Ref:          fm.Ref,
-		Md5:          fm.MD5,
+		MD5:          fm.MD5,
 		ReconciledAt: now,
 		SoftDelete:   fm.SoftDelete,
 	}

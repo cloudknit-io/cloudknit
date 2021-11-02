@@ -31,7 +31,7 @@ func GenerateWorkflowOfWorkflows(environment *stablev1.Environment) *workflow.Wo
 	var tasks []workflow.DAGTask
 
 	for _, environmentComponent := range environment.Spec.Components {
-		tfPath := il.EnvironmentComponentTerraformIlPath(environment.Spec.TeamName, environment.Spec.EnvName, environmentComponent.Name)
+		tfPath := il.EnvironmentComponentTerraformDirectoryPath(environment.Spec.TeamName, environment.Spec.EnvName, environmentComponent.Name)
 		task := workflow.DAGTask{
 			Name: environmentComponent.Name,
 			TemplateRef: &workflow.TemplateRef{
@@ -109,7 +109,7 @@ func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment) *workf
 	for _, ec := range ecs {
 		allComponents = append(allComponents, ec.Name)
 
-		tfPath := il.EnvironmentComponentTerraformIlPath(environment.Spec.TeamName, environment.Spec.EnvName, ec.Name)
+		tfPath := il.EnvironmentComponentTerraformDirectoryPath(environment.Spec.TeamName, environment.Spec.EnvName, ec.Name)
 
 		autoApproveFlag := ec.AutoApprove
 		if autoApproveAll {

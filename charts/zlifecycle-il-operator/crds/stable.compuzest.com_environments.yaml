@@ -19,7 +19,7 @@ spec:
   - name: v1
     schema:
       openAPIV3Schema:
-        description: Environment is the Schema for the environments API
+        description: Environment is the Schema for the environments API.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -34,7 +34,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: EnvironmentSpec defines the desired state of Environment
+            description: EnvironmentSpec defines the desired state of Environment.
             properties:
               autoApprove:
                 type: boolean
@@ -192,7 +192,7 @@ spec:
             - teamName
             type: object
           status:
-            description: EnvironmentStatus defines the observed state of Environment
+            description: EnvironmentStatus defines the observed state of Environment.
             properties:
               components:
                 items:
@@ -339,24 +339,26 @@ spec:
               fileState:
                 additionalProperties:
                   additionalProperties:
-                    additionalProperties:
-                      properties:
-                        filename:
-                          type: string
-                        md5:
-                          type: string
-                        path:
-                          type: string
-                        reconciledAt:
-                          format: date-time
-                          type: string
-                        ref:
-                          type: string
-                        softDelete:
-                          type: boolean
-                        source:
-                          type: string
-                      type: object
+                    properties:
+                      filename:
+                        type: string
+                      md5:
+                        type: string
+                      path:
+                        type: string
+                      reconciledAt:
+                        format: date-time
+                        type: string
+                      ref:
+                        type: string
+                      softDelete:
+                        type: boolean
+                      source:
+                        type: string
+                      type:
+                        type: string
+                    required:
+                    - type
                     type: object
                   type: object
                 type: object

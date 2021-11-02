@@ -106,10 +106,10 @@ type EnvironmentSpec struct {
 
 // EnvironmentStatus defines the observed state of Environment.
 type EnvironmentStatus struct {
-	TeamName   string                                        `json:"teamName,omitempty"`
-	EnvName    string                                        `json:"envName,omitempty"`
-	Components []*EnvironmentComponent                       `json:"components,omitempty"`
-	FileState  map[string]map[string]map[string]*WatchedFile `json:"fileState,omitempty"`
+	TeamName   string                             `json:"teamName,omitempty"`
+	EnvName    string                             `json:"envName,omitempty"`
+	Components []*EnvironmentComponent            `json:"components,omitempty"`
+	FileState  map[string]map[string]*WatchedFile `json:"fileState,omitempty"`
 }
 
 type WatchedFile struct {
@@ -118,7 +118,7 @@ type WatchedFile struct {
 	Source       string      `json:"source,omitempty"`
 	Path         string      `json:"path,omitempty"`
 	Ref          string      `json:"ref,omitempty"`
-	Md5          string      `json:"md5,omitempty"`
+	MD5          string      `json:"md5,omitempty"`
 	ReconciledAt metav1.Time `json:"reconciledAt,omitempty"`
 	SoftDelete   bool        `json:"softDelete,omitempty"`
 }

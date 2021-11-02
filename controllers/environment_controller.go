@@ -89,8 +89,8 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		return ctrl.Result{}, nil
 	}
 
-	envDirectory := il.TeamDirectory(environment.Spec.TeamName)
-	envComponentDirectory := il.EnvironmentDirectory(environment.Spec.TeamName, environment.Spec.EnvName)
+	envDirectory := il.TeamDirectoryPath(environment.Spec.TeamName)
+	envComponentDirectory := il.EnvironmentDirectoryPath(environment.Spec.TeamName, environment.Spec.EnvName)
 	fileService := file.NewOsFileService()
 
 	isDeleteEvent := !environment.DeletionTimestamp.IsZero() || environment.Spec.Teardown
@@ -133,6 +133,14 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 			"team", environment.Spec.TeamName,
 			"environment", environment.Spec.EnvName,
 		)
+	}
+	r.Log.Info(
+		"Checking for dangling overlays", "team", environment.Spec.TeamName,
+		"environment",
+		environment.Spec.EnvName,
+	)
+	if err := r.cleanupDanglingOverlays(ctx, environment); err != nil {
+		r.Log.Error(err, "Error cleaning up dangling overlays")
 	}
 
 	r.Log.Info(
@@ -330,7 +338,7 @@ func (r *EnvironmentReconciler) postDeleteHook(
 	}
 	_ = r.deleteDanglingArgocdApps(e, argocdAPI)
 	_ = r.deleteDanglingArgoWorkflows(e, argoworkflowAPI)
-	r.removeFileReconcilerEntries(e)
+	r.removeEnvironmentFromFileReconciler(e)
 	return nil
 }
 
@@ -356,10 +364,6 @@ func (r *EnvironmentReconciler) deleteDanglingArgocdApps(e *stablev1.Environment
 	return nil
 }
 
-func (r *EnvironmentReconciler) cleanupDanglingOverlays(e *stablev1.Environment) error {
-	for e.Status.FileState
-}
-
 func (r *EnvironmentReconciler) deleteDanglingArgoWorkflows(e *stablev1.Environment, api argoworkflow.API) error {
 	prefix := fmt.Sprintf("%s-%s", e.Spec.TeamName, e.Spec.EnvName)
 	namespace := env.Config.ArgoWorkflowsNamespace
@@ -370,18 +374,13 @@ func (r *EnvironmentReconciler) deleteDanglingArgoWorkflows(e *stablev1.Environm
 		"prefix", prefix,
 		"workflowNamespace", namespace,
 	)
+
 	return argoworkflow.DeleteWorkflowsWithPrefix(r.Log, prefix, namespace, api)
 }
 
 func (r *EnvironmentReconciler) cleanupIlRepo(ctx context.Context, e *stablev1.Environment) error {
-	owner := env.Config.ZlifecycleOwner
-	ilRepo := env.Config.ILRepoName
-	api := github.NewHTTPGitClient(ctx, env.Config.GitHubAuthToken)
-	branch := env.Config.RepoBranch
-	now := time.Now()
 	paths := extractPathsToRemove(e)
 	team := fmt.Sprintf("%s-team-environment", e.Spec.TeamName)
-	commitAuthor := &github2.CommitAuthor{Date: &now, Name: &env.Config.GithubSvcAccntName, Email: &env.Config.GithubSvcAccntEmail}
 	commitMessage := fmt.Sprintf("Cleaning il objects for %s team in %s environment", e.Spec.TeamName, e.Spec.EnvName)
 	r.Log.Info(
 		"Cleaning up IL repo",
@@ -389,7 +388,35 @@ func (r *EnvironmentReconciler) cleanupIlRepo(ctx context.Context, e *stablev1.E
 		"environment", e.Spec.EnvName,
 		"objects", paths,
 	)
-	return github.DeletePatternsFromRootTree(r.Log, api, owner, ilRepo, branch, team, paths, commitAuthor, commitMessage)
+
+	return deleteFromGitRepo(ctx, r.Log, team, paths, commitMessage)
+}
+
+func (r *EnvironmentReconciler) cleanupDanglingOverlays(ctx context.Context, e *stablev1.Environment) error {
+	if paths := overlay.FindDanglingOverlays(e); len(paths) > 0 {
+		team := fmt.Sprintf("%s-team-environment", e.Spec.TeamName)
+		commitMessage := fmt.Sprintf("Cleaning dangling overlays for %s team in %s environment", e.Spec.TeamName, e.Spec.EnvName)
+		r.Log.Info(
+			"Cleaning dangling overlays",
+			"team", e.Spec.TeamName,
+			"environment", e.Spec.EnvName,
+			"overlays", paths,
+		)
+
+		return deleteFromGitRepo(ctx, r.Log, team, paths, commitMessage)
+	}
+	return nil
+}
+
+func deleteFromGitRepo(ctx context.Context, log logr.Logger, team string, paths []string, commitMessage string) error {
+	owner := env.Config.ZlifecycleOwner
+	ilRepo := env.Config.ILRepoName
+	api := github.NewHTTPGitClient(ctx, env.Config.GitHubAuthToken)
+	branch := env.Config.RepoBranch
+	now := time.Now()
+	commitAuthor := &github2.CommitAuthor{Date: &now, Name: &env.Config.GithubSvcAccntName, Email: &env.Config.GithubSvcAccntEmail}
+
+	return github.DeletePatternsFromRootTree(log, api, owner, ilRepo, branch, team, paths, commitAuthor, commitMessage)
 }
 
 // TODO: Should we remove objects in IL repo?
@@ -402,18 +429,14 @@ func extractPathsToRemove(e *stablev1.Environment) []string {
 	}
 }
 
-func (r *EnvironmentReconciler) removeFileReconcilerEntries(e *stablev1.Environment) {
+func (r *EnvironmentReconciler) removeEnvironmentFromFileReconciler(e *stablev1.Environment) {
 	r.Log.Info(
 		"Removing entries from file reconciler",
 		"team", e.Spec.TeamName,
 		"environment", e.Spec.EnvName,
 	)
 	fr := filereconciler.GetReconciler()
-	for _, ec := range e.Spec.Components {
-		if ec.VariablesFile != nil {
-			fr.RemoveComponentFiles(e.Spec.EnvName, ec.Name)
-		}
-	}
+	fr.RemoveEnvironmentFiles(e.Spec.TeamName, e.Spec.EnvName)
 }
 
 func generateAndSaveEnvironmentComponents(
@@ -478,7 +501,7 @@ func generateAndSaveEnvironmentComponents(
 			return err
 		}
 
-		terraformDirectory := il.EnvironmentComponentTerraformIlPath(environment.Spec.TeamName, environment.Spec.EnvName, ec.Name)
+		terraformDirectory := il.EnvironmentComponentTerraformDirectoryPath(environment.Spec.TeamName, environment.Spec.EnvName, ec.Name)
 		if err := overlay.GenerateOverlayFiles(log, fileService, githubRepoAPI, environment, ec, terraformDirectory); err != nil {
 			return err
 		}
