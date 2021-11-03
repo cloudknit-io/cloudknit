@@ -62,6 +62,7 @@ export class ComponentService {
   }
 
   async saveComponents(costing: CostingDto): Promise<boolean> {
+    console.log('-------> component cost', costing.component.cost);
     const id = `${costing.teamName}-${costing.environmentName}-${costing.component.componentName}`;
     let savedComponent = null;
     if (costing.component.isDeleted) {
