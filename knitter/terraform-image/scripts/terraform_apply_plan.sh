@@ -16,7 +16,7 @@ aws s3 cp terraform-plan s3://zlifecycle-tfplan-$customer_id/$team_name/$env_nam
 data='{"metadata":{"labels":{"component_status":"calculating_cost"}}}'
 argocd app patch $team_env_config_name --patch $data --type merge >null
 
-infracost breakdown --path . --format json --log-level=warn >>output.json
+infracost breakdown --path terraform-plan --format json --log-level=warn >>output.json
 estimated_cost=$(cat output.json | jq -r ".projects[0].breakdown.totalMonthlyCost")
 resources=$(cat output.json | jq -r ".projects[0].breakdown.resources")
 
