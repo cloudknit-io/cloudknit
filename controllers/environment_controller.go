@@ -15,15 +15,14 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"k8s.io/apiserver/pkg/registry/generic/registry"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"strings"
 	"time"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/filereconciler"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/overlay"
-	"k8s.io/apiserver/pkg/registry/generic/registry"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-
 	"github.com/compuzest/zlifecycle-il-operator/controllers/gotfvars"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/overlay"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	"github.com/google/go-cmp/cmp"
 	github2 "github.com/google/go-github/v32/github"
@@ -107,7 +106,6 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 			)
 			return ctrl.Result{}, nil
 		}
-
 		r.Log.Info(
 			"Generating Environment application",
 			"team", environment.Spec.TeamName,
@@ -251,9 +249,11 @@ func delayEnvironmentReconcileOnInitialRun(log logr.Logger, seconds int64) {
 }
 
 func (r *EnvironmentReconciler) updateStatus(ctx context.Context, e *stablev1.Environment) error {
-	isStateDirty := e.Status.TeamName != e.Spec.TeamName ||
-		e.Status.EnvName != e.Spec.EnvName ||
-		!cmp.Equal(e.Status.Components, e.Spec.Components)
+	fileState := filereconciler.GetReconciler().BuildDomainFileState(e.Spec.TeamName, e.Spec.EnvName)
+	hasEnvironmentInfoChanged := e.Status.TeamName != e.Spec.TeamName || e.Status.EnvName != e.Spec.EnvName
+	haveComponentsChanged := !cmp.Equal(e.Status.Components, e.Spec.Components)
+	//hasFileStateChanged := !cmp.Equal(fileState, e.Status.FileState)
+	isStateDirty := hasEnvironmentInfoChanged || haveComponentsChanged
 
 	if isStateDirty {
 		r.Log.Info(
@@ -264,6 +264,7 @@ func (r *EnvironmentReconciler) updateStatus(ctx context.Context, e *stablev1.En
 		e.Status.TeamName = e.Spec.TeamName
 		e.Status.EnvName = e.Spec.EnvName
 		e.Status.Components = e.Spec.Components
+		e.Status.FileState = fileState
 		if err := r.Status().Update(ctx, e); err != nil {
 			return err
 		}

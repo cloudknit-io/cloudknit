@@ -190,6 +190,105 @@ func removeEnvironmentObjectsFromTree(
 	return newBaseTree, nil
 }
 
+func removeEnvironmentTerraformObjectsFromTree(
+	log logr.Logger,
+	api GitAPI,
+	owner string,
+	repo string,
+	branch string,
+	team string,
+	patterns []string,
+) (*github.Tree, error) {
+	// get base tree
+	log.Info("Fetching base tree...", "owner", owner, "repo", repo, "branch", branch)
+	baseTree, baseTreeResp, baseTreeErr := api.GetTree(owner, repo, branch, false)
+	if baseTreeErr != nil {
+		return nil, baseTreeErr
+	}
+	defer common.CloseBody(baseTreeResp.Body)
+
+	// team root tree
+	teamRootPath := "team"
+	log.Info("Fetching team root tree...", "owner", owner, "repo", repo, "path", teamRootPath)
+	var teamRootTree *github.Tree
+	for _, entry := range baseTree.Entries {
+		if *entry.Path == teamRootPath {
+			tree, treeResp, treeErr := api.GetTree(owner, repo, *entry.SHA, false)
+			if treeErr != nil {
+				return nil, treeErr
+			}
+			common.CloseBody(treeResp.Body)
+			teamRootTree = tree
+		}
+	}
+	if teamRootTree == nil {
+		return nil, errors.New("missing team root tree")
+	}
+
+	// team tree
+	teamPath := team
+	log.Info("Fetching team tree...", "owner", owner, "repo", repo, "path", teamPath)
+	var teamTree *github.Tree
+	for _, entry := range teamRootTree.Entries {
+		if *entry.Path == teamPath {
+			tree, treeResp, treeErr := api.GetTree(owner, repo, *entry.SHA, false)
+			if treeErr != nil {
+				return nil, treeErr
+			}
+			common.CloseBody(treeResp.Body)
+			teamTree = tree
+		}
+	}
+	if teamTree == nil {
+		return nil, errors.New("missing team tree")
+	}
+
+	// exclude entries
+	entries := removePathsFromTree(log, teamTree, patterns)
+
+	// update team tree
+	log.Info("Creating new team subtree...")
+	newTeamTree, newTeamTreeResp, newTeamTreeErr := api.CreateTree(owner, repo, "", entries)
+	if newTeamTreeErr != nil {
+		return nil, newTeamTreeErr
+	}
+	defer common.CloseBody(newTeamTreeResp.Body)
+
+	// update root team tree
+	for _, entry := range teamRootTree.Entries {
+		if teamPath == *entry.Path {
+			log.Info("Updating SHA value for team subtree", "path", *entry.Path, "oldSHA", *entry.SHA, "newSHA", newTeamTree.SHA)
+			entry.SHA = newTeamTree.SHA
+			entry.URL = nil
+		}
+	}
+
+	log.Info("Creating new team root tree...")
+	newTeamRootTree, newTeamRootTreeResp, newTeamRootTreeErr := api.CreateTree(owner, repo, "", teamRootTree.Entries)
+	if newTeamRootTreeErr != nil {
+		return nil, newTeamRootTreeErr
+	}
+	defer common.CloseBody(newTeamRootTreeResp.Body)
+
+	// update base tree
+	for _, entry := range baseTree.Entries {
+		if teamRootPath == *entry.Path {
+			log.Info("Updating SHA value for root team subtree", "path", *entry.Path, "oldSHA", *entry.SHA, "newSHA", newTeamRootTree.SHA)
+			entry.SHA = newTeamRootTree.SHA
+			entry.URL = nil
+		}
+	}
+
+	log.Info("Creating new base tree...")
+	newBaseTree, newBaseTreeResp, newBaseTreeErr := api.CreateTree(owner, repo, "", baseTree.Entries)
+	if newBaseTreeErr != nil {
+		return nil, newBaseTreeErr
+	}
+	defer common.CloseBody(newBaseTreeResp.Body)
+
+	return newBaseTree, nil
+}
+
 func commitAndPushTree(
 	log logr.Logger,
 	api GitAPI,
@@ -524,8 +623,15 @@ func pushCommit(ref *github.Reference, tree *github.Tree) (dirty bool, err error
 	return dirty, nil
 }
 
-func CommitAndPushFiles(_sourceOwner string, _sourceRepo string, _sourceFolders []string,
-	_commitBranch string, _commitMessage string, _authorName string, _authorEmail string) (dirty bool, err error) {
+func CommitAndPushFiles(
+	_sourceOwner string,
+	_sourceRepo string,
+	_sourceFolders []string,
+	_commitBranch string,
+	_commitMessage string,
+	_authorName string,
+	_authorEmail string,
+) (dirty bool, err error) {
 	mutex.Lock()
 	defer mutex.Unlock()
 	sourceOwner = _sourceOwner

@@ -54,6 +54,7 @@ func GetVariablesFromTfvarsFile(
 	fm := &filereconciler.FileMeta{
 		Type:           "tfvars",
 		Filename:       ec.VariablesFile.Path,
+		Team:           environment.Spec.TeamName,
 		Environment:    environment.Spec.EnvName,
 		Component:      ec.Name,
 		Source:         ec.VariablesFile.Source,

@@ -45,6 +45,7 @@ func GenerateOverlayFiles(
 			fm := filereconciler.FileMeta{
 				Type:           "overlay",
 				Filename:       name,
+				Team:           e.Spec.TeamName,
 				Environment:    e.Spec.EnvName,
 				Component:      ec.Name,
 				Source:         overlay.Source,

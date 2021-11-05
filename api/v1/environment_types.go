@@ -113,7 +113,7 @@ type EnvironmentStatus struct {
 }
 
 type WatchedFile struct {
-	Type         string      `json:"type"`
+	Type         string      `json:"type,omitempty"`
 	Filename     string      `json:"filename,omitempty"`
 	Source       string      `json:"source,omitempty"`
 	Path         string      `json:"path,omitempty"`

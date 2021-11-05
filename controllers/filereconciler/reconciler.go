@@ -250,7 +250,7 @@ func (w *Reconciler) reconcile(fm *FileMeta) (updated bool, err error) {
 		)
 		fm.MD5 = newHash
 		fm.ReconciledAt = time.Now()
-		environment.Status.FileState = w.buildDomainFileState(environment.Spec.TeamName, environment.Spec.EnvName)
+		environment.Status.FileState = w.BuildDomainFileState(environment.Spec.TeamName, environment.Spec.EnvName)
 		if err := w.k8sClient.Status().Update(w.ctx, &environment); err != nil {
 			w.log.Info(
 				"Reverting hash because of failed status update",
@@ -270,7 +270,7 @@ func (w *Reconciler) reconcile(fm *FileMeta) (updated bool, err error) {
 	return updated, nil
 }
 
-func (w *Reconciler) buildDomainFileState(team string, environment string) map[string]map[string]*v1.WatchedFile {
+func (w *Reconciler) BuildDomainFileState(team string, environment string) map[string]map[string]*v1.WatchedFile {
 	domainState := map[string]map[string]*v1.WatchedFile{}
 	for compKey, componentFiles := range w.state[team][environment] {
 		if domainState[compKey] == nil {
@@ -286,6 +286,7 @@ func (w *Reconciler) buildDomainFileState(team string, environment string) map[s
 func toDomainFiles(fm *FileMeta) *v1.WatchedFile {
 	now := metav1.NewTime(time.Now())
 	return &v1.WatchedFile{
+		Type:         fm.Type,
 		Filename:     fm.Filename,
 		Source:       fm.Source,
 		Path:         fm.Path,

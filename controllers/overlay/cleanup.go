@@ -12,11 +12,14 @@ func FindDanglingOverlays(e *v1.Environment) (paths []string) {
 	state := e.Status.FileState
 	for _, ec := range e.Spec.Components {
 		for _, file := range state[ec.Name] {
+			if file.Type != "overlay" {
+				continue
+			}
 			exists := false
 			for _, overlay := range ec.OverlayFiles {
 				notMarkedForDeletion := !file.SoftDelete
 				overlayName := common.ExtractNameFromPath(overlay.Path)
-				isSameFile := file.Type == "overlay" && file.Filename == overlayName
+				isSameFile := file.Filename == overlayName
 				if isSameFile && notMarkedForDeletion {
 					exists = true
 					break
