@@ -1,12 +1,4 @@
 terraform {
-    required_version = "{{ .Version }}"
-
-    required_providers {
-      aws = {
-        version = "~> 3.0"
-      }
-    }
-
     backend "s3" {
         region         = "{{ .Region }}"
         bucket         = "{{ .Bucket }}"

@@ -9,7 +9,6 @@ import (
 // TerraformBackendConfig variables for creating tf backend
 type TerraformBackendConfig struct {
 	Region        string
-	Version       string
 	Key           string
 	Bucket        string
 	DynamoDBTable string
@@ -17,6 +16,11 @@ type TerraformBackendConfig struct {
 	TeamName      string
 	EnvName       string
 	ComponentName string
+}
+
+// TerraformVersionsConfig variables for creating tf verions
+type TerraformVersionsConfig struct {
+	Version       string
 }
 
 // TerraformModuleConfig variables for creating tf module
