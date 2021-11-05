@@ -44,12 +44,15 @@ func GenerateTerraform(
 	backendConfig := TerraformBackendConfig{
 		Region:        DefaultSharedRegion,
 		Profile:       DefaultSharedProfile,
-		Version:       DefaultTerraformVersion,
 		Bucket:        fmt.Sprintf("zlifecycle-tfstate-%s", env.Config.CompanyName),
 		DynamoDBTable: fmt.Sprintf("zlifecycle-tflock-%s", env.Config.CompanyName),
 		TeamName:      vars.TeamName,
 		EnvName:       vars.EnvName,
 		ComponentName: componentName,
+	}
+
+	versionsConfig := TerraformVersionsConfig{
+		Version:       DefaultTerraformVersion,
 	}
 
 	standardizedVariables, err := standardizeVariables(vars.EnvCompVariables)
@@ -128,6 +131,10 @@ func GenerateTerraform(
 	}
 
 	if err := generateFile(fileService, &backendConfig, terraformDirectory, "terraform.tf", "terraform_backend"); err != nil {
+		return err
+	}
+
+	if err := generateFile(fileService, &versionsConfig, terraformDirectory, "versions.tf", "terraform_versions"); err != nil {
 		return err
 	}
 
