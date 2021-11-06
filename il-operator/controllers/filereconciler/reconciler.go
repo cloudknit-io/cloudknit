@@ -64,7 +64,7 @@ func (w *Reconciler) Start() error {
 	w.log.Info("Starting file reconciler")
 	c := cron.New()
 	c.Start()
-	_, err := c.AddFunc("@every 1m", func() {
+	_, err := c.AddFunc("@every 3m", func() {
 		var reconciled []string
 		start := time.Now()
 		w.log.Info("Running scheduled file reconciler iteration", "time", time.Now().String())
