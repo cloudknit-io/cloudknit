@@ -15,10 +15,9 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/filereconciler"
 	"os"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/filereconciler"
 
-	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -40,8 +39,7 @@ var (
 
 // +kubebuilder:rbac:groups="",resources=configmaps;secrets,verbs=get;list;watch;update;patch
 // +kubebuilder:rbac:groups=coordination.k8s.io,resources=leases,verbs=get;create;update
-
-func init() {
+func init() { // nolint
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
 	utilruntime.Must(stablev1.AddToScheme(scheme))
@@ -76,7 +74,7 @@ func main() {
 		ctx,
 		ctrl.Log.WithName("FileReconciler"),
 		mgr.GetClient(),
-		github.NewHTTPRepositoryAPI(ctx, env.Config.GitHubAuthToken),
+		github.NewHTTPRepositoryAPI(ctx),
 	)
 	if err := fileReconciler.Start(); err != nil {
 		setupLog.Error(err, "failed to start file reconciler")

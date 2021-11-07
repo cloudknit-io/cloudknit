@@ -19,12 +19,28 @@ var Config = config{
 	ConfigWatcherDirectory: "config-watcher",
 }
 
-func TeamDirectory(team string) string {
-	return Config.TeamDirectory + "/" + team + "-team-environment"
+func TeamDirectoryName(team string) string {
+	return team + "-team-environment"
 }
 
-func EnvironmentDirectory(team string, environment string) string {
-	return TeamDirectory(team) + "/" + environment + "-environment-component"
+func TeamDirectoryPath(team string) string {
+	return Config.TeamDirectory + "/" + TeamDirectoryName(team)
+}
+
+func EnvironmentDirectoryName(environment string) string {
+	return environment + "-environment-component"
+}
+
+func EnvironmentDirectoryPath(team string, environment string) string {
+	return TeamDirectoryPath(team) + "/" + EnvironmentDirectoryName(environment)
+}
+
+func EnvironmentComponentDirectoryPath(team string, environment string, component string) string {
+	return filepath.Join(EnvironmentDirectoryPath(team, environment), component)
+}
+
+func EnvironmentComponentTerraformDirectoryPath(team string, environment string, component string) string {
+	return filepath.Join(EnvironmentComponentDirectoryPath(team, environment, component), "terraform")
 }
 
 func TeamTFDirectory(team string) string {
@@ -32,11 +48,15 @@ func TeamTFDirectory(team string) string {
 }
 
 func EnvironmentTFDirectory(team string, environment string) string {
-	return TeamDirectory(team) + "/" + environment + "-environment-component"
+	return TeamDirectoryName(team) + "/" + environment + "-environment-component"
 }
 
-func EnvironmentComponentTerraformIlPath(team string, environment string, component string) string {
-	return filepath.Join(EnvironmentTFDirectory(team, environment), component, "terraform")
+func RepoName(companyName string) string {
+	return companyName + "-il"
+}
+
+func RepoURL(owner string, companyName string) string {
+	return fmt.Sprintf("git@github.com:%s/%s.git", owner, RepoName(companyName))
 }
 
 func EnvComponentModuleSource(moduleSource string, moduleName string) string {

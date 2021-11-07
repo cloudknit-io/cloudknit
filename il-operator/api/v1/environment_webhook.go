@@ -32,21 +32,21 @@ func (in *Environment) SetupWebhookWithManager(mgr ctrl.Manager) error {
 
 var _ webhook.Validator = &Environment{}
 
-// ValidateCreate implements webhook.Validator so a webhook will be registered for the type
+// ValidateCreate implements webhook.Validator so a webhook will be registered for the type.
 func (in *Environment) ValidateCreate() error {
 	environmentlog.Info("validating environment create", "name", in.Name)
 
 	return ValidateEnvironmentCreate(in)
 }
 
-// ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
+// ValidateUpdate implements webhook.Validator so a webhook will be registered for the type.
 func (in *Environment) ValidateUpdate(old runtime.Object) error {
 	environmentlog.Info("validate environment update", "name", in.Name)
 
 	return ValidateEnvironmentUpdate(in)
 }
 
-// ValidateDelete implements webhook.Validator so a webhook will be registered for the type
+// ValidateDelete implements webhook.Validator so a webhook will be registered for the type.
 func (in *Environment) ValidateDelete() error {
 	environmentlog.Info("validate environment delete", "name", in.Name)
 
