@@ -3,8 +3,6 @@ package github_test
 import (
 	"fmt"
 	"testing"
-
-
 	"github.com/compuzest/zlifecycle-il-operator/mocks"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"

@@ -7,8 +7,6 @@ import (
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 
-	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
-
 	"github.com/google/go-github/v32/github"
 	"golang.org/x/oauth2"
 )
