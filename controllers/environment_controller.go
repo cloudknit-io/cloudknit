@@ -15,10 +15,10 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"strings"
-	"time"
 	"k8s.io/apiserver/pkg/registry/generic/registry"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"strings"
+	"time"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/filereconciler"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/gotfvars"

@@ -20,7 +20,7 @@ type TerraformBackendConfig struct {
 
 // TerraformVersionsConfig variables for creating tf verions
 type TerraformVersionsConfig struct {
-	Version       string
+	Version string
 }
 
 // TerraformModuleConfig variables for creating tf module

@@ -52,7 +52,7 @@ func GenerateTerraform(
 	}
 
 	versionsConfig := TerraformVersionsConfig{
-		Version:       DefaultTerraformVersion,
+		Version: DefaultTerraformVersion,
 	}
 
 	standardizedVariables, err := standardizeVariables(vars.EnvCompVariables)
