@@ -15,6 +15,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/git"
 	"k8s.io/apiserver/pkg/registry/generic/registry"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"strings"
@@ -77,6 +78,17 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	argoworkflowAPI := argoworkflow.NewHTTPClient(ctx, env.Config.ArgoWorkflowsServerURL)
 	repoAPI := github.NewHTTPRepositoryAPI(ctx)
 	fileAPI := file.NewOsFileService()
+	gitAPI, err := git.NewGoGit(ctx)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	// temp clone IL repo
+	tempILRepoDir, cleanup, err := git.CloneTemp(gitAPI, ilRepoURL)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+	defer cleanup()
 
 	// finalizer handling
 	finalizer := env.Config.EnvironmentFinalizer
@@ -107,7 +119,7 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 			)
 			return ctrl.Result{}, nil
 		}
-		if err := r.handleNonDeleteEvent(environment, fileAPI, repoAPI); err != nil {
+		if err := r.handleNonDeleteEvent(tempILRepoDir, environment, fileAPI, repoAPI); err != nil {
 			return ctrl.Result{}, err
 		}
 	} else {
@@ -118,17 +130,17 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		)
 	}
 
-	r.Log.Info(
-		"Checking for dangling overlays", "team", environment.Spec.TeamName,
-		"environment",
-		environment.Spec.EnvName,
-	)
-	if err := r.cleanupDanglingOverlays(ctx, environment); err != nil {
-		r.Log.Error(err, "Error cleaning up dangling overlays")
-	}
+	//r.Log.Info(
+	//	"Checking for dangling overlays", "team", environment.Spec.TeamName,
+	//	"environment",
+	//	environment.Spec.EnvName,
+	//)
+	//if err := r.cleanupDanglingOverlays(ctx, environment); err != nil {
+	//	r.Log.Error(err, "Error cleaning up dangling overlays")
+	//}
 
-	envDirectory := il.EnvironmentDirectoryPath(environment.Spec.TeamName)
-	envComponentDirectory := il.EnvironmentComponentsDirectoryPath(environment.Spec.TeamName, environment.Spec.EnvName)
+	envDirectory := il.EnvironmentDirectoryAbsolutePath(tempILRepoDir, environment.Spec.TeamName)
+	envComponentDirectory := il.EnvironmentComponentsDirectoryAbsolutePath(tempILRepoDir, environment.Spec.TeamName, environment.Spec.EnvName)
 
 	r.Log.Info(
 		"Generating workflow of workflows",
@@ -136,24 +148,21 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		"environment", environment.Spec.EnvName,
 		"isDeleteEvent", isDeleteEvent,
 	)
-	if err := generateAndSaveWorkflowOfWorkflows(fileAPI, environment, envComponentDirectory); err != nil {
+	if err := generateAndSaveWorkflowOfWorkflows(tempILRepoDir, fileAPI, environment, envComponentDirectory); err != nil {
 		return ctrl.Result{}, err
 	}
 
-	dirty, err := github.CommitAndPushFiles(
-		env.Config.ILRepoSourceOwner,
-		env.Config.ILRepoName,
-		[]string{envDirectory, envComponentDirectory},
-		env.Config.RepoBranch,
-		fmt.Sprintf("Reconciling environment %s", environment.Spec.EnvName),
-		env.Config.GithubSvcAccntName,
-		env.Config.GithubSvcAccntEmail,
-	)
+	commitInfo := git.CommitInfo{
+		Author: githubSvcAccntName,
+		Email:  githubSvcAccntEmail,
+		Msg: fmt.Sprintf("Reconciling environment %s", environment.Spec.EnvName),
+	}
+	pushed, err := gitAPI.CommitAndPush(&commitInfo)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 
-	if dirty {
+	if pushed {
 		if err := r.handleDirtyILState(argoworkflowAPI, environment); err != nil {
 			return ctrl.Result{}, err
 		}
@@ -204,6 +213,7 @@ func (r *EnvironmentReconciler) tryGetEnvironment(ctx context.Context, req ctrl.
 }
 
 func (r *EnvironmentReconciler) handleNonDeleteEvent(
+	tempILRepoDir string,
 	e *stablev1.Environment,
 	fileAPI file.Service,
 	repoAPI github.RepositoryAPI,
@@ -214,14 +224,15 @@ func (r *EnvironmentReconciler) handleNonDeleteEvent(
 		"environment", e.Spec.EnvName,
 	)
 
-	envDirectory := il.EnvironmentDirectoryPath(e.Spec.TeamName)
-	envComponentDirectory := il.EnvironmentComponentsDirectoryPath(e.Spec.TeamName, e.Spec.EnvName)
+	envDirectory := il.EnvironmentDirectoryAbsolutePath(tempILRepoDir, e.Spec.TeamName)
+	envComponentDirectory := il.EnvironmentComponentsDirectoryAbsolutePath(tempILRepoDir, e.Spec.TeamName, e.Spec.EnvName)
 
 	if err := generateAndSaveEnvironmentApp(fileAPI, e, envDirectory); err != nil {
 		return err
 	}
 
 	if err := generateAndSaveEnvironmentComponents(
+		tempILRepoDir,
 		r.Log,
 		fileAPI,
 		e,
@@ -478,6 +489,7 @@ func (r *EnvironmentReconciler) removeEnvironmentFromFileReconciler(e *stablev1.
 }
 
 func generateAndSaveEnvironmentComponents(
+	tempILRepoDir string,
 	log logr.Logger,
 	fileService file.Service,
 	environment *stablev1.Environment,
@@ -531,7 +543,7 @@ func generateAndSaveEnvironmentComponents(
 			EnvCompSecrets:       ec.Secrets,
 			EnvCompAWSConfig:     ec.AWS,
 		}
-		if err := terraformgenerator.GenerateTerraform(fileService, vars, envComponentDirectory); err != nil {
+		if err := terraformgenerator.GenerateTerraform(tempILRepoDir, fileService, vars, envComponentDirectory); err != nil {
 			return err
 		}
 
@@ -539,7 +551,7 @@ func generateAndSaveEnvironmentComponents(
 			return err
 		}
 
-		terraformDirectory := il.EnvironmentComponentTerraformDirectoryPath(environment.Spec.TeamName, environment.Spec.EnvName, ec.Name)
+		terraformDirectory := il.EnvironmentComponentTerraformDirectoryAbsolutePath(tempILRepoDir, environment.Spec.TeamName, environment.Spec.EnvName, ec.Name)
 		if err := overlay.GenerateOverlayFiles(log, fileService, githubRepoAPI, environment, ec, terraformDirectory); err != nil {
 			return err
 		}

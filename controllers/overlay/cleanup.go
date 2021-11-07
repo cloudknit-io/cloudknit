@@ -4,7 +4,6 @@ import (
 	"fmt"
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
 )
 
 func FindDanglingOverlays(e *v1.Environment) (paths []string) {
@@ -28,7 +27,7 @@ func FindDanglingOverlays(e *v1.Environment) (paths []string) {
 			if !exists {
 				path := fmt.Sprintf(
 					"%s/%s",
-					il.EnvironmentComponentTerraformDirectoryPath(e.Spec.TeamName, e.Spec.EnvName, ec.Name),
+					//il.EnvironmentComponentTerraformDirectoryPath(e.Spec.TeamName, e.Spec.EnvName, ec.Name),
 					file.Filename,
 				)
 				dangling = append(dangling, path)
