@@ -19,6 +19,14 @@ var Config = config{
 	ConfigWatcherDirectory: "config-watcher",
 }
 
+func ConfigWatcherDirectoryAbsolutePath(dir string) string {
+	return filepath.Join(dir, Config.ConfigWatcherDirectory)
+}
+
+func CompanyDirectoryAbsolutePath(dir string) string {
+	return filepath.Join(dir, Config.CompanyDirectory)
+}
+
 func TeamDirectoryName(team string) string {
 	return team + "-team-environment"
 }
@@ -27,20 +35,36 @@ func TeamDirectoryPath(team string) string {
 	return Config.TeamDirectory + "/" + TeamDirectoryName(team)
 }
 
+func TeamDirectoryAbsolutePath(dir string, team string) string {
+	return filepath.Join(dir, TeamDirectoryPath(team))
+}
+
 func EnvironmentDirectoryName(environment string) string {
 	return environment + "-environment-component"
 }
 
 func EnvironmentDirectoryPath(team string, environment string) string {
-	return TeamDirectoryPath(team) + "/" + EnvironmentDirectoryName(environment)
+	return filepath.Join(TeamDirectoryPath(team), EnvironmentDirectoryName(environment))
+}
+
+func EnvironmentDirectoryAbsolutePath(dir string, team string, environment string) string {
+	return filepath.Join(dir, EnvironmentDirectoryPath(team, environment))
 }
 
 func EnvironmentComponentDirectoryPath(team string, environment string, component string) string {
 	return filepath.Join(EnvironmentDirectoryPath(team, environment), component)
 }
 
+func EnvironmentComponentDirectoryAbsolutePath(dir string, team string, environment string, component string) string {
+	return filepath.Join(dir, EnvironmentDirectoryPath(team, environment), component)
+}
+
 func EnvironmentComponentTerraformDirectoryPath(team string, environment string, component string) string {
 	return filepath.Join(EnvironmentComponentDirectoryPath(team, environment, component), "terraform")
+}
+
+func EnvironmentComponentTerraformDirectoryAbsolutePath(dir string, team string, environment string, component string) string {
+	return filepath.Join(dir, EnvironmentComponentDirectoryPath(team, environment, component), "terraform")
 }
 
 func TeamTFDirectory(team string) string {

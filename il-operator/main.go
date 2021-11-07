@@ -15,8 +15,8 @@ package main
 import (
 	"context"
 	"flag"
-	"os"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/filereconciler"
+	"os"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
 
