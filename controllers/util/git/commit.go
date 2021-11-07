@@ -1,16 +1,18 @@
 package git
 
 import (
-	"errors"
 	"time"
 
 	gogit "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
-func (g *GoGit) Commit(nfo *CommitInfo) (*object.Commit, error) {
+// Commit will add all files changed files to the staging area and commit them.
+// Throws an ErrEmptyCommit if no files are changed.
+// It returns the commit object.
+func (g *GoGit) Commit(nfo *CommitInfo) (commit *object.Commit, err error) {
 	if g.r == nil {
-		return nil, errors.New("repo not cloned")
+		return nil, ErrRepoNotCloned
 	}
 	w, err := g.r.Worktree()
 	if err != nil {
@@ -29,9 +31,18 @@ func (g *GoGit) Commit(nfo *CommitInfo) (*object.Commit, error) {
 		return nil, err
 	}
 
-	commit, err := g.r.CommitObject(commitHash)
+	commit, err = g.r.CommitObject(commitHash)
 	if err != nil {
 		return nil, err
+	}
+
+	fileStats, err := commit.StatsContext(g.ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(fileStats) == 0 {
+		return nil, ErrEmptyCommit
 	}
 
 	return commit, nil

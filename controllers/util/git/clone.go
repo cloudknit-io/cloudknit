@@ -19,3 +19,12 @@ func (g *GoGit) Clone(repo string, directory string) error {
 	g.r = r
 	return nil
 }
+
+func (g *GoGit) Open(path string) error {
+	r, err := gogit.PlainOpen(path)
+	if err != nil {
+		return err
+	}
+	g.r = r
+	return nil
+}

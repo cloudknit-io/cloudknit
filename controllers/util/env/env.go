@@ -16,13 +16,15 @@ type config struct {
 
 	EnvironmentStateConfigMap string
 
-	GithubSvcAccntName   string
-	GithubSvcAccntEmail  string
-	EnvironmentFinalizer string
-	GitHubAuthToken      string
-	GitHubWebhookSecret  string
-	GitHubOrg            string
-	RepoBranch           string
+	GithubSvcAccntName  string
+	GithubSvcAccntEmail string
+	GitHubAuthToken     string
+	GitHubWebhookSecret string
+	GitHubOrg           string
+	RepoBranch          string
+
+	DisableEnvironmentFinalizer string
+	EnvironmentFinalizer        string
 
 	HelmChartsRepo string
 	K8sAPIURL      string
@@ -38,7 +40,7 @@ type config struct {
 	APIURL string
 }
 
-// Config exposes vars used throughout the operator
+// Config exposes vars used throughout the operator.
 var Config = config{
 	ZlifecycleOwner:               getOr("GITHUB_ZLIFECYCLE_OWNER", "zlifecycle-il"),
 	ZlifecycleMasterRepoSSHSecret: getOr("ZLIFECYCLE_MASTER_SSH", "zlifecycle-operator-ssh"),
@@ -52,13 +54,15 @@ var Config = config{
 
 	EnvironmentStateConfigMap: "environment-state-cm",
 
-	GithubSvcAccntName:   "zLifecycle",
-	GithubSvcAccntEmail:  "zLifecycle@compuzest.com",
-	EnvironmentFinalizer: "zlifecycle.compuzest.com/github-finalizer",
-	GitHubAuthToken:      os.Getenv("GITHUB_AUTH_TOKEN"),
-	GitHubWebhookSecret:  os.Getenv("GITHUB_WEBHOOK_SECRET"),
-	GitHubOrg:            os.Getenv("GITHUB_ORG"),
-	RepoBranch:           "main",
+	GithubSvcAccntName:  "zLifecycle",
+	GithubSvcAccntEmail: "zLifecycle@compuzest.com",
+	GitHubAuthToken:     os.Getenv("GITHUB_AUTH_TOKEN"),
+	GitHubWebhookSecret: os.Getenv("GITHUB_WEBHOOK_SECRET"),
+	GitHubOrg:           os.Getenv("GITHUB_ORG"),
+	RepoBranch:          "main",
+
+	DisableEnvironmentFinalizer: getOr("DISABLE_ENVIRONMENT_FINALIZER", "false"),
+	EnvironmentFinalizer:        "zlifecycle.compuzest.com/github-finalizer",
 
 	HelmChartsRepo: os.Getenv("helmChartsRepo"),
 	K8sAPIURL:      "https://kubernetes.default.svc",

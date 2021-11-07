@@ -97,7 +97,7 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	owner := env.Config.ZlifecycleOwner
 	ilRepo := env.Config.ILRepoName
-	repoAPI := github.NewHTTPRepositoryAPI(ctx, env.Config.GitHubAuthToken)
+	repoAPI := github.NewHTTPRepositoryAPI(ctx)
 	_, err := github.TryCreateRepository(r.Log, repoAPI, owner, ilRepo)
 	if err != nil {
 		return ctrl.Result{}, err
@@ -155,7 +155,7 @@ func (r *CompanyReconciler) initCompany(ctx context.Context) error {
 	r.Log.Info("Running company operator init")
 
 	r.Log.Info("Creating webhook for IL repo")
-	repoAPI := github.NewHTTPRepositoryAPI(ctx, env.Config.GitHubAuthToken)
+	repoAPI := github.NewHTTPRepositoryAPI(ctx)
 	ilRepoURL := env.Config.ILRepoURL
 	if _, err := github.CreateRepoWebhook(r.Log, repoAPI, ilRepoURL, env.Config.ArgocdHookURL, env.Config.GitHubWebhookSecret); err != nil {
 		r.Log.Error(err, "error creating Company IL webhook", "repo", ilRepoURL)

@@ -9,7 +9,7 @@ import (
 
 func (g *GoGit) Push() error {
 	if g.r == nil {
-		return errors.New("repo not cloned")
+		return ErrRepoNotCloned
 	}
 	return g.r.Push(&gogit.PushOptions{
 		Auth: &http.BasicAuth{
@@ -19,13 +19,16 @@ func (g *GoGit) Push() error {
 	})
 }
 
-func (g *GoGit) CommitAndPush(nfo *CommitInfo) error {
+func (g *GoGit) CommitAndPush(nfo *CommitInfo) (empty bool, err error) {
 	if g.r == nil {
-		return errors.New("repo not cloned")
+		return false, ErrRepoNotCloned
 	}
 	if _, err := g.Commit(nfo); err != nil {
-		return err
+		if errors.Is(err, ErrEmptyCommit) {
+			return true, nil
+		}
+		return false, err
 	}
 
-	return g.Push()
+	return false, g.Push()
 }

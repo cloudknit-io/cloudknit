@@ -15,10 +15,11 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"k8s.io/apiserver/pkg/registry/generic/registry"
 	"strings"
 	"sync"
 	"time"
+
+	"k8s.io/apiserver/pkg/registry/generic/registry"
 
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
@@ -153,7 +154,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		)
 	}
 
-	repoAPI := github.NewHTTPRepositoryAPI(ctx, env.Config.GitHubAuthToken)
+	repoAPI := github.NewHTTPRepositoryAPI(ctx)
 	_, err = github.CreateRepoWebhook(r.Log, repoAPI, teamRepo, env.Config.ArgocdHookURL, env.Config.GitHubWebhookSecret)
 	if err != nil {
 		r.Log.Error(err, "error creating Team webhook", "team", team.Spec.TeamName)

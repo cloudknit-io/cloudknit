@@ -536,7 +536,7 @@ func newHook(payloadURL string, secret string) github.Hook {
 	return github.Hook{Events: events, Active: github.Bool(true), Config: cfg}
 }
 
-// getRef returns the commit branch reference object if it exists or return error
+// getRef returns the commit branch reference object if it exists or return error.
 func getRef() (ref *github.Reference, err error) {
 	if commitBranch == "" {
 		return nil, errors.New("the `-commit-branch` should not be set to an empty string")
