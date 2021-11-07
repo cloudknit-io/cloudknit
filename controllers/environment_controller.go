@@ -130,15 +130,6 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		)
 	}
 
-	//r.Log.Info(
-	//	"Checking for dangling overlays", "team", environment.Spec.TeamName,
-	//	"environment",
-	//	environment.Spec.EnvName,
-	//)
-	//if err := r.cleanupDanglingOverlays(ctx, environment); err != nil {
-	//	r.Log.Error(err, "Error cleaning up dangling overlays")
-	//}
-
 	envDirectory := il.EnvironmentDirectoryAbsolutePath(tempILRepoDir, environment.Spec.TeamName)
 	envComponentDirectory := il.EnvironmentComponentsDirectoryAbsolutePath(tempILRepoDir, environment.Spec.TeamName, environment.Spec.EnvName)
 
@@ -439,22 +430,6 @@ func (r *EnvironmentReconciler) cleanupIlRepo(ctx context.Context, e *stablev1.E
 	)
 
 	return deleteFromGitRepo(ctx, r.Log, team, paths, commitMessage)
-}
-
-func (r *EnvironmentReconciler) cleanupDanglingOverlays(ctx context.Context, e *stablev1.Environment) error {
-	if paths := overlay.FindDanglingOverlays(e); len(paths) > 0 {
-		team := fmt.Sprintf("%s-team-environment", e.Spec.TeamName)
-		commitMessage := fmt.Sprintf("Cleaning dangling overlays for %s team in %s environment", e.Spec.TeamName, e.Spec.EnvName)
-		r.Log.Info(
-			"Cleaning dangling overlays",
-			"team", e.Spec.TeamName,
-			"environment", e.Spec.EnvName,
-			"overlays", paths,
-		)
-
-		return deleteFromGitRepo(ctx, r.Log, team, paths, commitMessage)
-	}
-	return nil
 }
 
 func deleteFromGitRepo(ctx context.Context, log logr.Logger, team string, paths []string, commitMessage string) error {

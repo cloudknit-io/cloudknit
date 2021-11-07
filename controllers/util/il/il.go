@@ -6,14 +6,12 @@ import (
 )
 
 type config struct {
-	TeamTFDirectory        string
 	TeamDirectory          string
 	CompanyDirectory       string
 	ConfigWatcherDirectory string
 }
 
 var Config = config{
-	TeamTFDirectory:        "team-tf",
 	TeamDirectory:          "team",
 	CompanyDirectory:       "company",
 	ConfigWatcherDirectory: "config-watcher",
@@ -59,32 +57,12 @@ func environmentComponentDirectoryPath(team string, environment string, componen
 	return filepath.Join(EnvironmentComponentsDirectoryPath(team, environment), component)
 }
 
-func EnvironmentComponentDirectoryAbsolutePath(dir string, team string, environment string, component string) string {
-	return filepath.Join(dir, EnvironmentComponentsDirectoryPath(team, environment), component)
-}
-
 func EnvironmentComponentTerraformDirectoryPath(team string, environment string, component string) string {
 	return filepath.Join(environmentComponentDirectoryPath(team, environment, component), "terraform")
 }
 
 func EnvironmentComponentTerraformDirectoryAbsolutePath(dir string, team string, environment string, component string) string {
 	return filepath.Join(dir, environmentComponentDirectoryPath(team, environment, component), "terraform")
-}
-
-func TeamTFDirectory(team string) string {
-	return Config.TeamTFDirectory + "/" + team + "-team-environment"
-}
-
-func EnvironmentTFDirectory(team string, environment string) string {
-	return environmentDirectoryName(team) + "/" + environment + "-environment-component"
-}
-
-func RepoName(companyName string) string {
-	return companyName + "-il"
-}
-
-func RepoURL(owner string, companyName string) string {
-	return fmt.Sprintf("git@github.com:%s/%s.git", owner, RepoName(companyName))
 }
 
 func EnvComponentModuleSource(moduleSource string, moduleName string) string {
