@@ -35,6 +35,7 @@ const (
 )
 
 func GenerateTerraform(
+	tempILRepoDir string,
 	fileService file.Service,
 	vars *TemplateVariables,
 	componentDirectory string,
@@ -121,7 +122,11 @@ func GenerateTerraform(
 
 	tfPath := terraformPath{componentDirectory: componentDirectory, componentName: componentName}
 
-	terraformDirectory := il.EnvironmentComponentTerraformDirectoryPath(vars.TeamName, vars.EnvName, tfPath.componentName)
+	terraformDirectory := il.EnvironmentComponentTerraformDirectoryAbsolutePath(tempILRepoDir, vars.TeamName, vars.EnvName, tfPath.componentName)
+
+	// Deleting terraform folder so that it gets recreated so that any dangling files are cleaned up
+	fileService.RemoveAll(terraformDirectory)
+
 	if err := generateFile(fileService, &providerConfig, terraformDirectory, "provider.tf", "terraform_provider"); err != nil {
 		return err
 	}
