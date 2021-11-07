@@ -27,36 +27,40 @@ func CompanyDirectoryAbsolutePath(dir string) string {
 	return filepath.Join(dir, Config.CompanyDirectory)
 }
 
-func TeamDirectoryName(team string) string {
+func TeamDirectoryAbsolutePath(dir string) string {
+	return filepath.Join(dir, Config.TeamDirectory)
+}
+
+func EnvironmentDirectoryName(team string) string {
 	return team + "-team-environment"
 }
 
-func TeamDirectoryPath(team string) string {
-	return Config.TeamDirectory + "/" + TeamDirectoryName(team)
+func EnvironmentDirectoryPath(team string) string {
+	return Config.TeamDirectory + "/" + EnvironmentDirectoryName(team)
 }
 
-func TeamDirectoryAbsolutePath(dir string, team string) string {
-	return filepath.Join(dir, TeamDirectoryPath(team))
+func EnvironmentDirectoryAbsolutePath(dir string, team string) string {
+	return filepath.Join(dir, EnvironmentDirectoryPath(team))
 }
 
-func EnvironmentDirectoryName(environment string) string {
+func EnvironmentComponentsDirectoryName(environment string) string {
 	return environment + "-environment-component"
 }
 
-func EnvironmentDirectoryPath(team string, environment string) string {
-	return filepath.Join(TeamDirectoryPath(team), EnvironmentDirectoryName(environment))
+func EnvironmentComponentsDirectoryPath(team string, environment string) string {
+	return filepath.Join(EnvironmentDirectoryPath(team), EnvironmentComponentsDirectoryName(environment))
 }
 
-func EnvironmentDirectoryAbsolutePath(dir string, team string, environment string) string {
-	return filepath.Join(dir, EnvironmentDirectoryPath(team, environment))
+func EnvironmentComponentsDirectoryAbsolutePath(dir string, team string, environment string) string {
+	return filepath.Join(dir, EnvironmentComponentsDirectoryPath(team, environment))
 }
 
 func EnvironmentComponentDirectoryPath(team string, environment string, component string) string {
-	return filepath.Join(EnvironmentDirectoryPath(team, environment), component)
+	return filepath.Join(EnvironmentComponentsDirectoryPath(team, environment), component)
 }
 
 func EnvironmentComponentDirectoryAbsolutePath(dir string, team string, environment string, component string) string {
-	return filepath.Join(dir, EnvironmentDirectoryPath(team, environment), component)
+	return filepath.Join(dir, EnvironmentComponentsDirectoryPath(team, environment), component)
 }
 
 func EnvironmentComponentTerraformDirectoryPath(team string, environment string, component string) string {
@@ -72,7 +76,7 @@ func TeamTFDirectory(team string) string {
 }
 
 func EnvironmentTFDirectory(team string, environment string) string {
-	return TeamDirectoryName(team) + "/" + environment + "-environment-component"
+	return EnvironmentDirectoryName(team) + "/" + environment + "-environment-component"
 }
 
 func RepoName(companyName string) string {

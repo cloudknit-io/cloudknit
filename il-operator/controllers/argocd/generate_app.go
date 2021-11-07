@@ -93,7 +93,7 @@ func GenerateTeamApp(team *stablev1.Team) *appv1.Application {
 			},
 			Source: appv1.ApplicationSource{
 				RepoURL:        env.Config.ILRepoURL,
-				Path:           "./" + il.TeamDirectoryPath(team.Spec.TeamName),
+				Path:           "./" + il.EnvironmentDirectoryPath(team.Spec.TeamName),
 				TargetRevision: "HEAD",
 			},
 		},
@@ -139,7 +139,7 @@ func GenerateEnvironmentApp(environment *stablev1.Environment) *appv1.Applicatio
 			},
 			Source: appv1.ApplicationSource{
 				RepoURL:        env.Config.ILRepoURL,
-				Path:           "./" + il.EnvironmentDirectoryPath(environment.Spec.TeamName, environment.Spec.EnvName),
+				Path:           "./" + il.EnvironmentComponentsDirectoryPath(environment.Spec.TeamName, environment.Spec.EnvName),
 				TargetRevision: "HEAD",
 			},
 		},
