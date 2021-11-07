@@ -19,6 +19,11 @@ func (g *GoGit) Commit(nfo *CommitInfo) (commit *object.Commit, err error) {
 		return nil, err
 	}
 
+	_, err = w.Add(".")
+	if err != nil {
+		return nil, err
+	}
+
 	commitHash, err := w.Commit(nfo.Msg, &gogit.CommitOptions{
 		All: true,
 		Author: &object.Signature{
