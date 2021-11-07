@@ -148,7 +148,7 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		"environment", environment.Spec.EnvName,
 		"isDeleteEvent", isDeleteEvent,
 	)
-	if err := generateAndSaveWorkflowOfWorkflows(tempILRepoDir, fileAPI, environment, envComponentDirectory); err != nil {
+	if err := generateAndSaveWorkflowOfWorkflows(fileAPI, environment, envComponentDirectory); err != nil {
 		return ctrl.Result{}, err
 	}
 
