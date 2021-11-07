@@ -6,9 +6,9 @@ import (
 	"strings"
 )
 
-type CleanupFunc func() error
+type CleanupFunc func()
 
-func CloneTemp(gitAPI Git, repo string) (dir string, cleanup CleanupFunc, err error) {
+func CloneTemp(gitAPI API, repo string) (dir string, cleanup CleanupFunc, err error) {
 	httpsRepo := repo
 	if strings.HasPrefix(httpsRepo, "git@github.com:") {
 		httpsRepo = strings.ReplaceAll(httpsRepo, "git@github.com:", "https://github.com/")
@@ -22,8 +22,8 @@ func CloneTemp(gitAPI Git, repo string) (dir string, cleanup CleanupFunc, err er
 		return "", nil, err
 	}
 
-	cleanupFunc := func() error {
-		return os.RemoveAll(tempDir)
+	cleanupFunc := func() {
+		_ = os.RemoveAll(tempDir)
 	}
 
 	return tempDir, cleanupFunc, nil

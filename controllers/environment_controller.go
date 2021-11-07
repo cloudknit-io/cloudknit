@@ -15,11 +15,12 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/git"
 	"k8s.io/apiserver/pkg/registry/generic/registry"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"strings"
-	"time"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/filereconciler"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/gotfvars"
@@ -119,7 +120,7 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 			)
 			return ctrl.Result{}, nil
 		}
-		if err := r.handleNonDeleteEvent(tempILRepoDir, environment, fileAPI, repoAPI); err != nil {
+		if err := r.handleNonDeleteEvent(tempILRepoDir, environment, fileAPI, gitAPI, repoAPI); err != nil {
 			return ctrl.Result{}, err
 		}
 	} else {
@@ -146,7 +147,7 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	commitInfo := git.CommitInfo{
 		Author: githubSvcAccntName,
 		Email:  githubSvcAccntEmail,
-		Msg: fmt.Sprintf("Reconciling environment %s", environment.Spec.EnvName),
+		Msg:    fmt.Sprintf("Reconciling environment %s", environment.Spec.EnvName),
 	}
 	pushed, err := gitAPI.CommitAndPush(&commitInfo)
 	if err != nil {
@@ -207,6 +208,7 @@ func (r *EnvironmentReconciler) handleNonDeleteEvent(
 	tempILRepoDir string,
 	e *stablev1.Environment,
 	fileAPI file.Service,
+	gitAPI git.API,
 	repoAPI github.RepositoryAPI,
 ) error {
 	r.Log.Info(
@@ -226,6 +228,7 @@ func (r *EnvironmentReconciler) handleNonDeleteEvent(
 		tempILRepoDir,
 		r.Log,
 		fileAPI,
+		gitAPI,
 		e,
 		envComponentDirectory,
 		repoAPI,
@@ -466,7 +469,8 @@ func (r *EnvironmentReconciler) removeEnvironmentFromFileReconciler(e *stablev1.
 func generateAndSaveEnvironmentComponents(
 	tempILRepoDir string,
 	log logr.Logger,
-	fileService file.Service,
+	fileAPI file.Service,
+	gitAPI git.API,
 	environment *stablev1.Environment,
 	envComponentDirectory string,
 	githubRepoAPI github.RepositoryAPI,
@@ -481,7 +485,7 @@ func generateAndSaveEnvironmentComponents(
 		)
 		if ec.Variables != nil {
 			fileName := fmt.Sprintf("%s.tfvars", ec.Name)
-			if err := gotfvars.SaveTfVarsToFile(fileService, ec.Variables, envComponentDirectory, fileName); err != nil {
+			if err := gotfvars.SaveTfVarsToFile(fileAPI, ec.Variables, envComponentDirectory, fileName); err != nil {
 				return err
 			}
 		}
@@ -518,16 +522,16 @@ func generateAndSaveEnvironmentComponents(
 			EnvCompSecrets:       ec.Secrets,
 			EnvCompAWSConfig:     ec.AWS,
 		}
-		if err := terraformgenerator.GenerateTerraform(tempILRepoDir, fileService, vars, envComponentDirectory); err != nil {
+		if err := terraformgenerator.GenerateTerraform(tempILRepoDir, fileAPI, vars, envComponentDirectory); err != nil {
 			return err
 		}
 
-		if err := fileService.SaveYamlFile(*application, envComponentDirectory, fmt.Sprintf("%s.yaml", ec.Name)); err != nil {
+		if err := fileAPI.SaveYamlFile(*application, envComponentDirectory, fmt.Sprintf("%s.yaml", ec.Name)); err != nil {
 			return err
 		}
 
 		terraformDirectory := il.EnvironmentComponentTerraformDirectoryAbsolutePath(tempILRepoDir, environment.Spec.TeamName, environment.Spec.EnvName, ec.Name)
-		if err := overlay.GenerateOverlayFiles(log, fileService, githubRepoAPI, environment, ec, terraformDirectory); err != nil {
+		if err := overlay.GenerateOverlayFiles(log, fileAPI, gitAPI, environment, ec, terraformDirectory); err != nil {
 			return err
 		}
 	}

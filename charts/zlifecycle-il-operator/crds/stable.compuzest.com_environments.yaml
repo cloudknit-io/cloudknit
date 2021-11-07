@@ -110,14 +110,16 @@ spec:
                     overlayFiles:
                       items:
                         properties:
-                          path:
-                            type: string
+                          paths:
+                            items:
+                              type: string
+                            type: array
                           ref:
                             type: string
                           source:
                             type: string
                         required:
-                        - path
+                        - paths
                         - source
                         type: object
                       type: array
@@ -266,14 +268,16 @@ spec:
                     overlayFiles:
                       items:
                         properties:
-                          path:
-                            type: string
+                          paths:
+                            items:
+                              type: string
+                            type: array
                           ref:
                             type: string
                           source:
                             type: string
                         required:
-                        - path
+                        - paths
                         - source
                         type: object
                       type: array
