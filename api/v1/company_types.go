@@ -24,7 +24,7 @@ type CompanyConfigRepo struct {
 	Path   string `json:"path"`
 }
 
-// CompanySpec defines the desired state of Company
+// CompanySpec defines the desired state of Company.
 type CompanySpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
@@ -34,7 +34,7 @@ type CompanySpec struct {
 	ConfigRepo  *CompanyConfigRepo `json:"configRepo"`
 }
 
-// CompanyStatus defines the observed state of Company
+// CompanyStatus defines the observed state of Company.
 type CompanyStatus struct { // INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 }
@@ -42,7 +42,7 @@ type CompanyStatus struct { // INSERT ADDITIONAL STATUS FIELD - define observed 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 
-// Company is the Schema for the companies API
+// Company is the Schema for the companies API.
 type Company struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -53,7 +53,7 @@ type Company struct {
 
 // +kubebuilder:object:root=true
 
-// CompanyList contains a list of Company
+// CompanyList contains a list of Company.
 type CompanyList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

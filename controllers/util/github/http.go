@@ -5,21 +5,24 @@ import (
 	"io"
 	"strings"
 
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
+
 	"github.com/google/go-github/v32/github"
 	"golang.org/x/oauth2"
 )
 
-func NewHTTPRepositoryAPI(ctx context.Context, token string) RepositoryAPI {
-	client := createGithubClient(ctx, token).Repositories
+func NewHTTPRepositoryAPI(ctx context.Context) RepositoryAPI {
+	client := createGithubClient(ctx).Repositories
 	return HTTPRepositoryAPI{Client: client, Ctx: ctx}
 }
 
-func NewHTTPGitClient(ctx context.Context, token string) GitAPI {
-	client := createGithubClient(ctx, token).Git
+func NewHTTPGitClient(ctx context.Context) GitAPI {
+	client := createGithubClient(ctx).Git
 	return HTTPGitAPI{Client: client, Ctx: ctx}
 }
 
-func createGithubClient(ctx context.Context, token string) *github.Client {
+func createGithubClient(ctx context.Context) *github.Client {
+	token := env.Config.GitHubAuthToken
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
 	tc := oauth2.NewClient(ctx, ts)
 	return github.NewClient(tc)

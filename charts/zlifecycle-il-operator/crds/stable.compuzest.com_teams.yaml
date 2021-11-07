@@ -19,7 +19,7 @@ spec:
   - name: v1
     schema:
       openAPIV3Schema:
-        description: Team is the Schema for the teams API
+        description: Team is the Schema for the teams API.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -34,7 +34,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: TeamSpec defines the desired state of Team
+            description: TeamSpec defines the desired state of Team.
             properties:
               configRepo:
                 properties:
@@ -57,7 +57,7 @@ spec:
             - teamName
             type: object
           status:
-            description: TeamStatus defines the observed state of Team
+            description: TeamStatus defines the observed state of Team.
             type: object
         type: object
     served: true

@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	y "gopkg.in/yaml.v2"
 )
@@ -118,4 +119,9 @@ func ToYaml(in interface{}) (ymlstring string, e error) {
 	}
 
 	return string(out), nil
+}
+
+func ExtractNameFromPath(path string) string {
+	tokens := strings.Split(path, "/")
+	return tokens[len(tokens)-1]
 }

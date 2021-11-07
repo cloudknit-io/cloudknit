@@ -36,7 +36,7 @@ import (
 
 var initOperatorLock sync.Once
 
-// CompanyReconciler reconciles a Company object
+// CompanyReconciler reconciles a Company object.
 type CompanyReconciler struct {
 	client.Client
 	Log    logr.Logger
@@ -49,6 +49,7 @@ type CompanyReconciler struct {
 func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	start := time.Now()
 
+	// init logic
 	var initOperatorError error
 	initOperatorLock.Do(func() {
 		initOperatorError = r.initCompany(ctx)
@@ -57,6 +58,7 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{}, initOperatorError
 	}
 
+	// get company resource from k8s cache
 	company := &stablev1.Company{}
 	if err := r.Get(ctx, req.NamespacedName, company); err != nil {
 		if errors.IsNotFound(err) {
@@ -77,12 +79,21 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{}, err
 	}
 
+	// services init
+	argocdAPI := argocd.NewHTTPClient(ctx, r.Log, env.Config.ArgocdServerURL)
+	repoAPI := github.NewHTTPRepositoryAPI(ctx)
+	//gitAPI, err := git.NewGoGit(ctx)
+	//if err != nil {
+	//	return ctrl.Result{}, err
+	//}
+
+	// environment config variables
+	ilRepoURL := env.Config.ILRepoURL
+
+	// reconcile logic
 	companyRepo := company.Spec.ConfigRepo.Source
 	operatorSSHSecret := env.Config.ZlifecycleMasterRepoSSHSecret
 	operatorNamespace := env.Config.ZlifecycleOperatorNamespace
-
-	argocdAPI := argocd.NewHTTPClient(ctx, r.Log, env.Config.ArgocdServerURL)
-
 	if err := repo.TryRegisterRepo(ctx, r.Client, r.Log, argocdAPI, companyRepo, operatorNamespace, operatorSSHSecret); err != nil {
 		return ctrl.Result{}, err
 	}
@@ -97,13 +108,11 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	owner := env.Config.ZlifecycleOwner
 	ilRepo := env.Config.ILRepoName
-	repoAPI := github.NewHTTPRepositoryAPI(ctx, env.Config.GitHubAuthToken)
 	_, err := github.TryCreateRepository(r.Log, repoAPI, owner, ilRepo)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 
-	ilRepoURL := env.Config.ILRepoURL
 	if err := repo.TryRegisterRepo(ctx, r.Client, r.Log, argocdAPI, ilRepoURL, operatorNamespace, operatorSSHSecret); err != nil {
 		return ctrl.Result{}, err
 	}
@@ -136,6 +145,7 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{}, err
 	}
 
+	// try create a webhook, it will fail if git service account does not have permissions to create it
 	_, err = github.CreateRepoWebhook(r.Log, repoAPI, companyRepo, env.Config.ArgocdHookURL, env.Config.GitHubWebhookSecret)
 	if err != nil {
 		r.Log.Error(err, "error creating Company webhook", "company", company.Spec.CompanyName)
@@ -155,7 +165,7 @@ func (r *CompanyReconciler) initCompany(ctx context.Context) error {
 	r.Log.Info("Running company operator init")
 
 	r.Log.Info("Creating webhook for IL repo")
-	repoAPI := github.NewHTTPRepositoryAPI(ctx, env.Config.GitHubAuthToken)
+	repoAPI := github.NewHTTPRepositoryAPI(ctx)
 	ilRepoURL := env.Config.ILRepoURL
 	if _, err := github.CreateRepoWebhook(r.Log, repoAPI, ilRepoURL, env.Config.ArgocdHookURL, env.Config.GitHubWebhookSecret); err != nil {
 		r.Log.Error(err, "error creating Company IL webhook", "repo", ilRepoURL)

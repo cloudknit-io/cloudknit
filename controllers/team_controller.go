@@ -15,10 +15,13 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"strings"
 	"sync"
 	"time"
+
+	"k8s.io/apiserver/pkg/registry/generic/registry"
+
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/repo"
@@ -28,7 +31,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apiserver/pkg/registry/generic/registry"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -40,7 +42,7 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
 )
 
-// TeamReconciler reconciles a Team object
+// TeamReconciler reconciles a Team object.
 type TeamReconciler struct {
 	client.Client
 	Log    logr.Logger
@@ -55,7 +57,7 @@ var (
 	teamReconcileInitialRunLock = atomic.NewBool(true)
 )
 
-// Reconcile method called everytime there is a change in Team Custom Resource
+// Reconcile method called everytime there is a change in Team Custom Resource.
 func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	delayTeamReconcileOnInitialRun(r.Log, 15)
 	start := time.Now()
@@ -108,7 +110,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	teamYAML := fmt.Sprintf("%s-team.yaml", team.Spec.TeamName)
 
 	fileUtil := &file.OsFileService{}
-	if err := fileUtil.CreateEmptyDirectory(il.TeamDirectory(team.Spec.TeamName)); err != nil {
+	if err := fileUtil.CreateEmptyDirectory(il.TeamDirectoryPath(team.Spec.TeamName)); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -152,7 +154,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		)
 	}
 
-	repoAPI := github.NewHTTPRepositoryAPI(ctx, env.Config.GitHubAuthToken)
+	repoAPI := github.NewHTTPRepositoryAPI(ctx)
 	_, err = github.CreateRepoWebhook(r.Log, repoAPI, teamRepo, env.Config.ArgocdHookURL, env.Config.GitHubWebhookSecret)
 	if err != nil {
 		r.Log.Error(err, "error creating Team webhook", "team", team.Spec.TeamName)
@@ -168,7 +170,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	return ctrl.Result{}, nil
 }
 
-// SetupWithManager sets up the Company Controller with Manager
+// SetupWithManager sets up the Company Controller with Manager.
 func (r *TeamReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&stablev1.Team{}).
