@@ -96,6 +96,7 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	// services init
+	fileAPI := file.NewOsFileService()
 	argocdAPI := argocd.NewHTTPClient(ctx, r.Log, argocdServerURL)
 	repoAPI := github.NewHTTPRepositoryAPI(ctx)
 	gitAPI, err := git.NewGoGit(ctx)
@@ -116,11 +117,11 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{}, err
 	}
 
-	if err := generateAndSaveCompanyApp(company, tempILRepoDir); err != nil {
+	if err := generateAndSaveCompanyApp(fileAPI, company, tempILRepoDir); err != nil {
 		return ctrl.Result{}, err
 	}
 
-	if err := generateAndSaveCompanyConfigWatcher(company, tempILRepoDir); err != nil {
+	if err := generateAndSaveCompanyConfigWatcher(fileAPI, company, tempILRepoDir); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -195,16 +196,14 @@ func (r *CompanyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func generateAndSaveCompanyApp(company *stablev1.Company, ilRepoDir string) error {
+func generateAndSaveCompanyApp(fileAPI file.Service, company *stablev1.Company, ilRepoDir string) error {
 	companyApp := argocd.GenerateCompanyApp(company)
-	fileUtil := &file.OsFileService{}
 
-	return fileUtil.SaveYamlFile(*companyApp, il.CompanyDirectoryAbsolutePath(ilRepoDir), company.Spec.CompanyName+".yaml")
+	return fileAPI.SaveYamlFile(*companyApp, il.CompanyDirectoryAbsolutePath(ilRepoDir), company.Spec.CompanyName+".yaml")
 }
 
-func generateAndSaveCompanyConfigWatcher(company *stablev1.Company, ilRepoDir string) error {
+func generateAndSaveCompanyConfigWatcher(fileAPI file.Service, company *stablev1.Company, ilRepoDir string) error {
 	companyConfigWatcherApp := argocd.GenerateCompanyConfigWatcherApp(company.Spec.CompanyName, company.Spec.ConfigRepo.Source)
-	fileUtil := &file.OsFileService{}
 
-	return fileUtil.SaveYamlFile(*companyConfigWatcherApp, il.ConfigWatcherDirectoryAbsolutePath(ilRepoDir), company.Spec.CompanyName+".yaml")
+	return fileAPI.SaveYamlFile(*companyConfigWatcherApp, il.ConfigWatcherDirectoryAbsolutePath(ilRepoDir), company.Spec.CompanyName+".yaml")
 }

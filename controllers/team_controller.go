@@ -19,6 +19,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/git"
+
 	"k8s.io/apiserver/pkg/registry/generic/registry"
 
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -59,9 +61,11 @@ var (
 
 // Reconcile method called everytime there is a change in Team Custom Resource.
 func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	// delay Team Reconcile so Company reconciles finish first
 	delayTeamReconcileOnInitialRun(r.Log, 15)
 	start := time.Now()
 
+	// init logic
 	var initError error
 	initArgocdAdminRbacLock.Do(func() {
 		initError = r.initArgocdAdminRbac(ctx)
@@ -74,6 +78,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		return ctrl.Result{}, initError
 	}
 
+	// fetch Team resource from k8s cache
 	team := &stablev1.Team{}
 	if err := r.Get(ctx, req.NamespacedName, team); err != nil {
 		if errors.IsNotFound(err) {
@@ -94,6 +99,22 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		return ctrl.Result{}, err
 	}
 
+	// services init
+	fileAPI := &file.OsFileService{}
+	argocdAPI := argocd.NewHTTPClient(ctx, r.Log, env.Config.ArgocdServerURL)
+	repoAPI := github.NewHTTPRepositoryAPI(ctx)
+	gitAPI, err := git.NewGoGit(ctx)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	// temp clone IL repo
+	tempILRepoDir, cleanup, err := git.CloneTemp(gitAPI, ilRepoURL)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+	defer cleanup()
+
 	if err := r.updateArgocdRbac(ctx, team); err != nil {
 		if strings.Contains(err.Error(), registry.OptimisticLockErrorMsg) {
 			// do manual retry without error
@@ -102,15 +123,11 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		return ctrl.Result{}, err
 	}
 
-	argocdAPI := argocd.NewHTTPClient(ctx, r.Log, env.Config.ArgocdServerURL)
 	if _, err := argocd.TryCreateProject(ctx, r.Log, team.Spec.TeamName, env.Config.GitHubOrg); err != nil {
 		return ctrl.Result{}, err
 	}
 
-	teamYAML := fmt.Sprintf("%s-team.yaml", team.Spec.TeamName)
-
-	fileUtil := &file.OsFileService{}
-	if err := fileUtil.CreateEmptyDirectory(il.TeamDirectoryPath(team.Spec.TeamName)); err != nil {
+	if err := fileAPI.CreateEmptyDirectory(il.EnvironmentDirectoryPath(team.Spec.TeamName)); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -122,27 +139,26 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		return ctrl.Result{}, err
 	}
 
-	if err := generateAndSaveTeamApp(team, teamYAML); err != nil {
+	teamAppFilename := fmt.Sprintf("%s-team.yaml", team.Spec.TeamName)
+
+	if err := generateAndSaveTeamApp(fileAPI, team, teamAppFilename, tempILRepoDir); err != nil {
 		return ctrl.Result{}, err
 	}
 
-	if err := generateAndSaveConfigWatchers(team, teamYAML); err != nil {
+	if err := generateAndSaveConfigWatchers(fileAPI, team, teamAppFilename, tempILRepoDir); err != nil {
 		return ctrl.Result{}, err
 	}
 
-	dirty, err := github.CommitAndPushFiles(
-		env.Config.ILRepoSourceOwner,
-		env.Config.ILRepoName,
-		[]string{il.Config.TeamDirectory, il.Config.ConfigWatcherDirectory},
-		env.Config.RepoBranch,
-		fmt.Sprintf("Reconciling team %s", team.Spec.TeamName),
-		env.Config.GithubSvcAccntName,
-		env.Config.GithubSvcAccntEmail,
-	)
+	commitInfo := git.CommitInfo{
+		Author: githubSvcAccntName,
+		Email:  githubSvcAccntEmail,
+		Msg:    fmt.Sprintf("Reconciling team %s", team.Spec.TeamName),
+	}
+	pushed, err := gitAPI.CommitAndPush(&commitInfo)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-	if dirty {
+	if pushed {
 		r.Log.Info(
 			"Committed new changes to IL repo",
 			"team", team.Spec.TeamName,
@@ -154,7 +170,6 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		)
 	}
 
-	repoAPI := github.NewHTTPRepositoryAPI(ctx)
 	_, err = github.CreateRepoWebhook(r.Log, repoAPI, teamRepo, env.Config.ArgocdHookURL, env.Config.GitHubWebhookSecret)
 	if err != nil {
 		r.Log.Error(err, "error creating Team webhook", "team", team.Spec.TeamName)
@@ -227,16 +242,14 @@ func delayTeamReconcileOnInitialRun(log logr.Logger, seconds int64) {
 	}
 }
 
-func generateAndSaveTeamApp(team *stablev1.Team, teamYAML string) error {
+func generateAndSaveTeamApp(fileAPI file.Service, team *stablev1.Team, filename string, ilRepoDir string) error {
 	teamApp := argocd.GenerateTeamApp(team)
-	fileUtil := &file.OsFileService{}
 
-	return fileUtil.SaveYamlFile(*teamApp, il.Config.TeamDirectory, teamYAML)
+	return fileAPI.SaveYamlFile(*teamApp, il.TeamDirectoryAbsolutePath(ilRepoDir), filename)
 }
 
-func generateAndSaveConfigWatchers(team *stablev1.Team, teamYAML string) error {
+func generateAndSaveConfigWatchers(fileAPI file.Service, team *stablev1.Team, filename string, ilRepoDir string) error {
 	teamConfigWatcherApp := argocd.GenerateTeamConfigWatcherApp(team)
-	fileUtil := &file.OsFileService{}
 
-	return fileUtil.SaveYamlFile(*teamConfigWatcherApp, il.Config.ConfigWatcherDirectory, teamYAML)
+	return fileAPI.SaveYamlFile(*teamConfigWatcherApp, il.ConfigWatcherDirectoryAbsolutePath(ilRepoDir), filename)
 }

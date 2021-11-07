@@ -127,8 +127,8 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		r.Log.Error(err, "Error cleaning up dangling overlays")
 	}
 
-	envDirectory := il.TeamDirectoryPath(environment.Spec.TeamName)
-	envComponentDirectory := il.EnvironmentDirectoryPath(environment.Spec.TeamName, environment.Spec.EnvName)
+	envDirectory := il.EnvironmentDirectoryPath(environment.Spec.TeamName)
+	envComponentDirectory := il.EnvironmentComponentsDirectoryPath(environment.Spec.TeamName, environment.Spec.EnvName)
 
 	r.Log.Info(
 		"Generating workflow of workflows",
@@ -214,8 +214,8 @@ func (r *EnvironmentReconciler) handleNonDeleteEvent(
 		"environment", e.Spec.EnvName,
 	)
 
-	envDirectory := il.TeamDirectoryPath(e.Spec.TeamName)
-	envComponentDirectory := il.EnvironmentDirectoryPath(e.Spec.TeamName, e.Spec.EnvName)
+	envDirectory := il.EnvironmentDirectoryPath(e.Spec.TeamName)
+	envComponentDirectory := il.EnvironmentComponentsDirectoryPath(e.Spec.TeamName, e.Spec.EnvName)
 
 	if err := generateAndSaveEnvironmentApp(fileAPI, e, envDirectory); err != nil {
 		return err
