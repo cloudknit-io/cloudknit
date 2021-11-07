@@ -18,7 +18,7 @@ type Git interface {
 	Clone(repo string, dir string) error
 	Open(path string) error
 	Commit(nfo *CommitInfo) (*object.Commit, error)
-	CommitAndPush(nfo *CommitInfo) (empty bool, err error)
+	CommitAndPush(nfo *CommitInfo) (pushed bool, err error)
 	Push() error
 }
 

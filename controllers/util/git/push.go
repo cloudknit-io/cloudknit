@@ -19,16 +19,16 @@ func (g *GoGit) Push() error {
 	})
 }
 
-func (g *GoGit) CommitAndPush(nfo *CommitInfo) (empty bool, err error) {
+func (g *GoGit) CommitAndPush(nfo *CommitInfo) (pushed bool, err error) {
 	if g.r == nil {
 		return false, ErrRepoNotCloned
 	}
 	if _, err := g.Commit(nfo); err != nil {
 		if errors.Is(err, ErrEmptyCommit) {
-			return true, nil
+			return false, nil
 		}
 		return false, err
 	}
 
-	return false, g.Push()
+	return true, g.Push()
 }
