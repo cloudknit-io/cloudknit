@@ -14,7 +14,7 @@ var (
 	ErrRepoNotCloned = errors.New("repo not cloned")
 )
 
-type Git interface {
+type API interface {
 	Clone(repo string, dir string) error
 	Open(path string) error
 	Commit(nfo *CommitInfo) (*object.Commit, error)
@@ -43,4 +43,4 @@ func NewGoGit(ctx context.Context) (*GoGit, error) {
 	return &GoGit{token: t, ctx: ctx}, nil
 }
 
-var _ Git = (*GoGit)(nil)
+var _ API = (*GoGit)(nil)

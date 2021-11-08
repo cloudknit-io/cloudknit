@@ -15,11 +15,12 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/git"
 	"k8s.io/apiserver/pkg/registry/generic/registry"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"strings"
-	"time"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/filereconciler"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/gotfvars"
@@ -54,6 +55,8 @@ type EnvironmentReconciler struct {
 
 // +kubebuilder:rbac:groups=stable.compuzest.com,resources=environments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=stable.compuzest.com,resources=environments/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups="",resources=configmaps;secrets,verbs=get;list;watch;update;patch
+// +kubebuilder:rbac:groups=coordination.k8s.io,resources=leases,verbs=create;get;update
 
 var environmentInitialRunLock = atomic.NewBool(true)
 
@@ -91,20 +94,23 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	defer cleanup()
 
 	// finalizer handling
-	finalizer := env.Config.EnvironmentFinalizer
-	finalizerCompleted, err := r.handleFinalizer(ctx, environment, finalizer, argocdAPI, argoworkflowAPI)
-	if err != nil {
-		return ctrl.Result{}, err
-	}
-	if finalizerCompleted {
-		r.Log.Info(
-			"Finalizer completed, ending reconcile",
-			"team", environment.Spec.TeamName,
-			"environment", environment.Spec.EnvName,
-		)
-		return ctrl.Result{}, nil
+	if env.Config.DisableEnvironmentFinalizer != "true" {
+		finalizer := env.Config.EnvironmentFinalizer
+		finalizerCompleted, err := r.handleFinalizer(ctx, environment, finalizer, argocdAPI, argoworkflowAPI)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+		if finalizerCompleted {
+			r.Log.Info(
+				"Finalizer completed, ending reconcile",
+				"team", environment.Spec.TeamName,
+				"environment", environment.Spec.EnvName,
+			)
+			return ctrl.Result{}, nil
+		}
 	}
 
+	// reconcile logic
 	isDeleteEvent := !environment.DeletionTimestamp.IsZero() || environment.Spec.Teardown
 	if !isDeleteEvent {
 		if err := r.updateStatus(ctx, environment); err != nil {
@@ -119,7 +125,7 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 			)
 			return ctrl.Result{}, nil
 		}
-		if err := r.handleNonDeleteEvent(tempILRepoDir, environment, fileAPI, repoAPI); err != nil {
+		if err := r.handleNonDeleteEvent(ctx, tempILRepoDir, environment, fileAPI, gitAPI, repoAPI); err != nil {
 			return ctrl.Result{}, err
 		}
 	} else {
@@ -130,7 +136,6 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		)
 	}
 
-	envDirectory := il.EnvironmentDirectoryAbsolutePath(tempILRepoDir, environment.Spec.TeamName)
 	envComponentDirectory := il.EnvironmentComponentsDirectoryAbsolutePath(tempILRepoDir, environment.Spec.TeamName, environment.Spec.EnvName)
 
 	r.Log.Info(
@@ -146,7 +151,7 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	commitInfo := git.CommitInfo{
 		Author: githubSvcAccntName,
 		Email:  githubSvcAccntEmail,
-		Msg: fmt.Sprintf("Reconciling environment %s", environment.Spec.EnvName),
+		Msg:    fmt.Sprintf("Reconciling environment %s", environment.Spec.EnvName),
 	}
 	pushed, err := gitAPI.CommitAndPush(&commitInfo)
 	if err != nil {
@@ -163,10 +168,6 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 			"team", environment.Spec.TeamName,
 			"environment", environment.Spec.EnvName,
 		)
-	}
-
-	if err := r.handlePostReconcileCleanup(fileAPI, environment, envDirectory); err != nil {
-		return ctrl.Result{}, err
 	}
 
 	duration := time.Since(start)
@@ -204,9 +205,11 @@ func (r *EnvironmentReconciler) tryGetEnvironment(ctx context.Context, req ctrl.
 }
 
 func (r *EnvironmentReconciler) handleNonDeleteEvent(
+	ctx context.Context,
 	tempILRepoDir string,
 	e *stablev1.Environment,
 	fileAPI file.Service,
+	gitAPI git.API,
 	repoAPI github.RepositoryAPI,
 ) error {
 	r.Log.Info(
@@ -223,6 +226,7 @@ func (r *EnvironmentReconciler) handleNonDeleteEvent(
 	}
 
 	if err := generateAndSaveEnvironmentComponents(
+		ctx,
 		tempILRepoDir,
 		r.Log,
 		fileAPI,
@@ -249,20 +253,6 @@ func (r *EnvironmentReconciler) handleDirtyILState(argoworkflowAPI argoworkflow.
 	)
 	wow := fmt.Sprintf("%s-%s", e.Spec.TeamName, e.Spec.EnvName)
 	if err := argoworkflow.DeleteWorkflow(wow, env.Config.ArgoWorkflowsNamespace, argoworkflowAPI); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (r *EnvironmentReconciler) handlePostReconcileCleanup(fileAPI file.Service, e *stablev1.Environment, paths string) error {
-	r.Log.Info(
-		"Cleaning up local git files",
-		"team", e.Spec.TeamName,
-		"environment", e.Spec.EnvName,
-		"path", paths,
-	)
-	if err := fileAPI.RemoveAll(paths); err != nil {
 		return err
 	}
 
@@ -464,9 +454,10 @@ func (r *EnvironmentReconciler) removeEnvironmentFromFileReconciler(e *stablev1.
 }
 
 func generateAndSaveEnvironmentComponents(
+	ctx context.Context,
 	tempILRepoDir string,
 	log logr.Logger,
-	fileService file.Service,
+	fileAPI file.Service,
 	environment *stablev1.Environment,
 	envComponentDirectory string,
 	githubRepoAPI github.RepositoryAPI,
@@ -481,7 +472,7 @@ func generateAndSaveEnvironmentComponents(
 		)
 		if ec.Variables != nil {
 			fileName := fmt.Sprintf("%s.tfvars", ec.Name)
-			if err := gotfvars.SaveTfVarsToFile(fileService, ec.Variables, envComponentDirectory, fileName); err != nil {
+			if err := gotfvars.SaveTfVarsToFile(fileAPI, ec.Variables, envComponentDirectory, fileName); err != nil {
 				return err
 			}
 		}
@@ -518,16 +509,16 @@ func generateAndSaveEnvironmentComponents(
 			EnvCompSecrets:       ec.Secrets,
 			EnvCompAWSConfig:     ec.AWS,
 		}
-		if err := terraformgenerator.GenerateTerraform(tempILRepoDir, fileService, vars, envComponentDirectory); err != nil {
+		if err := terraformgenerator.GenerateTerraform(tempILRepoDir, fileAPI, vars, envComponentDirectory); err != nil {
 			return err
 		}
 
-		if err := fileService.SaveYamlFile(*application, envComponentDirectory, fmt.Sprintf("%s.yaml", ec.Name)); err != nil {
+		if err := fileAPI.SaveYamlFile(*application, envComponentDirectory, fmt.Sprintf("%s.yaml", ec.Name)); err != nil {
 			return err
 		}
 
 		terraformDirectory := il.EnvironmentComponentTerraformDirectoryAbsolutePath(tempILRepoDir, environment.Spec.TeamName, environment.Spec.EnvName, ec.Name)
-		if err := overlay.GenerateOverlayFiles(log, fileService, githubRepoAPI, environment, ec, terraformDirectory); err != nil {
+		if err := overlay.GenerateOverlayFiles(ctx, log, fileAPI, environment, ec, terraformDirectory); err != nil {
 			return err
 		}
 	}
