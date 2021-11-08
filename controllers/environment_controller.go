@@ -92,20 +92,23 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	defer cleanup()
 
 	// finalizer handling
-	finalizer := env.Config.EnvironmentFinalizer
-	finalizerCompleted, err := r.handleFinalizer(ctx, environment, finalizer, argocdAPI, argoworkflowAPI)
-	if err != nil {
-		return ctrl.Result{}, err
-	}
-	if finalizerCompleted {
-		r.Log.Info(
-			"Finalizer completed, ending reconcile",
-			"team", environment.Spec.TeamName,
-			"environment", environment.Spec.EnvName,
-		)
-		return ctrl.Result{}, nil
+	if env.Config.DisableEnvironmentFinalizer != "true" {
+		finalizer := env.Config.EnvironmentFinalizer
+		finalizerCompleted, err := r.handleFinalizer(ctx, environment, finalizer, argocdAPI, argoworkflowAPI)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+		if finalizerCompleted {
+			r.Log.Info(
+				"Finalizer completed, ending reconcile",
+				"team", environment.Spec.TeamName,
+				"environment", environment.Spec.EnvName,
+			)
+			return ctrl.Result{}, nil
+		}
 	}
 
+	// reconcile logic
 	isDeleteEvent := !environment.DeletionTimestamp.IsZero() || environment.Spec.Teardown
 	if !isDeleteEvent {
 		if err := r.updateStatus(ctx, environment); err != nil {
