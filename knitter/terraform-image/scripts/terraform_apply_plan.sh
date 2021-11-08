@@ -16,14 +16,13 @@ aws s3 cp terraform-plan s3://zlifecycle-tfplan-$customer_id/$team_name/$env_nam
 data='{"metadata":{"labels":{"component_status":"calculating_cost"}}}'
 argocd app patch $team_env_config_name --patch $data --type merge >null
 
-infracost breakdown --path . --format json --log-level=warn >>output.json
+infracost breakdown --path terraform-plan --format json --log-level=warn >>output.json
 estimated_cost=$(cat output.json | jq -r ".projects[0].breakdown.totalMonthlyCost")
 resources=$(cat output.json | jq -r ".projects[0].breakdown.resources")
-
-unsupportedResources=$(cat output.json | jq ' .projects[0].summary.unsupportedResourceCounts == "{}"')
+unsupportedResources=$(cat output.json | jq ' .projects[0].summary.unsupportedResourceCounts == {}')
 if [[ $unsupportedResources != "true" && $estimated_cost == '0' ]]
 then
-    estimated_cost='-1'
+   estimated_cost='-1'
 fi
 
 costing_payload='{"teamName": "'$team_name'", "environmentName": "'$env_name'", "component": { "componentName": "'$config_name'", "cost": '$estimated_cost', "resources" : '$resources'  }}'
