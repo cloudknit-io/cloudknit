@@ -1,6 +1,7 @@
 package common
 
 import (
+	"errors"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -15,16 +16,12 @@ func CopyFile(src string, dst string) error {
 	}
 
 	safeDst := dst
-	isDir, err := IsDir(safeDst)
-	if err != nil {
-		return err
-	}
-	if isDir {
+	if IsDir(safeDst) {
 		name := ExtractNameFromPath(src)
 		safeDst = filepath.Join(dst, name)
 	}
 
-	err = ioutil.WriteFile(safeDst, input, 0o644)
+	err = ioutil.WriteFile(safeDst, input, 0o600)
 	if err != nil {
 		return err
 	}
@@ -34,6 +31,10 @@ func CopyFile(src string, dst string) error {
 
 // CopyDirContent copies content of the src directory to the dst directory.
 func CopyDirContent(src string, dst string) error {
+	if !IsDir(src) {
+		return errors.New("source is not a directory")
+	}
+
 	files, err := ioutil.ReadDir(src)
 	if err != nil {
 		return err
@@ -50,11 +51,11 @@ func CopyDirContent(src string, dst string) error {
 	return nil
 }
 
-func IsDir(path string) (bool, error) {
+func IsDir(path string) bool {
 	fileInfo, err := os.Stat(path)
 	if err != nil {
-		return false, err
+		return false
 	}
 
-	return fileInfo.IsDir(), err
+	return fileInfo.IsDir()
 }
