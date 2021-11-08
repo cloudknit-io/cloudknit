@@ -41,9 +41,13 @@ func CopyDirContent(src string, dst string) error {
 	}
 
 	for _, file := range files {
-		fileSrc := filepath.Join(src, file.Name())
-		fileDst := filepath.Join(dst, file.Name())
-		if err := CopyFile(fileSrc, fileDst); err != nil {
+		absoluteSrc := filepath.Join(src, file.Name())
+		// skip subfolders
+		if IsDir(absoluteSrc) {
+			continue
+		}
+		absoluteDst := filepath.Join(dst, file.Name())
+		if err := CopyFile(absoluteSrc, absoluteDst); err != nil {
 			return err
 		}
 	}
