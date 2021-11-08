@@ -119,6 +119,7 @@ spec:
                           source:
                             type: string
                         required:
+                        - paths
                         - source
                         type: object
                       type: array
@@ -276,6 +277,7 @@ spec:
                           source:
                             type: string
                         required:
+                        - paths
                         - source
                         type: object
                       type: array

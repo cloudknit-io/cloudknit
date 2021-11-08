@@ -37,7 +37,7 @@ type VariablesFile struct {
 type OverlayFile struct {
 	Source string   `json:"source"`
 	Ref    string   `json:"ref,omitempty"`
-	Paths  []string `json:"paths,omitempty"`
+	Paths  []string `json:"paths"`
 }
 
 type OverlayData struct {
