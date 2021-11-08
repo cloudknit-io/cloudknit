@@ -2,8 +2,8 @@ package github_test
 
 import (
 	"fmt"
-	"github.com/compuzest/zlifecycle-il-operator/mocks"
 	"testing"
+	"github.com/compuzest/zlifecycle-il-operator/mocks"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	github2 "github.com/compuzest/zlifecycle-il-operator/controllers/util/github"

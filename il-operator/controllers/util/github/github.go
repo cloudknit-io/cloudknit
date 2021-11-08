@@ -15,10 +15,12 @@ package github
 import (
 	"errors"
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
+	"github.com/go-logr/logr"
+	"github.com/google/go-github/v32/github"
 	"io"
 	"regexp"
 	"strings"
-
 )
 
 func DownloadFile(
