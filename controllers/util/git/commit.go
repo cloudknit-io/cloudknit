@@ -52,3 +52,12 @@ func (g *GoGit) Commit(nfo *CommitInfo) (commit *object.Commit, err error) {
 
 	return commit, nil
 }
+
+func (g *GoGit) HeadCommitHash() (hash string, err error) {
+	ref, err := g.r.Head()
+	if err != nil {
+		return "", err
+	}
+
+	return ref.Hash().String(), nil
+}

@@ -1,4 +1,4 @@
-package filereconciler
+package gitreconciler
 
 import (
 	"io/ioutil"

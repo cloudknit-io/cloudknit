@@ -18,6 +18,7 @@ type API interface {
 	Clone(repo string, dir string) error
 	Open(path string) error
 	Commit(nfo *CommitInfo) (*object.Commit, error)
+	HeadCommitHash() (hash string, err error)
 	CommitAndPush(nfo *CommitInfo) (pushed bool, err error)
 	Push() error
 }

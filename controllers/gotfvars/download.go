@@ -3,7 +3,7 @@ package gotfvars
 import (
 	"fmt"
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/filereconciler"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/gitreconciler"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
 	"io/ioutil"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -51,7 +51,7 @@ func GetVariablesFromTfvarsFile(
 		"component", ec.Name,
 		"type", ec.Type,
 	)
-	fm := &filereconciler.FileMeta{
+	fm := &gitreconciler.FileMeta{
 		Type:           "tfvars",
 		Filename:       ec.VariablesFile.Path,
 		Team:           environment.Spec.TeamName,
@@ -62,7 +62,7 @@ func GetVariablesFromTfvarsFile(
 		Ref:            ec.VariablesFile.Ref,
 		EnvironmentKey: client.ObjectKey{Name: environment.Name, Namespace: environment.Namespace},
 	}
-	if _, err := filereconciler.GetReconciler().Submit(fm); err != nil {
+	if _, err := gitreconciler.GetReconciler().Submit(fm); err != nil {
 		return "", err
 	}
 

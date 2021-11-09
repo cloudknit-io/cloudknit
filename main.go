@@ -15,7 +15,7 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/filereconciler"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/gitreconciler"
 	"os"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
@@ -70,7 +70,7 @@ func main() {
 	}
 
 	ctx := context.Background()
-	fileReconciler := filereconciler.NewReconciler(
+	fileReconciler := gitreconciler.NewReconciler(
 		ctx,
 		ctrl.Log.WithName("FileReconciler"),
 		mgr.GetClient(),

@@ -109,18 +109,12 @@ type EnvironmentStatus struct {
 	TeamName   string                             `json:"teamName,omitempty"`
 	EnvName    string                             `json:"envName,omitempty"`
 	Components []*EnvironmentComponent            `json:"components,omitempty"`
-	FileState  map[string]map[string]*WatchedFile `json:"fileState,omitempty"`
+	GitState   map[string]*SubscribedRepositories `json:"gitState,omitempty"`
 }
 
-type WatchedFile struct {
-	Type         string      `json:"type,omitempty"`
-	Filename     string      `json:"filename,omitempty"`
-	Source       string      `json:"source,omitempty"`
-	Path         string      `json:"path,omitempty"`
-	Ref          string      `json:"ref,omitempty"`
-	MD5          string      `json:"md5,omitempty"`
-	ReconciledAt metav1.Time `json:"reconciledAt,omitempty"`
-	SoftDelete   bool        `json:"softDelete,omitempty"`
+type SubscribedRepositories struct {
+	Source         string `json:"source"`
+	HeadCommitHash string `json:"headCommitHash"`
 }
 
 // +kubebuilder:object:root=true
