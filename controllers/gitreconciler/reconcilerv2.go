@@ -2,11 +2,10 @@ package gitreconciler
 
 import (
 	"context"
-	"crypto/md5"
-	"fmt"
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/git"
 	"github.com/go-logr/logr"
+	"github.com/robfig/cron"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	kClient "sigs.k8s.io/controller-runtime/pkg/client"
 	"time"
@@ -15,9 +14,10 @@ import (
 var reconciler *Reconciler
 
 type WatchedRepository struct {
-	gitAPI      git.API
-	Source      string
-	Subscribers []client.ObjectKey
+	Source         string
+	RepositoryPath string
+	HeadCommitHash string
+	Subscribers    []client.ObjectKey
 }
 
 type Reconciler struct {
@@ -49,28 +49,28 @@ func GetReconciler() *Reconciler {
 	return reconciler
 }
 
-func (w *Reconciler) Start() error {
-	w.log.Info("Starting git reconciler")
+func (r *Reconciler) Start() error {
+	r.log.Info("Starting git reconciler")
 	c := cron.New()
 	c.Start()
-	_, err := c.AddFunc("@every 1m", func() {
+	err := c.AddFunc("@every 1m", func() {
 		var reconciled []string
 		start := time.Now()
-		w.log.Info("Running scheduled git reconciler iteration", "time", time.Now().String())
+		r.log.Info("Running scheduled git reconciler iteration", "time", time.Now().String())
 
-		repos := w.Repositories()
-		for _, file := range allFiles {
-			updated, err := w.reconcile(file)
+		repos := r.Repositories()
+		for _, repo := range repos {
+			updated, err := r.reconcile(repo)
 			if err != nil {
-				w.log.Error(err, "Error reconciling file")
+				r.log.Error(err, "Error reconciling git repository")
 			}
 			if err == nil && updated {
-				reconciled = append(reconciled, fmt.Sprintf("%s:%s:%s", file.Environment, file.Component, file.Filename))
+				reconciled = append(reconciled, repo.Source)
 			}
 		}
 
 		duration := time.Since(start)
-		w.log.Info(
+		r.log.Info(
 			"Finished scheduled file reconciler iteration",
 			"started", time.Now().String(),
 			"duration", duration,
@@ -84,141 +84,96 @@ func (w *Reconciler) Start() error {
 	return nil
 }
 
-func (w *Reconciler) Repositories() []*WatchedRepository {
-	repos := make([]*WatchedRepository, 0, len(w.state))
+func (r *Reconciler) Repositories() []*WatchedRepository {
+	repos := make([]*WatchedRepository, 0, len(r.state))
 
-	for _, wr := range w.state {
+	for _, wr := range r.state {
 		repos = append(repos, wr)
 	}
 
 	return repos
 }
 
-func (w *Reconciler) State() State {
-	return w.state
+func (r *Reconciler) State() State {
+	return r.state
 }
 
-func (w *Reconciler) Submit(repositoryURL string, subscriber kClient.ObjectKey) error {
-	if w.state[repositoryURL] != nil {
+func (r *Reconciler) Subscribe(repositoryURL string, subscriber kClient.ObjectKey) error {
+	if r.state[repositoryURL] != nil {
 		subscribed := false
-		for _, s := range w.state[repositoryURL].Subscribers {
+		for _, s := range r.state[repositoryURL].Subscribers {
 			if s.Name == subscriber.Name && s.Namespace == subscriber.Namespace {
 				subscribed = true
 			}
 		}
 
 		if !subscribed {
-			w.state[repositoryURL].Subscribers = append(w.state[repositoryURL].Subscribers, subscriber)
+			r.state[repositoryURL].Subscribers = append(r.state[repositoryURL].Subscribers, subscriber)
 		}
 
 		return nil
 	}
-	gitAPI, err := git.NewGoGit(w.ctx)
-	if err != nil {
-		return err
-	}
-	w.state[repositoryURL] = &WatchedRepository{
+
+	r.state[repositoryURL] = &WatchedRepository{
 		Source:      repositoryURL,
 		Subscribers: []kClient.ObjectKey{subscriber},
-		gitAPI:      gitAPI,
 	}
 
 	return nil
 }
 
-func (w *Reconciler) reconcile(wr *WatchedRepository) (updated bool, err error) {
-	for _, subscribers := range wr.Subscribers {
-
+func (r *Reconciler) Unsubscribe(repositoryURL string, subscriber kClient.ObjectKey) error {
+	if r.state[repositoryURL] == nil {
+		return nil
 	}
 
-	updated = false
+	for i, s := range r.state[repositoryURL].Subscribers {
+		if s.Name == subscriber.Name && s.Namespace == subscriber.Namespace {
+			r.state[repositoryURL].Subscribers = remove(r.state[repositoryURL].Subscribers, i)
+			break
+		}
+	}
 
-	rc, exists, err := downloadFile(w.githubRepoAPI, fm.Source, fm.Ref, fm.Path)
+	return nil
+}
+
+func remove(s []client.ObjectKey, i int) []client.ObjectKey {
+	s[i] = s[len(s)-1]
+	return s[:len(s)-1]
+}
+
+func (r *Reconciler) reconcile(wr *WatchedRepository) (updated bool, err error) {
+	gitAPI, err := git.NewGoGit(r.ctx)
 	if err != nil {
-		return updated, err
-	}
-
-	var environment v1.Environment
-	if err := w.k8sClient.Get(w.ctx, fm.EnvironmentKey, &environment); err != nil {
 		return false, err
 	}
 
-	status := environment.Status.FileState
-	if !exists {
-		w.log.Info(
-			"Marking file as soft deleted in environment status",
-			"environment", fm.Environment,
-			"component", fm.Component,
-			"filename", fm.Filename,
-		)
-		if status[fm.Component] != nil && status[fm.Component][fm.Filename] != nil {
-			status[fm.Component][fm.Filename] = nil
-			if err := w.k8sClient.Status().Update(w.ctx, &environment); err != nil {
-				return false, err
-			}
+	_, cleanup, err := git.CloneTemp(gitAPI, wr.Source)
+	defer cleanup()
+	if err != nil {
+		return false, err
+	}
+
+	headCommitHash, err := gitAPI.HeadCommitHash()
+	if err != nil {
+		return false, err
+	}
+	if wr.HeadCommitHash == headCommitHash {
+		return false, nil
+	}
+
+	for _, subscriber := range wr.Subscribers {
+		environment := v1.Environment{}
+		if err := r.k8sClient.Get(r.ctx, subscriber, &environment); err != nil {
+			// TODO: maybe environment got destroyed and not removed from reconciler
+			continue
 		}
-		if success := w.RemoveFile(fm.Team, fm.Environment, fm.Component, fm.Filename); !success {
-			w.log.Info(
-				"File missing in file reconciler",
-				"environment", fm.Environment,
-				"component", fm.Component,
-				"filename", fm.Filename,
-			)
-		}
-		w.log.Info(
-			"File removed from file reconciler",
-			"environment", fm.Environment,
-			"component", fm.Component,
-			"filename", fm.Filename,
-		)
 
-		updated = true
-		return updated, nil
-	}
+		environment.Status.GitState[wr.Source].HeadCommitHash = headCommitHash
 
-	newHash := fmt.Sprintf("%x", md5.Sum(rc))
-
-	ec := findEnvironmentComponent(environment.Spec.Components, fm.Component)
-	if ec == nil {
-		w.log.Info(
-			"Missing environment component, ending reconcile",
-			"environment", fm.Environment,
-			"component", fm.Component,
-		)
-		return updated, nil
-	}
-
-	// get MD5 if it was already calculated from the Status, so we don't have a redundant reconcile
-	if status[fm.Component] != nil && status[fm.Component][fm.Filename] != nil {
-		fm.MD5 = status[fm.Component][fm.Filename].MD5
-	}
-
-	if oldHash, oldReconciledAt := fm.MD5, fm.ReconciledAt; oldHash != newHash {
-		w.log.Info(
-			"Updating hash for environment component",
-			"component", fm.Component,
-			"environment", environment.Spec.EnvName,
-			"team", environment.Spec.TeamName,
-			"oldHash", oldHash,
-			"newHash", newHash,
-		)
-		fm.MD5 = newHash
-		fm.ReconciledAt = time.Now()
-		environment.Status.FileState = w.BuildDomainFileState(environment.Spec.TeamName, environment.Spec.EnvName)
-		if err := w.k8sClient.Status().Update(w.ctx, &environment); err != nil {
-			w.log.Info(
-				"Reverting hash because of failed status update",
-				"component", fm.Component,
-				"environment", environment.Spec.EnvName,
-				"team", environment.Spec.TeamName,
-				"oldHash", newHash,
-				"newHash", oldHash,
-			)
-			fm.MD5 = oldHash
-			fm.ReconciledAt = oldReconciledAt
+		if err := r.k8sClient.Status().Update(r.ctx, &environment, nil); err != nil {
 			return false, err
 		}
-		updated = true
 	}
 
 	return updated, nil

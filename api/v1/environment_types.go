@@ -106,13 +106,13 @@ type EnvironmentSpec struct {
 
 // EnvironmentStatus defines the observed state of Environment.
 type EnvironmentStatus struct {
-	TeamName   string                             `json:"teamName,omitempty"`
-	EnvName    string                             `json:"envName,omitempty"`
-	Components []*EnvironmentComponent            `json:"components,omitempty"`
-	GitState   map[string]*SubscribedRepositories `json:"gitState,omitempty"`
+	TeamName   string                           `json:"teamName,omitempty"`
+	EnvName    string                           `json:"envName,omitempty"`
+	Components []*EnvironmentComponent          `json:"components,omitempty"`
+	GitState   map[string]*SubscribedRepository `json:"gitState,omitempty"`
 }
 
-type SubscribedRepositories struct {
+type SubscribedRepository struct {
 	Source         string `json:"source"`
 	HeadCommitHash string `json:"headCommitHash"`
 }

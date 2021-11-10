@@ -340,28 +340,16 @@ spec:
                 type: array
               envName:
                 type: string
-              fileState:
+              gitState:
                 additionalProperties:
-                  additionalProperties:
-                    properties:
-                      filename:
-                        type: string
-                      md5:
-                        type: string
-                      path:
-                        type: string
-                      reconciledAt:
-                        format: date-time
-                        type: string
-                      ref:
-                        type: string
-                      softDelete:
-                        type: boolean
-                      source:
-                        type: string
-                      type:
-                        type: string
-                    type: object
+                  properties:
+                    headCommitHash:
+                      type: string
+                    source:
+                      type: string
+                  required:
+                  - headCommitHash
+                  - source
                   type: object
                 type: object
               teamName:

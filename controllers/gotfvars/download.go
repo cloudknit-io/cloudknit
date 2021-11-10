@@ -62,7 +62,7 @@ func GetVariablesFromTfvarsFile(
 		Ref:            ec.VariablesFile.Ref,
 		EnvironmentKey: client.ObjectKey{Name: environment.Name, Namespace: environment.Namespace},
 	}
-	if _, err := gitreconciler.GetReconciler().Submit(fm); err != nil {
+	if _, err := gitreconciler.GetReconciler().Subscribe(fm); err != nil {
 		return "", err
 	}
 

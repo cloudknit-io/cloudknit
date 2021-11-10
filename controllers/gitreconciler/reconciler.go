@@ -117,7 +117,7 @@ type TeamState = map[Environment]EnvironmentState
 //	return w.state
 //}
 
-//func (w *Reconciler) Submit(repository RepositoryName, subscriber kClient.ObjectKey) (added bool, err error) {
+//func (w *Reconciler) Subscribe(repository RepositoryName, subscriber kClient.ObjectKey) (added bool, err error) {
 //	if w.state[repository] != nil {
 //
 //	}
@@ -149,29 +149,29 @@ type TeamState = map[Environment]EnvironmentState
 //return added, nil
 //}
 
-func (w *Reconciler) exists(team string, environment string, component string, filename string) bool {
-	return w.state[team] != nil &&
-		w.state[team][environment] != nil &&
-		w.state[team][environment][component] != nil &&
-		w.state[team][environment][component][filename] != nil
+func (r *Reconciler) exists(team string, environment string, component string, filename string) bool {
+	return r.state[team] != nil &&
+		r.state[team][environment] != nil &&
+		r.state[team][environment][component] != nil &&
+		r.state[team][environment][component][filename] != nil
 }
 
-func (w *Reconciler) RemoveFile(team string, environment string, component string, filename string) (success bool) {
-	if w.exists(team, environment, component, filename) {
-		w.state[team][environment][component][filename] = nil
+func (r *Reconciler) RemoveFile(team string, environment string, component string, filename string) (success bool) {
+	if r.exists(team, environment, component, filename) {
+		r.state[team][environment][component][filename] = nil
 		return true
 	}
 	return false
 }
 
-func (w *Reconciler) RemoveComponentFiles(team string, environment string, component string) {
-	if w.state[team][environment] != nil && w.state[team][environment][component] != nil {
-		w.state[team][environment][component] = nil
+func (r *Reconciler) RemoveComponentFiles(team string, environment string, component string) {
+	if r.state[team][environment] != nil && r.state[team][environment][component] != nil {
+		r.state[team][environment][component] = nil
 	}
 }
 
-func (w *Reconciler) RemoveEnvironmentFiles(team string, environment string) {
-	w.state[team][environment] = nil
+func (r *Reconciler) RemoveEnvironmentFiles(team string, environment string) {
+	r.state[team][environment] = nil
 }
 
 //func (w *Reconciler) reconcile(fm *FileMeta) (updated bool, err error) {
@@ -268,9 +268,9 @@ func (w *Reconciler) RemoveEnvironmentFiles(team string, environment string) {
 //	return updated, nil
 //}
 
-func (w *Reconciler) BuildDomainFileState(team string, environment string) map[string]map[string]*v1.WatchedFile {
+func (r *Reconciler) BuildDomainFileState(team string, environment string) map[string]map[string]*v1.WatchedFile {
 	domainState := map[string]map[string]*v1.WatchedFile{}
-	for compKey, componentFiles := range w.state[team][environment] {
+	for compKey, componentFiles := range r.state[team][environment] {
 		if domainState[compKey] == nil {
 			domainState[compKey] = map[string]*v1.WatchedFile{}
 		}
