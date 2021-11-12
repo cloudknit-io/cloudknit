@@ -18,8 +18,6 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controllers/gitreconciler"
 	"os"
 
-	"github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
-
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -72,12 +70,11 @@ func main() {
 	ctx := context.Background()
 	fileReconciler := gitreconciler.NewReconciler(
 		ctx,
-		ctrl.Log.WithName("FileReconciler"),
+		ctrl.Log.WithName("GitReconciler"),
 		mgr.GetClient(),
-		github.NewHTTPRepositoryAPI(ctx),
 	)
 	if err := fileReconciler.Start(); err != nil {
-		setupLog.Error(err, "failed to start file reconciler")
+		setupLog.Error(err, "failed to start git reconciler")
 	}
 
 	if err = (&controllers.CompanyReconciler{

@@ -711,6 +711,8 @@ google.golang.org/protobuf/types/known/wrapperspb
 # gopkg.in/inf.v0 v0.9.1
 ## explicit
 gopkg.in/inf.v0
+# gopkg.in/matryer/try.v1 v1.0.0-20150601225556-312d2599e12e
+## explicit
 # gopkg.in/src-d/go-billy.v4 v4.3.2
 ## explicit
 gopkg.in/src-d/go-billy.v4
