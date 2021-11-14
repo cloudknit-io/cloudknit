@@ -1,6 +1,7 @@
 package common
 
 import (
+	"bytes"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -36,4 +37,18 @@ func GetHTTPClient() *http.Client {
 		Timeout:   10 * time.Second,
 		Transport: t,
 	}
+}
+
+func ReadBody(stream io.ReadCloser) ([]byte, error) {
+	body, err := ioutil.ReadAll(stream)
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
+}
+
+func CreateMockResponse(code int) *http.Response {
+	r := http.Response{Body: ioutil.NopCloser(bytes.NewReader([]byte{})), StatusCode: code}
+	return &r
 }

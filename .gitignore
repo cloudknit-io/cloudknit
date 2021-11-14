@@ -4,6 +4,9 @@
 # Environment files
 *.env
 
+# Kubernetes cert
+cert
+
 # Local Operator files
 company/
 team/

@@ -22,7 +22,7 @@ import (
 	"k8s.io/apiserver/pkg/registry/generic/registry"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	"github.com/compuzest/zlifecycle-il-operator/controllers/filereconciler"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/gitreconciler"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/gotfvars"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/overlay"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
@@ -278,10 +278,8 @@ func delayEnvironmentReconcileOnInitialRun(log logr.Logger, seconds int64) {
 }
 
 func (r *EnvironmentReconciler) updateStatus(ctx context.Context, e *stablev1.Environment) error {
-	fileState := filereconciler.GetReconciler().BuildDomainFileState(e.Spec.TeamName, e.Spec.EnvName)
 	hasEnvironmentInfoChanged := e.Status.TeamName != e.Spec.TeamName || e.Status.EnvName != e.Spec.EnvName
 	haveComponentsChanged := !cmp.Equal(e.Status.Components, e.Spec.Components)
-	// hasFileStateChanged := !cmp.Equal(fileState, e.Status.FileState)
 	isStateDirty := hasEnvironmentInfoChanged || haveComponentsChanged
 
 	if isStateDirty {
@@ -293,7 +291,6 @@ func (r *EnvironmentReconciler) updateStatus(ctx context.Context, e *stablev1.En
 		e.Status.TeamName = e.Spec.TeamName
 		e.Status.EnvName = e.Spec.EnvName
 		e.Status.Components = e.Spec.Components
-		e.Status.FileState = fileState
 		if err := r.Status().Update(ctx, e); err != nil {
 			return err
 		}
@@ -443,14 +440,14 @@ func extractPathsToRemove(e *stablev1.Environment) []string {
 	}
 }
 
-func (r *EnvironmentReconciler) removeEnvironmentFromFileReconciler(e *stablev1.Environment) {
+func (r *EnvironmentReconciler) removeEnvironmentFromFileReconciler(e *stablev1.Environment) error {
 	r.Log.Info(
 		"Removing entries from file reconciler",
 		"team", e.Spec.TeamName,
 		"environment", e.Spec.EnvName,
 	)
-	fr := filereconciler.GetReconciler()
-	fr.RemoveEnvironmentFiles(e.Spec.TeamName, e.Spec.EnvName)
+	key := kClient.ObjectKey{Name: e.Name, Namespace: e.Namespace}
+	return gitreconciler.GetReconciler().UnsubscribeAll(key)
 }
 
 func generateAndSaveEnvironmentComponents(
@@ -480,8 +477,8 @@ func generateAndSaveEnvironmentComponents(
 		tfvars := ""
 		if ec.VariablesFile != nil {
 			tfv, err := gotfvars.GetVariablesFromTfvarsFile(
+				ctx,
 				log,
-				githubRepoAPI,
 				environment,
 				ec,
 			)
