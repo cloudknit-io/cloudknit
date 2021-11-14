@@ -2,6 +2,9 @@ package gitreconciler
 
 import (
 	"context"
+	"strings"
+	"time"
+
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/git"
@@ -9,10 +12,7 @@ import (
 	"github.com/robfig/cron"
 	"k8s.io/apimachinery/pkg/api/errors"
 	genericregistry "k8s.io/apiserver/pkg/registry/generic/registry"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	kClient "sigs.k8s.io/controller-runtime/pkg/client"
-	"strings"
-	"time"
 )
 
 var reconciler *Reconciler
@@ -21,7 +21,7 @@ type WatchedRepository struct {
 	Source         string
 	RepositoryPath string
 	HeadCommitHash string
-	Subscribers    []client.ObjectKey
+	Subscribers    []kClient.ObjectKey
 }
 
 type Reconciler struct {
@@ -102,28 +102,35 @@ func (r *Reconciler) State() State {
 	return r.state
 }
 
-func (r *Reconciler) Subscribe(repositoryURL string, subscriber kClient.ObjectKey) error {
+func (r *Reconciler) Subscribe(repositoryURL string, subscriber kClient.ObjectKey) (subscribed bool) {
+	subscribed = false
+	// check is repository already watched
 	if r.state[repositoryURL] != nil {
-		subscribed := false
+		// repository already watched by reconciler
+		// check is the subscriber already subscribed
 		for _, s := range r.state[repositoryURL].Subscribers {
 			if s.Name == subscriber.Name && s.Namespace == subscriber.Namespace {
+				// object already subscribed
 				subscribed = true
+				break
 			}
 		}
 
+		// add to list of subscribers
 		if !subscribed {
 			r.state[repositoryURL].Subscribers = append(r.state[repositoryURL].Subscribers, subscriber)
 		}
 
-		return nil
+		return subscribed
 	}
 
+	// if repository is not watched by reconciler, register it now
 	r.state[repositoryURL] = &WatchedRepository{
 		Source:      repositoryURL,
 		Subscribers: []kClient.ObjectKey{subscriber},
 	}
 
-	return nil
+	return subscribed
 }
 
 func (r *Reconciler) Unsubscribe(repositoryURL string, subscriber kClient.ObjectKey) error {
@@ -154,7 +161,7 @@ func (r *Reconciler) UnsubscribeAll(subscriber kClient.ObjectKey) error {
 	return nil
 }
 
-func remove(s []client.ObjectKey, i int) []client.ObjectKey {
+func remove(s []kClient.ObjectKey, i int) []kClient.ObjectKey {
 	s[i] = s[len(s)-1]
 	return s[:len(s)-1]
 }
@@ -206,6 +213,11 @@ func (r *Reconciler) reconcile(wr *WatchedRepository) (updated bool, err error) 
 			continue
 		}
 
+		// check should git state be initialized in environment status
+		if environment.Status.GitState == nil {
+			environment.Status.GitState = map[string]*v1.SubscribedRepository{}
+		}
+
 		// update the subscribed repository in the environment status
 		sr := v1.SubscribedRepository{
 			Source:         wr.Source,
@@ -220,16 +232,8 @@ func (r *Reconciler) reconcile(wr *WatchedRepository) (updated bool, err error) 
 			"oldHeadCommit", wr.HeadCommitHash,
 			"newHeadCommit", latestHeadCommitHash,
 		)
-		// use retry when updating status on stale cache errors, do not retry otherwise
-		fn := func(attempt int) (retry bool, err error) {
-			err = r.k8sClient.Status().Update(r.ctx, &environment)
-			if strings.Contains(err.Error(), genericregistry.OptimisticLockErrorMsg) {
-				// do manual retry without error
-				return attempt < 3, err
-			}
-			return false, err
-		}
-		if err := common.Retry(fn); err != nil {
+
+		if err := common.Retry(r.retryableUpdate(&environment)); err != nil {
 			return false, err
 		}
 	}
@@ -237,4 +241,26 @@ func (r *Reconciler) reconcile(wr *WatchedRepository) (updated bool, err error) 
 	wr.HeadCommitHash = latestHeadCommitHash
 
 	return true, nil
+}
+
+func (r *Reconciler) retryableUpdate(e *v1.Environment) func(attempt int) (retry bool, err error) {
+	fn := func(attempt int) (retry bool, err error) {
+		if err := r.k8sClient.Status().Update(r.ctx, e); err != nil {
+			if strings.Contains(err.Error(), genericregistry.OptimisticLockErrorMsg) {
+				r.log.Info(
+					"retrying status update due to optimistic lock error",
+					"team", e.Spec.TeamName,
+					"environment", e.Spec.EnvName,
+					"attempt", attempt,
+				)
+				// do manual retry without error
+				return attempt < 3, err
+			}
+			return false, err
+		}
+
+		return false, nil
+	}
+
+	return fn
 }

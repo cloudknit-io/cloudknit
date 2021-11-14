@@ -2,8 +2,11 @@ package overlay
 
 import (
 	"context"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/gitreconciler"
 	"path/filepath"
+
+
+	"github.com/compuzest/zlifecycle-il-operator/controllers/gitreconciler"
+
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
@@ -55,20 +58,30 @@ func GenerateOverlayFiles(
 						return err
 					}
 				}
+
+				// submit repo to git reconciler
+				log.Info(
+					"Subscribing to config repository in git reconciler",
+					"environment", e.Spec.EnvName,
+					"team", e.Spec.TeamName,
+					"component", ec.Name,
+					"type", ec.Type,
+					"repository", overlay.Source,
+				)
+				envKey := client.ObjectKey{Name: e.Name, Namespace: e.Namespace}
+				subscribed := gitreconciler.GetReconciler().Subscribe(overlay.Source, envKey)
+				if subscribed {
+					log.Info(
+						"Already subscribed in git reconciler to repository",
+						"environment", e.Spec.EnvName,
+						"team", e.Spec.TeamName,
+						"component", ec.Name,
+						"type", ec.Type,
+						"repository", overlay.Source,
+					)
+				}
 			}
 
-			log.Info(
-				"Subscribing to config repository in git reconciler",
-				"environment", e.Spec.EnvName,
-				"team", e.Spec.TeamName,
-				"component", ec.Name,
-				"type", ec.Type,
-				"repository", ec.VariablesFile.Source,
-			)
-			envKey := client.ObjectKey{Name: e.Name, Namespace: e.Namespace}
-			if err := gitreconciler.GetReconciler().Subscribe(ec.VariablesFile.Source, envKey); err != nil {
-				return err
-			}
 			return nil
 		}(); err != nil {
 			return err

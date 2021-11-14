@@ -16,6 +16,7 @@ import (
 	"context"
 	"flag"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/gitreconciler"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	"os"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -61,6 +62,7 @@ func main() {
 		Port:               9443,
 		LeaderElection:     enableLeaderElection,
 		LeaderElectionID:   "ce9255a7.compuzest.com",
+		CertDir:            env.Config.KubernetesCertDir,
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
@@ -102,7 +104,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if os.Getenv("DISABLE_WEBHOOKS") != "true" {
+	if env.Config.DisableWebhooks != "true" {
 		if err = (&stablev1.Environment{}).SetupWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "Environment")
 			os.Exit(1)

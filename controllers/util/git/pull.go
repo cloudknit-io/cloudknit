@@ -3,9 +3,14 @@ package git
 import (
 	gogit "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
+	"github.com/pkg/errors"
 )
 
 func (g *GoGit) Pull() (updated bool, err error) {
+	if g.r == nil {
+		return false, errors.Wrapf(ErrRepoNotCloned, "cannot pull")
+	}
+
 	w, err := g.r.Worktree()
 	if err != nil {
 		return false, err

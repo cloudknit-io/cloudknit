@@ -3,13 +3,15 @@ package gotfvars
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
+
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/gitreconciler"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/git"
 	"github.com/go-logr/logr"
-	"os"
-	"path/filepath"
+
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -62,8 +64,16 @@ func GetVariablesFromTfvarsFile(
 		"repository", ec.VariablesFile.Source,
 	)
 	envKey := client.ObjectKey{Name: e.Name, Namespace: e.Namespace}
-	if err := gitreconciler.GetReconciler().Subscribe(ec.VariablesFile.Source, envKey); err != nil {
-		return "", err
+	subscribed := gitreconciler.GetReconciler().Subscribe(ec.VariablesFile.Source, envKey)
+	if subscribed {
+		log.Info(
+			"Already subscribed in git reconciler to repository",
+			"environment", e.Spec.EnvName,
+			"team", e.Spec.TeamName,
+			"component", ec.Name,
+			"type", ec.Type,
+			"repository", ec.VariablesFile.Source,
+		)
 	}
 
 	tfvars := string(buff)

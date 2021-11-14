@@ -1,6 +1,7 @@
 package git
 
 import (
+	"github.com/pkg/errors"
 	"time"
 
 	gogit "github.com/go-git/go-git/v5"
@@ -8,11 +9,11 @@ import (
 )
 
 // Commit will add all files changed files to the staging area and commit them.
-// Throws an ErrEmptyCommit if no files are changed.
+// Throws an ErrEmptyCommit if no files are changed or ErrRepoNotCloned if repo is not cloned before
 // It returns the commit object.
 func (g *GoGit) Commit(nfo *CommitInfo) (commit *object.Commit, err error) {
 	if g.r == nil {
-		return nil, ErrRepoNotCloned
+		return nil, errors.Wrapf(ErrRepoNotCloned, "cannot commit")
 	}
 	w, err := g.r.Worktree()
 	if err != nil {
@@ -47,7 +48,7 @@ func (g *GoGit) Commit(nfo *CommitInfo) (commit *object.Commit, err error) {
 	}
 
 	if len(fileStats) == 0 {
-		return nil, ErrEmptyCommit
+		return nil, errors.Wrap(ErrEmptyCommit, "no staged files")
 	}
 
 	return commit, nil
