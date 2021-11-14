@@ -15,10 +15,9 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/filereconciler"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/gitreconciler"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	"os"
-
-	"github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -63,6 +62,7 @@ func main() {
 		Port:               9443,
 		LeaderElection:     enableLeaderElection,
 		LeaderElectionID:   "ce9255a7.compuzest.com",
+		CertDir:            env.Config.KubernetesCertDir,
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
@@ -70,14 +70,13 @@ func main() {
 	}
 
 	ctx := context.Background()
-	fileReconciler := filereconciler.NewReconciler(
+	fileReconciler := gitreconciler.NewReconciler(
 		ctx,
-		ctrl.Log.WithName("FileReconciler"),
+		ctrl.Log.WithName("GitReconciler"),
 		mgr.GetClient(),
-		github.NewHTTPRepositoryAPI(ctx),
 	)
 	if err := fileReconciler.Start(); err != nil {
-		setupLog.Error(err, "failed to start file reconciler")
+		setupLog.Error(err, "failed to start git reconciler")
 	}
 
 	if err = (&controllers.CompanyReconciler{
@@ -105,7 +104,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if os.Getenv("DISABLE_WEBHOOKS") != "true" {
+	if env.Config.DisableWebhooks != "true" {
 		if err = (&stablev1.Environment{}).SetupWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "Environment")
 			os.Exit(1)

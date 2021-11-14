@@ -23,6 +23,9 @@ type config struct {
 	GitHubOrg           string
 	RepoBranch          string
 
+	DisableWebhooks   string
+	KubernetesCertDir string
+
 	DisableEnvironmentFinalizer string
 	EnvironmentFinalizer        string
 
@@ -51,6 +54,9 @@ var Config = config{
 	ILRepoName:        os.Getenv("ilRepoName"),
 	ILRepoURL:         os.Getenv("ilRepo"),
 	ILRepoSourceOwner: os.Getenv("ilRepoSourceOwner"),
+
+	DisableWebhooks:   getOr("DISABLE_WEBHOOKS", "false"),
+	KubernetesCertDir: os.Getenv("KUBERNETES_CERT_DIR"),
 
 	EnvironmentStateConfigMap: "environment-state-cm",
 
