@@ -19,11 +19,11 @@ argocd app patch $team_env_config_name --patch $data --type merge >null
 infracost breakdown --path terraform-plan --format json --log-level=warn >>output.json
 estimated_cost=$(cat output.json | jq -r ".projects[0].breakdown.totalMonthlyCost")
 resources=$(cat output.json | jq -r ".projects[0].breakdown.resources")
-unsupportedResources=$(cat output.json | jq ' .projects[0].summary.unsupportedResourceCounts == {}')
-if [[ $unsupportedResources != "true" && $estimated_cost == '0' ]]
-then
+# unsupportedResources=$(cat output.json | jq ' .projects[0].summary.unsupportedResourceCounts == {}')
+# if [[ $unsupportedResources != "true" && $estimated_cost == '0' ]]
+# then
 #    estimated_cost='-1'
-fi
+# fi
 
 costing_payload='{"teamName": "'$team_name'", "environmentName": "'$env_name'", "component": { "componentName": "'$config_name'", "cost": '$estimated_cost', "resources" : '$resources'  }}'
 echo $costing_payload >temp_costing_payload.json
