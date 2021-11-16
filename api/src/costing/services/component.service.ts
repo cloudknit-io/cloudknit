@@ -62,11 +62,10 @@ export class ComponentService {
   }
 
   async saveComponents(costing: CostingDto): Promise<boolean> {
-    console.log('-------> component cost', costing.component.cost);
     const id = `${costing.teamName}-${costing.environmentName}-${costing.component.componentName}`;
-    let savedComponent = null;
-    if (costing.component.isDeleted) {
-      savedComponent = await this.softDelete(id);
+    let savedComponent = await this.componentRepository.findOne(id) || null;
+    if (costing.component.isDeleted && savedComponent) {
+      savedComponent = await this.softDelete(savedComponent);
     } else {
       const component = new Component();
       component.teamName = costing.teamName;
@@ -88,10 +87,9 @@ export class ComponentService {
     return true;
   }
   
-  async softDelete(id: string): Promise<Component> {
-    const component = await this.componentRepository.findOne(id);
-    component.isDeleted = true;
-    return await this.componentRepository.save(component);
+  async softDelete(component: Component): Promise<Component> {
+      component.isDeleted = true;
+      return await this.componentRepository.save(component);
   }
 
   async getResourceData(id: string) {
