@@ -145,15 +145,7 @@ fi
 data='{"metadata":{"labels":{"component_status":"initializing"}}}'
 argocd app patch $team_env_config_name --patch $data --type merge >null
 
-echo $show_output_start
-terraform init 2>&1 >/dev/null | appendLogs /tmp/$s3FileName.txt
-retVal="${PIPESTATUS[0]}"
-if [ $retVal -ne 0 ]; then
-  echo $show_output_end
-  SaveAndExit "Failed to initialize terraform"
-fi
-
-echo $show_output_end
+terraform init || SaveAndExit "Cannot initialize terraform"
 
 if [ $is_apply -eq 0 ]; then
   if [ $is_sync -eq 1 ]; then
