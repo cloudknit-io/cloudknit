@@ -18,6 +18,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/compuzest/zlifecycle-il-operator/controllers/zerrors"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/git"
 	"k8s.io/apiserver/pkg/registry/generic/registry"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -30,6 +32,7 @@ import (
 	github2 "github.com/google/go-github/v32/github"
 	"go.uber.org/atomic"
 
+	perrors "github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/errors"
 
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
@@ -70,7 +73,8 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 
 	exists, err := r.tryGetEnvironment(ctx, req, environment)
 	if err != nil {
-		return ctrl.Result{}, err
+		envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, err)
+		return ctrl.Result{}, perrors.Wrap(envErr, "error getting environment from k8s cache")
 	}
 	if !exists {
 		return ctrl.Result{}, nil
@@ -83,13 +87,15 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	fileAPI := file.NewOsFileService()
 	gitAPI, err := git.NewGoGit(ctx)
 	if err != nil {
-		return ctrl.Result{}, err
+		envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, err)
+		return ctrl.Result{}, perrors.Wrap(envErr, "error instantiating git API")
 	}
 
 	// temp clone IL repo
 	tempILRepoDir, cleanup, err := git.CloneTemp(gitAPI, ilRepoURL)
 	if err != nil {
-		return ctrl.Result{}, err
+		envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, err)
+		return ctrl.Result{}, perrors.Wrap(envErr, "error running git temp clone")
 	}
 	defer cleanup()
 
@@ -98,7 +104,8 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		finalizer := env.Config.EnvironmentFinalizer
 		finalizerCompleted, err := r.handleFinalizer(ctx, environment, finalizer, argocdAPI, argoworkflowAPI)
 		if err != nil {
-			return ctrl.Result{}, err
+			envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, err)
+			return ctrl.Result{}, perrors.Wrap(envErr, "error handling finalizer")
 		}
 		if finalizerCompleted {
 			r.Log.Info(
@@ -118,15 +125,12 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 				// do manual retry without error
 				return reconcile.Result{RequeueAfter: time.Second * 1}, nil
 			}
-			r.Log.Error(
-				err,
-				"Error occurred while updating Environment status",
-				"name", environment.Name,
-			)
-			return ctrl.Result{}, nil
+			envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, err)
+			return ctrl.Result{}, perrors.Wrap(envErr, "error updating environment status")
 		}
-		if err := r.handleNonDeleteEvent(ctx, tempILRepoDir, environment, fileAPI, gitAPI, repoAPI); err != nil {
-			return ctrl.Result{}, err
+		if err := r.handleNonDeleteEvent(ctx, tempILRepoDir, environment, fileAPI, repoAPI); err != nil {
+			envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, err)
+			return ctrl.Result{}, perrors.Wrap(envErr, "error handling non-delete event")
 		}
 	} else {
 		r.Log.Info(
@@ -145,7 +149,8 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		"isDeleteEvent", isDeleteEvent,
 	)
 	if err := generateAndSaveWorkflowOfWorkflows(fileAPI, environment, envComponentDirectory); err != nil {
-		return ctrl.Result{}, err
+		envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, err)
+		return ctrl.Result{}, perrors.Wrap(envErr, "error generating workflow of workflows")
 	}
 
 	commitInfo := git.CommitInfo{
@@ -155,12 +160,14 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	}
 	pushed, err := gitAPI.CommitAndPush(&commitInfo)
 	if err != nil {
-		return ctrl.Result{}, err
+		envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, err)
+		return ctrl.Result{}, perrors.Wrap(envErr, "error running commit and push")
 	}
 
 	if pushed {
 		if err := r.handleDirtyILState(argoworkflowAPI, environment); err != nil {
-			return ctrl.Result{}, err
+			envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, err)
+			return ctrl.Result{}, perrors.Wrap(envErr, "error handling dirty IL state")
 		}
 	} else {
 		r.Log.Info(
@@ -209,7 +216,6 @@ func (r *EnvironmentReconciler) handleNonDeleteEvent(
 	tempILRepoDir string,
 	e *stablev1.Environment,
 	fileAPI file.Service,
-	gitAPI git.API,
 	repoAPI github.RepositoryAPI,
 ) error {
 	r.Log.Info(
@@ -365,7 +371,7 @@ func (r *EnvironmentReconciler) postDeleteHook(
 	}
 	_ = r.deleteDanglingArgocdApps(e, argocdAPI)
 	_ = r.deleteDanglingArgoWorkflows(e, argoworkflowAPI)
-	r.removeEnvironmentFromFileReconciler(e)
+	_ = r.removeEnvironmentFromFileReconciler(e)
 	return nil
 }
 
