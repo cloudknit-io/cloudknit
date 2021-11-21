@@ -19,6 +19,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/compuzest/zlifecycle-il-operator/controllers/zerrors"
+	perrors "github.com/pkg/errors"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/git"
 
 	"k8s.io/apiserver/pkg/registry/generic/registry"
@@ -89,14 +92,8 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 			)
 			return ctrl.Result{}, nil
 		}
-		r.Log.Error(
-			err,
-			"error occurred while getting Team",
-			"name", req.Name,
-			"namespace", req.Namespace,
-		)
-
-		return ctrl.Result{}, err
+		teamErr := zerrors.NewTeamError(team.Spec.TeamName, err)
+		return ctrl.Result{}, perrors.Wrap(teamErr, "error getting team from k8s cache")
 	}
 
 	// services init
@@ -105,13 +102,15 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	repoAPI := github.NewHTTPRepositoryAPI(ctx)
 	gitAPI, err := git.NewGoGit(ctx)
 	if err != nil {
-		return ctrl.Result{}, err
+		teamErr := zerrors.NewTeamError(team.Spec.TeamName, err)
+		return ctrl.Result{}, perrors.Wrap(teamErr, "error instantiating git API")
 	}
 
 	// temp clone IL repo
 	tempILRepoDir, cleanup, err := git.CloneTemp(gitAPI, ilRepoURL)
 	if err != nil {
-		return ctrl.Result{}, err
+		teamErr := zerrors.NewTeamError(team.Spec.TeamName, err)
+		return ctrl.Result{}, perrors.Wrap(teamErr, "error running git temp clone")
 	}
 	defer cleanup()
 
@@ -120,15 +119,18 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 			// do manual retry without error
 			return reconcile.Result{RequeueAfter: time.Second * 1}, nil
 		}
-		return ctrl.Result{}, err
+		teamErr := zerrors.NewTeamError(team.Spec.TeamName, err)
+		return ctrl.Result{}, perrors.Wrap(teamErr, "error updating argocd rbac")
 	}
 
 	if _, err := argocd.TryCreateProject(ctx, r.Log, team.Spec.TeamName, env.Config.GitHubOrg); err != nil {
-		return ctrl.Result{}, err
+		teamErr := zerrors.NewTeamError(team.Spec.TeamName, err)
+		return ctrl.Result{}, perrors.Wrap(teamErr, "error trying to create argocd project")
 	}
 
 	if err := fileAPI.CreateEmptyDirectory(il.EnvironmentDirectoryPath(team.Spec.TeamName)); err != nil {
-		return ctrl.Result{}, err
+		teamErr := zerrors.NewTeamError(team.Spec.TeamName, err)
+		return ctrl.Result{}, perrors.Wrap(teamErr, "error creating team dir")
 	}
 
 	teamRepo := team.Spec.ConfigRepo.Source
@@ -136,17 +138,20 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	operatorNamespace := env.Config.ZlifecycleOperatorNamespace
 
 	if err := repo.TryRegisterRepo(ctx, r.Client, r.Log, argocdAPI, teamRepo, operatorNamespace, operatorSSHSecret); err != nil {
-		return ctrl.Result{}, err
+		teamErr := zerrors.NewTeamError(team.Spec.TeamName, err)
+		return ctrl.Result{}, perrors.Wrap(teamErr, "error registering argocd team repo")
 	}
 
 	teamAppFilename := fmt.Sprintf("%s-team.yaml", team.Spec.TeamName)
 
 	if err := generateAndSaveTeamApp(fileAPI, team, teamAppFilename, tempILRepoDir); err != nil {
-		return ctrl.Result{}, err
+		teamErr := zerrors.NewTeamError(team.Spec.TeamName, err)
+		return ctrl.Result{}, perrors.Wrap(teamErr, "error generating team argocd app")
 	}
 
 	if err := generateAndSaveConfigWatchers(fileAPI, team, teamAppFilename, tempILRepoDir); err != nil {
-		return ctrl.Result{}, err
+		teamErr := zerrors.NewTeamError(team.Spec.TeamName, err)
+		return ctrl.Result{}, perrors.Wrap(teamErr, "error generating team config watchers")
 	}
 
 	commitInfo := git.CommitInfo{
@@ -156,7 +161,8 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	}
 	pushed, err := gitAPI.CommitAndPush(&commitInfo)
 	if err != nil {
-		return ctrl.Result{}, err
+		teamErr := zerrors.NewTeamError(team.Spec.TeamName, err)
+		return ctrl.Result{}, perrors.Wrap(teamErr, "error running commit and push")
 	}
 	if pushed {
 		r.Log.Info(
