@@ -26,6 +26,8 @@ type config struct {
 	DisableWebhooks   string
 	KubernetesCertDir string
 
+	Mode string
+
 	DisableEnvironmentFinalizer string
 	EnvironmentFinalizer        string
 
@@ -57,6 +59,8 @@ var Config = config{
 
 	DisableWebhooks:   getOr("DISABLE_WEBHOOKS", "false"),
 	KubernetesCertDir: os.Getenv("KUBERNETES_CERT_DIR"),
+
+	Mode: getOr("MODE", "cloud"),
 
 	EnvironmentStateConfigMap: "environment-state-cm",
 
