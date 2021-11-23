@@ -46,6 +46,8 @@ In this sample example we are **provisioning** an environment called **sandbox**
 
 Once your YAML is pushed, you will see a similar card on **zlifecycle dashboard**
 
+<br/>
+
 ![sample-dashboard](assets/images/sample-dashboard.png "Sample Dashboard")
 
 <br/>
