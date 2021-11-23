@@ -53,7 +53,9 @@ Once your YAML is pushed, you will see a similar card on **zlifecycle dashboard*
 <br/>
 
 * Click the required environment to navigate to the **DAG View**.
+
 <br/>
+
 ![sample-dag-view](assets/images/sample-dag-view.png "Sample DAG View")
 
 * As shown in the above image, with **autoApprove** as `false` once our environments plan completes our component now **waits for approval for provisioning**. Once at this page **click** on the component which you want to **approve**.
