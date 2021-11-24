@@ -21,7 +21,7 @@ metadata:
 spec:
   teamName: checkout
   envName: sandbox  
-  autoApprove: false #spec level
+  autoApprove: false # spec level
   components:
     - name: networking
       autoApprove: true # this will override the one at spec level
