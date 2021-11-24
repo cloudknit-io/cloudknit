@@ -18,6 +18,10 @@ import (
 	"strings"
 	"time"
 
+
+	"github.com/compuzest/zlifecycle-il-operator/controllers/apm/newrelic"
+	newrelic2 "github.com/newrelic/go-agent/v3/newrelic"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/zerrors"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/git"
@@ -68,16 +72,23 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	delayEnvironmentReconcileOnInitialRun(r.Log, 35)
 	start := time.Now()
 
+	nr := newrelic.GetApp()
+
 	// get environment from k8s cache
 	environment := &stablev1.Environment{}
 
 	exists, err := r.tryGetEnvironment(ctx, req, environment)
 	if err != nil {
-		envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, err)
-		return ctrl.Result{}, perrors.Wrap(envErr, "error getting environment from k8s cache")
+		envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error getting environment from k8s cache"))
+		return ctrl.Result{}, envErr
 	}
 	if !exists {
 		return ctrl.Result{}, nil
+	}
+	var tx *newrelic2.Transaction
+	if nr != nil {
+		tx = nr.StartTransaction(fmt.Sprintf("com.zlifecycle.environmentreconciler.%s.%s", environment.Spec.TeamName, environment.Spec.EnvName))
+		defer tx.End()
 	}
 
 	// service init
@@ -87,15 +98,17 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	fileAPI := file.NewOsFileService()
 	gitAPI, err := git.NewGoGit(ctx)
 	if err != nil {
-		envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, err)
-		return ctrl.Result{}, perrors.Wrap(envErr, "error instantiating git API")
+		envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error instantiating git API"))
+		noticeError(tx, envErr)
+		return ctrl.Result{}, envErr
 	}
 
 	// temp clone IL repo
 	tempILRepoDir, cleanup, err := git.CloneTemp(gitAPI, ilRepoURL)
 	if err != nil {
-		envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, err)
-		return ctrl.Result{}, perrors.Wrap(envErr, "error running git temp clone")
+		envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error running git temp clone"))
+		noticeError(tx, envErr)
+		return ctrl.Result{}, envErr
 	}
 	defer cleanup()
 
@@ -104,8 +117,9 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		finalizer := env.Config.EnvironmentFinalizer
 		finalizerCompleted, err := r.handleFinalizer(ctx, environment, finalizer, argocdAPI, argoworkflowAPI)
 		if err != nil {
-			envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, err)
-			return ctrl.Result{}, perrors.Wrap(envErr, "error handling finalizer")
+			envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error handling finalizer"))
+			noticeError(tx, envErr)
+			return ctrl.Result{}, envErr
 		}
 		if finalizerCompleted {
 			r.Log.Info(
@@ -125,12 +139,14 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 				// do manual retry without error
 				return reconcile.Result{RequeueAfter: time.Second * 1}, nil
 			}
-			envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, err)
-			return ctrl.Result{}, perrors.Wrap(envErr, "error updating environment status")
+			envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error updating environment status"))
+			noticeError(tx, envErr)
+			return ctrl.Result{}, envErr
 		}
 		if err := r.handleNonDeleteEvent(ctx, tempILRepoDir, environment, fileAPI, repoAPI); err != nil {
-			envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, err)
-			return ctrl.Result{}, perrors.Wrap(envErr, "error handling non-delete event")
+			envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error handling non-delete event"))
+			noticeError(tx, envErr)
+			return ctrl.Result{}, envErr
 		}
 	} else {
 		r.Log.Info(
@@ -149,8 +165,9 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		"isDeleteEvent", isDeleteEvent,
 	)
 	if err := generateAndSaveWorkflowOfWorkflows(fileAPI, environment, envComponentDirectory); err != nil {
-		envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, err)
-		return ctrl.Result{}, perrors.Wrap(envErr, "error generating workflow of workflows")
+		envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error generating workflow of workflows"))
+		noticeError(tx, envErr)
+		return ctrl.Result{}, envErr
 	}
 
 	commitInfo := git.CommitInfo{
@@ -160,14 +177,16 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	}
 	pushed, err := gitAPI.CommitAndPush(&commitInfo)
 	if err != nil {
-		envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, err)
-		return ctrl.Result{}, perrors.Wrap(envErr, "error running commit and push")
+		envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error running commit and push"))
+		noticeError(tx, envErr)
+		return ctrl.Result{}, envErr
 	}
 
 	if pushed {
 		if err := r.handleDirtyILState(argoworkflowAPI, environment); err != nil {
-			envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, err)
-			return ctrl.Result{}, perrors.Wrap(envErr, "error handling dirty IL state")
+			envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error handling dirty IL state"))
+			noticeError(tx, envErr)
+			return ctrl.Result{}, envErr
 		}
 	} else {
 		r.Log.Info(
@@ -184,8 +203,34 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		"team", environment.Spec.TeamName,
 		"environment", environment.Spec.EnvName,
 	)
+	if nr != nil {
+		nr.RecordCustomEvent(
+			fmt.Sprintf("com.zlifecycle.environmentreconcile.%s.%s", environment.Spec.TeamName, environment.Spec.EnvName),
+			map[string]interface{}{
+				"duration":    duration,
+				"team":        environment.Spec.TeamName,
+				"environment": environment.Spec.EnvName,
+			},
+		)
+	}
 
 	return ctrl.Result{}, nil
+}
+
+func noticeError(tx *newrelic2.Transaction, err *zerrors.EnvironmentError) {
+	if app := newrelic.GetApp(); app != nil {
+		app.RecordCustomMetric("com.zlifecycle.environmentreconciler.error", 1)
+	}
+	if tx != nil {
+		tx.NoticeError(newrelic2.Error{
+			Message: err.Error(),
+			Class:   "EnvironmentReconcilerError",
+			Attributes: map[string]interface{}{
+				"environment": err.Environment,
+				"team":        err.Team,
+			},
+		})
+	}
 }
 
 func (r *EnvironmentReconciler) tryGetEnvironment(ctx context.Context, req ctrl.Request, e *stablev1.Environment) (exists bool, err error) {
