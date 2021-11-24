@@ -7,3 +7,4 @@
 * [How to onboard a team]()
 * [How to approve](approval.md)
 * [How to add a Secret](secrets.md)
+* [How to use Reconcile](reconcile.md)
