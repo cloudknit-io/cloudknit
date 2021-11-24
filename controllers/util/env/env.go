@@ -14,8 +14,6 @@ type config struct {
 	ILRepoURL                     string
 	ILRepoSourceOwner             string
 
-	EnvironmentStateConfigMap string
-
 	GithubSvcAccntName  string
 	GithubSvcAccntEmail string
 	GitHubAuthToken     string
@@ -27,6 +25,9 @@ type config struct {
 	KubernetesCertDir string
 
 	Mode string
+
+	NewRelicAPIKey string
+	EnableNewRelic string
 
 	DisableEnvironmentFinalizer string
 	EnvironmentFinalizer        string
@@ -43,6 +44,8 @@ type config struct {
 	ArgoWorkflowsNamespace string
 
 	APIURL string
+
+	TelemetryEnvironment string
 }
 
 // Config exposes vars used throughout the operator.
@@ -62,7 +65,8 @@ var Config = config{
 
 	Mode: getOr("MODE", "cloud"),
 
-	EnvironmentStateConfigMap: "environment-state-cm",
+	NewRelicAPIKey: os.Getenv("NEW_RELIC_API_KEY"),
+	EnableNewRelic: getOr("ENABLE_NEW_RELIC", "false"),
 
 	GithubSvcAccntName:  "zLifecycle",
 	GithubSvcAccntEmail: "zLifecycle@compuzest.com",
@@ -86,6 +90,8 @@ var Config = config{
 	ArgoWorkflowsNamespace: "argocd",
 
 	APIURL: getOr("API_URL", "http://zlifecycle-api.zlifecycle-ui.svc.cluster.local"),
+
+	TelemetryEnvironment: getOr("TELEMETRY_ENVIRONMENT", "dev"),
 }
 
 func getOr(key string, defaultValue string) string {

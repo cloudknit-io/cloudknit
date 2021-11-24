@@ -28,7 +28,7 @@ func (e *EnvironmentError) Error() string {
 	return fmt.Sprintf("environment %s/%s: error %v", e.Team, e.Environment, e.Err)
 }
 
-func NewEnvironmentError(team string, environment string, err error) error {
+func NewEnvironmentError(team string, environment string, err error) *EnvironmentError {
 	return &EnvironmentError{
 		Team:        team,
 		Environment: environment,

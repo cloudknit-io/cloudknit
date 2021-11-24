@@ -387,6 +387,16 @@ github.com/modern-go/reflect2
 # github.com/monochromegane/go-gitignore v0.0.0-20200626010858-205db1a8cc00
 ## explicit
 github.com/monochromegane/go-gitignore
+# github.com/newrelic/go-agent/v3 v3.15.1
+## explicit; go 1.7
+github.com/newrelic/go-agent/v3/internal
+github.com/newrelic/go-agent/v3/internal/cat
+github.com/newrelic/go-agent/v3/internal/com_newrelic_trace_v1
+github.com/newrelic/go-agent/v3/internal/jsonx
+github.com/newrelic/go-agent/v3/internal/logger
+github.com/newrelic/go-agent/v3/internal/sysinfo
+github.com/newrelic/go-agent/v3/internal/utilization
+github.com/newrelic/go-agent/v3/newrelic
 # github.com/opencontainers/go-digest v1.0.0
 ## explicit; go 1.13
 github.com/opencontainers/go-digest

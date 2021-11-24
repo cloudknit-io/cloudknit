@@ -17,6 +17,8 @@ import (
 	"flag"
 	"os"
 
+	"github.com/compuzest/zlifecycle-il-operator/controllers/apm/newrelic"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/gitreconciler"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 
@@ -71,13 +73,24 @@ func main() {
 		os.Exit(1)
 	}
 
+	// NewRelic
+	if env.Config.EnableNewRelic == "true" {
+		setupLog.Info("Initializing New Relic integration")
+		_, err := newrelic.InitNewRelic()
+		if err != nil {
+			setupLog.Error(err, "failed to init new relic")
+			os.Exit(1)
+		}
+	}
+
+	// Git reconciler
 	ctx := context.Background()
-	fileReconciler := gitreconciler.NewReconciler(
+	gitReconciler := gitreconciler.NewReconciler(
 		ctx,
 		ctrl.Log.WithName("GitReconciler"),
 		mgr.GetClient(),
 	)
-	if err := fileReconciler.Start(); err != nil {
+	if err := gitReconciler.Start(); err != nil {
 		setupLog.Error(err, "failed to start git reconciler")
 	}
 
