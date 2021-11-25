@@ -98,7 +98,7 @@ type AssumeRole struct {
 type EnvironmentSpec struct {
 	TeamName    					string                  `json:"teamName"`
 	EnvName     					string                  `json:"envName"`
-	SelectiveReconcile 		SelectiveReconcile     	`json:"selectiveReconcile,omitempty"`
+	SelectiveReconcile 		*SelectiveReconcile     `json:"selectiveReconcile,omitempty"`
 	Description 					string                  `json:"description,omitempty"`
 	AutoApprove 					bool                    `json:"autoApprove,omitempty"`
 	Teardown    					bool                    `json:"teardown,omitempty"`

@@ -227,12 +227,34 @@ func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment) *workf
 	return w
 }
 
-func skipComponent(destroyProtection bool, destroyFlag bool,  selectiveReconcile stablev1.SelectiveReconcile, tags []*stablev1.Tags) string {
+func skipComponent(destroyProtection bool, destroyFlag bool,  selectiveReconcile *stablev1.SelectiveReconcile, tags []*stablev1.Tags) string {
+	noSkipStatus := "noSkip"
+	selectiveReconcileStatus := "selectiveReconcile"
+	destroyProtectionStatus := "destroyProtection"
+
 	if destroyProtection && destroyFlag {
-		return "destroyProtection"
+		return destroyProtectionStatus
 	}
 
-	return "noSkip"
+	if selectiveReconcile == nil {
+		return noSkipStatus
+	}
+
+	if tags == nil {
+		return selectiveReconcileStatus
+	}
+
+	for _, tag := range tags {
+		if tag.Name == selectiveReconcile.TagName {
+			for _, sTag := range selectiveReconcile.TagValues {
+				if sTag == tag.Value {
+					return noSkipStatus
+				}
+			}
+		}
+	}
+
+	return selectiveReconcileStatus
 }
 
 func generateAuditTask(environment *stablev1.Environment, destroyAll bool, phase string, dependencies []string) workflow.DAGTask {
