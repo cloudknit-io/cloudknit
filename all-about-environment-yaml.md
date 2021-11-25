@@ -1,19 +1,18 @@
 # Environment YAML
 
+An environment YAML is the starting point when provisioning the environment, it provides zlifecycle the meta information required to **create** and **deploy** the **components**, **modules**, etc.
+
 An Environment YAML follows the following template:
 
 - [Environment YAML](#environment-yaml)
     - [Metdata](#metdata)
     - [Spec](#spec)
     - [Components](#components)
-      - [static-assets](#static-assets)
-      - [networking](#networking)
-      - [platform-eks](#platform-eks)
-      - [eks-addons](#eks-addons)
-      - [platform-ec2](#platform-ec2)
-    - [Final YAML](#final-yaml)
+    - [Examples](#examples)
 
 Our YAML file always starts with following yaml:
+
+with `kind` property being `environment`, and for now `apiVersion` is always `stable.compuzest.com/v1`
 
 ```yaml
 apiVersion: stable.compuzest.com/v1
@@ -22,10 +21,52 @@ kind: Environment
 
 ### Metdata
 
-Metadata scope contains name of your environment which follows the following pattern `{orgName}-{teamName}-{environmentName}`
+- [Name](#metadata-name)
+- [Namespace](#metadata-namespace)
+- [Usage](#metadata-usage)
+
+---
+
+<h4 style="font-weight: 200; letter-spacing: 2px">
+  Overview
+</h4>
+
+Metadata propery contains the `name` of your `environment` along with the `namespace` property which for now is always `zlifecycle`
+
+<div style="background-color: #ccc; height: 1px"></div>
+
+<h4 id="metadata-name" style="font-weight: 200; letter-spacing: 2px;">
+  Name Property
+</h4>
+
+The name property should be unique for every environment, to mantain that we follow following naming convention:-
+
+`{orgName}-{teamName}-{environmentName}`
 
 **orgName** is your organisation's name.
 **teamName** and **environmentName** are provided in the [spec](#spec) scope.
+
+```yaml
+name: orgtech-cloudsync-demo
+```
+
+<div style="background-color: #ccc; height: 1px"></div>
+
+<h4 id="metadata-namespace" style="font-weight: 200; letter-spacing: 2px;">
+  Namespace Property
+</h4>
+
+Namespace is always `zlifecycle` for every yaml you create.
+
+```yaml
+namespace: zlifecycle
+```
+
+<div style="background-color: #ccc; height: 1px"></div>
+
+<h4 id="metadata-usage" style="font-weight: 200; letter-spacing: 2px;">
+  Usage
+</h4>
 
 ```yaml
 metadata:
@@ -35,234 +76,458 @@ metadata:
   namespace: zlifecycle
 ```
 
+---
+
 ### Spec
 
-Spec consists of following parameters:
-`teamName`: `string`
-`envName`: `string`
-`autoApprove`: `boolean` [`OPTIONAL`]
-`teardown`: `boolean` [`OPTIONAL`]
-[`components`](#components): `Array`
+  - [Team Name](#team-name)
+  - [Environment Name](#environment-name)
+  - [Auto Approve](#auto-approve)
+  - [Teardown](#teardown)
+  - [Components](#spec-components)
+
+<h4 style="font-weight: 200; letter-spacing: 2px">
+  Overview
+</h4>
+
+Spec contains the information about **HOW** to provision an environment.
+
+<div style="background-color: #ccc; height: 1px"></div>
+
+<h4 id="team-name" style="font-weight: 200; letter-spacing: 2px">
+  Team Name
+</h4>
+
+Name of the team CRD to which this environment belongs to (also used to create [metadata.name](#metdata))
 
 ```yaml
-# name of the team CRD which this environment belongs to (also used to create metadata.name)
 teamName: cloudsync
-
-# name of the environment (used to create metadata.name)
-envName: demo
-
-# OPTIONAL: defaulted to false
-# Skip approval process on zLifecycle UI
-autoApprove: true
-
-# OPTIONAL: use this flag for destroying an environment
-
-# when creating a new environment, it must be omitted or set to `false`
-
-# environment teardown is composed as a 2-step process
-# Step 1. Update the `teardown` flag to `true` and wait for the environment to get destroyed (monitor progress on zLifecycle UI)
-# Step 2. Delete the Environment yaml from github for permanent deletion of an environment
-
-# NOTE: without the second step, you could use `teardown` to provision and restore temporary environments by toggling its value
-teardown: false
-components: [] # Array of components
 ```
+
+<div style="background-color: #ccc; height: 1px"></div>
+
+<h4 id="environment-name" style="font-weight: 200; letter-spacing: 2px">
+  Environment Name
+</h4>
+
+Name of the environment (used to create [metadata.name](#metdata))
+
+```yaml
+envName: demo
+```
+
+<div style="background-color: #ccc; height: 1px"></div>
+
+<h4 id="auto-approve" style="font-weight: 200; letter-spacing: 2px">
+  Auto Approve
+</h4>
+
+When we provision or destroy an environment, by default, zlifecycle UI always asks for approval from the end-user.
+
+This property allows zlifecycle to skip the approval process.
+
+**OPTIONAL**: defaulted to false if not provided
+
+```yaml
+autoApprove: true
+```
+
+<div style="background-color: #ccc; height: 1px"></div>
+
+<h4 id="teardown" style="font-weight: 200; letter-spacing: 2px">
+  Teardown
+</h4>
+
+This property tells zlifecycle to destroy an environment, so if you are **provisioning** an environment **remember to either remove it or set it to false**
+
+**OPTIONAL**: default value is false
+
+You can find more information about teardown [here](teardown.md).
+
+```yaml
+teardown: true
+```
+
+<div style="background-color: #ccc; height: 1px"></div>
+
+<h4 id="spec-components" style="font-weight: 200; letter-spacing: 2px">
+  Components
+</h4>
+
+This property contains an array of components that an environment is comprised of.
+
+```yaml
+components: []
+```
+
+See [components section](#components)
+
+<div style="background-color: #ccc; height: 1px"></div>
+
+<h4 style="font-weight: 200; letter-spacing: 2px">
+  Usage
+</h4>
+
+```yaml
+teamName: cloudsync
+envName: demo
+autoApprove: true
+teardown: false
+components: []
+```
+
+---
 
 ### Components
 
+  - [Name](#component-name)
+  - [Type](#component-type)
+  - [Destroy](#component-destroy)
+  - [Destroy Protection](#component-protection)
+  - [AWS Provider](#component-aws-provider)
+  - [Modules](#component-modules)
+  - [Outputs](#component-outputs)
+  - [Variables](#component-variables)
+  - [Secrets](#component-secrets)
+  - [Overlay Data](#component-overlay-data)
+  - [Overlay Files](#component-overlay-files)
+  - [Depends On](#component-depends-on)
+
 This is the most intimidating part of your environment yaml file. Let's decipher it step by step.
 
-A component consists of the following properties:
+<h4 id="component-name" style="font-weight: 200; letter-spacing: 2px">
+  Name
+</h4>
 
-Properties such as `name`, `terraform` are self explanatory.
-
-**Destroy** property takes in a boolean value, telling zlifecycle whether to destroy the environment or not. This property overrides **teardown** value provided at [spec](#spec) level, if it is set to `true`.
-
-**DestroyProtection** property comes into use when we set the **teardown** [see [spec](#spec)] property to true. With this property set to true, it protects this component from being destroyed while tearing down an environment.
-
-#### static-assets
+Name of the environment component
 
 ```yaml
-# array of environment components
-components:
-  # name of the environment component
-  - name: static-assets
+name: static-assets
+```
 
-    # `terraform` is currently the only supported type
+<div style="background-color: #ccc; height: 1px"></div>
+
+<h4 id="component-type" style="font-weight: 200; letter-spacing: 2px">
+  Type
+</h4>
+
+Terraform is currently the only supported type
+
+```yaml
+type: terraform
+```
+
+<div style="background-color: #ccc; height: 1px"></div>
+
+<h4 id="component-destroy" style="font-weight: 200; letter-spacing: 2px">
+  Destroy
+</h4>
+
+This property is similar to `teardown` property of [spec scope](#spec), the only difference being, it applies on environment component level.
+
+**NOTE**: This property overrides the teardown property at the spec level, which means that if teardown is false and destroy is true, the current component gets destroyed.
+
+**OPTIONAL**: Default value is false.
+
+You can find more information about teardown [here](teardown.md)
+
+```yaml
+destroy: false
+```
+
+<div style="background-color: #ccc; height: 1px"></div>
+
+<h4 id="component-protection" style="font-weight: 200; letter-spacing: 2px">
+  Destroy Protection
+</h4>
+
+This property tells zlifecycle to skip those components during the teardown process that have this property set to true.
+
+**OPTIONAL**: Default value is false
+
+```yaml
+destroyProtection: true
+```
+
+<div style="background-color: #ccc; height: 1px"></div>
+
+<h4 id="component-aws-provider" style="font-weight: 200; letter-spacing: 2px">
+  AWS Provider (Optional)
+</h4>
+
+Below is an example portraying how to add an aws provider configuration to a component.
+
+```yaml
+# OPTIONAL: Configuration block for AWS provider
+aws:
+  # OPTIONAL: AWS region
+  region: us-east-1
+  # OPTIONAL: Configuration block for AWS Assume Role
+  assumeRole:
+    # Role ARN which to assume
+    roleArn: arn:aws:iam::account-id:role/zl-allow-assume-networking
+    # OPTIONAL: External ID
+    externalId: test_id1
+    # OPTIONAL: Session Name
+    sessionName: some_session
+```
+
+<div style="background-color: #ccc; height: 1px"></div>
+
+<h4 id="component-modules" style="font-weight: 200; letter-spacing: 2px">
+  Modules
+</h4>
+
+- [Public Module](#public-module)
+- [Private Module](#private-module)
+  <br/>
+
+- <h5 id="public-module">Public Module</h5> 
+    Currently only AWS modules are supported, which one can reference from https://registry.terraform.io/modules/terraform-aws-modules/s3-bucket/aws/latest
+
+  - <h6>Path (Optional)</h6>
+    If the actual module is in a subdirectory (MonoRepo with multiple terraform modules), use `path` to specify the module
+    ```yaml
+    path: path/to/module
+    ```
+
+  <h5 style="font-weight: 200; letter-spacing: 2px">Usage</h5>
+
+  ```yaml
+  module:
+    source: aws
+    name: s3-bucket
+    path: path/to/module
+  ```
+
+- <h5 id="private-module">Private Module</h5>
+    For private modules you need to specify full path to the terraform module.
+    <h5 style="font-weight: 200; letter-spacing: 2px">Usage</h5>
+    
+    ```yaml
+      module:
+        source: "git@github.com:SebastianUA/terraform-aws-sagemaker"
+    ```
+
+<h4 id="component-outputs" style="font-weight: 200; letter-spacing: 2px">Outputs</h4>
+
+If the module supports outputs, name them here so they can be later referenced in `variables` block using `valueFrom`
+
+<h5 style="font-weight: 200; letter-spacing: 2px">Usage</h5>
+
+```yaml
+outputs:
+  - name: bucket_arn
+```
+
+<div style="background-color: #ccc; height: 1px"></div>
+
+<h4 id="component-variables" style="font-weight: 200; letter-spacing: 2px">Variables (Optional)</h4>
+
+```yaml
+variables: []
+```
+
+Inline variables (will get injected into the terraform module when TF code is generated). This array is a combination of `name` and `value` or `valueFrom`.
+
+  <br/>
+
+- **Value**: String type.
+
+- **ValueFrom**: reference an output defined in a previous module using [`outputs`](#module-outputs) block
+
+<h5 style="font-weight: 200; letter-spacing: 2px">Usage</h5>
+
+```yaml
+variables:
+  - name: bucket
+    value: "org-tech-cloudsync-demo-static-assets"
+  - name: acl
+    valueFrom: s3-common.bucket_acl
+```
+
+<div style="background-color: #ccc; height: 1px"></div>
+
+<h4 id="component-secrets"  style="font-weight: 200; letter-spacing: 2px">Secrets (Optional)</h4>
+
+```yaml
+secrets: []
+```
+
+References secret values which are added through the zLifecycle UI.
+
+See [Secrets](secrets.md) Section.
+
+  <br/>
+
+- **Name**: Name of the terraform module variable.
+- **Key**: Secret name entered in zLifecycle UI settings page.
+- **Scope**: Scope configures secret scope granularity.
+
+  - Org
+  - Team
+  - Environment
+
+<h5 style="font-weight: 200; letter-spacing: 2px">Usage</h5>
+
+```yaml
+secrets:
+  - name: bucket
+    key: s3-name
+    scope: org
+```
+
+<div style="background-color: #ccc; height: 1px"></div>
+
+<h4 id="component-overlay-data" style="font-weight: 200; letter-spacing: 2px">Overlay Data (Optional)</h4>
+
+```yaml
+overlayData: []
+```
+
+Array of files to be generated and bundled with the environment component.
+
+- **Name**: Name of the file.
+- **Data**: Content of the file (generally it is a multi-line string).
+
+<h5 style="font-weight: 200; letter-spacing: 2px">Usage</h5>
+
+```yaml
+overlayData:
+  - name: cloud-init.sh
+    data: |
+      #!/bin/sh
+      echo "Starting cloud init"
+```
+
+<div style="background-color: #ccc; height: 1px"></div>
+
+<h4 id="component-overlay-files" style="font-weight: 200; letter-spacing: 2px">Overlay Files (Optional)</h4>
+
+```yaml
+overlayFiles: []
+```
+
+Array of external files which will be bundled with the environment component
+
+- **Source**: Repo where the file is located.
+- **Paths (array)**: Paths to files in the `source` repo. Types of paths:-
+  - _Directory_
+  - _Individual Overlay Files_
+- **Ref (Optional)**: Reference to the branch, commit, head etc from where we will pull the file.
+
+<h5 style="font-weight: 200; letter-spacing: 2px">Usage</h5>
+
+```yaml
+overlayFiles:
+  - source: "git@github.com:org-tech/cloudsync-config.git"
+    paths:
+      - demo/files/
+      - demo/overlay.txt
+      - demo/overlay2.txt
+    ref: HEAD
+```
+
+<div style="background-color: #ccc; height: 1px"></div>
+
+<h4 id="component-depends-on" style="font-weight: 200; letter-spacing: 2px">Depends On</h4>
+
+```yaml
+dependsOn: []
+```
+
+Add module dependencies (array of environment component names), which are to be resolved before the current component is processed.
+
+Array includes [name](#component-name) property of the component.
+
+<h5 style="font-weight: 200; letter-spacing: 2px">Usage</h5>
+
+```yaml
+dependsOn: [networking]
+```
+
+---
+
+### Examples
+
+- ##### networking
+
+  ```yaml
+  - name: networking
     type: terraform
-
-    # OPTIONAL: same logic as global `teardown`, here it applies on environment component level (default is `false`)
-    destroy: false
-
-    # OPTIONAL: If set to true, do not run destroy actions against this component (default is `false`)
-    destroyProtection: true
-
-    # OPTIONAL: Configuration block for AWS provider
-    aws:
-      # OPTIONAL: AWS region
-      region: us-east-1
-      # OPTIONAL: Configuration block for AWS Assume Role
-      assumeRole:
-        # Role ARN which to assume
-        roleArn: arn:aws:iam::account-id:role/zl-allow-assume-networking
-        # OPTIONAL: External ID
-        externalId: test_id1
-        # OPTIONAL: Session Name
-        sessionName: some_session
-
-
-    # you can either reference a public or private module
-
-    # for public AWS modules
     module:
-      # `aws` is currently the only supported type
       source: aws
-
-      # public terraform modules can be referenced here
-      # this references https://registry.terraform.io/modules/terraform-aws-modules/s3-bucket/aws/latest
-      name: s3-bucket
-
-      # OPTIONAL: if the actual module is in a subdirectory (monorepo with multiple terraform modules), use `path` to specify where is the module
-      path: path/to/module
-
-    # for private AWS modules
-    module:
-    # full path to the terraform module
-    source: "git@github.com:SebastianUA/terraform-aws-sagemaker"
-
+      name: vpc
+    variablesFile:
+      source: "git@github.com:org-tech/cloudsync-config.git"
+      path: "demo/tfvars/networking.tfvars"
     # if the module supports outputs, name them here so they can be later referenced in `variables` block using `valueFrom`
     outputs:
-      - name: bucket_arn
+      - name: private_subnets
+  ```
 
-    # OPTIONAL: inline variables (will get injected into the terraform module when TF code is generated)
+- ##### platform-eks
+
+  ```yaml
+  - name: platform-eks
+    type: terraform
+    # add module dependencies (array of environment component names)
+    dependsOn: [networking]
+    module:
+      source: aws
+      name: s3-bucket
+    # instead of inline variables, pass a tfvars file
+    variablesFile:
+      # repo where the file belongs
+      source: "git@github.com:org-tech/cloudsync-config.git"
+      # path to the file in the `source` repo
+      path: "demo/tfvars/platform-eks.tfvars"
+  ```
+
+- ##### eks-addons
+
+  ```yaml
+  - name: eks-addons
+    type: terraform
+    dependsOn: [platform-eks]
+    module:
+      source: aws
+      name: s3-bucket
+    variablesFile:
+      source: "git@github.com:org-tech/cloudsync-config.git"
+      path: "demo/tfvars/eks-addons.tfvars"
+  ```
+
+- ##### platform-ec2
+
+  ```yaml
+  - name: platform-ec2
+    type: terraform
+    dependsOn: [networking]
+    module:
+      source: aws
+      name: ec2-instance
+    # example of using both inline variables and tfvars file
     variables:
-      # array of `name -> value` objects
-      - name: bucket
-        value: "org-tech-cloudsync-demo-static-assets"
+      - name: subnet_id
         # example of how to fetch a variable from `outputs`
-      - name: acl
-        # reference an output defined in a previous module using `outputs` block
-        valueFrom: s3-common.bucket_acl
+        valueFrom: networking.private_subnets[0]
+    variablesFile:
+      source: "git@github.com:org-tech/cloudsync-config.git"
+      path: "demo/tfvars/ec2.tfvars"
+  ```
 
+- ##### Full Fledged Yaml
 
-    # OPTIONAL: reference secret values which are added through the zLifecycle UI
-    secrets:
-      # name of the terraform module variable
-      - name: bucket
-        # secret name entered in zLifecycle UI settings page
-        key: s3-name
-        # scope configures secret scope granularity
-        # valid scopes are org, team, environment and component
-        scope: org
-
-
-    # OPTIONAL: array of files to be generated and bundled with the environment component
-    overlayData:
-      # name of the file
-      - name: cloud-init.sh
-        # content of the file (generally it is a multi-line string)
-        data: |
-          #!/bin/sh
-          echo "Starting cloud init"
-
-
-    # OPTIONAL: external files which will be bundled with the environment component
-    overlayFiles:
-      # repo where the file is located
-      - source: "git@github.com:org-tech/cloudsync-config.git"
-        # paths to files in the `source` repo
-        paths:
-          # directory with overlay files
-          - demo/files/
-          # individual overlay files
-          - demo/overlay.txt
-          - demo/overlay2.txt
-        # OPTIONAL: from which ref to pull the file (HEAD, branch name, commit SHA...)
-        ref: HEAD
-```
-
-#### networking
-
-```yaml
-- name: networking
-  type: terraform
-  module:
-    source: aws
-    name: vpc
-  variablesFile:
-    source: "git@github.com:org-tech/cloudsync-config.git"
-    path: "demo/tfvars/networking.tfvars"
-  # if the module supports outputs, name them here so they can be later referenced in `variables` block using `valueFrom`
-  outputs:
-    - name: private_subnets
-```
-
-#### platform-eks
-
-```yaml
-- name: platform-eks
-  type: terraform
-  # add module dependencies (array of environment component names)
-  dependsOn: [networking]
-  module:
-    source: aws
-    name: s3-bucket
-  # instead of inline variables, pass a tfvars file
-  variablesFile:
-    # repo where the file belongs
-    source: "git@github.com:org-tech/cloudsync-config.git"
-    # path to the file in the `source` repo
-    path: "demo/tfvars/platform-eks.tfvars"
-```
-
-#### eks-addons
-
-```yaml
-- name: eks-addons
-  type: terraform
-  dependsOn: [platform-eks]
-  module:
-    source: aws
-    name: s3-bucket
-  variablesFile:
-    source: "git@github.com:org-tech/cloudsync-config.git"
-    path: "demo/tfvars/eks-addons.tfvars"
-```
-
-#### platform-ec2
-
-```yaml
-- name: platform-ec2
-  type: terraform
-  dependsOn: [networking]
-  module:
-    source: aws
-    name: ec2-instance
-  # example of using both inline variables and tfvars file
-  variables:
-    - name: subnet_id
-      # example of how to fetch a variable from `outputs`
-      valueFrom: networking.private_subnets[0]
-  variablesFile:
-    source: "git@github.com:org-tech/cloudsync-config.git"
-    path: "demo/tfvars/ec2.tfvars"
-```
-
-### Final YAML
-
-The final yaml would result into something similar like the example given below.
-
-```yaml
-apiVersion: stable.compuzest.com/v1
-kind: Environment
-metadata:
+  ```yaml
+  apiVersion: stable.compuzest.com/v1
+  kind: Environment
+  metadata:
   name: org-tech-cloudsync-demo
   namespace: zlifecycle
-spec:
+  spec:
   teamName: cloudsync
   envName: demo
-  autoApprove: true # OPTIONAL
-  teardown: false # OPTIONAL (Not required when provisioning environment)
   components:
     - name: static-assets
       type: terraform
@@ -283,7 +548,7 @@ spec:
         - name: bucket
           value: "org-tech-cloudsync-demo-static-assets"
         - name: acl
-          valueFrom: s3-common.bucket_acl
+          valueFrom: s3-bucket.bucket_arn
       secrets:
         - name: bucket
           key: s3-name
@@ -294,7 +559,7 @@ spec:
             #!/bin/sh
             echo "Starting cloud init"
       overlayFiles:
-        - source: "git@github.com:org-tech/cloudsync-config.git"          
+        - source: "git@github.com:org-tech/cloudsync-config.git"
           paths:
             - demo/files/
             - demo/overlay.txt
@@ -340,4 +605,6 @@ spec:
       variablesFile:
         source: "git@github.com:org-tech/cloudsync-config.git"
         path: "demo/tfvars/ec2.tfvars"
-```
+  ```
+
+  ***
