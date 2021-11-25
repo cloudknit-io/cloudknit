@@ -171,8 +171,8 @@ func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment) *workf
 				Value: AnyStringPointer(autoApproveFlag),
 			},
 			{
-				Name:  "destroy_protection",
-				Value: AnyStringPointer(ec.DestroyProtection),
+				Name:  "skip_component",
+				Value: AnyStringPointer(skipComponent(ec.DestroyProtection, destroyFlag, environment.Spec.SelectiveReconcile, ec.Tags)),
 			},
 		}
 
@@ -225,6 +225,14 @@ func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment) *workf
 	}
 
 	return w
+}
+
+func skipComponent(destroyProtection bool, destroyFlag bool,  selectiveReconcile stablev1.SelectiveReconcile, tags []*stablev1.Tags) string {
+	if destroyProtection && destroyFlag {
+		return "destroyProtection"
+	}
+
+	return "false"
 }
 
 func generateAuditTask(environment *stablev1.Environment, destroyAll bool, phase string, dependencies []string) workflow.DAGTask {
