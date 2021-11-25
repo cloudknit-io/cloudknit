@@ -2,8 +2,6 @@
 
 An environment YAML is the starting point when provisioning the environment, it provides zlifecycle the meta information required to **create** and **deploy** the **components**, **modules**, etc.
 
-An Environment YAML follows the following template:
-
 - [Environment YAML](#environment-yaml)
     - [Metdata](#metdata)
     - [Spec](#spec)
@@ -289,6 +287,7 @@ aws:
 
   - <h6>Path (Optional)</h6>
     If the actual module is in a subdirectory (MonoRepo with multiple terraform modules), use `path` to specify the module
+
     ```yaml
     path: path/to/module
     ```
