@@ -24,7 +24,12 @@ When Environment CRD changes and you want to promote changes to an existing zLif
 
 ### Delete existing Environment CRs
 1. Update existing Environment CRs to remove finalizer using below command:
-`b
+
+```bash
+kubectl get environments -n zlifecycle | awk '//{print $1}' | xargs kubectl patch environment  -p '{"metadata":{"finalizers":[]}}' --type=merge -n zlifecycle
+```
+
+2. 
 
 ### Running the operator
 
