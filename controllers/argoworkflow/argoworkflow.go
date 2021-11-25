@@ -241,20 +241,30 @@ func skipComponent(destroyProtection bool, destroyFlag bool,  selectiveReconcile
 	}
 
 	if tags == nil {
-		return selectiveReconcileStatus
+		if selectiveReconcile.SkipMode {
+			return noSkipStatus
+		} else {
+			return selectiveReconcileStatus
+		}
 	}
 
 	for _, tag := range tags {
 		if tag.Name == selectiveReconcile.TagName {
 			for _, sTag := range selectiveReconcile.TagValues {
-				if sTag == tag.Value {
+				if selectiveReconcile.SkipMode && sTag == tag.Value {
+					return selectiveReconcileStatus
+				} else if !selectiveReconcile.SkipMode && sTag == tag.Value {
 					return noSkipStatus
 				}
 			}
 		}
 	}
 
-	return selectiveReconcileStatus
+	if selectiveReconcile.SkipMode {
+		return noSkipStatus
+	} else {
+		return selectiveReconcileStatus
+	}
 }
 
 func generateAuditTask(environment *stablev1.Environment, destroyAll bool, phase string, dependencies []string) workflow.DAGTask {
