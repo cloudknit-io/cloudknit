@@ -7,7 +7,7 @@ reconcile_id=$6
 config_reconcile_id=$7
 is_destroy=$8
 phase=$9
-destroy_protection=${10}
+skip_component=${10}
 
 team_env_name=$team_name-$env_name
 team_env_config_name=$team_name-$env_name-$config_name
@@ -22,11 +22,15 @@ if [ $config_reconcile_id -eq 0 ]; then
     config_reconcile_id=null
 fi
 
-if [[ $is_destroy = true -a $destroy_protection = true ]]; then
+if [[ $skip_component != 'noSkip' ]]; then
+    config_status='skipped'
+    if [[ $skip_component = 'selectiveReconcile' ]]; then
+        config_status='skipped_reconcile'
+    fi
     sh /argocd/login.sh
-    data='{"metadata":{"labels":{"component_status":"skipped"}}}'
+    
+    data='{"metadata":{"labels":{"component_status":"'$config_status'"}}}'
     argocd app patch $team_env_config_name --patch $data --type merge >null
-    config_status='Skipped'
 fi
 
 component_payload='[{"id" : '$config_reconcile_id', "name" : "'$team_env_config_name'", "status" : "'$config_status'", "startDateTime" : "'$start_date'", "endDateTime" : '$end_date'}]'
