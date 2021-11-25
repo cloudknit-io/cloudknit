@@ -232,7 +232,7 @@ func skipComponent(destroyProtection bool, destroyFlag bool,  selectiveReconcile
 		return "destroyProtection"
 	}
 
-	return "false"
+	return "noSkip"
 }
 
 func generateAuditTask(environment *stablev1.Environment, destroyAll bool, phase string, dependencies []string) workflow.DAGTask {
