@@ -184,6 +184,21 @@ spec:
                 type: string
               envName:
                 type: string
+              selectiveReconcile:
+                description: SelectiveReconcile lets you reconcile only selected Components
+                properties:
+                  skipMode:
+                    type: boolean
+                  tagName:
+                    type: string
+                  tagValues:
+                    items:
+                      type: string
+                    type: array
+                required:
+                - tagName
+                - tagValues
+                type: object
               teamName:
                 type: string
               teardown:
