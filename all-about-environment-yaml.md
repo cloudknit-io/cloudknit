@@ -180,6 +180,8 @@ components: []
 
 ### Components
 
+YAML Properties:-
+
   - [Name](#component-name)
   - [Type](#component-type)
   - [Destroy](#component-destroy)
