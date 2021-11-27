@@ -24,7 +24,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// GenerateWorkflowOfWorkflows create WoW
+// GenerateWorkflowOfWorkflows create WoW.
 func GenerateWorkflowOfWorkflows(environment *stablev1.Environment) *workflow.Workflow {
 	workflowTemplate := "terraform-provision-template"
 
@@ -80,6 +80,7 @@ func GenerateWorkflowOfWorkflows(environment *stablev1.Environment) *workflow.Wo
 		},
 		Spec: workflow.WorkflowSpec{
 			Entrypoint: "main",
+			OnExit:     "exit-handler",
 			Templates: []workflow.Template{
 				{
 					Name: "main",
@@ -87,6 +88,7 @@ func GenerateWorkflowOfWorkflows(environment *stablev1.Environment) *workflow.Wo
 						Tasks: tasks,
 					},
 				},
+				exitHandler(environment),
 			},
 		},
 	}
@@ -208,7 +210,8 @@ func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment) *workf
 		},
 		Spec: workflow.WorkflowSpec{
 			Entrypoint: "main",
-			PodGC:      &workflow.PodGC{Strategy: workflow.PodGCStrategy(workflow.PodGCOnPodSuccess)},
+			OnExit:     "exit-handler",
+			PodGC:      &workflow.PodGC{Strategy: workflow.PodGCOnPodSuccess},
 			Templates: []workflow.Template{
 				{
 					Name: "main",
@@ -216,6 +219,7 @@ func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment) *workf
 						Tasks: tasks,
 					},
 				},
+				exitHandler(environment),
 			},
 		},
 		Status: workflow.WorkflowStatus{
@@ -227,7 +231,50 @@ func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment) *workf
 	return w
 }
 
-func skipComponent(destroyProtection bool, destroyFlag bool,  selectiveReconcile *stablev1.SelectiveReconcile, tags []*stablev1.Tags) string {
+func exitHandler(e *stablev1.Environment) workflow.Template {
+	return workflow.Template{
+		Name: "exit-handler",
+		Steps: []workflow.ParallelSteps{
+			{
+				Steps: []workflow.WorkflowStep{
+					{
+						Name: "exit-handler",
+						TemplateRef: &workflow.TemplateRef{
+							Name:     "slack-notification",
+							Template: "send-completion",
+						},
+						Arguments: workflow.Arguments{
+							Parameters: []workflow.Parameter{
+								{
+									Name:  "WORKFLOW_STATUS",
+									Value: AnyStringPointer("{{workflow.status}}"),
+								},
+								{
+									Name:  "WORKFLOW_NAME",
+									Value: AnyStringPointer("{{workflow.name}}"),
+								},
+								{
+									Name:  "SLACK_CHANNEL",
+									Value: AnyStringPointer(env.Config.SlackAlertChannel),
+								},
+								{
+									Name:  "WORKFLOW_TEAM",
+									Value: AnyStringPointer(e.Spec.TeamName),
+								},
+								{
+									Name:  "WORKFLOW_ENVIRONMENT",
+									Value: AnyStringPointer(e.Spec.EnvName),
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func skipComponent(destroyProtection bool, destroyFlag bool, selectiveReconcile *stablev1.SelectiveReconcile, tags []*stablev1.Tags) string {
 	noSkipStatus := "noSkip"
 	selectiveReconcileStatus := "selectiveReconcile"
 	destroyProtectionStatus := "destroyProtection"

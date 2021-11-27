@@ -46,6 +46,8 @@ type config struct {
 	APIURL string
 
 	TelemetryEnvironment string
+
+	SlackAlertChannel string
 }
 
 // Config exposes vars used throughout the operator.
@@ -92,6 +94,8 @@ var Config = config{
 	APIURL: getOr("API_URL", "http://zlifecycle-api.zlifecycle-ui.svc.cluster.local"),
 
 	TelemetryEnvironment: getOr("TELEMETRY_ENVIRONMENT", "dev"),
+
+	SlackAlertChannel: getOr("SLACK_ALERT_CHANNEL", "#dev-workflow-alerts"),
 }
 
 func getOr(key string, defaultValue string) string {
