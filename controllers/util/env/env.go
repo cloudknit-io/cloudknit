@@ -47,7 +47,7 @@ type config struct {
 
 	TelemetryEnvironment string
 
-	SlackAlertChannel string
+	SlackWebhookURL string
 }
 
 // Config exposes vars used throughout the operator.
@@ -95,7 +95,7 @@ var Config = config{
 
 	TelemetryEnvironment: getOr("TELEMETRY_ENVIRONMENT", "dev"),
 
-	SlackAlertChannel: getOr("SLACK_ALERT_CHANNEL", "#dev-workflow-alerts"),
+	SlackWebhookURL: getOr("SLACK_WEBHOOK_URL", "https://hooks.slack.com/services/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"),
 }
 
 func getOr(key string, defaultValue string) string {

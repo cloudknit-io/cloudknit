@@ -255,8 +255,8 @@ func exitHandler(e *stablev1.Environment) workflow.Template {
 									Value: AnyStringPointer("{{workflow.name}}"),
 								},
 								{
-									Name:  "SLACK_CHANNEL",
-									Value: AnyStringPointer(env.Config.SlackAlertChannel),
+									Name:  "SLACK_WEBHOOK_URL",
+									Value: AnyStringPointer(env.Config.SlackWebhookURL),
 								},
 								{
 									Name:  "WORKFLOW_TEAM",
