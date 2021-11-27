@@ -13,8 +13,6 @@
 package argoworkflow_test
 
 import (
-	"testing"
-
 	"github.com/compuzest/zlifecycle-il-operator/controllers/argoworkflow"
 	"testing"
 
