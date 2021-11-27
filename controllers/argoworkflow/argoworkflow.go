@@ -243,6 +243,7 @@ func exitHandler(e *stablev1.Environment) workflow.Template {
 							Name:     "slack-notification",
 							Template: "send-completion",
 						},
+						When: "{{workflow.status}} != Succeeded",
 						Arguments: workflow.Arguments{
 							Parameters: []workflow.Parameter{
 								{
