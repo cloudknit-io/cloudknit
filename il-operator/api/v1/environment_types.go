@@ -58,7 +58,8 @@ type Secret struct {
 }
 
 type Output struct {
-	Name string `json:"name"`
+	Name 				string 	`json:"name"`
+  Sensitive 	bool 		`json:"sensitive,omitempty"`
 }
 
 type EnvironmentComponent struct {

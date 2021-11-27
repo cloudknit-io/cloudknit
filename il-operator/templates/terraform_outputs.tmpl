@@ -1,5 +1,8 @@
 {{ range .Outputs }}
 output "{{ .Name }}" {
   value = module.{{ $.ComponentName }}.{{ .Name }}
+{{- if .Sensitive }}
+  sensitive = {{ .Sensitive }}
+{{- end }}
 }
 {{end}}

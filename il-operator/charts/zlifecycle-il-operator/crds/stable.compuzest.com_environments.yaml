@@ -91,6 +91,8 @@ spec:
                         properties:
                           name:
                             type: string
+                          sensitive:
+                            type: boolean
                         required:
                         - name
                         type: object
@@ -264,6 +266,8 @@ spec:
                         properties:
                           name:
                             type: string
+                          sensitive:
+                            type: boolean
                         required:
                         - name
                         type: object
