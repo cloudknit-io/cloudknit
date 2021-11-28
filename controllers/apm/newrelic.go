@@ -1,4 +1,4 @@
-package newrelic
+package apm
 
 import (
 	"context"
@@ -9,18 +9,11 @@ import (
 	"github.com/pkg/errors"
 )
 
-type APM interface {
-	NoticeError(tx *nr.Transaction, err zerrors.ZError) error
-	RecordCustomEvent(event string, params map[string]interface{})
-	StartTransaction(name string) *nr.Transaction
-	NewContext(ctx context.Context, tx *nr.Transaction) context.Context
-}
-
-type App struct {
+type NewRelic struct {
 	app *nr.Application
 }
 
-func NewApp() (*App, error) {
+func NewNewRelic() (*NewRelic, error) {
 	if env.Config.NewRelicAPIKey == "" {
 		return nil, errors.New("missing NEW_RELIC_API_KEY env var")
 	}
@@ -39,10 +32,10 @@ func NewApp() (*App, error) {
 		return nil, err
 	}
 
-	return &App{app: app}, nil
+	return &NewRelic{app: app}, nil
 }
 
-func (a *App) NoticeError(tx *nr.Transaction, err zerrors.ZError) error {
+func (a *NewRelic) NoticeError(tx *nr.Transaction, err zerrors.ZError) error {
 	a.app.RecordCustomMetric(err.Metric(), 1)
 	if tx != nil {
 		tx.NoticeError(nr.Error{
@@ -55,43 +48,21 @@ func (a *App) NoticeError(tx *nr.Transaction, err zerrors.ZError) error {
 	return err
 }
 
-func (a *App) RecordCustomEvent(event string, params map[string]interface{}) {
+func (a *NewRelic) RecordCustomEvent(event string, params map[string]interface{}) {
 	fullEvent := fmt.Sprintf("com.zlifecycle.%s", event)
 	a.app.RecordCustomEvent(fullEvent, params)
 }
 
-func (a *App) StartTransaction(name string) *nr.Transaction {
+func (a *NewRelic) StartTransaction(name string) *nr.Transaction {
 	fullName := fmt.Sprintf("com.zlifecycle.%s", name)
 	return a.app.StartTransaction(fullName)
 }
 
-func (a *App) NewContext(ctx context.Context, tx *nr.Transaction) context.Context {
+func (a *NewRelic) NewContext(ctx context.Context, tx *nr.Transaction) context.Context {
 	if tx != nil {
 		return nr.NewContext(ctx, tx)
 	}
 	return ctx
 }
 
-var _ APM = (*App)(nil)
-
-type Noop struct{}
-
-func NewNoop() *Noop {
-	return &Noop{}
-}
-
-func (n *Noop) NoticeError(tx *nr.Transaction, err zerrors.ZError) error {
-	return err
-}
-
-func (n *Noop) RecordCustomEvent(event string, params map[string]interface{}) {}
-
-func (n *Noop) StartTransaction(name string) *nr.Transaction {
-	return nil
-}
-
-func (n *Noop) NewContext(ctx context.Context, tx *nr.Transaction) context.Context {
-	return ctx
-}
-
-var _ APM = (*Noop)(nil)
+var _ APM = (*NewRelic)(nil)

@@ -15,7 +15,7 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/apm/newrelic"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/apm"
 	"github.com/newrelic/go-agent/v3/integrations/logcontext/nrlogrusplugin"
 	"github.com/sirupsen/logrus"
 	"os"
@@ -92,12 +92,12 @@ func main() {
 	}
 
 	// new relic
-	var apm newrelic.APM
-	apm = newrelic.NewNoop()
+	var _apm apm.APM
+	_apm = apm.NewNoop()
 	if env.Config.EnableNewRelic == "true" {
 		setupLog.Info("setting logrus formatter to context formatter")
 		logrus.SetFormatter(nrlogrusplugin.ContextFormatter{})
-		apm, err = newrelic.NewApp()
+		_apm, err = apm.NewNewRelic()
 		if err != nil {
 			setupLog.WithError(err).Error("unable to init new relic")
 			os.Exit(1)
@@ -109,7 +109,7 @@ func main() {
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("Company"),
 		Scheme: mgr.GetScheme(),
-		APM:    apm,
+		APM:    _apm,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.WithError(err).WithField("controller", "Company").Error("unable to create controller")
 		os.Exit(1)
@@ -123,7 +123,7 @@ func main() {
 		Log:    ctrl.Log.WithName("controllers").WithName("Team"),
 		LogV2:  teamLogger.WithFields(logrus.Fields{"logger": "controller.Team", "company": env.Config.CompanyName}),
 		Scheme: mgr.GetScheme(),
-		APM:    apm,
+		APM:    _apm,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.WithError(err).WithField("controller", "Team").Error("unable to create controller")
 		os.Exit(1)
@@ -137,7 +137,7 @@ func main() {
 		Log:    ctrl.Log.WithName("controllers").WithName("Environment"),
 		LogV2:  environmentLogger.WithFields(logrus.Fields{"logger": "controller.Environment", "company": env.Config.CompanyName}),
 		Scheme: mgr.GetScheme(),
-		APM:    apm,
+		APM:    _apm,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.WithError(err).WithField("controller", "Environment").Error("unable to create controller")
 		os.Exit(1)

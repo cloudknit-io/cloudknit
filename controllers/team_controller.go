@@ -15,7 +15,7 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/apm/newrelic"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/apm"
 	"github.com/sirupsen/logrus"
 	"strings"
 	"sync"
@@ -55,7 +55,7 @@ type TeamReconciler struct {
 	Log    logr.Logger
 	LogV2  *logrus.Entry
 	Scheme *runtime.Scheme
-	APM    newrelic.APM
+	APM    apm.APM
 }
 
 // +kubebuilder:rbac:groups=stable.compuzest.com,resources=teams,verbs=get;list;watch;create;update;patch;delete

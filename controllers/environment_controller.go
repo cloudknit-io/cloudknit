@@ -15,11 +15,11 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/apm"
 	"github.com/sirupsen/logrus"
 	"strings"
 	"time"
 
-	"github.com/compuzest/zlifecycle-il-operator/controllers/apm/newrelic"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/zerrors"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/git"
@@ -57,7 +57,7 @@ type EnvironmentReconciler struct {
 	Log    logr.Logger
 	LogV2  *logrus.Entry
 	Scheme *runtime.Scheme
-	APM    newrelic.APM
+	APM    apm.APM
 }
 
 // +kubebuilder:rbac:groups=stable.compuzest.com,resources=environments,verbs=get;list;watch;create;update;patch;delete
@@ -135,6 +135,8 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	}
 
 	// reconcile logic
+	//isHardDelete := !environment.DeletionTimestamp.IsZero()
+	//isSoftDelete := environment.Spec.Teardown
 	isDeleteEvent := !environment.DeletionTimestamp.IsZero() || environment.Spec.Teardown
 	if !isDeleteEvent {
 		if err := r.updateStatus(apmCtx, environment); err != nil {
