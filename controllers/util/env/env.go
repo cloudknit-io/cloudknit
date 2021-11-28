@@ -5,6 +5,8 @@ import (
 )
 
 type config struct {
+	App string
+
 	ZlifecycleOwner               string
 	ZlifecycleMasterRepoSSHSecret string
 	ZlifecycleOperatorNamespace   string
@@ -52,6 +54,8 @@ type config struct {
 
 // Config exposes vars used throughout the operator.
 var Config = config{
+	App: "zlifecycle-il-operator",
+
 	ZlifecycleOwner:               getOr("GITHUB_ZLIFECYCLE_OWNER", "zlifecycle-il"),
 	ZlifecycleMasterRepoSSHSecret: getOr("ZLIFECYCLE_MASTER_SSH", "zlifecycle-operator-ssh"),
 	ZlifecycleOperatorNamespace:   os.Getenv("ZLIFECYCLE_OPERATOR_NAMESPACE"),

@@ -1,17 +1,43 @@
 package zerrors
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
+)
+
+type ZError interface {
+	Error() string
+	Attributes() map[string]interface{}
+	Class() string
+	Metric() string
+}
 
 type TeamError struct {
-	Team string `json:"team"`
-	Err  error  `json:"error"`
+	Company string `json:"company"`
+	Team    string `json:"team"`
+	Err     error  `json:"error"`
 }
 
 func (e *TeamError) Error() string {
-	return fmt.Sprintf("team %s: error %v", e.Team, e.Err)
+	return fmt.Sprintf("team reconcile failed for company [%s], team [%s]: %v", e.Company, e.Team, e.Err)
 }
 
-func NewTeamError(team string, err error) error {
+func (e *TeamError) Attributes() map[string]interface{} {
+	return map[string]interface{}{
+		"company": e.Company,
+		"team":    e.Team,
+	}
+}
+
+func (e *TeamError) Class() string {
+	return "TeamReconcilerError"
+}
+
+func (e *TeamError) Metric() string {
+	return "com.zlifecycle.teamreconciler.error"
+}
+
+func NewTeamError(team string, err error) *TeamError {
 	return &TeamError{
 		Team: team,
 		Err:  err,
@@ -19,17 +45,37 @@ func NewTeamError(team string, err error) error {
 }
 
 type EnvironmentError struct {
+	Company     string `json:"company"`
 	Team        string `json:"team"`
 	Environment string `json:"environment"`
 	Err         error  `json:"error"`
 }
 
 func (e *EnvironmentError) Error() string {
-	return fmt.Sprintf("environment %s/%s: error %v", e.Team, e.Environment, e.Err)
+	return fmt.Sprintf("environment reconcile failed for company [%s],team [%s], environment [%s]: %v", e.Company, e.Team, e.Environment, e.Err)
 }
+
+func (e *EnvironmentError) Attributes() map[string]interface{} {
+	return map[string]interface{}{
+		"company":     env.Config.CompanyName,
+		"team":        e.Team,
+		"environment": e.Environment,
+	}
+}
+
+func (e *EnvironmentError) Class() string {
+	return "EnvironmentReconcilerError"
+}
+
+func (e *EnvironmentError) Metric() string {
+	return "com.zlifecycle.environmentreconciler.error"
+}
+
+var _ ZError = (*EnvironmentError)(nil)
 
 func NewEnvironmentError(team string, environment string, err error) *EnvironmentError {
 	return &EnvironmentError{
+		Company:     env.Config.CompanyName,
 		Team:        team,
 		Environment: environment,
 		Err:         err,
@@ -37,21 +83,17 @@ func NewEnvironmentError(team string, environment string, err error) *Environmen
 }
 
 type EnvironmentComponentError struct {
-	Team        string `json:"team"`
-	Environment string `json:"environment"`
-	Component   string `json:"component"`
-	Err         error  `json:"error"`
+	Component string `json:"component"`
+	Err       error  `json:"error"`
 }
 
 func (e *EnvironmentComponentError) Error() string {
-	return fmt.Sprintf("environment %s/%s: component %s: error %v", e.Team, e.Environment, e.Component, e.Err)
+	return fmt.Sprintf("error reconciling environment component [%s]: %v", e.Component, e.Err)
 }
 
-func NewEnvironmentComponentError(team string, environment string, component string, err error) error {
+func NewEnvironmentComponentError(component string, err error) error {
 	return &EnvironmentComponentError{
-		Team:        team,
-		Environment: environment,
-		Component:   component,
-		Err:         err,
+		Component: component,
+		Err:       err,
 	}
 }

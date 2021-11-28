@@ -14,9 +14,12 @@ env:
   ARGOCD_SERVER_URL: "argocd-server"
   ARGOCD_WEBHOOK_URL: "https://xxx.zlifecycle.com/api/webhook"
   GITHUB_ZLIFECYCLE_OWNER: zlifecycle-il
-  GITHUB_WEBHOOK_SECRET: !!!CHANGEME!!!
-  GITHUB_ORG: !!!CHANGEME!!!
+  GITHUB_WEBHOOK_SECRET: "!!!CHANGEME!!!"
+  GITHUB_ORG: "!!!CHANGEME!!!"
   ZLIFECYCLE_MASTER_SSH: zlifecycle-operator-ssh
+  ENABLE_NEW_RELIC: "false"
+  NEW_RELIC_API_KEY: ""
+  SLACK_WEBHOOK_URL: ""
 
 resources:
   limits:

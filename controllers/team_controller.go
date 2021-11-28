@@ -15,6 +15,8 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/apm/newrelic"
+	"github.com/sirupsen/logrus"
 	"strings"
 	"sync"
 	"time"
@@ -51,7 +53,9 @@ import (
 type TeamReconciler struct {
 	client.Client
 	Log    logr.Logger
+	LogV2  *logrus.Entry
 	Scheme *runtime.Scheme
+	APM    newrelic.APM
 }
 
 // +kubebuilder:rbac:groups=stable.compuzest.com,resources=teams,verbs=get;list;watch;create;update;patch;delete
@@ -65,7 +69,7 @@ var (
 // Reconcile method called everytime there is a change in Team Custom Resource.
 func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	// delay Team Reconcile so Company reconciles finish first
-	delayTeamReconcileOnInitialRun(r.Log, 15)
+	delayTeamReconcileOnInitialRun(r.LogV2, 15)
 	start := time.Now()
 
 	// init logic
@@ -85,73 +89,85 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	team := &stablev1.Team{}
 	if err := r.Get(ctx, req.NamespacedName, team); err != nil {
 		if errors.IsNotFound(err) {
-			r.Log.Info(
-				"team missing from cache, ending reconcile",
-				"name", req.Name,
-				"namespace", req.Namespace,
-			)
+			r.LogV2.WithFields(logrus.Fields{
+				"name":      req.Name,
+				"namespace": req.Namespace,
+			}).Info("team missing from cache, ending reconcile")
 			return ctrl.Result{}, nil
 		}
-		teamErr := zerrors.NewTeamError(team.Spec.TeamName, err)
-		return ctrl.Result{}, perrors.Wrap(teamErr, "error getting team from k8s cache")
+		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error getting team from k8s cache"))
+		return ctrl.Result{}, teamErr
+	}
+
+	// start apm transaction
+	txName := fmt.Sprintf("teamreconciler.%s", team.Spec.TeamName)
+	tx := r.APM.StartTransaction(txName)
+	apmCtx := ctx
+	if tx != nil {
+		tx.AddAttribute("company", env.Config.CompanyName)
+		tx.AddAttribute("team", team.Spec.TeamName)
+		apmCtx = r.APM.NewContext(ctx, tx)
+		r.LogV2 = r.LogV2.WithField("team", team.Spec.TeamName).WithContext(apmCtx)
+		r.LogV2.WithField("name", txName).Info("Creating APM transaction")
+		defer tx.End()
 	}
 
 	// services init
 	fileAPI := &file.OsFileService{}
-	argocdAPI := argocd.NewHTTPClient(ctx, r.Log, env.Config.ArgocdServerURL)
-	repoAPI := github.NewHTTPRepositoryAPI(ctx)
-	gitAPI, err := git.NewGoGit(ctx)
+	argocdAPI := argocd.NewHTTPClient(apmCtx, r.Log, env.Config.ArgocdServerURL)
+	repoAPI := github.NewHTTPRepositoryAPI(apmCtx)
+	gitAPI, err := git.NewGoGit(apmCtx)
 	if err != nil {
-		teamErr := zerrors.NewTeamError(team.Spec.TeamName, err)
-		return ctrl.Result{}, perrors.Wrap(teamErr, "error instantiating git API")
+		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error instantiating git API"))
+		return ctrl.Result{}, r.APM.NoticeError(tx, teamErr)
 	}
 
 	// temp clone IL repo
 	tempILRepoDir, cleanup, err := git.CloneTemp(gitAPI, ilRepoURL)
 	if err != nil {
-		teamErr := zerrors.NewTeamError(team.Spec.TeamName, err)
-		return ctrl.Result{}, perrors.Wrap(teamErr, "error running git temp clone")
+		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error running git temp clone"))
+		return ctrl.Result{}, r.APM.NoticeError(tx, teamErr)
 	}
 	defer cleanup()
 
-	if err := r.updateArgocdRbac(ctx, team); err != nil {
+	if err := r.updateArgocdRbac(apmCtx, team); err != nil {
 		if strings.Contains(err.Error(), registry.OptimisticLockErrorMsg) {
 			// do manual retry without error
 			return reconcile.Result{RequeueAfter: time.Second * 1}, nil
 		}
-		teamErr := zerrors.NewTeamError(team.Spec.TeamName, err)
-		return ctrl.Result{}, perrors.Wrap(teamErr, "error updating argocd rbac")
+		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error updating argocd rbac"))
+		return ctrl.Result{}, r.APM.NoticeError(tx, teamErr)
 	}
 
-	if _, err := argocd.TryCreateProject(ctx, r.Log, team.Spec.TeamName, env.Config.GitHubOrg); err != nil {
-		teamErr := zerrors.NewTeamError(team.Spec.TeamName, err)
-		return ctrl.Result{}, perrors.Wrap(teamErr, "error trying to create argocd project")
+	if _, err := argocd.TryCreateProject(apmCtx, r.Log, team.Spec.TeamName, env.Config.GitHubOrg); err != nil {
+		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error trying to create argocd project"))
+		return ctrl.Result{}, r.APM.NoticeError(tx, teamErr)
 	}
 
 	if err := fileAPI.CreateEmptyDirectory(il.EnvironmentDirectoryPath(team.Spec.TeamName)); err != nil {
-		teamErr := zerrors.NewTeamError(team.Spec.TeamName, err)
-		return ctrl.Result{}, perrors.Wrap(teamErr, "error creating team dir")
+		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error creating team dir"))
+		return ctrl.Result{}, r.APM.NoticeError(tx, teamErr)
 	}
 
 	teamRepo := team.Spec.ConfigRepo.Source
 	operatorSSHSecret := env.Config.ZlifecycleMasterRepoSSHSecret
 	operatorNamespace := env.Config.ZlifecycleOperatorNamespace
 
-	if err := repo.TryRegisterRepo(ctx, r.Client, r.Log, argocdAPI, teamRepo, operatorNamespace, operatorSSHSecret); err != nil {
-		teamErr := zerrors.NewTeamError(team.Spec.TeamName, err)
-		return ctrl.Result{}, perrors.Wrap(teamErr, "error registering argocd team repo")
+	if err := repo.TryRegisterRepo(apmCtx, r.Client, r.Log, argocdAPI, teamRepo, operatorNamespace, operatorSSHSecret); err != nil {
+		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error registering argocd team repo"))
+		return ctrl.Result{}, r.APM.NoticeError(tx, teamErr)
 	}
 
 	teamAppFilename := fmt.Sprintf("%s-team.yaml", team.Spec.TeamName)
 
 	if err := generateAndSaveTeamApp(fileAPI, team, teamAppFilename, tempILRepoDir); err != nil {
-		teamErr := zerrors.NewTeamError(team.Spec.TeamName, err)
-		return ctrl.Result{}, perrors.Wrap(teamErr, "error generating team argocd app")
+		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error generating team argocd app"))
+		return ctrl.Result{}, r.APM.NoticeError(tx, teamErr)
 	}
 
 	if err := generateAndSaveConfigWatchers(fileAPI, team, teamAppFilename, tempILRepoDir); err != nil {
-		teamErr := zerrors.NewTeamError(team.Spec.TeamName, err)
-		return ctrl.Result{}, perrors.Wrap(teamErr, "error generating team config watchers")
+		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error generating team config watchers"))
+		return ctrl.Result{}, r.APM.NoticeError(tx, teamErr)
 	}
 
 	commitInfo := git.CommitInfo{
@@ -161,32 +177,27 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	}
 	pushed, err := gitAPI.CommitAndPush(&commitInfo)
 	if err != nil {
-		teamErr := zerrors.NewTeamError(team.Spec.TeamName, err)
-		return ctrl.Result{}, perrors.Wrap(teamErr, "error running commit and push")
+		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error running commit and push"))
+		return ctrl.Result{}, r.APM.NoticeError(tx, teamErr)
 	}
 	if pushed {
-		r.Log.Info(
-			"Committed new changes to IL repo",
-			"team", team.Spec.TeamName,
-		)
+		r.LogV2.Info("Committed new changes to IL repo")
 	} else {
-		r.Log.Info(
-			"No git changes to commit, no-op reconciliation.",
-			"team", team.Spec.TeamName,
-		)
+		r.LogV2.Info("No git changes to commit, no-op reconciliation.")
 	}
 
 	_, err = github.CreateRepoWebhook(r.Log, repoAPI, teamRepo, env.Config.ArgocdHookURL, env.Config.GitHubWebhookSecret)
 	if err != nil {
-		r.Log.Error(err, "error creating Team webhook", "team", team.Spec.TeamName)
+		r.LogV2.WithError(err).Error("error creating Team webhook")
 	}
 
 	duration := time.Since(start)
-	r.Log.Info(
-		"Reconcile finished",
-		"duration", duration,
-		"team", team.Spec.TeamName,
-	)
+	r.LogV2.WithField("duration", duration).Info("Reconcile finished")
+	attrs := map[string]interface{}{
+		"duration": duration,
+		"team":     team.Spec.TeamName,
+	}
+	r.APM.RecordCustomEvent("teamreconciler", attrs)
 
 	return ctrl.Result{}, nil
 }
@@ -237,12 +248,9 @@ func (r *TeamReconciler) updateArgocdRbac(ctx context.Context, t *stablev1.Team)
 	return r.Client.Update(ctx, &rbacCm)
 }
 
-func delayTeamReconcileOnInitialRun(log logr.Logger, seconds int64) {
+func delayTeamReconcileOnInitialRun(log *logrus.Entry, seconds int64) {
 	if teamReconcileInitialRunLock.Load() {
-		log.Info(
-			"Delaying Team reconcile on initial run to wait for Company operator",
-			"duration", fmt.Sprintf("%ds", seconds),
-		)
+		log.WithField("duration", fmt.Sprintf("%ds", seconds)).Info("Delaying Team reconcile on initial run to wait for Company operator")
 		time.Sleep(time.Duration(seconds) * time.Second)
 		teamReconcileInitialRunLock.Store(false)
 	}
