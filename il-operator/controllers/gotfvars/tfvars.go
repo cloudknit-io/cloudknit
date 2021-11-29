@@ -3,6 +3,7 @@ package gotfvars
 import (
 	"context"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
 
@@ -10,8 +11,6 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controllers/gitreconciler"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/git"
-	"github.com/go-logr/logr"
-
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -28,7 +27,7 @@ func SaveTfVarsToFile(fileService file.Service, ecVars []*v1.Variable, folderNam
 
 func GetVariablesFromTfvarsFile(
 	ctx context.Context,
-	log logr.Logger,
+	log *logrus.Entry,
 	e *v1.Environment,
 	ec *v1.EnvironmentComponent,
 ) (string, error) {
@@ -43,37 +42,28 @@ func GetVariablesFromTfvarsFile(
 	defer cleanup()
 
 	path := filepath.Join(tempRepoDir, ec.VariablesFile.Path)
-	log.Info(
-		"Reading tfvars file contents",
-		"team", e.Spec.TeamName,
-		"environment", e.Spec.EnvName,
-		"component", ec.Name,
-		"path", path,
-	)
+	log.WithFields(logrus.Fields{
+		"component": ec.Name,
+		"path":      path,
+	}).Info("Reading tfvars file contents")
 	buff, err := os.ReadFile(path)
 	if err != nil {
 		return "", err
 	}
 
-	log.Info(
-		"Subscribing to config repository in git reconciler",
-		"environment", e.Spec.EnvName,
-		"team", e.Spec.TeamName,
-		"component", ec.Name,
-		"type", ec.Type,
-		"repository", ec.VariablesFile.Source,
-	)
+	log.WithFields(logrus.Fields{
+		"component":  ec.Name,
+		"type":       ec.Type,
+		"repository": ec.VariablesFile.Source,
+	}).Info("Subscribing to config repository in git reconciler")
 	envKey := client.ObjectKey{Name: e.Name, Namespace: e.Namespace}
 	subscribed := gitreconciler.GetReconciler().Subscribe(ec.VariablesFile.Source, envKey)
 	if subscribed {
-		log.Info(
-			"Already subscribed in git reconciler to repository",
-			"environment", e.Spec.EnvName,
-			"team", e.Spec.TeamName,
-			"component", ec.Name,
-			"type", ec.Type,
-			"repository", ec.VariablesFile.Source,
-		)
+		log.WithFields(logrus.Fields{
+			"component":  ec.Name,
+			"type":       ec.Type,
+			"repository": ec.VariablesFile.Source,
+		}).Info("Already subscribed in git reconciler to repository")
 	}
 
 	tfvars := string(buff)

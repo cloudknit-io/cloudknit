@@ -15,6 +15,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/apm"
 	"sync"
 	"time"
 
@@ -43,6 +44,7 @@ type CompanyReconciler struct {
 	client.Client
 	Log    logr.Logger
 	Scheme *runtime.Scheme
+	APM    apm.APM
 }
 
 var (
