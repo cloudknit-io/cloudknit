@@ -15,9 +15,10 @@ package main
 import (
 	"context"
 	"flag"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/apm"
+	"github.com/newrelic/go-agent/v3/integrations/logcontext/nrlogrusplugin"
+	"github.com/sirupsen/logrus"
 	"os"
-
-	"github.com/compuzest/zlifecycle-il-operator/controllers/apm/newrelic"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/gitreconciler"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
@@ -36,12 +37,16 @@ import (
 
 var (
 	scheme   = runtime.NewScheme()
-	setupLog = ctrl.Log.WithName("setup")
+	setupLog *logrus.Entry
 )
 
 // +kubebuilder:rbac:groups="",resources=configmaps;secrets,verbs=get;list;watch;update;patch
 // +kubebuilder:rbac:groups=coordination.k8s.io,resources=leases,verbs=get;create;update
 func init() { // nolint
+	l := logrus.New()
+	l.SetFormatter(nrlogrusplugin.ContextFormatter{})
+	setupLog = l.WithField("logger", "setup")
+
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
 	utilruntime.Must(stablev1.AddToScheme(scheme))
@@ -69,59 +74,78 @@ func main() {
 		CertDir:            env.Config.KubernetesCertDir,
 	})
 	if err != nil {
-		setupLog.Error(err, "unable to start manager")
+		setupLog.WithError(err).Error("unable to start manager")
 		os.Exit(1)
 	}
 
-	// NewRelic
-	if env.Config.EnableNewRelic == "true" {
-		setupLog.Info("Initializing New Relic integration")
-		_, err := newrelic.InitNewRelic()
-		if err != nil {
-			setupLog.Error(err, "failed to init new relic")
-			os.Exit(1)
-		}
-	}
+	// ctx
+	ctx := context.Background()
 
 	// Git reconciler
-	ctx := context.Background()
 	gitReconciler := gitreconciler.NewReconciler(
 		ctx,
 		ctrl.Log.WithName("GitReconciler"),
 		mgr.GetClient(),
 	)
 	if err := gitReconciler.Start(); err != nil {
-		setupLog.Error(err, "failed to start git reconciler")
+		setupLog.WithError(err).Error(err, "failed to start git reconciler")
 	}
 
+	// new relic
+	var _apm apm.APM
+	_apm = apm.NewNoop()
+	if env.Config.EnableNewRelic == "true" {
+		setupLog.Info("setting logrus formatter to context formatter")
+		logrus.SetFormatter(nrlogrusplugin.ContextFormatter{})
+		_apm, err = apm.NewNewRelic()
+		if err != nil {
+			setupLog.WithError(err).Error("unable to init new relic")
+			os.Exit(1)
+		}
+	}
+
+	// company controller init
 	if err = (&controllers.CompanyReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("Company"),
 		Scheme: mgr.GetScheme(),
+		APM:    _apm,
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Company")
+		setupLog.WithError(err).WithField("controller", "Company").Error("unable to create controller")
 		os.Exit(1)
 	}
+
+	// team controller init
+	teamLogger := logrus.New()
+	teamLogger.SetFormatter(nrlogrusplugin.ContextFormatter{})
 	if err = (&controllers.TeamReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("Team"),
+		LogV2:  teamLogger.WithFields(logrus.Fields{"logger": "controller.Team", "company": env.Config.CompanyName}),
 		Scheme: mgr.GetScheme(),
+		APM:    _apm,
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Team")
+		setupLog.WithError(err).WithField("controller", "Team").Error("unable to create controller")
 		os.Exit(1)
 	}
+
+	// environment controller init
+	environmentLogger := logrus.New()
+	environmentLogger.SetFormatter(nrlogrusplugin.ContextFormatter{})
 	if err = (&controllers.EnvironmentReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("Environment"),
+		LogV2:  environmentLogger.WithFields(logrus.Fields{"logger": "controller.Environment", "company": env.Config.CompanyName}),
 		Scheme: mgr.GetScheme(),
+		APM:    _apm,
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Environment")
+		setupLog.WithError(err).WithField("controller", "Environment").Error("unable to create controller")
 		os.Exit(1)
 	}
 
 	if env.Config.DisableWebhooks != "true" {
 		if err = (&stablev1.Environment{}).SetupWebhookWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create webhook", "webhook", "Environment")
+			setupLog.WithError(err).Error("unable to create webhook", "webhook", "Environment")
 			os.Exit(1)
 		}
 	}
@@ -130,7 +154,7 @@ func main() {
 
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
-		setupLog.Error(err, "problem running manager")
+		setupLog.WithError(err).Error("problem running manager")
 		os.Exit(1)
 	}
 }

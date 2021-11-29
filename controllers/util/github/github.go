@@ -18,30 +18,9 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	"github.com/go-logr/logr"
 	"github.com/google/go-github/v32/github"
-	"io"
 	"regexp"
 	"strings"
 )
-
-func DownloadFile(
-	api RepositoryAPI,
-	repoURL string,
-	ref string,
-	path string,
-) (file io.ReadCloser, exists bool, err error) {
-	owner, repo, err := parseRepoURL(repoURL)
-	if ref == "" {
-		ref = "HEAD"
-	}
-	if err != nil {
-		return nil, false, err
-	}
-	rc, exists, err := api.DownloadContents(owner, repo, ref, path)
-	if err != nil {
-		return nil, false, err
-	}
-	return rc, exists, nil
-}
 
 func DeletePatternsFromRootTree(
 	log logr.Logger,

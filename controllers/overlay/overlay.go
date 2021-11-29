@@ -2,8 +2,8 @@ package overlay
 
 import (
 	"context"
+	"github.com/sirupsen/logrus"
 	"path/filepath"
-
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/gitreconciler"
 
@@ -14,12 +14,11 @@ import (
 
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
-	"github.com/go-logr/logr"
 )
 
 func GenerateOverlayFiles(
 	ctx context.Context,
-	log logr.Logger,
+	log *logrus.Entry,
 	fileAPI file.Service,
 	e *stablev1.Environment,
 	ec *stablev1.EnvironmentComponent,
@@ -38,16 +37,13 @@ func GenerateOverlayFiles(
 				return err
 			}
 			for _, path := range overlay.Paths {
-				log.Info(
-					"Generating overlay file",
-					"repo", overlay.Source,
-					"ref", overlay.Ref,
-					"source", path,
-					"destination", destinationFolder,
-					"team", e.Spec.TeamName,
-					"environment", e.Spec.EnvName,
-					"component", ec.Name,
-				)
+				log.WithFields(logrus.Fields{
+					"repo":        overlay.Source,
+					"ref":         overlay.Ref,
+					"source":      path,
+					"destination": destinationFolder,
+					"component":   ec.Name,
+				}).Info("Generating overlay file")
 				absolutePath := filepath.Join(tempDir, path)
 				if common.IsDir(absolutePath) {
 					if err := common.CopyDirContent(absolutePath, destinationFolder); err != nil {
@@ -60,25 +56,19 @@ func GenerateOverlayFiles(
 				}
 
 				// submit repo to git reconciler
-				log.Info(
-					"Subscribing to config repository in git reconciler",
-					"environment", e.Spec.EnvName,
-					"team", e.Spec.TeamName,
-					"component", ec.Name,
-					"type", ec.Type,
-					"repository", overlay.Source,
-				)
+				log.WithFields(logrus.Fields{
+					"component":  ec.Name,
+					"type":       ec.Type,
+					"repository": overlay.Source,
+				}).Info("Subscribing to config repository in git reconciler")
 				envKey := client.ObjectKey{Name: e.Name, Namespace: e.Namespace}
 				subscribed := gitreconciler.GetReconciler().Subscribe(overlay.Source, envKey)
 				if subscribed {
-					log.Info(
-						"Already subscribed in git reconciler to repository",
-						"environment", e.Spec.EnvName,
-						"team", e.Spec.TeamName,
-						"component", ec.Name,
-						"type", ec.Type,
-						"repository", overlay.Source,
-					)
+					log.WithFields(logrus.Fields{
+						"component":  ec.Name,
+						"type":       ec.Type,
+						"repository": overlay.Source,
+					}).Info("Already subscribed in git reconciler to repository")
 				}
 			}
 
@@ -89,14 +79,11 @@ func GenerateOverlayFiles(
 	}
 	// Generate inline overlay files
 	for _, overlay := range ec.OverlayData {
-		log.Info(
-			"Generating overlay file from data field",
-			"overlay", overlay.Name,
-			"destination", destinationFolder,
-			"team", e.Spec.TeamName,
-			"environment", e.Spec.EnvName,
-			"component", ec.Name,
-		)
+		log.WithFields(logrus.Fields{
+			"overlay":     overlay.Name,
+			"destination": destinationFolder,
+			"component":   ec.Name,
+		}).Info("Generating overlay file from data field")
 		if err := fileAPI.SaveFileFromString(overlay.Data, destinationFolder, overlay.Name); err != nil {
 			return err
 		}
