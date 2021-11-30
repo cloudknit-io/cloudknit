@@ -82,6 +82,7 @@ metadata:
   - [Environment Name](#environment-name)
   - [Auto Approve](#auto-approve)
   - [Teardown](#teardown)
+  - [Selective Reconcile](#selective-reconcile)
   - [Components](#spec-components)
 
 <h4 style="font-weight: 200; letter-spacing: 2px">
@@ -148,6 +149,26 @@ teardown: true
 
 <div style="background-color: #ccc; height: 1px"></div>
 
+<h4 id="selective-reconcile" style="font-weight: 200; letter-spacing: 2px">
+  Selective Reconcile (Optional)
+</h4>
+
+This property tells zlifecycle to **skip** certain components based on **tagName** and **tagValues** properties.
+
+**OPTIONAL**
+
+You can find more information about **Selective Reconcile** [here](selective-reconcile.md).
+
+**NOTE:** Works in conjunction with [**tags**](#component-tags) property of component.
+
+```yaml
+selectiveReconcile:
+  tagName: string
+  tagValues: [string, string]
+```
+
+<div style="background-color: #ccc; height: 1px"></div>
+
 <h4 id="spec-components" style="font-weight: 200; letter-spacing: 2px">
   Components
 </h4>
@@ -183,7 +204,6 @@ YAML Properties:-
   - [Name](#component-name)
   - [Type](#component-type)
   - [Destroy](#component-destroy)
-  - [Destroy Protection](#component-protection)
   - [AWS Provider](#component-aws-provider)
   - [Modules](#component-modules)
   - [Outputs](#component-outputs)
@@ -233,20 +253,6 @@ You can find more information about teardown [here](teardown.md)
 
 ```yaml
 destroy: false
-```
-
-<div style="background-color: #ccc; height: 1px"></div>
-
-<h4 id="component-protection" style="font-weight: 200; letter-spacing: 2px">
-  Destroy Protection
-</h4>
-
-This property tells zlifecycle to skip those components during the teardown process that have this property set to true.
-
-**OPTIONAL**: Default value is false
-
-```yaml
-destroyProtection: true
 ```
 
 <div style="background-color: #ccc; height: 1px"></div>
@@ -309,6 +315,30 @@ aws:
       module:
         source: "git@github.com:SebastianUA/terraform-aws-sagemaker"
     ```
+
+<div style="background-color: #ccc; height: 1px"></div>
+
+<h4 id="component-tags" style="font-weight: 200; letter-spacing: 2px">Tags (Optional)</h4>
+
+Adds additional information to the component.
+
+**Required**: When we are using [**selectiveReconcile**](#selective-reconcile) to skip components
+
+**name**: For selective reconcile to work this needs to be the same value used in **tagName** property of **selectiveReconcile**
+
+**value**: Value of the tag.
+
+<h5 style="font-weight: 200; letter-spacing: 2px">Usage</h5>
+
+```yaml
+tags:
+  - name: componentType # for selective reconcile to work this needs to be the same value used in tagName property of selectiveReconcile
+    value: data
+  - name: cloudProvider
+    value: aws
+```
+
+<div style="background-color: #ccc; height: 1px"></div>
 
 <h4 id="component-outputs" style="font-weight: 200; letter-spacing: 2px">Outputs</h4>
 
