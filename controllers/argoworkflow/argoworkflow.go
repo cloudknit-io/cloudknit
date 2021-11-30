@@ -266,6 +266,14 @@ func exitHandler(e *stablev1.Environment) workflow.Template {
 									Name:  "WORKFLOW_ENVIRONMENT",
 									Value: AnyStringPointer(e.Spec.EnvName),
 								},
+								{
+									Name:  "WORKFLOW_FAILURES",
+									Value: AnyStringPointer("{{workflow.failures}}"),
+								},
+								{
+									Name:  "WORKFLOW_DURATION",
+									Value: AnyStringPointer("{{workflow.duration}}"),
+								},
 							},
 						},
 					},
