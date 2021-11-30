@@ -36,3 +36,13 @@ To add a secret, select the scope and click on the Add button.
 ![custom-secrets](assets/images/custom-secrets.png "custom-secrets")
 
 Here you can **provide** the **secret name, value** and you are set.
+
+These secrets are used in the secrets property of the environment yaml.
+
+**Example**
+```yaml
+secrets:
+  - name: bucket
+    key: s3-name # secret id
+    scope: org
+```
