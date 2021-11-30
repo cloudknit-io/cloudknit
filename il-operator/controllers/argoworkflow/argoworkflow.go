@@ -13,6 +13,7 @@
 package argoworkflow
 
 import (
+	"fmt"
 	"time"
 
 	workflow "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
@@ -273,6 +274,10 @@ func exitHandler(e *stablev1.Environment) workflow.Template {
 								{
 									Name:  "WORKFLOW_DURATION",
 									Value: AnyStringPointer("{{workflow.duration}}"),
+								},
+								{
+									Name:  "WORKFLOW_URK",
+									Value: AnyStringPointer(fmt.Sprintf("https://%s.zlifecycle.com/%s/%s/infra", env.Config.CompanyName, e.Spec.TeamName, e.Spec.TeamName+"-"+e.Spec.EnvName)),
 								},
 							},
 						},
