@@ -192,6 +192,10 @@ teamName: client
 envName: demo
 autoApprove: true
 teardown: false
+# Add if you want to skip components
+selectiveReconcile:
+  tagName: string
+  tagValues: [string, string]
 components: []
 ```
 
@@ -554,14 +558,23 @@ dependsOn: [networking]
   apiVersion: stable.compuzest.com/v1
   kind: Environment
   metadata:
-  name: org-tech-client-demo
-  namespace: zlifecycle
+    name: org-tech-client-demo
+    namespace: zlifecycle
   spec:
-  teamName: client
-  envName: demo
+    teamName: client
+    envName: demo
+    # Use it to skip some components
+    selectiveReconcile:
+      tagName: string
+      tagValues: [string, string]
   components:
     - name: static-assets
       type: terraform
+      tags:
+        - name: componentType # for selective reconcile to work this needs to be the same value used in tagName property of selectiveReconcile
+          value: data
+        - name: cloudProvider
+          value: aws
       aws:
         region: us-east-1
         assumeRole:
