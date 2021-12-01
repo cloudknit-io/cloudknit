@@ -24,7 +24,7 @@ tags:
 ```
 
 **name**: The name property needs to be exactly what we supplied in the **tagName** property of **selectiveReconcile** which in our example is `componentType`.
-**value**: Value needs to be one of the strings passed in the **tagValues** property of **selectiveReconcile** which in our example is `[app]`.
+**value**: Value needs to be one of the strings passed in the **tagValues** property of **selectiveReconcile** which in our example is `app`.
 
 Now zLifecycle compares the above properties and sets up a component to be skipped.
 
