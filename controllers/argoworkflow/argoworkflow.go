@@ -196,6 +196,11 @@ func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment) *workf
 
 	tasks = append(tasks, generateAuditTask(environment, destroyAll, "1", allComponents))
 
+	onExit := ""
+	if env.Config.SlackWebhookURL != "" {
+		onExit = "exit-handler"
+	}
+
 	w := &workflow.Workflow{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "argoproj.io/v1alpha1",
@@ -211,7 +216,7 @@ func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment) *workf
 		},
 		Spec: workflow.WorkflowSpec{
 			Entrypoint: "main",
-			OnExit:     "exit-handler",
+			OnExit:     onExit,
 			PodGC:      &workflow.PodGC{Strategy: workflow.PodGCOnPodSuccess},
 			Templates: []workflow.Template{
 				{
@@ -272,12 +277,13 @@ func exitHandler(e *stablev1.Environment) workflow.Template {
 									Value: AnyStringPointer("{{workflow.failures}}"),
 								},
 								{
-									Name:  "WORKFLOW_DURATION",
-									Value: AnyStringPointer("{{workflow.duration}}"),
-								},
-								{
-									Name:  "WORKFLOW_URK",
-									Value: AnyStringPointer(fmt.Sprintf("https://%s.zlifecycle.com/%s/%s/infra", env.Config.CompanyName, e.Spec.TeamName, e.Spec.TeamName+"-"+e.Spec.EnvName)),
+									Name: "WORKFLOW_URL",
+									Value: AnyStringPointer(fmt.Sprintf(
+										"https://%s.zlifecycle.com/%s/%s/infra",
+										env.Config.CompanyName,
+										e.Spec.TeamName,
+										e.Spec.TeamName+"-"+e.Spec.EnvName,
+									)),
 								},
 							},
 						},
@@ -323,9 +329,8 @@ func skipComponent(destroyProtection bool, destroyFlag bool, selectiveReconcile 
 
 	if selectiveReconcile.SkipMode {
 		return noSkipStatus
-	} else {
-		return selectiveReconcileStatus
 	}
+	return selectiveReconcileStatus
 }
 
 func generateAuditTask(environment *stablev1.Environment, destroyAll bool, phase string, dependencies []string) workflow.DAGTask {
