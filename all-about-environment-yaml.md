@@ -45,7 +45,7 @@ The name property should be unique for every environment, to mantain that we fol
 **teamName** and **environmentName** are provided in the [spec](#spec) scope.
 
 ```yaml
-name: orgtech-cloudsync-demo
+name: orgtech-client-demo
 ```
 
 <div style="background-color: #ccc; height: 1px"></div>
@@ -69,7 +69,7 @@ namespace: zlifecycle
 ```yaml
 metadata:
   # Environment CRD k8s object name
-  name: orgtech-cloudsync-demo
+  name: orgtech-client-demo
   # namespace is `zlifecycle` for every yaml you create
   namespace: zlifecycle
 ```
@@ -100,7 +100,7 @@ Spec contains the information about **HOW** to provision an environment.
 Name of the team CRD to which this environment belongs to (also used to create [metadata.name](#metdata))
 
 ```yaml
-teamName: cloudsync
+teamName: client
 ```
 
 <div style="background-color: #ccc; height: 1px"></div>
@@ -188,7 +188,7 @@ See [components section](#components)
 </h4>
 
 ```yaml
-teamName: cloudsync
+teamName: client
 envName: demo
 autoApprove: true
 teardown: false
@@ -372,7 +372,7 @@ Inline variables (will get injected into the terraform module when TF code is ge
 ```yaml
 variables:
   - name: bucket
-    value: "org-tech-cloudsync-demo-static-assets"
+    value: "org-tech-client-demo-static-assets"
   - name: acl
     valueFrom: s3-common.bucket_acl
 ```
@@ -451,7 +451,7 @@ Array of external files which will be bundled with the environment component
 
 ```yaml
 overlayFiles:
-  - source: "git@github.com:org-tech/cloudsync-config.git"
+  - source: "git@github.com:org-tech/client-config.git"
     paths:
       - demo/files/
       - demo/overlay.txt
@@ -490,7 +490,7 @@ dependsOn: [networking]
       source: aws
       name: vpc
     variablesFile:
-      source: "git@github.com:org-tech/cloudsync-config.git"
+      source: "git@github.com:org-tech/client-config.git"
       path: "demo/tfvars/networking.tfvars"
     # if the module supports outputs, name them here so they can be later referenced in `variables` block using `valueFrom`
     outputs:
@@ -510,7 +510,7 @@ dependsOn: [networking]
     # instead of inline variables, pass a tfvars file
     variablesFile:
       # repo where the file belongs
-      source: "git@github.com:org-tech/cloudsync-config.git"
+      source: "git@github.com:org-tech/client-config.git"
       # path to the file in the `source` repo
       path: "demo/tfvars/platform-eks.tfvars"
   ```
@@ -525,7 +525,7 @@ dependsOn: [networking]
       source: aws
       name: s3-bucket
     variablesFile:
-      source: "git@github.com:org-tech/cloudsync-config.git"
+      source: "git@github.com:org-tech/client-config.git"
       path: "demo/tfvars/eks-addons.tfvars"
   ```
 
@@ -544,7 +544,7 @@ dependsOn: [networking]
         # example of how to fetch a variable from `outputs`
         valueFrom: networking.private_subnets[0]
     variablesFile:
-      source: "git@github.com:org-tech/cloudsync-config.git"
+      source: "git@github.com:org-tech/client-config.git"
       path: "demo/tfvars/ec2.tfvars"
   ```
 
@@ -554,10 +554,10 @@ dependsOn: [networking]
   apiVersion: stable.compuzest.com/v1
   kind: Environment
   metadata:
-  name: org-tech-cloudsync-demo
+  name: org-tech-client-demo
   namespace: zlifecycle
   spec:
-  teamName: cloudsync
+  teamName: client
   envName: demo
   components:
     - name: static-assets
@@ -577,7 +577,7 @@ dependsOn: [networking]
 
       variables:
         - name: bucket
-          value: "org-tech-cloudsync-demo-static-assets"
+          value: "org-tech-client-demo-static-assets"
         - name: acl
           valueFrom: s3-bucket.bucket_arn
       secrets:
@@ -590,7 +590,7 @@ dependsOn: [networking]
             #!/bin/sh
             echo "Starting cloud init"
       overlayFiles:
-        - source: "git@github.com:org-tech/cloudsync-config.git"
+        - source: "git@github.com:org-tech/client-config.git"
           paths:
             - demo/files/
             - demo/overlay.txt
@@ -602,7 +602,7 @@ dependsOn: [networking]
         source: aws
         name: vpc
       variablesFile:
-        source: "git@github.com:org-tech/cloudsync-config.git"
+        source: "git@github.com:org-tech/client-config.git"
         path: "demo/tfvars/networking.tfvars"
       outputs:
         - name: private_subnets
@@ -613,7 +613,7 @@ dependsOn: [networking]
         source: aws
         name: s3-bucket
       variablesFile:
-        source: "git@github.com:org-tech/cloudsync-config.git"
+        source: "git@github.com:org-tech/client-config.git"
         path: "demo/tfvars/platform-eks.tfvars"
     - name: eks-addons
       type: terraform
@@ -622,7 +622,7 @@ dependsOn: [networking]
         source: aws
         name: s3-bucket
       variablesFile:
-        source: "git@github.com:org-tech/cloudsync-config.git"
+        source: "git@github.com:org-tech/client-config.git"
         path: "demo/tfvars/eks-addons.tfvars"
     - name: platform-ec2
       type: terraform
@@ -634,7 +634,7 @@ dependsOn: [networking]
         - name: subnet_id
           valueFrom: networking.private_subnets[0]
       variablesFile:
-        source: "git@github.com:org-tech/cloudsync-config.git"
+        source: "git@github.com:org-tech/client-config.git"
         path: "demo/tfvars/ec2.tfvars"
   ```
 
