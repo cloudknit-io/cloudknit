@@ -19,7 +19,7 @@ type TeamError struct {
 }
 
 func (e *TeamError) Error() string {
-	return fmt.Sprintf("team reconcile failed for company [%s], team [%s]: %v", e.Company, e.Team, e.Err)
+	return fmt.Sprintf("team reconcile failed for company [%s] -> team [%s]: %v", e.Company, e.Team, e.Err)
 }
 
 func (e *TeamError) Attributes() map[string]interface{} {
@@ -52,7 +52,7 @@ type EnvironmentError struct {
 }
 
 func (e *EnvironmentError) Error() string {
-	return fmt.Sprintf("environment reconcile failed for company [%s],team [%s], environment [%s]: %v", e.Company, e.Team, e.Environment, e.Err)
+	return fmt.Sprintf("environment reconcile failed for company [%s] -> team [%s] -> environment [%s]: %v", e.Company, e.Team, e.Environment, e.Err)
 }
 
 func (e *EnvironmentError) Attributes() map[string]interface{} {
