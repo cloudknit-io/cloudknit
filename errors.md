@@ -4,9 +4,33 @@ Almost all errors are logged in the **concise logs** section of the [component d
 
 Usually the errors that might occur are related to:-
 
-- **AWS Secrets**: When secrets are not set and one is trying to provision an environment. See [secrets section](secrets.md) to set secrets. 
+- **AWS Secrets**: When secrets are not set and one is trying to provision an environment. See [secrets section](secrets.md) to set secrets. Another reason could be while deploying a particular resource for example:-
+
+![AWS Error](assets/images/aws-resource-error.png)
   
-- **Terraform configuration**: This usually occurs if terraform initialization fails. When this happens contact your administrator. 
+- **Terraform configuration**: Errors related to terraform usually occur because of **wrong tfvars file** that zlifecycle refers while creating an environment for you.
+  A **tfvars** file is supplied by the user while creating environment yaml.
+
+  **Example:**
+
+  ```
+  name            = "cust-team-env-vpc"
+  cidr            = "10.11.0.0/16"
+  azs             = ["us-east-1a", "us-east-1b", "us-east-1c"]
+  private_subnets = ["10.11.0.0/24", "10.11.1.0/24", "10.11.2.0/24"]
+  public_subnets  = ["10.11.200.0/24", "10.11.201.0/24", "10.11.202.0/24"]
+  enable_ipv6 = truee // Error: we added wrong value here
+
+  public_subnet_ipv6_prefixes  = [0, 1, 2]
+  private_subnet_ipv6_prefixes = [3, 4, 5]
+  public_subnet_tags = {
+    "kubernetes.io/role/elb"      = 1
+  }
+  ```
+
+  The above **tfvars** file will error out as `truee` is not a valid value.
+
+
   
 - **Incorrect YAML**:
    - Formatting problem
