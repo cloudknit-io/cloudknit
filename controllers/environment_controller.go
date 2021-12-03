@@ -69,7 +69,7 @@ var environmentInitialRunLock = atomic.NewBool(true)
 
 // Reconcile method called everytime there is a change in Environment Custom Resource.
 func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	delayEnvironmentReconcileOnInitialRun(ctx, r.LogV2, 35)
+	delayEnvironmentReconcileOnInitialRun(r.LogV2, 35)
 	start := time.Now()
 
 	// get environment from k8s cache
@@ -135,9 +135,9 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	}
 
 	// reconcile logic
-	//isHardDelete := !environment.DeletionTimestamp.IsZero()
-	//isSoftDelete := environment.Spec.Teardown
-	isDeleteEvent := !environment.DeletionTimestamp.IsZero() || environment.Spec.Teardown
+	isHardDelete := !environment.DeletionTimestamp.IsZero()
+	isSoftDelete := environment.Spec.Teardown
+	isDeleteEvent := isHardDelete || isSoftDelete
 	if !isDeleteEvent {
 		if err := r.updateStatus(apmCtx, environment); err != nil {
 			if strings.Contains(err.Error(), registry.OptimisticLockErrorMsg) {
@@ -147,12 +147,12 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 			envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error updating environment status"))
 			return ctrl.Result{}, r.APM.NoticeError(tx, envErr)
 		}
+	}
+	if !isHardDelete {
 		if err := r.handleNonDeleteEvent(apmCtx, tempILRepoDir, environment, fileAPI); err != nil {
 			envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error handling non-delete event"))
 			return ctrl.Result{}, r.APM.NoticeError(tx, envErr)
 		}
-	} else {
-		r.LogV2.Info("Generating teardown workflow")
 	}
 
 	envComponentDirectory := il.EnvironmentComponentsDirectoryAbsolutePath(tempILRepoDir, environment.Spec.TeamName, environment.Spec.EnvName)
@@ -175,7 +175,7 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	}
 
 	if pushed {
-		if err := r.handleDirtyILState(apmCtx, argoworkflowAPI, environment); err != nil {
+		if err := r.handleDirtyILState(argoworkflowAPI, environment); err != nil {
 			envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error handling dirty IL state"))
 			return ctrl.Result{}, r.APM.NoticeError(tx, envErr)
 		}
@@ -244,7 +244,7 @@ func (r *EnvironmentReconciler) handleNonDeleteEvent(
 	return nil
 }
 
-func (r *EnvironmentReconciler) handleDirtyILState(ctx context.Context, argoworkflowAPI argoworkflow.API, e *stablev1.Environment) error {
+func (r *EnvironmentReconciler) handleDirtyILState(argoworkflowAPI argoworkflow.API, e *stablev1.Environment) error {
 	r.LogV2.Info("Committed new changes to IL repo")
 	r.LogV2.Info("Re-syncing Workflow of Workflows")
 	wow := fmt.Sprintf("%s-%s", e.Spec.TeamName, e.Spec.EnvName)
@@ -262,7 +262,7 @@ func (r *EnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func delayEnvironmentReconcileOnInitialRun(ctx context.Context, log *logrus.Entry, seconds int64) {
+func delayEnvironmentReconcileOnInitialRun(log *logrus.Entry, seconds int64) {
 	if environmentInitialRunLock.Load() {
 		log.WithField("duration", fmt.Sprintf("%ds", seconds)).Info("Delaying Environment reconcile on initial run to wait for Team operator")
 		time.Sleep(time.Duration(seconds) * time.Second)
