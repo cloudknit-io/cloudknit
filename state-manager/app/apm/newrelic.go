@@ -6,7 +6,7 @@ import (
 )
 
 func Init() (*newrelic.Application, error) {
-	license := os.Getenv("NEWRELIC_LICENSE")
+	license := os.Getenv("NEW_RELIC_API_KEY")
 	app, err := newrelic.NewApplication(
 		newrelic.ConfigAppName("zlifecycle-state-manager"),
 		newrelic.ConfigLicense(license),

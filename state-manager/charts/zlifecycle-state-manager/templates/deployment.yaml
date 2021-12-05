@@ -49,10 +49,10 @@ spec:
           env:
             - name: GITHUB_TOKEN
               value: {{ .Values.env.GITHUB_TOKEN }}
-            - name: ENABLE_NEWRELIC
-              value: {{ quote .Values.env.ENABLE_NEWRELIC }}
-            - name: NEWRELIC_LICENSE
-              value: {{ .Values.env.NEWRELIC_LICENSE }}
+            - name: ENABLE_NEW_RELIC
+              value: {{ quote .Values.env.ENABLE_NEW_RELIC }}
+            - name: NEW_RELIC_API_KEY
+              value: {{ .Values.env.NEW_RELIC_API_KEY }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       volumes:

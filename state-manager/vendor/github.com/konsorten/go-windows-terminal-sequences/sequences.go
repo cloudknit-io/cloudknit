@@ -1,6 +1,6 @@
 // +build windows
 
-package sequences
+package go_windows_terminal_sequences
 
 import (
 	"syscall"

@@ -45,8 +45,8 @@ func NewServer() {
 func initRouter() (*mux.Router, error) {
 	r := mux.NewRouter()
 
-	if os.Getenv("DEV_MODE") != "true" && os.Getenv("ENABLE_NEWRELIC") == "true" {
-		zlog.PlainLogger().Info("Initializing application in cloud mode")
+	if os.Getenv("DEV_MODE") != "true" && os.Getenv("ENABLE_NEW_RELIC") == "true" {
+		zlog.PlainLogger().Info("Initializing application with APM")
 		zlog.PlainLogger().Info("Initializing NewRelic APM")
 		app, err := apm.Init()
 		if err != nil {
@@ -54,7 +54,7 @@ func initRouter() (*mux.Router, error) {
 		}
 		r.HandleFunc(newrelic.WrapHandleFunc(app, "/state", controllers.StateHandler))
 	} else {
-		zlog.PlainLogger().Info("Initializing application in dev mode")
+		zlog.PlainLogger().Info("Initializing application without APM")
 		r.HandleFunc("/state", controllers.StateHandler)
 	}
 
