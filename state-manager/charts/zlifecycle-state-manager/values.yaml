@@ -11,9 +11,9 @@ image:
   tag: "latest"
 
 env:
-  GITHUB_TOKEN:
-  ENABLE_NEWRELIC:
-  NEWRELIC_LICENSE:
+  GITHUB_TOKEN: ""
+  ENABLE_NEW_RELIC: "false"
+  NEW_RELIC_API_KEY: ""
 
 imagePullSecrets: []
 nameOverride: ""
