@@ -1,0 +1,26 @@
+apiVersion: stable.compuzest.com/v1
+kind: Environment
+metadata:
+  name: zmart-checkout-dev
+  namespace: zlifecycle
+spec:
+  teamName: checkout
+  envName: dev
+  components:
+    - name: static-assets
+      type: terraform
+      module:
+        source: aws
+        name: s3-bucket
+      variables:
+        - name: bucket
+          value: "dev-checkout-prod-static-assets"
+    - name: static-assets
+      type: terraform
+      dependsOn: [networking]
+      module:
+        source: aws
+        name: s3-bucket
+      variables:
+        - name: bucket
+          value: "dev-checkout-prod-static-assets"
