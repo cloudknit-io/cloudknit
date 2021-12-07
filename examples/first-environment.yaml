@@ -7,20 +7,20 @@ spec:
   teamName: checkout
   envName: dev
   components:
-    - name: static-assets
+    - name: images
       type: terraform
       module:
         source: aws
         name: s3-bucket
       variables:
         - name: bucket
-          value: "zmart-checkout-prod-static-assets"
-    - name: static-assets-2
+          value: "zmart-checkout-dev-images"
+    - name: videos
       type: terraform
-      dependsOn: [static-assets]
+      dependsOn: [static-assets-images]
       module:
         source: aws
         name: s3-bucket
       variables:
         - name: bucket
-          value: "zmart-checkout-prod-static-assets-2"
+          value: "zmart-checkout-dev-videos"
