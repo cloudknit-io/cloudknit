@@ -14,13 +14,13 @@ spec:
         name: s3-bucket
       variables:
         - name: bucket
-          value: "dev-checkout-prod-static-assets"
-    - name: static-assets
+          value: "zmart-checkout-prod-static-assets"
+    - name: static-assets-2
       type: terraform
-      dependsOn: [networking]
+      dependsOn: [static-assets]
       module:
         source: aws
         name: s3-bucket
       variables:
         - name: bucket
-          value: "dev-checkout-prod-static-assets"
+          value: "zmart-checkout-prod-static-assets-2"
