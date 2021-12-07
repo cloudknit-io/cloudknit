@@ -15,7 +15,7 @@
     * Getting Started
         * Setting up zLifecycle
         * [Provisioning your First Environment](provision/first-environment.md)
-    * [Define Environment](define-environment.md)
+    * [Define Environment](define/define-environment.md)
     * Provision Environment
     * Reconcile Environment
     * Teardown Environment

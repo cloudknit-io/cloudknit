@@ -1,16 +1,16 @@
+# Define Environment
+
+Defining an Environment is the 1st step of the lifecycle management. Environment Definition uses a Kubernetes [Custom Resource](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) which is in YAML format and provides a declerative way of defining an environment.
+
 # Environment YAML
 
-An environment YAML is the starting point when provisioning the environment, it provides zlifecycle the meta information required to **create** and **deploy** the **components**, **modules**, etc.
+An environment YAML allows you to provide all the details of an environment. It has following main sections:
 
-- [Environment YAML](#environment-yaml)
-    - [Metdata](#metdata)
-    - [Spec](#spec)
-    - [Components](#components)
-    - [Examples](#examples)
+- [Metdata](#metdata)
+- [Spec](#spec)
+- [Components](#components)
 
-Our YAML file always starts with following yaml:
-
-with `kind` property being `environment`, and for now `apiVersion` is always `stable.compuzest.com/v1`
+Kubernetes Custom Resource starts with `apiVersion` and `kind`. For zLifecycle Environments that means following:
 
 ```yaml
 apiVersion: stable.compuzest.com/v1
@@ -21,7 +21,7 @@ kind: Environment
 
 - [Name](#metadata-name)
 - [Namespace](#metadata-namespace)
-- [Usage](#metadata-usage)
+- [Example](#metadata-example)
 
 ---
 
@@ -29,32 +29,30 @@ kind: Environment
   Overview
 </h4>
 
-Metadata propery contains the `name` of your `environment` along with the `namespace` property which for now is always `zlifecycle`
+Metadata contains the `name` of your environment along with the `namespace` which is always `zlifecycle`
 
 <div style="background-color: #ccc; height: 1px"></div>
 
 <h4 id="metadata-name" style="font-weight: 200; letter-spacing: 2px;">
-  Name Property
+  Name
 </h4>
 
-The name property should be unique for every environment, to mantain that we follow following naming convention:-
+The name should be unique for every environment, to ensure that we follow below naming convention:-
 
-`{orgName}-{teamName}-{environmentName}`
+`{company}-{team}-{environment}`
 
-**orgName** is your organisation's name.
-**teamName** and **environmentName** are provided in the [spec](#spec) scope.
+For example: `zmart-checkout-dev`
 
-```yaml
-name: orgtech-client-demo
-```
+**company** is your organization's name.
+**team** and **environment** are defined in the [spec](#spec) section below.
 
 <div style="background-color: #ccc; height: 1px"></div>
 
 <h4 id="metadata-namespace" style="font-weight: 200; letter-spacing: 2px;">
-  Namespace Property
+  Namespace
 </h4>
 
-Namespace is always `zlifecycle` for every yaml you create.
+Namespace is always `zlifecycle` for every environment you create.
 
 ```yaml
 namespace: zlifecycle
@@ -62,15 +60,15 @@ namespace: zlifecycle
 
 <div style="background-color: #ccc; height: 1px"></div>
 
-<h4 id="metadata-usage" style="font-weight: 200; letter-spacing: 2px;">
-  Usage
+<h4 id="metadata-example" style="font-weight: 200; letter-spacing: 2px;">
+  Example
 </h4>
 
 ```yaml
 metadata:
-  # Environment CRD k8s object name
-  name: orgtech-client-demo
-  # namespace is `zlifecycle` for every yaml you create
+  # Environment Custom Resource name in k8s
+  name: zmart-checkout-dev
+  # namespace should be `zlifecycle` for all environments
   namespace: zlifecycle
 ```
 
