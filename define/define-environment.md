@@ -1,63 +1,38 @@
 # Define Environment
 
-Defining an Environment is the 1st step of the lifecycle management. Environment Definition uses a Kubernetes [Custom Resource](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) which is in YAML format and provides a declerative way of defining an environment.
+Defining an Environment is the 1st step of the lifecycle management. Environment definition uses a Kubernetes [Custom Resource](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) which is in YAML format and provides a declarative way of defining an environment.
 
 # Environment YAML
 
 An environment YAML allows you to provide all the details of an environment. It has following main sections:
 
-- [Metdata](#metdata)
-- [Spec](#spec)
-- [Components](#components)
+| Field Name | Field Type | Description   |
+|:----------:|:----------:|---------------|
+|`apiVersion`|`string`|APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.io.k8s.community/contributors/devel/sig-architecture/api-conventions.md#resources|
+|`kind`|`string`|Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.io.k8s.community/contributors/devel/sig-architecture/api-conventions.md#types-kinds|
+|`metadata`|[`Metadata`](#Metadata)|_No description available_|
+|`spec`|[`spec`](#spec)|_No description available_|
+|`status`|[`WorkflowStatus`](#workflowstatus)|_No description available_|
 
-Kubernetes Custom Resource starts with `apiVersion` and `kind`. For zLifecycle Environments that means following:
+Since Environment is a Kubernetes Custom Resource it starts with `apiVersion` and `kind`. For zLifecycle Environments that means following:
 
 ```yaml
 apiVersion: stable.compuzest.com/v1
 kind: Environment
 ```
 
-### Metdata
-
-- [Name](#metadata-name)
-- [Namespace](#metadata-namespace)
-- [Example](#metadata-example)
-
----
-
-<h4 style="font-weight: 200; letter-spacing: 2px">
-  Overview
-</h4>
+### Metadata
 
 Metadata contains the `name` of your environment along with the `namespace` which is always `zlifecycle`
 
-<div style="background-color: #ccc; height: 1px"></div>
+### Fields
+| Field Name | Field Type | Description   |
+|:----------:|:----------:|---------------|
+|`name`|`string`| The name should be unique for every environment, to ensure that we follow below naming convention:- `{company}-{team}-{environment}` For example: `zmart-checkout-dev` **company** is your organization's name. **team** and **environment** are defined in the [spec](#spec) section below |
+|`namespace`|`string|Namespace is always `zlifecycle` for every environment you create|
 
-<h4 id="metadata-name" style="font-weight: 200; letter-spacing: 2px;">
-  Name
-</h4>
 
-The name should be unique for every environment, to ensure that we follow below naming convention:-
-
-`{company}-{team}-{environment}`
-
-For example: `zmart-checkout-dev`
-
-**company** is your organization's name.
-**team** and **environment** are defined in the [spec](#spec) section below.
-
-<div style="background-color: #ccc; height: 1px"></div>
-
-<h4 id="metadata-namespace" style="font-weight: 200; letter-spacing: 2px;">
-  Namespace
-</h4>
-
-Namespace is always `zlifecycle` for every environment you create.
-
-```yaml
-namespace: zlifecycle
-```
-
+---
 <div style="background-color: #ccc; height: 1px"></div>
 
 <h4 id="metadata-example" style="font-weight: 200; letter-spacing: 2px;">
@@ -76,18 +51,18 @@ metadata:
 
 ### Spec
 
+<h4 style="font-weight: 200; letter-spacing: 2px">
+  Overview
+</h4>
+
+Spec contains the information about details of the environment to be provisioned.
+
   - [Team Name](#team-name)
   - [Environment Name](#environment-name)
   - [Auto Approve](#auto-approve)
   - [Teardown](#teardown)
   - [Selective Reconcile](#selective-reconcile)
   - [Components](#spec-components)
-
-<h4 style="font-weight: 200; letter-spacing: 2px">
-  Overview
-</h4>
-
-Spec contains the information about **HOW** to provision an environment.
 
 <div style="background-color: #ccc; height: 1px"></div>
 
