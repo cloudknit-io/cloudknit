@@ -22,15 +22,11 @@ if [ $config_reconcile_id -eq 0 ]; then
     config_reconcile_id=null
 fi
 
-if [[ $skip_component != 'noSkip' ]]; then
+if [ "$skip_component" != 'noSkip' ]; then
     config_status='skipped'
-    if [[ $skip_component = 'selectiveReconcile' ]]; then
+    if [ "$skip_component" = 'selectiveReconcile' ]; then
         config_status='skipped_reconcile'
     fi
-    sh /argocd/login.sh
-    
-    data='{"metadata":{"labels":{"component_status":"'$config_status'"}}}'
-    argocd app patch $team_env_config_name --patch $data --type merge >null
 fi
 
 component_payload='[{"id" : '$config_reconcile_id', "name" : "'$team_env_config_name'", "status" : "'$config_status'", "startDateTime" : "'$start_date'", "endDateTime" : '$end_date'}]'
