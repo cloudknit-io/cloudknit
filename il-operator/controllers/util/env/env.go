@@ -7,14 +7,22 @@ import (
 type config struct {
 	App string
 
-	ZlifecycleOwner               string
+	ZlifecycleILRepoOwner         string
 	ZlifecycleMasterRepoSSHSecret string
 	ZlifecycleOperatorNamespace   string
 	ZlifecycleOperatorRepo        string
 	CompanyName                   string
-	ILRepoName                    string
-	ILRepoURL                     string
+	ZLILRepoName                  string
+	ZLILRepoURL                   string
+	TFILRepoName                  string
+	TFILRepoURL                   string
 	ILRepoSourceOwner             string
+
+	DefaultTerraformVersion string
+	DefaultRegion           string
+	DefaultSharedRegion     string
+	DefaultSharedProfile    string
+	DefaultSharedAlias      string
 
 	GithubSvcAccntName  string
 	GithubSvcAccntEmail string
@@ -56,15 +64,23 @@ type config struct {
 var Config = config{
 	App: "zlifecycle-il-operator",
 
-	ZlifecycleOwner:               getOr("GITHUB_ZLIFECYCLE_OWNER", "zlifecycle-il"),
+	ZlifecycleILRepoOwner:         getOr("GITHUB_ZLIFECYCLE_OWNER", "zlifecycle-il"),
 	ZlifecycleMasterRepoSSHSecret: getOr("ZLIFECYCLE_MASTER_SSH", "zlifecycle-operator-ssh"),
-	ZlifecycleOperatorNamespace:   os.Getenv("ZLIFECYCLE_OPERATOR_NAMESPACE"),
+	ZlifecycleOperatorNamespace:   getOr("ZLIFECYCLE_OPERATOR_NAMESPACE", "zlifecycle-il-operator-system"),
 	ZlifecycleOperatorRepo:        "zlifecycle-il-operator",
 
 	CompanyName:       os.Getenv("companyName"),
-	ILRepoName:        os.Getenv("ilRepoName"),
-	ILRepoURL:         os.Getenv("ilRepo"),
+	ZLILRepoName:      os.Getenv("ilRepoName"),
+	ZLILRepoURL:       os.Getenv("ilRepo"),
+	TFILRepoName:      os.Getenv("TF_IL_REPO_NAME"),
+	TFILRepoURL:       os.Getenv("TF_IL_REPO_URL"),
 	ILRepoSourceOwner: os.Getenv("ilRepoSourceOwner"),
+
+	DefaultTerraformVersion: getOr("TERRAFORM_DEFAULT_VERSION", "1.0.9"),
+	DefaultRegion:           getOr("TERRAFORM_DEFAULT_REGION", "us-east-1"),
+	DefaultSharedRegion:     getOr("TERRAFORM_DEFAULT_SHARED_REGION", "us-east-1"),
+	DefaultSharedProfile:    getOr("TERRAFORM_DEFAULT_SHARED_PROFILE", "compuzest-shared"),
+	DefaultSharedAlias:      getOr("TERRAFORM_DEFAULT_SHARED_PROFILE", "shared"),
 
 	DisableWebhooks:   getOr("DISABLE_WEBHOOKS", "false"),
 	KubernetesCertDir: os.Getenv("KUBERNETES_CERT_DIR"),
@@ -99,7 +115,7 @@ var Config = config{
 
 	TelemetryEnvironment: getOr("TELEMETRY_ENVIRONMENT", "dev"),
 
-	SlackWebhookURL: getOr("SLACK_WEBHOOK_URL", "https://hooks.slack.com/services/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"),
+	SlackWebhookURL: os.Getenv("SLACK_WEBHOOK_URL"),
 }
 
 func getOr(key string, defaultValue string) string {

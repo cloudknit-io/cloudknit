@@ -26,7 +26,7 @@ import (
 
 //go:generate go run -mod=mod github.com/golang/mock/mockgen -source=./file.go -destination=../../../mocks/mock_file.go -package=mocks github.com/compuzest/zlifecycle-il-operator/mocks
 
-type Service interface {
+type FSAPI interface {
 	SaveFileFromString(input string, folderName string, fileName string) error
 	SaveFileFromByteArray(input []byte, folderName string, fileName string) error
 	SaveYamlFile(obj interface{}, folderName string, fileName string) error
@@ -68,7 +68,7 @@ func (f *OsFileService) SaveVarsToFile(variables []*stablev1.Variable, folderNam
 	return nil
 }
 
-// SaveFileFromTemplate creates a file with variables
+// SaveFileFromTemplate creates a file with variables.
 func (f *OsFileService) SaveFileFromTemplate(t *template.Template, vars interface{}, folderName string, fileName string) error {
 	file, err := createFileRecursive(folderName, fileName)
 	if err != nil {
@@ -99,7 +99,7 @@ func createFileRecursive(folderName string, fileName string) (*os.File, error) {
 	return file, nil
 }
 
-// SaveFileFromString Create file
+// SaveFileFromString Create file.
 func (f *OsFileService) SaveFileFromString(input string, folderName string, fileName string) error {
 	return saveBytesToFile([]byte(input), folderName, fileName)
 }
@@ -108,12 +108,12 @@ func (f *OsFileService) SaveFileFromByteArray(input []byte, folderName string, f
 	return saveBytesToFile(input, folderName, fileName)
 }
 
-// CreateEmptyDirectory creates empty directory with a .keep file
+// CreateEmptyDirectory creates empty directory with a .keep file.
 func (f *OsFileService) CreateEmptyDirectory(folderName string) error {
 	return saveBytesToFile(nil, folderName, ".keep")
 }
 
-// SaveYamlFile creates file and directory, does not validate yaml
+// SaveYamlFile creates file and directory, does not validate yaml.
 func (f *OsFileService) SaveYamlFile(obj interface{}, folderName string, fileName string) error {
 	jsonBytes, err := json.Marshal(obj)
 	if err != nil {

@@ -14,15 +14,15 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func SaveTfVarsToFile(fileService file.Service, ecVars []*v1.Variable, folderName string, fileName string) error {
-	variables := make([]*v1.Variable, 0, len(ecVars))
-	for _, v := range ecVars {
+func SaveTfVarsToFile(fs file.FSAPI, vars []*v1.Variable, folderName string, fileName string) error {
+	variables := make([]*v1.Variable, 0, len(vars))
+	for _, v := range vars {
 		// TODO: This is a hack to just to make it work, needs to be revisited
 		v.Value = fmt.Sprintf("\"%s\"", v.Value)
 		variables = append(variables, v)
 	}
 
-	return fileService.SaveVarsToFile(variables, folderName, fileName)
+	return fs.SaveVarsToFile(variables, folderName, fileName)
 }
 
 func GetVariablesFromTfvarsFile(

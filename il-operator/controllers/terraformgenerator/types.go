@@ -80,9 +80,9 @@ type TerraformDataConfig struct {
 
 // UtilTerraformGenerator package interface for generating terraform files
 type UtilTerraformGenerator interface {
-	GenerateTerraform(tempILRepoDir string, fileUtil file.Service, 	vars *TemplateVariables, environmentComponentDirectory string) error
-  GenerateSharedProvider(file file.Service, environmentComponentDirectory string, componentName string) error
-	GenerateFromTemplate(vars interface{}, environmentComponentDirectory string, componentName string, fileUtil file.Service, templateName string, filePath string) error
+	GenerateTerraform(tempILRepoDir string, fileUtil file.FSAPI, vars *TemplateVariables, environmentComponentDirectory string) error
+	GenerateSharedProvider(file file.FSAPI, environmentComponentDirectory string, componentName string) error
+	GenerateFromTemplate(vars interface{}, environmentComponentDirectory string, componentName string, fileUtil file.FSAPI, templateName string, filePath string) error
 }
 
 type TerraformGenerator struct {
