@@ -115,7 +115,7 @@ var Config = config{
 
 	TelemetryEnvironment: getOr("TELEMETRY_ENVIRONMENT", "dev"),
 
-	SlackWebhookURL: getOr("SLACK_WEBHOOK_URL", "https://hooks.slack.com/services/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"),
+	SlackWebhookURL: os.Getenv("SLACK_WEBHOOK_URL"),
 }
 
 func getOr(key string, defaultValue string) string {
