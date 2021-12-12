@@ -26,25 +26,16 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
 )
 
-const (
-	DefaultTerraformVersion = "1.0.9"
-	DefaultRegion           = "us-east-1"
-	DefaultSharedRegion     = "us-east-1"
-	DefaultSharedProfile    = "compuzest-shared"
-	DefaultSharedAlias      = "shared"
-)
-
 func GenerateTerraform(
-	tempILRepoDir string,
-	fileService file.Service,
+	fileAPI file.API,
 	vars *TemplateVariables,
-	componentDirectory string,
+	tfDirectory string,
 ) error {
 	componentName := vars.EnvCompName
 
 	backendConfig := TerraformBackendConfig{
-		Region:        DefaultSharedRegion,
-		Profile:       DefaultSharedProfile,
+		Region:        env.Config.DefaultSharedRegion,
+		Profile:       env.Config.DefaultSharedProfile,
 		Bucket:        fmt.Sprintf("zlifecycle-tfstate-%s", env.Config.CompanyName),
 		DynamoDBTable: fmt.Sprintf("zlifecycle-tflock-%s", env.Config.CompanyName),
 		TeamName:      vars.TeamName,
@@ -53,7 +44,7 @@ func GenerateTerraform(
 	}
 
 	versionsConfig := TerraformVersionsConfig{
-		Version: DefaultTerraformVersion,
+		Version: env.Config.DefaultTerraformVersion,
 	}
 
 	standardizedVariables, err := standardizeVariables(vars.EnvCompVariables)
@@ -62,7 +53,7 @@ func GenerateTerraform(
 	}
 	moduleConfig := TerraformModuleConfig{
 		ComponentName: componentName,
-		Source:        il.EnvComponentModuleSource(vars.EnvCompModuleSource, vars.EnvCompModuleName),
+		Source:        il.EnvironmentComponentModuleSource(vars.EnvCompModuleSource, vars.EnvCompModuleName),
 		Path:          vars.EnvCompModulePath,
 		Version:       vars.EnvCompModuleVersion,
 		Variables:     standardizedVariables,
@@ -76,8 +67,8 @@ func GenerateTerraform(
 	}
 
 	dataConfig := TerraformDataConfig{
-		Region:    DefaultSharedRegion,
-		Profile:   DefaultSharedProfile,
+		Region:    env.Config.DefaultSharedRegion,
+		Profile:   env.Config.DefaultSharedProfile,
 		Bucket:    fmt.Sprintf("zlifecycle-tfstate-%s", env.Config.CompanyName),
 		TeamName:  vars.TeamName,
 		EnvName:   vars.EnvName,
@@ -93,7 +84,7 @@ func GenerateTerraform(
 		}
 	}
 
-	region := DefaultRegion
+	region := env.Config.DefaultRegion
 	if vars.EnvCompAWSConfig != nil && vars.EnvCompAWSConfig.Region != "" {
 		region = vars.EnvCompAWSConfig.Region
 	}
@@ -104,9 +95,9 @@ func GenerateTerraform(
 	}
 
 	sharedProviderConfig := TerraformProviderConfig{
-		Region:  DefaultSharedRegion,
-		Profile: DefaultSharedProfile,
-		Alias:   DefaultSharedAlias,
+		Region:  env.Config.DefaultSharedRegion,
+		Profile: env.Config.DefaultSharedProfile,
+		Alias:   env.Config.DefaultSharedAlias,
 	}
 
 	secretsMeta := secrets.SecretMeta{
@@ -120,47 +111,40 @@ func GenerateTerraform(
 		return err
 	}
 
-	tfPath := terraformPath{componentDirectory: componentDirectory, componentName: componentName}
-
-	terraformDirectory := il.EnvironmentComponentTerraformDirectoryAbsolutePath(tempILRepoDir, vars.TeamName, vars.EnvName, tfPath.componentName)
-
-	// Deleting terraform folder so that it gets recreated so that any dangling files are cleaned up
-	fileService.RemoveAll(terraformDirectory)
-
-	if err := generateFile(fileService, &providerConfig, terraformDirectory, "provider.tf", "terraform_provider"); err != nil {
+	if err := generateFile(fileAPI, &providerConfig, tfDirectory, "provider.tf", "terraform_provider"); err != nil {
 		return err
 	}
 
-	if err := generateFile(fileService, &sharedProviderConfig, terraformDirectory, "provider_shared.tf", "terraform_provider"); err != nil {
+	if err := generateFile(fileAPI, &sharedProviderConfig, tfDirectory, "provider_shared.tf", "terraform_provider"); err != nil {
 		return err
 	}
 
-	if err := generateFile(fileService, &backendConfig, terraformDirectory, "terraform.tf", "terraform_backend"); err != nil {
+	if err := generateFile(fileAPI, &backendConfig, tfDirectory, "terraform.tf", "terraform_backend"); err != nil {
 		return err
 	}
 
-	if err := generateFile(fileService, &versionsConfig, terraformDirectory, "versions.tf", "terraform_versions"); err != nil {
+	if err := generateFile(fileAPI, &versionsConfig, tfDirectory, "versions.tf", "terraform_versions"); err != nil {
 		return err
 	}
 
-	if err := generateFile(fileService, &moduleConfig, terraformDirectory, "module.tf", "terraform_module"); err != nil {
+	if err := generateFile(fileAPI, &moduleConfig, tfDirectory, "module.tf", "terraform_module"); err != nil {
 		return err
 	}
 
 	if len(outputsConfig.Outputs) > 0 {
-		if err := generateFile(fileService, &outputsConfig, terraformDirectory, "outputs.tf", "terraform_outputs"); err != nil {
+		if err := generateFile(fileAPI, &outputsConfig, tfDirectory, "outputs.tf", "terraform_outputs"); err != nil {
 			return err
 		}
 	}
 
 	if len(dataConfig.DependsOn) > 0 {
-		if err := generateFile(fileService, &dataConfig, terraformDirectory, "data.tf", "terraform_data"); err != nil {
+		if err := generateFile(fileAPI, &dataConfig, tfDirectory, "data.tf", "terraform_data"); err != nil {
 			return err
 		}
 	}
 
 	if vars.EnvCompSecrets != nil && len(vars.EnvCompSecrets) > 0 {
-		if err := generateFile(fileService, &secretsConfig, terraformDirectory, "secrets.tf", "terraform_secrets"); err != nil {
+		if err := generateFile(fileAPI, &secretsConfig, tfDirectory, "secrets.tf", "terraform_secrets"); err != nil {
 			return err
 		}
 	}
@@ -168,7 +152,7 @@ func GenerateTerraform(
 	return nil
 }
 
-func generateFile(service file.Service, templateVars interface{}, terraformDirectory string, fileName string, templateName string) error {
+func generateFile(service file.API, templateVars interface{}, terraformDirectory string, fileName string, templateName string) error {
 	f, err := service.NewFile(terraformDirectory, fileName)
 	if err != nil {
 		return err

@@ -16,12 +16,10 @@ import (
 	"context"
 	"flag"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/apm"
-	"github.com/newrelic/go-agent/v3/integrations/logcontext/nrlogrusplugin"
-	"github.com/sirupsen/logrus"
-	"os"
-
 	"github.com/compuzest/zlifecycle-il-operator/controllers/gitreconciler"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
+	"github.com/newrelic/go-agent/v3/integrations/logcontext/nrlogrusplugin"
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -74,8 +72,7 @@ func main() {
 		CertDir:            env.Config.KubernetesCertDir,
 	})
 	if err != nil {
-		setupLog.WithError(err).Error("unable to start manager")
-		os.Exit(1)
+		setupLog.WithError(err).Panic("unable to start manager")
 	}
 
 	// ctx
@@ -84,7 +81,7 @@ func main() {
 	// Git reconciler
 	gitReconciler := gitreconciler.NewReconciler(
 		ctx,
-		ctrl.Log.WithName("GitReconciler"),
+		newLogger().WithFields(logrus.Fields{"logger": "GitReconciler", "instance": env.Config.CompanyName, "company": env.Config.CompanyName}),
 		mgr.GetClient(),
 	)
 	if err := gitReconciler.Start(); err != nil {
@@ -99,8 +96,7 @@ func main() {
 		logrus.SetFormatter(nrlogrusplugin.ContextFormatter{})
 		_apm, err = apm.NewNewRelic()
 		if err != nil {
-			setupLog.WithError(err).Error("unable to init new relic")
-			os.Exit(1)
+			setupLog.WithError(err).Panic("unable to init new relic")
 		}
 	}
 
@@ -108,45 +104,38 @@ func main() {
 	if err = (&controllers.CompanyReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("Company"),
+		LogV2:  newLogger().WithFields(logrus.Fields{"logger": "controller.Company", "instance": env.Config.CompanyName, "company": env.Config.CompanyName}),
 		Scheme: mgr.GetScheme(),
 		APM:    _apm,
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.WithError(err).WithField("controller", "Company").Error("unable to create controller")
-		os.Exit(1)
+		setupLog.WithError(err).WithField("controller", "Company").Panic("unable to create controller")
 	}
 
 	// team controller init
-	teamLogger := logrus.New()
-	teamLogger.SetFormatter(nrlogrusplugin.ContextFormatter{})
 	if err = (&controllers.TeamReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("Team"),
-		LogV2:  teamLogger.WithFields(logrus.Fields{"logger": "controller.Team", "company": env.Config.CompanyName}),
+		LogV2:  newLogger().WithFields(logrus.Fields{"logger": "controller.Team", "instance": env.Config.CompanyName, "company": env.Config.CompanyName}),
 		Scheme: mgr.GetScheme(),
 		APM:    _apm,
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.WithError(err).WithField("controller", "Team").Error("unable to create controller")
-		os.Exit(1)
+		setupLog.WithError(err).WithField("controller", "Team").Panic("unable to create controller")
 	}
 
 	// environment controller init
-	environmentLogger := logrus.New()
-	environmentLogger.SetFormatter(nrlogrusplugin.ContextFormatter{})
 	if err = (&controllers.EnvironmentReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("Environment"),
-		LogV2:  environmentLogger.WithFields(logrus.Fields{"logger": "controller.Environment", "company": env.Config.CompanyName}),
+		LogV2:  newLogger().WithFields(logrus.Fields{"logger": "controller.Environment", "instance": env.Config.CompanyName, "company": env.Config.CompanyName}),
 		Scheme: mgr.GetScheme(),
 		APM:    _apm,
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.WithError(err).WithField("controller", "Environment").Error("unable to create controller")
-		os.Exit(1)
+		setupLog.WithError(err).WithField("controller", "Environment").Panic("unable to create controller")
 	}
 
 	if env.Config.DisableWebhooks != "true" {
 		if err = (&stablev1.Environment{}).SetupWebhookWithManager(mgr); err != nil {
-			setupLog.WithError(err).Error("unable to create webhook", "webhook", "Environment")
-			os.Exit(1)
+			setupLog.WithError(err).Panic("unable to create webhook", "webhook", "Environment")
 		}
 	}
 
@@ -154,7 +143,16 @@ func main() {
 
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
-		setupLog.WithError(err).Error("problem running manager")
-		os.Exit(1)
+		setupLog.WithError(err).Panic("problem running manager")
 	}
+}
+
+func newLogger() *logrus.Logger {
+	l := logrus.New()
+	if env.Config.Mode != "local" {
+		l.SetFormatter(nrlogrusplugin.ContextFormatter{})
+	} else {
+		l.SetFormatter(&logrus.TextFormatter{})
+	}
+	return l
 }

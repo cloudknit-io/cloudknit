@@ -13,31 +13,31 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-// MockService is a mock of Service interface.
-type MockService struct {
+// MockAPI is a mock of API interface.
+type MockAPI struct {
 	ctrl     *gomock.Controller
-	recorder *MockServiceMockRecorder
+	recorder *MockAPIMockRecorder
 }
 
-// MockServiceMockRecorder is the mock recorder for MockService.
-type MockServiceMockRecorder struct {
-	mock *MockService
+// MockAPIMockRecorder is the mock recorder for MockAPI.
+type MockAPIMockRecorder struct {
+	mock *MockAPI
 }
 
-// NewMockService creates a new mock instance.
-func NewMockService(ctrl *gomock.Controller) *MockService {
-	mock := &MockService{ctrl: ctrl}
-	mock.recorder = &MockServiceMockRecorder{mock}
+// NewMockAPI creates a new mock instance.
+func NewMockAPI(ctrl *gomock.Controller) *MockAPI {
+	mock := &MockAPI{ctrl: ctrl}
+	mock.recorder = &MockAPIMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockService) EXPECT() *MockServiceMockRecorder {
+func (m *MockAPI) EXPECT() *MockAPIMockRecorder {
 	return m.recorder
 }
 
 // CreateEmptyDirectory mocks base method.
-func (m *MockService) CreateEmptyDirectory(folderName string) error {
+func (m *MockAPI) CreateEmptyDirectory(folderName string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateEmptyDirectory", folderName)
 	ret0, _ := ret[0].(error)
@@ -45,13 +45,13 @@ func (m *MockService) CreateEmptyDirectory(folderName string) error {
 }
 
 // CreateEmptyDirectory indicates an expected call of CreateEmptyDirectory.
-func (mr *MockServiceMockRecorder) CreateEmptyDirectory(folderName interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) CreateEmptyDirectory(folderName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateEmptyDirectory", reflect.TypeOf((*MockService)(nil).CreateEmptyDirectory), folderName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateEmptyDirectory", reflect.TypeOf((*MockAPI)(nil).CreateEmptyDirectory), folderName)
 }
 
 // NewFile mocks base method.
-func (m *MockService) NewFile(folderName, fileName string) (*os.File, error) {
+func (m *MockAPI) NewFile(folderName, fileName string) (*os.File, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NewFile", folderName, fileName)
 	ret0, _ := ret[0].(*os.File)
@@ -60,13 +60,13 @@ func (m *MockService) NewFile(folderName, fileName string) (*os.File, error) {
 }
 
 // NewFile indicates an expected call of NewFile.
-func (mr *MockServiceMockRecorder) NewFile(folderName, fileName interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) NewFile(folderName, fileName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewFile", reflect.TypeOf((*MockService)(nil).NewFile), folderName, fileName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewFile", reflect.TypeOf((*MockAPI)(nil).NewFile), folderName, fileName)
 }
 
 // RemoveAll mocks base method.
-func (m *MockService) RemoveAll(path string) error {
+func (m *MockAPI) RemoveAll(path string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RemoveAll", path)
 	ret0, _ := ret[0].(error)
@@ -74,13 +74,13 @@ func (m *MockService) RemoveAll(path string) error {
 }
 
 // RemoveAll indicates an expected call of RemoveAll.
-func (mr *MockServiceMockRecorder) RemoveAll(path interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) RemoveAll(path interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveAll", reflect.TypeOf((*MockService)(nil).RemoveAll), path)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveAll", reflect.TypeOf((*MockAPI)(nil).RemoveAll), path)
 }
 
 // SaveFileFromByteArray mocks base method.
-func (m *MockService) SaveFileFromByteArray(input []byte, folderName, fileName string) error {
+func (m *MockAPI) SaveFileFromByteArray(input []byte, folderName, fileName string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveFileFromByteArray", input, folderName, fileName)
 	ret0, _ := ret[0].(error)
@@ -88,13 +88,13 @@ func (m *MockService) SaveFileFromByteArray(input []byte, folderName, fileName s
 }
 
 // SaveFileFromByteArray indicates an expected call of SaveFileFromByteArray.
-func (mr *MockServiceMockRecorder) SaveFileFromByteArray(input, folderName, fileName interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) SaveFileFromByteArray(input, folderName, fileName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveFileFromByteArray", reflect.TypeOf((*MockService)(nil).SaveFileFromByteArray), input, folderName, fileName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveFileFromByteArray", reflect.TypeOf((*MockAPI)(nil).SaveFileFromByteArray), input, folderName, fileName)
 }
 
 // SaveFileFromString mocks base method.
-func (m *MockService) SaveFileFromString(input, folderName, fileName string) error {
+func (m *MockAPI) SaveFileFromString(input, folderName, fileName string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveFileFromString", input, folderName, fileName)
 	ret0, _ := ret[0].(error)
@@ -102,13 +102,13 @@ func (m *MockService) SaveFileFromString(input, folderName, fileName string) err
 }
 
 // SaveFileFromString indicates an expected call of SaveFileFromString.
-func (mr *MockServiceMockRecorder) SaveFileFromString(input, folderName, fileName interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) SaveFileFromString(input, folderName, fileName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveFileFromString", reflect.TypeOf((*MockService)(nil).SaveFileFromString), input, folderName, fileName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveFileFromString", reflect.TypeOf((*MockAPI)(nil).SaveFileFromString), input, folderName, fileName)
 }
 
 // SaveFileFromTemplate mocks base method.
-func (m *MockService) SaveFileFromTemplate(t *template.Template, vars interface{}, folderName, fileName string) error {
+func (m *MockAPI) SaveFileFromTemplate(t *template.Template, vars interface{}, folderName, fileName string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveFileFromTemplate", t, vars, folderName, fileName)
 	ret0, _ := ret[0].(error)
@@ -116,13 +116,13 @@ func (m *MockService) SaveFileFromTemplate(t *template.Template, vars interface{
 }
 
 // SaveFileFromTemplate indicates an expected call of SaveFileFromTemplate.
-func (mr *MockServiceMockRecorder) SaveFileFromTemplate(t, vars, folderName, fileName interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) SaveFileFromTemplate(t, vars, folderName, fileName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveFileFromTemplate", reflect.TypeOf((*MockService)(nil).SaveFileFromTemplate), t, vars, folderName, fileName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveFileFromTemplate", reflect.TypeOf((*MockAPI)(nil).SaveFileFromTemplate), t, vars, folderName, fileName)
 }
 
 // SaveVarsToFile mocks base method.
-func (m *MockService) SaveVarsToFile(variables []*v1.Variable, folderName, fileName string) error {
+func (m *MockAPI) SaveVarsToFile(variables []*v1.Variable, folderName, fileName string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveVarsToFile", variables, folderName, fileName)
 	ret0, _ := ret[0].(error)
@@ -130,13 +130,13 @@ func (m *MockService) SaveVarsToFile(variables []*v1.Variable, folderName, fileN
 }
 
 // SaveVarsToFile indicates an expected call of SaveVarsToFile.
-func (mr *MockServiceMockRecorder) SaveVarsToFile(variables, folderName, fileName interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) SaveVarsToFile(variables, folderName, fileName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveVarsToFile", reflect.TypeOf((*MockService)(nil).SaveVarsToFile), variables, folderName, fileName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveVarsToFile", reflect.TypeOf((*MockAPI)(nil).SaveVarsToFile), variables, folderName, fileName)
 }
 
 // SaveYamlFile mocks base method.
-func (m *MockService) SaveYamlFile(obj interface{}, folderName, fileName string) error {
+func (m *MockAPI) SaveYamlFile(obj interface{}, folderName, fileName string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveYamlFile", obj, folderName, fileName)
 	ret0, _ := ret[0].(error)
@@ -144,7 +144,7 @@ func (m *MockService) SaveYamlFile(obj interface{}, folderName, fileName string)
 }
 
 // SaveYamlFile indicates an expected call of SaveYamlFile.
-func (mr *MockServiceMockRecorder) SaveYamlFile(obj, folderName, fileName interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) SaveYamlFile(obj, folderName, fileName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveYamlFile", reflect.TypeOf((*MockService)(nil).SaveYamlFile), obj, folderName, fileName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveYamlFile", reflect.TypeOf((*MockAPI)(nil).SaveYamlFile), obj, folderName, fileName)
 }

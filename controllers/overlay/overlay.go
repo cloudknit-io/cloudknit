@@ -19,7 +19,7 @@ import (
 func GenerateOverlayFiles(
 	ctx context.Context,
 	log *logrus.Entry,
-	fileAPI file.Service,
+	fileAPI file.API,
 	e *stablev1.Environment,
 	ec *stablev1.EnvironmentComponent,
 	destinationFolder string,

@@ -18,7 +18,6 @@ import (
 
 	workflow "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/terraformgenerator"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
@@ -48,7 +47,7 @@ func GenerateWorkflowOfWorkflows(environment *stablev1.Environment) *workflow.Wo
 					},
 					{
 						Name:  "terraform_version",
-						Value: AnyStringPointer(terraformgenerator.DefaultTerraformVersion),
+						Value: AnyStringPointer(env.Config.DefaultTerraformVersion),
 					},
 					{
 						Name:  "terraform_il_path",
@@ -56,7 +55,7 @@ func GenerateWorkflowOfWorkflows(environment *stablev1.Environment) *workflow.Wo
 					},
 					{
 						Name:  "il_repo",
-						Value: AnyStringPointer(env.Config.ILRepoURL),
+						Value: AnyStringPointer(env.Config.ZLILRepoURL),
 						// to be replaced with reference to il.RepoURL(owner, companyName) once company can be extrapolated here
 					},
 				},
@@ -151,7 +150,7 @@ func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment) *workf
 			},
 			{
 				Name:  "il_repo",
-				Value: AnyStringPointer(env.Config.ILRepoURL),
+				Value: AnyStringPointer(env.Config.ZLILRepoURL),
 			},
 			{
 				Name:  "terraform_il_path",

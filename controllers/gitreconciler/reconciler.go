@@ -2,13 +2,13 @@ package gitreconciler
 
 import (
 	"context"
+	"github.com/sirupsen/logrus"
 	"strings"
 	"time"
 
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/git"
-	"github.com/go-logr/logr"
 	"github.com/robfig/cron"
 	"k8s.io/apimachinery/pkg/api/errors"
 	genericregistry "k8s.io/apiserver/pkg/registry/generic/registry"
@@ -26,7 +26,7 @@ type WatchedRepository struct {
 
 type Reconciler struct {
 	ctx       context.Context
-	log       logr.Logger
+	log       *logrus.Entry
 	k8sClient kClient.Client
 	state     State
 }
@@ -34,7 +34,7 @@ type Reconciler struct {
 type State map[string]*WatchedRepository
 
 // NewReconciler creates a new Reconciler singleton instance.
-func NewReconciler(ctx context.Context, log logr.Logger, k8sClient kClient.Client) *Reconciler {
+func NewReconciler(ctx context.Context, log *logrus.Entry, k8sClient kClient.Client) *Reconciler {
 	if reconciler == nil {
 		state := State{}
 		reconciler = &Reconciler{
@@ -60,13 +60,13 @@ func (r *Reconciler) Start() error {
 	err := c.AddFunc("@every 1m", func() {
 		var reconciled []string
 		start := time.Now()
-		r.log.Info("Running scheduled git reconciler iteration", "time", time.Now().String())
+		r.log.WithField("time", time.Now().String()).Info("Running scheduled git reconciler iteration")
 
 		repos := r.Repositories()
 		for _, repo := range repos {
 			updated, err := r.reconcile(repo)
 			if err != nil {
-				r.log.Error(err, "Error reconciling git repository")
+				r.log.WithError(err).Error("Error reconciling git repository")
 			}
 			if err == nil && updated {
 				reconciled = append(reconciled, repo.Source)
@@ -74,12 +74,11 @@ func (r *Reconciler) Start() error {
 		}
 
 		duration := time.Since(start)
-		r.log.Info(
-			"Finished scheduled file reconciler iteration",
-			"started", time.Now().String(),
-			"duration", duration,
-			"reconciled", reconciled,
-		)
+		r.log.WithFields(logrus.Fields{
+			"started":    time.Now().String(),
+			"duration":   duration,
+			"reconciled": reconciled,
+		}).Info("Finished scheduled file reconciler iteration")
 	})
 	if err != nil {
 		return err
@@ -193,16 +192,19 @@ func (r *Reconciler) reconcile(wr *WatchedRepository) (updated bool, err error) 
 		return false, nil
 	}
 
-	r.log.Info("Reconciling git repository", "repositoryURL", wr.RepositoryPath)
+	r.log.WithField("repositoryURL", wr.RepositoryPath).Info("Reconciling git repository")
 
 	for _, subscriber := range wr.Subscribers {
-		r.log.Info("Fetching environment object", "name", subscriber.Name, "namespace", subscriber.Namespace)
+		r.log.WithFields(logrus.Fields{
+			"name":      subscriber.Name,
+			"namespace": subscriber.Namespace,
+		}).Info("Fetching environment object")
 		environment := v1.Environment{}
 		if err := r.k8sClient.Get(r.ctx, subscriber, &environment); err != nil {
 			if errors.IsNotFound(err) {
 				r.Remove(wr.Source)
 			} else {
-				r.log.Error(err, "error updating environment status")
+				r.log.WithError(err).Error("error updating environment status")
 			}
 			continue
 		}
@@ -225,13 +227,12 @@ func (r *Reconciler) reconcile(wr *WatchedRepository) (updated bool, err error) 
 		}
 		environment.Status.GitState[wr.Source] = &sr
 
-		r.log.Info(
-			"Updating environment status",
-			"team", environment.Spec.TeamName,
-			"environment", environment.Spec.EnvName,
-			"oldHeadCommit", wr.HeadCommitHash,
-			"newHeadCommit", latestHeadCommitHash,
-		)
+		r.log.WithFields(logrus.Fields{
+			"team":          environment.Spec.TeamName,
+			"environment":   environment.Spec.EnvName,
+			"oldHeadCommit": wr.HeadCommitHash,
+			"newHeadCommit": latestHeadCommitHash,
+		}).Info("Updating environment status")
 
 		if err := common.Retry(r.retryableUpdate(&environment)); err != nil {
 			return false, err
@@ -247,12 +248,11 @@ func (r *Reconciler) retryableUpdate(e *v1.Environment) func(attempt int) (retry
 	fn := func(attempt int) (retry bool, err error) {
 		if err := r.k8sClient.Status().Update(r.ctx, e); err != nil {
 			if strings.Contains(err.Error(), genericregistry.OptimisticLockErrorMsg) {
-				r.log.Info(
-					"retrying status update due to optimistic lock error",
-					"team", e.Spec.TeamName,
-					"environment", e.Spec.EnvName,
-					"attempt", attempt,
-				)
+				r.log.WithFields(logrus.Fields{
+					"team":        e.Spec.TeamName,
+					"environment": e.Spec.EnvName,
+					"attempt":     attempt,
+				}).Info("retrying status update due to optimistic lock error")
 				// do manual retry without error
 				return attempt < 3, err
 			}

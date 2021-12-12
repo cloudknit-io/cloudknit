@@ -26,7 +26,7 @@ import (
 
 //go:generate go run -mod=mod github.com/golang/mock/mockgen -source=./file.go -destination=../../../mocks/mock_file.go -package=mocks github.com/compuzest/zlifecycle-il-operator/mocks
 
-type Service interface {
+type API interface {
 	SaveFileFromString(input string, folderName string, fileName string) error
 	SaveFileFromByteArray(input []byte, folderName string, fileName string) error
 	SaveYamlFile(obj interface{}, folderName string, fileName string) error

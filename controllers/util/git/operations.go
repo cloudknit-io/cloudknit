@@ -2,6 +2,7 @@ package git
 
 import (
 	"errors"
+	"fmt"
 	gogit "github.com/go-git/go-git/v5"
 	"io/ioutil"
 	"os"
@@ -30,10 +31,13 @@ func PullOrClone(gitAPI API, repoURL string) error {
 
 func CloneTemp(gitAPI API, repo string) (dir string, cleanup CleanupFunc, err error) {
 	httpsRepo := repo
-	if strings.HasPrefix(httpsRepo, "git@github.com:") {
-		httpsRepo = strings.ReplaceAll(httpsRepo, "git@github.com:", "https://github.com/")
+	sshPrefix := "git@github.com:"
+	httpsPrefix := "https://github.com/"
+	if strings.HasPrefix(httpsRepo, sshPrefix) {
+		httpsRepo = strings.ReplaceAll(httpsRepo, sshPrefix, httpsPrefix)
 	}
-	tempDir, err := ioutil.TempDir("", "il-")
+	dirName := strings.ReplaceAll(strings.TrimPrefix(strings.TrimSuffix(httpsRepo, ".git"), httpsPrefix), "/", "-")
+	tempDir, err := ioutil.TempDir("", fmt.Sprintf("repo-%s-", dirName))
 	if err != nil {
 		return "", nil, err
 	}
