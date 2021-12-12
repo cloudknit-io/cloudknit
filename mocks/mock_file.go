@@ -13,31 +13,31 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-// MockAPI is a mock of API interface.
-type MockAPI struct {
+// MockFSAPI is a mock of FSAPI interface.
+type MockFSAPI struct {
 	ctrl     *gomock.Controller
-	recorder *MockAPIMockRecorder
+	recorder *MockFSAPIMockRecorder
 }
 
-// MockAPIMockRecorder is the mock recorder for MockAPI.
-type MockAPIMockRecorder struct {
-	mock *MockAPI
+// MockFSAPIMockRecorder is the mock recorder for MockFSAPI.
+type MockFSAPIMockRecorder struct {
+	mock *MockFSAPI
 }
 
-// NewMockAPI creates a new mock instance.
-func NewMockAPI(ctrl *gomock.Controller) *MockAPI {
-	mock := &MockAPI{ctrl: ctrl}
-	mock.recorder = &MockAPIMockRecorder{mock}
+// NewMockFSAPI creates a new mock instance.
+func NewMockFSAPI(ctrl *gomock.Controller) *MockFSAPI {
+	mock := &MockFSAPI{ctrl: ctrl}
+	mock.recorder = &MockFSAPIMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockAPI) EXPECT() *MockAPIMockRecorder {
+func (m *MockFSAPI) EXPECT() *MockFSAPIMockRecorder {
 	return m.recorder
 }
 
 // CreateEmptyDirectory mocks base method.
-func (m *MockAPI) CreateEmptyDirectory(folderName string) error {
+func (m *MockFSAPI) CreateEmptyDirectory(folderName string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateEmptyDirectory", folderName)
 	ret0, _ := ret[0].(error)
@@ -45,13 +45,13 @@ func (m *MockAPI) CreateEmptyDirectory(folderName string) error {
 }
 
 // CreateEmptyDirectory indicates an expected call of CreateEmptyDirectory.
-func (mr *MockAPIMockRecorder) CreateEmptyDirectory(folderName interface{}) *gomock.Call {
+func (mr *MockFSAPIMockRecorder) CreateEmptyDirectory(folderName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateEmptyDirectory", reflect.TypeOf((*MockAPI)(nil).CreateEmptyDirectory), folderName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateEmptyDirectory", reflect.TypeOf((*MockFSAPI)(nil).CreateEmptyDirectory), folderName)
 }
 
 // NewFile mocks base method.
-func (m *MockAPI) NewFile(folderName, fileName string) (*os.File, error) {
+func (m *MockFSAPI) NewFile(folderName, fileName string) (*os.File, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NewFile", folderName, fileName)
 	ret0, _ := ret[0].(*os.File)
@@ -60,13 +60,13 @@ func (m *MockAPI) NewFile(folderName, fileName string) (*os.File, error) {
 }
 
 // NewFile indicates an expected call of NewFile.
-func (mr *MockAPIMockRecorder) NewFile(folderName, fileName interface{}) *gomock.Call {
+func (mr *MockFSAPIMockRecorder) NewFile(folderName, fileName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewFile", reflect.TypeOf((*MockAPI)(nil).NewFile), folderName, fileName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewFile", reflect.TypeOf((*MockFSAPI)(nil).NewFile), folderName, fileName)
 }
 
 // RemoveAll mocks base method.
-func (m *MockAPI) RemoveAll(path string) error {
+func (m *MockFSAPI) RemoveAll(path string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RemoveAll", path)
 	ret0, _ := ret[0].(error)
@@ -74,13 +74,13 @@ func (m *MockAPI) RemoveAll(path string) error {
 }
 
 // RemoveAll indicates an expected call of RemoveAll.
-func (mr *MockAPIMockRecorder) RemoveAll(path interface{}) *gomock.Call {
+func (mr *MockFSAPIMockRecorder) RemoveAll(path interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveAll", reflect.TypeOf((*MockAPI)(nil).RemoveAll), path)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveAll", reflect.TypeOf((*MockFSAPI)(nil).RemoveAll), path)
 }
 
 // SaveFileFromByteArray mocks base method.
-func (m *MockAPI) SaveFileFromByteArray(input []byte, folderName, fileName string) error {
+func (m *MockFSAPI) SaveFileFromByteArray(input []byte, folderName, fileName string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveFileFromByteArray", input, folderName, fileName)
 	ret0, _ := ret[0].(error)
@@ -88,13 +88,13 @@ func (m *MockAPI) SaveFileFromByteArray(input []byte, folderName, fileName strin
 }
 
 // SaveFileFromByteArray indicates an expected call of SaveFileFromByteArray.
-func (mr *MockAPIMockRecorder) SaveFileFromByteArray(input, folderName, fileName interface{}) *gomock.Call {
+func (mr *MockFSAPIMockRecorder) SaveFileFromByteArray(input, folderName, fileName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveFileFromByteArray", reflect.TypeOf((*MockAPI)(nil).SaveFileFromByteArray), input, folderName, fileName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveFileFromByteArray", reflect.TypeOf((*MockFSAPI)(nil).SaveFileFromByteArray), input, folderName, fileName)
 }
 
 // SaveFileFromString mocks base method.
-func (m *MockAPI) SaveFileFromString(input, folderName, fileName string) error {
+func (m *MockFSAPI) SaveFileFromString(input, folderName, fileName string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveFileFromString", input, folderName, fileName)
 	ret0, _ := ret[0].(error)
@@ -102,13 +102,13 @@ func (m *MockAPI) SaveFileFromString(input, folderName, fileName string) error {
 }
 
 // SaveFileFromString indicates an expected call of SaveFileFromString.
-func (mr *MockAPIMockRecorder) SaveFileFromString(input, folderName, fileName interface{}) *gomock.Call {
+func (mr *MockFSAPIMockRecorder) SaveFileFromString(input, folderName, fileName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveFileFromString", reflect.TypeOf((*MockAPI)(nil).SaveFileFromString), input, folderName, fileName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveFileFromString", reflect.TypeOf((*MockFSAPI)(nil).SaveFileFromString), input, folderName, fileName)
 }
 
 // SaveFileFromTemplate mocks base method.
-func (m *MockAPI) SaveFileFromTemplate(t *template.Template, vars interface{}, folderName, fileName string) error {
+func (m *MockFSAPI) SaveFileFromTemplate(t *template.Template, vars interface{}, folderName, fileName string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveFileFromTemplate", t, vars, folderName, fileName)
 	ret0, _ := ret[0].(error)
@@ -116,13 +116,13 @@ func (m *MockAPI) SaveFileFromTemplate(t *template.Template, vars interface{}, f
 }
 
 // SaveFileFromTemplate indicates an expected call of SaveFileFromTemplate.
-func (mr *MockAPIMockRecorder) SaveFileFromTemplate(t, vars, folderName, fileName interface{}) *gomock.Call {
+func (mr *MockFSAPIMockRecorder) SaveFileFromTemplate(t, vars, folderName, fileName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveFileFromTemplate", reflect.TypeOf((*MockAPI)(nil).SaveFileFromTemplate), t, vars, folderName, fileName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveFileFromTemplate", reflect.TypeOf((*MockFSAPI)(nil).SaveFileFromTemplate), t, vars, folderName, fileName)
 }
 
 // SaveVarsToFile mocks base method.
-func (m *MockAPI) SaveVarsToFile(variables []*v1.Variable, folderName, fileName string) error {
+func (m *MockFSAPI) SaveVarsToFile(variables []*v1.Variable, folderName, fileName string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveVarsToFile", variables, folderName, fileName)
 	ret0, _ := ret[0].(error)
@@ -130,13 +130,13 @@ func (m *MockAPI) SaveVarsToFile(variables []*v1.Variable, folderName, fileName 
 }
 
 // SaveVarsToFile indicates an expected call of SaveVarsToFile.
-func (mr *MockAPIMockRecorder) SaveVarsToFile(variables, folderName, fileName interface{}) *gomock.Call {
+func (mr *MockFSAPIMockRecorder) SaveVarsToFile(variables, folderName, fileName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveVarsToFile", reflect.TypeOf((*MockAPI)(nil).SaveVarsToFile), variables, folderName, fileName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveVarsToFile", reflect.TypeOf((*MockFSAPI)(nil).SaveVarsToFile), variables, folderName, fileName)
 }
 
 // SaveYamlFile mocks base method.
-func (m *MockAPI) SaveYamlFile(obj interface{}, folderName, fileName string) error {
+func (m *MockFSAPI) SaveYamlFile(obj interface{}, folderName, fileName string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveYamlFile", obj, folderName, fileName)
 	ret0, _ := ret[0].(error)
@@ -144,7 +144,7 @@ func (m *MockAPI) SaveYamlFile(obj interface{}, folderName, fileName string) err
 }
 
 // SaveYamlFile indicates an expected call of SaveYamlFile.
-func (mr *MockAPIMockRecorder) SaveYamlFile(obj, folderName, fileName interface{}) *gomock.Call {
+func (mr *MockFSAPIMockRecorder) SaveYamlFile(obj, folderName, fileName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveYamlFile", reflect.TypeOf((*MockAPI)(nil).SaveYamlFile), obj, folderName, fileName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveYamlFile", reflect.TypeOf((*MockFSAPI)(nil).SaveYamlFile), obj, folderName, fileName)
 }
