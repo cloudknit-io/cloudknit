@@ -54,9 +54,9 @@ func GenerateWorkflowOfWorkflows(environment *stablev1.Environment) *workflow.Wo
 						Value: AnyStringPointer(tfPath),
 					},
 					{
+						// TODO: to be replaced with reference to il.RepoURL(owner, companyName) once company can be extrapolated here
 						Name:  "il_repo",
-						Value: AnyStringPointer(env.Config.ZLILRepoURL),
-						// to be replaced with reference to il.RepoURL(owner, companyName) once company can be extrapolated here
+						Value: AnyStringPointer(env.Config.TFILRepoURL),
 					},
 				},
 			},
@@ -150,7 +150,7 @@ func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment) *workf
 			},
 			{
 				Name:  "il_repo",
-				Value: AnyStringPointer(env.Config.ZLILRepoURL),
+				Value: AnyStringPointer(env.Config.TFILRepoURL),
 			},
 			{
 				Name:  "terraform_il_path",
