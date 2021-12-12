@@ -27,7 +27,7 @@ import (
 )
 
 func GenerateTerraform(
-	fileAPI file.API,
+	fileAPI file.FSAPI,
 	vars *TemplateVariables,
 	tfDirectory string,
 ) error {
@@ -152,7 +152,7 @@ func GenerateTerraform(
 	return nil
 }
 
-func generateFile(service file.API, templateVars interface{}, terraformDirectory string, fileName string, templateName string) error {
+func generateFile(service file.FSAPI, templateVars interface{}, terraformDirectory string, fileName string, templateName string) error {
 	f, err := service.NewFile(terraformDirectory, fileName)
 	if err != nil {
 		return err

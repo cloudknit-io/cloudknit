@@ -90,14 +90,17 @@ func main() {
 
 	// new relic
 	var _apm apm.APM
-	_apm = apm.NewNoop()
+
 	if env.Config.EnableNewRelic == "true" {
-		setupLog.Info("setting logrus formatter to context formatter")
+		setupLog.Info("Initializing NewRelic APM")
 		logrus.SetFormatter(nrlogrusplugin.ContextFormatter{})
 		_apm, err = apm.NewNewRelic()
 		if err != nil {
 			setupLog.WithError(err).Panic("unable to init new relic")
 		}
+	} else {
+		_apm = apm.NewNoop()
+		setupLog.Info("Defaulting to no-op APM")
 	}
 
 	// company controller init

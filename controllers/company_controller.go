@@ -183,13 +183,13 @@ func (r *CompanyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func generateAndSaveCompanyApp(fileAPI file.API, company *stablev1.Company, ilRepoDir string) error {
+func generateAndSaveCompanyApp(fileAPI file.FSAPI, company *stablev1.Company, ilRepoDir string) error {
 	companyApp := argocd.GenerateCompanyApp(company)
 
 	return fileAPI.SaveYamlFile(*companyApp, il.CompanyDirectoryAbsolutePath(ilRepoDir), company.Spec.CompanyName+".yaml")
 }
 
-func generateAndSaveCompanyConfigWatcher(fileAPI file.API, company *stablev1.Company, ilRepoDir string) error {
+func generateAndSaveCompanyConfigWatcher(fileAPI file.FSAPI, company *stablev1.Company, ilRepoDir string) error {
 	companyConfigWatcherApp := argocd.GenerateCompanyConfigWatcherApp(company.Spec.CompanyName, company.Spec.ConfigRepo.Source)
 
 	return fileAPI.SaveYamlFile(*companyConfigWatcherApp, il.ConfigWatcherDirectoryAbsolutePath(ilRepoDir), company.Spec.CompanyName+".yaml")

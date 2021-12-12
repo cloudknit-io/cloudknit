@@ -237,7 +237,7 @@ func (r *EnvironmentReconciler) handleNonDeleteEvent(
 	ctx context.Context,
 	ilService *il.Service,
 	e *stablev1.Environment,
-	fileAPI file.API,
+	fileAPI file.FSAPI,
 ) error {
 	r.LogV2.Info("Generating Environment application")
 
@@ -419,7 +419,7 @@ func (r *EnvironmentReconciler) removeEnvironmentFromFileReconciler(e *stablev1.
 	return gitreconciler.GetReconciler().UnsubscribeAll(key)
 }
 
-func generateAndSaveWorkflowOfWorkflows(fileAPI file.API, ilService *il.Service, environment *stablev1.Environment) error {
+func generateAndSaveWorkflowOfWorkflows(fileAPI file.FSAPI, ilService *il.Service, environment *stablev1.Environment) error {
 	// WIP, below command is for testing
 	// experimentalworkflow := argoWorkflow.GenerateWorkflowOfWorkflows(*environment)
 	// if err := fileAPI.SaveYamlFile(*experimentalworkflow, envComponentDirectory, "/experimental_wofw.yaml"); err != nil {
@@ -431,7 +431,7 @@ func generateAndSaveWorkflowOfWorkflows(fileAPI file.API, ilService *il.Service,
 	return fileAPI.SaveYamlFile(*workflow, ilEnvComponentDirectory, "/wofw.yaml")
 }
 
-func generateAndSaveEnvironmentApp(fileService file.API, environment *stablev1.Environment, envDirectory string) error {
+func generateAndSaveEnvironmentApp(fileService file.FSAPI, environment *stablev1.Environment, envDirectory string) error {
 	envApp := argocd.GenerateEnvironmentApp(environment)
 	envYAML := fmt.Sprintf("%s-environment.yaml", environment.Spec.EnvName)
 
@@ -442,7 +442,7 @@ func generateAndSaveEnvironmentComponents(
 	ctx context.Context,
 	log *logrus.Entry,
 	ilService *il.Service,
-	fileAPI file.API,
+	fileAPI file.FSAPI,
 	e *stablev1.Environment,
 ) error {
 	for _, ec := range e.Spec.Components {

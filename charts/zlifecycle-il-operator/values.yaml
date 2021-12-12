@@ -20,14 +20,16 @@ env:
   ENABLE_NEW_RELIC: "false"
   NEW_RELIC_API_KEY: ""
   SLACK_WEBHOOK_URL: ""
+  TF_IL_REPO_URL: ""
+  TF_IL_REPO_NAME: ""
 
 resources:
   limits:
-    cpu: 200m
-    memory: 300Mi
+    cpu: 400m
+    memory: 500Mi
   requests:
-    cpu: 100m
-    memory: 150Mi
+    cpu: 200m
+    memory: 250Mi
 
 companyConfigMap:
   enabled: true

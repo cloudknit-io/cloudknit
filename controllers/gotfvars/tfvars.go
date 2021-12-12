@@ -14,7 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func SaveTfVarsToFile(fs file.API, vars []*v1.Variable, folderName string, fileName string) error {
+func SaveTfVarsToFile(fs file.FSAPI, vars []*v1.Variable, folderName string, fileName string) error {
 	variables := make([]*v1.Variable, 0, len(vars))
 	for _, v := range vars {
 		// TODO: This is a hack to just to make it work, needs to be revisited
