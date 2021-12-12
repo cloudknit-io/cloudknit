@@ -4,6 +4,8 @@ import (
 	"context"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/zerrors"
 	nr "github.com/newrelic/go-agent/v3/newrelic"
+	"github.com/sirupsen/logrus"
+	"runtime/debug"
 )
 
 type Noop struct{}
@@ -12,7 +14,8 @@ func NewNoop() *Noop {
 	return &Noop{}
 }
 
-func (n *Noop) NoticeError(tx *nr.Transaction, err zerrors.ZError) error {
+func (n *Noop) NoticeError(tx *nr.Transaction, log *logrus.Entry, err zerrors.ZError) error {
+	log.WithError(err).Errorf("error during reconcile\nstack trace:\n%s", string(debug.Stack()))
 	return err
 }
 

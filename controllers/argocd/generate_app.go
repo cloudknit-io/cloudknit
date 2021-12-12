@@ -48,7 +48,7 @@ func GenerateCompanyApp(company *stablev1.Company) *appv1.Application {
 				Namespace: "default",
 			},
 			Source: appv1.ApplicationSource{
-				RepoURL:        env.Config.ILRepoURL,
+				RepoURL:        env.Config.ZLILRepoURL,
 				Path:           "./" + il.Config.TeamDirectory,
 				TargetRevision: "HEAD",
 			},
@@ -57,7 +57,7 @@ func GenerateCompanyApp(company *stablev1.Company) *appv1.Application {
 			Sync: appv1.SyncStatus{
 				ComparedTo: appv1.ComparedTo{
 					Source: appv1.ApplicationSource{
-						RepoURL: env.Config.ILRepoURL,
+						RepoURL: env.Config.ZLILRepoURL,
 					},
 				},
 				Status: "Synced",
@@ -92,7 +92,7 @@ func GenerateTeamApp(team *stablev1.Team) *appv1.Application {
 				Namespace: "default",
 			},
 			Source: appv1.ApplicationSource{
-				RepoURL:        env.Config.ILRepoURL,
+				RepoURL:        env.Config.ZLILRepoURL,
 				Path:           "./" + il.EnvironmentDirectoryPath(team.Spec.TeamName),
 				TargetRevision: "HEAD",
 			},
@@ -101,7 +101,7 @@ func GenerateTeamApp(team *stablev1.Team) *appv1.Application {
 			Sync: appv1.SyncStatus{
 				ComparedTo: appv1.ComparedTo{
 					Source: appv1.ApplicationSource{
-						RepoURL: env.Config.ILRepoURL,
+						RepoURL: env.Config.ZLILRepoURL,
 					},
 				},
 				Status: "Synced",
@@ -138,7 +138,7 @@ func GenerateEnvironmentApp(environment *stablev1.Environment) *appv1.Applicatio
 				Namespace: "default",
 			},
 			Source: appv1.ApplicationSource{
-				RepoURL:        env.Config.ILRepoURL,
+				RepoURL:        env.Config.ZLILRepoURL,
 				Path:           "./" + il.EnvironmentComponentsDirectoryPath(environment.Spec.TeamName, environment.Spec.EnvName),
 				TargetRevision: "HEAD",
 			},
@@ -147,7 +147,7 @@ func GenerateEnvironmentApp(environment *stablev1.Environment) *appv1.Applicatio
 			Sync: appv1.SyncStatus{
 				ComparedTo: appv1.ComparedTo{
 					Source: appv1.ApplicationSource{
-						RepoURL: env.Config.ILRepoURL,
+						RepoURL: env.Config.ZLILRepoURL,
 					},
 				},
 				Status: "Synced",
@@ -226,8 +226,8 @@ func getHelmValues(environment *stablev1.Environment, environmentComponent *stab
             path: %s`, environment.Spec.TeamName,
 		environment.Spec.EnvName,
 		environmentComponent.Name,
-		il.EnvComponentModuleSource(environmentComponent.Module.Source, environmentComponent.Module.Name),
-		il.EnvComponentModulePath(environmentComponent.Module.Path))
+		il.EnvironmentComponentModuleSource(environmentComponent.Module.Source, environmentComponent.Module.Name),
+		il.EnvironmentComponentModulePath(environmentComponent.Module.Path))
 	if environmentComponent.CronSchedule != "" {
 		helmValues += fmt.Sprintf(`
         cron_schedule: "%s"`, environmentComponent.CronSchedule)
@@ -363,7 +363,7 @@ func GenerateCompanyBootstrapApp() *appv1.Application {
 				Namespace: "default",
 			},
 			Source: appv1.ApplicationSource{
-				RepoURL:        env.Config.ILRepoURL,
+				RepoURL:        env.Config.ZLILRepoURL,
 				Path:           "company",
 				TargetRevision: "HEAD",
 			},
@@ -397,7 +397,7 @@ func GenerateConfigWatcherBootstrapApp() *appv1.Application {
 				Namespace: "default",
 			},
 			Source: appv1.ApplicationSource{
-				RepoURL:        env.Config.ILRepoURL,
+				RepoURL:        env.Config.ZLILRepoURL,
 				Path:           "config-watcher",
 				TargetRevision: "HEAD",
 			},

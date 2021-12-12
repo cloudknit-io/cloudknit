@@ -7,6 +7,8 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controllers/zerrors"
 	nr "github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+	"runtime/debug"
 )
 
 type NewRelic struct {
@@ -24,7 +26,7 @@ func NewNewRelic() (*NewRelic, error) {
 		nr.ConfigDistributedTracerEnabled(true),
 		func(c *nr.Config) {
 			c.Labels = map[string]string{
-				"env": env.Config.CompanyName,
+				"instance": env.Config.CompanyName,
 			}
 		},
 	)
@@ -35,7 +37,7 @@ func NewNewRelic() (*NewRelic, error) {
 	return &NewRelic{app: app}, nil
 }
 
-func (a *NewRelic) NoticeError(tx *nr.Transaction, err zerrors.ZError) error {
+func (a *NewRelic) NoticeError(tx *nr.Transaction, log *logrus.Entry, err zerrors.ZError) error {
 	a.app.RecordCustomMetric(err.Metric(), 1)
 	if tx != nil {
 		tx.NoticeError(nr.Error{
@@ -44,6 +46,7 @@ func (a *NewRelic) NoticeError(tx *nr.Transaction, err zerrors.ZError) error {
 			Attributes: err.Attributes(),
 		})
 	}
+	log.WithError(err).Errorf("error during reconcile\nstack trace:\n%s", string(debug.Stack()))
 
 	return err
 }

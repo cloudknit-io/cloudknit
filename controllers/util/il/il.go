@@ -1,9 +1,54 @@
 package il
 
 import (
+	"context"
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/git"
 	"path/filepath"
 )
+
+type Service struct {
+	TFILGitAPI   git.API
+	TFILTempDir  string
+	TFILCleanupF git.CleanupFunc
+	ZLILGitAPI   git.API
+	ZLILTempDir  string
+	ZLILCleanupF git.CleanupFunc
+}
+
+func NewService(ctx context.Context) (*Service, error) {
+	zlILGitAPI, err := git.NewGoGit(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	tfILGitAPI, err := git.NewGoGit(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// temp clone IL repo
+	tempZLILRepoDir, zlILCleanup, err := git.CloneTemp(zlILGitAPI, env.Config.ZLILRepoURL)
+	if err != nil {
+		return nil, err
+	}
+
+	tempTFILRepoDir, tfILCleanup, err := git.CloneTemp(tfILGitAPI, env.Config.TFILRepoURL)
+	if err != nil {
+		zlILCleanup()
+		return nil, err
+	}
+
+	return &Service{
+		TFILGitAPI:   tfILGitAPI,
+		TFILTempDir:  tempTFILRepoDir,
+		TFILCleanupF: tfILCleanup,
+		ZLILGitAPI:   zlILGitAPI,
+		ZLILTempDir:  tempZLILRepoDir,
+		ZLILCleanupF: zlILCleanup,
+	}, nil
+}
 
 type config struct {
 	TeamDirectory          string
@@ -53,26 +98,30 @@ func EnvironmentComponentsDirectoryAbsolutePath(dir string, team string, environ
 	return filepath.Join(dir, EnvironmentComponentsDirectoryPath(team, environment))
 }
 
-func environmentComponentDirectoryPath(team string, environment string, component string) string {
+func EnvironmentComponentDirectoryPath(team string, environment string, component string) string {
 	return filepath.Join(EnvironmentComponentsDirectoryPath(team, environment), component)
 }
 
+func EnvironmentComponentDirectoryAbsolutePath(dir string, team string, environment string, component string) string {
+	return filepath.Join(dir, EnvironmentComponentDirectoryPath(team, environment, component))
+}
+
 func EnvironmentComponentTerraformDirectoryPath(team string, environment string, component string) string {
-	return filepath.Join(environmentComponentDirectoryPath(team, environment, component), "terraform")
+	return filepath.Join(EnvironmentComponentDirectoryPath(team, environment, component), "terraform")
 }
 
 func EnvironmentComponentTerraformDirectoryAbsolutePath(dir string, team string, environment string, component string) string {
-	return filepath.Join(dir, environmentComponentDirectoryPath(team, environment, component), "terraform")
+	return filepath.Join(dir, EnvironmentComponentDirectoryPath(team, environment, component), "terraform")
 }
 
-func EnvComponentModuleSource(moduleSource string, moduleName string) string {
+func EnvironmentComponentModuleSource(moduleSource string, moduleName string) string {
 	if moduleSource == "aws" {
 		return fmt.Sprintf("git@github.com:terraform-aws-modules/terraform-aws-%s.git", moduleName)
 	}
 	return moduleSource
 }
 
-func EnvComponentModulePath(modulePath string) string {
+func EnvironmentComponentModulePath(modulePath string) string {
 	if modulePath == "" {
 		return "."
 	}
