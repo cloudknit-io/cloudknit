@@ -158,6 +158,7 @@ func GenerateEnvironmentApp(environment *stablev1.Environment) *appv1.Applicatio
 
 func GenerateEnvironmentComponentApps(environment *stablev1.Environment, environmentComponent *stablev1.EnvironmentComponent) *appv1.Application {
 	helmValues := getHelmValues(environment, environmentComponent)
+
 	labels := map[string]string{
 		"zlifecycle.com/model": "environment-component",
 		"component_type":       environmentComponent.Type,
@@ -165,8 +166,12 @@ func GenerateEnvironmentComponentApps(environment *stablev1.Environment, environ
 		"component_name":       environmentComponent.Name,
 		"project_id":           environment.Spec.TeamName,
 		"environment_id":       environment.Spec.TeamName + "-" + environment.Spec.EnvName,
-		"depends_on":           strings.Join(environmentComponent.DependsOn, ".."),
 	}
+
+	for i, dependsOn := range environmentComponent.DependsOn {
+		labels["depends_on_" + i] = dependsOn
+	}
+
 	for _, tag := range environmentComponent.Tags {
 		labels[tag.Name] = tag.Value
 	}
