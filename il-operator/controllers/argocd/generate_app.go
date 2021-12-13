@@ -169,7 +169,7 @@ func GenerateEnvironmentComponentApps(environment *stablev1.Environment, environ
 	}
 
 	for i, dependsOn := range environmentComponent.DependsOn {
-		labels["depends_on_" + i] = dependsOn
+		labels["depends_on_" + string(i)] = dependsOn
 	}
 
 	for _, tag := range environmentComponent.Tags {
