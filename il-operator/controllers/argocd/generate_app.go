@@ -14,7 +14,6 @@ package argocd
 
 import (
 	"fmt"
-	"strings"
 
 	appv1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
