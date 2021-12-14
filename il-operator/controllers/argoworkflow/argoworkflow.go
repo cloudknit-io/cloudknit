@@ -195,11 +195,6 @@ func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment) *workf
 
 	tasks = append(tasks, generateAuditTask(environment, destroyAll, "1", allComponents))
 
-	onExit := ""
-	if env.Config.SlackWebhookURL != "" {
-		onExit = "exit-handler"
-	}
-
 	w := &workflow.Workflow{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "argoproj.io/v1alpha1",
@@ -215,7 +210,7 @@ func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment) *workf
 		},
 		Spec: workflow.WorkflowSpec{
 			Entrypoint: "main",
-			OnExit:     onExit,
+			OnExit:     "exit-handler",
 			PodGC:      &workflow.PodGC{Strategy: workflow.PodGCOnPodSuccess},
 			Templates: []workflow.Template{
 				{
