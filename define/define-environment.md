@@ -29,7 +29,7 @@ Metadata contains the `name` of your environment along with the `namespace` whic
 | Field Name | Field Type | Description   |
 |:----------:|:----------:|---------------|
 |`name`|`string`| The name should be unique for every environment, to ensure that we follow below naming convention:- `{company}-{team}-{environment}` For example: `zmart-checkout-dev` **company** is your organization's name. **team** and **environment** are defined in the [spec](#spec) section below |
-|`namespace`|`string|Namespace provides a mechanism for isolating groups of resources within a single cluster. Namespace is always `zlifecycle` for every environment you create|
+|`namespace`|`string`|Namespace provides a mechanism for isolating groups of resources within a single cluster. Namespace is always `zlifecycle` for every environment you create|
 
 
 ---
@@ -58,8 +58,8 @@ Spec contains the information about details of the environment to be provisioned
 |:----------:|:----------:|---------------|
 |[Team Name](#team-name)|`string`| The name should be unique for every environment, to ensure that we follow below naming convention:- `{company}-{team}-{environment}` For example: `zmart-checkout-dev` **company** is your organization's name. **team** and **environment** are defined in the [spec](#spec) section below |
 |[Environment Name](#environment-name)|`string`|Namespace provides a mechanism for isolating groups of resources within a single cluster. Namespace is always `zlifecycle` for every environment you create|
-|[Auto Approve](#auto-approve)|`boolean`|__No description available__|
-|[Teardown](#teardown)|`boolean`|__No description available__|
+|[Auto Approve](#auto-approve)|`boolean`|_No description available_|
+|[Teardown](#teardown)|`boolean`|_No description available_|
 |[Selective Reconcile](#selective-reconcile)|_To be added_|_No description available_|
 |[Components](#spec-components)|_To be added_|_No description available_|
 
