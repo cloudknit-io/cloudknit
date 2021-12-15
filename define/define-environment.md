@@ -56,12 +56,12 @@ Spec contains the information about details of the environment to be provisioned
 ### Fields
 | Field Name | Field Type | Description   |
 |:----------:|:----------:|---------------|
-|[Team Name](#team-name)|`string`| The name should be unique for every environment, to ensure that we follow below naming convention:- `{company}-{team}-{environment}` For example: `zmart-checkout-dev` **company** is your organization's name. **team** and **environment** are defined in the [spec](#spec) section below |
-|[Environment Name](#environment-name)|`string`|Namespace provides a mechanism for isolating groups of resources within a single cluster. Namespace is always `zlifecycle` for every environment you create|
-|[Auto Approve](#auto-approve)|`boolean`|_No description available_|
-|[Teardown](#teardown)|`boolean`|_No description available_|
-|[Selective Reconcile](#selective-reconcile)|_To be added_|_No description available_|
-|[Components](#spec-components)|_To be added_|_No description available_|
+|`teamName`|`string`| Name of the team to which this environment belongs (also used to create [metadata.name](#metdata)) |
+|`envName`|`string`| _No description available_ |
+|`autoApprove`|`boolean`| _No description available_ |
+|`teardown`|`boolean`| _No description available_ |
+|`selectiveReconcile`| _To be added_ | _No description available_ |
+|`components`|`array`| _No description available_ |
 
 
 
@@ -71,7 +71,7 @@ Spec contains the information about details of the environment to be provisioned
   Team Name
 </h4>
 
-Name of the team CRD to which this environment belongs to (also used to create [metadata.name](#metdata))
+
 
 ```yaml
 teamName: client
@@ -95,7 +95,8 @@ envName: demo
   Auto Approve
 </h4>
 
-When we provision or destroy an environment, by default, zlifecycle UI always asks for approval from the end-user.
+When you provision or teardown an **environment**, the terraform plan needs to be approved. The approval step can be automated, by setting the flag to `true`. By default, this flag is set to `false`, requiring the user to manually approve.
+
 
 This property allows zlifecycle to skip the approval process.
 
@@ -190,6 +191,7 @@ YAML Properties:-
   - [Overlay Data](#component-overlay-data)
   - [Overlay Files](#component-overlay-files)
   - [Depends On](#component-depends-on)
+  - autoApprove (at component level)
 
 This is the most intimidating part of your environment yaml file. Let's decipher it step by step.
 
