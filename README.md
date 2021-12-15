@@ -11,10 +11,11 @@
         * Fields
 * Core Concepts
 * Getting on-boarded on zLifecycle
-* User Guide
+* User Guide2
     * Getting Started
         * Setting up zLifecycle
         * [Provisioning your First Environment](provision/first-environment.md)
+        * [Tearing down your First Environment](teardown/first-environment.md)
     * [Define Environment](define/define-environment.md)
     * Provision Environment
     * Reconcile Environment
