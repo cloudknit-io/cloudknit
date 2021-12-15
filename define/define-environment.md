@@ -29,7 +29,7 @@ Metadata contains the `name` of your environment along with the `namespace` whic
 | Field Name | Field Type | Description   |
 |:----------:|:----------:|---------------|
 |`name`|`string`| The name should be unique for every environment, to ensure that we follow below naming convention:- `{company}-{team}-{environment}` For example: `zmart-checkout-dev` **company** is your organization's name. **team** and **environment** are defined in the [spec](#spec) section below |
-|`namespace`|`string|Namespace is always `zlifecycle` for every environment you create|
+|`namespace`|`string|Namespaces provides a mechanism for isolating groups of resources within a single cluster. Namespace is always `zlifecycle` for every environment you create|
 
 
 ---
