@@ -1,0 +1,146 @@
+apiVersion: stable.compuzest.com/v1
+kind: Environment
+metadata:
+  # Environment CRD k8s object name
+  name: zl-app-tech-cloud-assembly-demo
+  # namespace should stay `zlifecycle` for now
+  namespace: zlifecycle
+spec:
+  # name of the team CRD which this environment belongs to
+  # should match Team.spec.teamName
+  teamName: cloud-assembly
+  # name of the environment (see difference from `metadata.name`)
+  envName: demo
+  # skip approval process on zLifecycle UI
+  autoApprove: true
+  # OPTIONAL: use this flag for destroying an environment
+  # when creating a new environment, it must be omitted or set to `false`
+  # environment teardown is composed as a 2-step process
+  #   first step is to update the `teardown` flag to `true` and wait for the environment to get destroyed (monitor progress on zLifecycle UI)
+  #   second step is to delete the Environment yaml from github for permanent deletion of an environment
+  #     NOTE: without the second step, you could use `teardown` to provision and restore temporary environments by toggling its value
+  teardown: false
+  # array of environment components
+  components:
+      # name of the environment component
+    - name: static-assets
+      # `terraform` is currently the only supported type
+      type: terraform
+      # OPTIONAL: same logic as global `teardown`, here it applies on environment component level (default is `false`)
+      destroy: false
+      # OPTIONAL: If set to true, do not run destroy actions against this component (default is `false`)
+      destroyProtection: true
+
+      # OPTIONAL: Configuration block for AWS provider
+      aws:
+        # OPTIONAL: AWS region
+        region: us-east-1
+        # OPTIONAL: Configuration block for AWS Assume Role
+        assumeRole:
+            # Role ARN which to assume
+            roleArn: arn:aws:iam::724056153233:role/zl-allow-assume-networking
+            # OPTIONAL: External ID
+            externalId: test_id1
+            # OPTIONAL: Session Name
+            sessionName: some_session
+
+      # you can either reference a public or private module
+      # for public AWS modules
+      module:
+        # `aws` is currently the only supported type
+        source: aws
+        # public terraform modules can be referenced here
+        # this references https://registry.terraform.io/modules/terraform-aws-modules/s3-bucket/aws/latest
+        name: s3-bucket
+        # OPTIONAL: if the actual module is in a subdirectory (monorepo with multiple terraform modules), use `path` to specify where is the module
+        path: path/to/module
+      # for private AWS modules
+      #module:
+        # full path to the terraform module
+        #source: "git@github.com:SebastianUA/terraform-aws-sagemaker"
+
+      # if the module supports outputs, name them here so they can be later referenced in `variables` block using `valueFrom`
+      outputs:
+        - name: bucket_arn
+
+      # OPTIONAL: inline variables (will get injected into the terraform module when TF code is generated)
+      variables:
+        # array of `name -> value` objects
+        - name: bucket
+          value: "zl-app-tech-cloud-assembly-demo-static-assets"
+          # example of how to fetch a variable from `outputs`
+        - name: acl
+          # reference an output defined in a previous module using `outputs` block
+          valueFrom: data.terraform_remote_state.s3-common.outputs.bucket_acl
+      # OPTIONAL: reference secret values which are added through the zLifecycle UI
+      secrets:
+          # name of the terraform module variable
+        - name: bucket
+          # secret name entered in zLifecycle UI settings page
+          key: s3-name
+          # scope configures secret scope granularity
+          # valid scopes are org, team, environment and component
+          scope: org
+      # OPTIONAL: array of files to be generated and bundled with the environment component
+      overlayData:
+          # name of the file
+        - name: cloud-init.sh
+          # content of the file (generally it is a multi-line string)
+          data: |
+            #!/bin/sh
+            echo "Starting cloud init"
+      # OPTIONAL: external files which will be bundled with the environment component
+      overlayFiles:
+          # repo where the file is located
+        - source: "git@github.com:zl-app-tech/cloud-assembly-config.git"
+          # path to the file in the `source` repo
+          path: demo/overlay.txt
+          # OPTIONAL: from which ref to pull the file (HEAD, branch name, commit SHA...)
+          ref: HEAD
+    - name: networking
+      type: terraform
+      module:
+        source: aws
+        name: vpc
+      variablesFile:
+        source: "git@github.com:zl-app-tech/cloud-assembly-config.git"
+        path: "demo/tfvars/networking.tfvars"
+      # if the module supports outputs, name them here so they can be later referenced in `variables` block using `valueFrom`
+      outputs:
+        - name: private_subnets
+    - name: platform-eks
+      type: terraform
+      # add module dependencies (array of environment component names)
+      dependsOn: [networking]
+      module:
+        source: aws
+        name: s3-bucket
+      # instead of inline variables, pass a tfvars file
+      variablesFile:
+        # repo where the file belongs
+        source: "git@github.com:zl-app-tech/cloud-assembly-config.git"
+        # path to the file in the `source` repo
+        path: "demo/tfvars/platform-eks.tfvars"
+    - name: eks-addons
+      type: terraform
+      dependsOn: [platform-eks]
+      module:
+        source: aws
+        name: s3-bucket
+      variablesFile:
+        source: "git@github.com:zl-app-tech/cloud-assembly-config.git"
+        path: "demo/tfvars/eks-addons.tfvars"
+    - name: platform-ec2
+      type: terraform
+      dependsOn: [networking]
+      module:
+        source: aws
+        name: ec2-instance
+      # example of using both inline variables and tfvars file
+      variables:
+        - name: subnet_id
+          # example of how to fetch a variable from `outputs`
+          valueFrom: data.terraform_remote_state.networking.outputs.private_subnets[0]
+      variablesFile:
+        source: "git@github.com:zl-app-tech/cloud-assembly-config.git"
+        path: "demo/tfvars/ec2.tfvars"
