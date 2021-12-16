@@ -60,7 +60,7 @@ function PatchError() {
   data='{"metadata":{"labels":{"component_status":"'$component_error_status'"}}}'
   argocd app patch $team_env_config_name --patch $data --type merge >null
 
-  sh /audit.sh $team_name $env_name $config_name "Failed" "Failed" $reconcile_id $config_reconcile_id $is_destroy 0
+  sh /audit.sh $team_name $env_name $config_name "Failed" "Failed" $reconcile_id $config_reconcile_id $is_destroy 0 "noSkip"
 }
 
 function appendLogs() {
