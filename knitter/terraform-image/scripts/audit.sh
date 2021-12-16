@@ -17,12 +17,18 @@ url='http://zlifecycle-api.zlifecycle-ui.svc.cluster.local/reconciliation/api/v1
 start_date=$(date)
 end_date='"'$(date)'"'
 
+
 if [ $config_reconcile_id -eq 0 ]; then
     end_date=null
     config_reconcile_id=null
 fi
 
-if [ "$skip_component" != 'noSkip' ]; then
+if [ "$skip_component" != "noSkip" ]; then
+    if [[ "$config_status" = "Initialising..." && $config_reconcile_id = null ]]; then
+        . /argocd/login.sh
+        data='{"metadata":{"labels":{"is_skipped":"true"}}}'
+        argocd app patch $team_env_config_name --patch $data --type merge > null
+    fi
     config_status='skipped'
     if [ "$skip_component" = 'selectiveReconcile' ]; then
         config_status='skipped_reconcile'
