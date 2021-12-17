@@ -319,8 +319,7 @@ func checkEnvironmentComponentDependenciesExist(comp string, deps []string, ecs 
 		}
 		if !exists {
 			fld := field.NewPath("spec").Child("components").Child(ec).Child("dependsOn").Key(dep)
-			err := fmt.Errorf("component '%s' depends on non-existing component: '%s'", comp, dep)
-			return field.Invalid(fld, dep, err.Error())
+			return field.Invalid(fld, dep, fmt.Sprintf("component '%s' depends on non-existing component: '%s'", comp, dep))
 		}
 	}
 	return nil
