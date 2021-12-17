@@ -18,6 +18,7 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controllers/apm"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/gitreconciler"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/log"
 	"github.com/newrelic/go-agent/v3/integrations/logcontext/nrlogrusplugin"
 	"github.com/sirupsen/logrus"
 
@@ -81,7 +82,7 @@ func main() {
 	// Git reconciler
 	gitReconciler := gitreconciler.NewReconciler(
 		ctx,
-		newLogger().WithFields(logrus.Fields{"logger": "GitReconciler", "instance": env.Config.CompanyName, "company": env.Config.CompanyName}),
+		log.NewLogger().WithFields(logrus.Fields{"logger": "GitReconciler", "instance": env.Config.CompanyName, "company": env.Config.CompanyName}),
 		mgr.GetClient(),
 	)
 	if err := gitReconciler.Start(); err != nil {
@@ -107,7 +108,7 @@ func main() {
 	if err = (&controllers.CompanyReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("Company"),
-		LogV2:  newLogger().WithFields(logrus.Fields{"logger": "controller.Company", "instance": env.Config.CompanyName, "company": env.Config.CompanyName}),
+		LogV2:  log.NewLogger().WithFields(logrus.Fields{"logger": "controller.Company", "instance": env.Config.CompanyName, "company": env.Config.CompanyName}),
 		Scheme: mgr.GetScheme(),
 		APM:    _apm,
 	}).SetupWithManager(mgr); err != nil {
@@ -118,7 +119,7 @@ func main() {
 	if err = (&controllers.TeamReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("Team"),
-		LogV2:  newLogger().WithFields(logrus.Fields{"logger": "controller.Team", "instance": env.Config.CompanyName, "company": env.Config.CompanyName}),
+		LogV2:  log.NewLogger().WithFields(logrus.Fields{"logger": "controller.Team", "instance": env.Config.CompanyName, "company": env.Config.CompanyName}),
 		Scheme: mgr.GetScheme(),
 		APM:    _apm,
 	}).SetupWithManager(mgr); err != nil {
@@ -129,7 +130,7 @@ func main() {
 	if err = (&controllers.EnvironmentReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("Environment"),
-		LogV2:  newLogger().WithFields(logrus.Fields{"logger": "controller.Environment", "instance": env.Config.CompanyName, "company": env.Config.CompanyName}),
+		LogV2:  log.NewLogger().WithFields(logrus.Fields{"logger": "controller.Environment", "instance": env.Config.CompanyName, "company": env.Config.CompanyName}),
 		Scheme: mgr.GetScheme(),
 		APM:    _apm,
 	}).SetupWithManager(mgr); err != nil {
@@ -137,6 +138,7 @@ func main() {
 	}
 
 	if env.Config.DisableWebhooks != "true" {
+		setupLog.Info("Initializing webhook service")
 		if err = (&stablev1.Environment{}).SetupWebhookWithManager(mgr); err != nil {
 			setupLog.WithError(err).Panic("unable to create webhook", "webhook", "Environment")
 		}
@@ -148,14 +150,4 @@ func main() {
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.WithError(err).Panic("problem running manager")
 	}
-}
-
-func newLogger() *logrus.Logger {
-	l := logrus.New()
-	if env.Config.Mode != "local" {
-		l.SetFormatter(nrlogrusplugin.ContextFormatter{})
-	} else {
-		l.SetFormatter(&logrus.TextFormatter{})
-	}
-	return l
 }

@@ -6,18 +6,15 @@ import (
 	"fmt"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/notifier"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
+	"github.com/sirupsen/logrus"
 	"net/http"
 )
 
 func (u *UINotifier) Notify(ctx context.Context, n *notifier.Notification) error {
-	u.log.Info(
-		"Sending UI notification",
-		"company", n.Company,
-		"team", n.Team,
-		"environment", n.Environment,
-		"message", n.Message,
-		"messageType", n.MessageType,
-	)
+	u.log.WithFields(logrus.Fields{
+		"message":     n.Message,
+		"messageType": n.MessageType,
+	}).Info("Sending UI notification")
 
 	notificationEndpoint := fmt.Sprintf("%s/reconciliation/api/v1/notification/save", u.apiURL)
 
