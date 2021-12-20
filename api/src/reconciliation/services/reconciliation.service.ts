@@ -6,6 +6,7 @@ import { S3Handler } from "src/costing/utilities/s3Handler";
 import { ComponentReconcile } from "src/typeorm/reconciliation/component-reconcile.entity";
 import { EnvironmentReconcile } from "src/typeorm/reconciliation/environment-reconcile.entity";
 import { Notification } from "src/typeorm/reconciliation/notification.entity";
+import { Like, Not } from "typeorm";
 import { Repository } from "typeorm/repository/Repository";
 import { ComponentAudit } from "../dtos/componentAudit.dto";
 import { EnvironmentAudit } from "../dtos/environmentAudit.dto";
@@ -109,7 +110,7 @@ export class ReconciliationService {
     if (entries.length > 0) {
       const newEntries = entries.map((entry) => ({
         ...entry,
-        status: "Skipped",
+        status: "skipped_reconcile",
       }));
       await repo.save(newEntries);
     }
@@ -202,6 +203,7 @@ export class ReconciliationService {
     const latestAuditId = await this.componentReconcileRepository.find({
       where: {
         name: `${team}-${environment}-${component}`,
+        status: Not(Like('skipped%')),
       },
       order: {
         start_date_time: -1,
