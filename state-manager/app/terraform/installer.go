@@ -2,16 +2,16 @@ package terraform
 
 import (
 	"context"
+
 	"github.com/compuzest/zlifecycle-state-manager/app/zlog"
 	"github.com/hashicorp/terraform-exec/tfinstall"
+	"github.com/pkg/errors"
 )
 
-var (
-	globalExecPath = ""
-)
+var globalExecPath = ""
 
-// FindExecutable searches the file system for the terraform binary.
-func FindExecutable(ctx context.Context) (execPath string, err error) {
+// findExecutable searches the file system for the terraform binary.
+func findExecutable(ctx context.Context) (execPath string, err error) {
 	execPath, err = tfinstall.Find(ctx, tfinstall.LookPath())
 	return
 }
@@ -20,9 +20,9 @@ func FindExecutable(ctx context.Context) (execPath string, err error) {
 func GetExecPath(ctx context.Context) (execPath string, err error) {
 	if globalExecPath == "" {
 		zlog.CtxLogger(ctx).Info("Searching file system for terraform executable")
-		globalExecPath, err = FindExecutable(ctx)
+		globalExecPath, err = findExecutable(ctx)
 		if err != nil {
-			return "", err
+			return "", errors.Wrap(err, "error looking up terraform executable path")
 		}
 	}
 	return globalExecPath, nil

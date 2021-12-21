@@ -3,14 +3,16 @@ package terraform
 import (
 	"context"
 	"fmt"
+	"os"
+	"path"
+	"time"
+
 	"github.com/compuzest/zlifecycle-state-manager/app/util"
 	"github.com/compuzest/zlifecycle-state-manager/app/zlog"
 	"github.com/hashicorp/terraform-exec/tfexec"
 	gocache "github.com/patrickmn/go-cache"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"os"
-	"path"
-	"time"
 )
 
 var cache = gocache.New(15*time.Minute, 30*time.Minute)
@@ -21,7 +23,7 @@ func InitTerraform(ctx context.Context, workdir string, execPath string) (*Wrapp
 
 	tf, err := checkCache(ctx, workdir)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "error checking cache for cached terraform instance")
 	}
 	if tf != nil {
 		return &Wrapper{ctx: ctx, tf: tf}, nil
@@ -29,7 +31,7 @@ func InitTerraform(ctx context.Context, workdir string, execPath string) (*Wrapp
 
 	tf, err = tfexec.NewTerraform(workdir, execPath)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "error creating new terraform instance")
 	}
 
 	setTfLogLevel(tf)
@@ -45,7 +47,7 @@ func InitTerraform(ctx context.Context, workdir string, execPath string) (*Wrapp
 		logrus.Fields{"workdir": workdir},
 	).Info("Caching terraform instance")
 	if err := cache.Add(workdir, tf, gocache.DefaultExpiration); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "error caching terraform instance after terraform initialization")
 	}
 
 	wrapper := Wrapper{ctx: ctx, tf: tf}
@@ -93,7 +95,7 @@ func (w *Wrapper) RemoveStateResources(resources []string) (state *StateWrapper,
 	setTfLogLevel(w.tf)
 	for _, r := range resources {
 		if err := w.tf.StateRm(deadlineCtx, r); err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err, "error running terraform state rm operation for resource %s", r)
 		}
 	}
 

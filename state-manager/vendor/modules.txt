@@ -202,6 +202,9 @@ github.com/newrelic/go-agent/v3/integrations/logcontext/nrlogrusplugin
 # github.com/patrickmn/go-cache v2.1.0+incompatible
 ## explicit
 github.com/patrickmn/go-cache
+# github.com/pkg/errors v0.9.1
+## explicit
+github.com/pkg/errors
 # github.com/sergi/go-diff v1.2.0
 github.com/sergi/go-diff/diffmatchpatch
 # github.com/sirupsen/logrus v1.4.1

@@ -2,14 +2,16 @@ package il
 
 import (
 	"context"
+	"os"
+	"path"
+	"time"
+
 	"github.com/compuzest/zlifecycle-state-manager/app/git"
 	"github.com/compuzest/zlifecycle-state-manager/app/terraform"
 	"github.com/compuzest/zlifecycle-state-manager/app/util"
 	"github.com/compuzest/zlifecycle-state-manager/app/zlog"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"os"
-	"path"
-	"time"
 )
 
 func FetchState(ctx context.Context, zs *ZState) (*terraform.StateWrapper, error) {
@@ -17,12 +19,12 @@ func FetchState(ctx context.Context, zs *ZState) (*terraform.StateWrapper, error
 
 	workdir, err := getTerraformWorkdir(ctx, zs)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "error getting terraform workdir")
 	}
 
 	state, err := terraform.GetState(ctx, workdir)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "error executing terraform state ls operation")
 	}
 
 	zlog.CtxLogger(ctx).WithFields(
@@ -43,7 +45,7 @@ func RemoveStateResources(ctx context.Context, zs *ZState, resources []string) (
 
 	workdir, err := getTerraformWorkdir(ctx, zs)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "error getting terraform workdir")
 	}
 
 	state, err := terraform.RemoveResources(ctx, workdir, resources)
@@ -73,7 +75,7 @@ func getTerraformWorkdir(ctx context.Context, zs *ZState) (string, error) {
 	}
 
 	if !exists {
-		err = os.MkdirAll(basedir, 0755)
+		err = os.MkdirAll(basedir, 0o755)
 		if err != nil {
 			return "", err
 		}
@@ -81,7 +83,7 @@ func getTerraformWorkdir(ctx context.Context, zs *ZState) (string, error) {
 
 	_, _, err = git.GetRepository(ctx, zs.RepoURL, basedir)
 	if err != nil {
-		return "", err
+		return "", errors.Wrapf(err, "error getting repository: %s", zs.RepoURL)
 	}
 
 	workdir, err := BuildILComponentPath(zs.Meta, basedir)

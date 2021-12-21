@@ -1,10 +1,14 @@
 package il
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/pkg/errors"
+)
 
 func BuildILComponentPath(meta *ComponentMeta, prefix string) (path string, err error) {
 	if meta.Environment == "" || meta.Team == "" || meta.Component == "" {
-		return "", fmt.Errorf("state must contain non-empty team, environment and component name")
+		return "", errors.New("state must contain non-empty team, environment and component name")
 	}
 
 	path = fmt.Sprintf(
