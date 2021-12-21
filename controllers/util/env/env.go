@@ -119,7 +119,7 @@ var Config = config{
 
 	SlackWebhookURL: os.Getenv("SLACK_WEBHOOK_URL"),
 
-	EnableErrorNotifier: getOr("ENABLE_ERROR_NOTIFIER", "true"),
+	EnableErrorNotifier: getOr("ENABLE_ERROR_NOTIFIER", "false"),
 }
 
 func getOr(key string, defaultValue string) string {
