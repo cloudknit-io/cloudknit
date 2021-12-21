@@ -58,6 +58,8 @@ type config struct {
 	TelemetryEnvironment string
 
 	SlackWebhookURL string
+
+	EnableErrorNotifier string
 }
 
 // Config exposes vars used throughout the operator.
@@ -116,6 +118,8 @@ var Config = config{
 	TelemetryEnvironment: getOr("TELEMETRY_ENVIRONMENT", "dev"),
 
 	SlackWebhookURL: os.Getenv("SLACK_WEBHOOK_URL"),
+
+	EnableErrorNotifier: getOr("ENABLE_ERROR_NOTIFIER", "false"),
 }
 
 func getOr(key string, defaultValue string) string {

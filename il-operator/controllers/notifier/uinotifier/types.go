@@ -1,12 +1,14 @@
 package uinotifier
 
-import "github.com/go-logr/logr"
+import (
+	"github.com/sirupsen/logrus"
+)
 
 type UINotifier struct {
 	apiURL string
-	log    logr.Logger
+	log    *logrus.Entry
 }
 
-func NewUINotifier(log logr.Logger, apiURL string) *UINotifier {
+func NewUINotifier(log *logrus.Entry, apiURL string) *UINotifier {
 	return &UINotifier{apiURL: apiURL, log: log}
 }
