@@ -60,7 +60,7 @@ Spec contains the information about details of the environment to be provisioned
 |`envName`|`string`| _No description available_ |
 |`autoApprove`|`boolean`| _No description available_ |
 |`teardown`|`boolean`| _No description available_ |
-|`selectiveReconcile`| _To be added_ | _No description available_ |
+|`selectiveReconcile`| _array_ | _No description available_ |
 |`components`|`array`| _No description available_ |
 
 
