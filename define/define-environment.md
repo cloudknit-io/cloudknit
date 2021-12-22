@@ -57,11 +57,11 @@ Spec contains the information about details of the environment to be provisioned
 | Field Name | Field Type | Description   |
 |:----------:|:----------:|---------------|
 |`teamName`|`string`| Name of the team to which this environment belongs (also used to create [metadata.name](#metdata)) |
-|`envName`|`string`| _No description available_ |
-|`autoApprove`|`boolean`| _No description available_ |
-|`teardown`|`boolean`| _No description available_ |
-|`selectiveReconcile`| _array_ | _No description available_ |
-|`components`|`array`| _No description available_ |
+|`envName`|`string`| Name of the environment |
+|`autoApprove`|`boolean`| To skip the manual approval step of applying the changes to a workflow, set this flag to `true`. If not set, it will default to `false` |
+|`teardown`|`boolean`| To teardown an environment, set this flag to `true`. If you are creating a new environment, it must be omitted or set to `false`. If omitted, it will default to `false`. Environment teardown is composed as a 2-step process: First step is to update the `teardown` flag to `true` and wait for the environment to get destroyed (monitor progress on zLifecycle UI). Second step is to delete the Environment yaml from github for permanent deletion of an environment |
+|`selectiveReconcile`| `array` | _No description available_ |
+|`components`|`array`| Array of environment components |
 
 
 
