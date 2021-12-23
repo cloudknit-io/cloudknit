@@ -2,6 +2,7 @@ package terraform
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-exec/tfexec"
 	tfjson "github.com/hashicorp/terraform-json"
 )

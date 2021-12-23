@@ -3,9 +3,9 @@ package web
 import (
 	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/compuzest/zlifecycle-state-manager/app/apm"
+	"github.com/compuzest/zlifecycle-state-manager/app/env"
 	"github.com/compuzest/zlifecycle-state-manager/app/web/controllers"
 	"github.com/compuzest/zlifecycle-state-manager/app/web/middleware"
 	"github.com/compuzest/zlifecycle-state-manager/app/zlog"
@@ -45,7 +45,7 @@ func NewServer() {
 func initRouter() (*mux.Router, error) {
 	r := mux.NewRouter()
 
-	if os.Getenv("DEV_MODE") != "true" && os.Getenv("ENABLE_NEW_RELIC") == "true" {
+	if env.Config().DevMode != "true" && env.Config().EnableNewRelic == "true" {
 		zlog.PlainLogger().Info("Initializing application with APM")
 		zlog.PlainLogger().Info("Initializing NewRelic APM")
 		app, err := apm.Init()

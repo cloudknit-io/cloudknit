@@ -2,6 +2,7 @@ package zlog
 
 import (
 	"context"
+
 	"github.com/newrelic/go-agent/v3/integrations/logcontext/nrlogrusplugin"
 	log "github.com/sirupsen/logrus"
 )

@@ -1,6 +1,7 @@
 package util
 
 import (
+	"github.com/pkg/errors"
 	"io"
 	"os"
 )
@@ -25,7 +26,7 @@ func IsDirEmpty(dir string) (bool, error) {
 	defer f.Close()
 
 	_, err = f.Readdirnames(1) // Or f.Readdir(1)
-	if err == io.EOF {
+	if errors.Is(err, io.EOF) {
 		return true, nil
 	}
 	return false, err // Either not empty or error, suits both cases

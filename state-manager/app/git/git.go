@@ -3,16 +3,16 @@ package git
 import (
 	"context"
 	"errors"
+	"github.com/compuzest/zlifecycle-state-manager/app/env"
 	"github.com/compuzest/zlifecycle-state-manager/app/util"
 	"github.com/compuzest/zlifecycle-state-manager/app/zlog"
 	gogit "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/sirupsen/logrus"
-	"os"
 )
 
 func auth() *http.BasicAuth {
-	token := os.Getenv("GITHUB_TOKEN")
+	token := env.Config().GitToken
 	return &http.BasicAuth{
 		Username: "zlifecycle", // yes, this can be anything except an empty string
 		Password: token,

@@ -1,11 +1,12 @@
 package middleware
 
 import (
-	http2 "github.com/compuzest/zlifecycle-state-manager/app/web/http"
-	"github.com/compuzest/zlifecycle-state-manager/app/zlog"
 	"mime"
 	"net/http"
 	"time"
+
+	http2 "github.com/compuzest/zlifecycle-state-manager/app/web/http"
+	"github.com/compuzest/zlifecycle-state-manager/app/zlog"
 )
 
 func EnforceJSONHandler(next http.Handler) http.Handler {
