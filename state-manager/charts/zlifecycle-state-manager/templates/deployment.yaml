@@ -47,8 +47,8 @@ spec:
               subPath: id_rsa
               readOnly: true
           env:
-            - name: GITHUB_TOKEN
-              value: {{ .Values.env.GITHUB_TOKEN }}
+            - name: GIT_TOKEN
+              value: {{ .Values.env.GIT_TOKEN }}
             - name: ENABLE_NEW_RELIC
               value: {{ quote .Values.env.ENABLE_NEW_RELIC }}
             - name: NEW_RELIC_API_KEY
