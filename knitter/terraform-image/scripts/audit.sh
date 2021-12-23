@@ -33,10 +33,14 @@ if [ "$skip_component" != "noSkip" ]; then
 fi
 
 if [[ $config_name != 0 && $config_reconcile_id = null ]]; then
-    echo "skipped status "$is_skipped
+    sh ./validate_env_component.sh $team_name $env_name $config_name
     . /argocd/login.sh
     data='{"metadata":{"labels":{"is_skipped":"'$is_skipped'"}}}'
     argocd app patch $team_env_config_name --patch $data --type merge > null
+fi
+
+if [[ $config_reconcile_id != null ]]; then
+    echo -n '0' >/tmp/error_code.txt
 fi
 
 component_payload='[{"id" : '$config_reconcile_id', "name" : "'$team_env_config_name'", "status" : "'$config_status'", "startDateTime" : "'$start_date'", "endDateTime" : '$end_date'}]'
