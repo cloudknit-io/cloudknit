@@ -37,9 +37,7 @@ if [[ $config_name != 0 && $config_reconcile_id = null ]]; then
     . /argocd/login.sh
     data='{"metadata":{"labels":{"is_skipped":"'$is_skipped'"}}}'
     argocd app patch $team_env_config_name --patch $data --type merge > null
-fi
-
-if [[ $config_reconcile_id != null ]]; then
+else
     echo -n '0' >/tmp/error_code.txt
 fi
 
