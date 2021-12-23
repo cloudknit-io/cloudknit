@@ -25,5 +25,5 @@ webhooks:
           - UPDATE
         resources:
           - environments
-		sideEffects: None
-		timeoutSeconds: 30
+    sideEffects: None
+    timeoutSeconds: 30
