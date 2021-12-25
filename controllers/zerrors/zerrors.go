@@ -10,6 +10,7 @@ type ZError interface {
 	Attributes() map[string]interface{}
 	Class() string
 	Metric() string
+	OriginalError() error
 }
 
 type TeamError struct {
@@ -36,6 +37,12 @@ func (e *TeamError) Class() string {
 func (e *TeamError) Metric() string {
 	return "com.zlifecycle.teamreconciler.error"
 }
+
+func (e *TeamError) OriginalError() error {
+	return e.Err
+}
+
+var _ ZError = (*TeamError)(nil)
 
 func NewTeamError(team string, err error) *TeamError {
 	return &TeamError{
@@ -69,6 +76,10 @@ func (e *EnvironmentError) Class() string {
 
 func (e *EnvironmentError) Metric() string {
 	return "com.zlifecycle.environmentreconciler.error"
+}
+
+func (e *EnvironmentError) OriginalError() error {
+	return e.Err
 }
 
 var _ ZError = (*EnvironmentError)(nil)
