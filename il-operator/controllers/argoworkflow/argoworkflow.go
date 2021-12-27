@@ -346,7 +346,7 @@ func generateAuditTask(environment *stablev1.Environment, destroyAll bool, phase
 		Name: name,
 		TemplateRef: &workflow.TemplateRef{
 			Name:     "audit-run-template",
-			Template: "run_audit",
+			Template: "run-audit",
 		},
 		Dependencies: dependencies,
 		Arguments: workflow.Arguments{
