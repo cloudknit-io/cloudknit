@@ -23,139 +23,31 @@ reconcile_id=${11}
 customer_id=${12}
 auto_approve=${13}
 
-team_env_name=$team_name-$env_name
-team_env_config_name=$team_name-$env_name-$config_name
-show_output_start='----->show_output_start<-----'
-show_output_end='----->show_output_end<-----'
-is_debug=0
-if [ $is_apply -eq 0 ];
-then
-  component_error_status="plan_failed"
-  s3FileName="plan_output"
-else
-  s3FileName="apply_output"
-  if [ $is_destroy = true ]
-  then
-      component_error_status="destroy_failed"
-  else
-      component_error_status="provision_failed"
-  fi
-fi
+#---------- INIT PHASE START ----------#
 
 echo "Initializing..." 2>&1 | tee /tmp/$s3FileName.txt
 
+. /initialize-component-variables.sh
 
-ENV_COMPONENT_PATH=/home/terraform-config/$terraform_il_path
-
-function PatchError() {
-  if [ $is_destroy = true ]
-  then
-      data='{"metadata":{"labels":{"env_status":"destroy_failed"}}}'
-  else
-      data='{"metadata":{"labels":{"env_status":"provision_failed"}}}'
-  fi
-
-  argocd app patch $team_env_name --patch $data --type merge > null
-
-  data='{"metadata":{"labels":{"component_status":"'$component_error_status'"}}}'
-  argocd app patch $team_env_config_name --patch $data --type merge >null
-
-  sh /audit.sh $team_name $env_name $config_name "Failed" "Failed" $reconcile_id $config_reconcile_id $is_destroy 0 "noSkip"
-}
-
-function appendLogs() {
-  IFS=''
-  while read line; do
-    echo $line | tee -a $1 
-  done
-}
-
-function Error() {
-  if [ -n "$1" ]; then
-    echo "Error: "$1
-    PatchError
-  fi
-
-  exit 1
-}
-
-function SaveAndExit() {
-  echo $show_output_start
-  echo $1 2>&1 | appendLogs /tmp/$s3FileName.txt
-  echo $show_output_end
-  aws s3 cp /tmp/$s3FileName.txt s3://zlifecycle-tfplan-$customer_id/$team_name/$env_name/$config_name/$config_reconcile_id/$s3FileName --profile compuzest-shared --quiet
-  Error $1
-}
-
-function returnErrorCode() {
-  return 99;
-}
-
-function setAWSCreds() {
-  aws_region=$(aws ssm get-parameter --profile compuzest-shared --region us-east-1 --name "/$1/aws_region" --with-decryption --query "Parameter.Value" | jq -r ".")
-  if [ ! -z $aws_region ];
-  then
-    export AWS_REGION=$aws_region
-  fi
-
-  aws_access_key_id=$(aws ssm get-parameter --profile compuzest-shared --region us-east-1 --name "/$1/aws_access_key_id" --with-decryption --query "Parameter.Value" | jq -r ".")
-  aws_secret_access_key=$(aws ssm get-parameter --profile compuzest-shared --region us-east-1 --name "/$1/aws_secret_access_key" --with-decryption --query "Parameter.Value" | jq -r ".")
-
-  if [ ! -z $aws_access_key_id -a ! -z $aws_secret_access_key ];
-  then
-    aws configure set aws_access_key_id $aws_access_key_id 
-    aws configure set aws_secret_access_key $aws_secret_access_key
-
-    aws_session_token=$(aws ssm get-parameter --profile compuzest-shared --region us-east-1 --name "/$1/aws_session_token" --with-decryption --query "Parameter.Value" | jq -r ".")
-
-    if [ ! -z $aws_session_token ];
-    then
-      aws configure set aws_session_token $aws_session_token
-    fi
-
-    return 1
-  fi
-  return 0
-}
+. /initialize-functions.sh
 
 sh /client/setup_github.sh || SaveAndExit "Cannot setup github ssh key"
+
 sh /client/setup_aws.sh || SaveAndExit "Cannot setup aws credentials"
 
 cd $ENV_COMPONENT_PATH
 
 sh /argocd/login.sh
 
-setAWSCreds $customer_id/$team_name/$env_name
-aws_response=$?
-if [ $aws_response -eq 0 ];
-then
-  setAWSCreds $customer_id/$team_name
-  aws_response=$?
-  if [ $aws_response -eq 0 ];
-  then
-    setAWSCreds $customer_id
-    aws_response=$?
-    if [ $aws_response -eq 0 ];
-    then
-      SaveAndExit "No AWS Credentials available. Please set AWS Credentials in the Settings Page."
-    fi
-  fi
-fi
-
-data='{"metadata":{"labels":{"component_status":"initializing"}}}'
-argocd app patch $team_env_config_name --patch $data --type merge >null
+. /set-aws-creds.sh
 
 # add last argo workflow run id to config application so it can fetch workflow details on UI
 data='{"metadata":{"labels":{"last_workflow_run_id":"'$workflow_id'"}}}'
 argocd app patch $team_env_config_name --patch $data --type merge >null
 
-echo $show_output_start
-((((terraform init -no-color; echo $? >&3) 2>&1 1>/dev/null | appendLogs "/tmp/$s3FileName.txt" >&4) 3>&1) | (read xs; exit $xs)) 4>&1
-if [ $? -ne 0 ]; then
-  echo $show_output_end
-  SaveAndExit "Failed to initialize terraform"
-fi
-echo $show_output_end
+. /initialize-terraform.sh
+
+#---------- INIT PHASE END ----------#
 
 if [ $is_apply -eq 0 ]; then
   if [ $is_sync -eq 1 ]; then
