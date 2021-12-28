@@ -11,6 +11,4 @@
 
 set -eo pipefail
 
-argoPassword=$(kubectl get secret argocd-creds -n argocd -o json | jq '.data.ARGOCD_PASSWORD | @base64d' | tr -d '"')
-
-echo y | argocd login --insecure argocd-server:443 --grpc-web --username admin --password $argoPassword
+echo y | argocd login --insecure argocd-server:443 --grpc-web --username admin --password $ARGOCD_PASSWORD
