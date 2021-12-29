@@ -1,7 +1,7 @@
 echo $show_output_start
 echo "Executing apply plan..." 2>&1 | appendLogs /tmp/plan_output.txt
-echo $show_output_end
-data='{"metadata":{"labels":{"component_status":"running_plan"}}}'
+echo $show_output_end;
+data='{"metadata":{"labels":{"component_status":"running_plan","audit_status":"running_plan"}}}'
 argocd app patch $team_env_config_name --patch $data --type merge >null
 
 echo $show_output_start
@@ -13,7 +13,7 @@ echo $show_output_end
 aws s3 cp /tmp/plan_output.txt s3://zlifecycle-tfplan-$customer_id/$team_name/$env_name/$config_name/$config_reconcile_id/plan_output --profile compuzest-shared
 aws s3 cp terraform-plan s3://zlifecycle-tfplan-$customer_id/$team_name/$env_name/$config_name/tfplans/$config_reconcile_id --profile compuzest-shared
 
-data='{"metadata":{"labels":{"component_status":"calculating_cost"}}}'
+data='{"metadata":{"labels":{"component_status":"calculating_cost","audit_status":"calculating_cost"}}}'
 argocd app patch $team_env_config_name --patch $data --type merge >null
 
 infracost breakdown --path terraform-plan --format json --log-level=warn >>output.json
@@ -30,5 +30,5 @@ echo $costing_payload >temp_costing_payload.json
 
 curl -X 'POST' 'http://zlifecycle-api.zlifecycle-ui.svc.cluster.local/costing/api/v1/saveComponent' -H 'accept: */*' -H 'Content-Type: application/json' -d @temp_costing_payload.json
 
-data='{"metadata":{"labels":{"component_status":"provisioning"}}}'
+data='{"metadata":{"labels":{"component_status":"provisioning","audit_status":"provisioning"}}}'
 argocd app patch $team_env_config_name --patch $data --type merge >null

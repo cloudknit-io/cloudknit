@@ -53,9 +53,9 @@ if [ $result -eq 0 ]
 then
     if [ $is_destroy = true ]
     then
-        data='{"metadata":{"labels":{"component_status":"destroyed"}}}'
+        data='{"metadata":{"labels":{"component_status":"destroyed","audit_status":"finishing"}}}'
     else
-        data='{"metadata":{"labels":{"component_status":"provisioned"}}}'
+        data='{"metadata":{"labels":{"component_status":"provisioned","audit_status":"finishing"}}}'
     fi
     argocd app patch $team_env_config_name --patch $data --type merge > null
 
@@ -82,13 +82,13 @@ then
     then
         if [ $auto_approve = false ]
         then
-            data='{"metadata":{"labels":{"component_status":"waiting_for_approval"}}}'
+            data='{"metadata":{"labels":{"component_status":"waiting_for_approval","audit_status":"waiting_for_approval"}}}'
         else
             if [ $is_destroy = true ]
             then
-                data='{"metadata":{"labels":{"component_status":"destroying"}}}'
+                data='{"metadata":{"labels":{"component_status":"destroying","audit_status":"destroying"}}}'
             else
-                data='{"metadata":{"labels":{"component_status":"provisioning"}}}'
+                data='{"metadata":{"labels":{"component_status":"provisioning","audit_status":"provisioning"}}}'
             fi
         fi
         argocd app patch $team_env_config_name --patch $data --type merge > null
