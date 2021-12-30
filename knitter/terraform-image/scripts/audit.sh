@@ -53,7 +53,7 @@ if [[ $config_status == *"failed"* ]]; then
     fi
 fi
 
-if [[ $config_status === 'Initialising...' ]]; then
+if [[ $config_status == 'Initialising...' ]]; then
     if [[ $is_destroy == true ]]; then
         config_status="destroying"
     else
