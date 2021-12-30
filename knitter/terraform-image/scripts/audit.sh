@@ -25,7 +25,7 @@ else
     config_status="Provision Successful"
     echo "inside audit_status"
     if [[ $is_destroy = true ]]; then
-        config_status="Teardown Successful"
+        config_status="Destroy Successful"
     fi
 fi
 
