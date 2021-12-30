@@ -2,35 +2,49 @@ package zlstate
 
 import (
 	"bytes"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/compuzest/zlifecycle-state-manager/app/env"
+	"context"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	awshttp "github.com/aws/aws-sdk-go-v2/aws/transport/http"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/compuzest/zlifecycle-state-manager/app/util"
 	"github.com/pkg/errors"
+	"net/http"
 	"time"
 )
 
 type S3Backend struct {
+	ctx    context.Context
 	bucket string
-	s3     *s3.S3
+	s3     *s3.Client
 }
 
-func NewS3Backend(bucket string) *S3Backend {
-	mySession := session.Must(session.NewSession())
-	return &S3Backend{
-		bucket: bucket,
-		s3:     s3.New(mySession, aws.NewConfig().WithRegion(env.Config().AWSRegion)),
+func NewS3Backend(ctx context.Context, bucket string) (*S3Backend, error) {
+	cfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "error loading default aws config")
 	}
+	return &S3Backend{
+		ctx:    ctx,
+		bucket: bucket,
+		s3:     s3.NewFromConfig(cfg),
+	}, nil
 }
 
 // Get returns the state file whose key is the path in the bucket for which the backend was created
 func (s *S3Backend) Get(key string) (*ZLState, error) {
+	exists, err := s.exists(key)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error checking does object already exist for key: [%s]", key)
+	}
+	if !exists {
+		return nil, errors.Errorf("key does not exist: [%s]", key)
+	}
 	input := s3.GetObjectInput{
 		Bucket: aws.String(s.bucket),
 		Key:    aws.String(key),
 	}
-	output, err := s.s3.GetObject(&input)
+	output, err := s.s3.GetObject(s.ctx, &input)
 	if err != nil {
 		return nil, errors.Wrap(err, "error getting zLstate object from s3")
 	}
@@ -50,7 +64,17 @@ func (s *S3Backend) Get(key string) (*ZLState, error) {
 	return zlstate, nil
 }
 
+var ErrKeyExists = errors.Errorf("object already exists")
+
 func (s *S3Backend) Put(key string, state *ZLState) error {
+	exists, err := s.exists(key)
+	if err != nil {
+		return errors.Wrapf(err, "error checking does object already exist for key: [%s]", key)
+	}
+	if exists {
+		return errors.WithStack(ErrKeyExists)
+	}
+
 	addDefaults(state)
 
 	body, err := util.ToJSON(state)
@@ -63,7 +87,7 @@ func (s *S3Backend) Put(key string, state *ZLState) error {
 		Body:   bytes.NewReader(body),
 	}
 
-	_, err = s.s3.PutObject(&input)
+	_, err = s.s3.PutObject(s.ctx, &input)
 	if err != nil {
 		return errors.Wrap(err, "error saving zLstate")
 	}
@@ -72,6 +96,21 @@ func (s *S3Backend) Put(key string, state *ZLState) error {
 }
 
 var _ Backend = (*S3Backend)(nil)
+
+func (s *S3Backend) exists(key string) (bool, error) {
+	_, err := s.s3.HeadObject(s.ctx, &s3.HeadObjectInput{
+		Bucket: aws.String(s.bucket),
+		Key:    aws.String(key),
+	})
+	if err != nil {
+		var responseError *awshttp.ResponseError
+		if errors.As(err, &responseError) && responseError.ResponseError.HTTPStatusCode() == http.StatusNotFound {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
+}
 
 func addDefaults(state *ZLState) {
 	if state.CreatedAt.IsZero() {

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/compuzest/zlifecycle-state-manager/app/apm"
@@ -22,13 +23,13 @@ func ZLStateHandler(w http.ResponseWriter, r *http.Request) {
 	var statusCode int
 	switch r.Method {
 	case "POST":
-		resp, err = postZLStateHandler(r.Body)
+		resp, err = postZLStateHandler(r.Context(), r.Body)
 		statusCode = http.StatusOK
 	case "PUT":
-		resp, err = putZLStateHandler(r.Body)
+		resp, err = putZLStateHandler(r.Context(), r.Body)
 		statusCode = http.StatusOK
 	case "PATCH":
-		resp, err = patchZLStateHandler(r.Body)
+		resp, err = patchZLStateHandler(r.Context(), r.Body)
 		statusCode = http.StatusOK
 	default:
 		err := apm.NoticeError(
@@ -51,7 +52,7 @@ func ZLStateHandler(w http.ResponseWriter, r *http.Request) {
 	http2.Response(w, resp, statusCode)
 }
 
-func postZLStateHandler(b io.ReadCloser) (*GetZLStateResponse, error) {
+func postZLStateHandler(ctx context.Context, b io.ReadCloser) (*GetZLStateResponse, error) {
 	var body GetZLStateRequest
 	decoder := json.NewDecoder(b)
 	if err := decoder.Decode(&body); err != nil {
@@ -61,7 +62,10 @@ func postZLStateHandler(b io.ReadCloser) (*GetZLStateResponse, error) {
 		return nil, errors.Wrap(err, "error validating get zLstate resource body")
 	}
 
-	client := zlstate.NewS3Backend(BuildZLStateBucket(body.Company))
+	client, err := zlstate.NewS3Backend(ctx, BuildZLStateBucket(body.Company))
+	if err != nil {
+		return nil, errors.Wrap(err, "error instantiating s3 backend for zLstate manager")
+	}
 
 	zlState, err := client.Get(BuildZLStateKey(body.Team, body.Environment))
 	if err != nil {
@@ -81,7 +85,7 @@ type GetZLStateResponse struct {
 	ZLState *zlstate.ZLState `json:"zlstate"`
 }
 
-func putZLStateHandler(b io.ReadCloser) (*PutZLStateResponse, error) {
+func putZLStateHandler(ctx context.Context, b io.ReadCloser) (*PutZLStateResponse, error) {
 	var body PutZLStateRequest
 	decoder := json.NewDecoder(b)
 	if err := decoder.Decode(&body); err != nil {
@@ -91,13 +95,19 @@ func putZLStateHandler(b io.ReadCloser) (*PutZLStateResponse, error) {
 		return nil, errors.Wrap(err, "error validating put zLstate resource body")
 	}
 
-	client := zlstate.NewS3Backend(BuildZLStateBucket(body.Company))
+	client, err := zlstate.NewS3Backend(ctx, BuildZLStateBucket(body.Company))
+	if err != nil {
+		return nil, errors.Wrap(err, "error instantiating s3 backend for zLstate manager")
+	}
 
 	if err := client.Put(BuildZLStateKey(body.Team, body.Environment), body.ZLState); err != nil {
+		if errors.Is(err, zlstate.ErrKeyExists) {
+			return &PutZLStateResponse{Message: "zLstate already exists"}, nil
+		}
 		return nil, errors.Wrap(err, "error persisting zLstate to remote backend")
 	}
 
-	return &PutZLStateResponse{}, nil
+	return &PutZLStateResponse{Message: "zLstate created successfully"}, nil
 }
 
 type PutZLStateRequest struct {
@@ -107,9 +117,11 @@ type PutZLStateRequest struct {
 	ZLState     *zlstate.ZLState `json:"zlstate"`
 }
 
-type PutZLStateResponse struct{}
+type PutZLStateResponse struct {
+	Message string `json:"message"`
+}
 
-func patchZLStateHandler(b io.ReadCloser) (*PatchZLStateResponse, error) {
+func patchZLStateHandler(ctx context.Context, b io.ReadCloser) (*PatchZLStateResponse, error) {
 	var body PatchZLStateRequest
 	decoder := json.NewDecoder(b)
 	if err := decoder.Decode(&body); err != nil {
@@ -119,7 +131,10 @@ func patchZLStateHandler(b io.ReadCloser) (*PatchZLStateResponse, error) {
 		return nil, errors.Wrap(err, "error validating patch zLstate resource body")
 	}
 
-	client := zlstate.NewS3Backend(BuildZLStateBucket(body.Company))
+	client, err := zlstate.NewS3Backend(ctx, BuildZLStateBucket(body.Company))
+	if err != nil {
+		return nil, errors.Wrap(err, "error instantiating s3 backend for zLstate manager")
+	}
 
 	key := BuildZLStateKey(body.Team, body.Environment)
 
