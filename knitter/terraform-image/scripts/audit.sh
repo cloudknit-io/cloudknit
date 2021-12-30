@@ -39,7 +39,11 @@ fi
 if [[ $config_name != 0 && $config_reconcile_id = null ]]; then
     sh ./validate_env_component.sh $team_name $env_name $config_name
     . /argocd/login.sh
-    data='{"metadata":{"labels":{"is_skipped":"'$is_skipped'","component_status":"initializing","is_destroy":"'$is_destroy'","audit_status":"initializing"}}}'
+    if [[ $is_skipped == *"skipped"* ]]; then
+        data='{"metadata":{"labels":{"is_skipped":"'$is_skipped'"}}}'
+    else
+        data='{"metadata":{"labels":{"is_skipped":"'$is_skipped'","component_status":"initializing","is_destroy":"'$is_destroy'","audit_status":"initializing"}}}'
+    fi
     argocd app patch $team_env_config_name --patch $data --type merge > null
 else
     echo -n '0' >/tmp/error_code.txt
