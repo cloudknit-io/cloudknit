@@ -52,10 +52,12 @@ func initRouter() (*mux.Router, error) {
 		if err != nil {
 			return nil, err
 		}
-		r.HandleFunc(newrelic.WrapHandleFunc(app, "/state", controllers.StateHandler))
+		r.HandleFunc(newrelic.WrapHandleFunc(app, "/terraform/state", controllers.TerraformStateHandler))
+		r.HandleFunc(newrelic.WrapHandleFunc(app, "/zl/state", controllers.ZLStateHandler))
 	} else {
 		zlog.PlainLogger().Info("Initializing application without APM")
-		r.HandleFunc("/state", controllers.StateHandler)
+		r.HandleFunc("/terraform/state", controllers.TerraformStateHandler)
+		r.HandleFunc("/zl/state", controllers.ZLStateHandler)
 	}
 
 	r.NotFoundHandler = http.HandlerFunc(controllers.NotFoundHandler)
