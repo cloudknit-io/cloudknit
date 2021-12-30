@@ -45,7 +45,7 @@ func validateGetZLStateRequest(req *GetZLStateRequest) error {
 	return nil
 }
 
-func validatePostZLStateRequest(req *PostZLStateRequest) error {
+func validatePutZLStateRequest(req *PutZLStateRequest) error {
 	if req.Company == "" {
 		return errors.New(`request body is missing field "company"`)
 	}

@@ -81,13 +81,13 @@ type GetZLStateResponse struct {
 	ZLState *zlstate.ZLState `json:"zlstate"`
 }
 
-func putZLStateHandler(b io.ReadCloser) (*PostZLStateResponse, error) {
-	var body PostZLStateRequest
+func putZLStateHandler(b io.ReadCloser) (*PutZLStateResponse, error) {
+	var body PutZLStateRequest
 	decoder := json.NewDecoder(b)
 	if err := decoder.Decode(&body); err != nil {
 		return nil, errors.Wrap(err, "invalid put zLstate body")
 	}
-	if err := validatePostZLStateRequest(&body); err != nil {
+	if err := validatePutZLStateRequest(&body); err != nil {
 		return nil, errors.Wrap(err, "error validating put zLstate resource body")
 	}
 
@@ -97,17 +97,17 @@ func putZLStateHandler(b io.ReadCloser) (*PostZLStateResponse, error) {
 		return nil, errors.Wrap(err, "error persisting zLstate to remote backend")
 	}
 
-	return &PostZLStateResponse{}, nil
+	return &PutZLStateResponse{}, nil
 }
 
-type PostZLStateRequest struct {
+type PutZLStateRequest struct {
 	Company     string           `json:"company"`
 	Team        string           `json:"team"`
 	Environment string           `json:"environment"`
 	ZLState     *zlstate.ZLState `json:"zlstate"`
 }
 
-type PostZLStateResponse struct{}
+type PutZLStateResponse struct{}
 
 func patchZLStateHandler(b io.ReadCloser) (*PatchZLStateResponse, error) {
 	var body PatchZLStateRequest
