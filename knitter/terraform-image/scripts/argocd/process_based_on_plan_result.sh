@@ -53,9 +53,9 @@ if [ $result -eq 0 ]
 then
     if [ $is_destroy = true ]
     then
-        data='{"metadata":{"labels":{"component_status":"destroyed","audit_status":"finishing"}}}'
+        data='{"metadata":{"labels":{"component_status":"destroyed"}}}'
     else
-        data='{"metadata":{"labels":{"component_status":"provisioned","audit_status":"finishing"}}}'
+        data='{"metadata":{"labels":{"component_status":"provisioned"}}}'
     fi
     argocd app patch $team_env_config_name --patch $data --type merge > null
 

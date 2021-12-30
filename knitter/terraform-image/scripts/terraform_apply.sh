@@ -21,7 +21,7 @@ echo $show_output_end
 aws s3 cp /tmp/apply_output.txt s3://zlifecycle-tfplan-$customer_id/$team_name/$env_name/$config_name/$config_reconcile_id/apply_output --profile compuzest-shared
 
 if [ $result -eq 0 ]; then
-    data='{"metadata":{"labels":{"component_status":"provisioned","audit_status":"finishing"}}}'
+    data='{"metadata":{"labels":{"component_status":"provisioned"}}}'
     argocd app patch $team_env_config_name --patch $data --type merge >null
 else
     SaveAndExit "There is an issue with provisioning"
