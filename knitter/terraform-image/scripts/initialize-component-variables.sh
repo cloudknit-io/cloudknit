@@ -10,13 +10,8 @@ then
   component_error_status="plan_failed"
   s3FileName="plan_output"
 else
+  component_error_status="apply_failed"
   s3FileName="apply_output"
-  if [ $is_destroy = true ]
-  then
-      component_error_status="destroy_failed"
-  else
-      component_error_status="provision_failed"
-  fi
 fi
 
 

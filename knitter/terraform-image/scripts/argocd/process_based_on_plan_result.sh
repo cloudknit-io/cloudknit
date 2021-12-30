@@ -25,7 +25,7 @@ auto_approve=${12}
 function PatchError() {
     data='{"metadata":{"labels":{"component_status":"plan_failed"}}}'
     argocd app patch $team_env_config_name --patch $data --type merge > null
-    sh ../audit.sh $team_name $env_name $config_name "" "Failed" $reconcile_id $config_reconcile_id $is_destroy 0 "noSkip"
+    sh ../audit.sh $team_name $env_name $config_name "" "plan_failed" $reconcile_id $config_reconcile_id $is_destroy 0 "noSkip"
     if [ $is_destroy = true ]
     then
         data='{"metadata":{"labels":{"env_status":"destroy_failed"}}}'

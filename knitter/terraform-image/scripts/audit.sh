@@ -17,15 +17,13 @@ url='http://zlifecycle-api.zlifecycle-ui.svc.cluster.local/reconciliation/api/v1
 start_date=$(date)
 end_date='"'$(date)'"'
 
-
 if [ $config_reconcile_id -eq 0 ]; then
     end_date=null
     config_reconcile_id=null
 else
-    config_status="Provision Successful"
-    echo "inside audit_status"
+    config_status="Provisioned"
     if [[ $is_destroy = true ]]; then
-        config_status="Destroy Successful"
+        config_status="Destroyed"
     fi
 fi
 
