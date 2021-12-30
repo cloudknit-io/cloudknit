@@ -15,7 +15,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func StateHandler(w http.ResponseWriter, r *http.Request) {
+func TerraformStateHandler(w http.ResponseWriter, r *http.Request) {
 	txn := newrelic.FromContext(r.Context())
 
 	var err error
@@ -23,24 +23,24 @@ func StateHandler(w http.ResponseWriter, r *http.Request) {
 	var statusCode int
 	switch r.Method {
 	case "POST":
-		resp, err = postStateHandler(r.Context(), r.Body)
+		resp, err = postTerraformStateHandler(r.Context(), r.Body)
 		statusCode = http.StatusOK
 	case "DELETE":
-		resp, err = deleteStateResourcesHandler(r.Context(), r.Body)
+		resp, err = deleteTerraformStateResourcesHandler(r.Context(), r.Body)
 		statusCode = http.StatusOK
 	default:
 		err := apm.NoticeError(
 			txn,
-			http2.NewVerboseError("NotFoundError", r.Method, "/state", errors.New("endpoint not implemented")),
+			http2.NewVerboseError("NotFoundError", r.Method, "/terraform/state", errors.New("endpoint not implemented")),
 		)
 		zlog.CtxLogger(r.Context()).Error(err)
 		http2.ErrorResponse(w, err.Error(), http.StatusNotFound)
 		return
 	}
 	if err != nil {
-		verr := http2.NewVerboseError("StateError", r.Method, "/state", err)
+		verr := http2.NewVerboseError("StateError", r.Method, "/terraform/state", err)
 		_ = apm.NoticeError(txn, verr)
-		zlog.CtxLogger(r.Context()).WithError(verr).Errorf("state handler error")
+		zlog.CtxLogger(r.Context()).WithError(verr).Errorf("terraform state handler error")
 		zlog.CtxLogger(r.Context()).Errorf("%+v", verr.OriginalError)
 		http2.ErrorResponse(w, verr.Error(), http.StatusBadRequest)
 		return
@@ -49,42 +49,42 @@ func StateHandler(w http.ResponseWriter, r *http.Request) {
 	http2.Response(w, resp, statusCode)
 }
 
-func postStateHandler(ctx context.Context, b io.ReadCloser) (*GetStateResponse, error) {
-	var body GetStateRequest
+func postTerraformStateHandler(ctx context.Context, b io.ReadCloser) (*GetTerraformStateResponse, error) {
+	var body GetTerraformStateRequest
 	decoder := json.NewDecoder(b)
 	if err := decoder.Decode(&body); err != nil {
-		return nil, errors.Wrap(err, "invalid get state body")
+		return nil, errors.Wrap(err, "invalid get terraform state body")
 	}
 	if err := validateZState(body.ZState); err != nil {
-		return nil, errors.Wrap(err, "error validating get state resource body")
+		return nil, errors.Wrap(err, "error validating get terrafirn state resource body")
 	}
 
 	s, err := il.FetchState(ctx, body.ZState)
 	if err != nil {
-		return nil, errors.Wrap(err, "error handling get state request")
+		return nil, errors.Wrap(err, "error handling get terraform state request")
 	}
 
-	resp := &GetStateResponse{State: s.GetRawState(), Resources: s.ParseResources()}
+	resp := &GetTerraformStateResponse{State: s.GetRawState(), Resources: s.ParseResources()}
 	return resp, nil
 }
 
-type GetStateRequest struct {
+type GetTerraformStateRequest struct {
 	ZState *il.ZState `json:"zstate"`
 }
 
-type GetStateResponse struct {
+type GetTerraformStateResponse struct {
 	State     *tfjson.State `json:"state"`
 	Resources []string      `json:"resources"`
 }
 
-func deleteStateResourcesHandler(ctx context.Context, b io.ReadCloser) (*DeleteStateResourcesResponse, error) {
-	var body DeleteStateResourcesRequest
+func deleteTerraformStateResourcesHandler(ctx context.Context, b io.ReadCloser) (*DeleteTerraformStateResourcesResponse, error) {
+	var body DeleteTerraformStateResourcesRequest
 	decoder := json.NewDecoder(b)
 	if err := decoder.Decode(&body); err != nil {
 		return nil, errors.Wrap(err, "invalid delete state resource request body")
 	}
 	if err := validateZState(body.ZState); err != nil {
-		return nil, errors.Wrap(err, "error validating delete state resource body")
+		return nil, errors.Wrap(err, "error validating delete terraform state resource body")
 	}
 
 	s, err := il.RemoveStateResources(ctx, body.ZState, body.Resources)
@@ -92,20 +92,16 @@ func deleteStateResourcesHandler(ctx context.Context, b io.ReadCloser) (*DeleteS
 		return nil, errors.Wrap(err, "error handling delete state request")
 	}
 
-	resp := &DeleteStateResourcesResponse{State: s.GetRawState(), Resources: s.ParseResources()}
+	resp := &DeleteTerraformStateResourcesResponse{State: s.GetRawState(), Resources: s.ParseResources()}
 	return resp, nil
 }
 
-type DeleteStateResourcesRequest struct {
+type DeleteTerraformStateResourcesRequest struct {
 	ZState    *il.ZState `json:"zstate"`
 	Resources []string   `json:"resources"`
 }
 
-type DeleteStateResourcesResponse struct {
+type DeleteTerraformStateResourcesResponse struct {
 	State     *tfjson.State `json:"state"`
 	Resources []string      `json:"resources"`
-}
-
-type stackTracer interface {
-	StackTrace() errors.StackTrace
 }

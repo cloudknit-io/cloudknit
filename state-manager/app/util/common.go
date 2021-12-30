@@ -1,6 +1,7 @@
 package util
 
 import (
+	"encoding/json"
 	"github.com/pkg/errors"
 	"io"
 	"os"
@@ -30,4 +31,31 @@ func IsDirEmpty(dir string) (bool, error) {
 		return true, nil
 	}
 	return false, err // Either not empty or error, suits both cases
+}
+
+func ReadBody(stream io.ReadCloser) ([]byte, error) {
+	body, err := io.ReadAll(stream)
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
+}
+
+func FromJSON(s interface{}, jsonData []byte) error {
+	err := json.Unmarshal(jsonData, s)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ToJSON(data interface{}) ([]byte, error) {
+	jsoned, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	return jsoned, nil
 }

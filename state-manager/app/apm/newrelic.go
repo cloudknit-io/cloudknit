@@ -47,7 +47,7 @@ type stackTracer interface {
 
 func stackTrace(err error) []uintptr {
 	st := deepestStackTrace(err)
-	if nil == st {
+	if st == nil {
 		return nil
 	}
 	return transformStackTrace(st)
@@ -56,9 +56,11 @@ func stackTrace(err error) []uintptr {
 func deepestStackTrace(err error) errors.StackTrace {
 	var last stackTracer
 	for err != nil {
+		//nolint
 		if err, ok := err.(stackTracer); ok {
 			last = err
 		}
+		//nolint
 		cause, ok := err.(interface {
 			Cause() error
 		})
