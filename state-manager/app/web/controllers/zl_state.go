@@ -3,16 +3,15 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/compuzest/zlifecycle-state-manager/app/zlstate"
-	"io"
-	"net/http"
-	"time"
-
 	"github.com/compuzest/zlifecycle-state-manager/app/apm"
 	http2 "github.com/compuzest/zlifecycle-state-manager/app/web/http"
 	"github.com/compuzest/zlifecycle-state-manager/app/zlog"
+	"github.com/compuzest/zlifecycle-state-manager/app/zlstate"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/pkg/errors"
+	"io"
+	"net/http"
+	"time"
 )
 
 func ZLStateHandler(w http.ResponseWriter, r *http.Request) {
@@ -64,12 +63,12 @@ func postZLStateHandler(b io.ReadCloser) (*GetZLStateResponse, error) {
 
 	client := zlstate.NewS3Backend(BuildZLStateBucket(body.Company))
 
-	zlstate, err := client.Get(BuildZLStateKey(body.Team, body.Environment))
+	zlState, err := client.Get(BuildZLStateKey(body.Team, body.Environment))
 	if err != nil {
 		return nil, errors.Wrap(err, "error getting zLstate from remote backend")
 	}
 
-	return &GetZLStateResponse{ZLState: zlstate}, nil
+	return &GetZLStateResponse{ZLState: zlState}, nil
 }
 
 type GetZLStateRequest struct {
@@ -124,31 +123,32 @@ func patchZLStateHandler(b io.ReadCloser) (*PatchZLStateResponse, error) {
 
 	key := BuildZLStateKey(body.Team, body.Environment)
 
-	zlstate, err := client.Get(key)
+	zlState, err := client.Get(key)
 	if err != nil {
 		return nil, errors.Wrap(err, "error getting zLstate from remote backend")
 	}
 
 	updated := false
-	for _, c := range zlstate.Components {
-		if c.Name == body.Component {
-			c.Status = body.Status
-			c.UpdatedAt = time.Now().UTC()
-			zlstate.UpdatedAt = time.Now().UTC()
-			updated = true
-			break
+	for _, c := range zlState.Components {
+		if c.Name != body.Component {
+			continue
 		}
+		c.Status = body.Status
+		c.UpdatedAt = time.Now().UTC()
+		zlState.UpdatedAt = time.Now().UTC()
+		updated = true
+		break
 	}
 	if !updated {
 		return nil, errors.Errorf("component not found: %s", body.Component)
 	}
 
-	if err := client.Put(key, zlstate); err != nil {
+	if err := client.Put(key, zlState); err != nil {
 		return nil, errors.Wrap(err, "error persisting zLstate to remote backend")
 	}
 
 	return &PatchZLStateResponse{
-		ZLState: zlstate,
+		ZLState: zlState,
 	}, nil
 }
 
