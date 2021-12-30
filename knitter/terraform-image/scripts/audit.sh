@@ -45,6 +45,14 @@ else
     echo -n '0' >/tmp/error_code.txt
 fi
 
+if [[ $config_status == *"failed"* ]]; then
+    if [[ $is_destroy == true ]]; then
+        config_status="destroy_'$config_status'"
+    else
+        config_status="provision_'$config_status'"
+    fi
+fi
+
 component_payload='[{"id" : '$config_reconcile_id', "name" : "'$team_env_config_name'", "status" : "'$config_status'", "startDateTime" : "'$start_date'", "endDateTime" : '$end_date'}]'
 
 end_date='"'$(date)'"'
