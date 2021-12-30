@@ -59,9 +59,9 @@ fi
 
 if [[ $config_status == 'Initialising...' ]]; then
     if [[ $is_destroy == true ]]; then
-        config_status="destroying"
+        config_status="audit_destroying"
     else
-        config_status="provisioning"
+        config_status="audit_provisioning"
     fi
 fi
 
