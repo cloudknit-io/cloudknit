@@ -53,6 +53,14 @@ if [[ $config_status == *"failed"* ]]; then
     fi
 fi
 
+if [[ $config_status === 'Initialising...' ]]; then
+    if [[ $is_destroy == true ]]; then
+        config_status="destroying"
+    else
+        config_status="provisioning"
+    fi
+fi
+
 component_payload='[{"id" : '$config_reconcile_id', "name" : "'$team_env_config_name'", "status" : "'$config_status'", "startDateTime" : "'$start_date'", "endDateTime" : '$end_date'}]'
 
 end_date='"'$(date)'"'
