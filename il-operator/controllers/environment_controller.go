@@ -16,6 +16,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/apm"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/zlstate"
 	"github.com/sirupsen/logrus"
 	"strings"
 	"time"
@@ -200,6 +201,14 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		}
 	}
 
+	// persist zlstate
+	r.LogV2.Info("Persisting zLstate to remote backend")
+	zlstateManagerAPI := zlstate.NewHTTPStateManager(apmCtx, r.LogV2)
+	if err := zlstateManagerAPI.Put(env.Config.CompanyName, environment); err != nil {
+		envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error persisting zLstate"))
+		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
+	}
+
 	// finish successful reconcile
 	duration := time.Since(start)
 	r.LogV2.WithField("duration", duration).Info("Reconcile finished")
@@ -353,7 +362,7 @@ func (r *EnvironmentReconciler) postDeleteHook(
 	}
 	_ = r.deleteDanglingArgocdApps(e, argocdAPI)
 	_ = r.deleteDanglingArgoWorkflows(e, argoworkflowAPI)
-	_ = r.removeEnvironmentFromFileReconciler(e)
+	_ = r.removeEnvironmentFromGitReconciler(e)
 	return nil
 }
 
@@ -413,8 +422,8 @@ func extractPathsToRemove(e *stablev1.Environment) []string {
 	}
 }
 
-func (r *EnvironmentReconciler) removeEnvironmentFromFileReconciler(e *stablev1.Environment) error {
-	r.LogV2.Info("Removing entries from file reconciler")
+func (r *EnvironmentReconciler) removeEnvironmentFromGitReconciler(e *stablev1.Environment) error {
+	r.LogV2.Info("Removing entries from git reconciler")
 	key := kClient.ObjectKey{Name: e.Name, Namespace: e.Namespace}
 	return gitreconciler.GetReconciler().UnsubscribeAll(key)
 }

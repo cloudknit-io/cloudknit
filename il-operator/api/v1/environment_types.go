@@ -58,8 +58,8 @@ type Secret struct {
 }
 
 type Output struct {
-	Name 				string 	`json:"name"`
-  Sensitive 	bool 		`json:"sensitive,omitempty"`
+	Name      string `json:"name"`
+	Sensitive bool   `json:"sensitive,omitempty"`
 }
 
 type EnvironmentComponent struct {
@@ -97,20 +97,20 @@ type AssumeRole struct {
 
 // EnvironmentSpec defines the desired state of Environment.
 type EnvironmentSpec struct {
-	TeamName    					string                  `json:"teamName"`
-	EnvName     					string                  `json:"envName"`
-	SelectiveReconcile 		*SelectiveReconcile     `json:"selectiveReconcile,omitempty"`
-	Description 					string                  `json:"description,omitempty"`
-	AutoApprove 					bool                    `json:"autoApprove,omitempty"`
-	Teardown    					bool                    `json:"teardown,omitempty"`
-	Components  					[]*EnvironmentComponent `json:"components"`
+	TeamName           string                  `json:"teamName"`
+	EnvName            string                  `json:"envName"`
+	SelectiveReconcile *SelectiveReconcile     `json:"selectiveReconcile,omitempty"`
+	Description        string                  `json:"description,omitempty"`
+	AutoApprove        bool                    `json:"autoApprove,omitempty"`
+	Teardown           bool                    `json:"teardown,omitempty"`
+	Components         []*EnvironmentComponent `json:"components"`
 }
 
 // SelectiveReconcile lets you reconcile only selected Components
 type SelectiveReconcile struct {
-	SkipMode  bool			`json:"skipMode,omitempty"`
-	TagName 	string 		`json:"tagName"`
-	TagValues []string 	`json:"tagValues"`
+	SkipMode  bool     `json:"skipMode,omitempty"`
+	TagName   string   `json:"tagName"`
+	TagValues []string `json:"tagValues"`
 }
 
 // EnvironmentStatus defines the observed state of Environment.
