@@ -53,6 +53,8 @@ type config struct {
 	ArgoWorkflowsServerURL string
 	ArgoWorkflowsNamespace string
 
+	StateManagerURL string
+
 	APIURL string
 
 	TelemetryEnvironment string
@@ -112,6 +114,8 @@ var Config = config{
 
 	ArgoWorkflowsServerURL: getOr("ARGOWORKFLOWS_URL", "http://argo-workflow-server.argocd.svc.cluster.local:2746"),
 	ArgoWorkflowsNamespace: "argocd",
+
+	StateManagerURL: getOr("STATE_MANAGER_URL", "http://zlifecycle-state-manager.zlifecycle-il-operator-system.svc.cluster.local:8080"),
 
 	APIURL: getOr("API_URL", "http://zlifecycle-api.zlifecycle-ui.svc.cluster.local"),
 

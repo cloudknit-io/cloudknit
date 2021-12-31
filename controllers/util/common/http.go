@@ -17,7 +17,7 @@ func CloseBody(body io.ReadCloser) {
 }
 
 func LogBody(log logr.Logger, body io.ReadCloser) {
-	bodyBytes, err := ioutil.ReadAll(body)
+	bodyBytes, err := io.ReadAll(body)
 	if err != nil {
 		log.Error(err, "Error while deserializing body")
 		return
