@@ -9,23 +9,26 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/compuzest/zlifecycle-state-manager/app/util"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"time"
 )
 
 type S3Backend struct {
 	ctx    context.Context
+	log    *logrus.Entry
 	bucket string
 	s3     *s3.Client
 }
 
-func NewS3Backend(ctx context.Context, bucket string) (*S3Backend, error) {
+func NewS3Backend(ctx context.Context, log *logrus.Entry, bucket string) (*S3Backend, error) {
 	cfg, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "error loading default aws config")
 	}
 	return &S3Backend{
 		ctx:    ctx,
+		log:    log,
 		bucket: bucket,
 		s3:     s3.NewFromConfig(cfg),
 	}, nil
@@ -33,6 +36,7 @@ func NewS3Backend(ctx context.Context, bucket string) (*S3Backend, error) {
 
 // Get returns the state file whose key is the path in the bucket for which the backend was created
 func (s *S3Backend) Get(key string) (*ZLState, error) {
+	s.log.WithField("key", key).Info("Getting zLstate from remote backend [s3]")
 	exists, err := s.exists(key)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error checking does object already exist for key: [%s]", key)
@@ -67,11 +71,16 @@ func (s *S3Backend) Get(key string) (*ZLState, error) {
 var ErrKeyExists = errors.Errorf("object already exists")
 
 func (s *S3Backend) Put(key string, state *ZLState) error {
+	s.log.WithFields(logrus.Fields{
+		"key":     key,
+		"zLstate": state,
+	}).Info("Putting zLstate to remote backend [s3]")
 	exists, err := s.exists(key)
 	if err != nil {
 		return errors.Wrapf(err, "error checking does object already exist for key: [%s]", key)
 	}
 	if exists {
+		s.log.WithField("key", key).Info("State already exists, returning early")
 		return errors.WithStack(ErrKeyExists)
 	}
 
@@ -91,6 +100,11 @@ func (s *S3Backend) Put(key string, state *ZLState) error {
 	if err != nil {
 		return errors.Wrap(err, "error saving zLstate")
 	}
+
+	s.log.WithFields(logrus.Fields{
+		"key":     key,
+		"zLstate": state,
+	}).Info("zLstate persisted successfully to remote backend [s3]")
 
 	return nil
 }
