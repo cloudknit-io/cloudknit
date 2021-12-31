@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/compuzest/zlifecycle-state-manager/app/apm"
+	"github.com/compuzest/zlifecycle-state-manager/app/env"
 	http2 "github.com/compuzest/zlifecycle-state-manager/app/web/http"
 	"github.com/compuzest/zlifecycle-state-manager/app/zlog"
 	"github.com/compuzest/zlifecycle-state-manager/app/zlstate"
@@ -62,7 +63,7 @@ func postZLStateHandler(ctx context.Context, b io.ReadCloser) (*GetZLStateRespon
 		return nil, errors.Wrap(err, "error validating get zLstate resource body")
 	}
 
-	client, err := zlstate.NewS3Backend(ctx, BuildZLStateBucket(body.Company))
+	client, err := zlstate.NewS3Backend(ctx, BuildZLStateBucketName(body.Company))
 	if err != nil {
 		return nil, errors.Wrap(err, "error instantiating s3 backend for zLstate manager")
 	}
@@ -95,7 +96,7 @@ func putZLStateHandler(ctx context.Context, b io.ReadCloser) (*PutZLStateRespons
 		return nil, errors.Wrap(err, "error validating put zLstate resource body")
 	}
 
-	client, err := zlstate.NewS3Backend(ctx, BuildZLStateBucket(body.Company))
+	client, err := zlstate.NewS3Backend(ctx, BuildZLStateBucketName(body.Company))
 	if err != nil {
 		return nil, errors.Wrap(err, "error instantiating s3 backend for zLstate manager")
 	}
@@ -131,7 +132,7 @@ func patchZLStateHandler(ctx context.Context, b io.ReadCloser) (*PatchZLStateRes
 		return nil, errors.Wrap(err, "error validating patch zLstate resource body")
 	}
 
-	client, err := zlstate.NewS3Backend(ctx, BuildZLStateBucket(body.Company))
+	client, err := zlstate.NewS3Backend(ctx, BuildZLStateBucketName(body.Company))
 	if err != nil {
 		return nil, errors.Wrap(err, "error instantiating s3 backend for zLstate manager")
 	}
@@ -183,6 +184,6 @@ func BuildZLStateKey(team, environment string) string {
 	return fmt.Sprintf("%s/%s.zlstate", team, environment)
 }
 
-func BuildZLStateBucket(company string) string {
-	return fmt.Sprintf("zlifecycle-zlstate-%s", company)
+func BuildZLStateBucketName(company string) string {
+	return fmt.Sprintf("zlifecycle-%s-zlstate-%s", env.Config().Environment, company)
 }

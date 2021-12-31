@@ -10,6 +10,7 @@ type Cfg struct {
 	Instance       string
 	GitToken       string
 	AWSRegion      string
+	Environment    string
 }
 
 func Config() *Cfg {
@@ -21,6 +22,7 @@ func Config() *Cfg {
 		Instance:       getOr("META_INSTANCE", "dev"),
 		GitToken:       os.Getenv("GIT_TOKEN"),
 		AWSRegion:      getOr("AWS_REGION", "us-east-1"),
+		Environment:    getOr("ENVIRONMENT", "dev"),
 	}
 }
 
