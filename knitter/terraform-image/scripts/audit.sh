@@ -20,7 +20,7 @@ end_date='"'$(date)'"'
 if [ $config_reconcile_id -eq 0 ]; then
     end_date=null
     config_reconcile_id=null
-else
+elif [[ $config_status != *"failed"* ]]
     config_status="Provisioned"
     if [[ $is_destroy = true ]]; then
         config_status="Destroyed"
