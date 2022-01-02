@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"github.com/compuzest/zlifecycle-internal-cli/app/cmd/state"
 	"github.com/compuzest/zlifecycle-internal-cli/app/common"
+	"github.com/compuzest/zlifecycle-internal-cli/app/env"
 	"github.com/spf13/cobra"
 	"os"
 
@@ -56,12 +57,11 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.AddCommand(state.RootCmd)
-
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
-
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.zl.yaml)")
+	rootCmd.PersistentFlags().BoolVarP(&env.Verbose, "verbose", "v", false, "enable command logs")
 }
 
 // initConfig reads in config file and ENV variables if set.

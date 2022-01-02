@@ -19,7 +19,7 @@ var environmentStatePullCmd = &cobra.Command{
 	Long:    `environment state pull command pulls the environment state from remote backend using zLifecycle State Manager and prints it to stdout`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
-		c := zlstate.NewHTTPStateManager(ctx, log.Log.WithContext(ctx))
+		c := zlstate.NewHTTPStateManager(ctx, log.NewLogger().WithContext(ctx))
 		req := zlstate.FetchZLStateRequest{
 			Company:     company,
 			Team:        team,
