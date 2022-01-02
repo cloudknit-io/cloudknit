@@ -38,7 +38,7 @@ func TerraformStateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err != nil {
-		verr := http2.NewVerboseError("StateError", r.Method, "/terraform/state", err)
+		verr := http2.NewVerboseError("TFStateError", r.Method, "/terraform/state", err)
 		_ = apm.NoticeError(txn, verr)
 		zlog.CtxLogger(r.Context()).WithError(verr).Errorf("terraform state handler error")
 		zlog.CtxLogger(r.Context()).Errorf("%+v", verr.OriginalError)

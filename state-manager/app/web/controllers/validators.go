@@ -31,7 +31,7 @@ func validateZState(state *il.ZState) error {
 	return nil
 }
 
-func validateGetZLStateRequest(req *GetZLStateRequest) error {
+func validateGetZLStateRequest(req *FetchZLStateRequest) error {
 	if req.Company == "" {
 		return errors.New(`request body is missing field "company"`)
 	}
@@ -40,6 +40,23 @@ func validateGetZLStateRequest(req *GetZLStateRequest) error {
 	}
 	if req.Environment == "" {
 		return errors.New(`request body is missing field "environment"`)
+	}
+
+	return nil
+}
+
+func validateGetZLStateComponentRequest(req *FetchZLStateComponentRequest) error {
+	if req.Company == "" {
+		return errors.New(`request body is missing field "company"`)
+	}
+	if req.Team == "" {
+		return errors.New(`request body is missing field "team"`)
+	}
+	if req.Environment == "" {
+		return errors.New(`request body is missing field "environment"`)
+	}
+	if req.Component == "" {
+		return errors.New(`request body is missing field "component"`)
 	}
 
 	return nil
@@ -62,7 +79,7 @@ func validatePutZLStateRequest(req *PutZLStateRequest) error {
 	return nil
 }
 
-func validatePatchZLStateRequest(req *PatchZLStateRequest) error {
+func validatePatchZLStateComponentRequest(req *UpdateZLStateComponentRequest) error {
 	if req.Company == "" {
 		return errors.New(`request body is missing field "company"`)
 	}

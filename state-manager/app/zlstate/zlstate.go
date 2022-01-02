@@ -4,7 +4,7 @@ import "time"
 
 type Backend interface {
 	Get(key string) (*ZLState, error)
-	Put(key string, state *ZLState) error
+	Put(key string, state *ZLState, force bool) error
 }
 
 type ZLState struct {

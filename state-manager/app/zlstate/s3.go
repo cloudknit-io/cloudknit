@@ -70,18 +70,20 @@ func (s *S3Backend) Get(key string) (*ZLState, error) {
 
 var ErrKeyExists = errors.Errorf("object already exists")
 
-func (s *S3Backend) Put(key string, state *ZLState) error {
+func (s *S3Backend) Put(key string, state *ZLState, force bool) error {
 	s.log.WithFields(logrus.Fields{
 		"key":     key,
 		"zLstate": state,
 	}).Info("Putting zLstate to remote backend [s3]")
-	exists, err := s.exists(key)
-	if err != nil {
-		return errors.Wrapf(err, "error checking does object already exist for key: [%s]", key)
-	}
-	if exists {
-		s.log.WithField("key", key).Info("State already exists, returning early")
-		return errors.WithStack(ErrKeyExists)
+	if !force {
+		exists, err := s.exists(key)
+		if err != nil {
+			return errors.Wrapf(err, "error checking does object already exist for key: [%s]", key)
+		}
+		if exists {
+			s.log.WithField("key", key).Info("State already exists, returning early")
+			return errors.WithStack(ErrKeyExists)
+		}
 	}
 
 	addDefaults(state)
