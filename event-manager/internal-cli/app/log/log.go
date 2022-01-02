@@ -1,5 +1,15 @@
 package log
 
-import "github.com/sirupsen/logrus"
+import (
+	"github.com/compuzest/zlifecycle-internal-cli/app/env"
+	"github.com/sirupsen/logrus"
+	"io"
+)
 
-var Log = logrus.New()
+func NewLogger() *logrus.Logger {
+	l := logrus.New()
+	if !env.Verbose {
+		l.Out = io.Discard
+	}
+	return l
+}
