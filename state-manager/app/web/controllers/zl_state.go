@@ -3,9 +3,7 @@ package controllers
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/compuzest/zlifecycle-state-manager/app/apm"
-	"github.com/compuzest/zlifecycle-state-manager/app/env"
 	http2 "github.com/compuzest/zlifecycle-state-manager/app/web/http"
 	"github.com/compuzest/zlifecycle-state-manager/app/zlog"
 	"github.com/compuzest/zlifecycle-state-manager/app/zlstate"
@@ -14,7 +12,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"io"
 	"net/http"
-	"time"
 )
 
 func ZLStateHandler(w http.ResponseWriter, r *http.Request) {
@@ -30,9 +27,6 @@ func ZLStateHandler(w http.ResponseWriter, r *http.Request) {
 	case "PUT":
 		resp, err = putZLStateHandler(r.Context(), zlog.CtxLogger(r.Context()), r.Body)
 		statusCode = http.StatusOK
-	case "PATCH":
-		resp, err = patchZLStateHandler(r.Context(), zlog.CtxLogger(r.Context()), r.Body)
-		statusCode = http.StatusOK
 	default:
 		err := apm.NoticeError(
 			txn,
@@ -43,7 +37,7 @@ func ZLStateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err != nil {
-		verr := http2.NewVerboseError("StateError", r.Method, "/zl/state", err)
+		verr := http2.NewVerboseError("ZLStateError", r.Method, "/zl/state", err)
 		_ = apm.NoticeError(txn, verr)
 		zlog.CtxLogger(r.Context()).WithError(verr).Errorf("zl state handler error")
 		zlog.CtxLogger(r.Context()).Errorf("%+v", verr.OriginalError)
@@ -54,14 +48,14 @@ func ZLStateHandler(w http.ResponseWriter, r *http.Request) {
 	http2.Response(w, resp, statusCode)
 }
 
-func postZLStateHandler(ctx context.Context, log *logrus.Entry, b io.ReadCloser) (*GetZLStateResponse, error) {
-	var body GetZLStateRequest
+func postZLStateHandler(ctx context.Context, log *logrus.Entry, b io.ReadCloser) (*FetchZLStateResponse, error) {
+	var body FetchZLStateRequest
 	decoder := json.NewDecoder(b)
 	if err := decoder.Decode(&body); err != nil {
 		return nil, errors.Wrap(err, "invalid get zLstate body")
 	}
 	if err := validateGetZLStateRequest(&body); err != nil {
-		return nil, errors.Wrap(err, "error validating get zLstate resource body")
+		return nil, errors.Wrap(err, "error validating get zLstate request body")
 	}
 
 	log.WithField("body", body).Info("Handling get zLstate request")
@@ -76,16 +70,16 @@ func postZLStateHandler(ctx context.Context, log *logrus.Entry, b io.ReadCloser)
 		return nil, errors.Wrap(err, "error getting zLstate from remote backend")
 	}
 
-	return &GetZLStateResponse{ZLState: zlState}, nil
+	return &FetchZLStateResponse{ZLState: zlState}, nil
 }
 
-type GetZLStateRequest struct {
+type FetchZLStateRequest struct {
 	Company     string `json:"company"`
 	Team        string `json:"team"`
 	Environment string `json:"environment"`
 }
 
-type GetZLStateResponse struct {
+type FetchZLStateResponse struct {
 	ZLState *zlstate.ZLState `json:"zlstate"`
 }
 
@@ -96,7 +90,7 @@ func putZLStateHandler(ctx context.Context, log *logrus.Entry, b io.ReadCloser) 
 		return nil, errors.Wrap(err, "invalid put zLstate body")
 	}
 	if err := validatePutZLStateRequest(&body); err != nil {
-		return nil, errors.Wrap(err, "error validating put zLstate resource body")
+		return nil, errors.Wrap(err, "error validating put zLstate request body")
 	}
 
 	log.WithField("body", body).Info("Handling put zLstate request")
@@ -106,7 +100,7 @@ func putZLStateHandler(ctx context.Context, log *logrus.Entry, b io.ReadCloser) 
 		return nil, errors.Wrap(err, "error instantiating s3 backend for zLstate manager")
 	}
 
-	if err := client.Put(BuildZLStateKey(body.Team, body.Environment), body.ZLState); err != nil {
+	if err := client.Put(BuildZLStateKey(body.Team, body.Environment), body.ZLState, false); err != nil {
 		if errors.Is(err, zlstate.ErrKeyExists) {
 			return &PutZLStateResponse{Message: "zLstate already exists"}, nil
 		}
@@ -125,72 +119,4 @@ type PutZLStateRequest struct {
 
 type PutZLStateResponse struct {
 	Message string `json:"message"`
-}
-
-func patchZLStateHandler(ctx context.Context, log *logrus.Entry, b io.ReadCloser) (*PatchZLStateResponse, error) {
-	var body PatchZLStateRequest
-	decoder := json.NewDecoder(b)
-	if err := decoder.Decode(&body); err != nil {
-		return nil, errors.Wrap(err, "invalid patch zLstate body")
-	}
-	if err := validatePatchZLStateRequest(&body); err != nil {
-		return nil, errors.Wrap(err, "error validating patch zLstate resource body")
-	}
-
-	log.WithField("body", body).Info("Handling patch zLstate component status request")
-
-	client, err := zlstate.NewS3Backend(ctx, log, BuildZLStateBucketName(body.Company))
-	if err != nil {
-		return nil, errors.Wrap(err, "error instantiating s3 backend for zLstate manager")
-	}
-
-	key := BuildZLStateKey(body.Team, body.Environment)
-
-	zlState, err := client.Get(key)
-	if err != nil {
-		return nil, errors.Wrap(err, "error getting zLstate from remote backend")
-	}
-
-	updated := false
-	for _, c := range zlState.Components {
-		if c.Name != body.Component {
-			continue
-		}
-		c.Status = body.Status
-		c.UpdatedAt = time.Now().UTC()
-		zlState.UpdatedAt = time.Now().UTC()
-		updated = true
-		break
-	}
-	if !updated {
-		return nil, errors.Errorf("component not found: %s", body.Component)
-	}
-
-	if err := client.Put(key, zlState); err != nil {
-		return nil, errors.Wrap(err, "error persisting zLstate to remote backend")
-	}
-
-	return &PatchZLStateResponse{
-		ZLState: zlState,
-	}, nil
-}
-
-type PatchZLStateRequest struct {
-	Company     string `json:"company"`
-	Team        string `json:"team"`
-	Environment string `json:"environment"`
-	Component   string `json:"component"`
-	Status      string `json:"statu"`
-}
-
-type PatchZLStateResponse struct {
-	ZLState *zlstate.ZLState `json:"zlstate"`
-}
-
-func BuildZLStateKey(team, environment string) string {
-	return fmt.Sprintf("%s/%s.zlstate", team, environment)
-}
-
-func BuildZLStateBucketName(company string) string {
-	return fmt.Sprintf("zlifecycle-%s-zlstate-%s", env.Config().Environment, company)
 }
