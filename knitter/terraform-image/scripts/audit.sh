@@ -86,7 +86,7 @@ if [ $config_name -eq 0 ]; then
     . /patch_environment.sh
 fi
 
-$status="provision_'$status'"
+status="provision_'$status'"
 if [[ $is_destroy = true ]]; then
     status="destroy_'$status'"
 fi
