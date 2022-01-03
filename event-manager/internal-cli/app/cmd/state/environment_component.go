@@ -1,6 +1,8 @@
 package state
 
 import (
+	"github.com/compuzest/zlifecycle-internal-cli/app/cmd/state/patch"
+	"github.com/compuzest/zlifecycle-internal-cli/app/cmd/state/pull"
 	"github.com/compuzest/zlifecycle-internal-cli/app/common"
 	"github.com/spf13/cobra"
 )
@@ -23,5 +25,6 @@ var environmentComponentCmd = &cobra.Command{
 }
 
 func init() {
-	environmentComponentCmd.AddCommand(environmentComponentStatePullCmd)
+	environmentComponentCmd.AddCommand(pull.EnvironmentComponentStatePullCmd)
+	environmentComponentCmd.AddCommand(patch.EnvironmentComponentStatusPatchCmd)
 }
