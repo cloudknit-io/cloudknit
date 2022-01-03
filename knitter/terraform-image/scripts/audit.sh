@@ -26,14 +26,13 @@ is_skipped="false"
 if [ $config_reconcile_id -eq 0 ]; then
     end_date=null
     config_reconcile_id=null
-else
     if [[ $config_status == "Initialising..." ]]; then
         config_status="provisioning_in_progress"
         if [[ $is_destroy == true ]]; then
             config_status="destroying_in_progress"
         fi
     fi
-
+else
     if [[ $config_status == "Success" ]]; then
         config_status="Provisioned"
         if [[ $is_destroy = true ]]; then
