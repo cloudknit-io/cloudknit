@@ -12,28 +12,51 @@ skip_component=${10}
 team_env_name=$team_name-$env_name
 team_env_config_name=$team_name-$env_name-$config_name
 
+# yaml status values
+# config --> Initialising... , Success , Failed
+# env --> initializing , ended 
+
+
 url_environment='http://zlifecycle-api.zlifecycle-ui.svc.cluster.local/reconciliation/api/v1/environment/save'
 url='http://zlifecycle-api.zlifecycle-ui.svc.cluster.local/reconciliation/api/v1/component/save'
 start_date=$(date)
 end_date='"'$(date)'"'
 
+is_skipped="false"
 if [ $config_reconcile_id -eq 0 ]; then
     end_date=null
     config_reconcile_id=null
-elif [[ $config_status != *"failed"* ]]; then
-    config_status="Provisioned"
-    if [[ $is_destroy = true ]]; then
-        config_status="Destroyed"
+else
+    if [[ $config_status == 'Initialising...' ]]; then
+        config_status="provisioning_in_progress"
+        if [[ $is_destroy == true ]]; then
+            config_status="destroying_in_progress"
+        fi
     fi
-fi
 
-is_skipped="false"
-if [ "$skip_component" != "noSkip" ]; then
-    is_skipped="true"
-    config_status='skipped'
-    if [ "$skip_component" = 'selectiveReconcile' ]; then
-        config_status='skipped_reconcile'
+    if [[ $config_status == "Success" ]]; then
+        config_status="Provisioned"
+        if [[ $is_destroy = true ]]; then
+            config_status="Destroyed"
+        fi
     fi
+
+    if [ "$skip_component" != "noSkip" ]; then
+        is_skipped="true"
+        config_status='skipped'
+        if [ "$skip_component" = 'selectiveReconcile' ]; then
+            config_status='skipped_reconcile'
+        fi
+    fi
+
+    if [[ $config_status == *"failed"* ]]; then
+        if [[ $is_destroy == true ]]; then
+            config_status="destroy_'$config_status'"
+        else
+            config_status="provision_'$config_status'"
+        fi
+    fi
+
 fi
 
 if [[ $config_name != 0 && $config_reconcile_id = null ]]; then
@@ -49,22 +72,6 @@ else
     echo -n '0' >/tmp/error_code.txt
 fi
 
-if [[ $config_status == *"failed"* ]]; then
-    if [[ $is_destroy == true ]]; then
-        config_status="destroy_'$config_status'"
-    else
-        config_status="provision_'$config_status'"
-    fi
-fi
-
-if [[ $config_status == 'Initialising...' ]]; then
-    if [[ $is_destroy == true ]]; then
-        config_status="audit_destroying"
-    else
-        config_status="audit_provisioning"
-    fi
-fi
-
 component_payload='[{"id" : '$config_reconcile_id', "name" : "'$team_env_config_name'", "status" : "'$config_status'", "startDateTime" : "'$start_date'", "endDateTime" : '$end_date'}]'
 
 end_date='"'$(date)'"'
@@ -77,6 +84,11 @@ if [ $config_name -eq 0 ]; then
     component_payload=[]
     url=$url_environment
     . /patch_environment.sh
+fi
+
+$status = "provision_'$status'"
+if [[ $is_destroy = true ]]; then
+    status = "destroy_'$status'"
 fi
 
 payload='{"reconcileId": '$reconcile_id', "name" : "'$team_env_name'", "teamName" : "'$team_name'", "status" : "'$status'", "startDateTime" : "'$start_date'", "endDateTime" : '$end_date', "componentReconciles" : '$component_payload'}'
