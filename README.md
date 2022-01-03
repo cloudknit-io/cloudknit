@@ -12,7 +12,7 @@
         * Teardown
 * Core Concepts
 * Getting on-boarded on zLifecycle
-* User Guide2
+* User Guide
     * Getting Started
         * Setting up zLifecycle
         * [Provisioning your First Environment](provision/first-environment.md)
@@ -63,8 +63,40 @@ Environment YAML
 
 ## 
 
+# User Guide
 
-Glossary
+## Reference YAML
+
+## Field Reference
+
+## Cost Calculation
+
+## Selective Reconcile
+
+## Manual Reconcile
+
+## Status
+List of statuses + description
+
+## Approval
+
+## Team Onboarding
+
+## Team member Onboarding
+
+## Secrets Management
+Set up AWS credentials
+Set up other secrets
+
+## Overlay Files
+
+## AWS Provider
+
+## Destroy Protection
+
+## Possible Errors
+
+
 
 * [How to create an Environment YAML file](all-about-environment-yaml.md)
 * How to onboard a team
