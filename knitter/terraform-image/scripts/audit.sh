@@ -87,9 +87,9 @@ if [ $config_name -eq 0 ]; then
 fi
 
 if [[ $is_destroy = true ]]; then
-    status="destroy_'$status'"
+    status="destroy_"$status
 else
-    status="provision_'$status'"
+    status="provision_"$status
 fi
 
 payload='{"reconcileId": '$reconcile_id', "name" : "'$team_env_name'", "teamName" : "'$team_name'", "status" : "'$status'", "startDateTime" : "'$start_date'", "endDateTime" : '$end_date', "componentReconciles" : '$component_payload'}'
