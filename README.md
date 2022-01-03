@@ -33,9 +33,11 @@
 
 ### Getting Started
 
-### Examples
+### Define
 
-### Fields
+### Provision
+
+### Teardown
 
 # Core Concepts
 Glossary
