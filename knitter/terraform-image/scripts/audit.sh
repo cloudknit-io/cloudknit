@@ -42,9 +42,9 @@ else
 
     if [ "$skip_component" != "noSkip" ]; then
         is_skipped="true"
-        config_status='skipped'
+        config_status='skipped_destroy'
         if [ "$skip_component" = 'selectiveReconcile' ]; then
-            config_status='skipped_reconcile'
+            config_status='skipped_provision'
         fi
     fi
 
