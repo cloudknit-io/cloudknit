@@ -50,9 +50,9 @@ else
 
     if [[ $config_status == *"failed"* ]]; then
         if [[ $is_destroy == true ]]; then
-            config_status="destroy_'$config_status'"
+            config_status="destroy_"$config_status
         else
-            config_status="provision_'$config_status'"
+            config_status="provision_"$config_status
         fi
     fi
 
