@@ -45,6 +45,25 @@ zLifecycle makes Environment Management easy across various cloud providers. It 
 ### Teardown
 
 # Core Concepts
+
+## Teams
+
+## Environment 
+
+## Components 
+
+## Custom Resource Definition (CRD)
+Environment YAML 
+
+## Provisioning 
+
+## Drift Detection + Reconciling
+
+## Teardown
+
+## 
+
+
 Glossary
 
 * [How to create an Environment YAML file](all-about-environment-yaml.md)
