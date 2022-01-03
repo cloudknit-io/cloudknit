@@ -86,9 +86,10 @@ if [ $config_name -eq 0 ]; then
     . /patch_environment.sh
 fi
 
-status="provision_'$status'"
 if [[ $is_destroy = true ]]; then
     status="destroy_'$status'"
+else
+    status="provision_'$status'"
 fi
 
 payload='{"reconcileId": '$reconcile_id', "name" : "'$team_env_name'", "teamName" : "'$team_name'", "status" : "'$status'", "startDateTime" : "'$start_date'", "endDateTime" : '$end_date', "componentReconciles" : '$component_payload'}'
