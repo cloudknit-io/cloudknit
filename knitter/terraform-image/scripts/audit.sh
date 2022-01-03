@@ -27,7 +27,7 @@ if [ $config_reconcile_id -eq 0 ]; then
     end_date=null
     config_reconcile_id=null
 else
-    if [[ $config_status == 'Initialising...' ]]; then
+    if [[ $config_status == "Initialising..." ]]; then
         config_status="provisioning_in_progress"
         if [[ $is_destroy == true ]]; then
             config_status="destroying_in_progress"
