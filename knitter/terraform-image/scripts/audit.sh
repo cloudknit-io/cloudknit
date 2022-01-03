@@ -22,7 +22,6 @@ url='http://zlifecycle-api.zlifecycle-ui.svc.cluster.local/reconciliation/api/v1
 start_date=$(date)
 end_date='"'$(date)'"'
 
-is_skipped="false"
 if [ $config_reconcile_id -eq 0 ]; then
     end_date=null
     config_reconcile_id=null
@@ -40,14 +39,6 @@ else
         fi
     fi
 
-    if [ "$skip_component" != "noSkip" ]; then
-        is_skipped="true"
-        config_status='skipped_destroy'
-        if [ "$skip_component" = 'selectiveReconcile' ]; then
-            config_status='skipped_provision'
-        fi
-    fi
-
     if [[ $config_status == *"failed"* ]]; then
         if [[ $is_destroy == true ]]; then
             config_status="destroy_"$config_status
@@ -55,7 +46,15 @@ else
             config_status="provision_"$config_status
         fi
     fi
+fi
 
+is_skipped="false"
+if [ "$skip_component" != "noSkip" ]; then
+    is_skipped="true"
+    config_status='skipped_destroy'
+    if [ "$skip_component" = 'selectiveReconcile' ]; then
+        config_status='skipped_provision'
+    fi
 fi
 
 if [[ $config_name != 0 && $config_reconcile_id = null ]]; then
