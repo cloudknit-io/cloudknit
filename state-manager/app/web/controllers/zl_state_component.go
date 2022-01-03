@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/compuzest/zlifecycle-state-manager/app/apm"
 	http2 "github.com/compuzest/zlifecycle-state-manager/app/web/http"
 	"github.com/compuzest/zlifecycle-state-manager/app/zlog"
@@ -123,11 +124,13 @@ func patchZLStateComponentHandler(ctx context.Context, log *logrus.Entry, b io.R
 		return nil, errors.Wrap(err, "error getting zLstate from remote backend")
 	}
 
+	var oldStatus string
 	updated := false
 	for _, c := range zlState.Components {
 		if c.Name != body.Component {
 			continue
 		}
+		oldStatus = c.Status
 		c.Status = body.Status
 		c.UpdatedAt = time.Now().UTC()
 		zlState.UpdatedAt = time.Now().UTC()
@@ -142,7 +145,16 @@ func patchZLStateComponentHandler(ctx context.Context, log *logrus.Entry, b io.R
 		return nil, errors.Wrap(err, "error persisting zLstate to remote backend")
 	}
 
-	return &UpdateZLStateComponentResponse{}, nil
+	msg := fmt.Sprintf("updated environment component [%s] status from [%s] to [%s]", body.Component, oldStatus, body.Status)
+	log.WithFields(logrus.Fields{
+		"company":     body.Company,
+		"team":        body.Team,
+		"environment": body.Environment,
+		"component":   body.Component,
+	}).Info(msg)
+	return &UpdateZLStateComponentResponse{
+		Message: fmt.Sprintf("updated environment component [%s] status from [%s] to [%s]", body.Component, oldStatus, body.Status),
+	}, nil
 }
 
 type UpdateZLStateComponentRequest struct {
@@ -153,4 +165,6 @@ type UpdateZLStateComponentRequest struct {
 	Status      string `json:"status"`
 }
 
-type UpdateZLStateComponentResponse struct{}
+type UpdateZLStateComponentResponse struct {
+	Message string `json:"message"`
+}
