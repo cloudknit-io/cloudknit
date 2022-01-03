@@ -39,7 +39,7 @@ fi
 if [[ $config_name != 0 && $config_reconcile_id = null ]]; then
     sh ./validate_env_component.sh $team_name $env_name $config_name
     . /argocd/login.sh
-    if [[ $is_skipped == *"skipped"* ]]; then
+    if [[ $config_status == *"skipped"* ]]; then
         data='{"metadata":{"labels":{"is_skipped":"'$is_skipped'"}}}'
     else
         data='{"metadata":{"labels":{"is_skipped":"'$is_skipped'","component_status":"initializing","is_destroy":"'$is_destroy'","audit_status":"initializing"}}}'
