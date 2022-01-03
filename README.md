@@ -7,8 +7,9 @@
     * Why zLifecycle
     * zLifecycle Documentation
         * Getting Started
-        * Examples
-        * Fields
+        * Define
+        * Provision
+        * Teardown
 * Core Concepts
 * Getting on-boarded on zLifecycle
 * User Guide2
