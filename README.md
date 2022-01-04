@@ -73,6 +73,16 @@ Environment YAML
 
 ## Selective Reconcile
 
+This property tells zlifecycle to **skip** certain components based on **tagName** and **tagValues** properties. This is an optional field.
+
+**NOTE:** Works in conjunction with [**tags**](#component-tags) property of component.
+
+```yaml
+selectiveReconcile:
+  tagName: string
+  tagValues: [string, string]
+```
+
 ## Manual Reconcile
 
 ## Status
