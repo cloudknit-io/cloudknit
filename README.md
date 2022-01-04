@@ -80,6 +80,13 @@ List of statuses + description
 
 ## Approval
 
+When you provision or teardown an **environment**, the terraform plan needs to be approved. The approval step can be automated, by setting the flag to `true`. By default, this flag is set to `false`, requiring the user to manually approve.
+
+
+```yaml
+autoApprove: true
+```
+
 ## Team Onboarding
 
 ## Team member Onboarding
