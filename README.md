@@ -11,7 +11,7 @@
         * Provision
         * Teardown
 * Core Concepts
-* Getting on-boarded on zLifecycle
+* Getting on-boarded on to zLifecycle
 * User Guide
     * Getting Started
         * Setting up zLifecycle
