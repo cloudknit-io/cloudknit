@@ -83,14 +83,7 @@ then
         if [ $auto_approve = false ]
         then
             data='{"metadata":{"labels":{"component_status":"waiting_for_approval","audit_status":"waiting_for_approval"}}}'
-        else
-            if [ $is_destroy = true ]
-            then
-                data='{"metadata":{"labels":{"component_status":"destroying","audit_status":"destroying"}}}'
-            else
-                data='{"metadata":{"labels":{"component_status":"provisioning","audit_status":"provisioning"}}}'
-            fi
+            argocd app patch $team_env_config_name --patch $data --type merge > null
         fi
-        argocd app patch $team_env_config_name --patch $data --type merge > null
     fi
 fi

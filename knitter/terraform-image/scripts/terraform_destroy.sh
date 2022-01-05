@@ -1,9 +1,11 @@
+
+data='{"metadata":{"labels":{"component_status":"destroying","audit_status":"destroying"}}}'
+argocd app patch $team_env_config_name --patch $data --type merge >null
+
 echo $show_output_start
 echo "Executing terraform destroy..." 2>&1 | appendLogs "/tmp/apply_output.txt"
 echo $show_output_end
-data='{"metadata":{"labels":{"component_status":"destroying","audit_status":"destroying"}}}'
 
-argocd app patch $team_env_config_name --patch $data --type merge >null
 aws s3 cp s3://zlifecycle-tfplan-$customer_id/$team_name/$env_name/$config_name/tfplans/$config_reconcile_id terraform-plan --profile compuzest-shared
 
 echo $show_output_start
