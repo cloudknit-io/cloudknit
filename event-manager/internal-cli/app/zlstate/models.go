@@ -23,6 +23,18 @@ type FetchZLStateComponentResponse struct {
 	Component *Component `json:"component"`
 }
 
+type UpdateZLStateComponentStatusRequest struct {
+	Company     string `json:"company"`
+	Team        string `json:"team"`
+	Environment string `json:"environment"`
+	Component   string `json:"component"`
+	Status      string `json:"status"`
+}
+
+type UpdateZLStateComponentStatusResponse struct {
+	Message string `json:"message"`
+}
+
 type UpdateZLStateComponentRequest struct {
 	Company     string `json:"company"`
 	Team        string `json:"team"`

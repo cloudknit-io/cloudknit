@@ -14,6 +14,7 @@ import (
 type Manager interface {
 	GetState(*FetchZLStateRequest) (*FetchZLStateResponse, error)
 	GetComponent(request *FetchZLStateComponentRequest) (*FetchZLStateComponentResponse, error)
+	PatchEnvironmentComponentStatus(request *UpdateZLStateComponentStatusRequest) (*UpdateZLStateComponentStatusResponse, error)
 }
 
 type HTTPStateManager struct {
@@ -42,7 +43,7 @@ func (s *HTTPStateManager) GetState(request *FetchZLStateRequest) (*FetchZLState
 		"company":         request.Company,
 		"team":            request.Team,
 		"environment":     request.Environment,
-	}).Info("Fetching zLstate through zLifecycle State Manager")
+	}).Info("Fetching environment zLstate through zLifecycle State Manager")
 
 	jsonBody, err := common.ToJSON(request)
 	if err != nil {
@@ -77,7 +78,7 @@ func (s *HTTPStateManager) GetState(request *FetchZLStateRequest) (*FetchZLState
 	s.log.WithFields(logrus.Fields{
 		"method":     "POST",
 		"statusCode": resp.StatusCode,
-	}).Info("Successful response for zLstate from zLifecycle State Manager")
+	}).Info("Successful response for environment zLstate from zLifecycle State Manager")
 
 	return &r, nil
 }
@@ -93,7 +94,7 @@ func (s *HTTPStateManager) GetComponent(request *FetchZLStateComponentRequest) (
 		"team":            request.Team,
 		"environment":     request.Environment,
 		"component":       request.Component,
-	}).Info("Fetching zLstate component through zLifecycle State Manager")
+	}).Info("Fetching environment component state from zLstate through zLifecycle State Manager")
 
 	jsonBody, err := common.ToJSON(request)
 	if err != nil {
@@ -128,7 +129,59 @@ func (s *HTTPStateManager) GetComponent(request *FetchZLStateComponentRequest) (
 	s.log.WithFields(logrus.Fields{
 		"method":     "POST",
 		"statusCode": resp.StatusCode,
-	}).Info("Successful response for for environment component status from zLifecycle State Manager")
+	}).Info("Successful response for environment component state from zLifecycle State Manager")
+
+	return &r, nil
+}
+
+func (s *HTTPStateManager) PatchEnvironmentComponentStatus(request *UpdateZLStateComponentStatusRequest) (*UpdateZLStateComponentStatusResponse, error) {
+	endpoint := "zl/state/component"
+	url := fmt.Sprintf("%s/%s", s.host, endpoint)
+
+	s.log.WithFields(logrus.Fields{
+		"stateManagerURL": s.host,
+		"endpoint":        endpoint,
+		"company":         request.Company,
+		"team":            request.Team,
+		"environment":     request.Environment,
+		"component":       request.Component,
+		"status":          request.Status,
+	}).Info("Patching zLstate environment component status through zLifecycle State Manager")
+
+	jsonBody, err := common.ToJSON(request)
+	if err != nil {
+		return nil, errors.Wrap(err, "error marshaling fetch zLstate component request body")
+	}
+
+	req, err := http.NewRequestWithContext(s.ctx, "PATCH", url, bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return nil, errors.Wrapf(err, "error creating PATCH %s request", endpoint)
+	}
+	req.Header.Add("Content-Type", "application/json")
+	resp, err := s.httpClient.Do(req)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error executing PATCH %s request", endpoint)
+	}
+	defer common.CloseBody(resp.Body)
+
+	if resp.StatusCode != 200 {
+		return nil, errors.Errorf("PATCH %s returned a non-OK status code: [%d]", endpoint, resp.StatusCode)
+	}
+
+	respBody, err := common.ReadBody(resp.Body)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error reading PATCH %s response body", endpoint)
+	}
+
+	r := UpdateZLStateComponentStatusResponse{}
+	if err := common.FromJSON(&r, respBody); err != nil {
+		return nil, errors.Wrapf(err, "error unmarshaling PATCH %s response body", endpoint)
+	}
+
+	s.log.WithFields(logrus.Fields{
+		"method":     "PATCH",
+		"statusCode": resp.StatusCode,
+	}).Info("Successful response for environment component status update from zLifecycle State Manager")
 
 	return &r, nil
 }

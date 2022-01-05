@@ -1,17 +1,18 @@
-package state
+package pull
 
 import (
 	"context"
 	"fmt"
 	"github.com/compuzest/zlifecycle-internal-cli/app/common"
+	"github.com/compuzest/zlifecycle-internal-cli/app/env"
 	"github.com/compuzest/zlifecycle-internal-cli/app/log"
 	"github.com/compuzest/zlifecycle-internal-cli/app/zlstate"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
-// environmentComponentStatePullCmd represents the validate command
-var environmentComponentStatePullCmd = &cobra.Command{
+// EnvironmentComponentStatePullCmd represents the validate command
+var EnvironmentComponentStatePullCmd = &cobra.Command{
 	Use:     "pull [flags]",
 	Example: "pull --company dev --team checkout --environment test --component networking",
 	Args:    cobra.NoArgs,
@@ -21,10 +22,10 @@ var environmentComponentStatePullCmd = &cobra.Command{
 		ctx := context.Background()
 		c := zlstate.NewHTTPStateManager(ctx, log.NewLogger().WithContext(ctx))
 		req := zlstate.FetchZLStateComponentRequest{
-			Company:     company,
-			Team:        team,
-			Environment: environment,
-			Component:   component,
+			Company:     env.Company,
+			Team:        env.Team,
+			Environment: env.Environment,
+			Component:   env.Component,
 		}
 		componentState, err := c.GetComponent(&req)
 		if err != nil {
@@ -43,20 +44,20 @@ var environmentComponentStatePullCmd = &cobra.Command{
 }
 
 func init() {
-	environmentComponentStatePullCmd.Flags().StringVarP(&company, "company", "c", "", "Company name")
-	if err := environmentComponentStatePullCmd.MarkFlagRequired("company"); err != nil {
+	EnvironmentComponentStatePullCmd.Flags().StringVarP(&env.Company, "company", "c", "", "Company name")
+	if err := EnvironmentComponentStatePullCmd.MarkFlagRequired("company"); err != nil {
 		common.Failure(1201)
 	}
-	environmentComponentStatePullCmd.Flags().StringVarP(&team, "team", "t", "", "Team name")
-	if err := environmentComponentStatePullCmd.MarkFlagRequired("team"); err != nil {
+	EnvironmentComponentStatePullCmd.Flags().StringVarP(&env.Team, "team", "t", "", "Team name")
+	if err := EnvironmentComponentStatePullCmd.MarkFlagRequired("team"); err != nil {
 		common.Failure(1202)
 	}
-	environmentComponentStatePullCmd.Flags().StringVarP(&environment, "environment", "e", "", "Environment name")
-	if err := environmentComponentStatePullCmd.MarkFlagRequired("environment"); err != nil {
+	EnvironmentComponentStatePullCmd.Flags().StringVarP(&env.Environment, "environment", "e", "", "Environment name")
+	if err := EnvironmentComponentStatePullCmd.MarkFlagRequired("environment"); err != nil {
 		common.Failure(1203)
 	}
-	environmentComponentStatePullCmd.Flags().StringVarP(&component, "component", "m", "", "Environment Component name")
-	if err := environmentComponentStatePullCmd.MarkFlagRequired("environment"); err != nil {
+	EnvironmentComponentStatePullCmd.Flags().StringVarP(&env.Component, "component", "m", "", "Environment Component name")
+	if err := EnvironmentComponentStatePullCmd.MarkFlagRequired("environment"); err != nil {
 		common.Failure(1204)
 	}
 }

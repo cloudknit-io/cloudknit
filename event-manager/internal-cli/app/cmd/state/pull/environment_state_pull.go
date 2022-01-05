@@ -1,9 +1,10 @@
-package state
+package pull
 
 import (
 	"context"
 	"fmt"
 	"github.com/compuzest/zlifecycle-internal-cli/app/common"
+	"github.com/compuzest/zlifecycle-internal-cli/app/env"
 	"github.com/compuzest/zlifecycle-internal-cli/app/log"
 	"github.com/compuzest/zlifecycle-internal-cli/app/zlstate"
 	"github.com/pkg/errors"
@@ -11,7 +12,7 @@ import (
 )
 
 // stateCmd represents the validate command
-var environmentStatePullCmd = &cobra.Command{
+var EnvironmentStatePullCmd = &cobra.Command{
 	Use:     "pull [flags]",
 	Example: "pull --company dev --team checkout --environment test",
 	Args:    cobra.NoArgs,
@@ -21,9 +22,9 @@ var environmentStatePullCmd = &cobra.Command{
 		ctx := context.Background()
 		c := zlstate.NewHTTPStateManager(ctx, log.NewLogger().WithContext(ctx))
 		req := zlstate.FetchZLStateRequest{
-			Company:     company,
-			Team:        team,
-			Environment: environment,
+			Company:     env.Company,
+			Team:        env.Team,
+			Environment: env.Environment,
 		}
 		zlstate, err := c.GetState(&req)
 		if err != nil {
@@ -42,16 +43,16 @@ var environmentStatePullCmd = &cobra.Command{
 }
 
 func init() {
-	environmentStatePullCmd.Flags().StringVarP(&company, "company", "c", "", "Company name")
-	if err := environmentStatePullCmd.MarkFlagRequired("company"); err != nil {
+	EnvironmentStatePullCmd.Flags().StringVarP(&env.Company, "company", "c", "", "Company name")
+	if err := EnvironmentStatePullCmd.MarkFlagRequired("company"); err != nil {
 		common.Failure(1101)
 	}
-	environmentStatePullCmd.Flags().StringVarP(&team, "team", "t", "", "Team name")
-	if err := environmentStatePullCmd.MarkFlagRequired("team"); err != nil {
+	EnvironmentStatePullCmd.Flags().StringVarP(&env.Team, "team", "t", "", "Team name")
+	if err := EnvironmentStatePullCmd.MarkFlagRequired("team"); err != nil {
 		common.Failure(1102)
 	}
-	environmentStatePullCmd.Flags().StringVarP(&environment, "environment", "e", "", "Environment name")
-	if err := environmentStatePullCmd.MarkFlagRequired("environment"); err != nil {
+	EnvironmentStatePullCmd.Flags().StringVarP(&env.Environment, "environment", "e", "", "Environment name")
+	if err := EnvironmentStatePullCmd.MarkFlagRequired("environment"); err != nil {
 		common.Failure(1103)
 	}
 }
