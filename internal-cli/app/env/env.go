@@ -3,6 +3,11 @@ package env
 import "os"
 
 var (
+	Company         string
+	Team            string
+	Environment     string
+	Component       string
+	Status          string
 	Verbose         bool
 	StateManagerURL = getOr(
 		"STATE_MANAGER_URL",
