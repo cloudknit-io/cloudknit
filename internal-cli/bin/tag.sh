@@ -17,7 +17,7 @@ fi
 
 echo $TGT
 
-find . -type f -name "app/env/env.go" -print0 | xargs -0 sed -i '' -e "s/Version = \\\"[v]*[0-9]*[0-9]\.[0-9]*[0-9]\.[0-9]*[0-9]\\\"/version = \"${TGT}\"/g"
+find ./app/env -type f -name "env.go" -print0 | xargs -0 sed -i '' -e "s/Version = \\\"[v]*[0-9]*[0-9]\.[0-9]*[0-9]\.[0-9]*[0-9]\\\"/version = \"${TGT}\"/g"
 
 make build
 
