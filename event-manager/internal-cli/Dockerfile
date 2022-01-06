@@ -1,3 +1,3 @@
 FROM scratch
-COPY mybin /
-ENTRYPOINT ["/mybin"]
+ENTRYPOINT ["/zlifecycle-internal-cli"]
+COPY zlifecycle-internal-cli /
