@@ -3,6 +3,7 @@ package env
 import "os"
 
 var (
+	Version         = "0.0.1"
 	Company         string
 	Team            string
 	Environment     string
