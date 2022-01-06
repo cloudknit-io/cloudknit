@@ -19,22 +19,8 @@ jobs:
           go-version: "1.17"
       - name: checkout
         uses: actions/checkout@v2
-      - name: "Dependencies"
-        run: "bin/bootstrap.sh"
-      - name: "Config"
-        env:
-          OWNER: "${{ github.repository_owner }}"
-          TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-        run: "git config --global url.\"https://${OWNER}:${TOKEN}@github.com\".insteadOf \"https://github.com\""
-      - name: "Templates"
-        run: "bin/templates.sh"
       - name: "Modules"
         run: "go mod download"
-        env:
-          GOPRIVATE: "github.com/${{ github.repository_owner }}"
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-          OWNER: "${{ github.repository_owner }}"
-          TOKEN: "${{ secrets.GITHUB_TOKEN }}"
       - name: "Lint"
         uses: golangci/golangci-lint-action@v2
         with:
@@ -42,4 +28,4 @@ jobs:
           skip-go-installation: true
           skip-pkg-cache: true
           skip-build-cache: true
-          args: "-c .golangci.yml --timeout=10m --issues-exit-code=0 --max-issues-per-linter=0 --sort-results ./..."
+          args: "-c ./.golangci.yml --timeout=10m --issues-exit-code=0 --max-issues-per-linter=0 --sort-results ./..."
