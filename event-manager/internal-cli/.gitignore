@@ -15,9 +15,9 @@
 *.out
 
 # build artifacts
-dist
-tmp
-build
+dist/
+tmp/
+build/
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
