@@ -51,3 +51,4 @@ jobs:
         env:
           SLACK_WEBHOOK: "${{ secrets.RELEASE_SLACK_INCOMING_WEBHOOK }}"
           ECR_REPO: "${{ secrets.ECR_REPO }}"
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
