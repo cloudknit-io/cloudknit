@@ -16,7 +16,7 @@ var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:     "zl [command]",
+	Use:     "zli [command]",
 	Version: env.Version,
 	Short:   "zLifecycle internal CLI",
 	Long:    `zLifecycle internal CLI for administrative management and workflow executor`,
