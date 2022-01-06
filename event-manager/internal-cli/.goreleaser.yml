@@ -38,9 +38,9 @@ release:
     ## {{ .Version }} ({{ .Date }})
     See https://github.com/CompuZest/zlifecycle-internal-cli for download links and documentation
     ## Main downloads
-    - [Linux Intel 64 bit](https://github.com/CompuZest/zlifecycle-internal-cli/releases/download/{{ .Tag }}/{{ .ProjectName }}-{{ .Version }}-linux_x86_64.zip)
-    - [MacOS Universal](https://github.com/CompuZest/zlifecycle-internal-cli/releases/download/{{ .Tag }}/{{ .ProjectName }}-{{ .Version }}-macos_all.zip)
-    - [Windows Intel 64 bit](https://github.com/CompuZest/zlifecycle-internal-cli/releases/download/{{ .Tag }}/{{ .ProjectName }}-{{ .Version }}-windows_x86_64.zip)
+    - [Linux Intel 64 bit](https://github.com/CompuZest/zlifecycle-internal-cli/releases/download/{{ .Tag }}/{{ .ProjectName }}_{{ .Version }}_linux_x86_64.zip)
+    - [MacOS Universal](https://github.com/CompuZest/zlifecycle-internal-cli/releases/download/{{ .Tag }}/{{ .ProjectName }}_{{ .Version }}_macos_all.zip)
+    - [Windows Intel 64 bit](https://github.com/CompuZest/zlifecycle-internal-cli/releases/download/{{ .Tag }}/{{ .ProjectName }}_{{ .Version }}_windows_x86_64.zip)
 
 snapshot:
   name_template: "{{ .Tag }}"
