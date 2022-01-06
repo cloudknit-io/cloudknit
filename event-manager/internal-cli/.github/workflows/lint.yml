@@ -3,7 +3,7 @@ on:
   push:
     tags:
       - v*
-    branches:
+    branches-ignore:
       - master
       - main
 permissions:
