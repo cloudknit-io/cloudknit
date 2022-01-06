@@ -30,9 +30,9 @@ jobs:
       - name: "Login"
         uses: "docker/login-action@v1"
         with:
-          registry: "ghcr.io"
-          username: "${{ github.repository_owner }}"
-          password: "${{ secrets.CR_PAT }}"
+          registry: "${{ secrets.ECR_REPO}}"
+          username: "${{ secrets.AWS_ACCESS_KEY_ID }}"
+          password: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
       - name: "Cache"
         uses: "actions/cache@v2"
         with:
