@@ -9,6 +9,7 @@ import (
 	"github.com/compuzest/zlifecycle-internal-cli/app/zlstate"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"os"
 )
 
 // EnvironmentComponentStatePullCmd represents the validate command
@@ -39,8 +40,28 @@ var EnvironmentComponentStatePullCmd = &cobra.Command{
 
 		fmt.Println(string(json))
 
+		os.Exit(getStatusCode(componentState.Component.Status))
 		return nil
 	},
+}
+
+func getStatusCode(status string) int {
+	switch status {
+	case "not_provisioned":
+		return 1
+	case "waiting_for_approval":
+		return 2
+	case "provisioning":
+		return 3
+	case "provisioned":
+		return 4
+	case "destroying":
+		return 5
+	case "destroyed":
+		return 6
+	default:
+		return 99
+	}
 }
 
 func init() {
