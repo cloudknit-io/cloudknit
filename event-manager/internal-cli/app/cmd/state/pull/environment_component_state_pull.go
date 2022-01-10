@@ -40,12 +40,12 @@ var EnvironmentComponentStatePullCmd = &cobra.Command{
 
 		fmt.Println(string(json))
 
-		os.Exit(getStatusCode(componentState.Component.Status))
+		os.Exit(getExitCode(componentState.Component.Status))
 		return nil
 	},
 }
 
-func getStatusCode(status string) int {
+func getExitCode(status string) int {
 	switch status {
 	case "not_provisioned":
 		return 1
