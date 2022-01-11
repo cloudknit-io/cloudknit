@@ -29,10 +29,14 @@
 
 ![image](https://user-images.githubusercontent.com/47644789/147984939-738f7535-be82-41ab-8f35-e684f8cdb3c7.png)
 
+zLifecycle is a declarative, GitOps continuous delivery tool for Environments.
+
 zLifecycle makes Environment Management easy across various cloud providers. It enables organizations to define, provision, detect drift + reconcile, and teardown environments across multiple cloud providers as well as on-premises. It also provides dashboards and reports for data-driven decision making.
 
 
 ## Why zLifecycle?
+
+Environment definitions and configurations should be declarative and version controlled. Environment deployment and lifecycle management should be automated, auditable, and easy to understand.
 
 ## zLifecycle Documentation
 
