@@ -5,12 +5,14 @@ import { Component } from "src/typeorm/costing/entities/Component";
 import { CostComponent, Resource } from "src/typeorm/resources/Resource.entity";
 import { Connection, Repository } from "typeorm";
 import { CostingDto } from "../dtos/Costing.dto";
+import { CostingStreamDto } from "../streams/costing.stream";
 import { Mapper } from "../utilities/mapper";
+import { MessageEvent } from "@nestjs/common";
 
 @Injectable()
 export class ComponentService {
   readonly stream: Subject<{}> = new Subject<{}>();
-  readonly notifyStream: Subject<{}> = new Subject<{}>();
+  readonly notifyStream: Subject<MessageEvent> = new Subject<MessageEvent>();
   constructor(
     private readonly connection: Connection,
     @InjectRepository(Component)
@@ -56,14 +58,16 @@ export class ComponentService {
     const raw = await this.componentRepository
       .createQueryBuilder("components")
       .select("SUM(components.cost) as cost")
-      .where(`components.teamName = '${name}' and components.isDeleted = 0 and components.cost != -1`)
+      .where(
+        `components.teamName = '${name}' and components.isDeleted = 0 and components.cost != -1`
+      )
       .getRawOne();
     return Number(raw.cost || 0);
   }
 
   async saveComponents(costing: CostingDto): Promise<boolean> {
     const id = `${costing.teamName}-${costing.environmentName}-${costing.component.componentName}`;
-    let savedComponent = await this.componentRepository.findOne(id) || null;
+    let savedComponent = (await this.componentRepository.findOne(id)) || null;
     if (costing.component.isDeleted && savedComponent) {
       savedComponent = await this.softDelete(savedComponent);
     } else {
@@ -83,13 +87,35 @@ export class ComponentService {
       );
       savedComponent.resources = resources;
     }
-    this.notifyStream.next(savedComponent);
+    const data = await this.getCostingStreamDto(savedComponent);
+    this.notifyStream.next({ data });
     return true;
   }
-  
+
+  async getCostingStreamDto(component: Component): Promise<CostingStreamDto> {
+    const data: CostingStreamDto = {
+      team: {
+        teamId: component.teamName,
+        cost: await this.getTeamCost(component.teamName),
+      },
+      environment: {
+        environmentId: `${component.teamName}-${component.environmentName}`,
+        cost: await this.getEnvironmentCost(
+          component.teamName,
+          component.environmentName
+        ),
+      },
+      component: {
+        componentId: component.id,
+        cost: component.isDeleted ? 0 : component.cost,
+      },
+    };
+    return data;
+  }
+
   async softDelete(component: Component): Promise<Component> {
-      component.isDeleted = true;
-      return await this.componentRepository.save(component);
+    component.isDeleted = true;
+    return await this.componentRepository.save(component);
   }
 
   async getResourceData(id: string) {
@@ -99,7 +125,9 @@ export class ComponentService {
       },
     });
     const roots = [];
-    var resources = new Map<string, any>(resultSet.map(e => [e.id, {...e, subresources: [] }]));
+    var resources = new Map<string, any>(
+      resultSet.map((e) => [e.id, { ...e, subresources: [] }])
+    );
     for (let i = 0; i < resultSet.length; i++) {
       const resource = resources.get(resultSet[i].id);
       if (!resource.parentId) {

@@ -1,9 +1,10 @@
 import { Controller, Param, Sse } from '@nestjs/common'
 import { from, Observable, Observer } from 'rxjs'
-import { map } from 'rxjs/operators'
+import { filter, map } from 'rxjs/operators'
 import { Component } from 'src/typeorm/costing/entities/Component'
 import { ComponentService } from '../services/component.service'
 import { Mapper } from '../utilities/mapper'
+import { MessageEvent } from '@nestjs/common';
 
 @Controller({
   path: 'costing/stream/api/v1',
@@ -46,32 +47,7 @@ export class CostingStream {
 
   @Sse('notify')
   notify(): Observable<MessageEvent> {
-    return new Observable((observer: Observer<MessageEvent>) => {
-      this.componentService.notifyStream.subscribe(
-        async (component: Component) => {
-          const data: CostingStreamDto = {
-            team: {
-              teamId: component.teamName,
-              cost: await this.componentService.getTeamCost(component.teamName),
-            },
-            environment: {
-              environmentId: `${component.teamName}-${component.environmentName}`,
-              cost: await this.componentService.getEnvironmentCost(
-                component.teamName,
-                component.environmentName,
-              ),
-            },
-            component: {
-              componentId: component.id,
-              cost: component.isDeleted ? 0 : component.cost,
-            },
-          }
-          observer.next({
-            data,
-          })
-        },
-      )
-    })
+    return this.componentService.notifyStream.asObservable();
   }
 }
 
@@ -88,11 +64,4 @@ export interface CostingStreamDto {
     componentId: string
     cost: number
   }
-}
-
-export interface MessageEvent {
-  data: string | object
-  id?: string
-  type?: string
-  retry?: number
 }
