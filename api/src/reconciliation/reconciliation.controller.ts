@@ -182,7 +182,7 @@ export class ReconciliationController {
     return from(this.reconciliationService.notifyStream).pipe(
       map((component: ComponentReconcile) => {
         if (component.name !== id) {
-          return { data: {} };
+          return { data: [] };
         }
         const data: ComponentAudit[] = Mapper.getComponentAuditList([
           component,
@@ -194,21 +194,17 @@ export class ReconciliationController {
 
   @Sse("environments/notify/:id")
   notifyEnvironments(@Param("id") id: string): Observable<MessageEvent> {
-    return new Observable((observer: Observer<MessageEvent>) => {
-      this.reconciliationService.notifyStream.subscribe(
-        async (environment: EnvironmentReconcile) => {
-          if (environment.name !== id) {
-            return;
-          }
-          const data: EnvironmentAudit[] = Mapper.getEnvironmentAuditList([
-            environment,
-          ]);
-          observer.next({
-            data: data,
-          });
+    return from(this.reconciliationService.notifyStream).pipe(
+      map((environment: EnvironmentReconcile) => {
+        if (environment.name !== id) {
+          return { data: [] };
         }
-      );
-    });
+        const data: EnvironmentAudit[] = Mapper.getEnvironmentAuditList([
+          environment,
+        ]);
+        return { data };
+      })
+    );
   }
 }
 
