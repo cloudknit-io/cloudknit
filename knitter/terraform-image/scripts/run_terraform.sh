@@ -39,11 +39,11 @@ cd $ENV_COMPONENT_PATH
 
 sh /argocd/login.sh
 
-. /set-aws-creds.sh
-
 # add last argo workflow run id to config application so it can fetch workflow details on UI
 data='{"metadata":{"labels":{"last_workflow_run_id":"'$workflow_id'"}}}'
 argocd app patch $team_env_config_name --patch $data --type merge >null
+
+. /set-aws-creds.sh
 
 . /initialize-terraform.sh
 
