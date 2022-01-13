@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 #
 # This script downloads an asset from latest or specific Github release of a
 # private repo. Feel free to extract more of the variables into command line

@@ -14,7 +14,7 @@ var RootCmd = &cobra.Command{
 }
 
 func init() {
-	RootCmd.PersistentFlags().StringVarP(&env.StateManagerURL, "url", "u", "", "zLifecycle State Manager URL")
+	RootCmd.PersistentFlags().StringVarP(&env.StateManagerURL, "url", "u", env.StateManagerURL, "zLifecycle State Manager URL")
 
 	RootCmd.AddCommand(environmentCmd)
 	RootCmd.AddCommand(environmentComponentCmd)
