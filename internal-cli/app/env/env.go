@@ -2,7 +2,7 @@ package env
 
 import "os"
 
-var Version = "0.0.9"
+var Version = "0.0.10"
 
 var (
 	Company         string
