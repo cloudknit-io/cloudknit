@@ -24,7 +24,7 @@ export class ComponentService {
   ) {
     setInterval(() => {
       this.notifyStream.next({ data: {} });
-    }, 10000);
+    }, 20000);
   }
 
   async getAll(): Promise<Component[]> {

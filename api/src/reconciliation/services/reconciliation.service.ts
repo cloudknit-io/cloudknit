@@ -16,7 +16,7 @@ import { EvnironmentReconcileDto } from "../dtos/reconcile.Dto";
 @Injectable()
 export class ReconciliationService {
   readonly notifyStream: Subject<{}> = new Subject<{}>();
-  readonly notificationStream: Subject<Notification> =
+  readonly notificationStream: Subject<{}> =
     new Subject<Notification>();
   private readonly s3h = S3Handler.instance();
   private readonly notFound = "";
@@ -27,7 +27,12 @@ export class ReconciliationService {
     private readonly componentReconcileRepository: Repository<ComponentReconcile>,
     @InjectRepository(Notification)
     private readonly notificationRepository: Repository<Notification>
-  ) {}
+  ) {
+    setInterval(() => {
+      this.notifyStream.next({});
+      this.notificationStream.next({});
+    }, 20000);
+  }
 
   async saveOrUpdateEnvironment(runData: EvnironmentReconcileDto) {
     const reconcileId = Number.isNaN(parseInt(runData.reconcileId))
