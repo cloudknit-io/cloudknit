@@ -192,7 +192,7 @@ func (r *Reconciler) reconcile(wr *WatchedRepository) (updated bool, err error) 
 		return false, nil
 	}
 
-	r.log.WithField("repositoryURL", wr.RepositoryPath).Info("Reconciling git repository")
+	r.log.WithField("source", wr.Source).Info("Reconciling git repository")
 
 	for _, subscriber := range wr.Subscribers {
 		r.log.WithFields(logrus.Fields{

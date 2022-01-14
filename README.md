@@ -6,7 +6,8 @@ zLifecycle Operator that generates Intermediate Language (ArgoCD Apps/Argo Workf
 
 ### Linter
 This project uses [golangci-lint](https://github.com/golangci/golangci-lint) for running code linting,
-in conjunction with (File Watchers)[https://www.jetbrains.com/help/idea/using-file-watchers.html] plugin for IntelliJ
+in conjunction with [File Watchers](https://www.jetbrains.com/help/idea/using-file-watchers.html) plugin for IntelliJ.
+
 Lint rules are configured in the `.golangci.yaml` file in the project root.
 
 ### ArgoCD credentials
@@ -19,7 +20,7 @@ TODO: Refactor ARGOCD_WEBHOOK_URL and ARGOCD_API_URL to be a config variable ins
 
 ## Vendoring
 
-We are using `go mod vendor` for our code so that all dependencies are available to the operator without relying on external sources. 
+We are using `go mod vendor` for our code so that all dependencies are available to the operator without relying on external sources.
 
 Note: Any time go dependencies change remember to run `go mod vendor` at the repo root directory and commit the latest folder to source control.
 
@@ -49,7 +50,7 @@ This operator combines a few things.
 When creating new controllers, `operator-sdk` works well with `kustomize` and will generate templates into kustomize default directories such as `config/crd/bases` and `config/rbac`. For now, the `make manifests` command has been configured to generate files into `helm/templates` and future `operator-sdk` commands should also be run with a custom output folder to generate into that directory (can also be moved manually).
 
 ## Deploy controller to k8s cluster
-helm install 
+helm install
 
 ## Local Development
 For faster docker builds, and the ability to shell into a contianer, use `Dockerfile.dev`, you can do this with `make docker-dev-build` or

@@ -44,12 +44,12 @@ func (s *HTTPStateManager) Put(company string, environment *v1.Environment) erro
 		ZLState:     zlstate,
 	}
 
-	s.log.WithField("state", zlstate).Info("Persisting zLstate through State Manager")
-
 	jsonBody, err := common.ToJSON(body)
 	if err != nil {
 		return errors.Wrap(err, "error marshaling put zLstate body")
 	}
+
+	s.log.WithField("body", string(jsonBody)).Info("Executing PUT request to zLifecycle State Manager")
 
 	req, err := http.NewRequestWithContext(s.ctx, "PUT", endpoint, bytes.NewBuffer(jsonBody))
 	if err != nil {
@@ -76,7 +76,7 @@ func (s *HTTPStateManager) Put(company string, environment *v1.Environment) erro
 		return errors.Wrap(err, "error unmarshaling PUT zLstate response body")
 	}
 
-	s.log.WithField("message", r.Message).Info("Successful response from State Manager")
+	s.log.WithField("message", r.Message).Info("Successful response from zLifecycle State Manager")
 
 	return nil
 }

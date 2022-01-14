@@ -22,12 +22,32 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+func meta() metav1.TypeMeta {
+	return metav1.TypeMeta{
+		APIVersion: "argoproj.io/v1alpha1",
+		Kind:       "Application",
+	}
+}
+
+func syncPolicy() *appv1.SyncPolicy {
+	return &appv1.SyncPolicy{
+		Automated: &appv1.SyncPolicyAutomated{
+			Prune:    true,
+			SelfHeal: true,
+		},
+	}
+}
+
+func destination() appv1.ApplicationDestination {
+	return appv1.ApplicationDestination{
+		Server:    "https://kubernetes.default.svc",
+		Namespace: "default",
+	}
+}
+
 func GenerateCompanyApp(company *stablev1.Company) *appv1.Application {
 	return &appv1.Application{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "argoproj.io/v1alpha1",
-			Kind:       "Application",
-		},
+		TypeMeta: meta(),
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      company.Spec.CompanyName,
 			Namespace: "argocd",
@@ -36,16 +56,9 @@ func GenerateCompanyApp(company *stablev1.Company) *appv1.Application {
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: "default",
-			SyncPolicy: &appv1.SyncPolicy{
-				Automated: &appv1.SyncPolicyAutomated{
-					Prune: true,
-				},
-			},
-			Destination: appv1.ApplicationDestination{
-				Server:    "https://kubernetes.default.svc",
-				Namespace: "default",
-			},
+			Project:     "default",
+			SyncPolicy:  syncPolicy(),
+			Destination: destination(),
 			Source: appv1.ApplicationSource{
 				RepoURL:        env.Config.ZLILRepoURL,
 				Path:           "./" + il.Config.TeamDirectory,
@@ -67,10 +80,7 @@ func GenerateCompanyApp(company *stablev1.Company) *appv1.Application {
 
 func GenerateTeamApp(team *stablev1.Team) *appv1.Application {
 	return &appv1.Application{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "argoproj.io/v1alpha1",
-			Kind:       "Application",
-		},
+		TypeMeta: meta(),
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      team.Spec.TeamName,
 			Namespace: "argocd",
@@ -80,16 +90,9 @@ func GenerateTeamApp(team *stablev1.Team) *appv1.Application {
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: team.Spec.TeamName,
-			SyncPolicy: &appv1.SyncPolicy{
-				Automated: &appv1.SyncPolicyAutomated{
-					Prune: true,
-				},
-			},
-			Destination: appv1.ApplicationDestination{
-				Server:    "https://kubernetes.default.svc",
-				Namespace: "default",
-			},
+			Project:     team.Spec.TeamName,
+			SyncPolicy:  syncPolicy(),
+			Destination: destination(),
 			Source: appv1.ApplicationSource{
 				RepoURL:        env.Config.ZLILRepoURL,
 				Path:           "./" + il.EnvironmentDirectoryPath(team.Spec.TeamName),
@@ -111,10 +114,7 @@ func GenerateTeamApp(team *stablev1.Team) *appv1.Application {
 
 func GenerateEnvironmentApp(environment *stablev1.Environment) *appv1.Application {
 	return &appv1.Application{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "argoproj.io/v1alpha1",
-			Kind:       "Application",
-		},
+		TypeMeta: meta(),
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      environment.Spec.TeamName + "-" + environment.Spec.EnvName,
 			Namespace: "argocd",
@@ -126,16 +126,9 @@ func GenerateEnvironmentApp(environment *stablev1.Environment) *appv1.Applicatio
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: environment.Spec.TeamName,
-			SyncPolicy: &appv1.SyncPolicy{
-				Automated: &appv1.SyncPolicyAutomated{
-					Prune: true,
-				},
-			},
-			Destination: appv1.ApplicationDestination{
-				Server:    "https://kubernetes.default.svc",
-				Namespace: "default",
-			},
+			Project:     environment.Spec.TeamName,
+			SyncPolicy:  syncPolicy(),
+			Destination: destination(),
 			Source: appv1.ApplicationSource{
 				RepoURL:        env.Config.ZLILRepoURL,
 				Path:           "./" + il.EnvironmentComponentsDirectoryPath(environment.Spec.TeamName, environment.Spec.EnvName),
@@ -175,10 +168,7 @@ func GenerateEnvironmentComponentApps(environment *stablev1.Environment, environ
 		labels[tag.Name] = tag.Value
 	}
 	return &appv1.Application{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Application",
-			APIVersion: "argoproj.io/v1alpha1",
-		},
+		TypeMeta: meta(),
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      environment.Spec.TeamName + "-" + environment.Spec.EnvName + "-" + environmentComponent.Name,
 			Namespace: "argocd",
@@ -188,16 +178,9 @@ func GenerateEnvironmentComponentApps(environment *stablev1.Environment, environ
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: environment.Spec.TeamName,
-			SyncPolicy: &appv1.SyncPolicy{
-				Automated: &appv1.SyncPolicyAutomated{
-					Prune: true,
-				},
-			},
-			Destination: appv1.ApplicationDestination{
-				Server:    env.Config.K8sAPIURL,
-				Namespace: "default",
-			},
+			Project:     environment.Spec.TeamName,
+			SyncPolicy:  syncPolicy(),
+			Destination: destination(),
 			Source: appv1.ApplicationSource{
 				RepoURL:        env.Config.HelmChartsRepo,
 				Path:           "charts/terraform-config",
@@ -247,10 +230,7 @@ func getHelmValues(environment *stablev1.Environment, environmentComponent *stab
 
 func GenerateTeamConfigWatcherApp(team *stablev1.Team) *appv1.Application {
 	return &appv1.Application{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "argoproj.io/v1alpha1",
-			Kind:       "Application",
-		},
+		TypeMeta: meta(),
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      team.Spec.TeamName + "-team-watcher",
 			Namespace: "argocd",
@@ -260,17 +240,9 @@ func GenerateTeamConfigWatcherApp(team *stablev1.Team) *appv1.Application {
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: team.Spec.TeamName,
-			SyncPolicy: &appv1.SyncPolicy{
-				Automated: &appv1.SyncPolicyAutomated{
-					Prune: true,
-				},
-				Retry: &appv1.RetryStrategy{Limit: 1},
-			},
-			Destination: appv1.ApplicationDestination{
-				Server:    "https://kubernetes.default.svc",
-				Namespace: "default",
-			},
+			Project:     team.Spec.TeamName,
+			SyncPolicy:  syncPolicy(),
+			Destination: destination(),
 			Source: appv1.ApplicationSource{
 				RepoURL:        team.Spec.ConfigRepo.Source,
 				Path:           team.Spec.ConfigRepo.Path,
@@ -295,10 +267,7 @@ func GenerateTeamConfigWatcherApp(team *stablev1.Team) *appv1.Application {
 
 func GenerateCompanyConfigWatcherApp(customerName string, companyConfigRepo string) *appv1.Application {
 	return &appv1.Application{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "argoproj.io/v1alpha1",
-			Kind:       "Application",
-		},
+		TypeMeta: meta(),
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      customerName + "-watcher",
 			Namespace: "argocd",
@@ -308,17 +277,9 @@ func GenerateCompanyConfigWatcherApp(customerName string, companyConfigRepo stri
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: "default",
-			SyncPolicy: &appv1.SyncPolicy{
-				Automated: &appv1.SyncPolicyAutomated{
-					Prune: true,
-				},
-				Retry: &appv1.RetryStrategy{Limit: 1},
-			},
-			Destination: appv1.ApplicationDestination{
-				Server:    "https://kubernetes.default.svc",
-				Namespace: "default",
-			},
+			Project:     "default",
+			SyncPolicy:  syncPolicy(),
+			Destination: destination(),
 			Source: appv1.ApplicationSource{
 				RepoURL:        companyConfigRepo,
 				Path:           ".",
@@ -343,10 +304,7 @@ func GenerateCompanyConfigWatcherApp(customerName string, companyConfigRepo stri
 
 func GenerateCompanyBootstrapApp() *appv1.Application {
 	return &appv1.Application{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "argoproj.io/v1alpha1",
-			Kind:       "Application",
-		},
+		TypeMeta: meta(),
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "company-bootstrap",
 			Namespace: "argocd",
@@ -356,16 +314,9 @@ func GenerateCompanyBootstrapApp() *appv1.Application {
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: "default",
-			SyncPolicy: &appv1.SyncPolicy{
-				Automated: &appv1.SyncPolicyAutomated{
-					Prune: true,
-				},
-			},
-			Destination: appv1.ApplicationDestination{
-				Server:    "https://kubernetes.default.svc",
-				Namespace: "default",
-			},
+			Project:     "default",
+			SyncPolicy:  syncPolicy(),
+			Destination: destination(),
 			Source: appv1.ApplicationSource{
 				RepoURL:        env.Config.ZLILRepoURL,
 				Path:           "company",
@@ -377,10 +328,7 @@ func GenerateCompanyBootstrapApp() *appv1.Application {
 
 func GenerateConfigWatcherBootstrapApp() *appv1.Application {
 	return &appv1.Application{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "argoproj.io/v1alpha1",
-			Kind:       "Application",
-		},
+		TypeMeta: meta(),
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "config-watcher-bootstrap",
 			Namespace: "argocd",
@@ -390,16 +338,9 @@ func GenerateConfigWatcherBootstrapApp() *appv1.Application {
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: "default",
-			SyncPolicy: &appv1.SyncPolicy{
-				Automated: &appv1.SyncPolicyAutomated{
-					Prune: true,
-				},
-			},
-			Destination: appv1.ApplicationDestination{
-				Server:    "https://kubernetes.default.svc",
-				Namespace: "default",
-			},
+			Project:     "default",
+			SyncPolicy:  syncPolicy(),
+			Destination: destination(),
 			Source: appv1.ApplicationSource{
 				RepoURL:        env.Config.ZLILRepoURL,
 				Path:           "config-watcher",
