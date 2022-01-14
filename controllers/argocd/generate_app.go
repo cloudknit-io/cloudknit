@@ -29,13 +29,35 @@ func meta() metav1.TypeMeta {
 	}
 }
 
-func syncPolicy() *appv1.SyncPolicy {
+func syncStatus(repo string) appv1.ApplicationStatus {
+	return appv1.ApplicationStatus{
+		Sync: appv1.SyncStatus{
+			ComparedTo: appv1.ComparedTo{
+				Source: appv1.ApplicationSource{
+					RepoURL: repo,
+				},
+			},
+			Status: "Synced",
+		},
+	}
+}
+
+func syncPolicy(selfHeal bool, retry *int64) *appv1.SyncPolicy {
+	var retryStrategy *appv1.RetryStrategy
+	if retry != nil {
+		retryStrategy = &appv1.RetryStrategy{Limit: *retry}
+	}
 	return &appv1.SyncPolicy{
 		Automated: &appv1.SyncPolicyAutomated{
 			Prune:    true,
-			SelfHeal: true,
+			SelfHeal: selfHeal,
 		},
+		Retry: retryStrategy,
 	}
+}
+
+func newInt64(num int64) *int64 {
+	return &num
 }
 
 func destination() appv1.ApplicationDestination {
@@ -57,7 +79,7 @@ func GenerateCompanyApp(company *stablev1.Company) *appv1.Application {
 		},
 		Spec: appv1.ApplicationSpec{
 			Project:     "default",
-			SyncPolicy:  syncPolicy(),
+			SyncPolicy:  syncPolicy(true, nil),
 			Destination: destination(),
 			Source: appv1.ApplicationSource{
 				RepoURL:        env.Config.ZLILRepoURL,
@@ -65,16 +87,7 @@ func GenerateCompanyApp(company *stablev1.Company) *appv1.Application {
 				TargetRevision: "HEAD",
 			},
 		},
-		Status: appv1.ApplicationStatus{
-			Sync: appv1.SyncStatus{
-				ComparedTo: appv1.ComparedTo{
-					Source: appv1.ApplicationSource{
-						RepoURL: env.Config.ZLILRepoURL,
-					},
-				},
-				Status: "Synced",
-			},
-		},
+		Status: syncStatus(env.Config.ZLILRepoURL),
 	}
 }
 
@@ -91,7 +104,7 @@ func GenerateTeamApp(team *stablev1.Team) *appv1.Application {
 		},
 		Spec: appv1.ApplicationSpec{
 			Project:     team.Spec.TeamName,
-			SyncPolicy:  syncPolicy(),
+			SyncPolicy:  syncPolicy(true, nil),
 			Destination: destination(),
 			Source: appv1.ApplicationSource{
 				RepoURL:        env.Config.ZLILRepoURL,
@@ -99,16 +112,7 @@ func GenerateTeamApp(team *stablev1.Team) *appv1.Application {
 				TargetRevision: "HEAD",
 			},
 		},
-		Status: appv1.ApplicationStatus{
-			Sync: appv1.SyncStatus{
-				ComparedTo: appv1.ComparedTo{
-					Source: appv1.ApplicationSource{
-						RepoURL: env.Config.ZLILRepoURL,
-					},
-				},
-				Status: "Synced",
-			},
-		},
+		Status: syncStatus(env.Config.ZLILRepoURL),
 	}
 }
 
@@ -127,7 +131,7 @@ func GenerateEnvironmentApp(environment *stablev1.Environment) *appv1.Applicatio
 		},
 		Spec: appv1.ApplicationSpec{
 			Project:     environment.Spec.TeamName,
-			SyncPolicy:  syncPolicy(),
+			SyncPolicy:  syncPolicy(true, nil),
 			Destination: destination(),
 			Source: appv1.ApplicationSource{
 				RepoURL:        env.Config.ZLILRepoURL,
@@ -135,16 +139,7 @@ func GenerateEnvironmentApp(environment *stablev1.Environment) *appv1.Applicatio
 				TargetRevision: "HEAD",
 			},
 		},
-		Status: appv1.ApplicationStatus{
-			Sync: appv1.SyncStatus{
-				ComparedTo: appv1.ComparedTo{
-					Source: appv1.ApplicationSource{
-						RepoURL: env.Config.ZLILRepoURL,
-					},
-				},
-				Status: "Synced",
-			},
-		},
+		Status: syncStatus(env.Config.ZLILRepoURL),
 	}
 }
 
@@ -179,7 +174,7 @@ func GenerateEnvironmentComponentApps(environment *stablev1.Environment, environ
 		},
 		Spec: appv1.ApplicationSpec{
 			Project:     environment.Spec.TeamName,
-			SyncPolicy:  syncPolicy(),
+			SyncPolicy:  syncPolicy(true, nil),
 			Destination: destination(),
 			Source: appv1.ApplicationSource{
 				RepoURL:        env.Config.HelmChartsRepo,
@@ -190,16 +185,7 @@ func GenerateEnvironmentComponentApps(environment *stablev1.Environment, environ
 				},
 			},
 		},
-		Status: appv1.ApplicationStatus{
-			Sync: appv1.SyncStatus{
-				ComparedTo: appv1.ComparedTo{
-					Source: appv1.ApplicationSource{
-						RepoURL: env.Config.HelmChartsRepo,
-					},
-				},
-				Status: "Synced",
-			},
-		},
+		Status: syncStatus(env.Config.HelmChartsRepo),
 	}
 }
 
@@ -241,7 +227,7 @@ func GenerateTeamConfigWatcherApp(team *stablev1.Team) *appv1.Application {
 		},
 		Spec: appv1.ApplicationSpec{
 			Project:     team.Spec.TeamName,
-			SyncPolicy:  syncPolicy(),
+			SyncPolicy:  syncPolicy(true, newInt64(1)),
 			Destination: destination(),
 			Source: appv1.ApplicationSource{
 				RepoURL:        team.Spec.ConfigRepo.Source,
@@ -252,16 +238,7 @@ func GenerateTeamConfigWatcherApp(team *stablev1.Team) *appv1.Application {
 				},
 			},
 		},
-		Status: appv1.ApplicationStatus{
-			Sync: appv1.SyncStatus{
-				ComparedTo: appv1.ComparedTo{
-					Source: appv1.ApplicationSource{
-						RepoURL: team.Spec.ConfigRepo.Source,
-					},
-				},
-				Status: "Synced",
-			},
-		},
+		Status: syncStatus(team.Spec.ConfigRepo.Source),
 	}
 }
 
@@ -278,7 +255,7 @@ func GenerateCompanyConfigWatcherApp(customerName string, companyConfigRepo stri
 		},
 		Spec: appv1.ApplicationSpec{
 			Project:     "default",
-			SyncPolicy:  syncPolicy(),
+			SyncPolicy:  syncPolicy(true, newInt64(1)),
 			Destination: destination(),
 			Source: appv1.ApplicationSource{
 				RepoURL:        companyConfigRepo,
@@ -289,16 +266,7 @@ func GenerateCompanyConfigWatcherApp(customerName string, companyConfigRepo stri
 				},
 			},
 		},
-		Status: appv1.ApplicationStatus{
-			Sync: appv1.SyncStatus{
-				ComparedTo: appv1.ComparedTo{
-					Source: appv1.ApplicationSource{
-						RepoURL: companyConfigRepo,
-					},
-				},
-				Status: "Synced",
-			},
-		},
+		Status: syncStatus(companyConfigRepo),
 	}
 }
 
@@ -315,7 +283,7 @@ func GenerateCompanyBootstrapApp() *appv1.Application {
 		},
 		Spec: appv1.ApplicationSpec{
 			Project:     "default",
-			SyncPolicy:  syncPolicy(),
+			SyncPolicy:  syncPolicy(true, nil),
 			Destination: destination(),
 			Source: appv1.ApplicationSource{
 				RepoURL:        env.Config.ZLILRepoURL,
@@ -339,7 +307,7 @@ func GenerateConfigWatcherBootstrapApp() *appv1.Application {
 		},
 		Spec: appv1.ApplicationSpec{
 			Project:     "default",
-			SyncPolicy:  syncPolicy(),
+			SyncPolicy:  syncPolicy(true, nil),
 			Destination: destination(),
 			Source: appv1.ApplicationSource{
 				RepoURL:        env.Config.ZLILRepoURL,
