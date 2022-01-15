@@ -118,6 +118,7 @@ echo $result > /tmp/reconcile_id.txt
 
 echo "config name: $config_name"
 if [[ $config_name != 0 ]]; then
+    set +e
     echo "calling zlifecycle-internal-cli state component pull"
     zlifecycle-internal-cli state component pull \
       --company "$customer_id" \
