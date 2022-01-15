@@ -104,12 +104,16 @@ echo $payload >reconcile_payload.txt
 result=$(curl -X 'POST' "$url" -H 'accept: */*' -H 'Content-Type: application/json' -d @reconcile_payload.txt)
 echo $result >/tmp/reconcile_id.txt
 
-zlifecycle-internal-cli state component pull \
-  --company $customer_id \
-  --team $team_name \
-  --environment $env_name \
-  --component $config_name \
-  -v
+if [ $config_name -ne "0" ]; then
+    zlifecycle-internal-cli state component pull \
+      --company $customer_id \
+      --team $team_name \
+      --environment $env_name \
+      --component $config_name \
+      -v
 
-component_status=$?
-echo $component_status > /tmp/component_status
+    component_status=$?
+    echo $component_status > /tmp/component_status
+else
+    echo 0 > /tmp/component_status
+fi
