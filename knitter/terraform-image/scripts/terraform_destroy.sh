@@ -1,17 +1,3 @@
-
-zlifecycle-internal-cli state component pull \
-  --company $customer_id \
-  --team $team_name \
-  --environment $env_name \
-  --component $config_name \
-  -v
-component_status=$?
-
-if [ $component_status -eq 6 ]
-then
-  return 0
-fi
-
 data='{"metadata":{"labels":{"component_status":"destroying","audit_status":"destroying"}}}'
 argocd app patch $team_env_config_name --patch $data --type merge >null
 

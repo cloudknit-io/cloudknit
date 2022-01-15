@@ -8,6 +8,7 @@ config_reconcile_id=$7
 is_destroy=$8
 phase=$9
 skip_component=${10}
+customer_id=${11}
 
 team_env_name=$team_name-$env_name
 team_env_config_name=$team_name-$env_name-$config_name
@@ -103,3 +104,12 @@ echo $payload >reconcile_payload.txt
 result=$(curl -X 'POST' "$url" -H 'accept: */*' -H 'Content-Type: application/json' -d @reconcile_payload.txt)
 echo $result >/tmp/reconcile_id.txt
 
+zlifecycle-internal-cli state component pull \
+  --company $customer_id \
+  --team $team_name \
+  --environment $env_name \
+  --component $config_name \
+  -v
+
+component_status=$?
+echo $component_status > /tmp/component_status
