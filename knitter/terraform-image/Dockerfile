@@ -62,7 +62,7 @@ RUN curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master
     helm plugin install https://github.com/hypnoglow/helm-s3.git
 
 # get the zlifecycle-internal-cli
-RUN ./helpers/gh_download.sh -v $ZLI_TAG -f zlifecycle-internal-cli_${ZLI_TAG#v}_linux_arm64.zip -t $GITHUB_TOKEN -r CompuZest/zlifecycle-internal-cli -o /tmp/cli.zip && \
+RUN ./helpers/gh_download.sh -v $ZLI_TAG -f zlifecycle-internal-cli_${ZLI_TAG#v}_linux_x86_64.zip -t $GITHUB_TOKEN -r CompuZest/zlifecycle-internal-cli -o /tmp/cli.zip && \
     unzip -d /tmp /tmp/cli.zip && \
     install -b -c -v /tmp/zlifecycle-internal-cli /usr/local/bin/ && \
     zlifecycle-internal-cli -h
