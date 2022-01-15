@@ -5,6 +5,14 @@ echo $show_output_start
 echo "Executing terraform apply..." 2>&1 | appendLogs /tmp/apply_output.txt
 echo $show_output_end
 
+zlifecycle-internal-cli state component patch \
+  --company $customer_id \
+  --team $team_name \
+  --environment $env_name \
+  --component $config_name \
+  --status provisioning \
+  -v
+
 aws s3 cp s3://zlifecycle-tfplan-$customer_id/$team_name/$env_name/$config_name/tfplans/$config_reconcile_id terraform-plan --profile compuzest-shared
 
 echo $show_output_start
@@ -26,3 +34,11 @@ if [ $result -eq 0 ]; then
 else
     SaveAndExit "There is an issue with provisioning"
 fi
+
+zlifecycle-internal-cli state component patch \
+  --company $customer_id \
+  --team $team_name \
+  --environment $env_name \
+  --component $config_name \
+  --status provisioned \
+  -v

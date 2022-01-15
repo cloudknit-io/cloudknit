@@ -5,6 +5,9 @@ on:
       image_tag:
         description: Docker image tag
         required: true
+      zli_tag:
+        description: zLifecycle Internal CLI tag
+        required: true
 jobs:
   build-image:
     name: Build docker image for terraform provisioner
@@ -25,7 +28,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
 
       - uses: actions/checkout@v2
-      - run: docker build -t ${{ env.ECR_REPO }}/zlifecycle-terraform:${{ github.event.inputs.image_tag }} --build-arg INFRACOST_API_KEY=${{ secrets.INFRACOST_API_KEY }} .
+      - run: docker build -t ${{ env.ECR_REPO }}/zlifecycle-terraform:${{ github.event.inputs.image_tag }} --build-arg ZLI_TAG=${{ github.event.inputs.zli_tag }} --build-arg GITHUB_TOKEN=${{ secrets.ZLIFECYCLE_CI_GITHUB_PAT }} --build-arg INFRACOST_API_KEY=${{ secrets.INFRACOST_API_KEY }} .
         env:
           ECR_REPO: ${{ steps.login-ecr.outputs.registry }}
       - run: docker push ${{ env.ECR_REPO }}/zlifecycle-terraform:${{ github.event.inputs.image_tag }}

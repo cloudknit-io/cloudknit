@@ -82,6 +82,13 @@ then
     then
         if [ $auto_approve = false ]
         then
+            zlifecycle-internal-cli state component patch \
+              --company $customer_id \
+              --team $team_name \
+              --environment $env_name \
+              --component $config_name \
+              --status waiting_for_approval \
+              -v
             data='{"metadata":{"labels":{"component_status":"waiting_for_approval","audit_status":"waiting_for_approval"}}}'
             argocd app patch $team_env_config_name --patch $data --type merge > null
         fi
