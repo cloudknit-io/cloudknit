@@ -117,7 +117,7 @@ echo "saving reconcile_id to /tmp/reconcile_id.txt: reconcile id $result"
 echo $result > /tmp/reconcile_id.txt
 
 echo "config name: $config_name"
-if [ "$config_name" -ne "0" ]; then
+if [[ $config_name != 0 ]]; then
     echo "calling zlifecycle-internal-cli state component pull"
     zlifecycle-internal-cli state component pull \
       --company "$customer_id" \
