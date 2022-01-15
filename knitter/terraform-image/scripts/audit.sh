@@ -60,11 +60,14 @@ if [ "$skip_component" != "noSkip" ]; then
 fi
 
 if [[ $config_name != 0 && $config_reconcile_id = null ]]; then
+    echo "running validate environment component script: team $team_name, environment $env_name, component $config_name"
     sh ./validate_env_component.sh $team_name $env_name $config_name
+    echo "running argocd login script"
     . /argocd/login.sh
     if [[ $config_status == *"skipped"* ]]; then
+        echo "getting environment component previous status"
         config_previous_status=$(argocd app get $team_env_config_name -o json | jq -r '.metadata.labels.component_status') || null
-        echo "config_prev_status"$config_previous_status
+        echo "config_prev_status: $config_previous_status"
         if [[ $config_previous_status == null ]]; then
             data='{"metadata":{"labels":{"is_skipped":"'$is_skipped'","component_status":"not_provisioned"}}}'
         else
@@ -73,8 +76,10 @@ if [[ $config_name != 0 && $config_reconcile_id = null ]]; then
     else
         data='{"metadata":{"labels":{"is_skipped":"'$is_skipped'","component_status":"initializing","is_destroy":"'$is_destroy'","audit_status":"initializing","last_workflow_run_id":"initializing"}}}'
     fi
+    echo "patch argocd resource $team_env_config_name with data $data"
     argocd app patch $team_env_config_name --patch $data --type merge > null
 else
+    echo "write 0 to /tmp/error_code.txt"
     echo -n '0' >/tmp/error_code.txt
 fi
 
@@ -82,6 +87,7 @@ component_payload='[{"id" : '$config_reconcile_id', "name" : "'$team_env_config_
 
 end_date='"'$(date)'"'
 if [ $reconcile_id -eq 0 ]; then
+    echo "set end_date and reconcile_id to null"
     end_date=null
     reconcile_id=null
 fi
@@ -89,6 +95,7 @@ fi
 if [ $config_name -eq 0 ]; then
     component_payload=[]
     url=$url_environment
+    echo "calling patch environment script"
     . /patch_environment.sh
 fi
 
@@ -100,12 +107,15 @@ fi
 
 payload='{"reconcileId": '$reconcile_id', "name" : "'$team_env_name'", "teamName" : "'$team_name'", "status" : "'$status'", "startDateTime" : "'$start_date'", "endDateTime" : '$end_date', "componentReconciles" : '$component_payload'}'
 
+echo "saving payload to reconcile_payload.txt: payload $payload"
 echo $payload >reconcile_payload.txt
 
 result=$(curl -X 'POST' "$url" -H 'accept: */*' -H 'Content-Type: application/json' -d @reconcile_payload.txt)
+echo "saving reconcile_id to /tmp/reconcile_id.txt: reconcile id $result"
 echo $result > /tmp/reconcile_id.txt
 
 if [ $config_name -ne "0" ]; then
+    echo "calling zlifecycle-internal-cli state component pull"
     zlifecycle-internal-cli state component pull \
       --company $customer_id \
       --team $team_name \
@@ -114,5 +124,6 @@ if [ $config_name -ne "0" ]; then
       -v
 
     component_status=$?
+    echo "saving component status to /tmp/component_status: component_status $component_status"
     echo $component_status > /tmp/component_status
 fi
