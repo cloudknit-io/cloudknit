@@ -59,6 +59,8 @@ if [ "$skip_component" != "noSkip" ]; then
     fi
 fi
 
+echo "current config status: $config_status"
+
 if [[ $config_name != 0 && $config_reconcile_id = null ]]; then
     echo "running validate environment component script: team $team_name, environment $env_name, component $config_name"
     sh ./validate_env_component.sh $team_name $env_name $config_name
@@ -114,13 +116,14 @@ result=$(curl -X 'POST' "$url" -H 'accept: */*' -H 'Content-Type: application/js
 echo "saving reconcile_id to /tmp/reconcile_id.txt: reconcile id $result"
 echo $result > /tmp/reconcile_id.txt
 
-if [ $config_name -ne "0" ]; then
+echo "config name: $config_name"
+if [ "$config_name" -ne "0" ]; then
     echo "calling zlifecycle-internal-cli state component pull"
     zlifecycle-internal-cli state component pull \
-      --company $customer_id \
-      --team $team_name \
-      --environment $env_name \
-      --component $config_name \
+      --company "$customer_id" \
+      --team "$team_name" \
+      --environment "$env_name" \
+      --component "$config_name" \
       -v
 
     component_status=$?
