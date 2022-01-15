@@ -17,6 +17,7 @@ team_env_config_name=$team_name-$env_name-$config_name
 # config --> Initialising... , Success , Failed
 # env --> initializing , ended 
 
+echo "config name: $config_name"
 
 url_environment='http://zlifecycle-api.zlifecycle-ui.svc.cluster.local/reconciliation/api/v1/environment/save'
 url='http://zlifecycle-api.zlifecycle-ui.svc.cluster.local/reconciliation/api/v1/component/save'

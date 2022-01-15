@@ -56,15 +56,18 @@ RUN find / -type f -iname "*.sh" -exec chmod +x {} \; && \
 
 COPY --from=aws-iam-authenticator /usr/local/bin/aws-iam-authenticator /usr/local/bin/aws-iam-authenticator
 
-RUN curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 && \
-    chmod 700 get_helm.sh && \
-    ./get_helm.sh && \
-    helm plugin install https://github.com/hypnoglow/helm-s3.git
+RUN curl -fsSL -o /tmp/get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 && \
+    chmod 700 /tmp/get_helm.sh && \
+    /tmp/get_helm.sh && \
+    helm plugin install https://github.com/hypnoglow/helm-s3.git && \
+    rm /tmp/get_helm.sh
 
 # get the zlifecycle-internal-cli
 RUN ./helpers/gh_download.sh -v $ZLI_TAG -f zlifecycle-internal-cli_${ZLI_TAG#v}_linux_x86_64.zip -t $GITHUB_TOKEN -r CompuZest/zlifecycle-internal-cli -o /tmp/cli.zip && \
     unzip -d /tmp /tmp/cli.zip && \
     install -b -c -v /tmp/zlifecycle-internal-cli /usr/local/bin/ && \
-    zlifecycle-internal-cli -h
+    zlifecycle-internal-cli -h && \
+    rm /tmp/cli.zip && \
+    rm /tmp/zlifecycle-internal-cli
 
 ENTRYPOINT ["sh"]
