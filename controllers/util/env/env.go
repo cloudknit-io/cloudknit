@@ -50,6 +50,9 @@ type config struct {
 	ArgocdUsername  string
 	ArgocdPassword  string
 
+	KubernetesOperatorWatchedNamespace string
+	KubernetesOperatorWatchedResources string
+
 	ArgoWorkflowsServerURL string
 	ArgoWorkflowsNamespace string
 
@@ -73,12 +76,14 @@ var Config = config{
 	ZlifecycleOperatorNamespace:   getOr("ZLIFECYCLE_OPERATOR_NAMESPACE", "zlifecycle-il-operator-system"),
 	ZlifecycleOperatorRepo:        "zlifecycle-il-operator",
 
-	CompanyName:       os.Getenv("companyName"),
-	ZLILRepoName:      os.Getenv("ilRepoName"),
-	ZLILRepoURL:       os.Getenv("ilRepo"),
-	TFILRepoName:      os.Getenv("TF_IL_REPO_NAME"),
-	TFILRepoURL:       os.Getenv("TF_IL_REPO_URL"),
-	ILRepoSourceOwner: os.Getenv("ilRepoSourceOwner"),
+	CompanyName:                        os.Getenv("companyName"),
+	KubernetesOperatorWatchedNamespace: getOr("KUBERNETES_OPERATOR_WATCHED_NAMESPACE", "zlifecycle"),
+	KubernetesOperatorWatchedResources: getOr("KUBERNETES_OPERATOR_WATCHED_RESOURCES", "company,team,environment"),
+	ZLILRepoName:                       os.Getenv("ilRepoName"),
+	ZLILRepoURL:                        os.Getenv("ilRepo"),
+	TFILRepoName:                       os.Getenv("TF_IL_REPO_NAME"),
+	TFILRepoURL:                        os.Getenv("TF_IL_REPO_URL"),
+	ILRepoSourceOwner:                  os.Getenv("ilRepoSourceOwner"),
 
 	DefaultTerraformVersion: getOr("TERRAFORM_DEFAULT_VERSION", "1.0.9"),
 	DefaultRegion:           getOr("TERRAFORM_DEFAULT_REGION", "us-east-1"),

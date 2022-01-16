@@ -16,6 +16,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/apm"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	"github.com/sirupsen/logrus"
 	"sync"
 	"time"
@@ -52,6 +53,23 @@ type CompanyReconciler struct {
 // +kubebuilder:rbac:groups=stable.compuzest.com,resources=companies/status,verbs=get;update;patch
 
 func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	if !checkIsNamespaceWatched(req.NamespacedName.Namespace) {
+		r.LogV2.WithFields(logrus.Fields{
+			"object":           fmt.Sprintf("%s/%s", req.NamespacedName.Namespace, req.NamespacedName.Name),
+			"namespace":        req.NamespacedName.Namespace,
+			"watchedNamespace": env.Config.KubernetesOperatorWatchedNamespace,
+		}).Info("Namespace is not configured to be watched by operator")
+		return ctrl.Result{}, nil
+	}
+	if resource := "company"; !checkIsResourceWatched(resource) {
+		r.LogV2.WithFields(logrus.Fields{
+			"object":           fmt.Sprintf("%s/%s", req.NamespacedName.Namespace, req.NamespacedName.Name),
+			"resource":         resource,
+			"watchedResources": env.Config.KubernetesOperatorWatchedResources,
+		}).Info("Resource is not configured to be watched by operator")
+		return ctrl.Result{}, nil
+	}
+
 	start := time.Now()
 
 	// init logic
