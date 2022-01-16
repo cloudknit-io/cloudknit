@@ -17,7 +17,7 @@ var (
 	gitHubWebhookSecret    = env.Config.GitHubWebhookSecret
 	argocdHookURL          = env.Config.ArgocdHookURL
 	argocdServerURL        = env.Config.ArgocdServerURL
-	argoWorkflowsNamespace = env.Config.ArgoWorkflowsNamespace
+	argoWorkflowsNamespace = env.Config.ArgoWorkflowsWorkflowNamespace
 )
 
 func checkIsNamespaceWatched(namespace string) bool {
