@@ -70,6 +70,23 @@ var environmentInitialRunLock = atomic.NewBool(true)
 
 // Reconcile method called everytime there is a change in Environment Custom Resource.
 func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	if !checkIsNamespaceWatched(req.NamespacedName.Namespace) {
+		r.LogV2.WithFields(logrus.Fields{
+			"object":           fmt.Sprintf("%s/%s", req.NamespacedName.Namespace, req.NamespacedName.Name),
+			"namespace":        req.NamespacedName.Namespace,
+			"watchedNamespace": env.Config.KubernetesOperatorWatchedNamespace,
+		}).Info("Namespace is not configured to be watched by operator")
+		return ctrl.Result{}, nil
+	}
+	if resource := "environment"; !checkIsResourceWatched(resource) {
+		r.LogV2.WithFields(logrus.Fields{
+			"object":           fmt.Sprintf("%s/%s", req.NamespacedName.Namespace, req.NamespacedName.Name),
+			"resource":         resource,
+			"watchedResources": env.Config.KubernetesOperatorWatchedResources,
+		}).Info("Resource is not configured to be watched by operator")
+		return ctrl.Result{}, nil
+	}
+
 	delayEnvironmentReconcileOnInitialRun(r.LogV2, 35)
 	start := time.Now()
 
