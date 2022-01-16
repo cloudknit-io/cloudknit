@@ -202,7 +202,7 @@ func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment) *workf
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      environment.Spec.TeamName + "-" + environment.Spec.EnvName,
-			Namespace: "argocd",
+			Namespace: env.Config.ArgoWorkflowsWorkflowNamespace,
 			Labels: map[string]string{
 				"terraform/sync":       "true",
 				"zlifecycle.com/model": "environment-sync-flow",
