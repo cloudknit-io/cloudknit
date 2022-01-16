@@ -53,8 +53,9 @@ type config struct {
 	KubernetesOperatorWatchedNamespace string
 	KubernetesOperatorWatchedResources string
 
-	ArgoWorkflowsServerURL string
-	ArgoWorkflowsNamespace string
+	ArgoWorkflowsServerURL         string
+	ArgoWorkflowsNamespace         string
+	ArgoWorkflowsWorkflowNamespace string
 
 	StateManagerURL string
 
@@ -117,8 +118,9 @@ var Config = config{
 	ArgocdUsername:  os.Getenv("ARGOCD_USERNAME"),
 	ArgocdPassword:  os.Getenv("ARGOCD_PASSWORD"),
 
-	ArgoWorkflowsServerURL: getOr("ARGOWORKFLOWS_URL", "http://argo-workflow-server.argocd.svc.cluster.local:2746"),
-	ArgoWorkflowsNamespace: "argocd",
+	ArgoWorkflowsServerURL:         getOr("ARGOWORKFLOWS_URL", "http://argo-workflow-server.argocd.svc.cluster.local:2746"),
+	ArgoWorkflowsNamespace:         getOr("ARGOWORKFLOWS_NAMESPACE", "argocd"),
+	ArgoWorkflowsWorkflowNamespace: getOr("ARGOWORKFLOWS_WORKFLOW_NAMESPACE", "argocd"),
 
 	StateManagerURL: getOr("STATE_MANAGER_URL", "http://zlifecycle-state-manager.zlifecycle-il-operator-system.svc.cluster.local:8080"),
 
