@@ -59,13 +59,18 @@ if [ "$skip_component" != "noSkip" ]; then
     fi
 fi
 
+echo "running argocd login script"
+. /argocd/login.sh
+
 echo "current config status: $config_status"
+if [[ $config_name != 0 ]]; then
+    echo "Fetching component status via zlifecycle-internal-cli"
+    . /component-state-zlifecycle-internal-cli.sh
+fi
 
 if [[ $config_name != 0 && $config_reconcile_id = null ]]; then
     echo "running validate environment component script: team $team_name, environment $env_name, component $config_name"
     sh ./validate_env_component.sh $team_name $env_name $config_name
-    echo "running argocd login script"
-    . /argocd/login.sh
     if [[ $config_status == *"skipped"* ]]; then
         echo "getting environment component previous status"
         config_previous_status=$(argocd app get $team_env_config_name -o json | jq -r '.metadata.labels.component_status') || null
@@ -115,19 +120,3 @@ echo $payload >reconcile_payload.txt
 result=$(curl -X 'POST' "$url" -H 'accept: */*' -H 'Content-Type: application/json' -d @reconcile_payload.txt)
 echo "saving reconcile_id to /tmp/reconcile_id.txt: reconcile id $result"
 echo $result > /tmp/reconcile_id.txt
-
-echo "config name: $config_name"
-if [[ $config_name != 0 ]]; then
-    set +e
-    echo "calling zlifecycle-internal-cli state component pull"
-    zlifecycle-internal-cli state component pull \
-      --company "$customer_id" \
-      --team "$team_name" \
-      --environment "$env_name" \
-      --component "$config_name" \
-      -v
-
-    component_status=$?
-    echo "saving component status to /tmp/component_status: component_status $component_status"
-    echo $component_status > /tmp/component_status
-fi
