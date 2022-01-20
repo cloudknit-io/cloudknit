@@ -34,6 +34,8 @@ import (
 	// +kubebuilder:scaffold:imports
 )
 
+var Version = "0.0.1"
+
 var (
 	scheme   = runtime.NewScheme()
 	setupLog *logrus.Entry
@@ -75,6 +77,8 @@ func main() {
 	if err != nil {
 		setupLog.WithError(err).Panic("unable to start manager")
 	}
+
+	setupLog.Info("Running zLifecycle IL operator version " + Version)
 
 	// ctx
 	ctx := context.Background()

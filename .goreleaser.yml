@@ -1,0 +1,89 @@
+# http://goreleaser.com
+project_name: zlifecycle-il-operator
+
+archives:
+  - format: zip
+    wrap_in_directory: "false"
+    replacements:
+      darwin: macos
+      amd64: x86_64
+    files:
+      - none*
+
+changelog:
+  use: "github"
+
+checksum:
+  name_template: "checksums.txt"
+
+dockers:
+  - image_templates:
+      - "{{ .Env.ECR_REPO }}/{{ .ProjectName }}:{{ .Major }}"
+      - "{{ .Env.ECR_REPO }}/{{ .ProjectName }}:{{ .Major }}.{{ .Minor }}"
+      - "{{ .Env.ECR_REPO }}/{{ .ProjectName }}:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
+    build_flag_templates:
+      - "--label=org.opencontainers.image.created={{ .Date }}"
+      - "--label=org.opencontainers.image.title={{ .ProjectName }}"
+      - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.vendor=CompuZest"
+    dockerfile: ./Dockerfile
+
+dist: "build/dist"
+
+release:
+  draft: false
+  header: |
+    ## {{ .Version }} ({{ .Date }})
+    See https://github.com/CompuZest/zlifecycle-il-operator for download links and documentation
+    ## Main downloads
+    - [Linux Intel 64 bit](https://github.com/CompuZest/zlifecycle-il-operator/releases/download/{{ .Tag }}/{{ .ProjectName }}_{{ .Version }}_linux_x86_64.zip)
+    - [MacOS Universal](https://github.com/CompuZest/zlifecycle-il-operator/releases/download/{{ .Tag }}/{{ .ProjectName }}_{{ .Version }}_macos_all.zip)
+    - [Windows Intel 64 bit](https://github.com/CompuZest/zlifecycle-il-operator/releases/download/{{ .Tag }}/{{ .ProjectName }}_{{ .Version }}_windows_x86_64.zip)
+    ## Docker images
+    - `docker pull {{ .Env.ECR_REPO }}/{{ .ProjectName }}:{{ .Major }}`
+    - `docker pull {{ .Env.ECR_REPO }}/{{ .ProjectName }}:{{ .Major }}.{{ .Minor }}`
+    - `docker pull {{ .Env.ECR_REPO }}/{{ .ProjectName }}:{{ .Major }}.{{ .Minor }}.{{ .Patch }}`
+
+snapshot:
+  name_template: "{{ .Tag }}"
+
+source:
+  enabled: true
+  name_template: "{{ .ProjectName }}_{{ .Version }}_source"
+  format: "zip"
+
+universal_binaries:
+  - id: "darwin"
+    replace: false
+    name_template: '{{ .ProjectName }}'
+
+builds:
+  - id: "darwin"
+    goos:
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    mod_timestamp: "{{ .CommitTimestamp }}"
+
+  - id: "linux"
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    mod_timestamp: "{{ .CommitTimestamp }}"
+
+  - id: "windows"
+    goos:
+      - windows
+    goarch:
+      - amd64
+    mod_timestamp: "{{ .CommitTimestamp }}"
+
+announce:
+  slack:
+    enabled: true
+    message_template: "*zLifecycle IL Operator* `{{ .Tag }}` has been released from the `{{ .Branch }}` branch at commit `{{ .ShortCommit }}` ({{ .CommitDate }})\nhttps://github.com/CompuZest/zlifecycle-il-operator/releases/tag/{{ .Tag }}\n\n{{ .ReleaseNotes }}"
+
