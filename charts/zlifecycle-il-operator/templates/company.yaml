@@ -2,7 +2,7 @@ apiVersion: stable.compuzest.com/v1
 kind: Company
 metadata:
   name: {{ .Values.company.config.name }}
-  namespace: {{ .Values.company.config.namespace }}
+  namespace: {{ .Values.company.config.name }}-config
 spec:
   companyName: {{ .Values.company.config.name }}
   configRepo:

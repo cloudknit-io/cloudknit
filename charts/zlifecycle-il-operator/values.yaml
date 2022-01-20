@@ -49,7 +49,6 @@ operator:
 company:
   config:
     name: "zCustomer"
-    namespace: "zlifecycle-system"
     gitOrganization: "zCustomer"
     teamFolder: "team"
     companyFolder: "company"

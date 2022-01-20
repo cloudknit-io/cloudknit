@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: zlifecycle-il-operator
+  namespace: {{ .Values.company.config.name }}-system
   labels:
     {{- include "core.labels" . | indent 4 }}
     control-plane: controller-manager
@@ -13,6 +14,7 @@ spec:
   template:
     metadata:
       labels:
+        {{- include "core.labels" . | indent 4 }}
         control-plane: controller-manager
     spec:
       containers:
@@ -48,7 +50,7 @@ spec:
             - name: COMPANY_NAME
               value: {{ .Values.company.config.name }}
             - name: COMPANY_NAMESPACE
-              value: {{ .Values.company.config.namespace }}
+              value: {{ .Values.company.config.name }}-config
             - name: IL_COMPANY_FOLDER
               value: {{ .Values.company.config.companyFolder }}
             - name: IL_TEAM_FOLDER
