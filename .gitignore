@@ -33,5 +33,4 @@ test-results/
 *.swp
 *.swo
 
-build/
 manager

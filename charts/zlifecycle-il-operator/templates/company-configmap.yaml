@@ -1,8 +1,0 @@
-{{- if .Values.companyConfigMap.enabled }}
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: company-config
-  namespace: zlifecycle-il-operator-system
-data: {{ toYaml .Values.companyConfigMap.data | nindent 2 }}
-{{- end }}

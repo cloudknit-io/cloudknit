@@ -28,7 +28,7 @@ func NewHTTPStateManager(ctx context.Context, log *logrus.Entry) *HTTPStateManag
 	return &HTTPStateManager{
 		ctx:        ctx,
 		log:        log,
-		host:       env.Config.StateManagerURL,
+		host:       env.Config.ZLifecycleStateManagerURL,
 		httpClient: common.GetHTTPClient(),
 	}
 }

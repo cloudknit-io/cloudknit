@@ -32,7 +32,6 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controllers/overlay"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	"github.com/google/go-cmp/cmp"
-	github2 "github.com/google/go-github/v32/github"
 	"go.uber.org/atomic"
 
 	perrors "github.com/pkg/errors"
@@ -44,7 +43,6 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controllers/terraformgenerator"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -134,8 +132,8 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	defer ilService.ZLILCleanupF()
 
 	// finalizer handling
-	if env.Config.DisableEnvironmentFinalizer != "true" {
-		finalizer := env.Config.EnvironmentFinalizer
+	if env.Config.KubernetesDisableEnvironmentFinalizer != "true" {
+		finalizer := env.Config.KubernetesEnvironmentFinalizerName
 		finalizerCompleted, err := r.handleFinalizer(apmCtx, environment, finalizer, argocdAPI, argoworkflowAPI)
 		if err != nil {
 			envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error handling finalizer"))
@@ -411,22 +409,12 @@ func (r *EnvironmentReconciler) deleteDanglingArgoWorkflows(e *stablev1.Environm
 
 func (r *EnvironmentReconciler) cleanupIlRepo(ctx context.Context, e *stablev1.Environment) error {
 	paths := extractPathsToRemove(e)
-	team := fmt.Sprintf("%s-team-environment", e.Spec.TeamName)
-	commitMessage := fmt.Sprintf("Cleaning il objects for %s team in %s environment", e.Spec.TeamName, e.Spec.EnvName)
+	_ = fmt.Sprintf("%s-team-environment", e.Spec.TeamName)
+	_ = fmt.Sprintf("Cleaning il objects for %s team in %s environment", e.Spec.TeamName, e.Spec.EnvName)
 	r.LogV2.WithField("objects", paths).Info("Cleaning up IL repo")
 
-	return deleteFromGitRepo(ctx, r.Log, team, paths, commitMessage)
-}
-
-func deleteFromGitRepo(ctx context.Context, log logr.Logger, team string, paths []string, commitMessage string) error {
-	owner := env.Config.ZlifecycleILRepoOwner
-	ilRepo := env.Config.ZLILRepoName
-	api := github.NewHTTPGitClient(ctx)
-	branch := env.Config.RepoBranch
-	now := time.Now()
-	commitAuthor := &github2.CommitAuthor{Date: &now, Name: &env.Config.GithubSvcAccntName, Email: &env.Config.GithubSvcAccntEmail}
-
-	return github.DeletePatternsFromRootTree(log, api, owner, ilRepo, branch, team, paths, commitAuthor, commitMessage)
+	// TODO: implement using delete from temp cloned il repo
+	return nil
 }
 
 // TODO: Should we remove objects in IL repo?

@@ -1,10 +1,10 @@
 apiVersion: stable.compuzest.com/v1
 kind: Company
 metadata:
-  name: {{ .Values.companyConfigMap.data.companyName }}
-  namespace: zlifecycle
+  name: {{ .Values.company.config.name }}
+  namespace: {{ .Values.company.config.name }}-config
 spec:
-  companyName: {{ .Values.companyConfigMap.data.companyName }}
+  companyName: {{ .Values.company.config.name }}
   configRepo:
-    source: {{ .Values.companyConfigMap.data.configRepo }}
+    source: {{ .Values.git.config.zlifecycleIlRepoUrl }}
     path: "."

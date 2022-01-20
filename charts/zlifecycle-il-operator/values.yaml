@@ -10,19 +10,6 @@ image:
 deployment:
   replicas: 1
 
-env:
-  ARGOCD_SERVER_URL: "argocd-server"
-  ARGOCD_WEBHOOK_URL: "https://xxx.zlifecycle.com/api/webhook"
-  GITHUB_ZLIFECYCLE_OWNER: zlifecycle-il
-  GITHUB_WEBHOOK_SECRET: "!!!CHANGEME!!!"
-  GITHUB_ORG: "!!!CHANGEME!!!"
-  ZLIFECYCLE_MASTER_SSH: zlifecycle-operator-ssh
-  ENABLE_NEW_RELIC: "false"
-  NEW_RELIC_API_KEY: ""
-  SLACK_WEBHOOK_URL: ""
-  TF_IL_REPO_URL: ""
-  TF_IL_REPO_NAME: ""
-
 resources:
   limits:
     cpu: 400m
@@ -31,15 +18,41 @@ resources:
     cpu: 200m
     memory: 250Mi
 
-companyConfigMap:
-  enabled: true
-  data:
-    companyName: "zCustomer"
-    adminEmail: "admin@compuzest.com"
-    teamsConfigPath: "teams"
-    configRepo: "git@github.com:zbank-tech/zcustomer-config.git"
-    configRepoName: "zcustomer-config"
-    ilRepo: "git@github.com:CompuZest/zcustomer-il.git"
-    ilRepoSourceOwner: "zlifecycle-il"
-    ilRepoName: "zcustomer-il"
-    helmChartsRepo: "git@github.com:CompuZest/helm-charts.git"
+argocd:
+  secretRef: argocd-creds
+  config:
+    webhookUrl: ""
+
+newrelic:
+  enabled: false
+  licenseKey: ""
+
+git:
+  secretRef: github-auth
+  config:
+    sshSecretName: zlifecycle-operator-ssh
+    helmChartsRepoUrl: "git@github.com:CompuZest/helm-charts.git"
+    terraformIlRepoUrl: ""
+    zlifecycleIlRepoUrl: ""
+    webhookSecret: "zS3cr37"
+
+operator:
+  finalizer:
+    environment:
+      disabled: false
+  webhooks:
+    disabled: false
+  watch:
+    resources: "company,team,environment"
+    namespace: "zlifecycle"
+
+company:
+  config:
+    name: "zCustomer"
+    gitOrganization: "zCustomer"
+    teamFolder: "team"
+    companyFolder: "company"
+    configWatcherFolder: "config-watcher"
+
+telemetry:
+  environment: dev

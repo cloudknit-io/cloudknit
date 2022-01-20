@@ -1,0 +1,41 @@
+name: test
+on:
+  workflow_call:
+  push:
+    tags:
+      - v*
+    branches-ignore:
+      - master
+      - main
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2"
+        with:
+          fetch-depth: 0
+      - name: "Golang"
+        uses: "actions/setup-go@v2"
+        with:
+          go-version: "1.17"
+      - name: "Cache"
+        uses: "actions/cache@v2"
+        with:
+          path: "./vendor"
+          key: "${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}"
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: "Modules download"
+        run: "go mod download"
+      - name: "Modules vendor"
+        run: "go mod vendor"
+      - name: "Test"
+        run: go test -json ./controllers/... > test.json
+      - name: "Annotate"
+        if: always()
+        uses: guyarb/golang-test-annotations@v0.5.0
+        with:
+          test-results: test.json

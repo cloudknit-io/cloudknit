@@ -34,8 +34,8 @@ func GenerateTerraform(
 	componentName := vars.EnvCompName
 
 	backendConfig := TerraformBackendConfig{
-		Region:        env.Config.DefaultSharedRegion,
-		Profile:       env.Config.DefaultSharedProfile,
+		Region:        env.Config.TerraformDefaultSharedAWSRegion,
+		Profile:       env.Config.TerraformDefaultSharedAWSProfile,
 		Bucket:        fmt.Sprintf("zlifecycle-tfstate-%s", env.Config.CompanyName),
 		DynamoDBTable: fmt.Sprintf("zlifecycle-tflock-%s", env.Config.CompanyName),
 		TeamName:      vars.TeamName,
@@ -44,7 +44,7 @@ func GenerateTerraform(
 	}
 
 	versionsConfig := TerraformVersionsConfig{
-		Version: env.Config.DefaultTerraformVersion,
+		Version: env.Config.TerraformDefaultVersion,
 	}
 
 	standardizedVariables, err := standardizeVariables(vars.EnvCompVariables)
@@ -67,8 +67,8 @@ func GenerateTerraform(
 	}
 
 	dataConfig := TerraformDataConfig{
-		Region:    env.Config.DefaultSharedRegion,
-		Profile:   env.Config.DefaultSharedProfile,
+		Region:    env.Config.TerraformDefaultSharedAWSRegion,
+		Profile:   env.Config.TerraformDefaultSharedAWSProfile,
 		Bucket:    fmt.Sprintf("zlifecycle-tfstate-%s", env.Config.CompanyName),
 		TeamName:  vars.TeamName,
 		EnvName:   vars.EnvName,
@@ -84,7 +84,7 @@ func GenerateTerraform(
 		}
 	}
 
-	region := env.Config.DefaultRegion
+	region := env.Config.TerraformDefaultAWSRegion
 	if vars.EnvCompAWSConfig != nil && vars.EnvCompAWSConfig.Region != "" {
 		region = vars.EnvCompAWSConfig.Region
 	}
@@ -95,9 +95,9 @@ func GenerateTerraform(
 	}
 
 	sharedProviderConfig := TerraformProviderConfig{
-		Region:  env.Config.DefaultSharedRegion,
-		Profile: env.Config.DefaultSharedProfile,
-		Alias:   env.Config.DefaultSharedAlias,
+		Region:  env.Config.TerraformDefaultSharedAWSRegion,
+		Profile: env.Config.TerraformDefaultSharedAWSProfile,
+		Alias:   env.Config.TerraformDefaultSharedAWSAlias,
 	}
 
 	secretsMeta := secrets.SecretMeta{

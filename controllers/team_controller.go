@@ -156,7 +156,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
 	}
 
-	if _, err := argocd.TryCreateProject(apmCtx, r.Log, team.Spec.TeamName, env.Config.GitHubOrg); err != nil {
+	if _, err := argocd.TryCreateProject(apmCtx, r.Log, team.Spec.TeamName, env.Config.GitHubCompanyOrganization); err != nil {
 		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error trying to create argocd project"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
 	}
@@ -167,8 +167,8 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	}
 
 	teamRepo := team.Spec.ConfigRepo.Source
-	operatorSSHSecret := env.Config.ZlifecycleMasterRepoSSHSecret
-	operatorNamespace := env.Config.ZlifecycleOperatorNamespace
+	operatorSSHSecret := env.Config.GitSSHSecretName
+	operatorNamespace := env.Config.KubernetesServiceNamespace
 
 	if err := repo.TryRegisterRepo(apmCtx, r.Client, r.Log, argocdAPI, teamRepo, operatorNamespace, operatorSSHSecret); err != nil {
 		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error registering argocd team repo"))
@@ -203,7 +203,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		r.LogV2.Info("No git changes to commit, no-op reconciliation.")
 	}
 
-	_, err = github.CreateRepoWebhook(r.Log, repoAPI, teamRepo, env.Config.ArgocdHookURL, env.Config.GitHubWebhookSecret)
+	_, err = github.CreateRepoWebhook(r.Log, repoAPI, teamRepo, env.Config.ArgocdWebhookURL, env.Config.GitHubWebhookSecret)
 	if err != nil {
 		r.LogV2.WithError(err).Error("error creating Team webhook")
 	}
@@ -236,7 +236,7 @@ func (r *TeamReconciler) initArgocdAdminRbac(ctx context.Context) error {
 	}
 	admin := "admin"
 	oldPolicyCsv := rbacCm.Data["policy.csv"]
-	oidcGroup := fmt.Sprintf("%s:%s", env.Config.GitHubOrg, admin)
+	oidcGroup := fmt.Sprintf("%s:%s", env.Config.GitHubCompanyOrganization, admin)
 	newPolicyCsv, err := argocd.GenerateAdminRbacConfig(r.Log, oldPolicyCsv, oidcGroup, admin)
 	if err != nil {
 		return err
@@ -256,7 +256,7 @@ func (r *TeamReconciler) updateArgocdRbac(ctx context.Context, t *stablev1.Team)
 	}
 	teamName := t.Spec.TeamName
 	oldPolicyCsv := rbacCm.Data["policy.csv"]
-	oidcGroup := fmt.Sprintf("%s:%s", env.Config.GitHubOrg, teamName)
+	oidcGroup := fmt.Sprintf("%s:%s", env.Config.GitHubCompanyOrganization, teamName)
 	newPolicyCsv, err := argocd.GenerateNewRbacConfig(r.Log, oldPolicyCsv, oidcGroup, teamName, t.Spec.Permissions)
 	if err != nil {
 		return err
