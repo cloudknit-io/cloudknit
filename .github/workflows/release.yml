@@ -40,7 +40,9 @@ jobs:
           key: "${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}"
           restore-keys: |
             ${{ runner.os }}-go-
-      - name: "Modules"
+      - name: "Modules download"
+        run: "go mod download"
+      - name: "Modules vendor"
         run: "go mod vendor"
       - name: "Release"
         uses: "goreleaser/goreleaser-action@v2"

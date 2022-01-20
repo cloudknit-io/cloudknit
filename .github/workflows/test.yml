@@ -24,12 +24,14 @@ jobs:
       - name: "Cache"
         uses: "actions/cache@v2"
         with:
-          path: "~/go/pkg/mod"
+          path: "./vendor"
           key: "${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}"
           restore-keys: |
             ${{ runner.os }}-go-
-      - name: "Modules"
+      - name: "Modules download"
         run: "go mod download"
+      - name: "Modules vendor"
+        run: "go mod vendor"
       - name: "Test"
         run: go test -json ./controllers/... > test.json
       - name: "Annotate"
