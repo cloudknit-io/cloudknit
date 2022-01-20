@@ -27,7 +27,7 @@ dockers:
       - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
       - "--label=org.opencontainers.image.version={{ .Version }}"
       - "--label=org.opencontainers.image.vendor=CompuZest"
-    dockerfile: ./Dockerfile
+    dockerfile: ./Dockerfile.goreleaser
 
 dist: "build/dist"
 
