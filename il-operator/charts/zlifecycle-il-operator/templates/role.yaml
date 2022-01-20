@@ -5,6 +5,7 @@ kind: ClusterRole
 metadata:
   creationTimestamp: null
   name: zlifecycle-il-operator-manager-role
+  namespace: {{ .Values.company.config.name }}-system
 rules:
 - apiGroups:
   - ""

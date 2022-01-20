@@ -2,6 +2,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: zlifecycle-il-operator-leader-election-rolebinding
+  namespace: {{ .Values.company.config.name }}-system
   labels:
     {{- include "core.labels" . | indent 4 }}
 roleRef:
@@ -11,4 +12,4 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: default
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ .Values.company.config.name }}-system

@@ -5,7 +5,7 @@ apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   name: selfsigned-issuer
-  namespace: zlifecycle-il-operator-system
+  namespace: {{ .Values.company.config.name }}-system
 spec:
   selfSigned: {}
 ---
@@ -13,12 +13,12 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: serving-cert
-  namespace: zlifecycle-il-operator-system
+  namespace: {{ .Values.company.config.name }}-system
 spec:
   # $(SERVICE_NAME) and $(SERVICE_NAMESPACE) will be substituted by kustomize
   dnsNames:
-    - webhook-service.zlifecycle-il-operator-system.svc
-    - webhook-service.zlifecycle-il-operator-system.svc.cluster.local
+    - webhook-service.{{ .Values.company.config.name }}-system.svc
+    - webhook-service.{{ .Values.company.config.name }}-system.svc.cluster.local
   issuerRef:
     kind: Issuer
     name: selfsigned-issuer

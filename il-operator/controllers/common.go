@@ -6,16 +6,15 @@ import (
 )
 
 var (
-	helmChartsRepo         = env.Config.HelmChartsRepo
-	operatorSSHSecret      = env.Config.ZlifecycleMasterRepoSSHSecret
-	operatorNamespace      = env.Config.ZlifecycleOperatorNamespace
-	zlILRepoURL            = env.Config.ZLILRepoURL
-	zlILRepoName           = env.Config.ZLILRepoName
-	ilRepoOwner            = env.Config.ZlifecycleILRepoOwner
-	githubSvcAccntName     = env.Config.GithubSvcAccntName
-	githubSvcAccntEmail    = env.Config.GithubSvcAccntEmail
+	helmChartsRepo         = env.Config.GitHelmChartsRepository
+	operatorSSHSecret      = env.Config.GitSSHSecretName
+	operatorNamespace      = env.Config.KubernetesServiceNamespace
+	zlILRepoURL            = env.Config.ILZLifecycleRepositoryURL
+	ilRepoOwner            = env.Config.GitILRepositoryOwner
+	githubSvcAccntName     = env.Config.GitServiceAccountName
+	githubSvcAccntEmail    = env.Config.GitServiceAccountEmail
 	gitHubWebhookSecret    = env.Config.GitHubWebhookSecret
-	argocdHookURL          = env.Config.ArgocdHookURL
+	argocdHookURL          = env.Config.ArgocdWebhookURL
 	argocdServerURL        = env.Config.ArgocdServerURL
 	argoWorkflowsNamespace = env.Config.ArgoWorkflowsWorkflowNamespace
 )

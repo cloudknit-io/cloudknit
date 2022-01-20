@@ -3,6 +3,7 @@ package common
 import (
 	"encoding/json"
 	y "gopkg.in/yaml.v2"
+	"strings"
 )
 
 func ToJSON(data interface{}) ([]byte, error) {
@@ -47,4 +48,9 @@ func ToYaml(in interface{}) (ymlstring string, e error) {
 	}
 
 	return string(out), nil
+}
+
+func ParseRepositoryName(url string) string {
+	repoURI := url[strings.LastIndex(url, "/")+1:]
+	return strings.TrimSuffix(repoURI, ".git")
 }

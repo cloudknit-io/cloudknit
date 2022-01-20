@@ -2,11 +2,10 @@ package git
 
 import (
 	"context"
-	"github.com/pkg/errors"
-	"os"
-
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	gogit "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/pkg/errors"
 )
 
 var (
@@ -37,7 +36,7 @@ type CommitInfo struct {
 }
 
 func NewGoGit(ctx context.Context) (*GoGit, error) {
-	t := os.Getenv("GITHUB_AUTH_TOKEN")
+	t := env.Config.GitToken
 	if t == "" {
 		return nil, errors.Wrap(ErrInvalidConfig, "missing github auth token")
 	}
