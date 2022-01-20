@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: zlifecycle-il-operator-controller-manager
+  name: zlifecycle-il-operator
   labels:
     {{- include "core.labels" . | indent 4 }}
     control-plane: controller-manager
@@ -13,40 +13,74 @@ spec:
   template:
     metadata:
       labels:
-        {{- include "core.labels" . | indent 8 }}
         control-plane: controller-manager
     spec:
       containers:
-      - name: manager
-        command:
-          - /manager
-        args:
-          - --enable-leader-election
-        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
-        ports:
-          - containerPort: 9443
-            name: webhook-server
-            protocol: TCP
-        volumeMounts:
-          - mountPath: /tmp/k8s-webhook-server/serving-certs
-            name: cert
-            readOnly: true
-        env:
-          - name: GITHUB_AUTH_TOKEN
-            valueFrom:
-              secretKeyRef:
-                name: github-auth-token
-                key: token
-          - name: ZLIFECYCLE_OPERATOR_NAMESPACE
-            value: {{ .Release.Namespace }}
-          {{- include "core.deployment.container-env" . | indent 10 }}
-        envFrom:
-          - configMapRef:
-              name: company-config
-          - secretRef:
-              name: argocd-creds
-        resources:
+        - name: manager
+          command:
+            - /manager
+          args:
+            - --enable-leader-election
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 9443
+              name: webhook-server
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /tmp/k8s-webhook-server/serving-certs
+              name: cert
+              readOnly: true
+          env:
+            - name: GIT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.git.secretRef }}
+                  key: token
+            - name: GIT_SSH_SECRET_NAME
+              value: {{ .Values.git.config.sshSecretName }}
+            - name: GIT_HELM_CHARTS_REPOSITORY
+              value: {{ .Values.git.config.helmChartsRepoUrl }}
+            - name: GITHUB_COMPANY_ORGANIZATION
+              value: {{ .Values.company.config.gitOrganization }}
+            - name: GITHUB_WEBHOOK_SECRET
+              value: {{ .Values.git.config.webhookSecret }}
+            - name: COMPANY_NAME
+              value: {{ .Values.company.config.name }}
+            - name: COMPANY_NAMESPACE
+              value: {{ .Values.company.config.namespace }}
+            - name: IL_COMPANY_FOLDER
+              value: {{ .Values.company.config.companyFolder }}
+            - name: IL_TEAM_FOLDER
+              value: {{ .Values.company.config.teamFolder }}
+            - name: IL_CONFIG_WATCHER_FOLDER
+              value: {{ .Values.company.config.configWatcherFolder }}
+            - name: IL_ZLIFECYCLE_REPOSITORY_URL
+              value: {{ .Values.git.config.zlifecycleIlRepoUrl }}
+            - name: IL_TERRAFORM_REPOSITORY_URL
+              value: {{ .Values.git.config.terraformIlRepoUrl }}
+            - name: ARGOCD_WEBHOOK_URL
+              value: {{ .Values.argocd.config.webhookUrl }}
+            - name: KUBERNETES_DISABLE_WEBHOOKS
+              value: {{ .Values.operator.webhooks.disabled | quote }}
+            - name: KUBERNETES_DISABLE_ENVIRONMENT_FINALIZER
+              value: {{ .Values.operator.finalizer.environment.disabled | quote }}
+            - name: KUBERNETES_SERVICE_NAMESPACE
+              value: {{ .Release.Namespace }}
+            - name: KUBERNETES_OPERATOR_WATCHED_NAMESPACE
+              value: {{ .Values.operator.watch.namespace }}
+            - name: KUBERNETES_OPERATOR_WATCHED_RESOURCES
+              value: {{ .Values.operator.watch.resources }}
+            - name: TELEMETRY_ENVIRONMENT
+              value: {{ .Values.telemetry.environment }}
+            - name: ENABLE_NEW_RELIC
+              value: {{ .Values.newrelic.enabled | quote }}
+            - name: NEW_RELIC_API_KEY
+              value: {{ .Values.newrelic.licenseKey }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.argocd.secretRef }}
+          resources:
           {{- toYaml .Values.resources | nindent 10 }}
       volumes:
         - name: cert

@@ -22,7 +22,7 @@ func NewHTTPGitClient(ctx context.Context) GitAPI {
 }
 
 func createGithubClient(ctx context.Context) *github.Client {
-	token := env.Config.GitHubAuthToken
+	token := env.Config.GitToken
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
 	tc := oauth2.NewClient(ctx, ts)
 	return github.NewClient(tc)

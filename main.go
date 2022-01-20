@@ -137,7 +137,7 @@ func main() {
 		setupLog.WithError(err).WithField("controller", "Environment").Panic("unable to create controller")
 	}
 
-	if env.Config.DisableWebhooks != "true" {
+	if env.Config.KubernetesDisableWebhooks != "true" {
 		setupLog.Info("Initializing webhook service")
 		if err = (&stablev1.Environment{}).SetupWebhookWithManager(mgr); err != nil {
 			setupLog.WithError(err).Panic("unable to create webhook", "webhook", "Environment")

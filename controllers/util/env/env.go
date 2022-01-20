@@ -1,134 +1,150 @@
 package env
 
 import (
+	"fmt"
 	"os"
 )
 
 type config struct {
-	App string
-
-	ZlifecycleILRepoOwner         string
-	ZlifecycleMasterRepoSSHSecret string
-	ZlifecycleOperatorNamespace   string
-	ZlifecycleOperatorRepo        string
-	CompanyName                   string
-	ZLILRepoName                  string
-	ZLILRepoURL                   string
-	TFILRepoName                  string
-	TFILRepoURL                   string
-	ILRepoSourceOwner             string
-
-	DefaultTerraformVersion string
-	DefaultRegion           string
-	DefaultSharedRegion     string
-	DefaultSharedProfile    string
-	DefaultSharedAlias      string
-
-	GithubSvcAccntName  string
-	GithubSvcAccntEmail string
-	GitHubAuthToken     string
-	GitHubWebhookSecret string
-	GitHubOrg           string
-	RepoBranch          string
-
-	DisableWebhooks   string
-	KubernetesCertDir string
-
+	App  string
 	Mode string
 
+	CompanyName      string
+	CompanyNamespace string
+
+	TelemetryEnvironment string
+	SlackWebhookURL      string
+	EnableErrorNotifier  string
+
+	ILZLifecycleRepositoryURL string
+	ILTerraformRepositoryURL  string
+	ILCompanyFolder           string
+	ILTeamFolder              string
+	ILConfigWatcherFolder     string
+
+	TerraformDefaultVersion          string
+	TerraformDefaultAWSRegion        string
+	TerraformDefaultSharedAWSRegion  string
+	TerraformDefaultSharedAWSProfile string
+	TerraformDefaultSharedAWSAlias   string
+
+	// git
+	GitHelmChartsRepository string
+	GitILRepositoryOwner    string
+	GitSSHSecretName        string
+	GitServiceAccountName   string
+	GitServiceAccountEmail  string
+	GitToken                string
+	GitRepositoryBranch     string
+
+	// github
+	GitHubWebhookSecret       string
+	GitHubCompanyOrganization string
+
+	// kubernetes
+	KubernetesDisableWebhooks             string
+	KubernetesCertDir                     string
+	KubernetesServiceNamespace            string
+	KubernetesDisableEnvironmentFinalizer string
+	KubernetesEnvironmentFinalizerName    string
+	KubernetesAPIURL                      string
+	KubernetesOperatorWatchedNamespace    string
+	KubernetesOperatorWatchedResources    string
+
+	// new relic
 	NewRelicAPIKey string
 	EnableNewRelic string
 
-	DisableEnvironmentFinalizer string
-	EnvironmentFinalizer        string
-
-	HelmChartsRepo string
-	K8sAPIURL      string
-
-	ArgocdServerURL string
-	ArgocdHookURL   string
-	ArgocdUsername  string
-	ArgocdPassword  string
-
-	KubernetesOperatorWatchedNamespace string
-	KubernetesOperatorWatchedResources string
-
+	ArgocdServerURL                string
+	ArgocdWebhookURL               string
+	ArgocdUsername                 string
+	ArgocdPassword                 string
 	ArgoWorkflowsServerURL         string
 	ArgoWorkflowsWorkflowNamespace string
 
-	StateManagerURL string
-
-	APIURL string
-
-	TelemetryEnvironment string
-
-	SlackWebhookURL string
-
-	EnableErrorNotifier string
+	ZLifecycleStateManagerURL string
+	ZLifecycleAPIURL          string
 }
 
 // Config exposes vars used throughout the operator.
 var Config = config{
-	App: "zlifecycle-il-operator",
-
-	ZlifecycleILRepoOwner:         getOr("GITHUB_ZLIFECYCLE_OWNER", "zlifecycle-il"),
-	ZlifecycleMasterRepoSSHSecret: getOr("ZLIFECYCLE_MASTER_SSH", "zlifecycle-operator-ssh"),
-	ZlifecycleOperatorNamespace:   getOr("ZLIFECYCLE_OPERATOR_NAMESPACE", "zlifecycle-il-operator-system"),
-	ZlifecycleOperatorRepo:        "zlifecycle-il-operator",
-
-	CompanyName:                        os.Getenv("companyName"),
-	KubernetesOperatorWatchedNamespace: getOr("KUBERNETES_OPERATOR_WATCHED_NAMESPACE", "zlifecycle"),
-	KubernetesOperatorWatchedResources: getOr("KUBERNETES_OPERATOR_WATCHED_RESOURCES", "company,team,environment"),
-	ZLILRepoName:                       os.Getenv("ilRepoName"),
-	ZLILRepoURL:                        os.Getenv("ilRepo"),
-	TFILRepoName:                       os.Getenv("TF_IL_REPO_NAME"),
-	TFILRepoURL:                        os.Getenv("TF_IL_REPO_URL"),
-	ILRepoSourceOwner:                  os.Getenv("ilRepoSourceOwner"),
-
-	DefaultTerraformVersion: getOr("TERRAFORM_DEFAULT_VERSION", "1.0.9"),
-	DefaultRegion:           getOr("TERRAFORM_DEFAULT_REGION", "us-east-1"),
-	DefaultSharedRegion:     getOr("TERRAFORM_DEFAULT_SHARED_REGION", "us-east-1"),
-	DefaultSharedProfile:    getOr("TERRAFORM_DEFAULT_SHARED_PROFILE", "compuzest-shared"),
-	DefaultSharedAlias:      getOr("TERRAFORM_DEFAULT_SHARED_PROFILE", "shared"),
-
-	DisableWebhooks:   getOr("DISABLE_WEBHOOKS", "false"),
-	KubernetesCertDir: os.Getenv("KUBERNETES_CERT_DIR"),
-
-	Mode: getOr("MODE", "cloud"),
-
-	NewRelicAPIKey: os.Getenv("NEW_RELIC_API_KEY"),
-	EnableNewRelic: getOr("ENABLE_NEW_RELIC", "false"),
-
-	GithubSvcAccntName:  "zLifecycle",
-	GithubSvcAccntEmail: "zLifecycle@compuzest.com",
-	GitHubAuthToken:     os.Getenv("GITHUB_AUTH_TOKEN"),
-	GitHubWebhookSecret: os.Getenv("GITHUB_WEBHOOK_SECRET"),
-	GitHubOrg:           os.Getenv("GITHUB_ORG"),
-	RepoBranch:          "main",
-
-	DisableEnvironmentFinalizer: getOr("DISABLE_ENVIRONMENT_FINALIZER", "false"),
-	EnvironmentFinalizer:        "zlifecycle.compuzest.com/github-finalizer",
-
-	HelmChartsRepo: os.Getenv("helmChartsRepo"),
-	K8sAPIURL:      "https://kubernetes.default.svc",
-
-	ArgocdServerURL: getOr("ARGOCD_URL", "http://argocd-server.argocd.svc.cluster.local"),
-	ArgocdHookURL:   os.Getenv("ARGOCD_WEBHOOK_URL"),
-	ArgocdUsername:  os.Getenv("ARGOCD_USERNAME"),
-	ArgocdPassword:  os.Getenv("ARGOCD_PASSWORD"),
-
-	ArgoWorkflowsServerURL:         getOr("ARGOWORKFLOWS_URL", "http://argo-workflow-server.argocd.svc.cluster.local:2746"),
-	ArgoWorkflowsWorkflowNamespace: getOr("ARGOWORKFLOWS_WORKFLOW_NAMESPACE", "argocd"),
-
-	StateManagerURL: getOr("STATE_MANAGER_URL", "http://zlifecycle-state-manager.zlifecycle-il-operator-system.svc.cluster.local:8080"),
-
-	APIURL: getOr("API_URL", "http://zlifecycle-api.zlifecycle-ui.svc.cluster.local"),
-
+	App:                  "zlifecycle-il-operator",
+	Mode:                 getOr("MODE", "cloud"),
 	TelemetryEnvironment: getOr("TELEMETRY_ENVIRONMENT", "dev"),
+	SlackWebhookURL:      os.Getenv("SLACK_WEBHOOK_URL"),
+	EnableErrorNotifier:  getOr("ENABLE_ERROR_NOTIFIER", "false"),
 
-	SlackWebhookURL: os.Getenv("SLACK_WEBHOOK_URL"),
+	// company/customer config
+	CompanyName:      os.Getenv("COMPANY_NAME"),
+	CompanyNamespace: companyNamespace(),
 
-	EnableErrorNotifier: getOr("ENABLE_ERROR_NOTIFIER", "false"),
+	// k8s
+	KubernetesDisableWebhooks:             getOr("KUBERNETES_DISABLE_WEBHOOKS", "false"),
+	KubernetesCertDir:                     os.Getenv("KUBERNETES_CERT_DIR"),
+	KubernetesServiceNamespace:            getOr("KUBERNETES_SERVICE_NAMESPACE", "zlifecycle-system"),
+	KubernetesDisableEnvironmentFinalizer: getOr("KUBERNETES_DISABLE_ENVIRONMENT_FINALIZER", "false"),
+	KubernetesEnvironmentFinalizerName:    "zlifecycle.compuzest.com/github-finalizer",
+	KubernetesAPIURL:                      "https://kubernetes.default.svc",
+	KubernetesOperatorWatchedNamespace:    getOr("KUBERNETES_OPERATOR_WATCHED_NAMESPACE", "zlifecycle-system"),
+	KubernetesOperatorWatchedResources:    getOr("KUBERNETES_OPERATOR_WATCHED_RESOURCES", "company,team,environment"),
+
+	// il
+	ILZLifecycleRepositoryURL: os.Getenv("IL_ZLIFECYCLE_REPOSITORY_URL"),
+	ILTerraformRepositoryURL:  os.Getenv("IL_TERRAFORM_REPOSITORY_URL"),
+	ILCompanyFolder:           getOr("IL_COMPANY_FOLDER", "company"),
+	ILTeamFolder:              getOr("IL_TEAM_FOLDER", "team"),
+	ILConfigWatcherFolder:     getOr("IL_CONFIG_WATCHER_FOLDER", "config-watcher"),
+
+	// terraform config
+	TerraformDefaultVersion:          getOr("TERRAFORM_DEFAULT_VERSION", "1.0.9"),
+	TerraformDefaultAWSRegion:        getOr("TERRAFORM_DEFAULT_REGION", "us-east-1"),
+	TerraformDefaultSharedAWSRegion:  getOr("TERRAFORM_DEFAULT_SHARED_REGION", "us-east-1"),
+	TerraformDefaultSharedAWSProfile: getOr("TERRAFORM_DEFAULT_SHARED_PROFILE", "compuzest-shared"),
+	TerraformDefaultSharedAWSAlias:   getOr("TERRAFORM_DEFAULT_SHARED_ALIAS", "shared"),
+
+	// new relic
+	EnableNewRelic: getOr("ENABLE_NEW_RELIC", "false"),
+	NewRelicAPIKey: os.Getenv("NEW_RELIC_API_KEY"),
+
+	// git
+	GitHelmChartsRepository: os.Getenv("GIT_HELM_CHARTS_REPOSITORY"),
+	GitILRepositoryOwner:    getOr("GIT_IL_REPOSITORY_OWNER", "zlifecycle-il"),
+	GitSSHSecretName:        getOr("GIT_SSH_SECRET_NAME", "zlifecycle-operator-ssh"),
+	GitServiceAccountName:   getOr("GIT_SERVICE_ACCOUNT_NAME", "zLifecycle"),
+	GitServiceAccountEmail:  getOr("GIT_SERVICE_ACCOUNT_EMAIL", "zLifecycle@compuzest.com"),
+	GitToken:                os.Getenv("GIT_TOKEN"),
+	GitRepositoryBranch:     getOr("GIT_REPOSITORY_BRANCH", "main"),
+
+	// github
+	GitHubWebhookSecret:       os.Getenv("GITHUB_WEBHOOK_SECRET"),
+	GitHubCompanyOrganization: os.Getenv("GITHUB_COMPANY_ORGANIZATION"),
+
+	// argocd
+	ArgocdServerURL:  getOr("ARGOCD_SERVER_URL", fmt.Sprintf("http://argocd-server.%s-system.svc.cluster.local", companyNamespace())),
+	ArgocdWebhookURL: os.Getenv("ARGOCD_WEBHOOK_URL"),
+	ArgocdUsername:   os.Getenv("ARGOCD_USERNAME"),
+	ArgocdPassword:   os.Getenv("ARGOCD_PASSWORD"),
+
+	// argo workflows
+	ArgoWorkflowsServerURL: getOr("ARGOWORKFLOWS_URL", fmt.Sprintf(
+		"http://argo-workflow-server.%s-system.svc.cluster.local:2746",
+		companyNamespace(),
+	)),
+	ArgoWorkflowsWorkflowNamespace: getOr("ARGOWORKFLOWS_WORKFLOW_NAMESPACE", fmt.Sprintf("%s-executor", companyNamespace())),
+
+	// zlifecycle
+	ZLifecycleStateManagerURL: getOr(
+		"ZLIFECYCLE_STATE_MANAGER_URL",
+		fmt.Sprintf("http://zlifecycle-state-manager.%s-system.svc.cluster.local:8080", companyNamespace()),
+	),
+	ZLifecycleAPIURL: getOr("ZLIFECYCLE_API_URL", fmt.Sprintf(
+		"http://zlifecycle-api.%s-system.svc.cluster.local",
+		companyNamespace(),
+	)),
+}
+
+func companyNamespace() string {
+	return getOr("COMPANY_NAMESPACE", "argocd")
 }
 
 func getOr(key string, defaultValue string) string {

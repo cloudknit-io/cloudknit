@@ -16,6 +16,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/apm"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	"github.com/sirupsen/logrus"
 	"sync"
@@ -140,6 +141,7 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{}, err
 	}
 
+	zlILRepoName := common.ParseRepositoryName(env.Config.ILZLifecycleRepositoryURL)
 	_, err = github.TryCreateRepository(r.Log, repoAPI, ilRepoOwner, zlILRepoName)
 	if err != nil {
 		return ctrl.Result{}, err

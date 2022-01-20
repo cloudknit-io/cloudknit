@@ -6,7 +6,7 @@ import (
 	"github.com/go-logr/logr"
 )
 
-// TerraformBackendConfig variables for creating tf backend
+// TerraformBackendConfig variables for creating tf backend.
 type TerraformBackendConfig struct {
 	Region        string
 	Key           string
@@ -18,12 +18,12 @@ type TerraformBackendConfig struct {
 	ComponentName string
 }
 
-// TerraformVersionsConfig variables for creating tf verions
+// TerraformVersionsConfig variables for creating tf versions.
 type TerraformVersionsConfig struct {
 	Version string
 }
 
-// TerraformModuleConfig variables for creating tf module
+// TerraformModuleConfig variables for creating tf module.
 type TerraformModuleConfig struct {
 	ComponentName string
 	Source        string
@@ -39,13 +39,13 @@ type Variable struct {
 	Value string
 }
 
-// TerraformOutputsConfig for creating tf module outputs
+// TerraformOutputsConfig for creating tf module outputs.
 type TerraformOutputsConfig struct {
 	ComponentName string
 	Outputs       []*stablev1.Output
 }
 
-// TerraformSecretsConfig for creating tf secrets
+// TerraformSecretsConfig for creating tf secrets.
 type TerraformSecretsConfig struct {
 	Secrets []Secret
 }
@@ -68,7 +68,7 @@ type Secret struct {
 	Name string
 }
 
-// TerraformDataConfig variables for creating tf backend
+// TerraformDataConfig variables for creating tf backend.
 type TerraformDataConfig struct {
 	Region    string
 	Bucket    string
@@ -78,11 +78,18 @@ type TerraformDataConfig struct {
 	DependsOn []string
 }
 
-// UtilTerraformGenerator package interface for generating terraform files
+// UtilTerraformGenerator package interface for generating terraform files.
 type UtilTerraformGenerator interface {
 	GenerateTerraform(tempILRepoDir string, fileUtil file.FSAPI, vars *TemplateVariables, environmentComponentDirectory string) error
 	GenerateSharedProvider(file file.FSAPI, environmentComponentDirectory string, componentName string) error
-	GenerateFromTemplate(vars interface{}, environmentComponentDirectory string, componentName string, fileUtil file.FSAPI, templateName string, filePath string) error
+	GenerateFromTemplate(
+		vars interface{},
+		environmentComponentDirectory string,
+		componentName string,
+		fileUtil file.FSAPI,
+		templateName string,
+		filePath string,
+	) error
 }
 
 type TerraformGenerator struct {
@@ -105,9 +112,4 @@ type TemplateVariables struct {
 	EnvCompOutputs       []*stablev1.Output
 	EnvCompDependsOn     []string
 	EnvCompAWSConfig     *stablev1.AWS
-}
-
-type terraformPath struct {
-	componentDirectory string
-	componentName      string
 }

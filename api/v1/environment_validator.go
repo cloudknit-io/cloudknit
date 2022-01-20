@@ -60,7 +60,7 @@ func ValidateEnvironmentCreate(e *Environment) error {
 
 	if env.Config.EnableErrorNotifier == "true" {
 		logger.Info("Sending UI error notification")
-		ntfr := uinotifier.NewUINotifier(logger, env.Config.APIURL)
+		ntfr := uinotifier.NewUINotifier(logger, env.Config.ZLifecycleAPIURL)
 		msg := fmt.Sprintf("error creating environment %s for team %s", e.Spec.EnvName, e.Spec.TeamName)
 		if err := notifyError(e, ntfr, msg, allErrs); err != nil {
 			logger.WithError(err).Error("error sending notification to UI")
@@ -103,7 +103,7 @@ func ValidateEnvironmentUpdate(e *Environment) error {
 
 	if env.Config.EnableErrorNotifier == "true" {
 		logger.Info("Sending UI error notification")
-		ntfr := uinotifier.NewUINotifier(logger, env.Config.APIURL)
+		ntfr := uinotifier.NewUINotifier(logger, env.Config.ZLifecycleAPIURL)
 		msg := fmt.Sprintf("error updating environment %s for team %s", e.Spec.EnvName, e.Spec.TeamName)
 		if err := notifyError(e, ntfr, msg, allErrs); err != nil {
 			logger.WithError(err).Error("error sending notification to UI")

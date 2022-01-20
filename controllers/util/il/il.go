@@ -29,12 +29,12 @@ func NewService(ctx context.Context) (*Service, error) {
 	}
 
 	// temp clone IL repo
-	tempZLILRepoDir, zlILCleanup, err := git.CloneTemp(zlILGitAPI, env.Config.ZLILRepoURL)
+	tempZLILRepoDir, zlILCleanup, err := git.CloneTemp(zlILGitAPI, env.Config.ILZLifecycleRepositoryURL)
 	if err != nil {
 		return nil, err
 	}
 
-	tempTFILRepoDir, tfILCleanup, err := git.CloneTemp(tfILGitAPI, env.Config.TFILRepoURL)
+	tempTFILRepoDir, tfILCleanup, err := git.CloneTemp(tfILGitAPI, env.Config.ILTerraformRepositoryURL)
 	if err != nil {
 		zlILCleanup()
 		return nil, err
@@ -57,9 +57,9 @@ type config struct {
 }
 
 var Config = config{
-	TeamDirectory:          "team",
-	CompanyDirectory:       "company",
-	ConfigWatcherDirectory: "config-watcher",
+	TeamDirectory:          env.Config.ILTeamFolder,
+	CompanyDirectory:       env.Config.ILCompanyFolder,
+	ConfigWatcherDirectory: env.Config.ILConfigWatcherFolder,
 }
 
 func ConfigWatcherDirectoryAbsolutePath(dir string) string {
