@@ -28,7 +28,7 @@ newrelic:
   licenseKey: ""
 
 git:
-  secretRef: github-auth
+  secretRef: github-auth-token
   config:
     sshSecretName: zlifecycle-operator-ssh
     helmChartsRepoUrl: "git@github.com:CompuZest/helm-charts.git"
