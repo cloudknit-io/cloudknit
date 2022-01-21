@@ -49,8 +49,6 @@ spec:
               value: {{ .Values.git.config.webhookSecret }}
             - name: COMPANY_NAME
               value: {{ .Values.company.config.name }}
-            - name: COMPANY_NAMESPACE
-              value: {{ .Values.company.config.name }}-config
             - name: IL_COMPANY_FOLDER
               value: {{ .Values.company.config.companyFolder }}
             - name: IL_TEAM_FOLDER
