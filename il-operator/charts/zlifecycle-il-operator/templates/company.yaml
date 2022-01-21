@@ -6,5 +6,5 @@ metadata:
 spec:
   companyName: {{ .Values.company.config.name }}
   configRepo:
-    source: {{ .Values.git.config.zlifecycleIlRepoUrl }}
+    source: {{ .Values.git.config.companyConfigRepoUrl }}
     path: "."
