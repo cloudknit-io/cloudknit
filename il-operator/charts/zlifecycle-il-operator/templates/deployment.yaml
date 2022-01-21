@@ -14,7 +14,7 @@ spec:
   template:
     metadata:
       labels:
-        {{- include "core.labels" . | indent 4 }}
+        {{- include "core.labels" . | indent 8 }}
         control-plane: controller-manager
     spec:
       containers:
