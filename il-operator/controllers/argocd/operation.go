@@ -203,7 +203,7 @@ func TryCreateProject(ctx context.Context, log logr.Logger, name string, group s
 
 func toProject(name string, group string) *appv1.AppProject {
 	typeMeta := metav1.TypeMeta{APIVersion: "argoproj.io/v1alpha1", Kind: "AppProject"}
-	objectMeta := metav1.ObjectMeta{Name: name, Namespace: "argocd"}
+	objectMeta := metav1.ObjectMeta{Name: name, Namespace: env.ArgoNamespace()}
 	spec := appv1.AppProjectSpec{
 		SourceRepos:              []string{"*"},
 		Destinations:             []appv1.ApplicationDestination{{Server: "https://kubernetes.default.svc", Namespace: "*"}},
