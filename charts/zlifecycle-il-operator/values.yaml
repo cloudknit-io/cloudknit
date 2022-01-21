@@ -34,6 +34,7 @@ git:
     helmChartsRepoUrl: "git@github.com:CompuZest/helm-charts.git"
     terraformIlRepoUrl: ""
     zlifecycleIlRepoUrl: ""
+    companyConfigRepoUrl: ""
     webhookSecret: "zS3cr37"
 
 operator:
