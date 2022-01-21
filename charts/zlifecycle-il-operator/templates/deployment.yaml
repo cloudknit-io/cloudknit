@@ -82,8 +82,7 @@ spec:
           envFrom:
             - secretRef:
                 name: {{ .Values.argocd.secretRef }}
-          resources:
-          {{- toYaml .Values.resources | nindent 10 }}
+          resources: {{- toYaml .Values.resources | nindent 12 }}
       volumes:
         - name: cert
           secret:
