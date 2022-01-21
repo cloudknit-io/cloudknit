@@ -76,7 +76,7 @@ var Config = config{
 
 	// company/customer config
 	CompanyName:      os.Getenv("COMPANY_NAME"),
-	CompanyNamespace: companyNamespace(),
+	CompanyNamespace: companyName(),
 
 	// k8s
 	KubernetesDisableWebhooks:             getOr("KUBERNETES_DISABLE_WEBHOOKS", "false"),
@@ -120,7 +120,7 @@ var Config = config{
 	GitHubCompanyOrganization: os.Getenv("GITHUB_COMPANY_ORGANIZATION"),
 
 	// argocd
-	ArgocdServerURL:  getOr("ARGOCD_SERVER_URL", fmt.Sprintf("http://argocd-server.%s-system.svc.cluster.local", companyNamespace())),
+	ArgocdServerURL:  getOr("ARGOCD_SERVER_URL", fmt.Sprintf("http://argocd-server.%s-system.svc.cluster.local", companyName())),
 	ArgocdWebhookURL: os.Getenv("ARGOCD_WEBHOOK_URL"),
 	ArgocdUsername:   os.Getenv("ARGOCD_USERNAME"),
 	ArgocdPassword:   os.Getenv("ARGOCD_PASSWORD"),
@@ -128,23 +128,23 @@ var Config = config{
 	// argo workflows
 	ArgoWorkflowsServerURL: getOr("ARGOWORKFLOWS_URL", fmt.Sprintf(
 		"http://argo-workflow-server.%s-system.svc.cluster.local:2746",
-		companyNamespace(),
+		companyName(),
 	)),
-	ArgoWorkflowsWorkflowNamespace: getOr("ARGOWORKFLOWS_WORKFLOW_NAMESPACE", fmt.Sprintf("%s-executor", companyNamespace())),
+	ArgoWorkflowsWorkflowNamespace: getOr("ARGOWORKFLOWS_WORKFLOW_NAMESPACE", fmt.Sprintf("%s-executor", companyName())),
 
 	// zlifecycle
 	ZLifecycleStateManagerURL: getOr(
 		"ZLIFECYCLE_STATE_MANAGER_URL",
-		fmt.Sprintf("http://zlifecycle-state-manager.%s-system.svc.cluster.local:8080", companyNamespace()),
+		fmt.Sprintf("http://zlifecycle-state-manager.%s-system.svc.cluster.local:8080", companyName()),
 	),
 	ZLifecycleAPIURL: getOr("ZLIFECYCLE_API_URL", fmt.Sprintf(
 		"http://zlifecycle-api.%s-system.svc.cluster.local",
-		companyNamespace(),
+		companyName(),
 	)),
 }
 
-func companyNamespace() string {
-	return getOr("COMPANY_NAMESPACE", "argocd")
+func companyName() string {
+	return getOr("COMPANY_NAME", "argocd")
 }
 
 func getOr(key string, defaultValue string) string {
