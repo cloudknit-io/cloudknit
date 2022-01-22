@@ -53,6 +53,8 @@ spec:
               value: {{ quote .Values.env.ENABLE_NEW_RELIC }}
             - name: NEW_RELIC_API_KEY
               value: {{ .Values.env.NEW_RELIC_API_KEY }}
+            - name: ENVIRONMENT
+              value: {{ .Values.env.ENVIRONMENT }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       volumes:
