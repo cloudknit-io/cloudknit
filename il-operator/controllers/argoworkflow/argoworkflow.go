@@ -352,6 +352,10 @@ func generateAuditTask(environment *stablev1.Environment, destroyAll bool, phase
 		Arguments: workflow.Arguments{
 			Parameters: []workflow.Parameter{
 				{
+					Name:  "customer_id",
+					Value: AnyStringPointer(env.Config.CompanyName),
+				},
+				{
 					Name:  "team_name",
 					Value: AnyStringPointer(environment.Spec.TeamName),
 				},
