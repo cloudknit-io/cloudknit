@@ -9,6 +9,8 @@ type config struct {
 	App  string
 	Mode string
 
+	Environment string
+
 	CompanyName      string
 	CompanyNamespace string
 
@@ -73,6 +75,8 @@ var Config = config{
 	TelemetryEnvironment: getOr("TELEMETRY_ENVIRONMENT", "dev"),
 	SlackWebhookURL:      os.Getenv("SLACK_WEBHOOK_URL"),
 	EnableErrorNotifier:  getOr("ENABLE_ERROR_NOTIFIER", "false"),
+
+	Environment: os.Getenv("ENVIRONMENT"),
 
 	// company/customer config
 	CompanyName:      os.Getenv("COMPANY_NAME"),

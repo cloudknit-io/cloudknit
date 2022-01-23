@@ -47,6 +47,8 @@ operator:
     resources: "company,team,environment"
     namespace: "zlifecycle"
 
+environment: "zEnvironment"
+
 company:
   config:
     name: "zCustomer"

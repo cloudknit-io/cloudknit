@@ -36,8 +36,8 @@ func GenerateTerraform(
 	backendConfig := TerraformBackendConfig{
 		Region:        env.Config.TerraformDefaultSharedAWSRegion,
 		Profile:       env.Config.TerraformDefaultSharedAWSProfile,
-		Bucket:        fmt.Sprintf("zlifecycle-tfstate-%s", env.Config.CompanyName),
-		DynamoDBTable: fmt.Sprintf("zlifecycle-tflock-%s", env.Config.CompanyName),
+		Bucket:        fmt.Sprintf("zlifecycle-%s-tfstate-%s", env.Config.Environment, env.Config.CompanyName),
+		DynamoDBTable: fmt.Sprintf("zlifecycle-%s-tflock-%s", env.Config.Environment, env.Config.CompanyName),
 		TeamName:      vars.TeamName,
 		EnvName:       vars.EnvName,
 		ComponentName: componentName,
@@ -69,7 +69,7 @@ func GenerateTerraform(
 	dataConfig := TerraformDataConfig{
 		Region:    env.Config.TerraformDefaultSharedAWSRegion,
 		Profile:   env.Config.TerraformDefaultSharedAWSProfile,
-		Bucket:    fmt.Sprintf("zlifecycle-tfstate-%s", env.Config.CompanyName),
+		Bucket:    fmt.Sprintf("zlifecycle-%s-tfstate-%s", env.Config.Environment, env.Config.CompanyName),
 		TeamName:  vars.TeamName,
 		EnvName:   vars.EnvName,
 		DependsOn: vars.EnvCompDependsOn,
