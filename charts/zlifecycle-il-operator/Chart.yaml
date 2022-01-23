@@ -2,4 +2,4 @@ apiVersion: v1
 description: A Helm chart for Kubernetes
 name: zlifecycle-il-operator
 type: application
-version: 0.14.0
+version: 0.15.0
