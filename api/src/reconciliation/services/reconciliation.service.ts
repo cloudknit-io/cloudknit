@@ -149,7 +149,7 @@ export class ReconciliationService {
     try {
       const prefix = `${team}/${environment}/${component}/${id}/`;
       const objects = await this.s3h.getObjects(
-        `zlifecycle-${environment}-${companyId}`,
+        `zlifecycle-${environment}-tfplan-${companyId}`,
         prefix
       );
       return objects.map((o) => ({
