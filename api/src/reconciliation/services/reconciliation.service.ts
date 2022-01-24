@@ -20,6 +20,7 @@ export class ReconciliationService {
     new Subject<Notification>();
   private readonly s3h = S3Handler.instance();
   private readonly notFound = "";
+  private readonly zlEnvironment = process.env.ZL_ENVIRONMENT || 'multitenant';
   constructor(
     @InjectRepository(EnvironmentReconcile)
     private readonly environmentReconcileRepository: Repository<EnvironmentReconcile>,
@@ -149,7 +150,7 @@ export class ReconciliationService {
     try {
       const prefix = `${team}/${environment}/${component}/${id}/`;
       const objects = await this.s3h.getObjects(
-        `zlifecycle-${environment}-tfplan-${companyId}`,
+        `zlifecycle-${this.zlEnvironment}-tfplan-${companyId}`,
         prefix
       );
       return objects.map((o) => ({
@@ -229,6 +230,17 @@ export class ReconciliationService {
       return logs;
     }
     return logs;
+  }
+
+  async putObject(customerId: string, path: string, contents: Express.Multer.File) {
+    return await this.s3h.copyToS3(`zlifecycle-${this.zlEnvironment}-tfplan-${customerId}`, path, contents);
+  }
+
+  async downloadObject(customerId: string, path: string) {
+    return await this.s3h.getObjectStream(
+      `zlifecycle-${this.zlEnvironment}-tfplan-${customerId}`,
+      path
+    );
   }
 
   async getStateFile(
