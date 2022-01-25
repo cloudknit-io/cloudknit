@@ -251,7 +251,7 @@ export class ReconciliationService {
   ) {
     const prefix = `${team}/${environment}/${component}/terraform.tfstate`;
     const resp = await this.s3h.getObject(
-      `zlifecycle-tfstate-${companyId}`,
+      `zlifecycle-${this.zlEnvironment}-tfstate-${companyId}`,
       prefix
     );
 
