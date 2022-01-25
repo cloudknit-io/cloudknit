@@ -39,7 +39,7 @@ export class ReconciliationController {
   @UseInterceptors(FileInterceptor('file'))
   async putObject(@UploadedFile() file: Express.Multer.File, @Body() body: any) {
     console.log(file, body);
-    return await this.reconciliationService.putObject(body.customerId, body.path, file);
+    return {"message" : await this.reconciliationService.putObject(body.customerId, body.path, file) };
   }
 
   @Post("component/downloadObject")

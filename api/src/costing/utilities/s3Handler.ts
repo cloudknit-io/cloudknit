@@ -107,7 +107,7 @@ export class S3Handler {
 
     const response = await uploadProcess.promise();
     console.log(response);
-    return response.Location;
+    return response.Key;
   }
 
 
