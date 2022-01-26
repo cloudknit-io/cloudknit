@@ -28,12 +28,7 @@ export class ReconciliationService {
     private readonly componentReconcileRepository: Repository<ComponentReconcile>,
     @InjectRepository(Notification)
     private readonly notificationRepository: Repository<Notification>
-  ) {
-    setInterval(() => {
-      this.notifyStream.next({});
-      this.notificationStream.next({});
-    }, 20000);
-  }
+  ) {}
 
   async saveOrUpdateEnvironment(runData: EvnironmentReconcileDto) {
     const reconcileId = Number.isNaN(parseInt(runData.reconcileId))

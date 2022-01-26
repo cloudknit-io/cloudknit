@@ -21,11 +21,7 @@ export class ComponentService {
     private resourceRepository: Repository<Resource>,
     @InjectRepository(CostComponent)
     private costComponentRepository: Repository<CostComponent>
-  ) {
-    setInterval(() => {
-      this.notifyStream.next({ data: {} });
-    }, 20000);
-  }
+  ) {}
 
   async getAll(): Promise<Component[]> {
     const components = await this.componentRepository.find({
