@@ -73,6 +73,7 @@ func main() {
 		LeaderElection:     enableLeaderElection,
 		LeaderElectionID:   "ce9255a7.compuzest.com",
 		CertDir:            env.Config.KubernetesCertDir,
+		Namespace:          env.Config.KubernetesOperatorWatchedNamespace,
 	})
 	if err != nil {
 		setupLog.WithError(err).Panic("unable to start manager")

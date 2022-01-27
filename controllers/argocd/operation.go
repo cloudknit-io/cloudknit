@@ -15,6 +15,7 @@ package argocd
 import (
 	"context"
 	"fmt"
+	"github.com/pkg/errors"
 	"strings"
 
 	appv1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
@@ -29,7 +30,7 @@ import (
 func GenerateNewRbacConfig(log logr.Logger, oldPolicyCsv string, oidcGroup string, role string, additionalRoles []string) (newPolicyCsv string, err error) {
 	rbacMap, err := parsePolicyCsv(oldPolicyCsv)
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, "error parsing policy CSV")
 	}
 	subject := fmt.Sprintf("role:%s", role)
 	var projects []string
@@ -50,7 +51,7 @@ func GenerateNewRbacConfig(log logr.Logger, oldPolicyCsv string, oidcGroup strin
 func GenerateAdminRbacConfig(log logr.Logger, oldPolicyCsv string, oidcGroup string, admin string) (newPolicyCsv string, err error) {
 	rbacMap, err := parsePolicyCsv(oldPolicyCsv)
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, "error parsing policy CSV")
 	}
 	adminSubject := fmt.Sprintf("role:%s", admin)
 	log.Info(
@@ -71,7 +72,7 @@ func DeleteApplication(log logr.Logger, api API, name string) error {
 
 	exists, err := api.DoesApplicationExist(name, bearer)
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "error checking does application [%s] exist", name)
 	}
 	if !exists {
 		log.Info(
@@ -89,15 +90,16 @@ func RegisterRepo(log logr.Logger, api API, repoOpts RepoOpts) (bool, error) {
 	repoName := strings.TrimSuffix(repoURI, ".git")
 	tokenResponse, err := api.GetAuthToken()
 	if err != nil {
-		return false, err
+		return false, errors.Wrap(err, "error getting auth token")
 	}
 	bearer := toBearerToken(tokenResponse.Token)
+
 	repositories, resp1, err1 := api.ListRepositories(bearer)
 	if err1 != nil {
-		return false, err1
+		return false, errors.Wrap(err1, "error listing repositories")
 	}
 	defer common.CloseBody(resp1.Body)
-	if isRepoRegistered(*repositories, repoOpts.RepoURL) {
+	if isRepoRegistered(repositories, repoOpts.RepoURL) {
 		log.Info("Repository already registered on ArgoCD",
 			"repoName", repoName,
 			"repoUrl", repoOpts.RepoURL,
@@ -110,11 +112,12 @@ func RegisterRepo(log logr.Logger, api API, repoOpts RepoOpts) (bool, error) {
 		"repoUrl", repoOpts.RepoURL,
 	)
 	createRepoBody := CreateRepoBody{Repo: repoOpts.RepoURL, Name: repoName, SSHPrivateKey: repoOpts.SSHPrivateKey}
-	resp2, err2 := api.CreateRepository(createRepoBody, bearer)
+	resp2, err2 := api.CreateRepository(&createRepoBody, bearer)
 	if err2 != nil {
-		return false, err2
+		return false, errors.Wrapf(err2, "error registering repository [%s]", repoName)
 	}
 	defer common.CloseBody(resp2.Body)
+
 	log.Info("Successfully registered repository on ArgoCD", "repo", repoOpts.RepoURL)
 	return true, nil
 }
@@ -124,22 +127,23 @@ func TryCreateBootstrapApps(ctx context.Context, log logr.Logger) error {
 
 	tokenResponse, err := api.GetAuthToken()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "error getting auth token")
 	}
 	bearer := toBearerToken(tokenResponse.Token)
 
-	exists, err := api.DoesApplicationExist("company-bootstrap", bearer)
+	companyBootstrapApp := "company-bootstrap"
+	exists, err := api.DoesApplicationExist(companyBootstrapApp, bearer)
 	if err != nil {
-		return fmt.Errorf("error while calling ArgoCD API to check if Application Exists: %w", err)
+		return errors.Wrapf(err, "error checking does application [%s] exists", companyBootstrapApp)
 	}
 	if exists {
 		log.Info("Application already registered on ArgoCD",
-			"application", "company-bootstrap",
+			"application", companyBootstrapApp,
 		)
 	} else {
 		companyResp, companyErr := api.CreateApplication(GenerateCompanyBootstrapApp(), bearer)
 		if companyErr != nil {
-			return fmt.Errorf("error while creating Company Bootstrap Application: %w", companyErr)
+			return errors.Wrap(companyErr, "error creating company bootstrap application")
 		}
 		defer common.CloseBody(companyResp.Body)
 		log.Info("Successfully registered application on ArgoCD",
@@ -147,18 +151,19 @@ func TryCreateBootstrapApps(ctx context.Context, log logr.Logger) error {
 		)
 	}
 
-	exists2, err2 := api.DoesApplicationExist("config-watcher-bootstrap", bearer)
+	configWatcherBootstrapApp := "config-watcher-bootstrap"
+	exists2, err2 := api.DoesApplicationExist(configWatcherBootstrapApp, bearer)
 	if err2 != nil {
-		return err2
+		return errors.Wrapf(err2, "error checking does application [%s] exist", configWatcherBootstrapApp)
 	}
 	if exists2 {
 		log.Info("Application already registered on ArgoCD",
-			"application", "config-watcher-bootstrap",
+			"application", configWatcherBootstrapApp,
 		)
 	} else {
 		companyResp2, companyErr2 := api.CreateApplication(GenerateConfigWatcherBootstrapApp(), bearer)
 		if companyErr2 != nil {
-			return fmt.Errorf("error while creating Config Watcher Bootstrap Application: %w", companyErr2)
+			return errors.Wrap(companyErr2, "error creating config watcher bootstrap app")
 		}
 		defer common.CloseBody(companyResp2.Body)
 		log.Info("Successfully registered application on ArgoCD",
@@ -169,19 +174,39 @@ func TryCreateBootstrapApps(ctx context.Context, log logr.Logger) error {
 	return nil
 }
 
+func UpdateDefaultClusterNamespaces(log logr.Logger, api API, namespaces []string) error {
+	tokenResponse, err := api.GetAuthToken()
+	if err != nil {
+		return errors.Wrap(err, "error getting auth token")
+	}
+	bearer := toBearerToken(tokenResponse.Token)
+
+	defaultClusterURL := "https://kubernetes.default.svc"
+	body := make(UpdateClusterBody, 1)
+	body["namespaces"] = namespaces
+	log.Info("Updating default cluster namespaces", "namespaces", namespaces)
+	resp, err := api.UpdateCluster(defaultClusterURL, &body, []string{"namespaces"}, bearer)
+	if err != nil {
+		return errors.Wrap(err, "error updating default cluster")
+	}
+	defer common.CloseBody(resp.Body)
+
+	return nil
+}
+
 func TryCreateProject(ctx context.Context, log logr.Logger, name string, group string) (exists bool, err error) {
 	api := NewHTTPClient(ctx, log, env.Config.ArgocdServerURL)
 
 	tokenResponse, err := api.GetAuthToken()
 	if err != nil {
-		return false, err
+		return false, errors.Wrap(err, "error getting auth token")
 	}
 	bearer := toBearerToken(tokenResponse.Token)
 
 	log.Info("Checking does AppProject already exist", "name", name)
-	exists, resp1, err := api.DoesProjectExist(name, bearer)
-	if err != nil {
-		return false, err
+	exists, resp1, err1 := api.DoesProjectExist(name, bearer)
+	if err1 != nil {
+		return false, errors.Wrapf(err1, "error checking does argocd project [%s] exists", name)
 	}
 	defer common.CloseBody(resp1.Body)
 
@@ -191,10 +216,10 @@ func TryCreateProject(ctx context.Context, log logr.Logger, name string, group s
 	}
 
 	body := CreateProjectBody{Project: toProject(name, group)}
-	log.Info("Checking does AppProject does not exist, creating new one", "name", name)
-	resp2, err := api.CreateProject(body, bearer)
-	if err != nil {
-		return false, err
+	log.Info("AppProject does not exist, creating new one", "name", name)
+	resp2, err2 := api.CreateProject(&body, bearer)
+	if err2 != nil {
+		return false, errors.Wrap(err2, "error creating argocd project")
 	}
 	defer common.CloseBody(resp2.Body)
 

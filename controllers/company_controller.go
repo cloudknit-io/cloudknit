@@ -18,6 +18,7 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controllers/apm"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
+	perrors "github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"sync"
 	"time"
@@ -191,9 +192,13 @@ func (r *CompanyReconciler) initCompany(ctx context.Context) error {
 		r.LogV2.WithError(err).WithField("repo", zlILRepoURL).Error("error creating Company IL webhook")
 	}
 
-	r.LogV2.Info("Registering helm chart repo")
 	argocdAPI := argocd.NewHTTPClient(ctx, r.Log, argocdServerURL)
+	r.LogV2.Info("Updating default argocd cluster namespaces")
+	if err := argocd.UpdateDefaultClusterNamespaces(r.Log, argocdAPI, []string{env.Config.KubernetesOperatorWatchedNamespace}); err != nil {
+		return perrors.Wrap(err, "error updating default argocd cluster namespaces")
+	}
 
+	r.LogV2.Info("Registering helm chart repo")
 	return repo.TryRegisterRepo(ctx, r.Client, r.Log, argocdAPI, helmChartsRepo, operatorNamespace, operatorSSHSecret)
 }
 
