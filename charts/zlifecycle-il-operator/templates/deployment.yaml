@@ -64,7 +64,7 @@ spec:
             - name: ARGOCD_WEBHOOK_URL
               value: {{ .Values.argocd.config.webhookUrl }}
             - name: ARGOCD_SERVER_URL
-              value: {{ .Values.argocd.config.webhookUrl }}
+              value: {{ .Values.argocd.config.serverUrl }}
             - name: KUBERNETES_DISABLE_WEBHOOKS
               value: {{ .Values.operator.webhooks.disabled | quote }}
             - name: KUBERNETES_DISABLE_ENVIRONMENT_FINALIZER
