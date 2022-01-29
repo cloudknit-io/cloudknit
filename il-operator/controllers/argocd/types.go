@@ -26,12 +26,13 @@ import (
 type API interface {
 	GetAuthToken() (*GetTokenResponse, error)
 	ListRepositories(bearerToken string) (*RepositoryList, *http.Response, error)
-	CreateRepository(body CreateRepoBody, bearerToken string) (*http.Response, error)
+	CreateRepository(body *CreateRepoBody, bearerToken string) (*http.Response, error)
 	CreateApplication(application *appv1.Application, bearerToken string) (*http.Response, error)
 	DeleteApplication(name string, bearerToken string) error
 	DoesApplicationExist(name string, bearerToken string) (exists bool, err error)
-	CreateProject(project CreateProjectBody, bearerToken string) (*http.Response, error)
+	CreateProject(project *CreateProjectBody, bearerToken string) (*http.Response, error)
 	DoesProjectExist(name string, bearerToken string) (exists bool, response *http.Response, err error)
+	UpdateCluster(clusterURL string, body *UpdateClusterBody, updatedFields []string, bearerToken string) (*http.Response, error)
 }
 
 type HTTPAPI struct {
@@ -77,6 +78,8 @@ type Repository struct {
 	Repo string `json:"repo"`
 	Name string `json:"name"`
 }
+
+type UpdateClusterBody map[string]interface{}
 
 /****************************/
 /*           RBAC           */

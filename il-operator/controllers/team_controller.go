@@ -228,8 +228,9 @@ func (r *TeamReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 func (r *TeamReconciler) initArgocdAdminRbac(ctx context.Context) error {
 	rbacCm := v1.ConfigMap{}
-	if err := r.Client.Get(ctx, types.NamespacedName{Name: "argocd-rbac-cm", Namespace: env.ArgoNamespace()}, &rbacCm); err != nil {
-		return err
+	nn := types.NamespacedName{Name: env.Config.ArgocdRBACConfigMap, Namespace: env.ArgocdNamespace()}
+	if err := r.Client.Get(ctx, nn, &rbacCm); err != nil {
+		return perrors.Wrap(err, "error getting argocd rbacm configmap from k8s")
 	}
 	if rbacCm.Data == nil {
 		rbacCm.Data = make(map[string]string)
@@ -248,7 +249,7 @@ func (r *TeamReconciler) initArgocdAdminRbac(ctx context.Context) error {
 
 func (r *TeamReconciler) updateArgocdRbac(ctx context.Context, t *stablev1.Team) error {
 	rbacCm := v1.ConfigMap{}
-	if err := r.Client.Get(ctx, types.NamespacedName{Name: "argocd-rbac-cm", Namespace: env.ArgoNamespace()}, &rbacCm); err != nil {
+	if err := r.Client.Get(ctx, types.NamespacedName{Name: env.Config.ArgocdRBACConfigMap, Namespace: env.ArgocdNamespace()}, &rbacCm); err != nil {
 		return err
 	}
 	if rbacCm.Data == nil {

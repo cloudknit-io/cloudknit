@@ -57,10 +57,14 @@ type config struct {
 	NewRelicAPIKey string
 	EnableNewRelic string
 
-	ArgocdServerURL                string
-	ArgocdWebhookURL               string
-	ArgocdUsername                 string
-	ArgocdPassword                 string
+	// argocd
+	ArgocdServerURL     string
+	ArgocdWebhookURL    string
+	ArgocdUsername      string
+	ArgocdPassword      string
+	ArgocdRBACConfigMap string
+
+	// argo workflows
 	ArgoWorkflowsServerURL         string
 	ArgoWorkflowsWorkflowNamespace string
 
@@ -124,15 +128,16 @@ var Config = config{
 	GitHubCompanyOrganization: os.Getenv("GITHUB_COMPANY_ORGANIZATION"),
 
 	// argocd
-	ArgocdServerURL:  getOr("ARGOCD_SERVER_URL", fmt.Sprintf("http://argocd-server.%s.svc.cluster.local", ArgoNamespace())),
-	ArgocdWebhookURL: os.Getenv("ARGOCD_WEBHOOK_URL"),
-	ArgocdUsername:   os.Getenv("ARGOCD_USERNAME"),
-	ArgocdPassword:   os.Getenv("ARGOCD_PASSWORD"),
+	ArgocdServerURL:     getOr("ARGOCD_SERVER_URL", fmt.Sprintf("http://argocd-%s-server.%s.svc.cluster.local", CompanyName(), ArgocdNamespace())),
+	ArgocdWebhookURL:    os.Getenv("ARGOCD_WEBHOOK_URL"),
+	ArgocdUsername:      os.Getenv("ARGOCD_USERNAME"),
+	ArgocdPassword:      os.Getenv("ARGOCD_PASSWORD"),
+	ArgocdRBACConfigMap: getOr("ARGOCD_RBAC_CONFIG_MAP", "argocd-rbac-cm"),
 
 	// argo workflows
 	ArgoWorkflowsServerURL: getOr("ARGOWORKFLOWS_URL", fmt.Sprintf(
 		"http://argo-workflow-server.%s.svc.cluster.local:2746",
-		ArgoNamespace(),
+		ArgoWorkflowsNamespace(),
 	)),
 	ArgoWorkflowsWorkflowNamespace: getOr("ARGOWORKFLOWS_WORKFLOW_NAMESPACE", fmt.Sprintf("%s", WorkflowsNamespace())),
 
@@ -145,6 +150,10 @@ var Config = config{
 		"http://zlifecycle-api.%s.svc.cluster.local",
 		APINamespace(),
 	)),
+}
+
+func CompanyName() string {
+	return os.Getenv("COMPANY_NAME")
 }
 
 func APINamespace() string {
@@ -163,12 +172,36 @@ func StateManagerNamespace() string {
 	return "zlifecycle-il-operator-system"
 }
 
-func ArgoNamespace() string {
+func ArgocdNamespace() string {
 	val, exists := os.LookupEnv("COMPANY_NAME")
 	if exists {
 		return fmt.Sprintf("%s-system", val)
 	}
 	return "argocd"
+}
+
+func ArgoWorkflowsNamespace() string {
+	val, exists := os.LookupEnv("COMPANY_NAME")
+	if exists {
+		return fmt.Sprintf("%s-executor", val)
+	}
+	return "argocd"
+}
+
+func SystemNamespace() string {
+	val, exists := os.LookupEnv("COMPANY_NAME")
+	if exists {
+		return fmt.Sprintf("%s-system", val)
+	}
+	return "zlifecycle-il-operator"
+}
+
+func ConfigNamespace() string {
+	val, exists := os.LookupEnv("COMPANY_NAME")
+	if exists {
+		return fmt.Sprintf("%s-config", val)
+	}
+	return "zlifecycle"
 }
 
 func WorkflowsNamespace() string {

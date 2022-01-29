@@ -52,7 +52,7 @@ func (mr *MockAPIMockRecorder) CreateApplication(arg0, arg1 interface{}) *gomock
 }
 
 // CreateProject mocks base method.
-func (m *MockAPI) CreateProject(arg0 argocd.CreateProjectBody, arg1 string) (*http.Response, error) {
+func (m *MockAPI) CreateProject(arg0 *argocd.CreateProjectBody, arg1 string) (*http.Response, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateProject", arg0, arg1)
 	ret0, _ := ret[0].(*http.Response)
@@ -67,7 +67,7 @@ func (mr *MockAPIMockRecorder) CreateProject(arg0, arg1 interface{}) *gomock.Cal
 }
 
 // CreateRepository mocks base method.
-func (m *MockAPI) CreateRepository(arg0 argocd.CreateRepoBody, arg1 string) (*http.Response, error) {
+func (m *MockAPI) CreateRepository(arg0 *argocd.CreateRepoBody, arg1 string) (*http.Response, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateRepository", arg0, arg1)
 	ret0, _ := ret[0].(*http.Response)
@@ -155,4 +155,19 @@ func (m *MockAPI) ListRepositories(arg0 string) (*argocd.RepositoryList, *http.R
 func (mr *MockAPIMockRecorder) ListRepositories(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListRepositories", reflect.TypeOf((*MockAPI)(nil).ListRepositories), arg0)
+}
+
+// UpdateCluster mocks base method.
+func (m *MockAPI) UpdateCluster(arg0 string, arg1 *argocd.UpdateClusterBody, arg2 []string, arg3 string) (*http.Response, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateCluster", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(*http.Response)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateCluster indicates an expected call of UpdateCluster.
+func (mr *MockAPIMockRecorder) UpdateCluster(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCluster", reflect.TypeOf((*MockAPI)(nil).UpdateCluster), arg0, arg1, arg2, arg3)
 }

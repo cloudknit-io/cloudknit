@@ -2,11 +2,10 @@ package repo
 
 import (
 	"context"
-	"errors"
-	"fmt"
+	"github.com/go-logr/logr"
+	perrors "github.com/pkg/errors"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
-	"github.com/go-logr/logr"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	kClient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -19,7 +18,7 @@ func TryRegisterRepo(ctx context.Context, c kClient.Client, log logr.Logger, api
 		types.NamespacedName{Namespace: namespace, Name: repoSecret}
 	if err := c.Get(ctx, secretNamespacedName, secret); err != nil {
 		log.Info(
-			"Secret does not exist in namespace\n",
+			"Secret does not exist",
 			"secret", repoSecret,
 			"namespace", namespace,
 		)
@@ -29,17 +28,13 @@ func TryRegisterRepo(ctx context.Context, c kClient.Client, log logr.Logger, api
 	sshPrivateKeyField := "sshPrivateKey"
 	sshPrivateKey := string(secret.Data[sshPrivateKeyField])
 	if sshPrivateKey == "" {
-		errMsg := fmt.Sprintf("Secret is missing %s data field!", sshPrivateKeyField)
-		err := errors.New(errMsg)
-		log.Error(err, errMsg)
-		return err
+		return perrors.Errorf(`secret %s does not have field "sshPrivateKey"`, repoSecret)
 	}
 
 	repoOpts := argocd.RepoOpts{
 		RepoURL:       repoURL,
 		SSHPrivateKey: sshPrivateKey,
 	}
-
 	if _, err := argocd.RegisterRepo(log, api, repoOpts); err != nil {
 		return err
 	}
