@@ -123,6 +123,9 @@ func ValidateEnvironmentUpdate(e *Environment) error {
 func validateEnvironmentCommon(e *Environment, isCreate bool) field.ErrorList {
 	var allErrs field.ErrorList
 
+	if err := validateEnvironmentNamespace(e); err != nil {
+		allErrs = append(allErrs, err)
+	}
 	if err := checkEnvironmentFields(e, isCreate); err != nil {
 		allErrs = append(allErrs, err...)
 	}
@@ -135,6 +138,16 @@ func validateEnvironmentCommon(e *Environment, isCreate bool) field.ErrorList {
 	}
 
 	return allErrs
+}
+
+func validateEnvironmentNamespace(e *Environment) *field.Error {
+	ns := env.Config.KubernetesOperatorWatchedNamespace
+	if ns != "" && e.Namespace != env.Config.KubernetesOperatorWatchedNamespace {
+		fld := field.NewPath("meta").Child("namespace")
+		return field.Forbidden(fld, fmt.Sprintf("namespace [%s] is forbidden when operator is configured for namespace [%s]", e.Namespace, ns))
+	}
+
+	return nil
 }
 
 func validateEnvironmentStatus(e *Environment) field.ErrorList {

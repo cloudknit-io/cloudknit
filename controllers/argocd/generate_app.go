@@ -30,7 +30,7 @@ func GenerateCompanyApp(company *stablev1.Company) *appv1.Application {
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      company.Spec.CompanyName,
-			Namespace: env.ArgoNamespace(),
+			Namespace: env.ArgocdNamespace(),
 			Labels: map[string]string{
 				"zlifecycle.com/model": "company",
 			},
@@ -73,7 +73,7 @@ func GenerateTeamApp(team *stablev1.Team) *appv1.Application {
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      team.Spec.TeamName,
-			Namespace: env.ArgoNamespace(),
+			Namespace: env.ArgocdNamespace(),
 			Labels: map[string]string{
 				"zlifecycle.com/model": "team",
 				"type":                 "project",
@@ -117,7 +117,7 @@ func GenerateEnvironmentApp(environment *stablev1.Environment) *appv1.Applicatio
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      environment.Spec.TeamName + "-" + environment.Spec.EnvName,
-			Namespace: env.ArgoNamespace(),
+			Namespace: env.ArgocdNamespace(),
 			Labels: map[string]string{
 				"zlifecycle.com/model": "environment",
 				"type":                 "environment",
@@ -181,7 +181,7 @@ func GenerateEnvironmentComponentApps(environment *stablev1.Environment, environ
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      environment.Spec.TeamName + "-" + environment.Spec.EnvName + "-" + environmentComponent.Name,
-			Namespace: env.ArgoNamespace(),
+			Namespace: env.ArgocdNamespace(),
 			Labels:    labels,
 			Finalizers: []string{
 				"resources-finalizer.argocd.argoproj.io",
@@ -253,7 +253,7 @@ func GenerateTeamConfigWatcherApp(team *stablev1.Team) *appv1.Application {
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      team.Spec.TeamName + "-team-watcher",
-			Namespace: env.ArgoNamespace(),
+			Namespace: env.ArgocdNamespace(),
 			Labels: map[string]string{
 				"zlifecycle.com/model":                   "config-watcher",
 				"zlifecycle.com/watched-custom-resource": "team",
@@ -301,7 +301,7 @@ func GenerateCompanyConfigWatcherApp(customerName string, companyConfigRepo stri
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      customerName + "-watcher",
-			Namespace: env.ArgoNamespace(),
+			Namespace: env.ArgocdNamespace(),
 			Labels: map[string]string{
 				"zlifecycle.com/model":                   "config-watcher",
 				"zlifecycle.com/watched-custom-resource": "company",
@@ -349,7 +349,7 @@ func GenerateCompanyBootstrapApp() *appv1.Application {
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "company-bootstrap",
-			Namespace: env.ArgoNamespace(),
+			Namespace: env.ArgocdNamespace(),
 			Labels: map[string]string{
 				"zlifecycle.com/model":                   "bootstrap",
 				"zlifecycle.com/watched-custom-resource": "company",
@@ -383,7 +383,7 @@ func GenerateConfigWatcherBootstrapApp() *appv1.Application {
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "config-watcher-bootstrap",
-			Namespace: env.ArgoNamespace(),
+			Namespace: env.ArgocdNamespace(),
 			Labels: map[string]string{
 				"zlifecycle.com/model":                   "bootstrap",
 				"zlifecycle.com/watched-custom-resource": "config-watcher",

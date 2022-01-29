@@ -17,7 +17,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/pkg/errors"
 	"net/http"
+	url2 "net/url"
 
 	appv1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
@@ -37,36 +39,36 @@ func (api *HTTPAPI) GetAuthToken() (*GetTokenResponse, error) {
 	body := GetTokenBody{Username: creds.Username, Password: creds.Password}
 	jsonBody, err := common.ToJSON(body)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "error marshalling body to JSON")
 	}
 
-	getTokenURL := fmt.Sprintf("%s/api/v1/session", api.serverURL)
-	req, err := http.NewRequestWithContext(api.ctx, "POST", getTokenURL, bytes.NewBuffer(jsonBody))
+	url := fmt.Sprintf("%s/api/v1/session", api.serverURL)
+	req, err := http.NewRequestWithContext(api.ctx, "POST", url, bytes.NewBuffer(jsonBody))
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "error creating POST request")
 	}
 
 	client := common.GetHTTPClient()
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to send POST request to %s: %w", getTokenURL, err)
+		return nil, errors.Wrapf(err, "error sending POST request to %s", url)
 	}
 	defer common.CloseBody(resp.Body)
 
 	respBody, err := common.ReadBody(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "error reading response body")
 	}
 
 	t := new(GetTokenResponse)
 	if err := common.FromJSON(t, respBody); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "error unmarshalling response body")
 	}
 
 	return t, nil
 }
 
-func isRepoRegistered(repos RepositoryList, repoURL string) bool {
+func isRepoRegistered(repos *RepositoryList, repoURL string) bool {
 	for _, r := range repos.Items {
 		if r.Repo == repoURL {
 			return true
@@ -76,10 +78,10 @@ func isRepoRegistered(repos RepositoryList, repoURL string) bool {
 }
 
 func (api *HTTPAPI) ListRepositories(bearerToken string) (*RepositoryList, *http.Response, error) {
-	getRepoURL := fmt.Sprintf("%s/api/v1/repositories", api.serverURL)
-	req, err := http.NewRequestWithContext(api.ctx, "GET", getRepoURL, nil)
+	url := fmt.Sprintf("%s/api/v1/repositories", api.serverURL)
+	req, err := http.NewRequestWithContext(api.ctx, "GET", url, nil)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to create GET request: %w", err)
+		return nil, nil, errors.Wrap(err, "error creating GET request")
 	}
 
 	req.Header.Add("Authorization", bearerToken)
@@ -87,34 +89,34 @@ func (api *HTTPAPI) ListRepositories(bearerToken string) (*RepositoryList, *http
 	client := common.GetHTTPClient()
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to send GET request to /api/v1/repositories: %w", err)
+		return nil, nil, errors.Wrapf(err, "error sending GET request to %s", url)
 	}
 
 	if resp.StatusCode != 200 {
 		common.CloseBody(resp.Body)
-		return nil, nil, fmt.Errorf("list repositories returned a non-OK response: %d", resp.StatusCode)
+		return nil, nil, errors.Errorf("list repositories returned a non-OK response: %d", resp.StatusCode)
 	}
 
 	repos := new(RepositoryList)
 	err = json.NewDecoder(resp.Body).Decode(repos)
 	if err != nil {
 		common.CloseBody(resp.Body)
-		return nil, nil, err
+		return nil, nil, errors.Wrap(err, "error unmarshalling response body")
 	}
 
 	return repos, resp, nil
 }
 
-func (api *HTTPAPI) CreateRepository(body CreateRepoBody, bearerToken string) (*http.Response, error) {
+func (api *HTTPAPI) CreateRepository(body *CreateRepoBody, bearerToken string) (*http.Response, error) {
 	jsonBody, err := common.ToJSON(body)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "error marshalling body to JSON")
 	}
 
-	addRepoURL := fmt.Sprintf("%s/api/v1/repositories", api.serverURL)
-	req, err := http.NewRequest("POST", addRepoURL, bytes.NewBuffer(jsonBody))
+	url := fmt.Sprintf("%s/api/v1/repositories", api.serverURL)
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonBody))
 	if err != nil {
-		return nil, fmt.Errorf("failed to create POST request: %w", err)
+		return nil, errors.Wrap(err, "error creating POST request")
 	}
 
 	req.Header.Add("Authorization", bearerToken)
@@ -122,23 +124,23 @@ func (api *HTTPAPI) CreateRepository(body CreateRepoBody, bearerToken string) (*
 	client := common.GetHTTPClient()
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to send POST request to /repositories: %w", err)
+		return nil, errors.Wrapf(err, "error sending POST request to %s", url)
 	}
 
 	if resp.StatusCode != 200 {
 		common.LogBody(api.log, resp.Body)
 		common.CloseBody(resp.Body)
-		return nil, fmt.Errorf("create repository returned non-OK status code: %d", resp.StatusCode)
+		return nil, errors.Errorf("create repository returned non-OK status code: %d", resp.StatusCode)
 	}
 
 	return resp, nil
 }
 
 func (api *HTTPAPI) DoesApplicationExist(name string, bearerToken string) (bool, error) {
-	getAppURL := fmt.Sprintf("%s/api/v1/applications/%s", api.serverURL, name)
-	req, err := http.NewRequestWithContext(api.ctx, "GET", getAppURL, nil)
+	url := fmt.Sprintf("%s/api/v1/applications/%s", api.serverURL, name)
+	req, err := http.NewRequestWithContext(api.ctx, "GET", url, nil)
 	if err != nil {
-		return false, fmt.Errorf("failed to create GET request: %w", err)
+		return false, errors.Wrap(err, "error creating GET request")
 	}
 
 	req.Header.Add("Authorization", bearerToken)
@@ -146,7 +148,7 @@ func (api *HTTPAPI) DoesApplicationExist(name string, bearerToken string) (bool,
 	client := common.GetHTTPClient()
 	resp, err := client.Do(req)
 	if err != nil {
-		return false, fmt.Errorf("failed to send GET request to applications/%s: %w", name, err)
+		return false, errors.Wrapf(err, "error sending GET request to %s", url)
 	}
 	defer common.CloseBody(resp.Body)
 
@@ -157,13 +159,13 @@ func (api *HTTPAPI) DoesApplicationExist(name string, bearerToken string) (bool,
 
 	if resp.StatusCode != 200 {
 		common.CloseBody(resp.Body)
-		return false, fmt.Errorf("get application returned a non-OK response: %d", resp.StatusCode)
+		return false, errors.Errorf("get application returned a non-OK response: %d", resp.StatusCode)
 	}
 
 	application := new(appv1.Application)
 	if err := json.NewDecoder(resp.Body).Decode(application); err != nil {
 		common.CloseBody(resp.Body)
-		return false, err
+		return false, errors.Wrap(err, "error unmarshalling response body")
 	}
 
 	if application.ObjectMeta.Name == name {
@@ -176,13 +178,13 @@ func (api *HTTPAPI) DoesApplicationExist(name string, bearerToken string) (bool,
 func (api *HTTPAPI) CreateApplication(application *appv1.Application, bearerToken string) (*http.Response, error) {
 	jsonBody, err := common.ToJSON(application)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "error marshalling body to JSON")
 	}
 
-	addAppURL := fmt.Sprintf("%s/api/v1/applications", api.serverURL)
-	req, err := http.NewRequestWithContext(api.ctx, "POST", addAppURL, bytes.NewBuffer(jsonBody))
+	url := fmt.Sprintf("%s/api/v1/applications", api.serverURL)
+	req, err := http.NewRequestWithContext(api.ctx, "POST", url, bytes.NewBuffer(jsonBody))
 	if err != nil {
-		return nil, fmt.Errorf("failed to create POST request: %w", err)
+		return nil, errors.Wrap(err, "error creating POST request")
 	}
 
 	req.Header.Add("Authorization", bearerToken)
@@ -190,13 +192,13 @@ func (api *HTTPAPI) CreateApplication(application *appv1.Application, bearerToke
 	client := common.GetHTTPClient()
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to send POST request to /applications: %w", err)
+		return nil, errors.Wrapf(err, "error sending POST request to %s", url)
 	}
 
 	if resp.StatusCode != 200 {
 		common.LogBody(api.log, resp.Body)
 		common.CloseBody(resp.Body)
-		return nil, fmt.Errorf("create application returned non-OK status code: %d", resp.StatusCode)
+		return nil, errors.Errorf("create application returned non-OK status code: %d", resp.StatusCode)
 	}
 
 	return resp, nil
@@ -206,7 +208,7 @@ func (api *HTTPAPI) DeleteApplication(name string, bearerToken string) error {
 	url := fmt.Sprintf("%s/api/v1/applications/%s", api.serverURL, name)
 	req, err := http.NewRequestWithContext(api.ctx, "DELETE", url, nil)
 	if err != nil {
-		return fmt.Errorf("failed to create DELETE request: %w", err)
+		return errors.Wrap(err, "error creating DELETE request")
 	}
 
 	req.Header.Add("Authorization", bearerToken)
@@ -214,28 +216,28 @@ func (api *HTTPAPI) DeleteApplication(name string, bearerToken string) error {
 	client := common.GetHTTPClient()
 	resp, err := client.Do(req)
 	if err != nil {
-		return fmt.Errorf("failed to send DELETE request to %s: %w", url, err)
+		return errors.Wrapf(err, "error sending DELETE request to %s", url)
 	}
 	defer common.CloseBody(resp.Body)
 
 	if resp.StatusCode != 200 {
 		common.LogBody(api.log, resp.Body)
-		return fmt.Errorf("delete application returned non-OK status code: %d", resp.StatusCode)
+		return errors.Errorf("delete application returned non-OK status code: %d", resp.StatusCode)
 	}
 
 	return nil
 }
 
-func (api *HTTPAPI) CreateProject(project CreateProjectBody, bearerToken string) (*http.Response, error) {
+func (api *HTTPAPI) CreateProject(project *CreateProjectBody, bearerToken string) (*http.Response, error) {
 	jsonBody, err := common.ToJSON(project)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "error marshalling body to JSON")
 	}
 
 	url := fmt.Sprintf("%s/api/v1/projects", api.serverURL)
 	req, err := http.NewRequestWithContext(api.ctx, "POST", url, bytes.NewBuffer(jsonBody))
 	if err != nil {
-		return nil, fmt.Errorf("failed to create POST request: %w", err)
+		return nil, errors.Wrap(err, "error creating POST request")
 	}
 
 	req.Header.Add("Authorization", bearerToken)
@@ -243,13 +245,13 @@ func (api *HTTPAPI) CreateProject(project CreateProjectBody, bearerToken string)
 	client := common.GetHTTPClient()
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to send POST request to %s: %w", url, err)
+		return nil, errors.Wrapf(err, "error sending POST request to %s", url)
 	}
 
 	if resp.StatusCode != 200 {
 		common.LogBody(api.log, resp.Body)
 		common.CloseBody(resp.Body)
-		return nil, fmt.Errorf("create project returned non-OK status code: %d", resp.StatusCode)
+		return nil, errors.Errorf("create project returned non-OK status code: %d", resp.StatusCode)
 	}
 
 	return resp, nil
@@ -259,7 +261,7 @@ func (api *HTTPAPI) DoesProjectExist(name string, bearerToken string) (exists bo
 	url := fmt.Sprintf("%s/api/v1/projects/%s", api.serverURL, name)
 	req, err := http.NewRequestWithContext(api.ctx, "GET", url, nil)
 	if err != nil {
-		return false, nil, fmt.Errorf("failed to create GET request: %w", err)
+		return false, nil, errors.Wrap(err, "error creating GET request")
 	}
 
 	req.Header.Add("Authorization", bearerToken)
@@ -267,7 +269,7 @@ func (api *HTTPAPI) DoesProjectExist(name string, bearerToken string) (exists bo
 	client := common.GetHTTPClient()
 	resp, err := client.Do(req)
 	if err != nil {
-		return false, nil, fmt.Errorf("failed to send GET request to %s: %w", url, err)
+		return false, nil, errors.Wrapf(err, "error sending GET request to %s", url)
 	}
 
 	if resp.StatusCode == 404 {
@@ -276,4 +278,37 @@ func (api *HTTPAPI) DoesProjectExist(name string, bearerToken string) (exists bo
 	}
 
 	return true, resp, nil
+}
+
+func (api *HTTPAPI) UpdateCluster(
+	clusterURL string,
+	body *UpdateClusterBody,
+	updatedFields []string,
+	bearerToken string,
+) (*http.Response, error) {
+	jsonBody, err := common.ToJSON(body)
+	if err != nil {
+		return nil, errors.Wrap(err, "error marshalling body to JSON")
+	}
+
+	url := fmt.Sprintf("%s/api/v1/clusters/%s?updatedFields=%s", api.serverURL, url2.QueryEscape(clusterURL), updatedFields)
+	req, err := http.NewRequestWithContext(api.ctx, "PUT", url, bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating PUT request")
+	}
+
+	req.Header.Add("Authorization", bearerToken)
+
+	client := common.GetHTTPClient()
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error sending PUT request to %s", url)
+	}
+
+	if resp.StatusCode == 404 {
+		common.LogBody(api.log, resp.Body)
+		return nil, errors.Errorf("update cluster returned non-OK response: %d", resp.StatusCode)
+	}
+
+	return resp, nil
 }
