@@ -118,7 +118,7 @@ func TestRegisterRepoNewRepo(t *testing.T) {
 	list := argocd.RepositoryList{Items: []argocd.Repository{repo}}
 	mockAPI.EXPECT().ListRepositories(gomock.Any()).Return(&list, common.CreateMockResponse(200), nil)
 	createRepoBody := argocd.CreateRepoBody{Name: "test_repo", Repo: "git@github.com:CompuZest/test_repo.git", SSHPrivateKey: "test_key"}
-	mockAPI.EXPECT().CreateRepository(createRepoBody, gomock.Any()).Return(common.CreateMockResponse(200), nil)
+	mockAPI.EXPECT().CreateRepository(&createRepoBody, gomock.Any()).Return(common.CreateMockResponse(200), nil)
 
 	log := ctrl.Log.WithName("TestRegisterRepoNewRepo")
 	registered, err := argocd.RegisterRepo(log, mockAPI, repoOpts)
