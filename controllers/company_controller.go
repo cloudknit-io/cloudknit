@@ -194,7 +194,7 @@ func (r *CompanyReconciler) initCompany(ctx context.Context) error {
 
 	argocdAPI := argocd.NewHTTPClient(ctx, r.Log, argocdServerURL)
 	r.LogV2.Info("Updating default argocd cluster namespaces")
-	if err := argocd.UpdateDefaultClusterNamespaces(r.Log, argocdAPI, []string{env.Config.KubernetesOperatorWatchedNamespace}); err != nil {
+	if err := argocd.UpdateDefaultClusterNamespaces(r.Log, argocdAPI, []string{env.ArgoNamespace(), env.WorkflowsNamespace()}); err != nil {
 		return perrors.Wrap(err, "error updating default argocd cluster namespaces")
 	}
 
