@@ -21,6 +21,7 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/log"
 	"github.com/newrelic/go-agent/v3/integrations/logcontext/nrlogrusplugin"
 	"github.com/sirupsen/logrus"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -73,7 +74,7 @@ func main() {
 		LeaderElection:     enableLeaderElection,
 		LeaderElectionID:   "ce9255a7.compuzest.com",
 		CertDir:            env.Config.KubernetesCertDir,
-		Namespace:          env.Config.KubernetesOperatorWatchedNamespace,
+		NewCache:           cache.MultiNamespacedCacheBuilder(getWatchedNamespaces()),
 	})
 	if err != nil {
 		setupLog.WithError(err).Panic("unable to start manager")
@@ -155,4 +156,15 @@ func main() {
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.WithError(err).Panic("problem running manager")
 	}
+}
+
+func getWatchedNamespaces() []string {
+	namespaces := make([]string, 0, 2)
+	systemNamespace := env.SystemNamespace()
+	configNamespace := env.ConfigNamespace()
+	namespaces = append(namespaces, systemNamespace)
+	if systemNamespace != configNamespace {
+		namespaces = append(namespaces, configNamespace)
+	}
+	return namespaces
 }

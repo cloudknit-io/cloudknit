@@ -194,12 +194,12 @@ func (r *CompanyReconciler) initCompany(ctx context.Context) error {
 
 	argocdAPI := argocd.NewHTTPClient(ctx, r.Log, argocdServerURL)
 	r.LogV2.Info("Updating default argocd cluster namespaces")
-	if err := argocd.UpdateDefaultClusterNamespaces(r.Log, argocdAPI, []string{env.ArgoNamespace(), env.WorkflowsNamespace()}); err != nil {
+	if err := argocd.UpdateDefaultClusterNamespaces(r.Log, argocdAPI, []string{env.ArgocdNamespace(), env.WorkflowsNamespace()}); err != nil {
 		return perrors.Wrap(err, "error updating default argocd cluster namespaces")
 	}
 
 	r.LogV2.Info("Registering helm chart repo")
-	return repo.TryRegisterRepo(ctx, r.Client, r.Log, argocdAPI, helmChartsRepo, operatorNamespace, operatorSSHSecret)
+	return repo.TryRegisterRepo(ctx, r.Client, r.Log, argocdAPI, helmChartsRepo, "zmart-a-config", operatorSSHSecret)
 }
 
 func (r *CompanyReconciler) SetupWithManager(mgr ctrl.Manager) error {
