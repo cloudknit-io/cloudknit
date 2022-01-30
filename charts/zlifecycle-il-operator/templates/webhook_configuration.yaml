@@ -13,6 +13,11 @@ webhooks:
         name: webhook-service
         namespace: {{ .Values.company.config.name }}-system
         path: /validate-stable-compuzest-com-v1-environment
+    namespaceSelector:
+      matchExpressions:
+        - key: "zlifecycle.com/validation"
+          operator: In
+          values: ["{{ .Values.company.config.name }}-config"]
     failurePolicy: Fail
     name: venvironment.kb.io
     rules:
