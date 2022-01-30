@@ -222,12 +222,14 @@ func GenerateEnvironmentComponentApps(environment *stablev1.Environment, environ
 
 func getHelmValues(environment *stablev1.Environment, environmentComponent *stablev1.EnvironmentComponent) string {
 	helmValues := fmt.Sprintf(`
+        namespace: "%s"
         team_name: "%s"
         env_name: %s
         config_name: %s
         module:
             source: %s
-            path: %s`, environment.Spec.TeamName,
+            path: %s`, env.ArgocdNamespace(),
+	        environment.Spec.TeamName,
 		environment.Spec.EnvName,
 		environmentComponent.Name,
 		il.EnvironmentComponentModuleSource(environmentComponent.Module.Source, environmentComponent.Module.Name),
