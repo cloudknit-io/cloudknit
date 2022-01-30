@@ -288,10 +288,10 @@ func (api *HTTPAPI) UpdateCluster(
 ) (*http.Response, error) {
 	jsonBody, err := common.ToJSON(body)
 	if err != nil {
-		return nil, errors.Wrap(err, "error marshalling body to JSON")
+		return nil, errors.Wrap(err, "error marshaling body to JSON")
 	}
 
-	url := fmt.Sprintf("%s/api/v1/clusters/%s?updatedFields=%s", api.serverURL, url2.QueryEscape(clusterURL), updatedFields)
+	url := fmt.Sprintf("%s/api/v1/clusters/%s?updatedFields=%s", api.serverURL, url2.QueryEscape(clusterURL), common.ToStringArray(updatedFields))
 	req, err := http.NewRequestWithContext(api.ctx, "PUT", url, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating PUT request")

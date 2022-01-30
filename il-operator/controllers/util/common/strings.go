@@ -60,3 +60,14 @@ func ExtractNameFromPath(path string) string {
 	tokens := strings.Split(path, "/")
 	return tokens[len(tokens)-1]
 }
+
+func ToStringArray(stringArr []string) string {
+	arr := ""
+	for i, s := range stringArr {
+		if i != 0 {
+			s += ","
+		}
+		arr += s
+	}
+	return arr
+}

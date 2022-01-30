@@ -189,6 +189,11 @@ func UpdateDefaultClusterNamespaces(log logr.Logger, api API, namespaces []strin
 	if err != nil {
 		return errors.Wrap(err, "error updating default cluster")
 	}
+	jsonBody, err := common.ReadBody(resp.Body)
+	if err != nil {
+		return errors.Wrap(err, "error reading response body")
+	}
+	log.Info("Response from argocd", "response", string(jsonBody))
 	defer common.CloseBody(resp.Body)
 
 	return nil
