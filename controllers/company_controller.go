@@ -199,7 +199,7 @@ func (r *CompanyReconciler) initCompany(ctx context.Context) error {
 	}
 
 	r.LogV2.Info("Registering helm chart repo")
-	return repo.TryRegisterRepo(ctx, r.Client, r.Log, argocdAPI, helmChartsRepo, "zmart-a-config", operatorSSHSecret)
+	return repo.TryRegisterRepo(ctx, r.Client, r.Log, argocdAPI, helmChartsRepo, env.ConfigNamespace(), operatorSSHSecret)
 }
 
 func (r *CompanyReconciler) SetupWithManager(mgr ctrl.Manager) error {
