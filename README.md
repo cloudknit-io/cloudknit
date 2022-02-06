@@ -15,6 +15,7 @@
 * User Guide
     * Getting Started
         * Setting up zLifecycle
+        * [Onboarding a Team](team/onboarding.md)
         * [Provisioning your First Environment](provision/first-environment.md)
         * [Tearing down your First Environment](teardown/first-environment.md)
     * [Define Environment](define/define-environment.md)
