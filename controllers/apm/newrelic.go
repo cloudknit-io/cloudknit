@@ -3,8 +3,6 @@ package apm
 import (
 	"context"
 	"fmt"
-	"runtime/debug"
-
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/zerrors"
 	nr "github.com/newrelic/go-agent/v3/newrelic"
@@ -40,15 +38,16 @@ func NewNewRelic() (*NewRelic, error) {
 
 func (a *NewRelic) NoticeError(tx *nr.Transaction, log *logrus.Entry, err zerrors.ZError) error {
 	a.app.RecordCustomMetric(err.Metric(), 1)
+	st := stackTrace(err.OriginalError())
 	if tx != nil {
 		tx.NoticeError(nr.Error{
 			Message:    err.Error(),
 			Class:      err.Class(),
 			Attributes: err.Attributes(),
-			Stack:      stackTrace(err.OriginalError()),
+			Stack:      st,
 		})
 	}
-	log.WithError(err).Errorf("error during reconcile\nstack trace:\n%s", string(debug.Stack()))
+	log.WithError(err).Errorf("error during reconcile\nstack trace:%+v", deepestStackTrace(err.OriginalError()))
 
 	return err
 }

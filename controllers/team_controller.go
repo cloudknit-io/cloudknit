@@ -141,7 +141,11 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error instantiating git API"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
 	}
-	privateKey, err := common.GetSSHPrivateKey(ctx, r.Client, client.ObjectKey{Name: env.Config.GitHubAppSecretName, Namespace: env.Config.GitSSHSecretName})
+	privateKey, err := common.GetSSHPrivateKey(
+		ctx,
+		r.Client,
+		client.ObjectKey{Name: env.Config.GitHubAppSecretName, Namespace: env.Config.GitHubAppSecretNamespace},
+	)
 	if err != nil {
 		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error getting ssh private key for github app"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
@@ -180,10 +184,17 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	}
 
 	teamRepo := team.Spec.ConfigRepo.Source
-	operatorSSHSecret := env.Config.GitSSHSecretName
-	operatorNamespace := env.Config.KubernetesServiceNamespace
 
-	if err := repo.TryRegisterRepoViaGitHubApp(apmCtx, r.Client, r.LogV2, argocdAPI, gitAppAPI, teamRepo, operatorNamespace, operatorSSHSecret); err != nil {
+	if err := repo.TryRegisterRepoViaGitHubApp(
+		apmCtx,
+		r.Client,
+		r.LogV2,
+		argocdAPI,
+		gitAppAPI,
+		teamRepo,
+		env.Config.GitHubAppSecretNamespace,
+		env.Config.GitHubAppSecretName,
+	); err != nil {
 		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error registering argocd team repo via github app auth"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
 	}

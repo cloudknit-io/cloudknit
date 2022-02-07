@@ -68,3 +68,12 @@ func ParseRepositoryInfo(url string) (owner string, repo string, err error) {
 
 	return owner, repo, nil
 }
+
+func RewriteGitURLToHTTPS(repoURL string) string {
+	httpsRepo := repoURL
+	httpsPrefix := "https://github.com/"
+	if sshPrefix := "git@github.com:"; strings.HasPrefix(httpsRepo, sshPrefix) {
+		httpsRepo = strings.ReplaceAll(httpsRepo, sshPrefix, httpsPrefix)
+	}
+	return httpsRepo
+}

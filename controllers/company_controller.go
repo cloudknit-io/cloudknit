@@ -15,6 +15,8 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/zerrors"
+	perrors "github.com/pkg/errors"
 	"sync"
 	"time"
 
@@ -120,6 +122,20 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	if err != nil {
 		return ctrl.Result{}, err
 	}
+	privateKey, err := common.GetSSHPrivateKey(
+		ctx,
+		r.Client,
+		client.ObjectKey{Name: env.Config.GitHubAppSecretName, Namespace: env.Config.GitHubAppSecretNamespace},
+	)
+	if err != nil {
+		companyErr := zerrors.NewCompanyError(company.Spec.CompanyName, perrors.Wrap(err, "error getting ssh private key for github app"))
+		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
+	}
+	gitAppAPI, err := github.NewHTTPAppClient(ctx, privateKey, env.Config.GitHubAppID)
+	if err != nil {
+		companyErr := zerrors.NewCompanyError(company.Spec.CompanyName, perrors.Wrap(err, "error instantiating github apps client"))
+		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
+	}
 
 	// temp clone IL repo
 	tempILRepoDir, cleanup, err := git.CloneTemp(gitAPI, zlILRepoURL)
@@ -130,26 +146,40 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	// reconcile logic
 	companyRepo := company.Spec.ConfigRepo.Source
-	if err := repo.TryRegisterRepoViaSSHPrivateKey(apmCtx, r.Client, r.LogV2, argocdAPI, companyRepo, operatorNamespace, operatorSSHSecret); err != nil {
-		return ctrl.Result{}, err
+	if err := repo.TryRegisterRepoViaGitHubApp(
+		apmCtx,
+		r.Client,
+		r.LogV2,
+		argocdAPI,
+		gitAppAPI,
+		companyRepo,
+		env.Config.GitHubAppSecretNamespace,
+		env.Config.GitHubAppSecretName,
+	); err != nil {
+		companyErr := zerrors.NewCompanyError(company.Spec.CompanyName, perrors.Wrap(err, "error registering company config repo in argocd using github app auth"))
+		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
 	}
 
 	if err := generateAndSaveCompanyApp(fileAPI, company, tempILRepoDir); err != nil {
-		return ctrl.Result{}, err
+		companyErr := zerrors.NewCompanyError(company.Spec.CompanyName, perrors.Wrap(err, "error generating and saving company argocd app"))
+		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
 	}
 
 	if err := generateAndSaveCompanyConfigWatcher(fileAPI, company, tempILRepoDir); err != nil {
-		return ctrl.Result{}, err
+		companyErr := zerrors.NewCompanyError(company.Spec.CompanyName, perrors.Wrap(err, "error generating and saving company config watcher argocd app"))
+		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
 	}
 
 	zlILRepoName := common.ParseRepositoryName(env.Config.ILZLifecycleRepositoryURL)
 	_, err = github.TryCreateRepository(r.LogV2, repoAPI, ilRepoOwner, zlILRepoName)
 	if err != nil {
-		return ctrl.Result{}, err
+		companyErr := zerrors.NewCompanyError(company.Spec.CompanyName, perrors.Wrap(err, "error trying to create company git repository"))
+		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
 	}
 
 	if err := repo.TryRegisterRepoViaSSHPrivateKey(apmCtx, r.Client, r.LogV2, argocdAPI, zlILRepoURL, operatorNamespace, operatorSSHSecret); err != nil {
-		return ctrl.Result{}, err
+		companyErr := zerrors.NewCompanyError(company.Spec.CompanyName, perrors.Wrap(err, "error registering company IL repo in argocd"))
+		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
 	}
 
 	commitInfo := git.CommitInfo{
@@ -159,7 +189,8 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 	pushed, err := gitAPI.CommitAndPush(&commitInfo)
 	if err != nil {
-		return ctrl.Result{}, err
+		companyErr := zerrors.NewCompanyError(company.Spec.CompanyName, perrors.Wrap(err, "error running commit and push company IL changes"))
+		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
 	}
 	if pushed {
 		r.LogV2.Info("Committed new changes to IL repo")
@@ -168,7 +199,8 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	if err := argocd.TryCreateBootstrapApps(apmCtx, r.Log); err != nil {
-		return ctrl.Result{}, err
+		companyErr := zerrors.NewCompanyError(company.Spec.CompanyName, perrors.Wrap(err, "error creating company bootstrap argocd app"))
+		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
 	}
 
 	// try create a webhook, it will fail if git service account does not have permissions to create it

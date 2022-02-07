@@ -3,8 +3,6 @@ package github_test
 import (
 	"fmt"
 	"testing"
-
-
 	"github.com/sirupsen/logrus"
 
 	"github.com/compuzest/zlifecycle-il-operator/mocks"

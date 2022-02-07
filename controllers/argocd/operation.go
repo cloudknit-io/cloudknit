@@ -120,7 +120,7 @@ func RegisterRepo(log *logrus.Entry, api API, repoOpts *RepoOpts) (bool, error) 
 			"appId":          repoOpts.GitHubAppID,
 		}).Info("Registering git repo in ArgoCD using GitHub App mode")
 		body = CreateRepoViaGitHubAppBody{
-			Repo:                    repoOpts.RepoURL,
+			Repo:                    common.RewriteGitURLToHTTPS(repoOpts.RepoURL),
 			Name:                    repoName,
 			GitHubAppPrivateKey:     string(repoOpts.GitHubAppPrivateKey),
 			GitHubAppInstallationID: repoOpts.GitHubAppInstallationID,

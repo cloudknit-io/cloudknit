@@ -58,6 +58,11 @@ func TryRegisterRepoViaGitHubApp(
 		return err
 	}
 
+	int64AppID, err := strconv.ParseInt(env.Config.GitHubAppID, 10, 64)
+	if err != nil {
+		return errors.Wrap(err, "error parsing app id as int64")
+	}
+
 	owner, repo, err := common.ParseRepositoryInfo(repoURL)
 	if err != nil {
 		return errors.Wrapf(err, "error parsing owner and repo name from git url: [%s]", repoURL)
@@ -73,9 +78,10 @@ func TryRegisterRepoViaGitHubApp(
 
 	repoOpts := argocd.RepoOpts{
 		RepoURL:                 repoURL,
-		GitHubAppID:             env.Config.GitHubAppID,
-		GitHubAppInstallationID: strconv.FormatInt(*installationID, 10),
+		GitHubAppID:             int64AppID,
+		GitHubAppInstallationID: *installationID,
 		GitHubAppPrivateKey:     privateKey,
+		Mode:                    argocd.ModeGitHubApp,
 	}
 	if _, err := argocd.RegisterRepo(log, argocdAPI, &repoOpts); err != nil {
 		return err

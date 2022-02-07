@@ -147,6 +147,7 @@ type EnvironmentList struct {
 	Items           []Environment `json:"items"`
 }
 
+// nolint
 func init() {
 	SchemeBuilder.Register(&Environment{}, &EnvironmentList{})
 }

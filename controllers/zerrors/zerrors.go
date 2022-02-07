@@ -14,6 +14,42 @@ type ZError interface {
 	OriginalError() error
 }
 
+type CompanyError struct {
+	Company string `json:"company"`
+	Err     error  `json:"err"`
+}
+
+func (e *CompanyError) Error() string {
+	return fmt.Sprintf("company reconcile failed for company [%s]: %v", e.Company, e.Err)
+}
+
+func (e *CompanyError) Attributes() map[string]interface{} {
+	return map[string]interface{}{
+		"company": e.Company,
+	}
+}
+
+func (e *CompanyError) Class() string {
+	return "CompanyReconcilerError"
+}
+
+func (e *CompanyError) Metric() string {
+	return "com.zlifecycle.companyreconciler.error"
+}
+
+func (e *CompanyError) OriginalError() error {
+	return e.Err
+}
+
+var _ ZError = (*CompanyError)(nil)
+
+func NewCompanyError(company string, err error) *CompanyError {
+	return &CompanyError{
+		Company: company,
+		Err:     err,
+	}
+}
+
 type TeamError struct {
 	Company string `json:"company"`
 	Team    string `json:"team"`

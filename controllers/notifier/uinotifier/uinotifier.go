@@ -5,8 +5,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-
-
 	"github.com/pkg/errors"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/notifier"

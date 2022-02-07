@@ -65,16 +65,16 @@ type RepoOpts struct {
 	SSHPrivateKey           string
 	Mode                    string
 	GitHubAppPrivateKey     []byte
-	GitHubAppInstallationID string
-	GitHubAppID             string
+	GitHubAppInstallationID int64
+	GitHubAppID             int64
 }
 
 type CreateRepoViaGitHubAppBody struct {
 	Repo                    string `json:"repo"`
 	Name                    string `json:"name"`
 	GitHubAppPrivateKey     string `json:"githubAppPrivateKey"`
-	GitHubAppInstallationID string `json:"githubAppInstallationID"`
-	GitHubAppID             string `json:"githubAppID"`
+	GitHubAppInstallationID int64  `json:"githubAppInstallationID"`
+	GitHubAppID             int64  `json:"githubAppID"`
 }
 
 type CreateRepoViaSSHBody struct {

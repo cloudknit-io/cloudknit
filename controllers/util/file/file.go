@@ -132,7 +132,7 @@ func saveBytesToFile(bytes []byte, folderName string, fileName string) error {
 		return fmt.Errorf("error: failed to create directory: %w", err)
 	}
 
-	return os.WriteFile(fmt.Sprintf("%s/%s", folderName, fileName), bytes, 0o644)
+	return os.WriteFile(fmt.Sprintf("%s/%s", folderName, fileName), bytes, 0o600)
 }
 
 // RemoveAll removes path and any children it contains.
