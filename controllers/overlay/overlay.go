@@ -2,8 +2,9 @@ package overlay
 
 import (
 	"context"
-	"github.com/sirupsen/logrus"
 	"path/filepath"
+
+	"github.com/sirupsen/logrus"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/gitreconciler"
 

@@ -15,12 +15,13 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"sync"
+	"time"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/apm"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	"github.com/sirupsen/logrus"
-	"sync"
-	"time"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/git"
 
@@ -129,7 +130,7 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	// reconcile logic
 	companyRepo := company.Spec.ConfigRepo.Source
-	if err := repo.TryRegisterRepo(apmCtx, r.Client, r.Log, argocdAPI, companyRepo, operatorNamespace, operatorSSHSecret); err != nil {
+	if err := repo.TryRegisterRepoViaSSHPrivateKey(apmCtx, r.Client, r.LogV2, argocdAPI, companyRepo, operatorNamespace, operatorSSHSecret); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -142,12 +143,12 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	zlILRepoName := common.ParseRepositoryName(env.Config.ILZLifecycleRepositoryURL)
-	_, err = github.TryCreateRepository(r.Log, repoAPI, ilRepoOwner, zlILRepoName)
+	_, err = github.TryCreateRepository(r.LogV2, repoAPI, ilRepoOwner, zlILRepoName)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 
-	if err := repo.TryRegisterRepo(apmCtx, r.Client, r.Log, argocdAPI, zlILRepoURL, operatorNamespace, operatorSSHSecret); err != nil {
+	if err := repo.TryRegisterRepoViaSSHPrivateKey(apmCtx, r.Client, r.LogV2, argocdAPI, zlILRepoURL, operatorNamespace, operatorSSHSecret); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -171,7 +172,7 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	// try create a webhook, it will fail if git service account does not have permissions to create it
-	_, err = github.CreateRepoWebhook(r.Log, repoAPI, companyRepo, argocdHookURL, gitHubWebhookSecret)
+	_, err = github.CreateRepoWebhook(r.LogV2, repoAPI, companyRepo, argocdHookURL, gitHubWebhookSecret)
 	if err != nil {
 		r.LogV2.WithError(err).Error("error creating Company webhook")
 	}
@@ -187,18 +188,22 @@ func (r *CompanyReconciler) initCompany(ctx context.Context) error {
 
 	r.LogV2.Info("Creating webhook for IL repo")
 	repoAPI := github.NewHTTPRepositoryAPI(ctx)
-	if _, err := github.CreateRepoWebhook(r.Log, repoAPI, zlILRepoURL, argocdHookURL, gitHubWebhookSecret); err != nil {
+	if _, err := github.CreateRepoWebhook(r.LogV2, repoAPI, zlILRepoURL, argocdHookURL, gitHubWebhookSecret); err != nil {
 		r.LogV2.WithError(err).WithField("repo", zlILRepoURL).Error("error creating Company IL webhook")
 	}
 
 	argocdAPI := argocd.NewHTTPClient(ctx, r.Log, argocdServerURL)
 	r.LogV2.Info("Updating default argocd cluster namespaces")
-	if err := argocd.UpdateDefaultClusterNamespaces(r.Log, argocdAPI, []string{env.ArgocdNamespace(), env.ConfigNamespace(), env.WorkflowsNamespace()}); err != nil {
+	if err := argocd.UpdateDefaultClusterNamespaces(
+		r.Log,
+		argocdAPI,
+		[]string{env.ArgocdNamespace(), env.ConfigNamespace(), env.WorkflowsNamespace()},
+	); err != nil {
 		r.LogV2.Fatalf("error updating argocd cluster namespaces: %v", err)
 	}
 
 	r.LogV2.Info("Registering helm chart repo")
-	return repo.TryRegisterRepo(ctx, r.Client, r.Log, argocdAPI, helmChartsRepo, operatorNamespace, operatorSSHSecret)
+	return repo.TryRegisterRepoViaSSHPrivateKey(ctx, r.Client, r.LogV2, argocdAPI, helmChartsRepo, operatorNamespace, operatorSSHSecret)
 }
 
 func (r *CompanyReconciler) SetupWithManager(mgr ctrl.Manager) error {

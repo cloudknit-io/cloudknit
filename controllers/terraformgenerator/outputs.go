@@ -2,8 +2,12 @@ package terraformgenerator
 
 import (
 	"fmt"
-	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"strings"
+
+
+	"github.com/go-errors/errors"
+
+	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 )
 
 func standardizeVariables(vars []*v1.Variable) ([]*Variable, error) {
@@ -13,7 +17,7 @@ func standardizeVariables(vars []*v1.Variable) ([]*Variable, error) {
 		if v.ValueFrom != "" {
 			tokens := strings.Split(v.ValueFrom, ".")
 			if len(tokens) != 2 {
-				return nil, fmt.Errorf("invalid output referenced: %s. Output should be in format <component>.<name>", v.Name)
+				return nil, errors.Errorf("invalid output referenced: %s. Output should be in format <component>.<name>", v.Name)
 			}
 			value = referenceOutputFromRemoteState(tokens[0], tokens[1])
 		} else {

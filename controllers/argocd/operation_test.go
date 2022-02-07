@@ -16,6 +16,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	"github.com/compuzest/zlifecycle-il-operator/mocks"
@@ -117,11 +119,11 @@ func TestRegisterRepoNewRepo(t *testing.T) {
 	repo := argocd.Repository{Repo: "git@github.com:CompuZest/test_repo2.git", Name: "test_repo2"}
 	list := argocd.RepositoryList{Items: []argocd.Repository{repo}}
 	mockAPI.EXPECT().ListRepositories(gomock.Any()).Return(&list, common.CreateMockResponse(200), nil)
-	createRepoBody := argocd.CreateRepoBody{Name: "test_repo", Repo: "git@github.com:CompuZest/test_repo.git", SSHPrivateKey: "test_key"}
-	mockAPI.EXPECT().CreateRepository(&createRepoBody, gomock.Any()).Return(common.CreateMockResponse(200), nil)
+	createRepoBody := argocd.CreateRepoViaSSHBody{Name: "test_repo", Repo: "git@github.com:CompuZest/test_repo.git", SSHPrivateKey: "test_key"}
+	mockAPI.EXPECT().CreateRepository(gomock.Eq(createRepoBody), gomock.Any()).Return(common.CreateMockResponse(200), nil)
 
-	log := ctrl.Log.WithName("TestRegisterRepoNewRepo")
-	registered, err := argocd.RegisterRepo(log, mockAPI, repoOpts)
+	log := logrus.NewEntry(logrus.New())
+	registered, err := argocd.RegisterRepo(log, mockAPI, &repoOpts)
 	assert.True(t, registered)
 	assert.NoError(t, err)
 }
@@ -139,10 +141,9 @@ func TestRegisterRepoExistingRepo(t *testing.T) {
 	list := argocd.RepositoryList{Items: []argocd.Repository{repo}}
 	mockArgocdAPI.EXPECT().ListRepositories(gomock.Any()).Return(&list, common.CreateMockResponse(200), nil)
 
-	log := ctrl.Log.WithName("TestRegisterRepoExistingRepo")
-
+	log := logrus.NewEntry(logrus.New())
 	repoOpts := argocd.RepoOpts{RepoURL: "git@github.com:CompuZest/test_repo.git", SSHPrivateKey: "test_key"}
-	registered, err := argocd.RegisterRepo(log, mockArgocdAPI, repoOpts)
+	registered, err := argocd.RegisterRepo(log, mockArgocdAPI, &repoOpts)
 	assert.False(t, registered)
 	assert.NoError(t, err)
 }

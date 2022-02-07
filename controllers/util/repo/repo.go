@@ -2,40 +2,82 @@ package repo
 
 import (
 	"context"
-	"github.com/go-logr/logr"
-	perrors "github.com/pkg/errors"
+	"strconv"
+
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
-	coreV1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	kClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// TODO: First check is the repo already registered
-func TryRegisterRepo(ctx context.Context, c kClient.Client, log logr.Logger, api argocd.API, repoURL string, namespace string, repoSecret string) error {
-	secret := &coreV1.Secret{}
-	secretNamespacedName :=
-		types.NamespacedName{Namespace: namespace, Name: repoSecret}
-	if err := c.Get(ctx, secretNamespacedName, secret); err != nil {
-		log.Info(
-			"Secret does not exist",
-			"secret", repoSecret,
-			"namespace", namespace,
-		)
+// TryRegisterRepoViaSSHPrivateKey registers a git repo in ArgoCD using a private SSH key for auth.
+func TryRegisterRepoViaSSHPrivateKey(
+	ctx context.Context,
+	c kClient.Client,
+	log *logrus.Entry,
+	api argocd.API,
+	repoURL string,
+	secretNamespace string,
+	secretName string,
+) error {
+	key := kClient.ObjectKey{Namespace: secretNamespace, Name: secretName}
+	privateKey, err := common.GetSSHPrivateKey(ctx, c, key)
+	if err != nil {
 		return err
-	}
-
-	sshPrivateKeyField := "sshPrivateKey"
-	sshPrivateKey := string(secret.Data[sshPrivateKeyField])
-	if sshPrivateKey == "" {
-		return perrors.Errorf(`secret %s does not have field "sshPrivateKey"`, repoSecret)
 	}
 
 	repoOpts := argocd.RepoOpts{
 		RepoURL:       repoURL,
-		SSHPrivateKey: sshPrivateKey,
+		SSHPrivateKey: string(privateKey),
 	}
-	if _, err := argocd.RegisterRepo(log, api, repoOpts); err != nil {
+	if _, err := argocd.RegisterRepo(log, api, &repoOpts); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// TryRegisterRepoViaGitHubApp registers a git repo in ArgoCD using a GitHubApp auth.
+func TryRegisterRepoViaGitHubApp(
+	ctx context.Context,
+	c kClient.Client,
+	log *logrus.Entry,
+	argocdAPI argocd.API,
+	gitAppAPI github.AppAPI,
+	repoURL string,
+	secretNamespace string,
+	secretName string,
+) error {
+	key := kClient.ObjectKey{Namespace: secretNamespace, Name: secretName}
+	privateKey, err := common.GetSSHPrivateKey(ctx, c, key)
+	if err != nil {
+		return err
+	}
+
+	owner, repo, err := common.ParseRepositoryInfo(repoURL)
+	if err != nil {
+		return errors.Wrapf(err, "error parsing owner and repo name from git url: [%s]", repoURL)
+	}
+
+	installationID, err := github.GetAppInstallationID(log, gitAppAPI, owner, repo)
+	if err != nil {
+		return errors.Wrapf(err, "error getting github app installation id for repo %s/%s", owner, repo)
+	}
+	if installationID == nil {
+		return errors.New("invalid installation id: nil")
+	}
+
+	repoOpts := argocd.RepoOpts{
+		RepoURL:                 repoURL,
+		GitHubAppID:             env.Config.GitHubAppID,
+		GitHubAppInstallationID: strconv.FormatInt(*installationID, 10),
+		GitHubAppPrivateKey:     privateKey,
+	}
+	if _, err := argocd.RegisterRepo(log, argocdAPI, &repoOpts); err != nil {
 		return err
 	}
 

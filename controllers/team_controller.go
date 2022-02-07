@@ -15,11 +15,14 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/apm"
-	"github.com/sirupsen/logrus"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
+
+	"github.com/compuzest/zlifecycle-il-operator/controllers/apm"
+	"github.com/sirupsen/logrus"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/zerrors"
 	perrors "github.com/pkg/errors"
@@ -138,6 +141,16 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error instantiating git API"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
 	}
+	privateKey, err := common.GetSSHPrivateKey(ctx, r.Client, client.ObjectKey{Name: env.Config.GitHubAppSecretName, Namespace: env.Config.GitSSHSecretName})
+	if err != nil {
+		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error getting ssh private key for github app"))
+		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
+	}
+	gitAppAPI, err := github.NewHTTPAppClient(ctx, privateKey, env.Config.GitHubAppID)
+	if err != nil {
+		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error instantiating github apps client"))
+		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
+	}
 
 	// temp clone IL repo
 	tempILRepoDir, cleanup, err := git.CloneTemp(gitAPI, zlILRepoURL)
@@ -170,8 +183,8 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	operatorSSHSecret := env.Config.GitSSHSecretName
 	operatorNamespace := env.Config.KubernetesServiceNamespace
 
-	if err := repo.TryRegisterRepo(apmCtx, r.Client, r.Log, argocdAPI, teamRepo, operatorNamespace, operatorSSHSecret); err != nil {
-		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error registering argocd team repo"))
+	if err := repo.TryRegisterRepoViaGitHubApp(apmCtx, r.Client, r.LogV2, argocdAPI, gitAppAPI, teamRepo, operatorNamespace, operatorSSHSecret); err != nil {
+		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error registering argocd team repo via github app auth"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
 	}
 
@@ -203,7 +216,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		r.LogV2.Info("No git changes to commit, no-op reconciliation.")
 	}
 
-	_, err = github.CreateRepoWebhook(r.Log, repoAPI, teamRepo, env.Config.ArgocdWebhookURL, env.Config.GitHubWebhookSecret)
+	_, err = github.CreateRepoWebhook(r.LogV2, repoAPI, teamRepo, env.Config.ArgocdWebhookURL, env.Config.GitHubWebhookSecret)
 	if err != nil {
 		r.LogV2.WithError(err).Error("error creating Team webhook")
 	}

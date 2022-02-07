@@ -23,10 +23,15 @@ import (
 
 //go:generate go run -mod=mod github.com/golang/mock/mockgen -destination=../../mocks/mock_argocd_api.go -package=mocks "github.com/compuzest/zlifecycle-il-operator/controllers/argocd" API
 
+const (
+	ModeGitHubApp = "githubApp"
+	ModeSSH       = "ssh"
+)
+
 type API interface {
 	GetAuthToken() (*GetTokenResponse, error)
 	ListRepositories(bearerToken string) (*RepositoryList, *http.Response, error)
-	CreateRepository(body *CreateRepoBody, bearerToken string) (*http.Response, error)
+	CreateRepository(body interface{}, bearerToken string) (*http.Response, error)
 	CreateApplication(application *appv1.Application, bearerToken string) (*http.Response, error)
 	DeleteApplication(name string, bearerToken string) error
 	DoesApplicationExist(name string, bearerToken string) (exists bool, err error)
@@ -56,11 +61,23 @@ type GetTokenResponse struct {
 }
 
 type RepoOpts struct {
-	RepoURL       string
-	SSHPrivateKey string
+	RepoURL                 string
+	SSHPrivateKey           string
+	Mode                    string
+	GitHubAppPrivateKey     []byte
+	GitHubAppInstallationID string
+	GitHubAppID             string
 }
 
-type CreateRepoBody struct {
+type CreateRepoViaGitHubAppBody struct {
+	Repo                    string `json:"repo"`
+	Name                    string `json:"name"`
+	GitHubAppPrivateKey     string `json:"githubAppPrivateKey"`
+	GitHubAppInstallationID string `json:"githubAppInstallationID"`
+	GitHubAppID             string `json:"githubAppID"`
+}
+
+type CreateRepoViaSSHBody struct {
 	Repo          string `json:"repo"`
 	Name          string `json:"name"`
 	SSHPrivateKey string `json:"sshPrivateKey"`
@@ -83,7 +100,7 @@ type UpdateClusterBody map[string]interface{}
 
 /****************************/
 /*           RBAC           */
-/****************************/
+/**************************.*.*/
 type (
 	EntryIdentifier = string
 	Permission      = string

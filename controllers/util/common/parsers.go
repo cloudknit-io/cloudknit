@@ -2,8 +2,10 @@ package common
 
 import (
 	"encoding/json"
-	y "gopkg.in/yaml.v2"
 	"strings"
+
+	"github.com/pkg/errors"
+	y "gopkg.in/yaml.v2"
 )
 
 func ToJSON(data interface{}) ([]byte, error) {
@@ -53,4 +55,16 @@ func ToYaml(in interface{}) (ymlstring string, e error) {
 func ParseRepositoryName(url string) string {
 	repoURI := url[strings.LastIndex(url, "/")+1:]
 	return strings.TrimSuffix(repoURI, ".git")
+}
+
+func ParseRepositoryInfo(url string) (owner string, repo string, err error) {
+	if url == "" {
+		return "", "", errors.New("URL cannot be empty")
+	}
+
+	owner = url[strings.LastIndex(url, ":")+1 : strings.LastIndex(url, "/")]
+	repoURI := url[strings.LastIndex(url, "/")+1:]
+	repo = strings.TrimSuffix(repoURI, ".git")
+
+	return owner, repo, nil
 }

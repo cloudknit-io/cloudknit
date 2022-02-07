@@ -160,7 +160,7 @@ func generateFile(service file.FSAPI, templateVars interface{}, terraformDirecto
 	return generateFromTemplate(templateVars, templateName, f)
 }
 
-// generateFromTemplate save terraform backend config
+// generateFromTemplate save terraform backend config.
 func generateFromTemplate(vars interface{}, templateName string, writer io.Writer) error {
 	workingDir, err := os.Getwd()
 	if err != nil {

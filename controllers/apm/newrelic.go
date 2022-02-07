@@ -3,12 +3,13 @@ package apm
 import (
 	"context"
 	"fmt"
+	"runtime/debug"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/zerrors"
 	nr "github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"runtime/debug"
 )
 
 type NewRelic struct {

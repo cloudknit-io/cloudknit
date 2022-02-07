@@ -5,7 +5,7 @@ import (
 	"io"
 
 	_ "github.com/golang/mock/mockgen/model" // workaround for mockgen failing
-	"github.com/google/go-github/v32/github"
+	"github.com/google/go-github/v42/github"
 )
 
 //go:generate go run --mod=mod github.com/golang/mock/mockgen -destination=../../../mocks/mock_github_api.go -package=mocks "github.com/compuzest/zlifecycle-il-operator/controllers/util/github" GitAPI,RepositoryAPI
@@ -20,8 +20,8 @@ type GitAPI interface {
 }
 
 type HTTPGitAPI struct {
-	Ctx    context.Context
-	Client *github.GitService
+	ctx context.Context
+	c   *github.GitService
 }
 
 type RepositoryAPI interface {
@@ -33,17 +33,20 @@ type RepositoryAPI interface {
 }
 
 type HTTPRepositoryAPI struct {
-	Ctx    context.Context
-	Client *github.RepositoriesService
+	ctx context.Context
+	c   *github.RepositoriesService
 }
 
-type Package struct {
-	FullName      string
-	Description   string
-	StarsCount    int
-	ForksCount    int
-	LastUpdatedBy string
+type AppAPI interface {
+	FindRepositoryInstallation(owner string, repo string) (*github.Installation, *github.Response, error)
 }
+
+type HTTPAppAPI struct {
+	ctx context.Context
+	c   *github.AppsService
+}
+
+// Git objects
 
 type HookCfg struct {
 	URL         string `json:"url"`
@@ -55,7 +58,3 @@ type RepoOpts struct {
 	Repo  string `json:"repo"`
 	Ref   string `json:"ref"`
 }
-
-type Owner = string
-
-type Repo = string

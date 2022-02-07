@@ -229,7 +229,7 @@ func getHelmValues(environment *stablev1.Environment, environmentComponent *stab
         module:
             source: %s
             path: %s`, env.ArgocdNamespace(),
-	        environment.Spec.TeamName,
+		environment.Spec.TeamName,
 		environment.Spec.EnvName,
 		environmentComponent.Name,
 		il.EnvironmentComponentModuleSource(environmentComponent.Module.Source, environmentComponent.Module.Name),

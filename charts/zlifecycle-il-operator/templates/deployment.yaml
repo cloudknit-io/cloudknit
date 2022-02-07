@@ -47,6 +47,8 @@ spec:
               value: {{ .Values.company.config.gitOrganization }}
             - name: GITHUB_WEBHOOK_SECRET
               value: {{ .Values.git.config.webhookSecret }}
+            - name: GITHUB_APP_ID
+              value: {{ .Values.git.config.githubAppId }}
             - name: ENVIRONMENT
               value: {{ .Values.environment }}
             - name: COMPANY_NAME

@@ -15,8 +15,11 @@ package argocd
 import (
 	"context"
 	"fmt"
-	"github.com/pkg/errors"
 	"strings"
+
+	"github.com/sirupsen/logrus"
+
+	"github.com/pkg/errors"
 
 	appv1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
@@ -85,7 +88,7 @@ func DeleteApplication(log logr.Logger, api API, name string) error {
 	return api.DeleteApplication(name, bearer)
 }
 
-func RegisterRepo(log logr.Logger, api API, repoOpts RepoOpts) (bool, error) {
+func RegisterRepo(log *logrus.Entry, api API, repoOpts *RepoOpts) (bool, error) {
 	repoURI := repoOpts.RepoURL[strings.LastIndex(repoOpts.RepoURL, "/")+1:]
 	repoName := strings.TrimSuffix(repoURI, ".git")
 	tokenResponse, err := api.GetAuthToken()
@@ -94,31 +97,46 @@ func RegisterRepo(log logr.Logger, api API, repoOpts RepoOpts) (bool, error) {
 	}
 	bearer := toBearerToken(tokenResponse.Token)
 
-	repositories, resp1, err1 := api.ListRepositories(bearer)
-	if err1 != nil {
-		return false, errors.Wrap(err1, "error listing repositories")
+	repositories, resp1, err := api.ListRepositories(bearer)
+	if err != nil {
+		return false, errors.Wrap(err, "error listing repositories")
 	}
 	defer common.CloseBody(resp1.Body)
+
+	l := log.WithFields(logrus.Fields{
+		"repoName": repoName,
+		"repoUrl":  repoOpts.RepoURL,
+	})
 	if isRepoRegistered(repositories, repoOpts.RepoURL) {
-		log.Info("Repository already registered on ArgoCD",
-			"repoName", repoName,
-			"repoUrl", repoOpts.RepoURL,
-		)
+		l.Info("Repository already registered on ArgoCD")
 		return false, nil
 	}
-	log.Info(
-		"Repository is not registered on ArgoCD, registering now...",
-		"repoName", repoName,
-		"repoUrl", repoOpts.RepoURL,
-	)
-	createRepoBody := CreateRepoBody{Repo: repoOpts.RepoURL, Name: repoName, SSHPrivateKey: repoOpts.SSHPrivateKey}
-	resp2, err2 := api.CreateRepository(&createRepoBody, bearer)
-	if err2 != nil {
-		return false, errors.Wrapf(err2, "error registering repository [%s]", repoName)
+	l.Info("Repository is not registered on ArgoCD")
+
+	var body interface{}
+	if repoOpts.Mode == ModeGitHubApp {
+		l.WithFields(logrus.Fields{
+			"installationId": repoOpts.GitHubAppInstallationID,
+			"appId":          repoOpts.GitHubAppID,
+		}).Info("Registering git repo in ArgoCD using GitHub App mode")
+		body = CreateRepoViaGitHubAppBody{
+			Repo:                    repoOpts.RepoURL,
+			Name:                    repoName,
+			GitHubAppPrivateKey:     string(repoOpts.GitHubAppPrivateKey),
+			GitHubAppInstallationID: repoOpts.GitHubAppInstallationID,
+			GitHubAppID:             repoOpts.GitHubAppID,
+		}
+	} else {
+		l.Info("Registering git repo in ArgoCD using SSH mode")
+		body = CreateRepoViaSSHBody{Repo: repoOpts.RepoURL, Name: repoName, SSHPrivateKey: repoOpts.SSHPrivateKey}
+	}
+	resp2, err := api.CreateRepository(body, bearer)
+	if err != nil {
+		return false, errors.Wrapf(err, "error registering repository [%s]", repoName)
 	}
 	defer common.CloseBody(resp2.Body)
 
-	log.Info("Successfully registered repository on ArgoCD", "repo", repoOpts.RepoURL)
+	l.Info("Successfully registered repository on ArgoCD")
 	return true, nil
 }
 

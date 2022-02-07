@@ -3,9 +3,10 @@ package il
 import (
 	"context"
 	"fmt"
+	"path/filepath"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/git"
-	"path/filepath"
 )
 
 type Service struct {

@@ -304,9 +304,8 @@ func skipComponent(destroyProtection bool, destroyFlag bool, selectiveReconcile 
 	if tags == nil {
 		if selectiveReconcile.SkipMode {
 			return noSkipStatus
-		} else {
-			return selectiveReconcileStatus
 		}
+		return selectiveReconcileStatus
 	}
 
 	for _, tag := range tags {

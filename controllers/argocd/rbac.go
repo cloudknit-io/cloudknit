@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	"github.com/go-errors/errors"
 )
 
 func parsePolicyCsv(policyCsv string) (*RbacMap, error) {
@@ -116,7 +118,7 @@ func parsePolicy(p string) (*RbacPolicy, error) {
 	rgx := regexp.MustCompile("^(.+),(.+),(.+),(.+),(.+),(.+)$")
 	matched := rgx.FindAllStringSubmatch(p, -1)
 	if matched == nil || len(matched) != 1 || len(matched[0]) != 7 {
-		return nil, fmt.Errorf("error file parsing policy: %s", p)
+		return nil, errors.Errorf("error file parsing policy: %s", p)
 	}
 	parsed := RbacPolicy{
 		Identifier: matched[0][1],
@@ -134,7 +136,7 @@ func parseGroup(g string) (*RbacGroup, error) {
 	rgx := regexp.MustCompile("^(.+),(.+),(.+)$")
 	matched := rgx.FindAllStringSubmatch(g, -1)
 	if matched == nil || len(matched) != 1 || len(matched[0]) != 4 {
-		return nil, fmt.Errorf("error parsing group: %s", g)
+		return nil, errors.Errorf("error parsing group: %s", g)
 	}
 	parsed := RbacGroup{
 		Identifier: matched[0][1],

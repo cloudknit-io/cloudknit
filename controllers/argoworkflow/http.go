@@ -17,6 +17,9 @@ import (
 	"fmt"
 	"net/http"
 
+
+	"github.com/go-errors/errors"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 )
 
@@ -26,7 +29,7 @@ func NewHTTPClient(ctx context.Context, serverURL string) API {
 
 func (api *HTTPAPI) ListWorkflows(opts ListWorkflowOptions) (*ListWorkflowsResponse, *http.Response, error) {
 	listWorkflowsURL := fmt.Sprintf("%s/api/v1/workflows/%s?fields=items.metadata.name", api.serverURL, opts.Namespace)
-	req, err := http.NewRequestWithContext(api.ctx, "GET", listWorkflowsURL, nil)
+	req, err := http.NewRequestWithContext(api.ctx, "GET", listWorkflowsURL, http.NoBody)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -53,7 +56,7 @@ func (api *HTTPAPI) ListWorkflows(opts ListWorkflowOptions) (*ListWorkflowsRespo
 
 func (api *HTTPAPI) DeleteWorkflow(opts DeleteWorkflowOptions) (*http.Response, error) {
 	deleteWorkflowURL := fmt.Sprintf("%s/api/v1/workflows/%s/%s", api.serverURL, opts.Namespace, opts.Name)
-	req, err := http.NewRequestWithContext(api.ctx, "DELETE", deleteWorkflowURL, nil)
+	req, err := http.NewRequestWithContext(api.ctx, "DELETE", deleteWorkflowURL, http.NoBody)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +74,7 @@ func (api *HTTPAPI) DeleteWorkflow(opts DeleteWorkflowOptions) (*http.Response, 
 	}
 
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("delete workflow returned non-OK response: %d", resp.StatusCode)
+		return nil, errors.Errorf("delete workflow returned non-OK response: %d", resp.StatusCode)
 	}
 
 	return resp, nil

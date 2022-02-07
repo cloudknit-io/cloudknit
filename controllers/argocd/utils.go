@@ -13,9 +13,8 @@
 package argocd
 
 import (
-	"errors"
-
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
+	"github.com/pkg/errors"
 )
 
 func getArgocdCredentialsFromEnv() (*Credentials, error) {

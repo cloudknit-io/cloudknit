@@ -106,7 +106,7 @@ type EnvironmentSpec struct {
 	Components         []*EnvironmentComponent `json:"components"`
 }
 
-// SelectiveReconcile lets you reconcile only selected Components
+// SelectiveReconcile lets you reconcile only selected Components.
 type SelectiveReconcile struct {
 	SkipMode  bool     `json:"skipMode,omitempty"`
 	TagName   string   `json:"tagName"`
