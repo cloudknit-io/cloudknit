@@ -19,8 +19,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
-
 	"github.com/compuzest/zlifecycle-il-operator/controllers/apm"
 	"github.com/sirupsen/logrus"
 
@@ -134,25 +132,15 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 
 	// services init
 	fileAPI := &file.OsFileService{}
-	argocdAPI := argocd.NewHTTPClient(apmCtx, r.Log, env.Config.ArgocdServerURL)
 	repoAPI := github.NewHTTPRepositoryAPI(apmCtx)
 	gitAPI, err := git.NewGoGit(apmCtx)
 	if err != nil {
 		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error instantiating git API"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
 	}
-	privateKey, err := common.GetSSHPrivateKey(
-		ctx,
-		r.Client,
-		client.ObjectKey{Name: env.Config.GitHubAppSecretName, Namespace: env.Config.GitHubAppSecretNamespace},
-	)
+	companyRepoAPI, err := repo.New(apmCtx, r.Client, env.Config.GitHubCompanyAuthMethod, r.LogV2)
 	if err != nil {
-		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error getting ssh private key for github app"))
-		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
-	}
-	gitAppAPI, err := github.NewHTTPAppClient(ctx, privateKey, env.Config.GitHubAppID)
-	if err != nil {
-		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error instantiating github apps client"))
+		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error instantiating repo API with github app auth mode"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
 	}
 
@@ -185,16 +173,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 
 	teamRepo := team.Spec.ConfigRepo.Source
 
-	if err := repo.TryRegisterRepoViaGitHubApp(
-		apmCtx,
-		r.Client,
-		r.LogV2,
-		argocdAPI,
-		gitAppAPI,
-		teamRepo,
-		env.Config.GitHubAppSecretNamespace,
-		env.Config.GitHubAppSecretName,
-	); err != nil {
+	if err := companyRepoAPI.TryRegisterRepo(teamRepo, env.Config.GitHubAppSecretNamespace, env.Config.GitHubAppSecretName); err != nil {
 		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error registering argocd team repo via github app auth"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
 	}

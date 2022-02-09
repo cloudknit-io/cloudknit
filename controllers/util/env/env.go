@@ -45,6 +45,7 @@ type config struct {
 	GitHubAppID               string
 	GitHubAppSecretName       string
 	GitHubAppSecretNamespace  string
+	GitHubCompanyAuthMethod   string
 
 	// kubernetes
 	KubernetesDisableWebhooks             string
@@ -132,6 +133,7 @@ var Config = config{
 	GitHubAppID:               os.Getenv("GITHUB_APP_ID"),
 	GitHubAppSecretName:       getOr("GITHUB_APP_SECRET_NAME", "github-app-ssh"),
 	GitHubAppSecretNamespace:  SystemNamespace(),
+	GitHubCompanyAuthMethod:   getOr("GITHUB_COMPANY_AUTH_METHOD", "githubApp"),
 
 	// argocd
 	ArgocdServerURL:     getOr("ARGOCD_SERVER_URL", fmt.Sprintf("http://argocd-%s-server.%s.svc.cluster.local", CompanyName(), ArgocdNamespace())),
