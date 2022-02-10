@@ -17,6 +17,7 @@ import (
 	"github.com/google/go-github/v42/github"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"strconv"
 )
 
 func GetAppInstallationID(
@@ -42,8 +43,8 @@ func GetAppInstallationID(
 	log.WithFields(logrus.Fields{
 		"owner":          owner,
 		"repo":           repo,
-		"installationId": installation.ID,
-		"appId":          installation.AppID,
+		"installationId": strconv.FormatInt(*installation.ID, 10),
+		"appId":          strconv.FormatInt(*installation.AppID, 10),
 	}).Info("Found installation for repository")
 
 	return installation.ID, nil
