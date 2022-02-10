@@ -173,7 +173,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 
 	teamRepo := team.Spec.ConfigRepo.Source
 
-	if err := companyRepoAPI.TryRegisterRepo(teamRepo, env.Config.GitHubAppSecretNamespace, env.Config.GitHubAppSecretName); err != nil {
+	if err := companyRepoAPI.TryRegisterRepo(teamRepo); err != nil {
 		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error registering argocd team repo via github app auth"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
 	}

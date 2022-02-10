@@ -23,7 +23,7 @@ const (
 //go:generate go run -mod=mod github.com/golang/mock/mockgen -destination=../../mocks/mock_repo_api.go -package=mocks "github.com/compuzest/zlifecycle-il-operator/controllers/util/repo" API
 
 type API interface {
-	TryRegisterRepo(repoURL string, secretNamespace string, secretName string) error
+	TryRegisterRepo(repoURL string) error
 }
 
 func New(ctx context.Context, c kClient.Client, mode string, log *logrus.Entry) (API, error) {
@@ -77,12 +77,8 @@ func newGitHubAppService(
 var _ API = (*githubAppService)(nil)
 
 // TryRegisterRepo registers a git repo in ArgoCD using a GitHubApp auth.
-func (s *githubAppService) TryRegisterRepo(
-	repoURL string,
-	secretNamespace string,
-	secretName string,
-) error {
-	key := kClient.ObjectKey{Namespace: secretNamespace, Name: secretName}
+func (s *githubAppService) TryRegisterRepo(repoURL string) error {
+	key := kClient.ObjectKey{Namespace: env.Config.GitHubAppSecretNamespace, Name: env.Config.GitHubAppSecretName}
 	privateKey, err := common.GetSSHPrivateKey(s.ctx, s.c, key)
 	if err != nil {
 		return err
@@ -138,8 +134,8 @@ func newSSHService(ctx context.Context, c kClient.Client, log *logrus.Entry) *ss
 }
 
 // TryRegisterRepo registers a git repo in ArgoCD using a private SSH key for auth.
-func (s *sshService) TryRegisterRepo(repoURL string, secretNamespace string, secretName string) error {
-	key := kClient.ObjectKey{Namespace: secretNamespace, Name: secretName}
+func (s *sshService) TryRegisterRepo(repoURL string) error {
+	key := kClient.ObjectKey{Namespace: env.Config.KubernetesServiceNamespace, Name: env.Config.GitSSHSecretName}
 	privateKey, err := common.GetSSHPrivateKey(s.ctx, s.c, key)
 	if err != nil {
 		return err

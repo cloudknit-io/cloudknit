@@ -143,7 +143,7 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	// reconcile logic
 	companyRepo := company.Spec.ConfigRepo.Source
 
-	if err := companyRepoAPI.TryRegisterRepo(companyRepo, env.Config.GitHubAppSecretNamespace, env.Config.GitHubAppSecretName); err != nil {
+	if err := companyRepoAPI.TryRegisterRepo(companyRepo); err != nil {
 		companyErr := zerrors.NewCompanyError(company.Spec.CompanyName, perrors.Wrap(err, "error registering company config repo in argocd using github app auth"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
 	}
@@ -165,7 +165,7 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
 	}
 
-	if err := sshRepoAPI.TryRegisterRepo(zlILRepoURL, operatorNamespace, operatorSSHSecret); err != nil {
+	if err := sshRepoAPI.TryRegisterRepo(zlILRepoURL); err != nil {
 		companyErr := zerrors.NewCompanyError(company.Spec.CompanyName, perrors.Wrap(err, "error registering company IL repo in argocd"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
 	}
@@ -223,7 +223,7 @@ func (r *CompanyReconciler) initCompany(ctx context.Context, api repo.API) error
 	}
 
 	r.LogV2.Info("Registering helm chart repo")
-	return api.TryRegisterRepo(helmChartsRepo, operatorNamespace, operatorSSHSecret)
+	return api.TryRegisterRepo(helmChartsRepo)
 }
 
 func (r *CompanyReconciler) SetupWithManager(mgr ctrl.Manager) error {
