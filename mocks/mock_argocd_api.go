@@ -67,7 +67,7 @@ func (mr *MockAPIMockRecorder) CreateProject(arg0, arg1 interface{}) *gomock.Cal
 }
 
 // CreateRepository mocks base method.
-func (m *MockAPI) CreateRepository(arg0 *argocd.CreateRepoBody, arg1 string) (*http.Response, error) {
+func (m *MockAPI) CreateRepository(arg0 interface{}, arg1 string) (*http.Response, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateRepository", arg0, arg1)
 	ret0, _ := ret[0].(*http.Response)

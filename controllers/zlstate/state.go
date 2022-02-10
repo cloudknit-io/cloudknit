@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"net/http"
+
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"net/http"
 )
 
 //go:generate go run -mod=mod github.com/golang/mock/mockgen -destination=../../mocks/mock_state_manager.go -package=mocks "github.com/compuzest/zlifecycle-il-operator/controllers/zlstate" StateManager

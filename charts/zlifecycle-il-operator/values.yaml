@@ -37,6 +37,8 @@ git:
     zlifecycleIlRepoUrl: ""
     companyConfigRepoUrl: ""
     webhookSecret: "zS3cr37"
+    githubAppId: "170128"
+    companyAuthMethod: ssh
 
 operator:
   finalizer:

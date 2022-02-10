@@ -3,14 +3,15 @@ package github_test
 import (
 	"fmt"
 	"testing"
+	"github.com/sirupsen/logrus"
+
 	"github.com/compuzest/zlifecycle-il-operator/mocks"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	github2 "github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
 	"github.com/golang/mock/gomock"
-	"github.com/google/go-github/v32/github"
+	"github.com/google/go-github/v42/github"
 	"github.com/stretchr/testify/assert"
-	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 func TestTryCreateRepositoryExisting(t *testing.T) {
@@ -28,7 +29,7 @@ func TestTryCreateRepositoryExisting(t *testing.T) {
 	mockResponse := github.Response{Response: common.CreateMockResponse(200)}
 	mockRepositoryAPI.EXPECT().GetRepository(testOwner, testRepo).Return(&testGitHubRepo, &mockResponse, nil)
 
-	log := ctrl.Log.WithName("TestTryCreateRepositoryExisting")
+	log := logrus.NewEntry(logrus.New())
 
 	created, err := github2.TryCreateRepository(log, mockRepositoryAPI, testOwner, testRepo)
 	assert.False(t, created)
@@ -52,7 +53,7 @@ func TestTryCreateRepositoryNew(t *testing.T) {
 	mockResponse2 := github.Response{Response: common.CreateMockResponse(200)}
 	mockRepositoryAPI.EXPECT().CreateRepository(testOwner, testRepo).Return(&testGitHubRepo, &mockResponse2, nil)
 
-	log := ctrl.Log.WithName("TestTryCreateRepositoryNew")
+	log := logrus.NewEntry(logrus.New())
 
 	created, err := github2.TryCreateRepository(log, mockRepositoryAPI, testOwner, testRepo)
 	assert.True(t, created)
@@ -94,7 +95,7 @@ func TestCreateRepoWebhookNew(t *testing.T) {
 		gomock.Eq(&testHook2),
 	).Return(&expectedHook, &mockResponse2, nil)
 
-	log := ctrl.Log.WithName("TestCreateRepoWebhookNew")
+	log := logrus.NewEntry(logrus.New())
 
 	testRepoURL := fmt.Sprintf("git@github.com:%s/%s", testOwner, testRepo)
 	created, err := github2.CreateRepoWebhook(log, mockRepositoryAPI, testRepoURL, testPayloadURL2, webHookSecret2)
@@ -125,7 +126,7 @@ func TestCreateRepoWebhookExisting(t *testing.T) {
 		gomock.Nil(),
 	).Return([]*github.Hook{&testHook1}, &mockResponse1, nil)
 
-	log := ctrl.Log.WithName("TestCreateRepoWebhookExisting")
+	log := logrus.NewEntry(logrus.New())
 
 	testRepoURL := fmt.Sprintf("git@github.com:%s/%s", testOwner, testRepo)
 	created, err := github2.CreateRepoWebhook(log, mockRepositoryAPI, testRepoURL, testPayloadURL1, webHookSecret1)

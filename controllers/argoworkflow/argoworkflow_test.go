@@ -13,8 +13,9 @@
 package argoworkflow_test
 
 import (
-	"github.com/compuzest/zlifecycle-il-operator/controllers/argoworkflow"
 	"testing"
+
+	"github.com/compuzest/zlifecycle-il-operator/controllers/argoworkflow"
 
 	"github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	"github.com/compuzest/zlifecycle-il-operator/mocks"
