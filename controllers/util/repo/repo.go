@@ -2,6 +2,7 @@ package repo
 
 import (
 	"context"
+	"github.com/compuzest/zlifecycle-il-operator/mocks"
 	"github.com/go-logr/logr"
 	"strconv"
 
@@ -16,28 +17,46 @@ import (
 )
 
 const (
-	GitAuthMethodSSH    = "ssh"
+	AuthMethodSSH       = "ssh"
 	AuthMethodGithubApp = "githubApp"
+	AuthMethodMock      = "mock"
 )
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -destination=../../mocks/mock_repo_api.go -package=mocks "github.com/compuzest/zlifecycle-il-operator/controllers/util/repo" API
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -destination=../../../mocks/mock_repo_api.go -package=mocks "github.com/compuzest/zlifecycle-il-operator/controllers/util/repo" Registration
 
-type API interface {
+type Registration interface {
 	TryRegisterRepo(repoURL string) error
 }
 
-func New(ctx context.Context, c kClient.Client, mode string, log *logrus.Entry) (API, error) {
+func New(ctx context.Context, c kClient.Client, mode string, log *logrus.Entry) (Registration, error) {
+	argocdAPI := argocd.NewHTTPClient(ctx, logr.FromContext(ctx), env.Config.ArgocdServerURL)
 	switch mode {
 	case AuthMethodGithubApp:
-		return newGitHubAppService(ctx, c, log)
-	case GitAuthMethodSSH:
-		return newSSHService(ctx, c, log), nil
+		// github app svc
+		privateKey, err := common.GetSSHPrivateKey(
+			ctx,
+			c,
+			kClient.ObjectKey{Name: env.Config.GitHubAppSecretName, Namespace: env.Config.GitHubAppSecretNamespace},
+		)
+		if err != nil {
+			return nil, errors.Wrap(err, "error getting ssh private key for github app")
+		}
+		gitAppAPI, err := github.NewHTTPAppClient(ctx, privateKey, env.Config.GitHubAppID)
+		if err != nil {
+			return nil, errors.Wrap(err, "error instantiating github apps client")
+		}
+		// argocd
+		return NewGitHubAppService(ctx, c, gitAppAPI, argocdAPI, log)
+	case AuthMethodSSH:
+		return NewSSHService(ctx, c, argocdAPI, log), nil
+	case AuthMethodMock:
+		return &mocks.MockRegistration{}, nil
 	default:
 		return nil, errors.Errorf("invalid mode: %s", mode)
 	}
 }
 
-type githubAppService struct {
+type GitHubAppService struct {
 	ctx       context.Context
 	c         kClient.Client
 	log       *logrus.Entry
@@ -45,27 +64,14 @@ type githubAppService struct {
 	gitAppAPI github.AppAPI
 }
 
-func newGitHubAppService(
+func NewGitHubAppService(
 	ctx context.Context,
 	c kClient.Client,
+	gitAppAPI github.AppAPI,
+	argocdAPI argocd.API,
 	log *logrus.Entry,
-) (*githubAppService, error) {
-	// github app svc
-	privateKey, err := common.GetSSHPrivateKey(
-		ctx,
-		c,
-		kClient.ObjectKey{Name: env.Config.GitHubAppSecretName, Namespace: env.Config.GitHubAppSecretNamespace},
-	)
-	if err != nil {
-		return nil, errors.Wrap(err, "error getting ssh private key for github app")
-	}
-	gitAppAPI, err := github.NewHTTPAppClient(ctx, privateKey, env.Config.GitHubAppID)
-	if err != nil {
-		return nil, errors.Wrap(err, "error instantiating github apps client")
-	}
-	// argocd
-	argocdAPI := argocd.NewHTTPClient(ctx, logr.FromContext(ctx), env.Config.ArgocdServerURL)
-	return &githubAppService{
+) (*GitHubAppService, error) {
+	return &GitHubAppService{
 		ctx:       ctx,
 		c:         c,
 		log:       log,
@@ -74,10 +80,10 @@ func newGitHubAppService(
 	}, nil
 }
 
-var _ API = (*githubAppService)(nil)
+var _ Registration = (*GitHubAppService)(nil)
 
 // TryRegisterRepo registers a git repo in ArgoCD using a GitHubApp auth.
-func (s *githubAppService) TryRegisterRepo(repoURL string) error {
+func (s *GitHubAppService) TryRegisterRepo(repoURL string) error {
 	key := kClient.ObjectKey{Namespace: env.Config.GitHubAppSecretNamespace, Name: env.Config.GitHubAppSecretName}
 	privateKey, err := common.GetSSHPrivateKey(s.ctx, s.c, key)
 	if err != nil {
@@ -116,16 +122,15 @@ func (s *githubAppService) TryRegisterRepo(repoURL string) error {
 	return nil
 }
 
-type sshService struct {
+type SSHService struct {
 	ctx       context.Context
 	c         kClient.Client
 	log       *logrus.Entry
 	argocdAPI argocd.API
 }
 
-func newSSHService(ctx context.Context, c kClient.Client, log *logrus.Entry) *sshService {
-	argocdAPI := argocd.NewHTTPClient(ctx, logr.FromContext(ctx), env.Config.ArgocdServerURL)
-	return &sshService{
+func NewSSHService(ctx context.Context, c kClient.Client, argocdAPI argocd.API, log *logrus.Entry) *SSHService {
+	return &SSHService{
 		ctx:       ctx,
 		c:         c,
 		log:       log,
@@ -134,7 +139,7 @@ func newSSHService(ctx context.Context, c kClient.Client, log *logrus.Entry) *ss
 }
 
 // TryRegisterRepo registers a git repo in ArgoCD using a private SSH key for auth.
-func (s *sshService) TryRegisterRepo(repoURL string) error {
+func (s *SSHService) TryRegisterRepo(repoURL string) error {
 	key := kClient.ObjectKey{Namespace: env.Config.KubernetesServiceNamespace, Name: env.Config.GitSSHSecretName}
 	privateKey, err := common.GetSSHPrivateKey(s.ctx, s.c, key)
 	if err != nil {
@@ -152,4 +157,4 @@ func (s *sshService) TryRegisterRepo(repoURL string) error {
 	return nil
 }
 
-var _ API = (*sshService)(nil)
+var _ Registration = (*SSHService)(nil)

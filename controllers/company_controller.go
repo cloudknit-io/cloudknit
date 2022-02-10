@@ -114,12 +114,12 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 	companyRepoAPI, err := repo.New(apmCtx, r.Client, env.Config.GitHubCompanyAuthMethod, r.LogV2)
 	if err != nil {
-		companyErr := zerrors.NewCompanyError(company.Spec.CompanyName, perrors.Wrap(err, "error instantiating repo API with github app auth mode"))
+		companyErr := zerrors.NewCompanyError(company.Spec.CompanyName, perrors.Wrap(err, "error instantiating repo Registration with github app auth mode"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
 	}
-	sshRepoAPI, err := repo.New(apmCtx, r.Client, repo.GitAuthMethodSSH, r.LogV2)
+	sshRepoAPI, err := repo.New(apmCtx, r.Client, repo.AuthMethodSSH, r.LogV2)
 	if err != nil {
-		companyErr := zerrors.NewCompanyError(company.Spec.CompanyName, perrors.Wrap(err, "error instantiating repo API with ssh auth mode"))
+		companyErr := zerrors.NewCompanyError(company.Spec.CompanyName, perrors.Wrap(err, "error instantiating repo Registration with ssh auth mode"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
 	}
 
@@ -203,7 +203,7 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	return ctrl.Result{}, nil
 }
 
-func (r *CompanyReconciler) initCompany(ctx context.Context, api repo.API) error {
+func (r *CompanyReconciler) initCompany(ctx context.Context, api repo.Registration) error {
 	r.LogV2.Info("Running company operator init")
 
 	r.LogV2.Info("Creating webhook for IL repo")
