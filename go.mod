@@ -12,7 +12,6 @@ require (
 	github.com/go-logr/logr v0.4.0
 	github.com/golang/mock v1.5.0
 	github.com/google/go-cmp v0.5.6
-	github.com/google/go-github/v32 v32.1.0
 	github.com/google/go-github/v42 v42.0.0
 	github.com/newrelic/go-agent/v3 v3.15.1
 	github.com/newrelic/go-agent/v3/integrations/logcontext/nrlogrusplugin v1.0.1
