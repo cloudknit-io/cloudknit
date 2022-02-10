@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"net/http"
+	"github.com/pkg/errors"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/notifier"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	"github.com/sirupsen/logrus"
-	"net/http"
 )
 
 func (u *UINotifier) Notify(ctx context.Context, n *notifier.Notification) error {
@@ -37,7 +39,7 @@ func (u *UINotifier) Notify(ctx context.Context, n *notifier.Notification) error
 	defer common.CloseBody(resp.Body)
 
 	if resp.StatusCode != 201 {
-		return fmt.Errorf("bad status code received: %d", resp.StatusCode)
+		return errors.Errorf("bad status code received: %d", resp.StatusCode)
 	}
 
 	return nil

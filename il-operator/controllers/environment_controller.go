@@ -15,11 +15,12 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/apm"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/zlstate"
 	"github.com/sirupsen/logrus"
-	"strings"
-	"time"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/zerrors"
 

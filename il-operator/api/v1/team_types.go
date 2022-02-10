@@ -54,6 +54,7 @@ type TeamList struct {
 	Items           []Team `json:"items"`
 }
 
+// nolint
 func init() {
 	SchemeBuilder.Register(&Team{}, &TeamList{})
 }

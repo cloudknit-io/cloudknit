@@ -1,8 +1,9 @@
 package secrets
 
 import (
-	"errors"
 	"fmt"
+
+	"github.com/pkg/errors"
 )
 
 type SecretMeta struct {
@@ -35,6 +36,6 @@ func CreateKey(name string, scope string, meta SecretMeta) (string, error) {
 		}
 		return fmt.Sprintf("/%s/%s/%s/%s/%s", meta.Company, meta.Team, meta.Environment, meta.EnvironmentComponent, name), nil
 	default:
-		return "", fmt.Errorf("invalid scope: %s", scope)
+		return "", errors.Errorf("invalid scope: %s", scope)
 	}
 }

@@ -60,6 +60,7 @@ type CompanyList struct {
 	Items           []Company `json:"items"`
 }
 
+// nolint
 func init() {
 	SchemeBuilder.Register(&Company{}, &CompanyList{})
 }

@@ -14,7 +14,6 @@ package file
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"text/template"
 
@@ -133,7 +132,7 @@ func saveBytesToFile(bytes []byte, folderName string, fileName string) error {
 		return fmt.Errorf("error: failed to create directory: %w", err)
 	}
 
-	return ioutil.WriteFile(fmt.Sprintf("%s/%s", folderName, fileName), bytes, 0644)
+	return os.WriteFile(fmt.Sprintf("%s/%s", folderName, fileName), bytes, 0o600)
 }
 
 // RemoveAll removes path and any children it contains.

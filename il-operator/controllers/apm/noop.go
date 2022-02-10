@@ -2,10 +2,11 @@ package apm
 
 import (
 	"context"
+	"runtime/debug"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/zerrors"
 	nr "github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/sirupsen/logrus"
-	"runtime/debug"
 )
 
 type Noop struct{}

@@ -1,16 +1,16 @@
 package common
 
 import (
-	"errors"
-	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"github.com/pkg/errors"
 )
 
 // CopyFile copies file from src path to dst path.
 // If dst path is a folder, it will extract the filename of the src path and append it to dst.
 func CopyFile(src string, dst string) error {
-	input, err := ioutil.ReadFile(src)
+	input, err := os.ReadFile(src)
 	if err != nil {
 		return err
 	}
@@ -21,7 +21,7 @@ func CopyFile(src string, dst string) error {
 		safeDst = filepath.Join(dst, name)
 	}
 
-	err = ioutil.WriteFile(safeDst, input, 0o600)
+	err = os.WriteFile(safeDst, input, 0o600)
 	if err != nil {
 		return err
 	}
@@ -35,7 +35,7 @@ func CopyDirContent(src string, dst string) error {
 		return errors.New("source is not a directory")
 	}
 
-	files, err := ioutil.ReadDir(src)
+	files, err := os.ReadDir(src)
 	if err != nil {
 		return err
 	}

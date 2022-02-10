@@ -1,8 +1,9 @@
 package controllers
 
 import (
-	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	"strings"
+
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 )
 
 var (

@@ -17,9 +17,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/pkg/errors"
 	"net/http"
 	url2 "net/url"
+
+	"github.com/pkg/errors"
 
 	appv1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
@@ -39,7 +40,7 @@ func (api *HTTPAPI) GetAuthToken() (*GetTokenResponse, error) {
 	body := GetTokenBody{Username: creds.Username, Password: creds.Password}
 	jsonBody, err := common.ToJSON(body)
 	if err != nil {
-		return nil, errors.Wrap(err, "error marshalling body to JSON")
+		return nil, errors.Wrap(err, "error marshaling body to JSON")
 	}
 
 	url := fmt.Sprintf("%s/api/v1/session", api.serverURL)
@@ -79,7 +80,7 @@ func isRepoRegistered(repos *RepositoryList, repoURL string) bool {
 
 func (api *HTTPAPI) ListRepositories(bearerToken string) (*RepositoryList, *http.Response, error) {
 	url := fmt.Sprintf("%s/api/v1/repositories", api.serverURL)
-	req, err := http.NewRequestWithContext(api.ctx, "GET", url, nil)
+	req, err := http.NewRequestWithContext(api.ctx, "GET", url, http.NoBody)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "error creating GET request")
 	}
@@ -107,14 +108,14 @@ func (api *HTTPAPI) ListRepositories(bearerToken string) (*RepositoryList, *http
 	return repos, resp, nil
 }
 
-func (api *HTTPAPI) CreateRepository(body *CreateRepoBody, bearerToken string) (*http.Response, error) {
+func (api *HTTPAPI) CreateRepository(body interface{}, bearerToken string) (*http.Response, error) {
 	jsonBody, err := common.ToJSON(body)
 	if err != nil {
-		return nil, errors.Wrap(err, "error marshalling body to JSON")
+		return nil, errors.Wrap(err, "error marshaling body to JSON")
 	}
 
 	url := fmt.Sprintf("%s/api/v1/repositories", api.serverURL)
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonBody))
+	req, err := http.NewRequestWithContext(api.ctx, "POST", url, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating POST request")
 	}
@@ -138,7 +139,7 @@ func (api *HTTPAPI) CreateRepository(body *CreateRepoBody, bearerToken string) (
 
 func (api *HTTPAPI) DoesApplicationExist(name string, bearerToken string) (bool, error) {
 	url := fmt.Sprintf("%s/api/v1/applications/%s", api.serverURL, name)
-	req, err := http.NewRequestWithContext(api.ctx, "GET", url, nil)
+	req, err := http.NewRequestWithContext(api.ctx, "GET", url, http.NoBody)
 	if err != nil {
 		return false, errors.Wrap(err, "error creating GET request")
 	}
@@ -178,7 +179,7 @@ func (api *HTTPAPI) DoesApplicationExist(name string, bearerToken string) (bool,
 func (api *HTTPAPI) CreateApplication(application *appv1.Application, bearerToken string) (*http.Response, error) {
 	jsonBody, err := common.ToJSON(application)
 	if err != nil {
-		return nil, errors.Wrap(err, "error marshalling body to JSON")
+		return nil, errors.Wrap(err, "error marshaling body to JSON")
 	}
 
 	url := fmt.Sprintf("%s/api/v1/applications", api.serverURL)
@@ -206,7 +207,7 @@ func (api *HTTPAPI) CreateApplication(application *appv1.Application, bearerToke
 
 func (api *HTTPAPI) DeleteApplication(name string, bearerToken string) error {
 	url := fmt.Sprintf("%s/api/v1/applications/%s", api.serverURL, name)
-	req, err := http.NewRequestWithContext(api.ctx, "DELETE", url, nil)
+	req, err := http.NewRequestWithContext(api.ctx, "DELETE", url, http.NoBody)
 	if err != nil {
 		return errors.Wrap(err, "error creating DELETE request")
 	}
@@ -231,7 +232,7 @@ func (api *HTTPAPI) DeleteApplication(name string, bearerToken string) error {
 func (api *HTTPAPI) CreateProject(project *CreateProjectBody, bearerToken string) (*http.Response, error) {
 	jsonBody, err := common.ToJSON(project)
 	if err != nil {
-		return nil, errors.Wrap(err, "error marshalling body to JSON")
+		return nil, errors.Wrap(err, "error marshaling body to JSON")
 	}
 
 	url := fmt.Sprintf("%s/api/v1/projects", api.serverURL)
@@ -259,7 +260,7 @@ func (api *HTTPAPI) CreateProject(project *CreateProjectBody, bearerToken string
 
 func (api *HTTPAPI) DoesProjectExist(name string, bearerToken string) (exists bool, response *http.Response, err error) {
 	url := fmt.Sprintf("%s/api/v1/projects/%s", api.serverURL, name)
-	req, err := http.NewRequestWithContext(api.ctx, "GET", url, nil)
+	req, err := http.NewRequestWithContext(api.ctx, "GET", url, http.NoBody)
 	if err != nil {
 		return false, nil, errors.Wrap(err, "error creating GET request")
 	}

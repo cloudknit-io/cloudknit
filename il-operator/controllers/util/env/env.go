@@ -42,6 +42,10 @@ type config struct {
 	// github
 	GitHubWebhookSecret       string
 	GitHubCompanyOrganization string
+	GitHubAppID               string
+	GitHubAppSecretName       string
+	GitHubAppSecretNamespace  string
+	GitHubCompanyAuthMethod   string
 
 	// kubernetes
 	KubernetesDisableWebhooks             string
@@ -126,6 +130,10 @@ var Config = config{
 	// github
 	GitHubWebhookSecret:       os.Getenv("GITHUB_WEBHOOK_SECRET"),
 	GitHubCompanyOrganization: os.Getenv("GITHUB_COMPANY_ORGANIZATION"),
+	GitHubAppID:               os.Getenv("GITHUB_APP_ID"),
+	GitHubAppSecretName:       getOr("GITHUB_APP_SECRET_NAME", "github-app-ssh"),
+	GitHubAppSecretNamespace:  SystemNamespace(),
+	GitHubCompanyAuthMethod:   getOr("GITHUB_COMPANY_AUTH_METHOD", "ssh"),
 
 	// argocd
 	ArgocdServerURL:     getOr("ARGOCD_SERVER_URL", fmt.Sprintf("http://argocd-%s-server.%s.svc.cluster.local", CompanyName(), ArgocdNamespace())),
@@ -139,7 +147,7 @@ var Config = config{
 		"http://argo-workflow-server.%s.svc.cluster.local:2746",
 		ArgoWorkflowsNamespace(),
 	)),
-	ArgoWorkflowsWorkflowNamespace: getOr("ARGOWORKFLOWS_WORKFLOW_NAMESPACE", fmt.Sprintf("%s", WorkflowsNamespace())),
+	ArgoWorkflowsWorkflowNamespace: getOr("ARGOWORKFLOWS_WORKFLOW_NAMESPACE", WorkflowsNamespace()),
 
 	// zlifecycle
 	ZLifecycleStateManagerURL: getOr(

@@ -3,7 +3,6 @@ package common
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -40,7 +39,7 @@ func GetHTTPClient() *http.Client {
 }
 
 func ReadBody(stream io.ReadCloser) ([]byte, error) {
-	body, err := ioutil.ReadAll(stream)
+	body, err := io.ReadAll(stream)
 	if err != nil {
 		return nil, err
 	}
@@ -49,6 +48,6 @@ func ReadBody(stream io.ReadCloser) ([]byte, error) {
 }
 
 func CreateMockResponse(code int) *http.Response {
-	r := http.Response{Body: ioutil.NopCloser(bytes.NewReader([]byte{})), StatusCode: code}
+	r := http.Response{Body: io.NopCloser(bytes.NewReader([]byte{})), StatusCode: code}
 	return &r
 }

@@ -15,6 +15,7 @@ package main
 import (
 	"context"
 	"flag"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/apm"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/gitreconciler"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
@@ -44,7 +45,8 @@ var (
 
 // +kubebuilder:rbac:groups="",resources=configmaps;secrets,verbs=get;list;watch;update;patch
 // +kubebuilder:rbac:groups=coordination.k8s.io,resources=leases,verbs=get;create;update
-func init() { // nolint
+// nolint
+func init() {
 	l := logrus.New()
 	l.SetFormatter(nrlogrusplugin.ContextFormatter{})
 	setupLog = l.WithField("logger", "setup")

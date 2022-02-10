@@ -3,9 +3,10 @@ package gotfvars
 import (
 	"context"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
+
+	"github.com/sirupsen/logrus"
 
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/gitreconciler"
@@ -18,7 +19,7 @@ func SaveTfVarsToFile(fs file.FSAPI, vars []*v1.Variable, folderName string, fil
 	variables := make([]*v1.Variable, 0, len(vars))
 	for _, v := range vars {
 		// TODO: This is a hack to just to make it work, needs to be revisited
-		v.Value = fmt.Sprintf("\"%s\"", v.Value)
+		v.Value = fmt.Sprintf("%q", v.Value)
 		variables = append(variables, v)
 	}
 

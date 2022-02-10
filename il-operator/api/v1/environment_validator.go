@@ -3,13 +3,14 @@ package v1
 import (
 	"context"
 	"fmt"
+	"os"
+	"time"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/notifier/uinotifier"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/git"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/log"
 	perrors "github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"os"
-	"time"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/notifier"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
@@ -19,9 +20,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 )
 
-var (
-	ctx = context.Background()
-)
+var ctx = context.Background()
 
 func notifyError(e *Environment, ntfr notifier.Notifier, msg string, debug interface{}) error {
 	n := &notifier.Notification{
