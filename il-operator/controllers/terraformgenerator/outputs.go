@@ -3,6 +3,7 @@ package terraformgenerator
 import (
 	"fmt"
 	"strings"
+
 	"github.com/go-errors/errors"
 
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"

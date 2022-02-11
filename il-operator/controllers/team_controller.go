@@ -138,7 +138,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error instantiating git Registration"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
 	}
-	companyRepoAPI, err := repo.New(apmCtx, r.Client, env.Config.GitHubCompanyAuthMethod, r.LogV2)
+	companyRepoAPI, err := repo.NewRegistration(apmCtx, r.Client, env.Config.GitHubCompanyAuthMethod, r.LogV2)
 	if err != nil {
 		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error instantiating repo Registration with github app auth mode"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)

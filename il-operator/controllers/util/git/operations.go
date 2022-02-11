@@ -3,11 +3,12 @@ package git
 import (
 	"errors"
 	"fmt"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 
 	gogit "github.com/go-git/go-git/v5"
 )

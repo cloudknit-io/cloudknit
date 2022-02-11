@@ -3,6 +3,7 @@ package apm
 import (
 	"context"
 	"fmt"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/zerrors"
 	nr "github.com/newrelic/go-agent/v3/newrelic"

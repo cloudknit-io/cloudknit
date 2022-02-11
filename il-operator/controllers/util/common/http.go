@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/google/go-github/v42/github"
+
 	"github.com/go-logr/logr"
 )
 
@@ -48,6 +50,11 @@ func ReadBody(stream io.ReadCloser) ([]byte, error) {
 }
 
 func CreateMockResponse(code int) *http.Response {
-	r := http.Response{Body: io.NopCloser(bytes.NewReader([]byte{})), StatusCode: code}
-	return &r
+	return &http.Response{Body: io.NopCloser(bytes.NewReader([]byte{})), StatusCode: code}
+}
+
+func CreateMockGithubResponse(code int) *github.Response {
+	return &github.Response{
+		Response: CreateMockResponse(code),
+	}
 }
