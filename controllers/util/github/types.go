@@ -8,7 +8,7 @@ import (
 	"github.com/google/go-github/v42/github"
 )
 
-//go:generate go run --mod=mod github.com/golang/mock/mockgen -destination=../../../mocks/mock_github_api.go -package=mocks "github.com/compuzest/zlifecycle-il-operator/controllers/util/github" GitAPI,RepositoryAPI
+//go:generate go run --mod=mod github.com/golang/mock/mockgen -destination=../../../mocks/mock_github_api.go -package=mocks "github.com/compuzest/zlifecycle-il-operator/controllers/util/github" GitAPI,RepositoryAPI,AppAPI
 
 type GitAPI interface {
 	GetRef(owner string, repo string, ref string) (*github.Reference, *github.Response, error)

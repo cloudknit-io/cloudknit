@@ -13,6 +13,7 @@
 package argocd_test
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -115,12 +116,14 @@ func TestRegisterRepoNewRepo(t *testing.T) {
 
 	repoOpts := argocd.RepoOpts{RepoURL: "git@github.com:CompuZest/test_repo.git", SSHPrivateKey: "test_key"}
 
+	mockToken := &argocd.GetTokenResponse{Token: "test_token"}
 	mockAPI.EXPECT().GetAuthToken().Return(&argocd.GetTokenResponse{Token: "test_token"}, nil)
+	token := fmt.Sprintf("Bearer %s", mockToken.Token)
 	repo := argocd.Repository{Repo: "git@github.com:CompuZest/test_repo2.git", Name: "test_repo2"}
 	list := argocd.RepositoryList{Items: []argocd.Repository{repo}}
-	mockAPI.EXPECT().ListRepositories(gomock.Any()).Return(&list, common.CreateMockResponse(200), nil)
+	mockAPI.EXPECT().ListRepositories(token).Return(&list, common.CreateMockResponse(200), nil)
 	createRepoBody := argocd.CreateRepoViaSSHBody{Name: "test_repo", Repo: "git@github.com:CompuZest/test_repo.git", SSHPrivateKey: "test_key"}
-	mockAPI.EXPECT().CreateRepository(gomock.Eq(createRepoBody), gomock.Any()).Return(common.CreateMockResponse(200), nil)
+	mockAPI.EXPECT().CreateRepository(gomock.Eq(createRepoBody), token).Return(common.CreateMockResponse(200), nil)
 
 	log := logrus.NewEntry(logrus.New())
 	registered, err := argocd.RegisterRepo(log, mockAPI, &repoOpts)
@@ -136,10 +139,12 @@ func TestRegisterRepoExistingRepo(t *testing.T) {
 
 	mockArgocdAPI := mocks.NewMockAPI(mockCtrl)
 
-	mockArgocdAPI.EXPECT().GetAuthToken().Return(&argocd.GetTokenResponse{Token: "test_token"}, nil)
+	mockToken := &argocd.GetTokenResponse{Token: "test_token"}
+	mockArgocdAPI.EXPECT().GetAuthToken().Return(mockToken, nil)
 	repo := argocd.Repository{Repo: "git@github.com:CompuZest/test_repo.git", Name: "test_repo"}
 	list := argocd.RepositoryList{Items: []argocd.Repository{repo}}
-	mockArgocdAPI.EXPECT().ListRepositories(gomock.Any()).Return(&list, common.CreateMockResponse(200), nil)
+	token := fmt.Sprintf("Bearer %s", mockToken.Token)
+	mockArgocdAPI.EXPECT().ListRepositories(token).Return(&list, common.CreateMockResponse(200), nil)
 
 	log := logrus.NewEntry(logrus.New())
 	repoOpts := argocd.RepoOpts{RepoURL: "git@github.com:CompuZest/test_repo.git", SSHPrivateKey: "test_key"}

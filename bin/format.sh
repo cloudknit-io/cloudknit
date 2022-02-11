@@ -8,4 +8,4 @@ dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $dir/..
 
 echo "=== formatting ==="
-gofumpt -w "$(find . -type f -name "*.go" -not -path "./vendor/*")"
+gofumpt -l -w ./controllers

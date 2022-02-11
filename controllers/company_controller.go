@@ -15,10 +15,11 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/zerrors"
-	perrors "github.com/pkg/errors"
 	"sync"
 	"time"
+
+	"github.com/compuzest/zlifecycle-il-operator/controllers/zerrors"
+	perrors "github.com/pkg/errors"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/apm"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
@@ -112,12 +113,12 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-	companyRepoAPI, err := repo.New(apmCtx, r.Client, env.Config.GitHubCompanyAuthMethod, r.LogV2)
+	companyRepoAPI, err := repo.NewRegistration(apmCtx, r.Client, env.Config.GitHubCompanyAuthMethod, r.LogV2)
 	if err != nil {
 		companyErr := zerrors.NewCompanyError(company.Spec.CompanyName, perrors.Wrap(err, "error instantiating repo Registration with github app auth mode"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
 	}
-	sshRepoAPI, err := repo.New(apmCtx, r.Client, repo.AuthMethodSSH, r.LogV2)
+	sshRepoAPI, err := repo.NewRegistration(apmCtx, r.Client, repo.AuthMethodSSH, r.LogV2)
 	if err != nil {
 		companyErr := zerrors.NewCompanyError(company.Spec.CompanyName, perrors.Wrap(err, "error instantiating repo Registration with ssh auth mode"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)

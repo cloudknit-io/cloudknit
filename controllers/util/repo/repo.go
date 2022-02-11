@@ -2,12 +2,10 @@ package repo
 
 import (
 	"context"
-	"github.com/compuzest/zlifecycle-il-operator/mocks"
-	"github.com/go-logr/logr"
-	"strconv"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
+	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -19,7 +17,6 @@ import (
 const (
 	AuthMethodSSH       = "ssh"
 	AuthMethodGithubApp = "githubApp"
-	AuthMethodMock      = "mock"
 )
 
 //go:generate go run -mod=mod github.com/golang/mock/mockgen -destination=../../../mocks/mock_repo_api.go -package=mocks "github.com/compuzest/zlifecycle-il-operator/controllers/util/repo" Registration
@@ -28,8 +25,8 @@ type Registration interface {
 	TryRegisterRepo(repoURL string) error
 }
 
-func New(ctx context.Context, c kClient.Client, mode string, log *logrus.Entry) (Registration, error) {
-	argocdAPI := argocd.NewHTTPClient(ctx, logr.FromContext(ctx), env.Config.ArgocdServerURL)
+func NewRegistration(ctx context.Context, c kClient.Client, mode string, log *logrus.Entry) (Registration, error) {
+	argocdAPI := argocd.NewHTTPClient(ctx, logr.FromContextOrDiscard(ctx), env.Config.ArgocdServerURL)
 	switch mode {
 	case AuthMethodGithubApp:
 		// github app svc
@@ -49,8 +46,6 @@ func New(ctx context.Context, c kClient.Client, mode string, log *logrus.Entry) 
 		return NewGitHubAppService(ctx, c, gitAppAPI, argocdAPI, log)
 	case AuthMethodSSH:
 		return NewSSHService(ctx, c, argocdAPI, log), nil
-	case AuthMethodMock:
-		return &mocks.MockRegistration{}, nil
 	default:
 		return nil, errors.Errorf("invalid mode: %s", mode)
 	}
@@ -90,17 +85,12 @@ func (s *GitHubAppService) TryRegisterRepo(repoURL string) error {
 		return err
 	}
 
-	int64AppID, err := strconv.ParseInt(env.Config.GitHubAppID, 10, 64)
-	if err != nil {
-		return errors.Wrap(err, "error parsing app id as int64")
-	}
-
 	owner, repo, err := common.ParseRepositoryInfo(repoURL)
 	if err != nil {
 		return errors.Wrapf(err, "error parsing owner and repo name from git url: [%s]", repoURL)
 	}
 
-	installationID, err := github.GetAppInstallationID(s.log, s.gitAppAPI, owner, repo)
+	installationID, appID, err := github.GetAppInstallationID(s.log, s.gitAppAPI, owner, repo)
 	if err != nil {
 		return errors.Wrapf(err, "error getting github app installation id for repo %s/%s", owner, repo)
 	}
@@ -110,7 +100,7 @@ func (s *GitHubAppService) TryRegisterRepo(repoURL string) error {
 
 	repoOpts := argocd.RepoOpts{
 		RepoURL:                 repoURL,
-		GitHubAppID:             int64AppID,
+		GitHubAppID:             *appID,
 		GitHubAppInstallationID: *installationID,
 		GitHubAppPrivateKey:     privateKey,
 		Mode:                    argocd.ModeGitHubApp,

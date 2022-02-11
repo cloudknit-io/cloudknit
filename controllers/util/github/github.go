@@ -13,11 +13,12 @@
 package github
 
 import (
+	"strconv"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
 	"github.com/google/go-github/v42/github"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"strconv"
 )
 
 func GetAppInstallationID(
@@ -25,19 +26,19 @@ func GetAppInstallationID(
 	api AppAPI,
 	owner string,
 	repo string,
-) (*int64, error) {
+) (installationID *int64, appID *int64, err error) {
 	log.WithFields(logrus.Fields{
 		"owner": owner,
 		"repo":  repo,
 	}).Info("Finding GitHub App installation ID")
 	installation, resp, err := api.FindRepositoryInstallation(owner, repo)
 	if err != nil {
-		return nil, errors.Wrapf(err, "error finding repository installation ID for repo %s/%s", owner, repo)
+		return nil, nil, errors.Wrapf(err, "error finding repository installation ID for repo %s/%s", owner, repo)
 	}
 	defer common.CloseBody(resp.Body)
 
 	if resp.StatusCode != 200 {
-		return nil, errors.Errorf("find repository installation returned non-OK status: %d", resp.StatusCode)
+		return nil, nil, errors.Errorf("find repository installation returned non-OK status: %d", resp.StatusCode)
 	}
 
 	log.WithFields(logrus.Fields{
@@ -47,7 +48,7 @@ func GetAppInstallationID(
 		"appId":          strconv.FormatInt(*installation.AppID, 10),
 	}).Info("Found installation for repository")
 
-	return installation.ID, nil
+	return installation.ID, installation.AppID, nil
 }
 
 // TryCreateRepository tries to create a private repository in a organization (enter blank string for owner if it is a user repo)
