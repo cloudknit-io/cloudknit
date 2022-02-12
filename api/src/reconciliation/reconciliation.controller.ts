@@ -1,4 +1,6 @@
-import { Body, Controller, Get, Param, Patch, Post, Sse } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Res, Sse, UploadedFile, UseInterceptors } from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { response } from "express";
 import { from, Observable, Observer } from "rxjs";
 import { map } from "rxjs/operators";
 import { Mapper } from "src/costing/utilities/mapper";
@@ -30,6 +32,21 @@ export class ReconciliationController {
   @Post("component/save")
   async saveComponent(@Body() runData: EvnironmentReconcileDto) {
     return await this.reconciliationService.saveOrUpdateComponent(runData);
+  }
+
+  
+  @Post("component/putObject")
+  @UseInterceptors(FileInterceptor('file'))
+  async putObject(@UploadedFile() file: Express.Multer.File, @Body() body: any) {
+    console.log(file, body);
+    return {"message" : await this.reconciliationService.putObject(body.customerId, body.path, file) };
+  }
+
+  @Post("component/downloadObject")
+  async downloadObject(@Res() response, @Body() body: any) {
+    console.log(body);
+    const stream = await this.reconciliationService.downloadObject(body.customerId, body.path);
+    stream.pipe(response);
   }
 
   @Patch("component/update")

@@ -11,3 +11,4 @@ awsCredentials:
   accessKeyId:
   secretAccessKey:
   region:
+zlEnvironment:

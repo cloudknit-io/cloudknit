@@ -29,6 +29,17 @@ export class S3Handler {
     return this._s3
   }
 
+  async getObjectStream(bucket: string, fileName: string) {
+    return this.s3.getObject(
+      {
+        Bucket: bucket,
+        Key: fileName,
+      },
+      (err, data) => {
+      },
+    ).createReadStream();
+  }
+
   async getObject(bucket: string, fileName: string): Promise<FileInfo> {
     try {
       return await this.downloadFile(bucket, fileName);
@@ -87,6 +98,19 @@ export class S3Handler {
     })
   }
 
+  public async copyToS3(bucket: string, path: string, contents: Express.Multer.File) {
+    const uploadProcess = this.s3.upload({
+      Bucket: bucket,
+      Body: contents.buffer,
+      Key: path
+    });
+
+    const response = await uploadProcess.promise();
+    console.log(response);
+    return response.Key;
+  }
+
+
   private async downloadFile(bucket: string, key: string): Promise<FileInfo> {
     return new Promise<FileInfo>((res, rej) => {
       this.s3.getObject(
@@ -95,6 +119,7 @@ export class S3Handler {
           Key: key,
         },
         (err, data) => {
+          console.log(err);
           if (err) {
             rej(err)
           }
