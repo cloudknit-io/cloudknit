@@ -26,7 +26,7 @@ ARG INFRACOST_API_KEY
 ARG ZLI_TAG
 ARG GITHUB_TOKEN
 
-RUN apk add --update --no-cache curl jq bash openssl python3 py3-pip py3-setuptools libc6-compat
+RUN apk add --update --no-cache curl jq bash openssl python3 py3-pip py3-setuptools libc6-compat unzip
 RUN python3 -m pip --no-cache-dir install --upgrade awscli
 
 RUN curl -sL https://github.com/infracost/infracost/releases/download/v0.9.15/infracost-linux-amd64.tar.gz | tar xz -C /tmp && \

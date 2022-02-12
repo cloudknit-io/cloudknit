@@ -6,6 +6,7 @@ zlifecycle-internal-cli state component pull \
     --team "$team_name" \
     --environment "$env_name" \
     --component "$config_name" \
+    -u http://zlifecycle-state-manager."$customer_id"-system.svc.cluster.local:8080 \
     -v
 
 component_status=$?
@@ -18,4 +19,3 @@ if [[ $component_status == "6" && $is_destroy == true ]] && [[ $config_reconcile
     config_status='skipped_destroy'
     is_skipped='true'
 fi
-

@@ -1,8 +1,10 @@
 team_env_name=$team_name-$env_name
 
-. /argocd/login.sh
-
 data='0'
+
+echo "Patching environment"
+
+echo "phase is: "$phase;
 
 if [ $phase = '0' ]
 then
@@ -23,6 +25,8 @@ then
         data='{"metadata":{"labels":{"env_status":"provisioned"}}}'
     fi    
 fi
+
+echo "data is: "$data
 
 if [ $data != '0' ]
 then

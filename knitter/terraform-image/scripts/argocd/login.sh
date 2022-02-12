@@ -11,4 +11,6 @@
 
 set -eo pipefail
 
-echo y | argocd login --insecure argocd-server:443 --grpc-web --username admin --password $ARGOCD_PASSWORD
+customer_id=$1
+
+echo y | argocd login --insecure argocd-"$customer_id"-server."$customer_id"-system.svc.cluster.local:443 --grpc-web --username admin --password $ARGOCD_PASSWORD

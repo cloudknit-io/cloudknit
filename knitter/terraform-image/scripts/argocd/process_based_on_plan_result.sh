@@ -21,6 +21,7 @@ config_name=$9
 reconcile_id=${10}
 config_reconcile_id=${11}
 auto_approve=${12}
+customer_id=${13}
 
 function PatchError() {
     data='{"metadata":{"labels":{"component_status":"plan_failed"}}}'
@@ -88,6 +89,7 @@ then
               --environment $env_name \
               --component $config_name \
               --status waiting_for_approval \
+              -u http://zlifecycle-state-manager."${customer_id}"-system.svc.cluster.local:8080 \
               -v
             data='{"metadata":{"labels":{"component_status":"waiting_for_approval","audit_status":"waiting_for_approval"}}}'
             argocd app patch $team_env_config_name --patch $data --type merge > null

@@ -4,6 +4,7 @@ show_output_start='----->show_output_start<-----'
 show_output_end='----->show_output_end<-----'
 is_debug=0
 
+
 # Intialize error statuses and s3FileName paths.
 if [ $is_apply -eq 0 ];
 then

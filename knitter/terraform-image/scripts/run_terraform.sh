@@ -37,7 +37,7 @@ sh /client/setup_aws.sh || SaveAndExit "Cannot setup aws credentials"
 
 cd $ENV_COMPONENT_PATH
 
-sh /argocd/login.sh
+sh /argocd/login.sh $customer_id
 
 # add last argo workflow run id to config application so it can fetch workflow details on UI
 data='{"metadata":{"labels":{"last_workflow_run_id":"'$workflow_id'"}}}'
@@ -67,7 +67,7 @@ if [ $is_apply -eq 0 ]; then
     SaveAndExit "There is an issue with generating terraform plan"
   fi
 
-  sh /argocd/process_based_on_plan_result.sh $is_sync $result $team_env_name $team_env_config_name $workflow_id $is_destroy $team_name $env_name $config_name $reconcile_id $config_reconcile_id $auto_approve || SaveAndExit "There is an issue with ArgoCD CLI"
+  sh /argocd/process_based_on_plan_result.sh $is_sync $result $team_env_name $team_env_config_name $workflow_id $is_destroy $team_name $env_name $config_name $reconcile_id $config_reconcile_id $auto_approve $customer_id || SaveAndExit "There is an issue with ArgoCD CLI"
 
 else
   if [ $is_destroy = true ]; then
@@ -75,5 +75,5 @@ else
   else
     . /terraform_apply.sh
   fi
-  argocd app sync $team_env_config_name >null
+  # argocd app sync $team_env_config_name >null
 fi

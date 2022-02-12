@@ -19,8 +19,8 @@ team_env_config_name=$team_name-$env_name-$config_name
 
 echo "config name: $config_name"
 
-url_environment='http://zlifecycle-api.zlifecycle-ui.svc.cluster.local/reconciliation/api/v1/environment/save'
-url='http://zlifecycle-api.zlifecycle-ui.svc.cluster.local/reconciliation/api/v1/component/save'
+url_environment="http://zlifecycle-api.${customer_id}-system.svc.cluster.local/reconciliation/api/v1/environment/save"
+url="http://zlifecycle-api.${customer_id}-system.svc.cluster.local/reconciliation/api/v1/component/save"
 start_date=$(date)
 end_date='"'$(date)'"'
 
@@ -60,7 +60,7 @@ if [ "$skip_component" != "noSkip" ]; then
 fi
 
 echo "running argocd login script"
-. /argocd/login.sh
+sh /argocd/login.sh $customer_id
 
 echo "current config status: $config_status"
 if [[ $config_name != 0 ]]; then
@@ -120,3 +120,20 @@ echo $payload >reconcile_payload.txt
 result=$(curl -X 'POST' "$url" -H 'accept: */*' -H 'Content-Type: application/json' -d @reconcile_payload.txt)
 echo "saving reconcile_id to /tmp/reconcile_id.txt: reconcile id $result"
 echo $result > /tmp/reconcile_id.txt
+
+echo "config name: $config_name"
+if [[ $config_name != 0 ]]; then
+    set +e
+    echo "calling zlifecycle-internal-cli state component pull"
+    zlifecycle-internal-cli state component pull \
+      --company "$customer_id" \
+      --team "$team_name" \
+      --environment "$env_name" \
+      --component "$config_name" \
+      -u http://zlifecycle-state-manager."$customer_id"-system.svc.cluster.local:8080 \
+      -v
+
+    component_status=$?
+    echo "saving component status to /tmp/component_status: component_status $component_status"
+    echo $component_status > /tmp/component_status
+fi
