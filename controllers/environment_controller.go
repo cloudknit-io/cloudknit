@@ -521,7 +521,11 @@ func generateAndSaveEnvironmentComponents(
 			return zerrors.NewEnvironmentComponentError(ec.Name, perrors.Wrap(err, "error saving yaml file"))
 		}
 
-		if err := overlay.GenerateOverlayFiles(ctx, log, fileAPI, e, ec, tfDirectory); err != nil {
+		gitAPI, err := git.NewGoGit(ctx)
+		if err != nil {
+			return zerrors.NewEnvironmentComponentError(ec.Name, perrors.Wrap(err, "error instantiating git api"))
+		}
+		if err = overlay.GenerateOverlayFiles(log, fileAPI, gitAPI, e, ec, tfDirectory); err != nil {
 			return zerrors.NewEnvironmentComponentError(ec.Name, perrors.Wrap(err, "error generating overlay files"))
 		}
 	}

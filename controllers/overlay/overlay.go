@@ -1,7 +1,6 @@
 package overlay
 
 import (
-	"context"
 	"path/filepath"
 
 	"github.com/sirupsen/logrus"
@@ -18,17 +17,13 @@ import (
 )
 
 func GenerateOverlayFiles(
-	ctx context.Context,
 	log *logrus.Entry,
 	fileAPI file.FSAPI,
+	gitAPI git.API,
 	e *stablev1.Environment,
 	ec *stablev1.EnvironmentComponent,
 	destinationFolder string,
 ) error {
-	gitAPI, err := git.NewGoGit(ctx)
-	if err != nil {
-		return err
-	}
 	// generate overlay files from config repo
 	for _, overlay := range ec.OverlayFiles {
 		if err := func() error {

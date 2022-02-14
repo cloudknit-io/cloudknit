@@ -102,6 +102,7 @@ func (r *Reconciler) State() State {
 	return r.state
 }
 
+// Subscribe adds a subscriber to watch a repository and returns is he already subscribed or no
 func (r *Reconciler) Subscribe(repositoryURL string, subscriber kClient.ObjectKey) (subscribed bool) {
 	subscribed = false
 	// check is repository already watched
