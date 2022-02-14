@@ -138,11 +138,12 @@ func main() {
 
 	// environment controller init
 	if err = (&controllers.EnvironmentReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Environment"),
-		LogV2:  log.NewLogger().WithFields(logrus.Fields{"logger": "controller.Environment", "instance": env.Config.CompanyName, "company": env.Config.CompanyName}),
-		Scheme: mgr.GetScheme(),
-		APM:    _apm,
+		Client:        mgr.GetClient(),
+		Log:           ctrl.Log.WithName("controllers").WithName("Environment"),
+		LogV2:         log.NewLogger().WithFields(logrus.Fields{"logger": "controller.Environment", "instance": env.Config.CompanyName, "company": env.Config.CompanyName}),
+		Scheme:        mgr.GetScheme(),
+		APM:           _apm,
+		GitReconciler: gitReconciler,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.WithError(err).WithField("controller", "Environment").Panic("unable to create controller")
 	}

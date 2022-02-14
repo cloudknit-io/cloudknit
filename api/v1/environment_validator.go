@@ -128,7 +128,7 @@ func validateEnvironmentCommon(e *Environment, isCreate bool) field.ErrorList {
 	if err := checkEnvironmentFields(e, isCreate); err != nil {
 		allErrs = append(allErrs, err...)
 	}
-	if err := validateEnvironmentComponents(e.Spec.Components, isCreate); err != nil {
+	if err := validateEnvironmentComponents(e, isCreate); err != nil {
 		allErrs = append(allErrs, err...)
 	}
 
@@ -168,26 +168,28 @@ func validateEnvironmentStatus(e *Environment) field.ErrorList {
 	return allErrs
 }
 
-func validateEnvironmentComponents(ecs []*EnvironmentComponent, isCreate bool) field.ErrorList {
+func validateEnvironmentComponents(e *Environment, isCreate bool) field.ErrorList {
 	var allErrs field.ErrorList
 
-	if err := checkEnvironmentComponentsNotEmpty(ecs); err != nil {
+	if err := checkEnvironmentComponentsNotEmpty(e.Spec.Components); err != nil {
 		allErrs = append(allErrs, err)
 	}
-	for _, ec := range ecs {
+	for _, ec := range e.Spec.Components {
 		name := ec.Name
 		dependsOn := ec.DependsOn
 		if err := checkEnvironmentComponentReferencesItself(name, dependsOn, ec.Name); err != nil {
 			allErrs = append(allErrs, err)
 		}
-		if err := checkEnvironmentComponentDependenciesExist(name, dependsOn, ecs, ec.Name); err != nil {
+		if err := checkEnvironmentComponentDependenciesExist(name, dependsOn, e.Spec.Components, ec.Name); err != nil {
 			allErrs = append(allErrs, err)
 		}
-		if err := checkOverlaysExist(ec.OverlayFiles, ec.Name); err != nil {
-			allErrs = append(allErrs, err...)
-		}
-		if err := checkTfvarsExist(ec.VariablesFile, ec.Name); err != nil {
-			allErrs = append(allErrs, err...)
+		if e.DeletionTimestamp == nil || e.DeletionTimestamp.IsZero() {
+			if err := checkOverlaysExist(ec.OverlayFiles, ec.Name); err != nil {
+				allErrs = append(allErrs, err...)
+			}
+			if err := checkTfvarsExist(ec.VariablesFile, ec.Name); err != nil {
+				allErrs = append(allErrs, err...)
+			}
 		}
 		if isCreate {
 			if err := checkEnvironmentComponentNotInitiallyDestroyed(ec); err != nil {

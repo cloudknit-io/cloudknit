@@ -16,8 +16,6 @@ import (
 	kClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-var reconciler *Reconciler
-
 type WatchedRepository struct {
 	Source         string
 	RepositoryPath string
@@ -25,36 +23,45 @@ type WatchedRepository struct {
 	Subscribers    []kClient.ObjectKey
 }
 
-type Reconciler struct {
+type API interface {
+	Start() error
+	Repositories() []*WatchedRepository
+	State() State
+	Subscribe(repositoryURL string, subscriber kClient.ObjectKey) (subscribed bool)
+	Unsubscribe(repositoryURL string, subscriber kClient.ObjectKey) error
+	UnsubscribeAll(subscriber kClient.ObjectKey) error
+}
+
+type GitReconciler struct {
 	ctx       context.Context
 	log       *logrus.Entry
 	k8sClient kClient.Client
 	state     State
 }
 
+var _ API = (*GitReconciler)(nil)
+
 type State map[string]*WatchedRepository
 
-// NewReconciler creates a new Reconciler singleton instance.
-func NewReconciler(ctx context.Context, log *logrus.Entry, k8sClient kClient.Client) *Reconciler {
-	if reconciler == nil {
-		state := State{}
-		reconciler = &Reconciler{
-			ctx:       ctx,
-			log:       log,
-			k8sClient: k8sClient,
-			state:     state,
-		}
+// NewReconciler creates a new GitReconciler singleton instance.
+func NewReconciler(ctx context.Context, log *logrus.Entry, k8sClient kClient.Client) *GitReconciler {
+	state := State{}
+	reconciler := &GitReconciler{
+		ctx:       ctx,
+		log:       log,
+		k8sClient: k8sClient,
+		state:     state,
 	}
 
 	return reconciler
 }
 
-// GetReconciler returns the current singleton instance. Note that it needs to be initialized first by calling NewReconciler.
-func GetReconciler() *Reconciler {
-	return reconciler
-}
+//// GetReconciler returns the current singleton instance. Note that it needs to be initialized first by calling NewReconciler.
+//func GetReconciler() *GitReconciler {
+//	return reconciler
+//}
 
-func (r *Reconciler) Start() error {
+func (r *GitReconciler) Start() error {
 	r.log.Info("Starting git reconciler")
 	c := cron.New()
 	c.Start()
@@ -88,7 +95,7 @@ func (r *Reconciler) Start() error {
 	return nil
 }
 
-func (r *Reconciler) Repositories() []*WatchedRepository {
+func (r *GitReconciler) Repositories() []*WatchedRepository {
 	repos := make([]*WatchedRepository, 0, len(r.state))
 
 	for _, wr := range r.state {
@@ -98,12 +105,12 @@ func (r *Reconciler) Repositories() []*WatchedRepository {
 	return repos
 }
 
-func (r *Reconciler) State() State {
+func (r *GitReconciler) State() State {
 	return r.state
 }
 
 // Subscribe adds a subscriber to watch a repository and returns is he already subscribed or no
-func (r *Reconciler) Subscribe(repositoryURL string, subscriber kClient.ObjectKey) (subscribed bool) {
+func (r *GitReconciler) Subscribe(repositoryURL string, subscriber kClient.ObjectKey) (subscribed bool) {
 	subscribed = false
 	// check is repository already watched
 	if r.state[repositoryURL] != nil {
@@ -134,7 +141,7 @@ func (r *Reconciler) Subscribe(repositoryURL string, subscriber kClient.ObjectKe
 	return subscribed
 }
 
-func (r *Reconciler) Unsubscribe(repositoryURL string, subscriber kClient.ObjectKey) error {
+func (r *GitReconciler) Unsubscribe(repositoryURL string, subscriber kClient.ObjectKey) error {
 	if r.state[repositoryURL] == nil {
 		return nil
 	}
@@ -149,7 +156,7 @@ func (r *Reconciler) Unsubscribe(repositoryURL string, subscriber kClient.Object
 	return nil
 }
 
-func (r *Reconciler) UnsubscribeAll(subscriber kClient.ObjectKey) error {
+func (r *GitReconciler) UnsubscribeAll(subscriber kClient.ObjectKey) error {
 	for _, wr := range r.state {
 		for i, s := range wr.Subscribers {
 			if s.Name == subscriber.Name && s.Namespace == subscriber.Namespace {
@@ -167,11 +174,11 @@ func remove(s []kClient.ObjectKey, i int) []kClient.ObjectKey {
 	return s[:len(s)-1]
 }
 
-func (r *Reconciler) Remove(repositoryURL string) {
+func (r *GitReconciler) Remove(repositoryURL string) {
 	r.state[repositoryURL] = nil
 }
 
-func (r *Reconciler) reconcile(wr *WatchedRepository) (updated bool, err error) {
+func (r *GitReconciler) reconcile(wr *WatchedRepository) (updated bool, err error) {
 	gitAPI, err := git.NewGoGit(r.ctx)
 	if err != nil {
 		return false, err
@@ -246,7 +253,7 @@ func (r *Reconciler) reconcile(wr *WatchedRepository) (updated bool, err error) 
 	return true, nil
 }
 
-func (r *Reconciler) retryableUpdate(e *v1.Environment) func(attempt int) (retry bool, err error) {
+func (r *GitReconciler) retryableUpdate(e *v1.Environment) func(attempt int) (retry bool, err error) {
 	fn := func(attempt int) (retry bool, err error) {
 		if err := r.k8sClient.Status().Update(r.ctx, e); err != nil {
 			if strings.Contains(err.Error(), genericregistry.OptimisticLockErrorMsg) {

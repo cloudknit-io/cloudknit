@@ -28,6 +28,7 @@ func SaveTfVarsToFile(fs file.FSAPI, vars []*v1.Variable, folderName string, fil
 
 func GetVariablesFromTfvarsFile(
 	ctx context.Context,
+	gitReconciler gitreconciler.API,
 	log *logrus.Entry,
 	e *v1.Environment,
 	ec *v1.EnvironmentComponent,
@@ -58,7 +59,7 @@ func GetVariablesFromTfvarsFile(
 		"repository": ec.VariablesFile.Source,
 	}).Info("Subscribing to config repository in git reconciler")
 	envKey := client.ObjectKey{Name: e.Name, Namespace: e.Namespace}
-	subscribed := gitreconciler.GetReconciler().Subscribe(ec.VariablesFile.Source, envKey)
+	subscribed := gitReconciler.Subscribe(ec.VariablesFile.Source, envKey)
 	if subscribed {
 		log.WithFields(logrus.Fields{
 			"component":  ec.Name,

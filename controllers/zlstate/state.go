@@ -45,7 +45,7 @@ func (s *HTTPStateManager) Put(company string, environment *v1.Environment) erro
 		ZLState:     zlstate,
 	}
 
-	s.log.WithField("state", zlstate).Info("Persisting zLstate through State Manager")
+	s.log.WithField("state", common.ToJSONString(zlstate)).Info("Persisting zLstate via State Manager")
 
 	jsonBody, err := common.ToJSON(body)
 	if err != nil {

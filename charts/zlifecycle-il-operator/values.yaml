@@ -12,11 +12,11 @@ deployment:
 
 resources:
   limits:
-    cpu: 400m
-    memory: 500Mi
+    cpu: 500m
+    memory: 700Mi
   requests:
-    cpu: 200m
-    memory: 250Mi
+    cpu: 250m
+    memory: 350Mi
 
 argocd:
   secretRef: argocd-creds
@@ -37,8 +37,10 @@ git:
     zlifecycleIlRepoUrl: ""
     companyConfigRepoUrl: ""
     webhookSecret: "zS3cr37"
+    companyGithubAppSecretName: company-github-app-ssh
     companyGithubAppId: "170128"
     companyAuthMethod: ssh
+    internalGithubAppSecretName: internal-github-app-ssh
     internalGithubAppId: "172117"
     internalAuthMethod: ssh
 

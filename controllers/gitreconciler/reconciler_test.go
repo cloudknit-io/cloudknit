@@ -3,13 +3,14 @@ package gitreconciler_test
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/gitreconciler"
 	"github.com/compuzest/zlifecycle-il-operator/mocks"
 	"github.com/golang/mock/gomock"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"testing"
 )
 
 var ctx = context.Background()

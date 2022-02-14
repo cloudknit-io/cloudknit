@@ -55,6 +55,10 @@ spec:
               value: {{ .Values.git.config.internalAuthMethod }}
             - name: GITHUB_APP_ID_INTERNAL
               value: {{ .Values.git.config.internalGithubAppId }}
+            - name: GITHUB_APP_SECRET_NAME_COMPANY
+              value: {{ .Values.git.config.companyGithubAppSecretName }}
+            - name: GITHUB_APP_SECRET_NAME_INTERNAL
+              value: {{ .Values.git.config.internalGithubAppSecretName }}
             - name: ENVIRONMENT
               value: {{ .Values.environment }}
             - name: COMPANY_NAME

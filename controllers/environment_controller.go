@@ -54,10 +54,11 @@ import (
 // EnvironmentReconciler reconciles a Environment object.
 type EnvironmentReconciler struct {
 	kClient.Client
-	Log    logr.Logger
-	LogV2  *logrus.Entry
-	Scheme *runtime.Scheme
-	APM    apm.APM
+	Log           logr.Logger
+	LogV2         *logrus.Entry
+	Scheme        *runtime.Scheme
+	APM           apm.APM
+	GitReconciler gitreconciler.API
 }
 
 // +kubebuilder:rbac:groups=stable.compuzest.com,resources=environments,verbs=get;list;watch;create;update;patch;delete
@@ -135,7 +136,7 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	// finalizer handling
 	if env.Config.KubernetesDisableEnvironmentFinalizer != "true" {
 		finalizer := env.Config.KubernetesEnvironmentFinalizerName
-		finalizerCompleted, err := r.handleFinalizer(apmCtx, environment, finalizer, argocdAPI, argoworkflowAPI)
+		finalizerCompleted, err := r.handleFinalizer(apmCtx, environment, finalizer, argocdAPI)
 		if err != nil {
 			envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error handling finalizer"))
 			return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
@@ -218,7 +219,6 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	}
 
 	// persist zlstate
-	r.LogV2.Info("Persisting zLstate to remote backend")
 	zlstateManagerAPI := zlstate.NewHTTPStateManager(apmCtx, r.LogV2)
 	if err := zlstateManagerAPI.Put(env.Config.CompanyName, environment); err != nil {
 		envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error persisting zLstate"))
@@ -276,6 +276,7 @@ func (r *EnvironmentReconciler) handleNonDeleteEvent(
 		r.LogV2,
 		ilService,
 		fileAPI,
+		r.GitReconciler,
 		e,
 	); err != nil {
 		return err
@@ -335,7 +336,6 @@ func (r *EnvironmentReconciler) handleFinalizer(
 	e *stablev1.Environment,
 	finalizer string,
 	argocdAPI argocd.API,
-	argoworkflowsAPI argoworkflow.API,
 ) (completed bool, err error) {
 	if e.DeletionTimestamp.IsZero() {
 		if !common.ContainsString(e.GetFinalizers(), finalizer) {
@@ -347,7 +347,7 @@ func (r *EnvironmentReconciler) handleFinalizer(
 		}
 	} else {
 		if common.ContainsString(e.GetFinalizers(), finalizer) {
-			if err := r.postDeleteHook(ctx, e, argocdAPI, argoworkflowsAPI); err != nil {
+			if err := r.postDeleteHook(ctx, e, argocdAPI); err != nil {
 				return false, err
 			}
 
@@ -369,15 +369,10 @@ func (r *EnvironmentReconciler) postDeleteHook(
 	ctx context.Context,
 	e *stablev1.Environment,
 	argocdAPI argocd.API,
-	argoworkflowAPI argoworkflow.API,
 ) error {
 	r.LogV2.Info("Executing post delete hook for environment finalizer")
 
-	if err := r.cleanupIlRepo(ctx, e); err != nil {
-		return err
-	}
 	_ = r.deleteDanglingArgocdApps(e, argocdAPI)
-	_ = r.deleteDanglingArgoWorkflows(e, argoworkflowAPI)
 	_ = r.removeEnvironmentFromGitReconciler(e)
 	return nil
 }
@@ -397,41 +392,10 @@ func (r *EnvironmentReconciler) deleteDanglingArgocdApps(e *stablev1.Environment
 	return nil
 }
 
-func (r *EnvironmentReconciler) deleteDanglingArgoWorkflows(e *stablev1.Environment, api argoworkflow.API) error {
-	prefix := fmt.Sprintf("%s-%s", e.Spec.TeamName, e.Spec.EnvName)
-	namespace := argoWorkflowsNamespace
-	r.LogV2.WithFields(logrus.Fields{
-		"prefix":            prefix,
-		"workflowNamespace": namespace,
-	}).Info("Cleaning up dangling Argo Workflows")
-
-	return argoworkflow.DeleteWorkflowsWithPrefix(r.Log, prefix, namespace, api)
-}
-
-func (r *EnvironmentReconciler) cleanupIlRepo(ctx context.Context, e *stablev1.Environment) error {
-	paths := extractPathsToRemove(e)
-	_ = fmt.Sprintf("%s-team-environment", e.Spec.TeamName)
-	_ = fmt.Sprintf("Cleaning il objects for %s team in %s environment", e.Spec.TeamName, e.Spec.EnvName)
-	r.LogV2.WithField("objects", paths).Info("Cleaning up IL repo")
-
-	// TODO: implement using delete from temp cloned il repo
-	return nil
-}
-
-// TODO: Should we remove objects in IL repo?
-func extractPathsToRemove(e *stablev1.Environment) []string {
-	envPath := fmt.Sprintf("%s-environment-component", e.Spec.EnvName)
-	envAppPath := fmt.Sprintf("%s-environment.yaml", e.Spec.EnvName)
-	return []string{
-		envPath,
-		envAppPath,
-	}
-}
-
 func (r *EnvironmentReconciler) removeEnvironmentFromGitReconciler(e *stablev1.Environment) error {
 	r.LogV2.Info("Removing entries from git reconciler")
 	key := kClient.ObjectKey{Name: e.Name, Namespace: e.Namespace}
-	return gitreconciler.GetReconciler().UnsubscribeAll(key)
+	return r.GitReconciler.UnsubscribeAll(key)
 }
 
 func generateAndSaveWorkflowOfWorkflows(fileAPI file.FSAPI, ilService *il.Service, environment *stablev1.Environment) error {
@@ -458,6 +422,7 @@ func generateAndSaveEnvironmentComponents(
 	log *logrus.Entry,
 	ilService *il.Service,
 	fileAPI file.FSAPI,
+	gitReconciler gitreconciler.API,
 	e *stablev1.Environment,
 ) error {
 	for _, ec := range e.Spec.Components {
@@ -481,7 +446,7 @@ func generateAndSaveEnvironmentComponents(
 
 		var tfvars string
 		if ec.VariablesFile != nil {
-			_tfvars, err := gotfvars.GetVariablesFromTfvarsFile(ctx, log, e, ec)
+			_tfvars, err := gotfvars.GetVariablesFromTfvarsFile(ctx, gitReconciler, log, e, ec)
 			if err != nil {
 				return zerrors.NewEnvironmentComponentError(ec.Name, perrors.Wrap(err, "error reading variables from tfvars file"))
 			}
@@ -525,7 +490,7 @@ func generateAndSaveEnvironmentComponents(
 		if err != nil {
 			return zerrors.NewEnvironmentComponentError(ec.Name, perrors.Wrap(err, "error instantiating git api"))
 		}
-		if err = overlay.GenerateOverlayFiles(log, fileAPI, gitAPI, e, ec, tfDirectory); err != nil {
+		if err = overlay.GenerateOverlayFiles(log, fileAPI, gitAPI, gitReconciler, e, ec, tfDirectory); err != nil {
 			return zerrors.NewEnvironmentComponentError(ec.Name, perrors.Wrap(err, "error generating overlay files"))
 		}
 	}

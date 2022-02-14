@@ -20,6 +20,7 @@ func GenerateOverlayFiles(
 	log *logrus.Entry,
 	fileAPI file.FSAPI,
 	gitAPI git.API,
+	gitReconciler gitreconciler.API,
 	e *stablev1.Environment,
 	ec *stablev1.EnvironmentComponent,
 	destinationFolder string,
@@ -58,7 +59,7 @@ func GenerateOverlayFiles(
 					"repository": overlay.Source,
 				}).Info("Subscribing to config repository in git reconciler")
 				envKey := client.ObjectKey{Name: e.Name, Namespace: e.Namespace}
-				subscribed := gitreconciler.GetReconciler().Subscribe(overlay.Source, envKey)
+				subscribed := gitReconciler.Subscribe(overlay.Source, envKey)
 				if subscribed {
 					log.WithFields(logrus.Fields{
 						"component":  ec.Name,
