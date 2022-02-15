@@ -26,6 +26,23 @@ func FromJSON(s interface{}, jsonData []byte) error {
 	return nil
 }
 
+func ToJSONString(x interface{}) string {
+	return string(ToJSONBytes(x, true))
+}
+
+func ToJSONCompact(x interface{}) string {
+	return string(ToJSONBytes(x, false))
+}
+
+func ToJSONBytes(x interface{}, indent bool) []byte {
+	if indent {
+		b, _ := json.MarshalIndent(x, "", "  ")
+		return b
+	}
+	b, _ := json.Marshal(x)
+	return b
+}
+
 func FromJSONMap(m map[string]interface{}, s interface{}) error {
 	jsoned, err := ToJSON(m)
 	if err != nil {

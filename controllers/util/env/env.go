@@ -40,12 +40,16 @@ type config struct {
 	GitRepositoryBranch     string
 
 	// github
-	GitHubWebhookSecret       string
-	GitHubCompanyOrganization string
-	GitHubAppID               string
-	GitHubAppSecretName       string
-	GitHubAppSecretNamespace  string
-	GitHubCompanyAuthMethod   string
+	GitHubWebhookSecret              string
+	GitHubCompanyOrganization        string
+	GitHubAppIDCompany               string
+	GitHubAppSecretNameCompany       string
+	GitHubAppSecretNamespaceCompany  string
+	GitHubCompanyAuthMethod          string
+	GitHubAppIDInternal              string
+	GitHubAppSecretNameInternal      string
+	GitHubAppSecretNamespaceInternal string
+	GitHubInternalAuthMethod         string
 
 	// kubernetes
 	KubernetesDisableWebhooks             string
@@ -128,12 +132,16 @@ var Config = config{
 	GitRepositoryBranch:     getOr("GIT_REPOSITORY_BRANCH", "main"),
 
 	// github
-	GitHubWebhookSecret:       os.Getenv("GITHUB_WEBHOOK_SECRET"),
-	GitHubCompanyOrganization: os.Getenv("GITHUB_COMPANY_ORGANIZATION"),
-	GitHubAppID:               os.Getenv("GITHUB_APP_ID"),
-	GitHubAppSecretName:       getOr("GITHUB_APP_SECRET_NAME", "github-app-ssh"),
-	GitHubAppSecretNamespace:  SystemNamespace(),
-	GitHubCompanyAuthMethod:   getOr("GITHUB_COMPANY_AUTH_METHOD", "ssh"),
+	GitHubWebhookSecret:              os.Getenv("GITHUB_WEBHOOK_SECRET"),
+	GitHubCompanyOrganization:        os.Getenv("GITHUB_COMPANY_ORGANIZATION"),
+	GitHubAppIDCompany:               os.Getenv("GITHUB_APP_ID_COMPANY"),
+	GitHubAppSecretNameCompany:       getOr("GITHUB_APP_SECRET_NAME_COMPANY", "public-github-app-ssh"),
+	GitHubAppSecretNamespaceCompany:  SystemNamespace(),
+	GitHubCompanyAuthMethod:          getOr("GITHUB_COMPANY_AUTH_METHOD", "ssh"),
+	GitHubAppIDInternal:              os.Getenv("GITHUB_APP_ID_INTERNAL"),
+	GitHubAppSecretNameInternal:      getOr("GITHUB_APP_SECRET_NAME_INTERNAL", "internal-github-app-ssh"),
+	GitHubAppSecretNamespaceInternal: SystemNamespace(),
+	GitHubInternalAuthMethod:         getOr("GITHUB_INTERNAL_AUTH_METHOD", "ssh"),
 
 	// argocd
 	ArgocdServerURL:     getOr("ARGOCD_SERVER_URL", fmt.Sprintf("http://argocd-%s-server.%s.svc.cluster.local", CompanyName(), ArgocdNamespace())),

@@ -113,21 +113,27 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-	companyRepoAPI, err := repo.NewRegistration(apmCtx, r.Client, env.Config.GitHubCompanyAuthMethod, r.LogV2)
+	companyRepoAPI, err := repo.NewRegistration(apmCtx, r.Client, env.Config.GitHubCompanyAuthMethod, repo.AuthTierCompany, r.LogV2)
 	if err != nil {
-		companyErr := zerrors.NewCompanyError(company.Spec.CompanyName, perrors.Wrap(err, "error instantiating repo Registration with github app auth mode"))
+		companyErr := zerrors.NewCompanyError(
+			company.Spec.CompanyName,
+			perrors.Wrapf(err, "error instantiating company repo registration with auth mode: %s", env.Config.GitHubCompanyAuthMethod),
+		)
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
 	}
-	sshRepoAPI, err := repo.NewRegistration(apmCtx, r.Client, repo.AuthMethodSSH, r.LogV2)
+	internalRepoAPI, err := repo.NewRegistration(apmCtx, r.Client, env.Config.GitHubInternalAuthMethod, repo.AuthTierInternal, r.LogV2)
 	if err != nil {
-		companyErr := zerrors.NewCompanyError(company.Spec.CompanyName, perrors.Wrap(err, "error instantiating repo Registration with ssh auth mode"))
+		companyErr := zerrors.NewCompanyError(
+			company.Spec.CompanyName,
+			perrors.Wrapf(err, "error instantiating internal repo registration with auth mode: %s", env.Config.GitHubCompanyAuthMethod),
+		)
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
 	}
 
 	// init logic
 	var initOperatorError error
 	initOperatorLock.Do(func() {
-		initOperatorError = r.initCompany(ctx, sshRepoAPI)
+		initOperatorError = r.initCompany(ctx, internalRepoAPI)
 	})
 	if initOperatorError != nil {
 		companyErr := zerrors.NewCompanyError(company.Spec.CompanyName, perrors.Wrap(err, "error initializing company"))
@@ -166,7 +172,7 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
 	}
 
-	if err := sshRepoAPI.TryRegisterRepo(zlILRepoURL); err != nil {
+	if err := internalRepoAPI.TryRegisterRepo(zlILRepoURL); err != nil {
 		companyErr := zerrors.NewCompanyError(company.Spec.CompanyName, perrors.Wrap(err, "error registering company IL repo in argocd"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
 	}
