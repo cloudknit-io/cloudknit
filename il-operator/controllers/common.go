@@ -8,8 +8,6 @@ import (
 
 var (
 	helmChartsRepo         = env.Config.GitHelmChartsRepository
-	operatorSSHSecret      = env.Config.GitSSHSecretName
-	operatorNamespace      = env.Config.KubernetesServiceNamespace
 	zlILRepoURL            = env.Config.ILZLifecycleRepositoryURL
 	ilRepoOwner            = env.Config.GitILRepositoryOwner
 	githubSvcAccntName     = env.Config.GitServiceAccountName

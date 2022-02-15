@@ -216,7 +216,10 @@ func (r *CompanyReconciler) initCompany(ctx context.Context, api repo.Registrati
 	r.LogV2.Info("Creating webhook for IL repo")
 	repoAPI := github.NewHTTPRepositoryAPI(ctx)
 	if _, err := github.CreateRepoWebhook(r.LogV2, repoAPI, zlILRepoURL, argocdHookURL, gitHubWebhookSecret); err != nil {
-		r.LogV2.WithError(err).WithField("repo", zlILRepoURL).Error("error creating Company IL webhook")
+		r.LogV2.WithError(err).WithField("repo", zlILRepoURL).Error("error creating Company IL ZL webhook")
+	}
+	if _, err := github.CreateRepoWebhook(r.LogV2, repoAPI, env.Config.ILTerraformRepositoryURL, argocdHookURL, gitHubWebhookSecret); err != nil {
+		r.LogV2.WithError(err).WithField("repo", env.Config.ILTerraformRepositoryURL).Error("error creating Company IL TF webhook")
 	}
 
 	argocdAPI := argocd.NewHTTPClient(ctx, r.Log, argocdServerURL)
