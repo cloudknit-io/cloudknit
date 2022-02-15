@@ -17,6 +17,8 @@ import (
 const (
 	AuthMethodSSH       = "ssh"
 	AuthMethodGithubApp = "githubApp"
+	AuthTierCompany     = "company"
+	AuthTierInternal    = "internal"
 )
 
 //go:generate go run -mod=mod github.com/golang/mock/mockgen -destination=../../../mocks/mock_repo_api.go -package=mocks "github.com/compuzest/zlifecycle-il-operator/controllers/util/repo" Registration
@@ -25,30 +27,74 @@ type Registration interface {
 	TryRegisterRepo(repoURL string) error
 }
 
-func NewRegistration(ctx context.Context, c kClient.Client, mode string, log *logrus.Entry) (Registration, error) {
+func NewRegistration(ctx context.Context, c kClient.Client, mode string, tier string, log *logrus.Entry) (Registration, error) {
 	argocdAPI := argocd.NewHTTPClient(ctx, logr.FromContextOrDiscard(ctx), env.Config.ArgocdServerURL)
+
 	switch mode {
 	case AuthMethodGithubApp:
+		nfo, err := getGitHubAppCreds(tier)
+		if err != nil {
+			return nil, errors.Wrap(err, "error getting github app creds")
+		}
 		// github app svc
-		privateKey, err := common.GetSSHPrivateKey(
-			ctx,
-			c,
-			kClient.ObjectKey{Name: env.Config.GitHubAppSecretName, Namespace: env.Config.GitHubAppSecretNamespace},
-		)
+		gitAppAPI, err := newGitAppAPI(ctx, c, nfo)
 		if err != nil {
-			return nil, errors.Wrap(err, "error getting ssh private key for github app")
+			return nil, errors.Wrap(err, "error creating github app api")
 		}
-		gitAppAPI, err := github.NewHTTPAppClient(ctx, privateKey, env.Config.GitHubAppID)
-		if err != nil {
-			return nil, errors.Wrap(err, "error instantiating github apps client")
-		}
-		// argocd
 		return NewGitHubAppService(ctx, c, gitAppAPI, argocdAPI, log)
 	case AuthMethodSSH:
 		return NewSSHService(ctx, c, argocdAPI, log), nil
 	default:
 		return nil, errors.Errorf("invalid mode: %s", mode)
 	}
+}
+
+func getGitHubAppCreds(tier string) (*secretInfo, error) {
+	var secretName string
+	var secretNamespace string
+	var appID string
+
+	switch tier {
+	case AuthTierCompany:
+		secretName = env.Config.GitHubAppSecretNameCompany
+		secretNamespace = env.Config.GitHubAppSecretNamespaceCompany
+		appID = env.Config.GitHubAppIDCompany
+	case AuthTierInternal:
+		secretName = env.Config.GitHubAppSecretNameInternal
+		secretNamespace = env.Config.GitHubAppSecretNamespaceInternal
+		appID = env.Config.GitHubAppIDInternal
+	default:
+		return nil, errors.Errorf("invalid tier: %s", tier)
+	}
+
+	return &secretInfo{
+		secretName:      secretName,
+		secretNamespace: secretNamespace,
+		appID:           appID,
+	}, nil
+}
+
+func newGitAppAPI(ctx context.Context, c kClient.Client, nfo *secretInfo) (github.AppAPI, error) {
+	privateKey, err := common.GetSSHPrivateKey(
+		ctx,
+		c,
+		kClient.ObjectKey{Name: nfo.secretName, Namespace: nfo.secretNamespace},
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "error getting ssh private key for github app")
+	}
+	gitAppAPI, err := github.NewHTTPAppClient(ctx, privateKey, nfo.appID)
+	if err != nil {
+		return nil, errors.Wrap(err, "error instantiating github apps client")
+	}
+
+	return gitAppAPI, nil
+}
+
+type secretInfo struct {
+	secretName      string
+	secretNamespace string
+	appID           string
 }
 
 type GitHubAppService struct {
@@ -79,7 +125,7 @@ var _ Registration = (*GitHubAppService)(nil)
 
 // TryRegisterRepo registers a git repo in ArgoCD using a GitHubApp auth.
 func (s *GitHubAppService) TryRegisterRepo(repoURL string) error {
-	key := kClient.ObjectKey{Namespace: env.Config.GitHubAppSecretNamespace, Name: env.Config.GitHubAppSecretName}
+	key := kClient.ObjectKey{Namespace: env.Config.GitHubAppSecretNamespaceCompany, Name: env.Config.GitHubAppSecretNameCompany}
 	privateKey, err := common.GetSSHPrivateKey(s.ctx, s.c, key)
 	if err != nil {
 		return err
