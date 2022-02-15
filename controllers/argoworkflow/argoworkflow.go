@@ -126,76 +126,18 @@ func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment) *workf
 		}
 
 		dependencies = append(dependencies, "trigger-audit")
+		parameters := generateWorkflowParams(environment, ec, workflowTemplate, tfPath, destroyFlag, autoApproveFlag)
 
-		parameters := []workflow.Parameter{
-			{
-				Name:  "workflowtemplate",
-				Value: AnyStringPointer(workflowTemplate),
-			},
-			{
-				Name:  "customer_id",
-				Value: AnyStringPointer(env.Config.CompanyName),
-			},
-			{
-				Name:  "team_name",
-				Value: AnyStringPointer(environment.Spec.TeamName),
-			},
-			{
-				Name:  "env_name",
-				Value: AnyStringPointer(environment.Spec.EnvName),
-			},
-			{
-				Name:  "config_name",
-				Value: AnyStringPointer(ec.Name),
-			},
-			{
-				Name:  "il_repo",
-				Value: AnyStringPointer(env.Config.ILTerraformRepositoryURL),
-			},
-			{
-				Name:  "terraform_il_path",
-				Value: AnyStringPointer(tfPath),
-			},
-			{
-				Name:  "is_destroy",
-				Value: AnyStringPointer(destroyFlag),
-			},
-			{
-				Name:  "reconcile_id",
-				Value: AnyStringPointer("{{tasks.trigger-audit.outputs.parameters.reconcile_id}}"),
-			},
-			{
-				Name:  "status",
-				Value: AnyStringPointer("initializing"),
-			},
-			{
-				Name:  "auto_approve",
-				Value: AnyStringPointer(autoApproveFlag),
-			},
-			{
-				Name:  "skip_component",
-				Value: AnyStringPointer(skipComponent(ec.DestroyProtection, destroyFlag, environment.Spec.SelectiveReconcile, ec.Tags)),
-			},
-		}
-
-		task := workflow.DAGTask{
-			Name: ec.Name,
-			TemplateRef: &workflow.TemplateRef{
-				Name:     "workflow-trigger-template",
-				Template: "run",
-			},
-			Dependencies: dependencies,
-			Arguments: workflow.Arguments{
-				Parameters: parameters,
-			},
-		}
-
-		tasks = append(tasks, task)
+		tasks = append(tasks, generateWorkflowTriggerDAGTask(ec.Name, dependencies, parameters))
 	}
 
 	tasks = append(tasks, generateAuditTask(environment, destroyAll, "1", allComponents))
 
-	w := &workflow.Workflow{
+	return generateWorkflow(environment, tasks)
+}
+
+func generateWorkflow(environment *stablev1.Environment, tasks []workflow.DAGTask) *workflow.Workflow {
+	return &workflow.Workflow{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "argoproj.io/v1alpha1",
 			Kind:       "Workflow",
@@ -227,8 +169,80 @@ func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment) *workf
 			FinishedAt: metav1.Time{Time: getStaticDate()},
 		},
 	}
+}
 
-	return w
+func generateWorkflowTriggerDAGTask(name string, dependencies []string, parameters []workflow.Parameter) workflow.DAGTask {
+	return workflow.DAGTask{
+		Name: name,
+		TemplateRef: &workflow.TemplateRef{
+			Name:     "workflow-trigger-template",
+			Template: "run",
+		},
+		Dependencies: dependencies,
+		Arguments: workflow.Arguments{
+			Parameters: parameters,
+		},
+	}
+}
+
+func generateWorkflowParams(
+	environment *stablev1.Environment,
+	ec *stablev1.EnvironmentComponent,
+	workflowTemplate string,
+	tfPath string,
+	destroyFlag bool,
+	autoApproveFlag bool,
+) []workflow.Parameter {
+	return []workflow.Parameter{
+		{
+			Name:  "workflowtemplate",
+			Value: AnyStringPointer(workflowTemplate),
+		},
+		{
+			Name:  "customer_id",
+			Value: AnyStringPointer(env.Config.CompanyName),
+		},
+		{
+			Name:  "team_name",
+			Value: AnyStringPointer(environment.Spec.TeamName),
+		},
+		{
+			Name:  "env_name",
+			Value: AnyStringPointer(environment.Spec.EnvName),
+		},
+		{
+			Name:  "config_name",
+			Value: AnyStringPointer(ec.Name),
+		},
+		{
+			Name:  "il_repo",
+			Value: AnyStringPointer(env.Config.ILTerraformRepositoryURL),
+		},
+		{
+			Name:  "terraform_il_path",
+			Value: AnyStringPointer(tfPath),
+		},
+		{
+			Name:  "is_destroy",
+			Value: AnyStringPointer(destroyFlag),
+		},
+		{
+			Name:  "reconcile_id",
+			Value: AnyStringPointer("{{tasks.trigger-audit.outputs.parameters.reconcile_id}}"),
+		},
+		{
+			Name:  "status",
+			Value: AnyStringPointer("initializing"),
+		},
+		{
+			Name:  "auto_approve",
+			Value: AnyStringPointer(autoApproveFlag),
+		},
+		{
+			Name:  "skip_component",
+			Value: AnyStringPointer(skipComponent(ec.DestroyProtection, destroyFlag, environment.Spec.SelectiveReconcile, ec.Tags)),
+		},
+	}
 }
 
 func exitHandler(e *stablev1.Environment) workflow.Template {
