@@ -22,6 +22,7 @@ config_reconcile_id=${10}
 reconcile_id=${11}
 customer_id=${12}
 auto_approve=${13}
+zl_env=${14}
 
 #---------- INIT PHASE START ----------#
 

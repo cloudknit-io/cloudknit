@@ -40,8 +40,7 @@ function SaveAndExit() {
   echo $show_output_start
   echo $1 2>&1 | appendLogs /tmp/$s3FileName.txt
   echo $show_output_end
-  # aws s3 cp /tmp/$s3FileName.txt s3://zlifecycle-$env_name-tfplan-$customer_id/$team_name/$env_name/$config_name/$config_reconcile_id/$s3FileName --profile compuzest-shared --quiet
-  sh /api_file.sh "@/tmp/$s3FileName.txt" $team_name/$env_name/$config_name/$config_reconcile_id/$s3FileName $customer_id
+  aws s3 cp /tmp/$s3FileName.txt s3://zlifecycle-$zl_env-tfplan-$customer_id/$team_name/$env_name/$config_name/$config_reconcile_id/$s3FileName --profile compuzest-shared --quiet
   Error $1
 }
 
