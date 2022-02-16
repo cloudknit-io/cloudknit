@@ -3,6 +3,9 @@ package controllers
 import (
 	"context"
 	"encoding/json"
+	"io"
+	"net/http"
+
 	"github.com/compuzest/zlifecycle-state-manager/app/apm"
 	http2 "github.com/compuzest/zlifecycle-state-manager/app/web/http"
 	"github.com/compuzest/zlifecycle-state-manager/app/zlog"
@@ -10,8 +13,6 @@ import (
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"io"
-	"net/http"
 )
 
 func ZLStateHandler(w http.ResponseWriter, r *http.Request) {
@@ -101,7 +102,7 @@ func putZLStateHandler(ctx context.Context, log *logrus.Entry, b io.ReadCloser) 
 	}
 
 	if err := client.Put(BuildZLStateKey(body.Team, body.Environment), body.ZLState, false); err != nil {
-		if errors.Is(err, zlstate.ErrKeyExists) {
+		if errors.Is(err, zlstate.ErrKeyAlreadyExists) {
 			return &PutZLStateResponse{Message: "zLstate already exists"}, nil
 		}
 		return nil, errors.Wrap(err, "error persisting zLstate to remote backend")

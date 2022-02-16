@@ -1,10 +1,10 @@
 package util
 
 import (
-	"encoding/json"
-	"github.com/pkg/errors"
 	"io"
 	"os"
+
+	"github.com/pkg/errors"
 )
 
 // DirExists returns whether the given file or directory exists
@@ -40,22 +40,4 @@ func ReadBody(stream io.ReadCloser) ([]byte, error) {
 	}
 
 	return body, nil
-}
-
-func FromJSON(s interface{}, jsonData []byte) error {
-	err := json.Unmarshal(jsonData, s)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func ToJSON(data interface{}) ([]byte, error) {
-	jsoned, err := json.Marshal(data)
-	if err != nil {
-		return nil, err
-	}
-
-	return jsoned, nil
 }

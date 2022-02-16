@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # BUILDER IMAGE
-FROM golang:1.16-alpine as builder
+FROM golang:1.17-alpine as builder
 
 # source files
 COPY app /svc/app
@@ -12,7 +12,7 @@ COPY go.sum /svc/go.sum
 
 WORKDIR /svc
 
-RUN go mod download
+RUN go mod tidy
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o zlifecycle-state-manager main.go
 

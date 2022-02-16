@@ -3,11 +3,12 @@ module github.com/compuzest/zlifecycle-state-manager
 go 1.16
 
 require (
-	github.com/aws/aws-sdk-go v1.42.25 // indirect
-	github.com/aws/aws-sdk-go-v2 v1.11.2
-	github.com/aws/aws-sdk-go-v2/config v1.11.1
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.22.0
+	github.com/aws/aws-sdk-go v1.42.53 // indirect
+	github.com/aws/aws-sdk-go-v2 v1.13.0
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.24.1
+	github.com/aws/smithy-go v1.10.0
 	github.com/go-git/go-git/v5 v5.4.2
+	github.com/golang/mock v1.6.0
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/terraform-exec v0.15.0
 	github.com/hashicorp/terraform-json v0.13.0
@@ -17,4 +18,5 @@ require (
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.4.1
+	github.com/stretchr/testify v1.7.0
 )
