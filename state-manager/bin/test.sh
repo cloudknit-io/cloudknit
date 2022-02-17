@@ -1,6 +1,4 @@
 #!/bin/bash
-# Content managed by Project Forge, see [projectforge.md] for details.
-
 ## Runs all the tests
 
 set -euo pipefail
