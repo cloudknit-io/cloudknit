@@ -23,12 +23,24 @@ func ZLStateComponentHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
 	var resp interface{}
 	var statusCode int
+
+	s3Client, err := zlstate.NewS3Client(r.Context())
+	if err != nil {
+		err = apm.NoticeError(
+			txn,
+			http2.NewVerboseError("InternalError", r.Method, "/zl/state", errors.New("internal server error")),
+		)
+		zlog.CtxLogger(r.Context()).Error(err)
+		http2.ErrorResponse(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	switch r.Method {
 	case "POST":
-		resp, err = postZLStateComponentHandler(r.Context(), zlog.CtxLogger(r.Context()), r.Body)
+		resp, err = postZLStateComponentHandler(r.Context(), zlog.CtxLogger(r.Context()), r.Body, s3Client)
 		statusCode = http.StatusOK
 	case "PATCH":
-		resp, err = patchZLStateComponentHandler(r.Context(), zlog.CtxLogger(r.Context()), r.Body)
+		resp, err = patchZLStateComponentHandler(r.Context(), zlog.CtxLogger(r.Context()), r.Body, s3Client)
 		statusCode = http.StatusOK
 	default:
 		err := apm.NoticeError(
@@ -51,7 +63,7 @@ func ZLStateComponentHandler(w http.ResponseWriter, r *http.Request) {
 	http2.Response(w, resp, statusCode)
 }
 
-func postZLStateComponentHandler(ctx context.Context, log *logrus.Entry, b io.ReadCloser) (*FetchZLStateComponentResponse, error) {
+func postZLStateComponentHandler(ctx context.Context, log *logrus.Entry, b io.ReadCloser, s3Client zlstate.S3API) (*FetchZLStateComponentResponse, error) {
 	var body FetchZLStateComponentRequest
 	decoder := json.NewDecoder(b)
 	if err := decoder.Decode(&body); err != nil {
@@ -63,12 +75,9 @@ func postZLStateComponentHandler(ctx context.Context, log *logrus.Entry, b io.Re
 
 	log.WithField("body", body).Info("Handling get zLstate component request")
 
-	client, err := zlstate.NewS3Backend(ctx, log, BuildZLStateBucketName(body.Company))
-	if err != nil {
-		return nil, errors.Wrap(err, "error instantiating s3 backend for zLstate manager")
-	}
+	backend := zlstate.NewS3Backend(ctx, log, BuildZLStateBucketName(body.Company), s3Client)
 
-	zlState, err := client.Get(BuildZLStateKey(body.Team, body.Environment))
+	zlState, err := backend.Get(BuildZLStateKey(body.Team, body.Environment))
 	if err != nil {
 		return nil, errors.Wrap(err, "error getting zLstate from remote backend")
 	}
@@ -101,7 +110,7 @@ type FetchZLStateComponentResponse struct {
 	Component *zlstate.Component `json:"component"`
 }
 
-func patchZLStateComponentHandler(ctx context.Context, log *logrus.Entry, b io.ReadCloser) (*UpdateZLStateComponentResponse, error) {
+func patchZLStateComponentHandler(ctx context.Context, log *logrus.Entry, b io.ReadCloser, s3Client zlstate.S3API) (*UpdateZLStateComponentResponse, error) {
 	var body UpdateZLStateComponentRequest
 	decoder := json.NewDecoder(b)
 	if err := decoder.Decode(&body); err != nil {
@@ -113,14 +122,11 @@ func patchZLStateComponentHandler(ctx context.Context, log *logrus.Entry, b io.R
 
 	log.WithField("body", body).Info("Handling patch zLstate component status request")
 
-	client, err := zlstate.NewS3Backend(ctx, log, BuildZLStateBucketName(body.Company))
-	if err != nil {
-		return nil, errors.Wrap(err, "error instantiating s3 backend for zLstate manager")
-	}
+	backend := zlstate.NewS3Backend(ctx, log, BuildZLStateBucketName(body.Company), s3Client)
 
 	key := BuildZLStateKey(body.Team, body.Environment)
 
-	zlState, err := client.Get(key)
+	zlState, err := backend.Get(key)
 	if err != nil {
 		return nil, errors.Wrap(err, "error getting zLstate from remote backend")
 	}
@@ -142,7 +148,7 @@ func patchZLStateComponentHandler(ctx context.Context, log *logrus.Entry, b io.R
 		return nil, errors.Errorf("component not found: %s", body.Component)
 	}
 
-	if err := client.Put(key, zlState, true); err != nil {
+	if err := backend.Put(key, zlState, true); err != nil {
 		return nil, errors.Wrap(err, "error persisting zLstate to remote backend")
 	}
 

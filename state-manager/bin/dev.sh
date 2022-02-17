@@ -11,5 +11,8 @@ if [ -f ".env" ]; then
 	export $(cat .env | grep -v "#" | xargs)
 fi
 
+export AWS_PROFILE="compuzest-dev"
+export DEV_MODE="true"
+
 ulimit -n 2048
 air

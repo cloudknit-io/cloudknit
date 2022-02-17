@@ -8,6 +8,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awshttp "github.com/aws/aws-sdk-go-v2/aws/transport/http"
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/compuzest/zlifecycle-state-manager/app/util"
 	"github.com/pkg/errors"
@@ -40,6 +41,14 @@ func NewS3Backend(ctx context.Context, log *logrus.Entry, bucket string, api S3A
 		bucket: bucket,
 		s3:     api,
 	}
+}
+
+func NewS3Client(ctx context.Context) (*s3.Client, error) {
+	cfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "error loading default s3 config")
+	}
+	return s3.NewFromConfig(cfg), nil
 }
 
 // Get returns the state file whose key is the path in the bucket for which the backend was created
