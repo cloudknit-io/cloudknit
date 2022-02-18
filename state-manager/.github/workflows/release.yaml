@@ -7,7 +7,7 @@ permissions:
   contents: write
 jobs:
   test:
-    uses: "CompuZest/zlifecycle-state-manager/.github/workflows/test.yml@main"
+    uses: "CompuZest/zlifecycle-state-manager/.github/workflows/test.yaml@main"
   build:
     runs-on: "ubuntu-latest"
     steps:
