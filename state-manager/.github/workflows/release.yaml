@@ -18,7 +18,7 @@ jobs:
           status: ${{ job.status }}
           notify_when: 'failure'
         env:
-          SLACK_WEBHOOK_URL: "${{ secrets.FAILURE_SLACK_INCOMING_WEBHOOK }}"
+          SLACK_WEBHOOK_URL: "${{ secrets.SLACK_WEBHOOK_URL }}"
       - name: "Checkout"
         uses: "actions/checkout@v2"
         with:
