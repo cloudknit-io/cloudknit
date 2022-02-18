@@ -5,7 +5,7 @@ import (
 	"github.com/compuzest/zlifecycle-state-manager/app/zlog"
 )
 
-var Version = "v0.0.1"
+var Version = "0.0.2"
 
 func main() {
 	zlog.PlainLogger().WithField("version", Version).Info("Starting zlifecycle state manager on localhost:8080")
