@@ -3,6 +3,9 @@ package zlstate
 import (
 	"bytes"
 	"context"
+	"net/http"
+	"time"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awshttp "github.com/aws/aws-sdk-go-v2/aws/transport/http"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -10,28 +13,42 @@ import (
 	"github.com/compuzest/zlifecycle-state-manager/app/util"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"net/http"
-	"time"
+)
+
+//go:generate go run -mod=mod github.com/golang/mock/mockgen -destination=./mock_s3.go -package=zlstate "github.com/compuzest/zlifecycle-state-manager/app/zlstate" S3API
+type S3API interface {
+	GetObject(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error)
+	PutObject(ctx context.Context, params *s3.PutObjectInput, optFns ...func(*s3.Options)) (*s3.PutObjectOutput, error)
+	HeadObject(ctx context.Context, params *s3.HeadObjectInput, optFns ...func(*s3.Options)) (*s3.HeadObjectOutput, error)
+}
+
+var (
+	ErrKeyNotExists     = errors.New("key does not exist")
+	ErrKeyAlreadyExists = errors.New("object already exists")
 )
 
 type S3Backend struct {
 	ctx    context.Context
 	log    *logrus.Entry
 	bucket string
-	s3     *s3.Client
+	s3     S3API
 }
 
-func NewS3Backend(ctx context.Context, log *logrus.Entry, bucket string) (*S3Backend, error) {
-	cfg, err := config.LoadDefaultConfig(ctx)
-	if err != nil {
-		return nil, errors.Wrap(err, "error loading default aws config")
-	}
+func NewS3Backend(ctx context.Context, log *logrus.Entry, bucket string, api S3API) *S3Backend {
 	return &S3Backend{
 		ctx:    ctx,
 		log:    log,
 		bucket: bucket,
-		s3:     s3.NewFromConfig(cfg),
-	}, nil
+		s3:     api,
+	}
+}
+
+func NewS3Client(ctx context.Context) (*s3.Client, error) {
+	cfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "error loading default s3 config")
+	}
+	return s3.NewFromConfig(cfg), nil
 }
 
 // Get returns the state file whose key is the path in the bucket for which the backend was created
@@ -42,7 +59,7 @@ func (s *S3Backend) Get(key string) (*ZLState, error) {
 		return nil, errors.Wrapf(err, "error checking does object already exist for key: [%s]", key)
 	}
 	if !exists {
-		return nil, errors.Errorf("key does not exist: [%s]", key)
+		return nil, errors.WithStack(ErrKeyNotExists)
 	}
 	input := s3.GetObjectInput{
 		Bucket: aws.String(s.bucket),
@@ -68,8 +85,6 @@ func (s *S3Backend) Get(key string) (*ZLState, error) {
 	return zlstate, nil
 }
 
-var ErrKeyExists = errors.Errorf("object already exists")
-
 func (s *S3Backend) Put(key string, state *ZLState, force bool) error {
 	s.log.WithFields(logrus.Fields{
 		"key":     key,
@@ -82,23 +97,19 @@ func (s *S3Backend) Put(key string, state *ZLState, force bool) error {
 		}
 		if exists {
 			s.log.WithField("key", key).Info("State already exists, returning early")
-			return errors.WithStack(ErrKeyExists)
+			return errors.WithStack(ErrKeyAlreadyExists)
 		}
 	}
 
 	addDefaults(state)
 
-	body, err := util.ToJSON(state)
-	if err != nil {
-		return errors.Wrap(err, "error serializing zLstate")
-	}
 	input := s3.PutObjectInput{
 		Bucket: aws.String(s.bucket),
 		Key:    aws.String(key),
-		Body:   bytes.NewReader(body),
+		Body:   bytes.NewReader(util.ToJSONBytes(state, false)),
 	}
 
-	_, err = s.s3.PutObject(s.ctx, &input)
+	_, err := s.s3.PutObject(s.ctx, &input)
 	if err != nil {
 		return errors.Wrap(err, "error saving zLstate")
 	}

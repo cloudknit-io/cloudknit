@@ -1,3 +1,18 @@
+# v1.24.1 (2022-01-28)
+
+* **Bug Fix**: Updates SDK API client deserialization to pre-allocate byte slice and string response payloads, [#1565](https://github.com/aws/aws-sdk-go-v2/pull/1565). Thanks to [Tyson Mote](https://github.com/tysonmote) for submitting this PR.
+
+# v1.24.0 (2022-01-14)
+
+* **Feature**: Updated `github.com/aws/smithy-go` to latest version
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.23.0 (2022-01-07)
+
+* **Feature**: Updated `github.com/aws/smithy-go` to latest version
+* **Documentation**: API client updated
+* **Dependency Update**: Updated to the latest SDK module versions
+
 # v1.22.0 (2021-12-21)
 
 * **Feature**: API Paginators now support specifying the initial starting token, and support stopping on empty string tokens.
