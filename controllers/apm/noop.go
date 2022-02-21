@@ -2,7 +2,6 @@ package apm
 
 import (
 	"context"
-	"runtime/debug"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/zerrors"
 	nr "github.com/newrelic/go-agent/v3/newrelic"
@@ -16,7 +15,7 @@ func NewNoop() *Noop {
 }
 
 func (n *Noop) NoticeError(tx *nr.Transaction, log *logrus.Entry, err zerrors.ZError) error {
-	log.WithError(err).Errorf("error during reconcile\nstack trace:\n%s", string(debug.Stack()))
+	log.WithError(err).Errorf("error during reconcile\nstack trace:%+v", deepestStackTrace(err.OriginalError()))
 	return err
 }
 

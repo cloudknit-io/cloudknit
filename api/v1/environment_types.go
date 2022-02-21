@@ -16,6 +16,28 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+type EnvironmentComponent struct {
+	Name         string   `json:"name"`
+	Type         string   `json:"type"`
+	CronSchedule string   `json:"cronSchedule,omitempty"`
+	DependsOn    []string `json:"dependsOn,omitempty"`
+	Module       *Module  `json:"module"`
+	Tags         []*Tags  `json:"tags,omitempty"`
+
+	AWS *AWS `json:"aws,omitempty"`
+
+	AutoApprove       bool `json:"autoApprove,omitempty"`
+	Destroy           bool `json:"destroy,omitempty"`
+	DestroyProtection bool `json:"destroyProtection,omitempty"`
+
+	VariablesFile *VariablesFile `json:"variablesFile,omitempty"`
+	OverlayFiles  []*OverlayFile `json:"overlayFiles,omitempty"`
+	OverlayData   []*OverlayData `json:"overlayData,omitempty"`
+	Variables     []*Variable    `json:"variables,omitempty"`
+	Secrets       []*Secret      `json:"secrets,omitempty"`
+	Outputs       []*Output      `json:"outputs,omitempty"`
+}
+
 type Tags struct {
 	Name  string `json:"name,omitempty"`
 	Value string `json:"value,omitempty"`
@@ -60,28 +82,6 @@ type Secret struct {
 type Output struct {
 	Name      string `json:"name"`
 	Sensitive bool   `json:"sensitive,omitempty"`
-}
-
-type EnvironmentComponent struct {
-	Name         string   `json:"name"`
-	Type         string   `json:"type"`
-	CronSchedule string   `json:"cronSchedule,omitempty"`
-	DependsOn    []string `json:"dependsOn,omitempty"`
-	Module       *Module  `json:"module"`
-	Tags         []*Tags  `json:"tags,omitempty"`
-
-	AWS *AWS `json:"aws,omitempty"`
-
-	AutoApprove       bool `json:"autoApprove,omitempty"`
-	Destroy           bool `json:"destroy,omitempty"`
-	DestroyProtection bool `json:"destroyProtection,omitempty"`
-
-	VariablesFile *VariablesFile `json:"variablesFile,omitempty"`
-	OverlayFiles  []*OverlayFile `json:"overlayFiles,omitempty"`
-	OverlayData   []*OverlayData `json:"overlayData,omitempty"`
-	Variables     []*Variable    `json:"variables,omitempty"`
-	Secrets       []*Secret      `json:"secrets,omitempty"`
-	Outputs       []*Output      `json:"outputs,omitempty"`
 }
 
 type AWS struct {
