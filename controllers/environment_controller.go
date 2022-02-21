@@ -15,8 +15,9 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/external/github"
 	"time"
+
+	"github.com/compuzest/zlifecycle-il-operator/controllers/external/github"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/gotfvars"

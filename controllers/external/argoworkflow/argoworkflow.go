@@ -241,6 +241,10 @@ func generateWorkflowParams(
 			Value: AnyStringPointer(autoApproveFlag),
 		},
 		{
+			Name:  "zl_environment",
+			Value: AnyStringPointer(env.Config.Environment),
+		},
+		{
 			Name:  "skip_component",
 			Value: AnyStringPointer(skipComponent(ec.DestroyProtection, destroyFlag, environment.Spec.SelectiveReconcile, ec.Tags)),
 		},
