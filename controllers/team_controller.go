@@ -19,20 +19,23 @@ import (
 	"sync"
 	"time"
 
+	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/file"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/il"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/apm"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/external/argocd"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/external/git"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/external/github"
 	"github.com/sirupsen/logrus"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/zerrors"
 	perrors "github.com/pkg/errors"
 
-	"github.com/compuzest/zlifecycle-il-operator/controllers/util/git"
-
 	"k8s.io/apiserver/pkg/registry/generic/registry"
 
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	"github.com/compuzest/zlifecycle-il-operator/controllers/util/file"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/util/repo"
 	"github.com/go-logr/logr"
 	"go.uber.org/atomic"
 	v1 "k8s.io/api/core/v1"
@@ -43,11 +46,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/util/github"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/util/il"
-
-	"github.com/compuzest/zlifecycle-il-operator/controllers/argocd"
 )
 
 // TeamReconciler reconciles a Team object.
@@ -130,25 +128,30 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		defer tx.End()
 	}
 
+	teamRepoURL := team.Spec.ConfigRepo.Source
+
 	// services init
 	fileAPI := &file.OsFileService{}
-	repoAPI := github.NewHTTPRepositoryAPI(apmCtx)
-	gitAPI, err := git.NewGoGit(apmCtx)
+	watcherServices, err := newGitHubServices(apmCtx, r.Client, env.Config.GitHubCompanyOrganization, r.LogV2)
 	if err != nil {
-		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error instantiating git Registration"))
+		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error instantiating watcher services"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
 	}
-	companyRepoAPI, err := repo.NewRegistration(apmCtx, r.Client, env.Config.GitHubCompanyAuthMethod, repo.AuthTierCompany, r.LogV2)
+	token, err := github.GenerateInstallationToken(r.LogV2, watcherServices.ilGitClient, env.Config.GitILRepositoryOwner)
 	if err != nil {
 		teamErr := zerrors.NewTeamError(
-			team.Spec.TeamName,
-			perrors.Wrapf(err, "error instantiating company repo registration with auth mode: %s", env.Config.GitHubCompanyAuthMethod),
+			team.Spec.TeamName, perrors.Wrapf(err, "error generating installation token for git organization [%s]", env.Config.GitILRepositoryOwner),
 		)
+		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
+	}
+	gitClient, err := git.NewGoGit(apmCtx, token)
+	if err != nil {
+		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error instantiating git client"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
 	}
 
 	// temp clone IL repo
-	tempILRepoDir, cleanup, err := git.CloneTemp(gitAPI, zlILRepoURL)
+	tempILRepoDir, cleanup, err := git.CloneTemp(gitClient, env.Config.ILZLifecycleRepositoryURL)
 	if err != nil {
 		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error running git temp clone"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
@@ -164,7 +167,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
 	}
 
-	if _, err := argocd.TryCreateProject(apmCtx, r.Log, team.Spec.TeamName, env.Config.GitHubCompanyOrganization); err != nil {
+	if _, err := argocd.TryCreateProject(apmCtx, watcherServices.argocdClient, r.Log, team.Spec.TeamName, env.Config.GitHubCompanyOrganization); err != nil {
 		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error trying to create argocd project"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
 	}
@@ -174,9 +177,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
 	}
 
-	teamRepo := team.Spec.ConfigRepo.Source
-
-	if err := companyRepoAPI.TryRegisterRepo(teamRepo); err != nil {
+	if err := watcherServices.companyWatcher.Watch(teamRepoURL); err != nil {
 		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error registering argocd team repo via github app auth"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
 	}
@@ -194,11 +195,11 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	}
 
 	commitInfo := git.CommitInfo{
-		Author: githubSvcAccntName,
-		Email:  githubSvcAccntEmail,
+		Author: env.Config.GitServiceAccountName,
+		Email:  env.Config.GitServiceAccountEmail,
 		Msg:    fmt.Sprintf("Reconciling team %s", team.Spec.TeamName),
 	}
-	pushed, err := gitAPI.CommitAndPush(&commitInfo)
+	pushed, err := gitClient.CommitAndPush(&commitInfo)
 	if err != nil {
 		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error running commit and push"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
@@ -209,7 +210,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		r.LogV2.Info("No git changes to commit, no-op reconciliation.")
 	}
 
-	_, err = github.CreateRepoWebhook(r.LogV2, repoAPI, teamRepo, env.Config.ArgocdWebhookURL, env.Config.GitHubWebhookSecret)
+	_, err = github.CreateRepoWebhook(r.LogV2, watcherServices.companyGitClient, teamRepoURL, env.Config.ArgocdWebhookURL, env.Config.GitHubWebhookSecret)
 	if err != nil {
 		r.LogV2.WithError(err).Error("error creating Team webhook")
 	}
@@ -280,13 +281,13 @@ func delayTeamReconcileOnInitialRun(log *logrus.Entry, seconds int64) {
 	}
 }
 
-func generateAndSaveTeamApp(fileAPI file.FSAPI, team *stablev1.Team, filename string, ilRepoDir string) error {
+func generateAndSaveTeamApp(fileAPI file.API, team *stablev1.Team, filename string, ilRepoDir string) error {
 	teamApp := argocd.GenerateTeamApp(team)
 
 	return fileAPI.SaveYamlFile(*teamApp, il.TeamDirectoryAbsolutePath(ilRepoDir), filename)
 }
 
-func generateAndSaveConfigWatchers(fileAPI file.FSAPI, team *stablev1.Team, filename string, ilRepoDir string) error {
+func generateAndSaveConfigWatchers(fileAPI file.API, team *stablev1.Team, filename string, ilRepoDir string) error {
 	teamConfigWatcherApp := argocd.GenerateTeamConfigWatcherApp(team)
 
 	return fileAPI.SaveYamlFile(*teamConfigWatcherApp, il.ConfigWatcherDirectoryAbsolutePath(ilRepoDir), filename)

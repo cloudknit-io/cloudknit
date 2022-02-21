@@ -1,7 +1,7 @@
 SHELL = /bin/bash
 
 CGO_ENABLED = 0
-DOCKER_TAG ?= latest
+DOCKER_TAG ?= validatation
 DOCKER_IMG = zlifecycle-il-operator
 
 BUILD_CMD = go build -a -o build/zlifecycle-il-operator-$${GOOS}-$${GOARCH}

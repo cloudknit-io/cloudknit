@@ -5,11 +5,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
+
+	git2 "github.com/compuzest/zlifecycle-il-operator/controllers/external/git"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
+
 	"github.com/sirupsen/logrus"
 
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/util/common"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/util/git"
 	"github.com/robfig/cron"
 	"k8s.io/apimachinery/pkg/api/errors"
 	genericregistry "k8s.io/apiserver/pkg/registry/generic/registry"
@@ -179,12 +182,12 @@ func (r *GitReconciler) Remove(repositoryURL string) {
 }
 
 func (r *GitReconciler) reconcile(wr *WatchedRepository) (updated bool, err error) {
-	gitAPI, err := git.NewGoGit(r.ctx)
+	gitAPI, err := git2.NewGoGit(r.ctx, env.Config.GitToken)
 	if err != nil {
 		return false, err
 	}
 
-	_, cleanup, err := git.CloneTemp(gitAPI, wr.Source)
+	_, cleanup, err := git2.CloneTemp(gitAPI, wr.Source)
 	defer cleanup()
 	if err != nil {
 		return false, err
@@ -243,7 +246,7 @@ func (r *GitReconciler) reconcile(wr *WatchedRepository) (updated bool, err erro
 			"newHeadCommit": latestHeadCommitHash,
 		}).Info("Updating environment status")
 
-		if err := common.Retry(r.retryableUpdate(&environment)); err != nil {
+		if err := util.Retry(r.retryableUpdate(&environment)); err != nil {
 			return false, err
 		}
 	}

@@ -3,17 +3,16 @@ package v1
 import (
 	"context"
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
+	git2 "github.com/compuzest/zlifecycle-il-operator/controllers/external/git"
+	notifier2 "github.com/compuzest/zlifecycle-il-operator/controllers/external/notifier"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/external/notifier/uinotifier"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/log"
 	"os"
 	"time"
 
-	"github.com/compuzest/zlifecycle-il-operator/controllers/notifier/uinotifier"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/util/git"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/util/log"
 	perrors "github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-
-	"github.com/compuzest/zlifecycle-il-operator/controllers/notifier"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -22,12 +21,12 @@ import (
 
 var ctx = context.Background()
 
-func notifyError(e *Environment, ntfr notifier.Notifier, msg string, debug interface{}) error {
-	n := &notifier.Notification{
+func notifyError(e *Environment, ntfr notifier2.Notifier, msg string, debug interface{}) error {
+	n := &notifier2.Notification{
 		Company:     env.Config.CompanyName,
 		Team:        e.Spec.TeamName,
 		Environment: e.Spec.EnvName,
-		MessageType: notifier.ERROR,
+		MessageType: notifier2.ERROR,
 		Message:     msg,
 		Timestamp:   time.Now(),
 		Debug:       debug,
@@ -232,13 +231,13 @@ func checkTfvarsExist(tfvars *VariablesFile, ec string) field.ErrorList {
 func checkPaths(source string, paths []string, fld *field.Path) field.ErrorList {
 	var allErrs field.ErrorList
 
-	gitAPI, err := git.NewGoGit(ctx)
+	gitAPI, err := git2.NewGoGit(ctx, env.Config.GitToken)
 	if err != nil {
 		fe := field.InternalError(fld, perrors.New("error validating access to source repository"))
 		allErrs = append(allErrs, fe)
 		return allErrs
 	}
-	dir, cleanup, err := git.CloneTemp(gitAPI, source)
+	dir, cleanup, err := git2.CloneTemp(gitAPI, source)
 	if err != nil {
 		fe := field.InternalError(fld, perrors.New("error validating access to source repository"))
 		allErrs = append(allErrs, fe)
