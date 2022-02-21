@@ -5,14 +5,11 @@ import (
 	"fmt"
 	"testing"
 
-	github2 "github.com/compuzest/zlifecycle-il-operator/controllers/external/github"
-
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/argocd"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/watcher"
 
 	"github.com/golang/mock/gomock"
-	"github.com/google/go-github/v42/github"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
@@ -28,14 +25,8 @@ func TestGitHubAppTryRegisterRepo(t *testing.T) {
 	repository := "test1"
 	repoURL := fmt.Sprintf("git@github.com:%s/%s", owner, repository)
 
-	var mockAppID int64 = 1
-	var mockInstallationID int64 = 2
-	mockInstallation := github.Installation{AppID: &mockAppID, ID: &mockInstallationID}
 	mockArgocdResponse := util.CreateMockResponse(200)
-	mockGitHubResponse := util.CreateMockGithubResponse(200)
 
-	mockGitClient := github2.NewMockAPI(mockCtrl)
-	mockGitClient.EXPECT().FindRepositoryInstallation(owner, repository).Return(&mockInstallation, mockGitHubResponse, nil)
 	mockArgocdClient := argocd.NewMockAPI(mockCtrl)
 	mockToken := &argocd.GetTokenResponse{Token: "test_token"}
 	mockArgocdClient.EXPECT().GetAuthToken().Return(mockToken, nil)
@@ -44,7 +35,7 @@ func TestGitHubAppTryRegisterRepo(t *testing.T) {
 	mockArgocdClient.EXPECT().ListRepositories(token).Return(&list, util.CreateMockResponse(200), nil)
 	mockArgocdClient.EXPECT().CreateRepository(gomock.Any(), token).Return(mockArgocdResponse, nil)
 	logger := logrus.New().WithField("name", "TestLogger")
-	r, err := watcher.NewGitHubAppWatcher(ctx, mockGitClient, mockArgocdClient, []byte("test"), logger)
+	r, err := watcher.NewGitHubAppWatcher(ctx, 1, 2, mockArgocdClient, []byte("test"), logger)
 	assert.NoError(t, err)
 	assert.IsType(t, r, &watcher.GitHubAppWatcher{})
 

@@ -51,6 +51,22 @@ func (mr *MockAPIMockRecorder) CreateHook(arg0, arg1, arg2 interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateHook", reflect.TypeOf((*MockAPI)(nil).CreateHook), arg0, arg1, arg2)
 }
 
+// CreateInstallationToken mocks base method.
+func (m *MockAPI) CreateInstallationToken(arg0 int64) (*github.InstallationToken, *github.Response, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateInstallationToken", arg0)
+	ret0, _ := ret[0].(*github.InstallationToken)
+	ret1, _ := ret[1].(*github.Response)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// CreateInstallationToken indicates an expected call of CreateInstallationToken.
+func (mr *MockAPIMockRecorder) CreateInstallationToken(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateInstallationToken", reflect.TypeOf((*MockAPI)(nil).CreateInstallationToken), arg0)
+}
+
 // CreateRepository mocks base method.
 func (m *MockAPI) CreateRepository(arg0, arg1 string) (*github.Repository, *github.Response, error) {
 	m.ctrl.T.Helper()
@@ -81,6 +97,22 @@ func (m *MockAPI) DownloadContents(arg0, arg1, arg2, arg3 string) (io.ReadCloser
 func (mr *MockAPIMockRecorder) DownloadContents(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DownloadContents", reflect.TypeOf((*MockAPI)(nil).DownloadContents), arg0, arg1, arg2, arg3)
+}
+
+// FindOrganizationInstallation mocks base method.
+func (m *MockAPI) FindOrganizationInstallation(arg0 string) (*github.Installation, *github.Response, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindOrganizationInstallation", arg0)
+	ret0, _ := ret[0].(*github.Installation)
+	ret1, _ := ret[1].(*github.Response)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// FindOrganizationInstallation indicates an expected call of FindOrganizationInstallation.
+func (mr *MockAPIMockRecorder) FindOrganizationInstallation(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindOrganizationInstallation", reflect.TypeOf((*MockAPI)(nil).FindOrganizationInstallation), arg0)
 }
 
 // FindRepositoryInstallation mocks base method.
