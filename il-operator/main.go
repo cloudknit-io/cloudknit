@@ -15,11 +15,11 @@ package main
 import (
 	"context"
 	"flag"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/log"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/apm"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/gitreconciler"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/util/env"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/util/log"
 	"github.com/newrelic/go-agent/v3/integrations/logcontext/nrlogrusplugin"
 	"github.com/sirupsen/logrus"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
@@ -43,7 +43,7 @@ var (
 	setupLog *logrus.Entry
 )
 
-//go:generate go run -mod=mod github.com/golang/mock/mockgen -destination=./mocks/mock_kclient.go -package=mocks "sigs.k8s.io/controller-runtime/pkg/client" Client
+//go:generate mockgen --build_flags=--mod=mod -destination=./mocks/mock_kclient.go -package=mocks "sigs.k8s.io/controller-runtime/pkg/client" Client
 
 // +kubebuilder:rbac:groups="",resources=configmaps;secrets,verbs=get;list;watch;update;patch
 // +kubebuilder:rbac:groups=coordination.k8s.io,resources=leases,verbs=get;create;update
