@@ -9,4 +9,10 @@ export class User {
   @ApiProperty()
   @Column()
   username: string;
+
+  @Column()
+  company: string;
+
+  @Column()
+  termAgreementStatus: boolean;
 }

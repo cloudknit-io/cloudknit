@@ -29,7 +29,8 @@ import { entities } from './typeorm';
     }),
     CostingModule,
     ReconciliationModule,
-    SecretsModule
+    SecretsModule,
+    AuthModule
   ],
   controllers: [AppController],
   providers: [AppService],
