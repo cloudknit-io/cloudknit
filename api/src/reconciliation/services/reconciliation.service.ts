@@ -117,7 +117,7 @@ export class ReconciliationService {
       const newEntries = entries.map((entry) => ({
         ...entry,
         status: "skipped_reconcile",
-      }));
+      })) as T[];
       await repo.save(newEntries);
     }
   }
