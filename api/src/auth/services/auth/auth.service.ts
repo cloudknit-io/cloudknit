@@ -15,6 +15,14 @@ export class AuthService {
         company: company,
       },
     });
-    return user.termAgreementStatus;
+    return user?.termAgreementStatus || false;
+  }
+
+  public async setTermAgreementStatus(company: string, username: string) {
+    return await this.userRepo.save({
+      company: company,
+      termAgreementStatus: true,
+      username: username,
+    });
   }
 }

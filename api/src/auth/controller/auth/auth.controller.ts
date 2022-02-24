@@ -1,8 +1,12 @@
-import { Controller, Get, Param, Res } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Res } from "@nestjs/common";
 import { Response } from "express";
+import { AuthService } from "src/auth/services/auth/auth.service";
 
 @Controller("auth")
 export class AuthController {
+
+  constructor(private readonly authService: AuthService){}
+
   /*
    * user will login via this route
    */
@@ -67,6 +71,16 @@ export class AuthController {
     const res = await Promise.all(updates);
 
     return res;
+  }
+
+  @Post("termAgreementStatus") 
+  public async getTermAgreementStatus(@Body() body) {
+    return await this.authService.getTermAgreementStatus(body.company);
+  }
+
+  @Post("setTermAgreementStatus") 
+  public async setTermAgreementStatus(@Body() body) {
+    return await this.authService.setTermAgreementStatus(body.company, body.username);
   }
 
   private async updateSecret(
