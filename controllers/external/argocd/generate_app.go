@@ -14,6 +14,7 @@ package argocd
 
 import (
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/il"
 
@@ -48,7 +49,7 @@ func GenerateCompanyApp(company *stablev1.Company) *appv1.Application {
 				Namespace: "default",
 			},
 			Source: appv1.ApplicationSource{
-				RepoURL:        env.Config.ILZLifecycleRepositoryURL,
+				RepoURL:        util.RewriteGitURLToHTTPS(env.Config.ILZLifecycleRepositoryURL),
 				Path:           "./" + il.Config.TeamDirectory,
 				TargetRevision: "HEAD",
 			},
@@ -57,7 +58,7 @@ func GenerateCompanyApp(company *stablev1.Company) *appv1.Application {
 			Sync: appv1.SyncStatus{
 				ComparedTo: appv1.ComparedTo{
 					Source: appv1.ApplicationSource{
-						RepoURL: env.Config.ILZLifecycleRepositoryURL,
+						RepoURL: util.RewriteGitURLToHTTPS(env.Config.ILZLifecycleRepositoryURL),
 					},
 				},
 				Status: "Synced",
@@ -92,7 +93,7 @@ func GenerateTeamApp(team *stablev1.Team) *appv1.Application {
 				Namespace: "default",
 			},
 			Source: appv1.ApplicationSource{
-				RepoURL:        env.Config.ILZLifecycleRepositoryURL,
+				RepoURL:        util.RewriteGitURLToHTTPS(env.Config.ILZLifecycleRepositoryURL),
 				Path:           "./" + il.EnvironmentDirectoryPath(team.Spec.TeamName),
 				TargetRevision: "HEAD",
 			},
@@ -101,7 +102,7 @@ func GenerateTeamApp(team *stablev1.Team) *appv1.Application {
 			Sync: appv1.SyncStatus{
 				ComparedTo: appv1.ComparedTo{
 					Source: appv1.ApplicationSource{
-						RepoURL: env.Config.ILZLifecycleRepositoryURL,
+						RepoURL: util.RewriteGitURLToHTTPS(env.Config.ILZLifecycleRepositoryURL),
 					},
 				},
 				Status: "Synced",
@@ -138,7 +139,7 @@ func GenerateEnvironmentApp(environment *stablev1.Environment) *appv1.Applicatio
 				Namespace: "default",
 			},
 			Source: appv1.ApplicationSource{
-				RepoURL:        env.Config.ILZLifecycleRepositoryURL,
+				RepoURL:        util.RewriteGitURLToHTTPS(env.Config.ILZLifecycleRepositoryURL),
 				Path:           "./" + il.EnvironmentComponentsDirectoryPath(environment.Spec.TeamName, environment.Spec.EnvName),
 				TargetRevision: "HEAD",
 			},
@@ -147,7 +148,7 @@ func GenerateEnvironmentApp(environment *stablev1.Environment) *appv1.Applicatio
 			Sync: appv1.SyncStatus{
 				ComparedTo: appv1.ComparedTo{
 					Source: appv1.ApplicationSource{
-						RepoURL: env.Config.ILZLifecycleRepositoryURL,
+						RepoURL: util.RewriteGitURLToHTTPS(env.Config.ILZLifecycleRepositoryURL),
 					},
 				},
 				Status: "Synced",
@@ -200,7 +201,7 @@ func GenerateEnvironmentComponentApps(environment *stablev1.Environment, environ
 				Namespace: "default",
 			},
 			Source: appv1.ApplicationSource{
-				RepoURL:        env.Config.GitHelmChartsRepository,
+				RepoURL:        util.RewriteGitURLToHTTPS(env.Config.GitHelmChartsRepository),
 				Path:           "charts/terraform-config",
 				TargetRevision: "HEAD",
 				Helm: &appv1.ApplicationSourceHelm{
@@ -212,7 +213,7 @@ func GenerateEnvironmentComponentApps(environment *stablev1.Environment, environ
 			Sync: appv1.SyncStatus{
 				ComparedTo: appv1.ComparedTo{
 					Source: appv1.ApplicationSource{
-						RepoURL: env.Config.GitHelmChartsRepository,
+						RepoURL: util.RewriteGitURLToHTTPS(env.Config.GitHelmChartsRepository),
 					},
 				},
 				Status: "Synced",
@@ -275,7 +276,7 @@ func GenerateTeamConfigWatcherApp(team *stablev1.Team) *appv1.Application {
 				Namespace: "default",
 			},
 			Source: appv1.ApplicationSource{
-				RepoURL:        team.Spec.ConfigRepo.Source,
+				RepoURL:        util.RewriteGitURLToHTTPS(team.Spec.ConfigRepo.Source),
 				Path:           team.Spec.ConfigRepo.Path,
 				TargetRevision: "HEAD",
 				Directory: &appv1.ApplicationSourceDirectory{
@@ -287,7 +288,7 @@ func GenerateTeamConfigWatcherApp(team *stablev1.Team) *appv1.Application {
 			Sync: appv1.SyncStatus{
 				ComparedTo: appv1.ComparedTo{
 					Source: appv1.ApplicationSource{
-						RepoURL: team.Spec.ConfigRepo.Source,
+						RepoURL: util.RewriteGitURLToHTTPS(team.Spec.ConfigRepo.Source),
 					},
 				},
 				Status: "Synced",
@@ -323,7 +324,7 @@ func GenerateCompanyConfigWatcherApp(customerName string, companyConfigRepo stri
 				Namespace: "default",
 			},
 			Source: appv1.ApplicationSource{
-				RepoURL:        companyConfigRepo,
+				RepoURL:        util.RewriteGitURLToHTTPS(companyConfigRepo),
 				Path:           ".",
 				TargetRevision: "HEAD",
 				Directory: &appv1.ApplicationSourceDirectory{
@@ -335,7 +336,7 @@ func GenerateCompanyConfigWatcherApp(customerName string, companyConfigRepo stri
 			Sync: appv1.SyncStatus{
 				ComparedTo: appv1.ComparedTo{
 					Source: appv1.ApplicationSource{
-						RepoURL: companyConfigRepo,
+						RepoURL: util.RewriteGitURLToHTTPS(companyConfigRepo),
 					},
 				},
 				Status: "Synced",
@@ -370,7 +371,7 @@ func GenerateCompanyBootstrapApp() *appv1.Application {
 				Namespace: "default",
 			},
 			Source: appv1.ApplicationSource{
-				RepoURL:        env.Config.ILZLifecycleRepositoryURL,
+				RepoURL:        util.RewriteGitURLToHTTPS(env.Config.ILZLifecycleRepositoryURL),
 				Path:           "company",
 				TargetRevision: "HEAD",
 			},
@@ -404,7 +405,7 @@ func GenerateConfigWatcherBootstrapApp() *appv1.Application {
 				Namespace: "default",
 			},
 			Source: appv1.ApplicationSource{
-				RepoURL:        env.Config.ILZLifecycleRepositoryURL,
+				RepoURL:        util.RewriteGitURLToHTTPS(env.Config.ILZLifecycleRepositoryURL),
 				Path:           "config-watcher",
 				TargetRevision: "HEAD",
 			},

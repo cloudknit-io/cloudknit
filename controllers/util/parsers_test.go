@@ -41,3 +41,25 @@ func TestParseRepositoryInfo(t *testing.T) {
 	assert.Empty(t, repo)
 	assert.Error(t, err)
 }
+
+func TestRewriteGitURLToHTTPS(t *testing.T) {
+	t.Parallel()
+
+	testRepo1 := "git@github.com:test/test"
+	expected1 := "https://github.com/test/test"
+	transformed1 := util.RewriteGitURLToHTTPS(testRepo1)
+	assert.Equal(t, transformed1, expected1)
+
+	testRepo2 := "https://github.com/hello/world"
+	transformed2 := util.RewriteGitURLToHTTPS(testRepo2)
+	assert.Equal(t, transformed2, testRepo2)
+
+	testRepo3 := "https://github.com/CompuZest/leet"
+	expected3 := "git@github.com:CompuZest/leet"
+	transformed3 := util.RewriteGitURLToSSH(testRepo3)
+	assert.Equal(t, transformed3, expected3)
+
+	testRepo4 := "git@github.com:CompuZest/rocks"
+	transformed4 := util.RewriteGitURLToSSH(testRepo4)
+	assert.Equal(t, transformed4, testRepo4)
+}
