@@ -8,6 +8,11 @@ import (
 	y "gopkg.in/yaml.v2"
 )
 
+const (
+	httpsPrefix = "https://github.com/"
+	sshPrefix   = "git@github.com:"
+)
+
 func ToJSON(data interface{}) ([]byte, error) {
 	jsoned, err := json.Marshal(data)
 	if err != nil {
@@ -94,10 +99,17 @@ func ParseRepositoryInfo(url string) (owner string, repo string, err error) {
 }
 
 func RewriteGitURLToHTTPS(repoURL string) string {
-	httpsRepo := repoURL
-	httpsPrefix := "https://github.com/"
-	if sshPrefix := "git@github.com:"; strings.HasPrefix(httpsRepo, sshPrefix) {
-		httpsRepo = strings.ReplaceAll(httpsRepo, sshPrefix, httpsPrefix)
+	transformed := repoURL
+	if strings.HasPrefix(transformed, sshPrefix) {
+		transformed = strings.ReplaceAll(transformed, sshPrefix, httpsPrefix)
 	}
-	return httpsRepo
+	return transformed
+}
+
+func RewriteGitURLToSSH(repoURL string) string {
+	transformed := repoURL
+	if strings.HasPrefix(transformed, httpsPrefix) {
+		transformed = strings.ReplaceAll(transformed, httpsPrefix, sshPrefix)
+	}
+	return transformed
 }

@@ -195,6 +195,7 @@ func generateWorkflowParams(
 	destroyFlag bool,
 	autoApproveFlag bool,
 ) []workflow.Parameter {
+	ilRepo := util.RewriteGitURLToSSH(env.Config.ILTerraformRepositoryURL)
 	return []workflow.Parameter{
 		{
 			Name:  "workflowtemplate",
@@ -218,7 +219,7 @@ func generateWorkflowParams(
 		},
 		{
 			Name:  "il_repo",
-			Value: AnyStringPointer(env.Config.ILTerraformRepositoryURL),
+			Value: AnyStringPointer(util.RewriteGitURLToSSH(ilRepo)),
 		},
 		{
 			Name:  "terraform_il_path",
