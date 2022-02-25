@@ -182,14 +182,14 @@ func validateEnvironmentComponents(e *Environment, isCreate bool) field.ErrorLis
 		if err := checkEnvironmentComponentDependenciesExist(name, dependsOn, e.Spec.Components, ec.Name); err != nil {
 			allErrs = append(allErrs, err)
 		}
-		if e.DeletionTimestamp == nil || e.DeletionTimestamp.IsZero() {
-			if err := checkOverlaysExist(ec.OverlayFiles, ec.Name); err != nil {
-				allErrs = append(allErrs, err...)
-			}
-			if err := checkTfvarsExist(ec.VariablesFile, ec.Name); err != nil {
-				allErrs = append(allErrs, err...)
-			}
-		}
+		//if e.DeletionTimestamp == nil || e.DeletionTimestamp.IsZero() {
+		//	if err := checkOverlaysExist(ec.OverlayFiles, ec.Name); err != nil {
+		//		allErrs = append(allErrs, err...)
+		//	}
+		//	if err := checkTfvarsExist(ec.VariablesFile, ec.Name); err != nil {
+		//		allErrs = append(allErrs, err...)
+		//	}
+		//}
 		if isCreate {
 			if err := checkEnvironmentComponentNotInitiallyDestroyed(ec); err != nil {
 				allErrs = append(allErrs, err)
