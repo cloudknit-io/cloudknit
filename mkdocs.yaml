@@ -1,0 +1,4 @@
+site_name: zLifecycle
+theme: readthedocs
+nav:
+    - Overview: README.md
