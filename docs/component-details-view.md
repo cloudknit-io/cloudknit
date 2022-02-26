@@ -8,8 +8,6 @@ This view provides the following information about the selected component.
     - [Audit View](#audit-view)
     - [State File](#state-file)
 
-
-
 ### Logs
 
 ![sample-logs](assets/images/sample-provision-success.png "Sample Logs")
