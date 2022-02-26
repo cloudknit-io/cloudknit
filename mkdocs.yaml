@@ -5,7 +5,7 @@ nav:
     - index.md
     - What is zLifecycle: index.md
     - Why zLifecycle: index.md
-  - Usert Guide:
+  - User Guide:
     - Getting Started:
       - Setting up: setup.md
       - Onboard a Team: team/onboarding.md
