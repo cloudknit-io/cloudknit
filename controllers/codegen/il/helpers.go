@@ -62,6 +62,14 @@ func EnvironmentComponentTerraformDirectoryAbsolutePath(dir string, team string,
 	return filepath.Join(dir, EnvironmentComponentDirectoryPath(team, environment, component), terraformDir)
 }
 
+func EnvironmentComponentArgocdAppsDirectoryPath(team string, environment string, component string) string {
+	return filepath.Join(EnvironmentComponentDirectoryPath(team, environment, component), argocdAppsDir)
+}
+
+func EnvironmentComponentArgocdAppsDirectoryAbsolutePath(dir string, team string, environment string, component string) string {
+	return filepath.Join(dir, EnvironmentComponentDirectoryPath(team, environment, component), argocdAppsDir)
+}
+
 func EnvironmentComponentModuleSource(moduleSource string, moduleName string) string {
 	if moduleSource == "aws" {
 		return fmt.Sprintf("git@github.com:terraform-aws-modules/terraform-aws-%s.git", moduleName)

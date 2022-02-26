@@ -414,8 +414,13 @@ func GenerateConfigWatcherBootstrapApp() *appv1.Application {
 	}
 }
 
-func AddLabelsToCustomerApp(app *appv1.Application) {
+func AddLabelsToCustomerApp(app *appv1.Application, ec *stablev1.EnvironmentComponent, filename string) {
 	app.Labels = map[string]string{
-		"component_type": "argocd",
+		"component_type":   "argocd",
+		"source_file_name": filename,
+	}
+	for i, dep := range ec.DependsOn {
+		label := fmt.Sprintf("depends_on_%d", i)
+		app.Labels[label] = dep
 	}
 }
