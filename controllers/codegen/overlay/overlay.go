@@ -22,7 +22,7 @@ func GenerateOverlayFiles(
 	fileAPI file.API,
 	gitClient git.API,
 	gitReconciler gitreconciler.API,
-	e *stablev1.Environment,
+	key *client.ObjectKey,
 	ec *stablev1.EnvironmentComponent,
 	destinationFolder string,
 ) error {
@@ -52,22 +52,7 @@ func GenerateOverlayFiles(
 						return err
 					}
 				}
-
-				// submit repo to git reconciler
-				log.WithFields(logrus.Fields{
-					"component":  ec.Name,
-					"type":       ec.Type,
-					"repository": overlay.Source,
-				}).Info("Subscribing to config repository in git reconciler")
-				envKey := client.ObjectKey{Name: e.Name, Namespace: e.Namespace}
-				subscribed := gitReconciler.Subscribe(overlay.Source, envKey)
-				if subscribed {
-					log.WithFields(logrus.Fields{
-						"component":  ec.Name,
-						"type":       ec.Type,
-						"repository": overlay.Source,
-					}).Info("Already subscribed in git reconciler to repository")
-				}
+				submitToGitReconciler(gitReconciler, key, ec, log)
 			}
 
 			return nil
@@ -88,4 +73,20 @@ func GenerateOverlayFiles(
 	}
 
 	return nil
+}
+
+func submitToGitReconciler(gitReconciler gitreconciler.API, key *client.ObjectKey, ec *stablev1.EnvironmentComponent, log *logrus.Entry) {
+	log.WithFields(logrus.Fields{
+		"component":  ec.Name,
+		"type":       ec.Type,
+		"repository": ec.Module.Source,
+	}).Info("Subscribing to config repository in git reconciler")
+	subscribed := gitReconciler.Subscribe(ec.Module.Source, *key)
+	if subscribed {
+		log.WithFields(logrus.Fields{
+			"component":  ec.Name,
+			"type":       ec.Type,
+			"repository": ec.Module.Source,
+		}).Info("Already subscribed in git reconciler to repository")
+	}
 }

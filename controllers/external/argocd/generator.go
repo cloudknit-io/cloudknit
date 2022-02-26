@@ -14,6 +14,7 @@ package argocd
 
 import (
 	"fmt"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/il"
@@ -410,5 +411,11 @@ func GenerateConfigWatcherBootstrapApp() *appv1.Application {
 				TargetRevision: "HEAD",
 			},
 		},
+	}
+}
+
+func AddLabelsToCustomerApp(app *appv1.Application) {
+	app.Labels = map[string]string{
+		"component_type": "argocd",
 	}
 }

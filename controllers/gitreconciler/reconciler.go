@@ -5,9 +5,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/compuzest/zlifecycle-il-operator/controllers/external/github"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/watcherservices"
+	perrors "github.com/pkg/errors"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
 
-	git2 "github.com/compuzest/zlifecycle-il-operator/controllers/external/git"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/external/git"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
 
 	"github.com/sirupsen/logrus"
@@ -18,13 +22,6 @@ import (
 	genericregistry "k8s.io/apiserver/pkg/registry/generic/registry"
 	kClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
-
-type WatchedRepository struct {
-	Source         string
-	RepositoryPath string
-	HeadCommitHash string
-	Subscribers    []kClient.ObjectKey
-}
 
 type API interface {
 	Start() error
@@ -40,14 +37,26 @@ type GitReconciler struct {
 	log       *logrus.Entry
 	k8sClient kClient.Client
 	state     State
+	watcher   *watcherservices.WatcherServices
 }
 
 var _ API = (*GitReconciler)(nil)
 
 type State map[string]*WatchedRepository
 
+type WatchedRepository struct {
+	Source         string
+	RepositoryPath string
+	HeadCommitHash string
+	Subscribers    []kClient.ObjectKey
+}
+
 // NewReconciler creates a new GitReconciler singleton instance.
-func NewReconciler(ctx context.Context, log *logrus.Entry, k8sClient kClient.Client) *GitReconciler {
+func NewReconciler(
+	ctx context.Context,
+	log *logrus.Entry,
+	k8sClient kClient.Client,
+) (*GitReconciler, error) {
 	state := State{}
 	reconciler := &GitReconciler{
 		ctx:       ctx,
@@ -56,13 +65,18 @@ func NewReconciler(ctx context.Context, log *logrus.Entry, k8sClient kClient.Cli
 		state:     state,
 	}
 
-	return reconciler
+	return reconciler, nil
 }
 
-//// GetReconciler returns the current singleton instance. Note that it needs to be initialized first by calling NewReconciler.
-//func GetReconciler() *GitReconciler {
-//	return reconciler
-//}
+func (r *GitReconciler) initWatcherServices() error {
+	watcherServices, err := watcherservices.NewGitHubServices(r.ctx, r.k8sClient, env.Config.GitHubCompanyOrganization, r.log)
+	if err != nil {
+		return perrors.Wrap(err, "unable to start instantiate watcher services")
+	}
+	r.watcher = watcherServices
+
+	return nil
+}
 
 func (r *GitReconciler) Start() error {
 	r.log.Info("Starting git reconciler")
@@ -182,18 +196,28 @@ func (r *GitReconciler) Remove(repositoryURL string) {
 }
 
 func (r *GitReconciler) reconcile(wr *WatchedRepository) (updated bool, err error) {
-	gitAPI, err := git2.NewGoGit(r.ctx, env.Config.GitToken)
+	if r.watcher == nil {
+		if err := r.initWatcherServices(); err != nil {
+			return false, perrors.Wrap(err, "error initializing watcher services in git reconciler")
+		}
+	}
+
+	companyToken, err := github.GenerateInstallationToken(r.log, r.watcher.CompanyGitClient, env.Config.GitHubCompanyOrganization)
+	if err != nil {
+		return false, perrors.Wrap(err, "error generating installation token")
+	}
+	gitClient, err := git.NewGoGit(r.ctx, companyToken)
 	if err != nil {
 		return false, err
 	}
 
-	_, cleanup, err := git2.CloneTemp(gitAPI, wr.Source)
+	_, cleanup, err := git.CloneTemp(gitClient, wr.Source)
 	defer cleanup()
 	if err != nil {
 		return false, err
 	}
 
-	latestHeadCommitHash, err := gitAPI.HeadCommitHash()
+	latestHeadCommitHash, err := gitClient.HeadCommitHash()
 	if err != nil {
 		return false, err
 	}

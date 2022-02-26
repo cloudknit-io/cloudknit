@@ -17,7 +17,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func SaveTfVarsToFile(fs file.API, vars []*v1.Variable, folderName string, fileName string) error {
+func GenerateTFVarsFile(fs file.API, vars []*v1.Variable, folderName string, fileName string) error {
 	variables := make([]*v1.Variable, 0, len(vars))
 	for _, v := range vars {
 		// TODO: This is a hack to just to make it work, needs to be revisited
@@ -32,7 +32,7 @@ func GetVariablesFromTfvarsFile(
 	gitReconciler gitreconciler.API,
 	gitClient git.API,
 	log *logrus.Entry,
-	e *v1.Environment,
+	key *client.ObjectKey,
 	ec *v1.EnvironmentComponent,
 ) (string, error) {
 	tempRepoDir, cleanup, err := git.CloneTemp(gitClient, ec.VariablesFile.Source)
@@ -56,8 +56,7 @@ func GetVariablesFromTfvarsFile(
 		"type":       ec.Type,
 		"repository": ec.VariablesFile.Source,
 	}).Info("Subscribing to config repository in git reconciler")
-	envKey := client.ObjectKey{Name: e.Name, Namespace: e.Namespace}
-	subscribed := gitReconciler.Subscribe(ec.VariablesFile.Source, envKey)
+	subscribed := gitReconciler.Subscribe(ec.VariablesFile.Source, *key)
 	if subscribed {
 		log.WithFields(logrus.Fields{
 			"component":  ec.Name,
