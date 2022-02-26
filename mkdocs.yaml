@@ -12,6 +12,10 @@ nav:
     - Define Environment: define/define-environment.md
     - Field Reference: define/field-reference.md
   - Provision:
+    - Steps: steps.md
   - Reconcile:
+    - Steps: steps.md
   - Teardown:
+    - Steps: steps.md
   - Dashboards:
+    - Steps: steps.md
