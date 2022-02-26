@@ -1,8 +1,7 @@
 site_name: zLifecycle
 theme: readthedocs
 nav:
-  - Home:
-    - index.md
+  - Overview: index.md
     - What is zLifecycle: index.md
     - Why zLifecycle: index.md
   - User Guide:

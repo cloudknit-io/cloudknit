@@ -1,7 +1,3 @@
-# zlifecycle-user-docs
-
-# Index
-
 # Overview
 
 ## What is zLifecycle?
