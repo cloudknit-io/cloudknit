@@ -1,4 +1,14 @@
 site_name: zLifecycle
 theme: readthedocs
 nav:
-    - Overview: README.md
+    - Home: index.md
+      - What is zLifecycle:
+      - Why zLifecycle:
+    - Usert Guide:
+      - Getting Started:
+        - Setting up
+        - Onboard a Team: team/onboarding.md
+        - Provision your First Environment: provision/first-environment.md
+        - Teardown your First Environment: teardown/first-environment.md
+      - Define Environment: define/define-environment.md
+    - Core Concepts

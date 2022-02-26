@@ -2,27 +2,6 @@
 
 # Index
 
-* Overview
-    * What is zLifecycle
-    * Why zLifecycle
-    * zLifecycle Documentation
-        * Getting Started
-        * Define
-        * Provision
-        * Teardown
-* Core Concepts
-* Getting on-boarded on to zLifecycle
-* User Guide
-    * Getting Started
-        * Setting up zLifecycle
-        * [Onboarding a Team](team/onboarding.md)
-        * [Provisioning your First Environment](provision/first-environment.md)
-        * [Tearing down your First Environment](teardown/first-environment.md)
-    * [Define Environment](define/define-environment.md)
-    * Provision Environment
-    * Reconcile Environment
-    * Teardown Environment
-    * Dashboards
 
 # Overview
 
