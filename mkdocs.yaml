@@ -2,11 +2,10 @@ site_name: zLifecycle
 theme: readthedocs
 nav:
   - Overview: index.md
-  - User Guide:
-    - Getting Started:
-      - Setting up: setup.md
-      - Onboard a Team: team/onboarding.md
-      - Provision your First Environment: provision/first-environment.md
-      - Teardown your First Environment: teardown/first-environment.md
+  - Getting Started:
+    - Setting up: setup.md
+    - Onboard a Team: team/onboarding.md
+    - Provision your First Environment: provision/first-environment.md
+    - Teardown your First Environment: teardown/first-environment.md
     - Define Environment: define/define-environment.md
   - Core Concepts: core-concepts.md
