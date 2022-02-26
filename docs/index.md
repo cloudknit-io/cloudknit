@@ -2,30 +2,15 @@
 
 ## What is zLifecycle?
 
-![image](https://user-images.githubusercontent.com/47644789/147984939-738f7535-be82-41ab-8f35-e684f8cdb3c7.png)
+<img src="https://user-images.githubusercontent.com/47644789/147984939-738f7535-be82-41ab-8f35-e684f8cdb3c7.png" width="200"/>
 
-zLifecycle is a declarative, GitOps continuous delivery tool for Environments.
+zLifecycle is a Continuous Delivery platform for managing Environments across various cloud providers and on-premises.
 
-zLifecycle makes Environment Management easy across various cloud providers. It enables organizations to define, provision, detect drift + reconcile, and teardown environments across multiple cloud providers as well as on-premises. It also provides dashboards and reports for data-driven decision making.
-
+It enables organizations to Define, Provision, Detect Drift + Reconcile, and Teardown environments. It also provides dashboards and reports for data-driven decision making.
 
 ## Why zLifecycle?
 
 Environment definitions and configurations should be declarative and version controlled. Environment deployment and lifecycle management should be automated, auditable, and easy to understand.
-
-## zLifecycle Documentation
-
-### Getting Started
-
-### Define
-
-### Provision
-
-### Teardown
-
-# Core Concepts
-
-## Teams
 
 ## Environment 
 
@@ -35,24 +20,10 @@ A logical grouping of all the Infrastructure Components that are needed to run b
 
 Logical groupings of 1 or more Infrastructure Resources that get provisioned together. For example, Networking is an Infrastructure Component with various Infrastructure resources like Virtual Private Cloud(VPC), Subnets, Internet Gateways, Route Tables, etc.
 
-
-
-## Custom Resource Definition (CRD)
-Environment YAML 
-
-## Provisioning 
-
-## Drift Detection + Reconciling
-
-## Teardown
-
-## 
-
 # User Guide
 
 ## Reference YAML
 
-## Field Reference
 
 ## Cost Calculation
 
