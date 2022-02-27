@@ -9,22 +9,6 @@ zLifecycle has two types of secrets:
    
 * **Custom:** Custom secrets required during the reconciling of the environment.
 
-### AWS Secrets
-
-AWS section has three type of secrets:
-
-![aws-secrets](assets/images/aws-secrets.png "aws-secrets")
-
-* `Access Key Id`
-* `Secret Access Key`
-* `Session Token` [Optional]
-
-These secrets are used by zlifecycle to provision your **AWS** environment. To add to that, we also have 3 scopes to which these secrets can be added, `company`, `team`, `environment`.
-
-**NOTE:** You need to **add AWS Secrets before** provisioning an environment **for the first time**.
-
-By default, zlifecycle tries to find secrets at environment level, then at team level and lastly at company level.
-
 ### Custom Secrets
 
 These are the secrets that a user can use at his own behest.

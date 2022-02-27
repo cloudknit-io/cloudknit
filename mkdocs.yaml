@@ -9,6 +9,9 @@ nav:
 - Overview: index.md
 - concepts/index.md
 - getting_started/index.md
+- Settings:
+  - settings/aws-secrets.md
+  - settings/secrets.md
 - Define:
   - define/define-environment.md
   - define/field-reference.md

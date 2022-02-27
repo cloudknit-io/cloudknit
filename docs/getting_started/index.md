@@ -1,5 +1,9 @@
 # Getting Started
 
+## Set AWS Credentials
+
+Make sure you set [AWS Credentials](../settings/aws_credentials.md) that you want to use for provisioning your environment.
+
 ## Provision your first Environment
 
 After you have setup zLifecycle, you will want to provision a simple environment to see how it works end to end.
