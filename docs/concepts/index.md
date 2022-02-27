@@ -1,3 +1,5 @@
+# Core Concepts
+
 ## Environment 
 
 A logical grouping of all the Infrastructure Components that are needed to run business applications. The grouping includes components like networking, platform-eks, database, s3 buckets, and any other components.

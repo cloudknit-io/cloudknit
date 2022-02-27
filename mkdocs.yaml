@@ -8,8 +8,10 @@ markdown_extensions:
 nav:
 - Overview: index.md
 - concepts/index.md
-- getting_started.md
-- Onboard a Team: team/onboarding.md
+- getting_started/index.md
+- Team:
+  - team/index.md
+  - team/onboard.md
 - Define:
   - define/define-environment.md
   - define/field-reference.md
@@ -19,5 +21,5 @@ nav:
   - steps.md
 - Teardown:
   - steps.md
-- Dashboards:
+- Dashboard:
   - steps.md

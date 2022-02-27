@@ -1,4 +1,4 @@
-# Onboarding a New Team
+# Onboard a New Team
 
 When you want to onboard a new team use the following steps:
 1. [Optional] Create a repository that will consist of environments for the team
