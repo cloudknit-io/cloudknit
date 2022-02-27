@@ -25,12 +25,48 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+func newTypeMeta() metav1.TypeMeta {
+	return metav1.TypeMeta{
+		APIVersion: "argoproj.io/v1alpha1",
+		Kind:       "Application",
+	}
+}
+
+func newApplicationDestination(server, namespace string) appv1.ApplicationDestination {
+	return appv1.ApplicationDestination{
+		Server:    server,
+		Namespace: namespace,
+	}
+}
+
+func newApplicationSource(repoURL, path string, recurse bool) appv1.ApplicationSource {
+	as := appv1.ApplicationSource{
+		RepoURL:        util.RewriteGitURLToHTTPS(repoURL),
+		Path:           path,
+		TargetRevision: "HEAD",
+	}
+	if recurse {
+		as.Directory = &appv1.ApplicationSourceDirectory{Recurse: true}
+	}
+	return as
+}
+
+func newApplicationStatus(repoURL string) appv1.ApplicationStatus {
+	return appv1.ApplicationStatus{
+		Sync: appv1.SyncStatus{
+			ComparedTo: appv1.ComparedTo{
+				Source: appv1.ApplicationSource{
+					RepoURL: util.RewriteGitURLToHTTPS(repoURL),
+				},
+			},
+			Status: "Synced",
+		},
+	}
+}
+
 func GenerateCompanyApp(company *stablev1.Company) *appv1.Application {
 	return &appv1.Application{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "argoproj.io/v1alpha1",
-			Kind:       "Application",
-		},
+		TypeMeta: newTypeMeta(),
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      company.Spec.CompanyName,
 			Namespace: env.ArgocdNamespace(),
@@ -45,35 +81,16 @@ func GenerateCompanyApp(company *stablev1.Company) *appv1.Application {
 					Prune: true,
 				},
 			},
-			Destination: appv1.ApplicationDestination{
-				Server:    "https://kubernetes.default.svc",
-				Namespace: "default",
-			},
-			Source: appv1.ApplicationSource{
-				RepoURL:        util.RewriteGitURLToHTTPS(env.Config.ILZLifecycleRepositoryURL),
-				Path:           "./" + il.Config.TeamDirectory,
-				TargetRevision: "HEAD",
-			},
+			Destination: newApplicationDestination("https://kubernetes.default.svc", "default"),
+			Source:      newApplicationSource(env.Config.ILZLifecycleRepositoryURL, "./"+il.Config.TeamDirectory, false),
 		},
-		Status: appv1.ApplicationStatus{
-			Sync: appv1.SyncStatus{
-				ComparedTo: appv1.ComparedTo{
-					Source: appv1.ApplicationSource{
-						RepoURL: util.RewriteGitURLToHTTPS(env.Config.ILZLifecycleRepositoryURL),
-					},
-				},
-				Status: "Synced",
-			},
-		},
+		Status: newApplicationStatus(env.Config.ILZLifecycleRepositoryURL),
 	}
 }
 
 func GenerateTeamApp(team *stablev1.Team) *appv1.Application {
 	return &appv1.Application{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "argoproj.io/v1alpha1",
-			Kind:       "Application",
-		},
+		TypeMeta: newTypeMeta(),
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      team.Spec.TeamName,
 			Namespace: env.ArgocdNamespace(),
@@ -89,35 +106,16 @@ func GenerateTeamApp(team *stablev1.Team) *appv1.Application {
 					Prune: true,
 				},
 			},
-			Destination: appv1.ApplicationDestination{
-				Server:    "https://kubernetes.default.svc",
-				Namespace: "default",
-			},
-			Source: appv1.ApplicationSource{
-				RepoURL:        util.RewriteGitURLToHTTPS(env.Config.ILZLifecycleRepositoryURL),
-				Path:           "./" + il.EnvironmentDirectoryPath(team.Spec.TeamName),
-				TargetRevision: "HEAD",
-			},
+			Destination: newApplicationDestination("https://kubernetes.default.svc", "default"),
+			Source:      newApplicationSource(env.Config.ILZLifecycleRepositoryURL, "./"+il.EnvironmentDirectoryPath(team.Spec.TeamName), false),
 		},
-		Status: appv1.ApplicationStatus{
-			Sync: appv1.SyncStatus{
-				ComparedTo: appv1.ComparedTo{
-					Source: appv1.ApplicationSource{
-						RepoURL: util.RewriteGitURLToHTTPS(env.Config.ILZLifecycleRepositoryURL),
-					},
-				},
-				Status: "Synced",
-			},
-		},
+		Status: newApplicationStatus(env.Config.ILZLifecycleRepositoryURL),
 	}
 }
 
 func GenerateEnvironmentApp(environment *stablev1.Environment) *appv1.Application {
 	return &appv1.Application{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "argoproj.io/v1alpha1",
-			Kind:       "Application",
-		},
+		TypeMeta: newTypeMeta(),
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      environment.Spec.TeamName + "-" + environment.Spec.EnvName,
 			Namespace: env.ArgocdNamespace(),
@@ -135,55 +133,57 @@ func GenerateEnvironmentApp(environment *stablev1.Environment) *appv1.Applicatio
 					Prune: true,
 				},
 			},
-			Destination: appv1.ApplicationDestination{
-				Server:    "https://kubernetes.default.svc",
-				Namespace: "default",
-			},
-			Source: appv1.ApplicationSource{
-				RepoURL:        util.RewriteGitURLToHTTPS(env.Config.ILZLifecycleRepositoryURL),
-				Path:           "./" + il.EnvironmentComponentsDirectoryPath(environment.Spec.TeamName, environment.Spec.EnvName),
-				TargetRevision: "HEAD",
-			},
+			Destination: newApplicationDestination("https://kubernetes.default.svc", "default"),
+			Source: newApplicationSource(
+				env.Config.ILZLifecycleRepositoryURL,
+				"./"+il.EnvironmentComponentsDirectoryPath(environment.Spec.TeamName, environment.Spec.EnvName),
+				false,
+			),
 		},
-		Status: appv1.ApplicationStatus{
-			Sync: appv1.SyncStatus{
-				ComparedTo: appv1.ComparedTo{
-					Source: appv1.ApplicationSource{
-						RepoURL: util.RewriteGitURLToHTTPS(env.Config.ILZLifecycleRepositoryURL),
-					},
-				},
-				Status: "Synced",
-			},
-		},
+		Status: newApplicationStatus(env.Config.ILZLifecycleRepositoryURL),
 	}
 }
 
-func GenerateEnvironmentComponentApps(environment *stablev1.Environment, environmentComponent *stablev1.EnvironmentComponent) *appv1.Application {
-	helmValues := getHelmValues(environment, environmentComponent)
+func GenerateEnvironmentComponentApps(e *stablev1.Environment, ec *stablev1.EnvironmentComponent) *appv1.Application {
+	helmValues := getHelmValues(e, ec)
 
 	labels := map[string]string{
 		"zlifecycle.com/model": "environment-component",
-		"component_type":       environmentComponent.Type,
+		"component_type":       ec.Type,
 		"type":                 "config",
-		"component_name":       environmentComponent.Name,
-		"project_id":           environment.Spec.TeamName,
-		"environment_id":       environment.Spec.TeamName + "-" + environment.Spec.EnvName,
+		"component_name":       ec.Name,
+		"project_id":           e.Spec.TeamName,
+		"environment_id":       fmt.Sprintf("%s-%s", e.Spec.TeamName, e.Spec.EnvName),
 	}
 
-	for i, dependsOn := range environmentComponent.DependsOn {
+	for i, dependsOn := range ec.DependsOn {
 		labels[fmt.Sprintf("depends_on_%d", i)] = dependsOn
 	}
 
-	for _, tag := range environmentComponent.Tags {
+	for _, tag := range ec.Tags {
 		labels[tag.Name] = tag.Value
 	}
-	return &appv1.Application{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Application",
-			APIVersion: "argoproj.io/v1alpha1",
+
+	source := appv1.ApplicationSource{
+		RepoURL:        util.RewriteGitURLToHTTPS(env.Config.GitHelmChartsRepository),
+		Path:           "charts/terraform-config",
+		TargetRevision: "HEAD",
+		Helm: &appv1.ApplicationSourceHelm{
+			Values: helmValues,
 		},
+	}
+	if ec.Type == "argocd" {
+		source = appv1.ApplicationSource{
+			RepoURL:        util.RewriteGitURLToHTTPS(env.Config.ILZLifecycleRepositoryURL),
+			Path:           fmt.Sprintf("argocd/%s", ec.Name),
+			TargetRevision: "HEAD",
+		}
+	}
+
+	return &appv1.Application{
+		TypeMeta: newTypeMeta(),
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      environment.Spec.TeamName + "-" + environment.Spec.EnvName + "-" + environmentComponent.Name,
+			Name:      fmt.Sprintf("%s-%s-%s", e.Spec.TeamName, e.Spec.EnvName, ec.Name),
 			Namespace: env.ArgocdNamespace(),
 			Labels:    labels,
 			Finalizers: []string{
@@ -191,35 +191,16 @@ func GenerateEnvironmentComponentApps(environment *stablev1.Environment, environ
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: environment.Spec.TeamName,
+			Project: e.Spec.TeamName,
 			SyncPolicy: &appv1.SyncPolicy{
 				Automated: &appv1.SyncPolicyAutomated{
 					Prune: true,
 				},
 			},
-			Destination: appv1.ApplicationDestination{
-				Server:    env.Config.KubernetesAPIURL,
-				Namespace: "default",
-			},
-			Source: appv1.ApplicationSource{
-				RepoURL:        util.RewriteGitURLToHTTPS(env.Config.GitHelmChartsRepository),
-				Path:           "charts/terraform-config",
-				TargetRevision: "HEAD",
-				Helm: &appv1.ApplicationSourceHelm{
-					Values: helmValues,
-				},
-			},
+			Destination: newApplicationDestination("https://kubernetes.default.svc", "default"),
+			Source:      source,
 		},
-		Status: appv1.ApplicationStatus{
-			Sync: appv1.SyncStatus{
-				ComparedTo: appv1.ComparedTo{
-					Source: appv1.ApplicationSource{
-						RepoURL: util.RewriteGitURLToHTTPS(env.Config.GitHelmChartsRepository),
-					},
-				},
-				Status: "Synced",
-			},
-		},
+		Status: newApplicationStatus(env.Config.GitHelmChartsRepository),
 	}
 }
 
@@ -252,10 +233,7 @@ func getHelmValues(environment *stablev1.Environment, environmentComponent *stab
 
 func GenerateTeamConfigWatcherApp(team *stablev1.Team) *appv1.Application {
 	return &appv1.Application{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "argoproj.io/v1alpha1",
-			Kind:       "Application",
-		},
+		TypeMeta: newTypeMeta(),
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      team.Spec.TeamName + "-team-watcher",
 			Namespace: env.ArgocdNamespace(),
@@ -272,38 +250,16 @@ func GenerateTeamConfigWatcherApp(team *stablev1.Team) *appv1.Application {
 				},
 				Retry: &appv1.RetryStrategy{Limit: 1},
 			},
-			Destination: appv1.ApplicationDestination{
-				Server:    "https://kubernetes.default.svc",
-				Namespace: "default",
-			},
-			Source: appv1.ApplicationSource{
-				RepoURL:        util.RewriteGitURLToHTTPS(team.Spec.ConfigRepo.Source),
-				Path:           team.Spec.ConfigRepo.Path,
-				TargetRevision: "HEAD",
-				Directory: &appv1.ApplicationSourceDirectory{
-					Recurse: true,
-				},
-			},
+			Destination: newApplicationDestination("https://kubernetes.default.svc", "default"),
+			Source:      newApplicationSource(team.Spec.ConfigRepo.Source, team.Spec.ConfigRepo.Path, true),
 		},
-		Status: appv1.ApplicationStatus{
-			Sync: appv1.SyncStatus{
-				ComparedTo: appv1.ComparedTo{
-					Source: appv1.ApplicationSource{
-						RepoURL: util.RewriteGitURLToHTTPS(team.Spec.ConfigRepo.Source),
-					},
-				},
-				Status: "Synced",
-			},
-		},
+		Status: newApplicationStatus(team.Spec.ConfigRepo.Source),
 	}
 }
 
 func GenerateCompanyConfigWatcherApp(customerName string, companyConfigRepo string) *appv1.Application {
 	return &appv1.Application{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "argoproj.io/v1alpha1",
-			Kind:       "Application",
-		},
+		TypeMeta: newTypeMeta(),
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      customerName + "-watcher",
 			Namespace: env.ArgocdNamespace(),
@@ -320,38 +276,16 @@ func GenerateCompanyConfigWatcherApp(customerName string, companyConfigRepo stri
 				},
 				Retry: &appv1.RetryStrategy{Limit: 1},
 			},
-			Destination: appv1.ApplicationDestination{
-				Server:    "https://kubernetes.default.svc",
-				Namespace: "default",
-			},
-			Source: appv1.ApplicationSource{
-				RepoURL:        util.RewriteGitURLToHTTPS(companyConfigRepo),
-				Path:           ".",
-				TargetRevision: "HEAD",
-				Directory: &appv1.ApplicationSourceDirectory{
-					Recurse: true,
-				},
-			},
+			Destination: newApplicationDestination("https://kubernetes.default.svc", "default"),
+			Source:      newApplicationSource(companyConfigRepo, ".", true),
 		},
-		Status: appv1.ApplicationStatus{
-			Sync: appv1.SyncStatus{
-				ComparedTo: appv1.ComparedTo{
-					Source: appv1.ApplicationSource{
-						RepoURL: util.RewriteGitURLToHTTPS(companyConfigRepo),
-					},
-				},
-				Status: "Synced",
-			},
-		},
+		Status: newApplicationStatus(companyConfigRepo),
 	}
 }
 
 func GenerateCompanyBootstrapApp() *appv1.Application {
 	return &appv1.Application{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "argoproj.io/v1alpha1",
-			Kind:       "Application",
-		},
+		TypeMeta: newTypeMeta(),
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "company-bootstrap",
 			Namespace: env.ArgocdNamespace(),
@@ -367,25 +301,15 @@ func GenerateCompanyBootstrapApp() *appv1.Application {
 					Prune: true,
 				},
 			},
-			Destination: appv1.ApplicationDestination{
-				Server:    "https://kubernetes.default.svc",
-				Namespace: "default",
-			},
-			Source: appv1.ApplicationSource{
-				RepoURL:        util.RewriteGitURLToHTTPS(env.Config.ILZLifecycleRepositoryURL),
-				Path:           "company",
-				TargetRevision: "HEAD",
-			},
+			Destination: newApplicationDestination("https://kubernetes.default.svc", "default"),
+			Source:      newApplicationSource(env.Config.ILZLifecycleRepositoryURL, "company", false),
 		},
 	}
 }
 
 func GenerateConfigWatcherBootstrapApp() *appv1.Application {
 	return &appv1.Application{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "argoproj.io/v1alpha1",
-			Kind:       "Application",
-		},
+		TypeMeta: newTypeMeta(),
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "config-watcher-bootstrap",
 			Namespace: env.ArgocdNamespace(),
@@ -401,26 +325,26 @@ func GenerateConfigWatcherBootstrapApp() *appv1.Application {
 					Prune: true,
 				},
 			},
-			Destination: appv1.ApplicationDestination{
-				Server:    "https://kubernetes.default.svc",
-				Namespace: "default",
-			},
-			Source: appv1.ApplicationSource{
-				RepoURL:        util.RewriteGitURLToHTTPS(env.Config.ILZLifecycleRepositoryURL),
-				Path:           "config-watcher",
-				TargetRevision: "HEAD",
-			},
+			Destination: newApplicationDestination("https://kubernetes.default.svc", "default"),
+			Source:      newApplicationSource(env.Config.ILZLifecycleRepositoryURL, "config-watcher", false),
 		},
 	}
 }
 
-func AddLabelsToCustomerApp(app *appv1.Application, ec *stablev1.EnvironmentComponent, filename string) {
+func AddLabelsToCustomerApp(app *appv1.Application, e *stablev1.Environment, ec *stablev1.EnvironmentComponent, filename string) {
 	app.Labels = map[string]string{
-		"component_type":   "argocd",
-		"source_file_name": filename,
+		"zlifecycle.com/model": "environment-component",
+		"component_type":       "argocd",
+		"component_name":       ec.Name,
+		"project_id":           e.Spec.TeamName,
+		"environment_id":       fmt.Sprintf("%s-%s", e.Spec.TeamName, e.Spec.EnvName),
+		"source_file_name":     filename,
 	}
 	for i, dep := range ec.DependsOn {
 		label := fmt.Sprintf("depends_on_%d", i)
 		app.Labels[label] = dep
+	}
+	for _, tag := range ec.Tags {
+		app.Labels[tag.Name] = tag.Value
 	}
 }

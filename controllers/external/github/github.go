@@ -29,7 +29,7 @@ func GetAppInstallationID(
 ) (installationID *int64, appID *int64, err error) {
 	log.WithFields(logrus.Fields{
 		"org": org,
-	}).Info("Finding GitHub App installation ID")
+	}).Infof("Finding GitHub App installation ID for organization %s", org)
 	installation, resp, err := client.FindOrganizationInstallation(org)
 	if err != nil {
 		return nil, nil, errors.Wrapf(err, "error finding repository installation ID for org %s", org)
@@ -44,7 +44,7 @@ func GetAppInstallationID(
 		"org":            org,
 		"installationId": strconv.FormatInt(*installation.ID, 10),
 		"appId":          strconv.FormatInt(*installation.AppID, 10),
-	}).Info("Found installation for repository")
+	}).Infof("Found installation ID for organization %s", org)
 
 	return installation.ID, installation.AppID, nil
 }
@@ -56,7 +56,7 @@ func GenerateInstallationToken(log *logrus.Entry, client API, org string) (token
 	}
 	log.WithFields(logrus.Fields{
 		"org": org,
-	}).Info("Creating installation token")
+	}).Infof("Creating installation token for organization %s", org)
 	installationToken, resp, err := client.CreateInstallationToken(*installationID)
 	if err != nil {
 		return "", errors.Wrapf(
@@ -80,7 +80,7 @@ func CreateRepository(log *logrus.Entry, api RepositoryAPI, owner string, repo s
 	log.WithFields(logrus.Fields{
 		"owner": owner,
 		"repo":  repo,
-	}).Info("Checking does repo exist on GitHub")
+	}).Infof("Checking does repository %s/%s exist on GitHub", owner, repo)
 	r, resp1, err := api.GetRepository(owner, repo)
 	if err != nil {
 		return false, errors.Wrapf(err, "error getting repository %s/%s", owner, repo)
@@ -91,14 +91,14 @@ func CreateRepository(log *logrus.Entry, api RepositoryAPI, owner string, repo s
 		log.WithFields(logrus.Fields{
 			"owner": owner,
 			"repo":  repo,
-		}).Info("GitHub repository already exists")
+		}).Infof("GitHub repository %s/%s already exists", owner, repo)
 		return false, nil
 	}
 
 	log.WithFields(logrus.Fields{
 		"owner": owner,
 		"repo":  repo,
-	}).Info("Creating new private repository in GitHub")
+	}).Infof("Creating new private repository %s/%s in GitHub", owner, repo)
 
 	nr, resp2, err := api.CreateRepository(owner, repo)
 	if err != nil {
@@ -134,7 +134,7 @@ func CreateRepoWebhook(log *logrus.Entry, api API, repoURL string, payloadURL st
 			"owner":      owner,
 			"repo":       repo,
 			"payloadUrl": payloadURL,
-		}).Info("Hook already exists")
+		}).Infof("Webhook already exists for repository %s", repoURL)
 		return true, nil
 	}
 	if err != nil {
@@ -154,7 +154,7 @@ func CreateRepoWebhook(log *logrus.Entry, api API, repoURL string, payloadURL st
 		"repo":       repo,
 		"hookId":     *hook.ID,
 		"payloadUrl": *hook.URL,
-	}).Info("Successfully created repository webhook")
+	}).Infof("Successfully created webhook for repository %s", repoURL)
 
 	return false, nil
 }

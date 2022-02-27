@@ -3,37 +3,39 @@ package il
 import (
 	"context"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
-	git2 "github.com/compuzest/zlifecycle-il-operator/controllers/external/git"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/external/git"
 )
 
 type Service struct {
-	TFILGitAPI   git2.API
+	TFILGitAPI   git.API
 	TFILTempDir  string
-	TFILCleanupF git2.CleanupFunc
-	ZLILGitAPI   git2.API
+	TFILCleanupF git.CleanupFunc
+	ZLILGitAPI   git.API
 	ZLILTempDir  string
-	ZLILCleanupF git2.CleanupFunc
+	ZLILCleanupF git.CleanupFunc
 }
 
-func NewService(ctx context.Context, token string) (*Service, error) {
-	zlILGitAPI, err := git2.NewGoGit(ctx, token)
+func NewService(ctx context.Context, token string, log *logrus.Entry) (*Service, error) {
+	zlILGitAPI, err := git.NewGoGit(ctx, token)
 	if err != nil {
 		return nil, err
 	}
 
-	tfILGitAPI, err := git2.NewGoGit(ctx, token)
+	tfILGitAPI, err := git.NewGoGit(ctx, token)
 	if err != nil {
 		return nil, err
 	}
 
 	// temp clone IL repo
-	tempZLILRepoDir, zlILCleanup, err := git2.CloneTemp(zlILGitAPI, env.Config.ILZLifecycleRepositoryURL)
+	tempZLILRepoDir, zlILCleanup, err := git.CloneTemp(zlILGitAPI, env.Config.ILZLifecycleRepositoryURL, log)
 	if err != nil {
 		return nil, err
 	}
 
-	tempTFILRepoDir, tfILCleanup, err := git2.CloneTemp(tfILGitAPI, env.Config.ILTerraformRepositoryURL)
+	tempTFILRepoDir, tfILCleanup, err := git.CloneTemp(tfILGitAPI, env.Config.ILTerraformRepositoryURL, log)
 	if err != nil {
 		zlILCleanup()
 		return nil, err

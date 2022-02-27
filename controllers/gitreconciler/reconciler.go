@@ -211,7 +211,7 @@ func (r *GitReconciler) reconcile(wr *WatchedRepository) (updated bool, err erro
 		return false, err
 	}
 
-	_, cleanup, err := git.CloneTemp(gitClient, wr.Source)
+	_, cleanup, err := git.CloneTemp(gitClient, wr.Source, r.log)
 	defer cleanup()
 	if err != nil {
 		return false, err

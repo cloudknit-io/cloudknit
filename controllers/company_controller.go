@@ -15,9 +15,10 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/watcherservices"
 	"sync"
 	"time"
+
+	"github.com/compuzest/zlifecycle-il-operator/controllers/watcherservices"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/il"
@@ -101,7 +102,7 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	if tx != nil {
 		tx.AddAttribute("company", company.Spec.CompanyName)
 		apmCtx = r.APM.NewContext(ctx, tx)
-		r.LogV2.WithField("name", txName).Info("Creating APM transaction")
+		r.LogV2.WithField("name", txName).Infof("Creating APM transaction for company %s", company.Spec.CompanyName)
 		defer tx.End()
 	}
 
@@ -146,7 +147,7 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	// temp clone IL repo
-	tempILRepoDir, cleanup, err := git.CloneTemp(gitClient, ilZLRepoURL)
+	tempILRepoDir, cleanup, err := git.CloneTemp(gitClient, ilZLRepoURL, r.LogV2)
 	if err != nil {
 		companyErr := zerrors.NewCompanyError(company.Spec.CompanyName, perrors.Wrapf(err, "error cloning temp dir for repo [%s]", env.Config.GitILRepositoryOwner))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
@@ -186,9 +187,9 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
 	}
 	if pushed {
-		r.LogV2.Info("Committed new changes to IL repo")
+		r.LogV2.Infof("Committed new changes for company %s to IL repo", company.Spec.CompanyName)
 	} else {
-		r.LogV2.Info("No git changes to commit, no-op reconciliation.")
+		r.LogV2.Infof("No git changes to commit for company %s, no-op reconciliation.", company.Spec.CompanyName)
 	}
 
 	if err := argocd.TryCreateBootstrapApps(apmCtx, watcherServices.ArgocdClient, r.Log); err != nil {
@@ -203,7 +204,7 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	duration := time.Since(start)
-	r.LogV2.WithField("duration", duration).Info("Reconcile finished")
+	r.LogV2.WithField("duration", duration).Infof("Reconcile finished for company %s", company.Spec.CompanyName)
 
 	return ctrl.Result{}, nil
 }

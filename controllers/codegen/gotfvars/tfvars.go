@@ -35,7 +35,7 @@ func GetVariablesFromTfvarsFile(
 	key *client.ObjectKey,
 	ec *v1.EnvironmentComponent,
 ) (string, error) {
-	tempRepoDir, cleanup, err := git.CloneTemp(gitClient, ec.VariablesFile.Source)
+	tempRepoDir, cleanup, err := git.CloneTemp(gitClient, ec.VariablesFile.Source, log)
 	if err != nil {
 		return "", perrors.Wrapf(err, "error temp cloning repo [%s]", ec.VariablesFile.Source)
 	}
@@ -45,17 +45,25 @@ func GetVariablesFromTfvarsFile(
 	log.WithFields(logrus.Fields{
 		"component": ec.Name,
 		"path":      path,
-	}).Info("Reading tfvars file contents")
+	}).Infof("Reading tfvars file contents for environment component %s", ec.Name)
 	buff, err := os.ReadFile(path)
 	if err != nil {
 		return "", perrors.Wrapf(err, "error reading file [%s]", path)
 	}
 
+	submitToGitReconciler(gitReconciler, key, ec, log)
+
+	tfvars := string(buff)
+
+	return tfvars, nil
+}
+
+func submitToGitReconciler(gitReconciler gitreconciler.API, key *client.ObjectKey, ec *v1.EnvironmentComponent, log *logrus.Entry) {
 	log.WithFields(logrus.Fields{
 		"component":  ec.Name,
 		"type":       ec.Type,
 		"repository": ec.VariablesFile.Source,
-	}).Info("Subscribing to config repository in git reconciler")
+	}).Infof("Subscribing to config repository %s in git reconciler", ec.VariablesFile.Source)
 	subscribed := gitReconciler.Subscribe(ec.VariablesFile.Source, *key)
 	if subscribed {
 		log.WithFields(logrus.Fields{
@@ -64,8 +72,4 @@ func GetVariablesFromTfvarsFile(
 			"repository": ec.VariablesFile.Source,
 		}).Info("Already subscribed in git reconciler to repository")
 	}
-
-	tfvars := string(buff)
-
-	return tfvars, nil
 }

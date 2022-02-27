@@ -204,31 +204,31 @@ func validateEnvironmentComponents(e *Environment, isCreate bool) field.ErrorLis
 	return allErrs
 }
 
-func checkOverlaysExist(overlays []*OverlayFile, ec string) field.ErrorList {
+func checkOverlaysExist(overlays []*OverlayFile, ec string, log *logrus.Entry) field.ErrorList {
 	var allErrs field.ErrorList
 
 	for i, overlay := range overlays {
 		fld := field.NewPath("spec").Child("components").Child(ec).Child("overlayFiles").Index(i)
 
-		allErrs = append(allErrs, checkPaths(overlay.Source, overlay.Paths, fld)...)
+		allErrs = append(allErrs, checkPaths(overlay.Source, overlay.Paths, fld, log)...)
 	}
 
 	return allErrs
 }
 
-func checkTfvarsExist(tfvars *VariablesFile, ec string) field.ErrorList {
+func checkTfvarsExist(tfvars *VariablesFile, ec string, log *logrus.Entry) field.ErrorList {
 	if tfvars == nil {
 		return field.ErrorList{}
 	}
 
 	fld := field.NewPath("spec").Child("components").Child(ec).Child("variablesFile")
 
-	allErrs := checkPaths(tfvars.Source, []string{tfvars.Path}, fld)
+	allErrs := checkPaths(tfvars.Source, []string{tfvars.Path}, fld, log)
 
 	return allErrs
 }
 
-func checkPaths(source string, paths []string, fld *field.Path) field.ErrorList {
+func checkPaths(source string, paths []string, fld *field.Path, log *logrus.Entry) field.ErrorList {
 	var allErrs field.ErrorList
 
 	gitAPI, err := git2.NewGoGit(ctx, env.Config.GitToken)
@@ -237,7 +237,7 @@ func checkPaths(source string, paths []string, fld *field.Path) field.ErrorList 
 		allErrs = append(allErrs, fe)
 		return allErrs
 	}
-	dir, cleanup, err := git2.CloneTemp(gitAPI, source)
+	dir, cleanup, err := git2.CloneTemp(gitAPI, source, log)
 	if err != nil {
 		fe := field.InternalError(fld, perrors.New("error validating access to source repository"))
 		allErrs = append(allErrs, fe)

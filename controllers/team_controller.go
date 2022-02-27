@@ -15,10 +15,11 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/watcherservices"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/compuzest/zlifecycle-il-operator/controllers/watcherservices"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/il"
@@ -125,7 +126,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		tx.AddAttribute("team", team.Spec.TeamName)
 		apmCtx = r.APM.NewContext(ctx, tx)
 		r.LogV2 = r.LogV2.WithField("team", team.Spec.TeamName).WithContext(apmCtx)
-		r.LogV2.WithField("name", txName).Info("Creating APM transaction")
+		r.LogV2.WithField("name", txName).Infof("Creating APM transaction for team %s", team.Spec.TeamName)
 		defer tx.End()
 	}
 
@@ -152,7 +153,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	}
 
 	// temp clone IL repo
-	tempILRepoDir, cleanup, err := git.CloneTemp(gitClient, env.Config.ILZLifecycleRepositoryURL)
+	tempILRepoDir, cleanup, err := git.CloneTemp(gitClient, env.Config.ILZLifecycleRepositoryURL, r.LogV2)
 	if err != nil {
 		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error running git temp clone"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
@@ -206,9 +207,9 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
 	}
 	if pushed {
-		r.LogV2.Info("Committed new changes to IL repo")
+		r.LogV2.Infof("Committed new changes for team %s to IL repo", team.Spec.TeamName)
 	} else {
-		r.LogV2.Info("No git changes to commit, no-op reconciliation.")
+		r.LogV2.Infof("No git changes to commit for team %s, no-op reconciliation.", team.Spec.TeamName)
 	}
 
 	_, err = github.CreateRepoWebhook(r.LogV2, watcherServices.CompanyGitClient, teamRepoURL, env.Config.ArgocdWebhookURL, env.Config.GitHubWebhookSecret)
@@ -217,7 +218,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	}
 
 	duration := time.Since(start)
-	r.LogV2.WithField("duration", duration).Info("Reconcile finished")
+	r.LogV2.WithField("duration", duration).Infof("Reconcile finished for team %s", team.Spec.TeamName)
 	attrs := map[string]interface{}{
 		"duration": duration,
 		"team":     team.Spec.TeamName,

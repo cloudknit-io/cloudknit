@@ -29,10 +29,8 @@ func GenerateArgocdApps(
 	gitReconciler gitreconciler.API,
 	key *client.ObjectKey,
 	e *stablev1.Environment,
-	componentFolder string,
+	argocdFolder string,
 ) error {
-	argocdFolder := filepath.Join(componentFolder, "argocd")
-
 	for _, ec := range e.Spec.Components {
 		if ec.Type != "argocd" {
 			continue
@@ -41,7 +39,7 @@ func GenerateArgocdApps(
 		var apps []*v1alpha1.Application
 
 		if err := func() error {
-			tempDir, cleanup, err := git.CloneTemp(gitClient, ec.Module.Source)
+			tempDir, cleanup, err := git.CloneTemp(gitClient, ec.Module.Source, log)
 			defer cleanup()
 			if err != nil {
 				return err
@@ -49,31 +47,38 @@ func GenerateArgocdApps(
 
 			argocdAOAFolder := filepath.Join(argocdFolder, ec.Name)
 
-			log.WithFields(logrus.Fields{
-				"source":      ec.Module.Source,
-				"version":     ec.Module.Version,
-				"path":        ec.Module.Path,
-				"destination": argocdAOAFolder,
-				"component":   ec.Name,
-			}).Info("Generating argocd App of Apps")
 			sourceAbsolutePath := filepath.Join(tempDir, ec.Module.Path)
 			if util.IsDir(sourceAbsolutePath) {
-				apps, err = parseArgocdApplicationFolder(sourceAbsolutePath, ec)
+				apps, err = parseArgocdApplicationFolder(sourceAbsolutePath, e, ec)
 				if err != nil {
 					return err
 				}
 			} else {
-				app, err := parseArgocdApplicationYAML(filepath.Base(sourceAbsolutePath), sourceAbsolutePath, ec)
+				app, err := parseArgocdApplicationYAML(filepath.Base(sourceAbsolutePath), sourceAbsolutePath, e, ec)
 				if err != nil {
 					return err
 				}
 				apps = append(apps, app)
 			}
 
+			log.WithFields(logrus.Fields{
+				"source":      ec.Module.Source,
+				"version":     ec.Module.Version,
+				"path":        ec.Module.Path,
+				"destination": argocdAOAFolder,
+				"component":   ec.Name,
+			}).Infof("Generating ArgoCD App of Apps Helm chart for environment component %s", ec.Name)
 			if err := generateHelmChart(fileAPI, argocdAOAFolder, ec.Name); err != nil {
 				return err
 			}
 
+			log.WithFields(logrus.Fields{
+				"source":      ec.Module.Source,
+				"version":     ec.Module.Version,
+				"path":        ec.Module.Path,
+				"destination": argocdAOAFolder,
+				"component":   ec.Name,
+			}).Infof("Generating ArgoCD Applications in  App of Apps Helm chart for environment component %s", ec.Name)
 			if err := generateArgocdApplications(apps, argocdAOAFolder, fileAPI); err != nil {
 				return err
 			}
@@ -92,7 +97,10 @@ func GenerateArgocdApps(
 func generateArgocdApplications(apps []*v1alpha1.Application, folderName string, fileAPI file.API) error {
 	templatesDir := filepath.Join(folderName, "templates")
 	for _, app := range apps {
-		fileName := app.Name + ".yaml"
+		fileName := app.Labels["source_file_name"]
+		if fileName == "" {
+			fileName = app.Name + ".yaml"
+		}
 		if err := fileAPI.SaveYamlFile(app, templatesDir, fileName); err != nil {
 			return perrors.Wrapf(err, "error saving file to %s/%s", folderName, fileName)
 		}
@@ -106,7 +114,7 @@ func submitToGitReconciler(gitReconciler gitreconciler.API, key *client.ObjectKe
 		"component":  ec.Name,
 		"type":       ec.Type,
 		"repository": ec.Module.Source,
-	}).Info("Subscribing to config repository in git reconciler")
+	}).Infof("Subscribing to config repository %s in git reconciler", ec.Module.Source)
 	subscribed := gitReconciler.Subscribe(ec.Module.Source, *key)
 	if subscribed {
 		log.WithFields(logrus.Fields{
@@ -127,7 +135,7 @@ func generateHelmChart(fileAPI file.API, dir string, name string) error {
 	return nil
 }
 
-func parseArgocdApplicationFolder(path string, ec *stablev1.EnvironmentComponent) (apps []*v1alpha1.Application, err error) {
+func parseArgocdApplicationFolder(path string, e *stablev1.Environment, ec *stablev1.EnvironmentComponent) (apps []*v1alpha1.Application, err error) {
 	walkF := func(path string, info fs.FileInfo, walkErr error) error {
 		if walkErr != nil {
 			return walkErr
@@ -139,7 +147,7 @@ func parseArgocdApplicationFolder(path string, ec *stablev1.EnvironmentComponent
 		if !isYAML {
 			return nil
 		}
-		app, err := parseArgocdApplicationYAML(info.Name(), path, ec)
+		app, err := parseArgocdApplicationYAML(info.Name(), path, e, ec)
 		if err != nil {
 			return perrors.Wrapf(err, "error parsing argocd application yaml from %s", path)
 		}
@@ -154,7 +162,7 @@ func parseArgocdApplicationFolder(path string, ec *stablev1.EnvironmentComponent
 	return apps, nil
 }
 
-func parseArgocdApplicationYAML(filename, path string, ec *stablev1.EnvironmentComponent) (*v1alpha1.Application, error) {
+func parseArgocdApplicationYAML(filename, path string, e *stablev1.Environment, ec *stablev1.EnvironmentComponent) (*v1alpha1.Application, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, perrors.Wrap(err, "error reading argocd app file")
@@ -163,7 +171,7 @@ func parseArgocdApplicationYAML(filename, path string, ec *stablev1.EnvironmentC
 	if err = yaml.Unmarshal(data, &app); err != nil {
 		return nil, perrors.Wrapf(err, "error unmarshalling argocd application yaml")
 	}
-	argocd.AddLabelsToCustomerApp(&app, ec, filename)
+	argocd.AddLabelsToCustomerApp(&app, e, ec, filename)
 
 	return &app, nil
 }
