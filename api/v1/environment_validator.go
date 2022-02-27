@@ -3,13 +3,14 @@ package v1
 import (
 	"context"
 	"fmt"
+	"os"
+	"time"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
 	git2 "github.com/compuzest/zlifecycle-il-operator/controllers/external/git"
 	notifier2 "github.com/compuzest/zlifecycle-il-operator/controllers/external/notifier"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/notifier/uinotifier"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/log"
-	"os"
-	"time"
 
 	perrors "github.com/pkg/errors"
 	"github.com/sirupsen/logrus"

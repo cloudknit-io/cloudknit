@@ -126,7 +126,7 @@ func (r *GitReconciler) State() State {
 	return r.state
 }
 
-// Subscribe adds a subscriber to watch a repository and returns is he already subscribed or no
+// Subscribe adds a subscriber to watch a repository and returns is he already subscribed or no.
 func (r *GitReconciler) Subscribe(repositoryURL string, subscriber kClient.ObjectKey) (subscribed bool) {
 	subscribed = false
 	// check is repository already watched

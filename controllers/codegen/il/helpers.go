@@ -63,7 +63,7 @@ func EnvironmentComponentTerraformDirectoryAbsolutePath(dir string, team string,
 }
 
 func EnvironmentComponentArgocdAppsDirectoryPath(team string, environment string, component string) string {
-	return filepath.Join(EnvironmentDirectoryPath(team), argocdAppsDir, environment, component)
+	return filepath.Join(EnvironmentDirectoryPath(team), argocdAppsDir, component)
 }
 
 func EnvironmentComponentArgocdAppsDirectoryAbsolutePath(dir string, team string, environment string, component string) string {
