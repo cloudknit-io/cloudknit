@@ -1,12 +1,12 @@
 # AWS Credentials
 
-![secrets](assets/images/secrets.png "Secrets")
+![settings](../assets/images/secrets.png "Settings")
 
 You can **create** & **update** **AWS secrets** using zLifecycle secrets manager, which is accessible by **clicking** on the **Settings Navigation button**, as highlighted in the above image.
 
 AWS section has three type of secrets:
 
-![aws-secrets](assets/images/aws-secrets.png "aws-secrets")
+![aws-secrets](../assets/images/aws-secrets.png "aws-secrets")
 
 * `Access Key Id`
 * `Secret Access Key`
