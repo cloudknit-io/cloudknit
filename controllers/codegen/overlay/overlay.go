@@ -80,7 +80,7 @@ func submitToGitReconciler(gitReconciler gitreconciler.API, key *client.ObjectKe
 		"component":  ec.Name,
 		"type":       ec.Type,
 		"repository": ec.Module.Source,
-	}).Info("Subscribing to config repository %s in git reconciler", ec.Module.Source)
+	}).Infof("Subscribing to config repository %s in git reconciler", ec.Module.Source)
 	subscribed := gitReconciler.Subscribe(ec.Module.Source, *key)
 	if subscribed {
 		log.WithFields(logrus.Fields{
