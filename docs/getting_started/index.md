@@ -13,7 +13,7 @@ After you have setup zLifecycle, you will want to provision a simple environment
    * Right panel should show the terraform plan
 4. Once the status changes to `Waiting For Approval` you will need to approve the changes by clicking on the `Approve` button below the terraform plan (as shown in the image below) to start provisoning the `images` s3 bucket (which is terraform apply)
 
-![sample-right-panel](../../assets/images/sample-right-panel.png "Sample Right Panel")
+![sample-right-panel](../assets/images/sample-right-panel.png "Sample Right Panel")
 
 ## Teardown your first Environment
 
