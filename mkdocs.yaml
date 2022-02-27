@@ -1,21 +1,23 @@
 site_name: zLifecycle
-theme: readthedocs
+theme: material
+markdown_extensions:
+- codehilite
+- admonition
+- toc:
+    permalink: true
 nav:
-  - Overview: index.md
-  - Core Concepts: core-concepts.md
-  - Getting Started:
-    - Setting up: setup.md
-    - Onboard a Team: team/onboarding.md
-    - Provision your First Environment: provision/first-environment.md
-    - Teardown your First Environment: teardown/first-environment.md
-  - Define:
-    - Define Environment: define/define-environment.md
-    - Field Reference: define/field-reference.md
-  - Provision:
-    - Steps: steps.md
-  - Reconcile:
-    - Steps: steps.md
-  - Teardown:
-    - Steps: steps.md
-  - Dashboards:
-    - Steps: steps.md
+- Overview: index.md
+- concepts/index.md
+- getting_started.md
+- Onboard a Team: team/onboarding.md
+- Define:
+  - define/define-environment.md
+  - define/field-reference.md
+- Provision:
+  - steps.md
+- Reconcile:
+  - steps.md
+- Teardown:
+  - steps.md
+- Dashboards:
+  - steps.md
