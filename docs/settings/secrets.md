@@ -1,27 +1,12 @@
-# Secrets
+# Environment Secrets
 
-![secrets](assets/images/secrets.png "Secrets")
+If you want to pass a secret to a component (for example a terraform module) you can create a secret using settings page and then reference it in the environment YAML. 
 
-An end-user can **create** and **update** their **secrets** using our secrets manager, which is accessible by **clicking** on the **Settings Navigation button**, as highlighted in the above image.
+Similar to AWS secrets we have 3 scopes here as well `company`, `team`, `environment`. To add a secret, go to the appropriate scope and click on the Add button.
 
-zLifecycle has two types of secrets:
-* **AWS:** As the name suggests, helps you to create secrets for your AWS account.
-   
-* **Custom:** Custom secrets required during the reconciling of the environment.
+![environment-secrets](../assets/images/environment-secrets.png "environment-secrets")
 
-### Custom Secrets
-
-These are the secrets that a user can use at his own behest.
-
-Similar to AWS secrets we have 3 scopes here as well `company`, `team`, `environment`.
-
-To add a secret, select the scope and click on the Add button.
-
-![custom-secrets](assets/images/custom-secrets.png "custom-secrets")
-
-Here you can **provide** the **secret name, value** and you are set.
-
-These secrets are used in the secrets property of the environment yaml.
+Once added these secrets can be used in the secrets property of the environment YAML as below.
 
 **Example**
 ```yaml
