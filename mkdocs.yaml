@@ -1,5 +1,8 @@
-site_name: zLifecycle
-theme: material
+site_name: zLifecycle - Environment Managment Made Easy
+theme:
+  name: material
+  favicon: assets/images/favicon.png
+  logo: assets/images/logo.png
 markdown_extensions:
 - codehilite
 - admonition
