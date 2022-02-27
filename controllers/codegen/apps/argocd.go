@@ -29,7 +29,7 @@ func GenerateArgocdApps(
 	gitReconciler gitreconciler.API,
 	key *client.ObjectKey,
 	e *stablev1.Environment,
-	argocdFolder string,
+	destinationFolder string,
 ) error {
 	for _, ec := range e.Spec.Components {
 		if ec.Type != "argocd" {
@@ -44,8 +44,6 @@ func GenerateArgocdApps(
 			if err != nil {
 				return err
 			}
-
-			argocdAOAFolder := filepath.Join(argocdFolder, ec.Name)
 
 			sourceAbsolutePath := filepath.Join(tempDir, ec.Module.Path)
 			if util.IsDir(sourceAbsolutePath) {
@@ -65,10 +63,10 @@ func GenerateArgocdApps(
 				"source":      ec.Module.Source,
 				"version":     ec.Module.Version,
 				"path":        ec.Module.Path,
-				"destination": argocdAOAFolder,
+				"destination": destinationFolder,
 				"component":   ec.Name,
 			}).Infof("Generating ArgoCD App of Apps Helm chart for environment component %s", ec.Name)
-			if err := generateHelmChart(fileAPI, argocdAOAFolder, ec.Name); err != nil {
+			if err := generateHelmChart(fileAPI, destinationFolder, ec.Name); err != nil {
 				return err
 			}
 
@@ -76,10 +74,10 @@ func GenerateArgocdApps(
 				"source":      ec.Module.Source,
 				"version":     ec.Module.Version,
 				"path":        ec.Module.Path,
-				"destination": argocdAOAFolder,
+				"destination": destinationFolder,
 				"component":   ec.Name,
 			}).Infof("Generating ArgoCD Applications in  App of Apps Helm chart for environment component %s", ec.Name)
-			if err := generateArgocdApplications(apps, argocdAOAFolder, fileAPI); err != nil {
+			if err := generateArgocdApplications(apps, destinationFolder, fileAPI); err != nil {
 				return err
 			}
 
@@ -127,8 +125,7 @@ func submitToGitReconciler(gitReconciler gitreconciler.API, key *client.ObjectKe
 
 func generateHelmChart(fileAPI file.API, dir string, name string) error {
 	chart := NewHelmChart(name)
-	chartDir := filepath.Join(dir, name)
-	if err := fileAPI.SaveYamlFile(chart, chartDir, "Chart.yaml"); err != nil {
+	if err := fileAPI.SaveYamlFile(chart, dir, "Chart.yaml"); err != nil {
 		return perrors.Wrapf(err, "error generating chart yaml")
 	}
 

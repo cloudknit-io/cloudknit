@@ -111,6 +111,9 @@ func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment) *workf
 	allComponents := make([]string, 0, len(ecs))
 
 	for _, ec := range ecs {
+		if ec.Type != "terraform" {
+			continue
+		}
 		allComponents = append(allComponents, ec.Name)
 
 		tfPath := il.EnvironmentComponentTerraformDirectoryPath(environment.Spec.TeamName, environment.Spec.EnvName, ec.Name)

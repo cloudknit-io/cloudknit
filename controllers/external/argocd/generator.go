@@ -175,7 +175,7 @@ func GenerateEnvironmentComponentApps(e *stablev1.Environment, ec *stablev1.Envi
 	if ec.Type == "argocd" {
 		source = appv1.ApplicationSource{
 			RepoURL:        util.RewriteGitURLToHTTPS(env.Config.ILZLifecycleRepositoryURL),
-			Path:           fmt.Sprintf("argocd/%s", ec.Name),
+			Path:           il.EnvironmentComponentArgocdAppsDirectoryPath(e.Spec.TeamName, e.Spec.EnvName, ec.Name),
 			TargetRevision: "HEAD",
 		}
 	}
