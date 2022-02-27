@@ -13,13 +13,13 @@ nav:
 - concepts/index.md
 - getting_started/index.md
 - Settings:
-  - settings/aws-credentials.md
+  - settings/aws_credentials.md
   - settings/secrets.md
 - Define:
-  - define/define-environment.md
-  - define/field-reference.md
+  - define/define_environment.md
+  - define/field_reference.md
 - Provision:
-  - steps.md
+  - cost_estimates.md
 - Reconcile:
   - steps.md
 - Teardown:
