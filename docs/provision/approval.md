@@ -44,7 +44,7 @@ spec:
 
 In this sample example we are **provisioning** an environment called **sandbox**.
 
-Once your YAML is pushed, you will see a similar card on **zlifecycle dashboard**
+Once your YAML is pushed, you will see a similar card on **zlifecycle Environments** page.
 
 <br/>
 
