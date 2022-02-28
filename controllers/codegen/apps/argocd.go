@@ -1,6 +1,7 @@
 package apps
 
 import (
+	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -180,6 +181,7 @@ func parseArgocdApplicationYAML(
 		return nil, perrors.Wrapf(err, "error unmarshalling argocd application yaml")
 	}
 	app.Spec.Destination.Server = k8sCluster
+	app.Namespace = env.SystemNamespace()
 	argocd.AddLabelsToCustomerApp(&app, e, ec, filename)
 
 	return &app, nil

@@ -59,6 +59,8 @@ spec:
               value: {{ .Values.git.config.companyGithubAppSecretName }}
             - name: GITHUB_APP_SECRET_NAME_INTERNAL
               value: {{ .Values.git.config.internalGithubAppSecretName }}
+            - name: AWS_REGION
+              value: {{ .Values.aws.config.region }}
             - name: ENVIRONMENT
               value: {{ .Values.environment }}
             - name: COMPANY_NAME
@@ -93,6 +95,8 @@ spec:
               value: {{ .Values.newrelic.enabled | quote }}
             - name: NEW_RELIC_API_KEY
               value: {{ .Values.newrelic.licenseKey }}
+            - name: RECONCILE_MODE
+              value: {{ .Values.test.reconcile }}
           envFrom:
             - secretRef:
                 name: {{ .Values.argocd.secretRef }}

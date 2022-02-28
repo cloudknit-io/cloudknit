@@ -24,6 +24,8 @@ type config struct {
 	ILTeamFolder              string
 	ILConfigWatcherFolder     string
 
+	AWSRegion string
+
 	TerraformDefaultVersion          string
 	TerraformDefaultAWSRegion        string
 	TerraformDefaultSharedAWSRegion  string
@@ -79,6 +81,9 @@ type config struct {
 
 	ZLifecycleStateManagerURL string
 	ZLifecycleAPIURL          string
+
+	// test
+	ReconcileMode string
 }
 
 // Config exposes vars used throughout the operator.
@@ -111,6 +116,9 @@ var Config = config{
 	ILCompanyFolder:           getOr("IL_COMPANY_FOLDER", "company"),
 	ILTeamFolder:              getOr("IL_TEAM_FOLDER", "team"),
 	ILConfigWatcherFolder:     getOr("IL_CONFIG_WATCHER_FOLDER", "config-watcher"),
+
+	// aws
+	AWSRegion: getOr("AWS_REGION", "us-east-1"),
 
 	// terraform config
 	TerraformDefaultVersion:          getOr("TERRAFORM_DEFAULT_VERSION", "1.0.9"),
@@ -168,6 +176,9 @@ var Config = config{
 		"http://zlifecycle-api.%s.svc.cluster.local",
 		APINamespace(),
 	)),
+
+	// test
+	ReconcileMode: getOr("RECONCILE_MODE", "normal"),
 }
 
 func CompanyName() string {

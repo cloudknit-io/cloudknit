@@ -56,6 +56,10 @@ type CompanyReconciler struct {
 // +kubebuilder:rbac:groups=stable.compuzest.com,resources=companies/status,verbs=get;update;patch
 
 func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	if checkReconcileMode(r.LogV2) {
+		return ctrl.Result{}, nil
+	}
+
 	if !checkIsNamespaceWatched(req.NamespacedName.Namespace) {
 		r.LogV2.WithFields(logrus.Fields{
 			"object":           fmt.Sprintf("%s/%s", req.NamespacedName.Namespace, req.NamespacedName.Name),

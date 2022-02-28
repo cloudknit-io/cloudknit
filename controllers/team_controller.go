@@ -69,6 +69,10 @@ var (
 
 // Reconcile method called everytime there is a change in Team Custom Resource.
 func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	if checkReconcileMode(r.LogV2) {
+		return ctrl.Result{}, nil
+	}
+
 	if !checkIsNamespaceWatched(req.NamespacedName.Namespace) {
 		r.LogV2.WithFields(logrus.Fields{
 			"object":           fmt.Sprintf("%s/%s", req.NamespacedName.Namespace, req.NamespacedName.Name),
