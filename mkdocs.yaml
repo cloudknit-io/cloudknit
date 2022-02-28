@@ -21,6 +21,7 @@ nav:
 - Provision:
   - provision/approval.md
   - provision/cost_estimates.md
+  - provision/selective_reconcile.md
 - Reconcile:
   - steps.md
 - Teardown:
