@@ -24,6 +24,7 @@ nav:
   - provision/cost_estimates.md
   - provision/selective_reconcile.md
   - provision/errors.md
+  - provision/destroy.md
 - Reconcile:
   - steps.md
 - Teardown:
