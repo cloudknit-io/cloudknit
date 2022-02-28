@@ -21,8 +21,6 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controllers/watcherservices"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/file"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/il"
-
 	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/argocd"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/git"
@@ -249,16 +247,4 @@ func (r *CompanyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&stablev1.Company{}).
 		Complete(r)
-}
-
-func generateAndSaveCompanyApp(fileAPI file.API, company *stablev1.Company, ilRepoDir string) error {
-	companyApp := argocd.GenerateCompanyApp(company)
-
-	return fileAPI.SaveYamlFile(*companyApp, il.CompanyDirectoryAbsolutePath(ilRepoDir), company.Spec.CompanyName+".yaml")
-}
-
-func generateAndSaveCompanyConfigWatcher(fileAPI file.API, company *stablev1.Company, ilRepoDir string) error {
-	companyConfigWatcherApp := argocd.GenerateCompanyConfigWatcherApp(company.Spec.CompanyName, company.Spec.ConfigRepo.Source)
-
-	return fileAPI.SaveYamlFile(*companyConfigWatcherApp, il.ConfigWatcherDirectoryAbsolutePath(ilRepoDir), company.Spec.CompanyName+".yaml")
 }

@@ -17,15 +17,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/external/k8s"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
 
 	"github.com/sirupsen/logrus"
 
 	"github.com/pkg/errors"
-
-	appv1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/go-logr/logr"
 )
@@ -245,28 +243,54 @@ func TryCreateProject(ctx context.Context, api API, log logr.Logger, name string
 	return false, nil
 }
 
-func toProject(name string, group string) *appv1.AppProject {
-	typeMeta := metav1.TypeMeta{APIVersion: "argoproj.io/v1alpha1", Kind: "AppProject"}
-	objectMeta := metav1.ObjectMeta{Name: name, Namespace: env.ArgocdNamespace()}
-	spec := appv1.AppProjectSpec{
-		SourceRepos:              []string{"*"},
-		Destinations:             []appv1.ApplicationDestination{{Server: "https://kubernetes.default.svc", Namespace: "*"}},
-		ClusterResourceWhitelist: []metav1.GroupKind{{Group: "*", Kind: "*"}},
-		Roles: []appv1.ProjectRole{
-			{
-				Name:   "frontend",
-				Groups: []string{fmt.Sprintf("%s:%s", group, name)},
-				Policies: []string{
-					fmt.Sprintf("p, proj:%s:frontend, applications, get, %s/*, allow", name, name),
-					fmt.Sprintf("p, proj:%s:frontend, applications, delete, %s/*, allow", name, name),
-					fmt.Sprintf("p, proj:%s:frontend, applications, sync, %s/*, allow", name, name),
-				},
+func RegisterNewCluster(k8sClient k8s.API, argocdClient API, cluster string, log *logrus.Entry) (*k8s.ClusterInfo, error) {
+	tokenResponse, err := argocdClient.GetAuthToken()
+	if err != nil {
+		return nil, errors.Wrap(err, "error getting auth token")
+	}
+	bearer := toBearerToken(tokenResponse.Token)
+
+	log.Infof("Describing cluster %s", cluster)
+	info, err := k8sClient.DescribeCluster(cluster)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error describing cluster %s", cluster)
+	}
+
+	log.Infof("Checking does k8s cluster %s exist", cluster)
+	clusters, err := argocdClient.ListClusters(&cluster, bearer)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error listing clusters")
+	}
+
+	for _, item := range clusters.Items {
+		if item.Name == cluster {
+			log.Infof("K8s cluster %s exist and will not register it", cluster)
+			return info, nil
+		}
+	}
+
+	log.Infof("K8s cluster %s exist and needs to be registered it", cluster)
+
+	log.Infof("Registering k8s cluster %s in ArgoCD", cluster)
+	server := strings.ToLower(strings.TrimPrefix(info.Endpoint, "https://"))
+	body := RegisterClusterBody{
+		Name: info.Name,
+		Config: &ClusterConfig{
+			BearerToken: info.BearerToken,
+			TLSClientConfig: &TLSClientConfig{
+				CAData:     info.CertificateAuthority,
+				ServerName: server,
 			},
 		},
+		Namespaces:    []string{},
+		Server:        info.Endpoint,
+		ServerVersion: info.Version,
 	}
-	return &appv1.AppProject{TypeMeta: typeMeta, ObjectMeta: objectMeta, Spec: spec, Status: appv1.AppProjectStatus{}}
-}
+	resp, err := argocdClient.RegisterCluster(&body, bearer)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error registering cluster %s in argocd", cluster)
+	}
+	defer util.CloseBody(resp.Body)
 
-func toBearerToken(token string) string {
-	return fmt.Sprintf("Bearer %s", token)
+	return info, nil
 }

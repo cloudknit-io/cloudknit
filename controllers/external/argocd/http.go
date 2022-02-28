@@ -60,12 +60,12 @@ func (c *HTTPClient) GetAuthToken() (*GetTokenResponse, error) {
 
 	respBody, err := util.ReadBody(resp.Body)
 	if err != nil {
-		return nil, errors.Wrap(err, "error reading response body")
+		return nil, errors.Wrap(err, "error reading get auth token response body")
 	}
 
 	t := GetTokenResponse{}
 	if err = util.FromJSON(&t, respBody); err != nil {
-		return nil, errors.Wrap(err, "error unmarshalling response body")
+		return nil, errors.Wrap(err, "error unmarshalling get auth token response body")
 	}
 
 	return &t, nil
@@ -313,4 +313,69 @@ func (c *HTTPClient) UpdateCluster(
 	}
 
 	return resp, nil
+}
+
+func (c *HTTPClient) RegisterCluster(body *RegisterClusterBody, bearerToken string) (*http.Response, error) {
+	jsonBody, err := util.ToJSON(body)
+	if err != nil {
+		return nil, errors.Wrap(err, "error marshaling body to JSON")
+	}
+
+	url := fmt.Sprintf("%s/api/v1/clusters", c.serverURL)
+	req, err := http.NewRequestWithContext(c.ctx, "POST", url, bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating POST request")
+	}
+
+	req.Header.Add("Authorization", bearerToken)
+
+	client := util.GetHTTPClient()
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error sending POST request to %s", url)
+	}
+
+	if resp.StatusCode != 200 {
+		util.LogBody(c.log, resp.Body)
+		return nil, errors.Errorf("register cluster returned non-OK response: %d", resp.StatusCode)
+	}
+
+	return resp, nil
+}
+
+func (c *HTTPClient) ListClusters(name *string, bearerToken string) (*ListClustersResponse, error) {
+	url := fmt.Sprintf("%s/api/v1/clusters", c.serverURL)
+	if name != nil {
+		url += fmt.Sprintf("?name=%s", *name)
+	}
+	req, err := http.NewRequestWithContext(c.ctx, "GET", url, http.NoBody)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating GET request")
+	}
+
+	req.Header.Add("Authorization", bearerToken)
+
+	client := util.GetHTTPClient()
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error sending GET request to %s", url)
+	}
+	defer util.CloseBody(resp.Body)
+
+	if resp.StatusCode != 200 {
+		util.LogBody(c.log, resp.Body)
+		return nil, errors.Errorf("list clusters returned non-OK response: %d", resp.StatusCode)
+	}
+
+	respBody, err := util.ReadBody(resp.Body)
+	if err != nil {
+		return nil, errors.Wrap(err, "error reading list clusters response body")
+	}
+
+	clusters := ListClustersResponse{}
+	if err = util.FromJSON(&clusters, respBody); err != nil {
+		return nil, errors.Wrap(err, "error unmarshalling list clusters response body")
+	}
+
+	return &clusters, nil
 }

@@ -29,6 +29,7 @@ func GenerateArgocdApps(
 	gitReconciler gitreconciler.API,
 	key *client.ObjectKey,
 	e *stablev1.Environment,
+	k8sCluster string,
 	destinationFolder string,
 ) error {
 	for _, ec := range e.Spec.Components {
@@ -47,12 +48,12 @@ func GenerateArgocdApps(
 
 			sourceAbsolutePath := filepath.Join(tempDir, ec.Module.Path)
 			if util.IsDir(sourceAbsolutePath) {
-				apps, err = parseArgocdApplicationFolder(sourceAbsolutePath, e, ec)
+				apps, err = parseArgocdApplicationFolder(sourceAbsolutePath, e, ec, k8sCluster)
 				if err != nil {
 					return err
 				}
 			} else {
-				app, err := parseArgocdApplicationYAML(filepath.Base(sourceAbsolutePath), sourceAbsolutePath, e, ec)
+				app, err := parseArgocdApplicationYAML(filepath.Base(sourceAbsolutePath), sourceAbsolutePath, e, ec, k8sCluster)
 				if err != nil {
 					return err
 				}
@@ -132,7 +133,12 @@ func generateHelmChart(fileAPI file.API, dir string, name string) error {
 	return nil
 }
 
-func parseArgocdApplicationFolder(path string, e *stablev1.Environment, ec *stablev1.EnvironmentComponent) (apps []*v1alpha1.Application, err error) {
+func parseArgocdApplicationFolder(
+	path string,
+	e *stablev1.Environment,
+	ec *stablev1.EnvironmentComponent,
+	k8sCluster string,
+) (apps []*v1alpha1.Application, err error) {
 	walkF := func(path string, info fs.FileInfo, walkErr error) error {
 		if walkErr != nil {
 			return walkErr
@@ -144,7 +150,7 @@ func parseArgocdApplicationFolder(path string, e *stablev1.Environment, ec *stab
 		if !isYAML {
 			return nil
 		}
-		app, err := parseArgocdApplicationYAML(info.Name(), path, e, ec)
+		app, err := parseArgocdApplicationYAML(info.Name(), path, e, ec, k8sCluster)
 		if err != nil {
 			return perrors.Wrapf(err, "error parsing argocd application yaml from %s", path)
 		}
@@ -159,7 +165,12 @@ func parseArgocdApplicationFolder(path string, e *stablev1.Environment, ec *stab
 	return apps, nil
 }
 
-func parseArgocdApplicationYAML(filename, path string, e *stablev1.Environment, ec *stablev1.EnvironmentComponent) (*v1alpha1.Application, error) {
+func parseArgocdApplicationYAML(
+	filename, path string,
+	e *stablev1.Environment,
+	ec *stablev1.EnvironmentComponent,
+	k8sCluster string,
+) (*v1alpha1.Application, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, perrors.Wrap(err, "error reading argocd app file")
@@ -168,6 +179,7 @@ func parseArgocdApplicationYAML(filename, path string, e *stablev1.Environment, 
 	if err = yaml.Unmarshal(data, &app); err != nil {
 		return nil, perrors.Wrapf(err, "error unmarshalling argocd application yaml")
 	}
+	app.Spec.Destination.Server = k8sCluster
 	argocd.AddLabelsToCustomerApp(&app, e, ec, filename)
 
 	return &app, nil

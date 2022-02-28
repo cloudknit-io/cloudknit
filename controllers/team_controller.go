@@ -282,15 +282,3 @@ func delayTeamReconcileOnInitialRun(log *logrus.Entry, seconds int64) {
 		teamReconcileInitialRunLock.Store(false)
 	}
 }
-
-func generateAndSaveTeamApp(fileAPI file.API, team *stablev1.Team, filename string, ilRepoDir string) error {
-	teamApp := argocd.GenerateTeamApp(team)
-
-	return fileAPI.SaveYamlFile(*teamApp, il.TeamDirectoryAbsolutePath(ilRepoDir), filename)
-}
-
-func generateAndSaveConfigWatchers(fileAPI file.API, team *stablev1.Team, filename string, ilRepoDir string) error {
-	teamConfigWatcherApp := argocd.GenerateTeamConfigWatcherApp(team)
-
-	return fileAPI.SaveYamlFile(*teamConfigWatcherApp, il.ConfigWatcherDirectoryAbsolutePath(ilRepoDir), filename)
-}
