@@ -38,7 +38,7 @@ func toProject(name string, group string) *appv1.AppProject {
 	objectMeta := metav1.ObjectMeta{Name: name, Namespace: env.ArgocdNamespace()}
 	spec := appv1.AppProjectSpec{
 		SourceRepos:              []string{"*"},
-		Destinations:             []appv1.ApplicationDestination{{Server: "https://kubernetes.default.svc", Namespace: "*"}},
+		Destinations:             []appv1.ApplicationDestination{{Server: "*", Namespace: "*"}},
 		ClusterResourceWhitelist: []metav1.GroupKind{{Group: "*", Kind: "*"}},
 		Roles: []appv1.ProjectRole{
 			{
