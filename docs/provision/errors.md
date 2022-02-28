@@ -6,7 +6,7 @@ Usually the errors that might occur are related to:-
 
 - **AWS Secrets**: When secrets are not set and one is trying to provision an environment. See [secrets section](secrets.md) to set secrets. Another reason could be while deploying a particular resource for example:-
 
-![AWS Error](assets/images/aws-resource-error.png)
+![AWS Error](../assets/images/aws-resource-error.png)
   
 - **Terraform configuration**: Errors related to terraform usually occur because of **wrong tfvars file** that zlifecycle refers while creating an environment for you.
   A **tfvars** file is supplied by the user while creating environment yaml.
@@ -65,6 +65,6 @@ spec:
         - name: vpc_cidr_block
 ```
 
-![yaml-notification](assets/images/yaml-error.png "yaml notification")
+![yaml-notification](../assets/images/yaml-error.png "yaml notification")
 
 In the above screenshot we can see that an unknown field **component2** is used in the **environment.spec** section of the yaml, which we can see in the **example**.
