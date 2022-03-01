@@ -13,7 +13,7 @@ After you have setup AWS Credentials, you will want to provision a simple enviro
 3. Run below bash script using terminal and enter Company, Team and Environment Names when asked.
 
 ```
-bash <(curl -s https://zlifecycle.github.io/docs/scripts/getting_started.sh)
+bash <(curl -s https://docs.zlifecycle.com/scripts/getting_started.sh)
 ```
 
 4. It will create a env.yaml like below:
