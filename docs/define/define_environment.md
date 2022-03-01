@@ -1,5 +1,9 @@
 # Define Environment
 
+
+** COMING SOON: WRITE UP A DEFINITION FOR THE 'DEFINE ENV' STEP**
+
+
 Defining an Environment is the 1st step of the lifecycle management. Environment definition uses a Kubernetes [Custom Resource](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) which is in YAML format and provides a declarative way of defining an environment.
 
 # Environment YAML
