@@ -1,14 +1,14 @@
 #/bin/bash
 
-echo Enter your company name used by zLifecycle (E.g. Enter "zmart" if your zL url is https://zmart.app.zlifecycle.com):
+echo "Enter your company name used by zLifecycle (E.g. Enter "zmart" if your zL url is https://zmart.app.zlifecycle.com):"
 
 read company
 
-echo Enter the team name (E.g. checkout):
+echo "Enter the team name (E.g. checkout):"
 
 read team
 
-echo Enter the environment name (E.g. dev):
+echo "Enter the environment name (E.g. dev):"
 
 read env
 
