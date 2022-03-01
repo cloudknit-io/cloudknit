@@ -16,6 +16,37 @@ After you have setup AWS Credentials, you will want to provision a simple enviro
 bash <(curl -s https://zlifecycle.github.io/docs/scripts/getting_started.sh)
 ```
 
+4. It will create a env.yaml like below:
+
+```yaml
+apiVersion: stable.compuzest.com/v1
+kind: Environment
+metadata:
+  name: zmart-checkout-hello-world
+  namespace: zmart-config
+spec:
+  teamName: checkout
+  envName: hello-world
+  components:
+    - name: images
+      type: terraform
+      module:
+        source: aws
+        name: s3-bucket
+      variables:
+        - name: bucket
+          value: "zmart-checkout-hello-world-images-abcde"
+    - name: videos
+      type: terraform
+      dependsOn: [images]
+      module:
+        source: aws
+        name: s3-bucket
+      variables:
+        - name: bucket
+          value: "zmart-checkout-hello-world-videos-vwxyz"
+```
+
 4. Commit and push this file to your team repository
 5. Go to Environments page on zLifecycle UI
    * After a few mins you should see the new environment with the team & env name you entered getting provisioned
@@ -30,7 +61,38 @@ bash <(curl -s https://zlifecycle.github.io/docs/scripts/getting_started.sh)
 
 After you have provisioned your first environment, let's go through the teardown exercise.
 
-1. In the `hello-world.yaml` that you created in the Provision step above add a 'teardown' flag to `true` at the spec level
+1. In the `hello-world.yaml` that you created in the Provision step above add a 'teardown' flag to `true` at the spec level. See exampple below.
+
+```yaml
+apiVersion: stable.compuzest.com/v1
+kind: Environment
+metadata:
+  name: zmart-checkout-hello-world
+  namespace: zmart-config
+spec:
+  teamName: checkout
+  envName: hello-world
+  teardown: true
+  components:
+    - name: images
+      type: terraform
+      module:
+        source: aws
+        name: s3-bucket
+      variables:
+        - name: bucket
+          value: "zmart-checkout-hello-world-images-abcde"
+    - name: videos
+      type: terraform
+      dependsOn: [images]
+      module:
+        source: aws
+        name: s3-bucket
+      variables:
+        - name: bucket
+          value: "zmart-checkout-hello-world-videos-vwxyz"
+```
+
 2. Commit and push changes to your team repository
     * The teardown will start at the bottom most leaf node
 3. Approve the teardown plan when prompted
