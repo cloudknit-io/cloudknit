@@ -17,6 +17,9 @@ import (
 	"fmt"
 	"time"
 
+	secrets2 "github.com/compuzest/zlifecycle-il-operator/controllers/codegen/secrets"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/external/secrets"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/k8s"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/watcherservices"
@@ -135,7 +138,19 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		)
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
 	}
-	k8sClient, err := k8s.NewEKS(apmCtx)
+	secretsClient, err := secrets.NewSSM(apmCtx, r.Client)
+	if err != nil {
+		envErr := zerrors.NewEnvironmentError(
+			environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error instantiating secret client"),
+		)
+		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
+	}
+	secretsMeta := secrets2.Meta{
+		Company:     env.Config.CompanyName,
+		Team:        environment.Spec.TeamName,
+		Environment: environment.Spec.EnvName,
+	}
+	k8sClient, err := k8s.NewEKS(apmCtx, secretsClient, &secretsMeta, r.LogV2)
 	if err != nil {
 		envErr := zerrors.NewEnvironmentError(
 			environment.Spec.TeamName,

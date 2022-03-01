@@ -74,7 +74,7 @@ func GenerateWorkflowOfWorkflows(environment *stablev1.Environment) *workflow.Wo
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "experimental-" + environment.Spec.TeamName + "-" + environment.Spec.EnvName,
-			Namespace: env.WorkflowsNamespace(),
+			Namespace: env.ExecutorNamespace(),
 			Labels: map[string]string{
 				"terraform/sync":       "true",
 				"zlifecycle.com/model": "environment-sync-flow",

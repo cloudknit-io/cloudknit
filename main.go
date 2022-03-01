@@ -174,9 +174,13 @@ func getWatchedNamespaces() []string {
 	namespaces := make([]string, 0, 2)
 	systemNamespace := env.SystemNamespace()
 	configNamespace := env.ConfigNamespace()
+	executorNamespace := env.ExecutorNamespace()
 	namespaces = append(namespaces, systemNamespace)
 	if systemNamespace != configNamespace {
 		namespaces = append(namespaces, configNamespace)
+	}
+	if systemNamespace != executorNamespace {
+		namespaces = append(namespaces, executorNamespace)
 	}
 	return namespaces
 }

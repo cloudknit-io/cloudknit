@@ -108,6 +108,7 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		defer tx.End()
 	}
 
+	// vars
 	companyRepoURL := company.Spec.ConfigRepo.Source
 	ilZLRepoURL := env.Config.ILZLifecycleRepositoryURL
 
@@ -238,7 +239,7 @@ func (r *CompanyReconciler) initCompany(ctx context.Context, services *watcherse
 	if err := argocd.UpdateDefaultClusterNamespaces(
 		r.Log,
 		services.ArgocdClient,
-		[]string{env.ArgocdNamespace(), env.ConfigNamespace(), env.WorkflowsNamespace()},
+		[]string{env.ArgocdNamespace(), env.ConfigNamespace(), env.ExecutorNamespace()},
 	); err != nil {
 		r.LogV2.Fatalf("error updating argocd cluster namespaces: %v", err)
 	}

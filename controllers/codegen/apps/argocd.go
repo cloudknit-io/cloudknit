@@ -1,11 +1,12 @@
 package apps
 
 import (
-	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/argocd"
 

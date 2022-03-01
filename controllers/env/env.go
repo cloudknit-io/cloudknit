@@ -24,7 +24,8 @@ type config struct {
 	ILTeamFolder              string
 	ILConfigWatcherFolder     string
 
-	AWSRegion string
+	SharedAWSCredsSecret string
+	AWSRegion            string
 
 	TerraformDefaultVersion          string
 	TerraformDefaultAWSRegion        string
@@ -118,7 +119,8 @@ var Config = config{
 	ILConfigWatcherFolder:     getOr("IL_CONFIG_WATCHER_FOLDER", "config-watcher"),
 
 	// aws
-	AWSRegion: getOr("AWS_REGION", "us-east-1"),
+	SharedAWSCredsSecret: getOr("AWS_SHARED_CREDS_SECRET", "shared-aws-creds"),
+	AWSRegion:            getOr("AWS_REGION", "us-east-1"),
 
 	// terraform config
 	TerraformDefaultVersion:          getOr("TERRAFORM_DEFAULT_VERSION", "1.0.9"),
@@ -165,7 +167,7 @@ var Config = config{
 		"http://argo-workflow-server.%s.svc.cluster.local:2746",
 		ArgoWorkflowsNamespace(),
 	)),
-	ArgoWorkflowsWorkflowNamespace: getOr("ARGOWORKFLOWS_WORKFLOW_NAMESPACE", WorkflowsNamespace()),
+	ArgoWorkflowsWorkflowNamespace: getOr("ARGOWORKFLOWS_WORKFLOW_NAMESPACE", ExecutorNamespace()),
 
 	// zlifecycle
 	ZLifecycleStateManagerURL: getOr(
@@ -233,7 +235,7 @@ func ConfigNamespace() string {
 	return "zlifecycle"
 }
 
-func WorkflowsNamespace() string {
+func ExecutorNamespace() string {
 	val, exists := os.LookupEnv("COMPANY_NAME")
 	if exists {
 		return fmt.Sprintf("%s-executor", val)
