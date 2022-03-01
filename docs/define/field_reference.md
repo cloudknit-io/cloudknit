@@ -49,7 +49,7 @@ metadata:
 ---
 
 
-### Spec
+## Spec
 
 Spec contains the information about details of the environment to be provisioned.
 
@@ -63,27 +63,16 @@ Spec contains the information about details of the environment to be provisioned
 |`selectiveReconcile`| `array` | _No description available_ |
 |`components`|`array`| Array of environment components |
 
-
+---
 <div style="background-color: #ccc; height: 1px"></div>
 
-<h4 id="team-name" style="font-weight: 200; letter-spacing: 2px">
-  Team Name
+<h4 id="metadata-example" style="font-weight: 200; letter-spacing: 2px;">
+  Example
 </h4>
 
 ```yaml
-teamName: client
+spec:
+  teamName: checkout
+  envName: demo
 ```
-
-<div style="background-color: #ccc; height: 1px"></div>
-
-<h4 id="environment-name" style="font-weight: 200; letter-spacing: 2px">
-  Environment Name
-</h4>
-
-Name of the environment (used to create [metadata.name](#metdata))
-
-```yaml
-envName: demo
-```
-
-<div style="background-color: #ccc; height: 1px"></div>
+---
