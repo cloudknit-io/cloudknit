@@ -2,9 +2,10 @@
 
 When you are creating an environment YAML file, you have an optional property called **autoApprove** which can be added at **spec** level or **component** level.
 
-Our reconciler while analyzing the YAML, looks for this property which tells it whether to ask for approval at the time of provisioning, tearing, or reconciling the environment.
+Our reconciler while analyzing the YAML, looks for this property which tells it whether to ask for approval at the time of provisioning, tearing down, or reconciling the environment.
 
 **NOTE:** 
+
 * Approval prompt will only come if **autoApprove** is `false`
 * The default value of **autoApprove** is `false`
 * Component level **autoApprove** overrides spec level **autoApprove**
