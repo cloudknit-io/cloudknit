@@ -1,47 +1,4 @@
 
----
-
-### Spec
-
-Spec contains the information about details of the environment to be provisioned.
-
-### Fields
-| Field Name | Field Type | Description   |
-|:----------:|:----------:|---------------|
-|`teamName`|`string`| Name of the team to which this environment belongs (also used to create [metadata.name](#metdata)) |
-|`envName`|`string`| Name of the environment |
-|`autoApprove`|`boolean`| To skip the manual approval step of applying the changes to a workflow, set this flag to `true`. If not set, it will default to `false` |
-|`teardown`|`boolean`| To teardown an environment, set this flag to `true`. If you are creating a new environment, it must be omitted or set to `false`. If omitted, it will default to `false`. Environment teardown is composed as a 2-step process: First step is to update the `teardown` flag to `true` and wait for the environment to get destroyed (monitor progress on zLifecycle UI). Second step is to delete the Environment yaml from github for permanent deletion of an environment |
-|`selectiveReconcile`| `array` | _No description available_ |
-|`components`|`array`| Array of environment components |
-
-
-
-<div style="background-color: #ccc; height: 1px"></div>
-
-<h4 id="team-name" style="font-weight: 200; letter-spacing: 2px">
-  Team Name
-</h4>
-
-
-
-```yaml
-teamName: client
-```
-
-<div style="background-color: #ccc; height: 1px"></div>
-
-<h4 id="environment-name" style="font-weight: 200; letter-spacing: 2px">
-  Environment Name
-</h4>
-
-Name of the environment (used to create [metadata.name](#metdata))
-
-```yaml
-envName: demo
-```
-
-<div style="background-color: #ccc; height: 1px"></div>
 
 <h4 id="auto-approve" style="font-weight: 200; letter-spacing: 2px">
   Auto Approve
