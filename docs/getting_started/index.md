@@ -17,7 +17,8 @@ bash <(curl -s https://zlifecycle.github.io/docs/scripts/getting_started.sh)
 ```
 
 4. It will create a env.yaml like below:
-
+<details>
+  <summary>Click to expand!</summary>
 ```yaml
 apiVersion: stable.compuzest.com/v1
 kind: Environment
@@ -46,6 +47,8 @@ spec:
         - name: bucket
           value: "zmart-checkout-hello-world-videos-vwxyz"
 ```
+</details>
+</br>
 
 4. Commit and push this file to your team repository
 5. Go to Environments page on zLifecycle UI
@@ -63,6 +66,8 @@ After you have provisioned your first environment, let's go through the teardown
 
 1. In the `hello-world.yaml` that you created in the Provision step above add a 'teardown' flag to `true` at the spec level. See exampple below.
 
+<details>
+  <summary>Click to expand!</summary>
 ```yaml
 apiVersion: stable.compuzest.com/v1
 kind: Environment
@@ -92,6 +97,8 @@ spec:
         - name: bucket
           value: "zmart-checkout-hello-world-videos-vwxyz"
 ```
+</details>
+</br>
 
 2. Commit and push changes to your team repository
     * The teardown will start at the bottom most leaf node
