@@ -14,7 +14,7 @@ read env
 
 echo "Downloading hello world template yaml"
 
-curl https://zlifecycle.github.io/docs/examples/first-environment.yaml --output hello-world.yaml
+curl https://docs.zlifecycle.com/examples/first-environment.yaml --output hello-world.yaml
 
 echo "Replacing variables"
 
