@@ -1,4 +1,5 @@
 site_name: zLifecycle - Environment Managment Made Easy
+site_url: https://docs.zlifecycle.com/
 theme:
   name: material
   favicon: assets/images/favicon.png
