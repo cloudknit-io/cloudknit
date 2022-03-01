@@ -18,13 +18,13 @@ nav:
 - Define:
   - define/define_environment.md
   - define/field_reference.md
+  - define/approval.md
+  - define/selective_reconcile.md
+  - define/destroy.md
 - Provision:
   - provision/component_details_view.md
-  - provision/approval.md
   - provision/cost_estimates.md
-  - provision/selective_reconcile.md
   - provision/errors.md
-  - provision/destroy.md
 - Reconcile:
   - steps.md
 - Teardown:
