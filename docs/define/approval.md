@@ -6,9 +6,9 @@ Our reconciler while analyzing the YAML, looks for this property which tells it 
 
 **NOTE:** 
 
-* Approval prompt will only come if **autoApprove** is `false`
+* Approval prompt will only appear if **autoApprove** is `false`
 * The default value of **autoApprove** is `false`
-* Component level **autoApprove** overrides spec level **autoApprove**
+* Component level **autoApprove** flag overrides spec level **autoApprove**
 
 ---
 **Sample YAML**
