@@ -1,12 +1,22 @@
 #/bin/bash
 
-company="$1"
-team="$2"
-env="$3"
+echo Enter your company name used by zLifecycle:
 
-echo "Downloading hello world yaml"
+read company
+
+echo Enter the team name for which you want to provision the environment:
+
+read team
+
+echo Enter name of the environment you want to provision:
+
+read env
+
+echo "Downloading hello world template yaml"
 
 curl https://zlifecycle.github.io/docs/examples/first-environment.yaml --output hello-world.yaml
+
+cat hello-world.yaml
 
 echo "Replacing variables"
 
