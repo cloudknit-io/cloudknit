@@ -1,4 +1,6 @@
-# How to Approve?
+# How to Approve 
+
+If the **autoApprove** flag is set to `false` or is omitted (defaults to `false`) the plan will need to be manually approved before it can proceed with applying.
 
 In this sample example we are **provisioning** an environment called **sandbox**.
 
