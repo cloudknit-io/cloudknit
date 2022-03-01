@@ -48,7 +48,6 @@ spec:
           value: "zmart-checkout-hello-world-videos-vwxyz"
 ```
 </details>
-</br>
 
 4. Commit and push this file to your team repository
 5. Go to Environments page on zLifecycle UI
@@ -98,7 +97,6 @@ spec:
           value: "zmart-checkout-hello-world-videos-vwxyz"
 ```
 </details>
-</br>
 
 2. Commit and push changes to your team repository
     * The teardown will start at the bottom most leaf node
