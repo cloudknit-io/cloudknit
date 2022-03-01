@@ -1,11 +1,11 @@
 apiVersion: stable.compuzest.com/v1
 kind: Environment
 metadata:
-  name: zmart-checkout-dev
-  namespace: zlifecycle
+  name: ${company}-${team}-${env}
+  namespace: ${company}-config
 spec:
-  teamName: checkout
-  envName: dev
+  teamName: ${team}
+  envName: ${env}
   components:
     - name: images
       type: terraform
@@ -14,7 +14,7 @@ spec:
         name: s3-bucket
       variables:
         - name: bucket
-          value: "zmart-checkout-dev-images"
+          value: "${company}-${team}-${env}-images-abcde"
     - name: videos
       type: terraform
       dependsOn: [images]
@@ -23,4 +23,4 @@ spec:
         name: s3-bucket
       variables:
         - name: bucket
-          value: "zmart-checkout-dev-videos"
+          value: "${company}-${team}-${env}-videos-vwxyz"
