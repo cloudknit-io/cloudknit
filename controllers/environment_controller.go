@@ -138,27 +138,15 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		)
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
 	}
-	secretsClient, err := secrets.NewSSM(apmCtx, r.Client)
-	if err != nil {
-		envErr := zerrors.NewEnvironmentError(
-			environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error instantiating secret client"),
-		)
-		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
-	}
+	secretsClient := secrets.LazyLoadSSM(apmCtx, r.Client)
+
 	secretsMeta := secrets2.Meta{
 		Company:     env.Config.CompanyName,
 		Team:        environment.Spec.TeamName,
 		Environment: environment.Spec.EnvName,
 	}
-	k8sClient, err := k8s.NewEKS(apmCtx, secretsClient, &secretsMeta, r.LogV2)
-	if err != nil {
-		envErr := zerrors.NewEnvironmentError(
-			environment.Spec.TeamName,
-			environment.Spec.EnvName,
-			perrors.Wrapf(err, "error instantiating k8s client"),
-		)
-		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
-	}
+	k8sClient := k8s.LazyLoadEKS(apmCtx, secretsClient, &secretsMeta, r.LogV2)
+
 	ilToken, err := github.GenerateInstallationToken(r.LogV2, watcherServices.ILGitClient, env.Config.GitILRepositoryOwner)
 	if err != nil {
 		envErr := zerrors.NewEnvironmentError(
@@ -417,20 +405,20 @@ func (r *EnvironmentReconciler) handleFinalizer(
 		if !util.ContainsString(e.GetFinalizers(), finalizer) {
 			r.LogV2.Infof("Setting finalizer for environment %s", e.Spec.EnvName)
 			e.SetFinalizers(append(e.GetFinalizers(), finalizer))
-			if err = r.Update(ctx, e); err != nil {
+			if err := r.Update(ctx, e); err != nil {
 				return completed, err
 			}
 		}
 	} else {
 		if util.ContainsString(e.GetFinalizers(), finalizer) {
-			if err = r.postDeleteHook(ctx, e, argocdAPI); err != nil {
+			if err := r.postDeleteHook(ctx, e, argocdAPI); err != nil {
 				return completed, err
 			}
 
 			r.LogV2.Infof("Removing finalizer for environment %s", e.Spec.EnvName)
 			e.SetFinalizers(util.RemoveString(e.GetFinalizers(), finalizer))
 
-			if err = r.Update(ctx, e); err != nil {
+			if err := r.Update(ctx, e); err != nil {
 				return completed, err
 			}
 		}
