@@ -17,17 +17,20 @@ import (
 	"fmt"
 	"time"
 
+	secrets2 "github.com/compuzest/zlifecycle-il-operator/controllers/codegen/secrets"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/external/secrets"
+
+	"github.com/compuzest/zlifecycle-il-operator/controllers/external/k8s"
+
+	"github.com/compuzest/zlifecycle-il-operator/controllers/watcherservices"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/github"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/file"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/gotfvars"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/il"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/overlay"
-	terraformgenerator2 "github.com/compuzest/zlifecycle-il-operator/controllers/codegen/terraformgenerator"
-
 	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
-	argocd2 "github.com/compuzest/zlifecycle-il-operator/controllers/external/argocd"
-	argoworkflow2 "github.com/compuzest/zlifecycle-il-operator/controllers/external/argoworkflow"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/external/argocd"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/external/argoworkflow"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/git"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/zlstate"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
@@ -70,6 +73,10 @@ var environmentInitialRunLock = atomic.NewBool(true)
 
 // Reconcile method called everytime there is a change in Environment Custom Resource.
 func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	if checkReconcileMode(r.LogV2) {
+		return ctrl.Result{}, nil
+	}
+
 	if !checkIsNamespaceWatched(req.NamespacedName.Namespace) {
 		r.LogV2.WithFields(logrus.Fields{
 			"object":           fmt.Sprintf("%s/%s", req.NamespacedName.Namespace, req.NamespacedName.Name),
@@ -115,24 +122,44 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 			"team":        environment.Spec.TeamName,
 			"environment": environment.Spec.EnvName,
 		}).WithContext(apmCtx)
-		r.LogV2.WithField("name", txName).Info("Creating APM transaction")
+		r.LogV2.WithField("name", txName).Infof("Creating APM transaction for environment %s", environment.Spec.EnvName)
 
 		defer tx.End()
 	}
 
 	// service init
 	zlstateManagerClient := zlstate.NewHTTPStateManager(apmCtx, r.LogV2)
-	argocdClient := argocd2.NewHTTPClient(apmCtx, r.LogV2, env.Config.ArgocdServerURL)
-	argoworkflowClient := argoworkflow2.NewHTTPClient(apmCtx, env.Config.ArgoWorkflowsServerURL)
-	watcherServices, err := newGitHubServices(apmCtx, r.Client, env.Config.GitHubCompanyOrganization, r.LogV2)
+	argocdClient := argocd.NewHTTPClient(apmCtx, r.LogV2, env.Config.ArgocdServerURL)
+	argoworkflowClient := argoworkflow.NewHTTPClient(apmCtx, env.Config.ArgoWorkflowsServerURL)
+	watcherServices, err := watcherservices.NewGitHubServices(apmCtx, r.Client, env.Config.GitHubCompanyOrganization, r.LogV2)
 	if err != nil {
 		envErr := zerrors.NewEnvironmentError(
 			environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error instantiating watcher services"),
 		)
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
 	}
-
-	ilToken, err := github.GenerateInstallationToken(r.LogV2, watcherServices.ilGitClient, env.Config.GitILRepositoryOwner)
+	secretsClient, err := secrets.NewSSM(apmCtx, r.Client)
+	if err != nil {
+		envErr := zerrors.NewEnvironmentError(
+			environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error instantiating secret client"),
+		)
+		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
+	}
+	secretsMeta := secrets2.Meta{
+		Company:     env.Config.CompanyName,
+		Team:        environment.Spec.TeamName,
+		Environment: environment.Spec.EnvName,
+	}
+	k8sClient, err := k8s.NewEKS(apmCtx, secretsClient, &secretsMeta, r.LogV2)
+	if err != nil {
+		envErr := zerrors.NewEnvironmentError(
+			environment.Spec.TeamName,
+			environment.Spec.EnvName,
+			perrors.Wrapf(err, "error instantiating k8s client"),
+		)
+		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
+	}
+	ilToken, err := github.GenerateInstallationToken(r.LogV2, watcherServices.ILGitClient, env.Config.GitILRepositoryOwner)
 	if err != nil {
 		envErr := zerrors.NewEnvironmentError(
 			environment.Spec.TeamName,
@@ -141,7 +168,7 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		)
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
 	}
-	ilService, err := il.NewService(apmCtx, ilToken)
+	ilService, err := il.NewService(apmCtx, ilToken, r.LogV2)
 	if err != nil {
 		envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error getting environment from k8s cache"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
@@ -149,7 +176,7 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	defer ilService.TFILCleanupF()
 	defer ilService.ZLILCleanupF()
 
-	companyToken, err := github.GenerateInstallationToken(r.LogV2, watcherServices.ilGitClient, env.Config.GitILRepositoryOwner)
+	companyToken, err := github.GenerateInstallationToken(r.LogV2, watcherServices.CompanyGitClient, env.Config.GitHubCompanyOrganization)
 	if err != nil {
 		envErr := zerrors.NewEnvironmentError(
 			environment.Spec.TeamName,
@@ -180,14 +207,24 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	}
 
 	// reconcile logic
-	if err = r.doReconcile(apmCtx, environment, ilService, fs, gitClient, argoworkflowClient, zlstateManagerClient); err != nil {
+	if err = r.doReconcile(
+		apmCtx,
+		environment,
+		ilService,
+		fs,
+		gitClient,
+		argoworkflowClient,
+		zlstateManagerClient,
+		k8sClient,
+		argocdClient,
+	); err != nil {
 		envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error executing reconcile"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
 	}
 
 	// finish successful reconcile
 	duration := time.Since(start)
-	r.LogV2.WithField("duration", duration).Info("Reconcile finished")
+	r.LogV2.WithField("duration", duration).Infof("Reconcile finished for environment %s", environment.Spec.EnvName)
 	attrs := map[string]interface{}{
 		"duration":    duration,
 		"team":        environment.Spec.TeamName,
@@ -204,8 +241,10 @@ func (r *EnvironmentReconciler) doReconcile(
 	ilService *il.Service,
 	fileService file.API,
 	gitClient git.API,
-	argoworkflowClient argoworkflow2.API,
+	argoworkflowClient argoworkflow.API,
 	zlstateManagerClient zlstate.API,
+	k8sClient k8s.API,
+	argocdClient argocd.API,
 ) error {
 	// reconcile logic
 	isHardDelete := !environment.DeletionTimestamp.IsZero()
@@ -217,7 +256,7 @@ func (r *EnvironmentReconciler) doReconcile(
 		}
 	}
 	if !isHardDelete {
-		if err := r.handleNonDeleteEvent(ilService, environment, fileService, gitClient); err != nil {
+		if err := r.handleNonDeleteEvent(ilService, environment, fileService, gitClient, k8sClient, argocdClient); err != nil {
 			return nil
 		}
 	}
@@ -241,7 +280,7 @@ func (r *EnvironmentReconciler) doReconcile(
 	}
 
 	if !zlPushed {
-		r.LogV2.Info("No git changes in zl il to commit, no-op reconciliation.")
+		r.LogV2.Infof("No git changes in zl il to commit for environment %s, no-op reconciliation.", environment.Spec.EnvName)
 	}
 
 	// push zl il changes
@@ -251,7 +290,7 @@ func (r *EnvironmentReconciler) doReconcile(
 	}
 
 	if !tfPushed {
-		r.LogV2.Info("No git changes in tf IL to commit, no-op reconciliation.")
+		r.LogV2.Infof("No git changes in tf IL to commit for environment %s, no-op reconciliation.", environment.Spec.EnvName)
 	}
 
 	if zlPushed || tfPushed {
@@ -268,46 +307,6 @@ func (r *EnvironmentReconciler) doReconcile(
 	return nil
 }
 
-func (r *EnvironmentReconciler) tryGetEnvironment(ctx context.Context, req ctrl.Request, e *stablev1.Environment) (exists bool, err error) {
-	if err := r.Get(ctx, req.NamespacedName, e); err != nil {
-		if errors.IsNotFound(err) {
-			r.LogV2.WithFields(logrus.Fields{
-				"name":      req.Name,
-				"namespace": req.Namespace,
-			}).Info("Environment missing from cache, ending reconcile")
-			return false, nil
-		}
-		r.LogV2.WithFields(logrus.Fields{
-			"name":      req.Name,
-			"namespace": req.Namespace,
-		}).WithError(err).Error("Error occurred while getting Environment")
-
-		return false, err
-	}
-
-	return true, nil
-}
-
-func (r *EnvironmentReconciler) handleNonDeleteEvent(
-	ilService *il.Service,
-	e *stablev1.Environment,
-	fileAPI file.API,
-	gitClient git.API,
-) error {
-	r.LogV2.Info("Generating Environment application")
-
-	envDirectory := il.EnvironmentDirectoryAbsolutePath(ilService.ZLILTempDir, e.Spec.TeamName)
-	if err := generateAndSaveEnvironmentApp(fileAPI, e, envDirectory); err != nil {
-		return perrors.Wrap(err, "error generating and saving environment apps")
-	}
-
-	if err := generateAndSaveEnvironmentComponents(r.LogV2, ilService, fileAPI, r.GitReconciler, gitClient, e); err != nil {
-		return perrors.Wrap(err, "error generating and saving environment components")
-	}
-
-	return nil
-}
-
 // SetupWithManager sets up the Environment Controller with Manager.
 func (r *EnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
@@ -315,12 +314,54 @@ func (r *EnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func (r *EnvironmentReconciler) handleDirtyILState(argoworkflowAPI argoworkflow2.API, e *stablev1.Environment) error {
-	r.LogV2.Info("Committed new changes to IL repo(s)")
-	r.LogV2.Info("Re-syncing Workflow of Workflows")
-	wow := fmt.Sprintf("%s-%s", e.Spec.TeamName, e.Spec.EnvName)
-	if err := argoworkflow2.DeleteWorkflow(wow, env.Config.ArgoWorkflowsWorkflowNamespace, argoworkflowAPI); err != nil {
-		return err
+func (r *EnvironmentReconciler) tryGetEnvironment(ctx context.Context, req ctrl.Request, e *stablev1.Environment) (exists bool, err error) {
+	exists = false
+	if err = r.Get(ctx, req.NamespacedName, e); err != nil {
+		if errors.IsNotFound(err) {
+			r.LogV2.WithFields(logrus.Fields{
+				"name":      req.Name,
+				"namespace": req.Namespace,
+			}).Info("Environment missing from cache, ending reconcile")
+			return exists, nil
+		}
+		r.LogV2.WithFields(logrus.Fields{
+			"name":      req.Name,
+			"namespace": req.Namespace,
+		}).WithError(err).Error("error occurred while getting Environment")
+
+		return exists, err
+	}
+
+	exists = true
+	return exists, nil
+}
+
+func (r *EnvironmentReconciler) handleNonDeleteEvent(
+	ilService *il.Service,
+	e *stablev1.Environment,
+	fileAPI file.API,
+	gitClient git.API,
+	k8sClient k8s.API,
+	argocdClient argocd.API,
+) error {
+	r.LogV2.Infof("Generating Environment application for environment %s", e.Spec.EnvName)
+
+	envDirectory := il.EnvironmentDirectoryAbsolutePath(ilService.ZLILTempDir, e.Spec.TeamName)
+	if err := generateAndSaveEnvironmentApp(fileAPI, e, envDirectory); err != nil {
+		return perrors.Wrap(err, "error generating and saving environment apps")
+	}
+
+	if err := generateAndSaveEnvironmentComponents(
+		r.LogV2,
+		ilService,
+		fileAPI,
+		r.GitReconciler,
+		gitClient,
+		k8sClient,
+		argocdClient,
+		e,
+	); err != nil {
+		return perrors.Wrap(err, "error generating and saving environment components")
 	}
 
 	return nil
@@ -334,13 +375,24 @@ func delayEnvironmentReconcileOnInitialRun(log *logrus.Entry, seconds int64) {
 	}
 }
 
+func (r *EnvironmentReconciler) handleDirtyILState(argoworkflowAPI argoworkflow.API, e *stablev1.Environment) error {
+	r.LogV2.Infof("Committed new changes to IL repo(s) for environment %s", e.Spec.EnvName)
+	r.LogV2.Infof("Re-syncing Workflow of Workflows for environment %s", e.Spec.EnvName)
+	wow := fmt.Sprintf("%s-%s", e.Spec.TeamName, e.Spec.EnvName)
+	if err := argoworkflow.DeleteWorkflow(wow, env.Config.ArgoWorkflowsWorkflowNamespace, argoworkflowAPI); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *EnvironmentReconciler) updateStatus(ctx context.Context, e *stablev1.Environment) error {
 	hasEnvironmentInfoChanged := e.Status.TeamName != e.Spec.TeamName || e.Status.EnvName != e.Spec.EnvName
 	haveComponentsChanged := !cmp.Equal(e.Status.Components, e.Spec.Components)
 	isStateDirty := hasEnvironmentInfoChanged || haveComponentsChanged
 
 	if isStateDirty {
-		r.LogV2.WithContext(ctx).Info("Environment state is dirty and needs to be updated")
+		r.LogV2.WithContext(ctx).Infof("Environment state is dirty and needs to be updated for environment %s", e.Spec.EnvName)
 		e.Status.TeamName = e.Spec.TeamName
 		e.Status.EnvName = e.Spec.EnvName
 		e.Status.Components = e.Spec.Components
@@ -348,7 +400,7 @@ func (r *EnvironmentReconciler) updateStatus(ctx context.Context, e *stablev1.En
 			return err
 		}
 	} else {
-		r.LogV2.Info("Environment state is up-to-date")
+		r.LogV2.Infof("Environment state is up-to-date for environment %s", e.Spec.EnvName)
 	}
 
 	return nil
@@ -358,49 +410,50 @@ func (r *EnvironmentReconciler) handleFinalizer(
 	ctx context.Context,
 	e *stablev1.Environment,
 	finalizer string,
-	argocdAPI argocd2.API,
+	argocdAPI argocd.API,
 ) (completed bool, err error) {
+	completed = false
 	if e.DeletionTimestamp.IsZero() {
 		if !util.ContainsString(e.GetFinalizers(), finalizer) {
-			r.LogV2.Info("Setting finalizer for environment")
+			r.LogV2.Infof("Setting finalizer for environment %s", e.Spec.EnvName)
 			e.SetFinalizers(append(e.GetFinalizers(), finalizer))
-			if err := r.Update(ctx, e); err != nil {
-				return false, err
+			if err = r.Update(ctx, e); err != nil {
+				return completed, err
 			}
 		}
 	} else {
 		if util.ContainsString(e.GetFinalizers(), finalizer) {
-			if err := r.postDeleteHook(ctx, e, argocdAPI); err != nil {
-				return false, err
+			if err = r.postDeleteHook(ctx, e, argocdAPI); err != nil {
+				return completed, err
 			}
 
-			r.LogV2.Info("Removing finalizer")
+			r.LogV2.Infof("Removing finalizer for environment %s", e.Spec.EnvName)
 			e.SetFinalizers(util.RemoveString(e.GetFinalizers(), finalizer))
 
-			if err := r.Update(ctx, e); err != nil {
-				return false, err
+			if err = r.Update(ctx, e); err != nil {
+				return completed, err
 			}
-			return true, nil
 		}
-		return true, nil
+		completed = true
+		return completed, nil
 	}
 
-	return false, nil
+	return completed, nil
 }
 
 func (r *EnvironmentReconciler) postDeleteHook(
 	ctx context.Context,
 	e *stablev1.Environment,
-	argocdAPI argocd2.API,
+	argocdAPI argocd.API,
 ) error {
-	r.LogV2.Info("Executing post delete hook for environment finalizer")
+	r.LogV2.Infof("Executing post delete hook for finalizer in environment %s", e.Spec.EnvName)
 
 	_ = r.deleteDanglingArgocdApps(e, argocdAPI)
 	_ = r.removeEnvironmentFromGitReconciler(e)
 	return nil
 }
 
-func (r *EnvironmentReconciler) deleteDanglingArgocdApps(e *stablev1.Environment, argocdAPI argocd2.API) error {
+func (r *EnvironmentReconciler) deleteDanglingArgocdApps(e *stablev1.Environment, argocdAPI argocd.API) error {
 	r.LogV2.Info("Cleaning up dangling argocd apps")
 	for _, ec := range e.Spec.Components {
 		appName := fmt.Sprintf("%s-%s-%s", e.Spec.TeamName, e.Spec.EnvName, ec.Name)
@@ -408,7 +461,7 @@ func (r *EnvironmentReconciler) deleteDanglingArgocdApps(e *stablev1.Environment
 			"component": ec.Name,
 			"app":       appName,
 		}).Info("Deleting argocd application")
-		if err := argocd2.DeleteApplication(r.Log, argocdAPI, appName); err != nil {
+		if err := argocd.DeleteApplication(r.Log, argocdAPI, appName); err != nil {
 			r.LogV2.WithError(err).Error("Error deleting argocd app")
 		}
 	}
@@ -419,100 +472,4 @@ func (r *EnvironmentReconciler) removeEnvironmentFromGitReconciler(e *stablev1.E
 	r.LogV2.Info("Removing entries from git reconciler")
 	key := kClient.ObjectKey{Name: e.Name, Namespace: e.Namespace}
 	return r.GitReconciler.UnsubscribeAll(key)
-}
-
-func generateAndSaveWorkflowOfWorkflows(fileAPI file.API, ilService *il.Service, environment *stablev1.Environment) error {
-	// WIP, below command is for testing
-	// experimentalworkflow := argoWorkflow.GenerateWorkflowOfWorkflows(*environment)
-	// if err := fileAPI.SaveYamlFile(*experimentalworkflow, envComponentDirectory, "/experimental_wofw.yaml"); err != nil {
-	// 	return err
-	// }
-	ilEnvComponentDirectory := il.EnvironmentComponentsDirectoryAbsolutePath(ilService.ZLILTempDir, environment.Spec.TeamName, environment.Spec.EnvName)
-
-	workflow := argoworkflow2.GenerateLegacyWorkflowOfWorkflows(environment)
-	return fileAPI.SaveYamlFile(*workflow, ilEnvComponentDirectory, "/wofw.yaml")
-}
-
-func generateAndSaveEnvironmentApp(fileService file.API, environment *stablev1.Environment, envDirectory string) error {
-	envApp := argocd2.GenerateEnvironmentApp(environment)
-	envYAML := fmt.Sprintf("%s-environment.yaml", environment.Spec.EnvName)
-
-	return fileService.SaveYamlFile(*envApp, envDirectory, envYAML)
-}
-
-func generateAndSaveEnvironmentComponents(
-	log *logrus.Entry,
-	ilService *il.Service,
-	fileAPI file.API,
-	gitReconciler gitreconciler.API,
-	gitClient git.API,
-	e *stablev1.Environment,
-) error {
-	for _, ec := range e.Spec.Components {
-		tfDirectory := il.EnvironmentComponentTerraformDirectoryAbsolutePath(ilService.TFILTempDir, e.Spec.TeamName, e.Spec.EnvName, ec.Name)
-
-		log.WithFields(logrus.Fields{
-			"component": ec.Name,
-			"type":      ec.Type,
-		}).Info("Generating environment component")
-
-		if ec.Variables != nil {
-			log.WithFields(logrus.Fields{
-				"component": ec.Name,
-				"type":      ec.Type,
-			}).Info("Generating tfvars file")
-			fileName := fmt.Sprintf("%s.tfvars", ec.Name)
-			if err := gotfvars.SaveTfVarsToFile(fileAPI, ec.Variables, tfDirectory, fileName); err != nil {
-				return zerrors.NewEnvironmentComponentError(ec.Name, perrors.Wrap(err, "error saving tfvars to file"))
-			}
-		}
-
-		var tfvars string
-		if ec.VariablesFile != nil {
-			_tfvars, err := gotfvars.GetVariablesFromTfvarsFile(gitReconciler, gitClient, log, e, ec)
-			if err != nil {
-				return zerrors.NewEnvironmentComponentError(ec.Name, perrors.Wrap(err, "error reading variables from tfvars file"))
-			}
-
-			tfvars = _tfvars
-		}
-
-		vars := &terraformgenerator2.TemplateVariables{
-			TeamName:             e.Spec.TeamName,
-			EnvName:              e.Spec.EnvName,
-			EnvCompName:          ec.Name,
-			EnvCompModulePath:    ec.Module.Path,
-			EnvCompModuleSource:  ec.Module.Source,
-			EnvCompModuleName:    ec.Module.Name,
-			EnvCompModuleVersion: ec.Module.Version,
-			EnvCompOutputs:       ec.Outputs,
-			EnvCompDependsOn:     ec.DependsOn,
-			EnvCompVariablesFile: tfvars,
-			EnvCompVariables:     ec.Variables,
-			EnvCompSecrets:       ec.Secrets,
-			EnvCompAWSConfig:     ec.AWS,
-		}
-
-		// Deleting terraform folder so that it gets recreated so that any dangling files are cleaned up
-		if err := fileAPI.RemoveAll(tfDirectory); err != nil {
-			return zerrors.NewEnvironmentComponentError(ec.Name, perrors.Wrap(err, "error deleting existing terraform directory"))
-		}
-
-		if err := terraformgenerator2.GenerateTerraform(fileAPI, vars, tfDirectory); err != nil {
-			return zerrors.NewEnvironmentComponentError(ec.Name, perrors.Wrap(err, "error generating terraform"))
-		}
-
-		application := argocd2.GenerateEnvironmentComponentApps(e, ec)
-
-		ecDirectory := il.EnvironmentComponentsDirectoryAbsolutePath(ilService.ZLILTempDir, e.Spec.TeamName, e.Spec.EnvName)
-		if err := fileAPI.SaveYamlFile(*application, ecDirectory, fmt.Sprintf("%s.yaml", ec.Name)); err != nil {
-			return zerrors.NewEnvironmentComponentError(ec.Name, perrors.Wrap(err, "error saving yaml file"))
-		}
-
-		if err := overlay.GenerateOverlayFiles(log, fileAPI, gitClient, gitReconciler, e, ec, tfDirectory); err != nil {
-			return zerrors.NewEnvironmentComponentError(ec.Name, perrors.Wrap(err, "error generating overlay files"))
-		}
-	}
-
-	return nil
 }

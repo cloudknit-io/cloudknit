@@ -19,6 +19,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/compuzest/zlifecycle-il-operator/controllers/watcherservices"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/il"
 
@@ -67,6 +69,10 @@ var (
 
 // Reconcile method called everytime there is a change in Team Custom Resource.
 func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	if checkReconcileMode(r.LogV2) {
+		return ctrl.Result{}, nil
+	}
+
 	if !checkIsNamespaceWatched(req.NamespacedName.Namespace) {
 		r.LogV2.WithFields(logrus.Fields{
 			"object":           fmt.Sprintf("%s/%s", req.NamespacedName.Namespace, req.NamespacedName.Name),
@@ -124,7 +130,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		tx.AddAttribute("team", team.Spec.TeamName)
 		apmCtx = r.APM.NewContext(ctx, tx)
 		r.LogV2 = r.LogV2.WithField("team", team.Spec.TeamName).WithContext(apmCtx)
-		r.LogV2.WithField("name", txName).Info("Creating APM transaction")
+		r.LogV2.WithField("name", txName).Infof("Creating APM transaction for team %s", team.Spec.TeamName)
 		defer tx.End()
 	}
 
@@ -132,12 +138,12 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 
 	// services init
 	fileAPI := &file.OsFileService{}
-	watcherServices, err := newGitHubServices(apmCtx, r.Client, env.Config.GitHubCompanyOrganization, r.LogV2)
+	watcherServices, err := watcherservices.NewGitHubServices(apmCtx, r.Client, env.Config.GitHubCompanyOrganization, r.LogV2)
 	if err != nil {
 		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error instantiating watcher services"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
 	}
-	token, err := github.GenerateInstallationToken(r.LogV2, watcherServices.ilGitClient, env.Config.GitILRepositoryOwner)
+	token, err := github.GenerateInstallationToken(r.LogV2, watcherServices.ILGitClient, env.Config.GitILRepositoryOwner)
 	if err != nil {
 		teamErr := zerrors.NewTeamError(
 			team.Spec.TeamName, perrors.Wrapf(err, "error generating installation token for git organization [%s]", env.Config.GitILRepositoryOwner),
@@ -151,7 +157,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	}
 
 	// temp clone IL repo
-	tempILRepoDir, cleanup, err := git.CloneTemp(gitClient, env.Config.ILZLifecycleRepositoryURL)
+	tempILRepoDir, cleanup, err := git.CloneTemp(gitClient, env.Config.ILZLifecycleRepositoryURL, r.LogV2)
 	if err != nil {
 		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error running git temp clone"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
@@ -167,7 +173,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
 	}
 
-	if _, err := argocd.TryCreateProject(apmCtx, watcherServices.argocdClient, r.Log, team.Spec.TeamName, env.Config.GitHubCompanyOrganization); err != nil {
+	if _, err := argocd.TryCreateProject(apmCtx, watcherServices.ArgocdClient, r.Log, team.Spec.TeamName, env.Config.GitHubCompanyOrganization); err != nil {
 		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error trying to create argocd project"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
 	}
@@ -177,7 +183,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
 	}
 
-	if err := watcherServices.companyWatcher.Watch(teamRepoURL); err != nil {
+	if err := watcherServices.CompanyWatcher.Watch(teamRepoURL); err != nil {
 		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error registering argocd team repo via github app auth"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
 	}
@@ -205,18 +211,18 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
 	}
 	if pushed {
-		r.LogV2.Info("Committed new changes to IL repo")
+		r.LogV2.Infof("Committed new changes for team %s to IL repo", team.Spec.TeamName)
 	} else {
-		r.LogV2.Info("No git changes to commit, no-op reconciliation.")
+		r.LogV2.Infof("No git changes to commit for team %s, no-op reconciliation.", team.Spec.TeamName)
 	}
 
-	_, err = github.CreateRepoWebhook(r.LogV2, watcherServices.companyGitClient, teamRepoURL, env.Config.ArgocdWebhookURL, env.Config.GitHubWebhookSecret)
+	_, err = github.CreateRepoWebhook(r.LogV2, watcherServices.CompanyGitClient, teamRepoURL, env.Config.ArgocdWebhookURL, env.Config.GitHubWebhookSecret)
 	if err != nil {
 		r.LogV2.WithError(err).Error("error creating Team webhook")
 	}
 
 	duration := time.Since(start)
-	r.LogV2.WithField("duration", duration).Info("Reconcile finished")
+	r.LogV2.WithField("duration", duration).Infof("Reconcile finished for team %s", team.Spec.TeamName)
 	attrs := map[string]interface{}{
 		"duration": duration,
 		"team":     team.Spec.TeamName,
@@ -279,16 +285,4 @@ func delayTeamReconcileOnInitialRun(log *logrus.Entry, seconds int64) {
 		time.Sleep(time.Duration(seconds) * time.Second)
 		teamReconcileInitialRunLock.Store(false)
 	}
-}
-
-func generateAndSaveTeamApp(fileAPI file.API, team *stablev1.Team, filename string, ilRepoDir string) error {
-	teamApp := argocd.GenerateTeamApp(team)
-
-	return fileAPI.SaveYamlFile(*teamApp, il.TeamDirectoryAbsolutePath(ilRepoDir), filename)
-}
-
-func generateAndSaveConfigWatchers(fileAPI file.API, team *stablev1.Team, filename string, ilRepoDir string) error {
-	teamConfigWatcherApp := argocd.GenerateTeamConfigWatcherApp(team)
-
-	return fileAPI.SaveYamlFile(*teamConfigWatcherApp, il.ConfigWatcherDirectoryAbsolutePath(ilRepoDir), filename)
 }

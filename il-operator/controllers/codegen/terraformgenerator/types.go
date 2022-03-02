@@ -113,3 +113,21 @@ type TemplateVariables struct {
 	EnvCompDependsOn     []string
 	EnvCompAWSConfig     *stablev1.AWS
 }
+
+func NewTemplateVariables(e *stablev1.Environment, ec *stablev1.EnvironmentComponent, tfvars string) *TemplateVariables {
+	return &TemplateVariables{
+		TeamName:             e.Spec.TeamName,
+		EnvName:              e.Spec.EnvName,
+		EnvCompName:          ec.Name,
+		EnvCompModulePath:    ec.Module.Path,
+		EnvCompModuleSource:  ec.Module.Source,
+		EnvCompModuleName:    ec.Module.Name,
+		EnvCompModuleVersion: ec.Module.Version,
+		EnvCompOutputs:       ec.Outputs,
+		EnvCompDependsOn:     ec.DependsOn,
+		EnvCompVariablesFile: tfvars,
+		EnvCompVariables:     ec.Variables,
+		EnvCompSecrets:       ec.Secrets,
+		EnvCompAWSConfig:     ec.AWS,
+	}
+}

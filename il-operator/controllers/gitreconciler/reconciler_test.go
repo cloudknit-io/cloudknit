@@ -29,7 +29,8 @@ func TestReconciler_Subscribe(t *testing.T) {
 	repository2 := "test2"
 	repoURL2 := fmt.Sprintf("git@github.com:%s/%s", owner, repository2)
 
-	r := gitreconciler.NewReconciler(ctx, logrus.New().WithField("name", "TestLogger"), mockClient)
+	r, err := gitreconciler.NewReconciler(ctx, logrus.New().WithField("name", "TestLogger"), mockClient)
+	assert.NoError(t, err)
 
 	testSubscriber1 := client.ObjectKey{Name: "test", Namespace: "test"}
 	result := r.Subscribe(repoURL1, testSubscriber1)
@@ -61,7 +62,8 @@ func TestReconciler_UnsubscribeAll(t *testing.T) {
 	repository1 := "test1"
 	repoURL1 := fmt.Sprintf("git@github.com:%s/%s", owner, repository1)
 
-	r := gitreconciler.NewReconciler(ctx, logrus.New().WithField("name", "TestLogger"), mockClient)
+	r, err := gitreconciler.NewReconciler(ctx, logrus.New().WithField("name", "TestLogger"), mockClient)
+	assert.NoError(t, err)
 
 	testSubscriber1 := client.ObjectKey{Name: "test", Namespace: "test"}
 	result := r.Subscribe(repoURL1, testSubscriber1)
@@ -71,7 +73,7 @@ func TestReconciler_UnsubscribeAll(t *testing.T) {
 	result = r.Subscribe(repoURL1, testSubscriber2)
 	assert.False(t, result)
 
-	err := r.UnsubscribeAll(testSubscriber1)
+	err = r.UnsubscribeAll(testSubscriber1)
 	assert.NoError(t, err)
 
 	repos := r.Repositories()

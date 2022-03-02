@@ -100,7 +100,7 @@ func GenerateTerraform(
 		Alias:   env.Config.TerraformDefaultSharedAWSAlias,
 	}
 
-	secretsMeta := secrets.SecretMeta{
+	secretsMeta := secrets.Meta{
 		Company:              env.Config.CompanyName,
 		Team:                 vars.TeamName,
 		Environment:          vars.EnvName,

@@ -5,14 +5,14 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/secrets"
 )
 
-func createSecretsConfig(secretArray []*stablev1.Secret, meta secrets.SecretMeta) (*TerraformSecretsConfig, error) {
+func createSecretsConfig(secretArray []*stablev1.Secret, meta secrets.Meta) (*TerraformSecretsConfig, error) {
 	scopedSecrets := make([]Secret, 0, len(secretArray))
 	for _, s := range secretArray {
 		scope := s.Scope
 		if scope == "" {
 			scope = "component"
 		}
-		key, err := secrets.CreateKey(s.Key, scope, meta)
+		key, err := secrets.CreateKey(s.Key, scope, &meta)
 		if err != nil {
 			return nil, err
 		}
