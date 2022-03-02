@@ -29,7 +29,7 @@ ARG GITHUB_TOKEN
 RUN apk add --update --no-cache curl jq bash openssl python3 py3-pip py3-setuptools libc6-compat unzip
 RUN python3 -m pip --no-cache-dir install --upgrade awscli
 
-RUN curl -sL https://github.com/infracost/infracost/releases/download/v0.9.15/infracost-linux-amd64.tar.gz | tar xz -C /tmp && \
+RUN curl -sL https://github.com/infracost/infracost/releases/download/v0.9.19/infracost-linux-amd64.tar.gz | tar xz -C /tmp && \
     mv /tmp/infracost-linux-amd64 /usr/local/bin/infracost && \
     mkdir ~/.config && \
     mkdir ~/.config/infracost/
@@ -69,5 +69,10 @@ RUN ./helpers/gh_download.sh -v $ZLI_TAG -f zlifecycle-internal-cli_${ZLI_TAG#v}
     zlifecycle-internal-cli -h && \
     rm /tmp/cli.zip && \
     rm /tmp/zlifecycle-internal-cli
+
+# Adding gitlab.com to known_hosts to avoid "Host key verification failed." error
+RUN mkdir ~/.ssh && \
+    touch ~/.ssh/known_hosts && \
+    sh-keyscan -t rsa gitlab.com >> ~/.ssh/known_hosts
 
 ENTRYPOINT ["sh"]
