@@ -69,7 +69,7 @@ var (
 
 // Reconcile method called everytime there is a change in Team Custom Resource.
 func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	if checkReconcileMode(r.LogV2) {
+	if shouldEndReconcile("team", r.LogV2) {
 		return ctrl.Result{}, nil
 	}
 

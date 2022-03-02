@@ -56,7 +56,7 @@ type CompanyReconciler struct {
 // +kubebuilder:rbac:groups=stable.compuzest.com,resources=companies/status,verbs=get;update;patch
 
 func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	if checkReconcileMode(r.LogV2) {
+	if shouldEndReconcile("company", r.LogV2) {
 		return ctrl.Result{}, nil
 	}
 
