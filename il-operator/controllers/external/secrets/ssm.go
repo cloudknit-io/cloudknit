@@ -18,11 +18,54 @@ const (
 )
 
 type SSM struct {
-	ctx    context.Context
-	client *ssm.Client
+	ctx       context.Context
+	k8sClient kClient.Client
+	ssmClient *ssm.Client
+}
+
+func LazyLoadSSM(ctx context.Context, client kClient.Client) *SSM {
+	return &SSM{
+		ctx:       ctx,
+		k8sClient: client,
+	}
 }
 
 func NewSSM(ctx context.Context, client kClient.Client) (*SSM, error) {
+	creds, err := getCreds(ctx, client)
+	if err != nil {
+		return nil, errors.Wrap(err, "error getting AWS creds from shared aws creds secret")
+	}
+
+	p := credentials.NewStaticCredentialsProvider(creds.AccessKeyID, creds.SecretAccessKey, creds.SessionToken)
+	cfg, err := config.LoadDefaultConfig(ctx, config.WithCredentialsProvider(p))
+	if err != nil {
+		return nil, errors.Wrap(err, "error loading default aws config using static credentials provider")
+	}
+
+	return &SSM{
+		ctx:       ctx,
+		k8sClient: client,
+		ssmClient: ssm.NewFromConfig(cfg),
+	}, nil
+}
+
+func (s *SSM) init() error {
+	creds, err := getCreds(s.ctx, s.k8sClient)
+	if err != nil {
+		return errors.Wrap(err, "error getting AWS creds from shared aws creds secret")
+	}
+
+	p := credentials.NewStaticCredentialsProvider(creds.AccessKeyID, creds.SecretAccessKey, creds.SessionToken)
+	cfg, err := config.LoadDefaultConfig(s.ctx, config.WithCredentialsProvider(p))
+	if err != nil {
+		return errors.Wrap(err, "error loading default aws config using static credentials provider")
+	}
+
+	s.ssmClient = ssm.NewFromConfig(cfg)
+	return nil
+}
+
+func getCreds(ctx context.Context, client kClient.Client) (*AWSCreds, error) {
 	var credsSecret v1.Secret
 	key := kClient.ObjectKey{Name: env.Config.SharedAWSCredsSecret, Namespace: env.ExecutorNamespace()}
 	if err := client.Get(ctx, key, &credsSecret); err != nil {
@@ -32,40 +75,46 @@ func NewSSM(ctx context.Context, client kClient.Client) (*SSM, error) {
 	accessKeyID := string(credsSecret.Data[keyAWSAccessKeyID])
 	secretAccessKey := string(credsSecret.Data[keyAWSSecretAccessKey])
 
-	p := credentials.NewStaticCredentialsProvider(accessKeyID, secretAccessKey, "")
-	cfg, err := config.LoadDefaultConfig(ctx, config.WithCredentialsProvider(p))
-	if err != nil {
-		return nil, errors.Wrap(err, "error loading default aws config")
+	if accessKeyID == "" || secretAccessKey == "" {
+		return nil, errors.New("missing AWS Access Key ID and/or AWS Secret Access key in shared aws secret")
 	}
-	ssmClient := ssm.NewFromConfig(cfg)
 
-	return &SSM{
-		ctx:    ctx,
-		client: ssmClient,
-	}, nil
+	return &AWSCreds{AccessKeyID: accessKeyID, SecretAccessKey: secretAccessKey}, nil
 }
 
 func (s *SSM) GetSecret(key string) (*Secret, error) {
+	if s.ssmClient == nil {
+		if err := s.init(); err != nil {
+			return nil, errors.Wrap(err, "error initializing ssm client")
+		}
+	}
+
 	input := ssm.GetParameterInput{
 		Name:           &key,
 		WithDecryption: true,
 	}
-	output, err := s.client.GetParameter(s.ctx, &input)
+	output, err := s.ssmClient.GetParameter(s.ctx, &input)
 	if err != nil {
-		return nil, errors.Wrapf(err, "error getting parameter %s from SSM", key)
+		return nil, errors.Wrapf(err, "error getting parameter %s from ssm", key)
 	}
 
 	return &Secret{Value: output.Parameter.Value, Key: *output.Parameter.Name, Exists: output.Parameter.Value != nil}, nil
 }
 
 func (s *SSM) GetSecrets(keys ...string) ([]*Secret, error) {
+	if s.ssmClient == nil {
+		if err := s.init(); err != nil {
+			return nil, errors.Wrap(err, "error initializing ssm client")
+		}
+	}
+
 	input := ssm.GetParametersInput{
 		Names:          keys,
 		WithDecryption: true,
 	}
-	output, err := s.client.GetParameters(s.ctx, &input)
+	output, err := s.ssmClient.GetParameters(s.ctx, &input)
 	if err != nil {
-		return nil, errors.Wrapf(err, "error getting parameters %s from SSM", keys)
+		return nil, errors.Wrapf(err, "error getting parameters %s from ssm", keys)
 	}
 
 	secrets := make([]*Secret, 0, len(keys))
