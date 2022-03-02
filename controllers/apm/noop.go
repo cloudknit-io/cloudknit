@@ -15,7 +15,7 @@ func NewNoop() *Noop {
 }
 
 func (n *Noop) NoticeError(tx *nr.Transaction, log *logrus.Entry, err zerrors.ZError) error {
-	log.WithError(err).Errorf("error during reconcile\nstack trace:%+v", deepestStackTrace(err.OriginalError()))
+	log.WithError(err).Errorf("error during reconcile\nerror: %s\nstack trace:%+v", err.Error(), deepestStackTrace(err.OriginalError()))
 	return err
 }
 

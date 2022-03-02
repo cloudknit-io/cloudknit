@@ -15,11 +15,11 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/log"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/apm"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/gitreconciler"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/log"
 	"github.com/newrelic/go-agent/v3/integrations/logcontext/nrlogrusplugin"
 	"github.com/sirupsen/logrus"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
@@ -90,11 +90,14 @@ func main() {
 	ctx := context.Background()
 
 	// Git reconciler
-	gitReconciler := gitreconciler.NewReconciler(
+	gitReconciler, err := gitreconciler.NewReconciler(
 		ctx,
 		log.NewLogger().WithFields(logrus.Fields{"logger": "GitReconciler", "instance": env.Config.CompanyName, "company": env.Config.CompanyName}),
 		mgr.GetClient(),
 	)
+	if err != nil {
+		setupLog.WithError(err).Panic(err, "failed to instantiate")
+	}
 	if err := gitReconciler.Start(); err != nil {
 		setupLog.WithError(err).Error(err, "failed to start git reconciler")
 	}
@@ -138,9 +141,13 @@ func main() {
 
 	// environment controller init
 	if err = (&controllers.EnvironmentReconciler{
-		Client:        mgr.GetClient(),
-		Log:           ctrl.Log.WithName("controllers").WithName("Environment"),
-		LogV2:         log.NewLogger().WithFields(logrus.Fields{"logger": "controller.Environment", "instance": env.Config.CompanyName, "company": env.Config.CompanyName}),
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("Environment"),
+		LogV2: log.NewLogger().WithFields(
+			logrus.Fields{
+				"logger": "controller.Environment", "instance": env.Config.CompanyName, "company": env.Config.CompanyName,
+			},
+		),
 		Scheme:        mgr.GetScheme(),
 		APM:           _apm,
 		GitReconciler: gitReconciler,
@@ -167,9 +174,13 @@ func getWatchedNamespaces() []string {
 	namespaces := make([]string, 0, 2)
 	systemNamespace := env.SystemNamespace()
 	configNamespace := env.ConfigNamespace()
+	executorNamespace := env.ExecutorNamespace()
 	namespaces = append(namespaces, systemNamespace)
 	if systemNamespace != configNamespace {
 		namespaces = append(namespaces, configNamespace)
+	}
+	if systemNamespace != executorNamespace {
+		namespaces = append(namespaces, executorNamespace)
 	}
 	return namespaces
 }

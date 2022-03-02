@@ -22,14 +22,14 @@ func GenerateOverlayFiles(
 	fileAPI file.API,
 	gitClient git.API,
 	gitReconciler gitreconciler.API,
-	e *stablev1.Environment,
+	key *client.ObjectKey,
 	ec *stablev1.EnvironmentComponent,
 	destinationFolder string,
 ) error {
 	// generate overlay files from config repo
 	for _, overlay := range ec.OverlayFiles {
 		if err := func() error {
-			tempDir, cleanup, err := git.CloneTemp(gitClient, overlay.Source)
+			tempDir, cleanup, err := git.CloneTemp(gitClient, overlay.Source, log)
 			defer cleanup()
 			if err != nil {
 				return err
@@ -41,7 +41,7 @@ func GenerateOverlayFiles(
 					"source":      path,
 					"destination": destinationFolder,
 					"component":   ec.Name,
-				}).Info("Generating overlay file")
+				}).Infof("Generating overlay file(s) for environment component %s", ec.Name)
 				absolutePath := filepath.Join(tempDir, path)
 				if util.IsDir(absolutePath) {
 					if err := util.CopyDirContent(absolutePath, destinationFolder); err != nil {
@@ -52,22 +52,7 @@ func GenerateOverlayFiles(
 						return err
 					}
 				}
-
-				// submit repo to git reconciler
-				log.WithFields(logrus.Fields{
-					"component":  ec.Name,
-					"type":       ec.Type,
-					"repository": overlay.Source,
-				}).Info("Subscribing to config repository in git reconciler")
-				envKey := client.ObjectKey{Name: e.Name, Namespace: e.Namespace}
-				subscribed := gitReconciler.Subscribe(overlay.Source, envKey)
-				if subscribed {
-					log.WithFields(logrus.Fields{
-						"component":  ec.Name,
-						"type":       ec.Type,
-						"repository": overlay.Source,
-					}).Info("Already subscribed in git reconciler to repository")
-				}
+				submitToGitReconciler(gitReconciler, key, ec, log)
 			}
 
 			return nil
@@ -81,11 +66,27 @@ func GenerateOverlayFiles(
 			"overlay":     overlay.Name,
 			"destination": destinationFolder,
 			"component":   ec.Name,
-		}).Info("Generating overlay file from data field")
+		}).Infof("Generating overlay file from data field for environment component %s", ec.Name)
 		if err := fileAPI.SaveFileFromString(overlay.Data, destinationFolder, overlay.Name); err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+func submitToGitReconciler(gitReconciler gitreconciler.API, key *client.ObjectKey, ec *stablev1.EnvironmentComponent, log *logrus.Entry) {
+	log.WithFields(logrus.Fields{
+		"component":  ec.Name,
+		"type":       ec.Type,
+		"repository": ec.Module.Source,
+	}).Infof("Subscribing to config repository %s in git reconciler", ec.Module.Source)
+	subscribed := gitReconciler.Subscribe(ec.Module.Source, *key)
+	if subscribed {
+		log.WithFields(logrus.Fields{
+			"component":  ec.Name,
+			"type":       ec.Type,
+			"repository": ec.Module.Source,
+		}).Info("Already subscribed in git reconciler to repository")
+	}
 }

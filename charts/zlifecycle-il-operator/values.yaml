@@ -64,5 +64,12 @@ company:
     companyFolder: "company"
     configWatcherFolder: "config-watcher"
 
+aws:
+  config:
+    region: us-east-1
+
+test:
+  reconcile: normal
+
 telemetry:
   environment: dev

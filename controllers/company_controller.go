@@ -18,9 +18,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/file"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/il"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/watcherservices"
 
+	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/argocd"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/git"
@@ -56,6 +56,10 @@ type CompanyReconciler struct {
 // +kubebuilder:rbac:groups=stable.compuzest.com,resources=companies/status,verbs=get;update;patch
 
 func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	if checkReconcileMode(r.LogV2) {
+		return ctrl.Result{}, nil
+	}
+
 	if !checkIsNamespaceWatched(req.NamespacedName.Namespace) {
 		r.LogV2.WithFields(logrus.Fields{
 			"object":           fmt.Sprintf("%s/%s", req.NamespacedName.Namespace, req.NamespacedName.Name),
@@ -100,17 +104,17 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	if tx != nil {
 		tx.AddAttribute("company", company.Spec.CompanyName)
 		apmCtx = r.APM.NewContext(ctx, tx)
-		r.LogV2.WithField("name", txName).Info("Creating APM transaction")
+		r.LogV2.WithField("name", txName).Infof("Creating APM transaction for company %s", company.Spec.CompanyName)
 		defer tx.End()
 	}
 
+	// vars
 	companyRepoURL := company.Spec.ConfigRepo.Source
 	ilZLRepoURL := env.Config.ILZLifecycleRepositoryURL
 
 	// services init
 	fileAPI := file.NewOsFileService()
-
-	watcherServices, err := newGitHubServices(apmCtx, r.Client, env.Config.GitHubCompanyOrganization, r.LogV2)
+	watcherServices, err := watcherservices.NewGitHubServices(apmCtx, r.Client, env.Config.GitHubCompanyOrganization, r.LogV2)
 	if err != nil {
 		companyErr := zerrors.NewCompanyError(
 			company.Spec.CompanyName,
@@ -118,7 +122,7 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		)
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
 	}
-	token, err := github.GenerateInstallationToken(r.LogV2, watcherServices.ilGitClient, env.Config.GitILRepositoryOwner)
+	token, err := github.GenerateInstallationToken(r.LogV2, watcherServices.ILGitClient, env.Config.GitILRepositoryOwner)
 	if err != nil {
 		companyErr := zerrors.NewCompanyError(
 			company.Spec.CompanyName,
@@ -146,7 +150,7 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	// temp clone IL repo
-	tempILRepoDir, cleanup, err := git.CloneTemp(gitClient, ilZLRepoURL)
+	tempILRepoDir, cleanup, err := git.CloneTemp(gitClient, ilZLRepoURL, r.LogV2)
 	if err != nil {
 		companyErr := zerrors.NewCompanyError(company.Spec.CompanyName, perrors.Wrapf(err, "error cloning temp dir for repo [%s]", env.Config.GitILRepositoryOwner))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
@@ -155,7 +159,7 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	// reconcile logic
 
-	if err := watcherServices.companyWatcher.Watch(companyRepoURL); err != nil {
+	if err := watcherServices.CompanyWatcher.Watch(companyRepoURL); err != nil {
 		companyErr := zerrors.NewCompanyError(company.Spec.CompanyName, perrors.Wrap(err, "error registering company config repo in argocd using github app auth"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
 	}
@@ -170,7 +174,7 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
 	}
 
-	if err := watcherServices.ilWatcher.Watch(ilZLRepoURL); err != nil {
+	if err := watcherServices.ILWatcher.Watch(ilZLRepoURL); err != nil {
 		companyErr := zerrors.NewCompanyError(company.Spec.CompanyName, perrors.Wrap(err, "error registering company IL repo in argocd"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
 	}
@@ -186,35 +190,35 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
 	}
 	if pushed {
-		r.LogV2.Info("Committed new changes to IL repo")
+		r.LogV2.Infof("Committed new changes for company %s to IL repo", company.Spec.CompanyName)
 	} else {
-		r.LogV2.Info("No git changes to commit, no-op reconciliation.")
+		r.LogV2.Infof("No git changes to commit for company %s, no-op reconciliation.", company.Spec.CompanyName)
 	}
 
-	if err := argocd.TryCreateBootstrapApps(apmCtx, watcherServices.argocdClient, r.Log); err != nil {
+	if err := argocd.TryCreateBootstrapApps(apmCtx, watcherServices.ArgocdClient, r.Log); err != nil {
 		companyErr := zerrors.NewCompanyError(company.Spec.CompanyName, perrors.Wrap(err, "error creating company bootstrap argocd app"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
 	}
 
 	// try create a webhook, it will fail if git service account does not have permissions to create it
-	_, err = github.CreateRepoWebhook(r.LogV2, watcherServices.companyGitClient, companyRepoURL, env.Config.ArgocdWebhookURL, env.Config.GitHubWebhookSecret)
+	_, err = github.CreateRepoWebhook(r.LogV2, watcherServices.CompanyGitClient, companyRepoURL, env.Config.ArgocdWebhookURL, env.Config.GitHubWebhookSecret)
 	if err != nil {
 		r.LogV2.WithError(err).Error("error creating Company webhook")
 	}
 
 	duration := time.Since(start)
-	r.LogV2.WithField("duration", duration).Info("Reconcile finished")
+	r.LogV2.WithField("duration", duration).Infof("Reconcile finished for company %s", company.Spec.CompanyName)
 
 	return ctrl.Result{}, nil
 }
 
-func (r *CompanyReconciler) initCompany(ctx context.Context, services *WatcherServices) error {
+func (r *CompanyReconciler) initCompany(ctx context.Context, services *watcherservices.WatcherServices) error {
 	r.LogV2.Info("Running company operator init")
 
 	r.LogV2.Info("Creating webhook for IL repo")
 	if _, err := github.CreateRepoWebhook(
 		r.LogV2,
-		services.ilGitClient,
+		services.ILGitClient,
 		env.Config.ILZLifecycleRepositoryURL,
 		env.Config.ArgocdWebhookURL,
 		env.Config.GitHubWebhookSecret,
@@ -223,7 +227,7 @@ func (r *CompanyReconciler) initCompany(ctx context.Context, services *WatcherSe
 	}
 	if _, err := github.CreateRepoWebhook(
 		r.LogV2,
-		services.ilGitClient,
+		services.ILGitClient,
 		env.Config.ILTerraformRepositoryURL,
 		env.Config.ArgocdWebhookURL,
 		env.Config.GitHubWebhookSecret,
@@ -234,30 +238,18 @@ func (r *CompanyReconciler) initCompany(ctx context.Context, services *WatcherSe
 	r.LogV2.Info("Updating default argocd cluster namespaces")
 	if err := argocd.UpdateDefaultClusterNamespaces(
 		r.Log,
-		services.argocdClient,
-		[]string{env.ArgocdNamespace(), env.ConfigNamespace(), env.WorkflowsNamespace()},
+		services.ArgocdClient,
+		[]string{env.ArgocdNamespace(), env.ConfigNamespace(), env.ExecutorNamespace()},
 	); err != nil {
 		r.LogV2.Fatalf("error updating argocd cluster namespaces: %v", err)
 	}
 
 	r.LogV2.Info("Registering helm chart repo")
-	return services.internalWatcher.Watch(env.Config.GitHelmChartsRepository)
+	return services.InternalWatcher.Watch(env.Config.GitHelmChartsRepository)
 }
 
 func (r *CompanyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&stablev1.Company{}).
 		Complete(r)
-}
-
-func generateAndSaveCompanyApp(fileAPI file.API, company *stablev1.Company, ilRepoDir string) error {
-	companyApp := argocd.GenerateCompanyApp(company)
-
-	return fileAPI.SaveYamlFile(*companyApp, il.CompanyDirectoryAbsolutePath(ilRepoDir), company.Spec.CompanyName+".yaml")
-}
-
-func generateAndSaveCompanyConfigWatcher(fileAPI file.API, company *stablev1.Company, ilRepoDir string) error {
-	companyConfigWatcherApp := argocd.GenerateCompanyConfigWatcherApp(company.Spec.CompanyName, company.Spec.ConfigRepo.Source)
-
-	return fileAPI.SaveYamlFile(*companyConfigWatcherApp, il.ConfigWatcherDirectoryAbsolutePath(ilRepoDir), company.Spec.CompanyName+".yaml")
 }

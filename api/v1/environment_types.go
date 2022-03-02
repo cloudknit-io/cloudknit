@@ -17,12 +17,16 @@ import (
 )
 
 type EnvironmentComponent struct {
-	Name         string   `json:"name"`
-	Type         string   `json:"type"`
-	CronSchedule string   `json:"cronSchedule,omitempty"`
-	DependsOn    []string `json:"dependsOn,omitempty"`
-	Module       *Module  `json:"module"`
-	Tags         []*Tags  `json:"tags,omitempty"`
+	Name      string   `json:"name"`
+	Type      string   `json:"type"`
+	Module    *Module  `json:"module"`
+	DependsOn []string `json:"dependsOn,omitempty"`
+	Tags      []*Tags  `json:"tags,omitempty"`
+
+	// argocd
+
+	// IaC settings
+	CronSchedule string `json:"cronSchedule,omitempty"`
 
 	AWS *AWS `json:"aws,omitempty"`
 

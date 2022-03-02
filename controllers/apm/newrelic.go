@@ -49,7 +49,7 @@ func (a *NewRelic) NoticeError(tx *nr.Transaction, log *logrus.Entry, err zerror
 			Stack:      st,
 		})
 	}
-	log.WithError(err).Errorf("error during reconcile\nstack trace:%+v", deepestStackTrace(err.OriginalError()))
+	log.WithError(err).Errorf("error during reconcile\nerror: %s\nstack trace:%+v", err.Error(), deepestStackTrace(err.OriginalError()))
 
 	return err
 }
