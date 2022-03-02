@@ -85,6 +85,7 @@ type config struct {
 
 	// test
 	ReconcileMode string
+	SkipReconcile string
 }
 
 // Config exposes vars used throughout the operator.
@@ -181,6 +182,7 @@ var Config = config{
 
 	// test
 	ReconcileMode: getOr("RECONCILE_MODE", "normal"),
+	SkipReconcile: getOr("SKIP_RECONCILE", ""),
 }
 
 func CompanyName() string {

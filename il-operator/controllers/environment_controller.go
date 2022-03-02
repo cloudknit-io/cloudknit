@@ -73,7 +73,7 @@ var environmentInitialRunLock = atomic.NewBool(true)
 
 // Reconcile method called everytime there is a change in Environment Custom Resource.
 func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	if checkReconcileMode(r.LogV2) {
+	if shouldEndReconcile("environment", r.LogV2) {
 		return ctrl.Result{}, nil
 	}
 
