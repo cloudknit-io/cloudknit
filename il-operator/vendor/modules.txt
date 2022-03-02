@@ -81,7 +81,7 @@ github.com/argoproj/pkg/exec
 github.com/argoproj/pkg/rand
 github.com/argoproj/pkg/sync
 github.com/argoproj/pkg/time
-# github.com/aws/aws-sdk-go v1.43.7
+# github.com/aws/aws-sdk-go v1.43.9
 ## explicit; go 1.11
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/arn

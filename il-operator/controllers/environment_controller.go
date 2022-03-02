@@ -245,7 +245,7 @@ func (r *EnvironmentReconciler) doReconcile(
 	}
 	if !isHardDelete {
 		if err := r.handleNonDeleteEvent(ilService, environment, fileService, gitClient, k8sClient, argocdClient); err != nil {
-			return nil
+			return perrors.Wrapf(err, "error handling non-delete event for environment %s", environment.Spec.EnvName)
 		}
 	}
 

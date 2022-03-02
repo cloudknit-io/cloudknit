@@ -93,7 +93,7 @@ func generateAndSaveEnvironmentComponents(
 		switch ec.Type {
 		case "terraform":
 			if err := generateTerraformComponent(gitReconciler, ilService, gitClient, fileAPI, e, ec, &gitReconcilerKey, log); err != nil {
-				return zerrors.NewEnvironmentComponentError(ec.Name, perrors.Wrap(err, "error generating terraform"))
+				return zerrors.NewEnvironmentComponentError(ec.Name, perrors.Wrap(err, "error generating component terraform"))
 			}
 		case "argocd":
 			if err := generateAppsComponent(
@@ -108,7 +108,7 @@ func generateAndSaveEnvironmentComponents(
 				&gitReconcilerKey,
 				log,
 			); err != nil {
-				return zerrors.NewEnvironmentComponentError(ec.Name, perrors.Wrap(err, "error generating apps"))
+				return zerrors.NewEnvironmentComponentError(ec.Name, perrors.Wrap(err, "error generating component apps"))
 			}
 		default:
 			return perrors.Errorf("invalid environment component type: %s", ec.Type)

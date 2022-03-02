@@ -5,6 +5,7 @@ go 1.17
 require (
 	github.com/argoproj/argo-cd/v2 v2.0.5
 	github.com/argoproj/argo-workflows/v3 v3.1.6
+	github.com/aws/aws-sdk-go v1.43.9
 	github.com/aws/aws-sdk-go-v2 v1.14.0
 	github.com/aws/aws-sdk-go-v2/config v1.14.0
 	github.com/aws/aws-sdk-go-v2/credentials v1.9.0
@@ -47,7 +48,6 @@ require (
 	github.com/acomagu/bufpipe v1.0.3 // indirect
 	github.com/argoproj/gitops-engine v0.3.3 // indirect
 	github.com/argoproj/pkg v0.10.1 // indirect
-	github.com/aws/aws-sdk-go v1.43.7 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.11.0 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.5 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.3.0 // indirect
