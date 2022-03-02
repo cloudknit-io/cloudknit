@@ -113,3 +113,7 @@ func RewriteGitURLToSSH(repoURL string) string {
 	}
 	return transformed
 }
+
+func IsGitLabURL(repoURL string) bool {
+	return strings.Contains(repoURL, "gitlab.com")
+}

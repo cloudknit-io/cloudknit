@@ -15,6 +15,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
 	"strings"
 	"sync"
 	"time"
@@ -216,9 +217,11 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		r.LogV2.Infof("No git changes to commit for team %s, no-op reconciliation.", team.Spec.TeamName)
 	}
 
-	_, err = github.CreateRepoWebhook(r.LogV2, watcherServices.CompanyGitClient, teamRepoURL, env.Config.ArgocdWebhookURL, env.Config.GitHubWebhookSecret)
-	if err != nil {
-		r.LogV2.WithError(err).Error("error creating Team webhook")
+	if !util.IsGitLabURL(teamRepoURL) {
+		_, err = github.CreateRepoWebhook(r.LogV2, watcherServices.CompanyGitClient, teamRepoURL, env.Config.ArgocdWebhookURL, env.Config.GitHubWebhookSecret)
+		if err != nil {
+			r.LogV2.WithError(err).Error("error creating Team webhook")
+		}
 	}
 
 	duration := time.Since(start)
