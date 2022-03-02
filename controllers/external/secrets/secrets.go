@@ -14,13 +14,21 @@ const (
 )
 
 func GetAWSCreds(client API, meta *secrets.Meta, log *logrus.Entry) (*AWSCreds, error) {
-	log.Info("Checking for AWS creds in company scope")
-	scrts, err := client.GetSecrets(getCompanyScopeSecrets(meta.Company, secretNameAccessKeyID, secretNameSecretAccessKey)...)
+	log.Info("Checking for AWS creds in environment scope")
+	scrts, err := client.GetSecrets(
+		getEnvironmentScopeSecrets(
+			meta.Company,
+			meta.Team,
+			meta.Environment,
+			secretNameAccessKeyID,
+			secretNameSecretAccessKey,
+		)...,
+	)
 	if err != nil {
-		return nil, errors.Wrap(err, "error getting AWS creds from company scope secrets")
+		return nil, errors.Wrap(err, "error getting AWS creds from team scope secrets")
 	}
 	if creds, exist := checkForCreds(scrts); exist {
-		log.Info("AWS creds found in company scope")
+		log.Info("AWS creds found in environment scope")
 		return creds, nil
 	}
 
@@ -41,21 +49,13 @@ func GetAWSCreds(client API, meta *secrets.Meta, log *logrus.Entry) (*AWSCreds, 
 		return creds, nil
 	}
 
-	log.Info("Checking for AWS creds in environment scope")
-	scrts, err = client.GetSecrets(
-		getEnvironmentScopeSecrets(
-			meta.Company,
-			meta.Team,
-			meta.Environment,
-			secretNameAccessKeyID,
-			secretNameSecretAccessKey,
-		)...,
-	)
+	log.Info("Checking for AWS creds in company scope")
+	scrts, err = client.GetSecrets(getCompanyScopeSecrets(meta.Company, secretNameAccessKeyID, secretNameSecretAccessKey)...)
 	if err != nil {
-		return nil, errors.Wrap(err, "error getting AWS creds from team scope secrets")
+		return nil, errors.Wrap(err, "error getting AWS creds from company scope secrets")
 	}
 	if creds, exist := checkForCreds(scrts); exist {
-		log.Info("AWS creds found in environment scope")
+		log.Info("AWS creds found in company scope")
 		return creds, nil
 	}
 

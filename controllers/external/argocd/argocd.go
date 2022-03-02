@@ -269,7 +269,7 @@ func RegisterNewCluster(k8sClient k8s.API, argocdClient API, cluster string, log
 		}
 	}
 
-	log.Infof("K8s cluster %s exist and needs to be registered it", cluster)
+	log.Infof("K8s cluster %s exist and needs to be registered", cluster)
 
 	log.Infof("Registering k8s cluster %s in ArgoCD", cluster)
 	server := strings.ToLower(strings.TrimPrefix(info.Endpoint, "https://"))

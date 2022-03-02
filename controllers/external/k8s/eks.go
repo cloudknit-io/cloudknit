@@ -3,14 +3,17 @@ package k8s
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go-v2/credentials"
+	credentialsv2 "github.com/aws/aws-sdk-go-v2/credentials"
+	awsv1 "github.com/aws/aws-sdk-go/aws"
+	credentialsv1 "github.com/aws/aws-sdk-go/aws/credentials"
+	sessionv1 "github.com/aws/aws-sdk-go/aws/session"
 	secrets2 "github.com/compuzest/zlifecycle-il-operator/controllers/codegen/secrets"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/secrets"
 	"github.com/sirupsen/logrus"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/service/eks"
+	awsv2 "github.com/aws/aws-sdk-go-v2/aws"
+	configv2 "github.com/aws/aws-sdk-go-v2/config"
+	eksv2 "github.com/aws/aws-sdk-go-v2/service/eks"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/aws-iam-authenticator/pkg/token"
 )
@@ -18,9 +21,10 @@ import (
 type EKS struct {
 	ctx          context.Context
 	secretClient secrets.API
-	eksClient    *eks.Client
+	eksClient    *eksv2.Client
 	secretMeta   *secrets2.Meta
 	creds        *secrets.AWSCreds
+	cfg          *awsv2.Config
 	log          *logrus.Entry
 }
 
@@ -39,16 +43,17 @@ func NewEKS(ctx context.Context, secretClient secrets.API, secretMeta *secrets2.
 		return nil, errors.Wrapf(err, "error fetching AWS creds for eks")
 	}
 
-	p := credentials.NewStaticCredentialsProvider(creds.AccessKeyID, creds.SecretAccessKey, creds.SessionToken)
-	cfg, err := config.LoadDefaultConfig(ctx, config.WithCredentialsProvider(p))
+	p := credentialsv2.NewStaticCredentialsProvider(creds.AccessKeyID, creds.SecretAccessKey, creds.SessionToken)
+	cfg, err := configv2.LoadDefaultConfig(ctx, configv2.WithCredentialsProvider(p))
 	if err != nil {
 		return nil, errors.Wrap(err, "error loading config with static credentials provider")
 	}
 
 	return &EKS{
 		ctx:        ctx,
-		eksClient:  eks.NewFromConfig(cfg),
+		eksClient:  eksv2.NewFromConfig(cfg),
 		creds:      creds,
+		cfg:        &cfg,
 		secretMeta: secretMeta,
 		log:        log,
 	}, nil
@@ -60,13 +65,15 @@ func (e *EKS) init() error {
 		return errors.Wrapf(err, "error fetching AWS creds for eks")
 	}
 
-	p := credentials.NewStaticCredentialsProvider(creds.AccessKeyID, creds.SecretAccessKey, creds.SessionToken)
-	cfg, err := config.LoadDefaultConfig(e.ctx, config.WithCredentialsProvider(p))
+	p := credentialsv2.NewStaticCredentialsProvider(creds.AccessKeyID, creds.SecretAccessKey, creds.SessionToken)
+	cfg, err := configv2.LoadDefaultConfig(e.ctx, configv2.WithCredentialsProvider(p))
 	if err != nil {
 		return errors.Wrap(err, "error loading config with static credentials provider")
 	}
 
-	e.eksClient = eks.NewFromConfig(cfg)
+	e.creds = creds
+	e.cfg = &cfg
+	e.eksClient = eksv2.NewFromConfig(cfg)
 	return nil
 }
 
@@ -77,8 +84,8 @@ func (e *EKS) DescribeCluster(name string) (*ClusterInfo, error) {
 		}
 	}
 
-	input := &eks.DescribeClusterInput{
-		Name: aws.String(name),
+	input := &eksv2.DescribeClusterInput{
+		Name: awsv2.String(name),
 	}
 	info, err := e.eksClient.DescribeCluster(e.ctx, input)
 	if err != nil {
@@ -89,8 +96,15 @@ func (e *EKS) DescribeCluster(name string) (*ClusterInfo, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "error creating aws iam authenticator as token generator for cluster %s", name)
 	}
+
+	creds := credentialsv1.NewStaticCredentials(e.creds.AccessKeyID, e.creds.SecretAccessKey, e.creds.SessionToken)
+	sess, err := sessionv1.NewSession(&awsv1.Config{Credentials: creds})
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating new aws session")
+	}
 	opts := &token.GetTokenOptions{
 		ClusterID: *info.Cluster.Name,
+		Session:   sess,
 	}
 	tok, err := gen.GetWithOptions(opts)
 	if err != nil {

@@ -1,12 +1,13 @@
 package git
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/pkg/errors"
 
 	"github.com/sirupsen/logrus"
 
@@ -38,10 +39,14 @@ func CloneTemp(gitAPI API, repo string, log *logrus.Entry) (dir string, cleanup 
 	httpsPrefix := "https://github.com/"
 	httpsRepo := util.RewriteGitURLToHTTPS(repo)
 	dirName := strings.ReplaceAll(strings.TrimPrefix(strings.Trim(httpsRepo, ".git"), httpsPrefix), "/", "-")
-	log.Infof("Cloning repository %s into a temp folder", repo)
-	tempDir, err := ioutil.TempDir("", fmt.Sprintf("repo-%s-", dirName))
+	log.Infof("Cloning repository %s into a temp folder", httpsRepo)
+	pattern := fmt.Sprintf("repo-%s-", dirName)
+	tempDir, err := ioutil.TempDir("", pattern)
 	if err != nil {
-		return "", nil, err
+		return "", nil, errors.Wrapf(err, "error generating temp dir using system tempdir and pattern %s", pattern)
+	}
+	if tempDir == "" {
+		return "", nil, errors.Errorf("invalid tempdir using system tempdir and pattern %s: tempdir is empty", pattern)
 	}
 
 	if err := gitAPI.Clone(httpsRepo, tempDir); err != nil {
