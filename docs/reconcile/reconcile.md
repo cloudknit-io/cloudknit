@@ -20,6 +20,8 @@ Go to DAG view.
 
 In the above screenshot you can see a green sync button, click that icon to **reconcile** the environment.
 
+
+
 # Status
 
 * **Green:** Synced
