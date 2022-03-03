@@ -2,7 +2,6 @@ package gotfvars
 
 import (
 	"fmt"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
 	"os"
 	"path/filepath"
 
@@ -36,23 +35,10 @@ func GetVariablesFromTfvarsFile(
 	key *client.ObjectKey,
 	ec *v1.EnvironmentComponent,
 ) (string, error) {
-
-	var tempRepoDir string
-	var err error
-	var cleanup git.CleanupFunc
-
-	if env.Config.GitHubCompanyAuthMethod == "ssh" {
-		tempRepoDir, cleanup, err = git.CloneTempSSH(gitClient, ec.VariablesFile.Source, log)
-		if err != nil {
-			return "", perrors.Wrapf(err, "error temp cloning repo [%s]", ec.VariablesFile.Source)
-		}
-	} else {
-		tempRepoDir, cleanup, err = git.CloneTemp(gitClient, ec.VariablesFile.Source, log)
-		if err != nil {
-			return "", perrors.Wrapf(err, "error temp cloning repo [%s]", ec.VariablesFile.Source)
-		}
+	tempRepoDir, cleanup, err := git.CloneTemp(gitClient, ec.VariablesFile.Source, log)
+	if err != nil {
+		return "", perrors.Wrapf(err, "error temp cloning repo [%s]", ec.VariablesFile.Source)
 	}
-
 	defer cleanup()
 
 	path := filepath.Join(tempRepoDir, ec.VariablesFile.Path)
