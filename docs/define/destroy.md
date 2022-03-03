@@ -6,4 +6,4 @@ This property is similar to teardown property of [spec scope](define_environment
 
 **OPTIONAL**: Default value is false.
 
-You can find more information about teardown [here](https://docs.zlifecycle.com/teardown/destroy/)
+You can find more information about teardown [here](../teardown/destroy.md)
