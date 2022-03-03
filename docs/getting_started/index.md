@@ -10,12 +10,11 @@ After you have setup AWS Credentials, you will want to provision a simple enviro
 
 1. Clone your team repo locally on your machine
 2. Go to root directory of the team repo and create a new folder called `hello-world`
-3. Run below bash script using terminal and enter Company, Team and Environment Names when asked.
+3. Run the below bash script using terminal and enter `Company`, `Team` and `Environment` Names when asked.
 
 ```
 bash <(curl -s https://docs.zlifecycle.com/scripts/getting_started.sh)
 ```
-
 4. It will create a env.yaml like below:
 <details>
   <summary>Click to expand!</summary>
