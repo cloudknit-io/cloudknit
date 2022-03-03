@@ -59,3 +59,24 @@ func CloneTemp(gitAPI API, repo string, log *logrus.Entry) (dir string, cleanup 
 
 	return tempDir, cleanupFunc, nil
 }
+
+func CloneTempSSH(gitAPI API, repo string, log *logrus.Entry) (dir string, cleanup CleanupFunc, err error) {
+	log.Infof("Cloning repository %s into a temp folder", repo)
+	tempDir, err := ioutil.TempDir("", "il-")
+	if err != nil {
+		return "", nil, errors.Wrapf(err, "error generating temp dir using system tempdir")
+	}
+	if tempDir == "" {
+		return "", nil, errors.Errorf("invalid tempdir using system tempdir. tempdir is empty")
+	}
+
+	if err := gitAPI.Clone(repo, tempDir); err != nil {
+		return "", nil, err
+	}
+
+	cleanupFunc := func() {
+		_ = os.RemoveAll(tempDir)
+	}
+
+	return tempDir, cleanupFunc, nil
+}

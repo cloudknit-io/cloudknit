@@ -1,6 +1,7 @@
 package overlay
 
 import (
+	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
 	"path/filepath"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/file"
@@ -29,7 +30,17 @@ func GenerateOverlayFiles(
 	// generate overlay files from config repo
 	for _, overlay := range ec.OverlayFiles {
 		if err := func() error {
-			tempDir, cleanup, err := git.CloneTemp(gitClient, overlay.Source, log)
+
+			var tempDir string
+			var err error
+			var cleanup git.CleanupFunc
+
+			if env.Config.GitHubCompanyAuthMethod == "ssh" {
+				tempDir, cleanup, err = git.CloneTempSSH(gitClient, overlay.Source, log)
+			} else {
+				tempDir, cleanup, err = git.CloneTemp(gitClient, overlay.Source, log)
+			}
+
 			defer cleanup()
 			if err != nil {
 				return err
