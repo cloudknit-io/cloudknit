@@ -202,13 +202,22 @@ func (r *GitReconciler) reconcile(wr *WatchedRepository) (updated bool, err erro
 		}
 	}
 
-	companyToken, err := github.GenerateInstallationToken(r.log, r.watcher.CompanyGitClient, env.Config.GitHubCompanyOrganization)
-	if err != nil {
-		return false, perrors.Wrap(err, "error generating installation token")
-	}
-	gitClient, err := git.NewGoGit(r.ctx, companyToken)
-	if err != nil {
-		return false, err
+	var gitClient git.API
+
+	if env.Config.GitHubCompanyAuthMethod == "ssh" {
+		gitClient, err = git.NewGoGit(r.ctx, env.Config.GitToken)
+		if err != nil {
+			return false, err
+		}
+	} else {
+		companyToken, err := github.GenerateInstallationToken(r.log, r.watcher.CompanyGitClient, env.Config.GitHubCompanyOrganization)
+		if err != nil {
+			return false, perrors.Wrap(err, "error generating installation token")
+		}
+		gitClient, err = git.NewGoGit(r.ctx, companyToken)
+		if err != nil {
+			return false, err
+		}
 	}
 
 	_, cleanup, err := git.CloneTemp(gitClient, wr.Source, r.log)
