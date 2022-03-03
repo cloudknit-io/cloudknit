@@ -9,8 +9,10 @@ import (
 )
 
 const (
-	httpsPrefix = "https://github.com/"
-	sshPrefix   = "git@github.com:"
+	httpsPrefix       = "https://github.com/"
+	sshPrefix         = "git@github.com:"
+	gitlabHttpsPrefix = "https://gitlab.com/"
+	gitlabSshPrefix   = "git@gitlab.com:"
 )
 
 func ToJSON(data interface{}) ([]byte, error) {
@@ -102,6 +104,9 @@ func RewriteGitURLToHTTPS(repoURL string) string {
 	transformed := repoURL
 	if strings.HasPrefix(transformed, sshPrefix) {
 		transformed = strings.ReplaceAll(transformed, sshPrefix, httpsPrefix)
+	}
+	if strings.HasPrefix(transformed, gitlabSshPrefix) {
+		transformed = strings.ReplaceAll(transformed, gitlabSshPrefix, gitlabHttpsPrefix)
 	}
 	return transformed
 }
