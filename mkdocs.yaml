@@ -31,7 +31,7 @@ nav:
 - Reconcile:
   - steps.md
 - Teardown:
-  - steps.md
+  - teardown/destroy.md
 - Team:
   - team/index.md
   - team/onboard.md
