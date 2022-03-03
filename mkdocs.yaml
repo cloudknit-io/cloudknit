@@ -33,7 +33,6 @@ nav:
 - Teardown:
   - teardown/destroy.md
 - Team:
-  - team/index.md
   - team/onboard.md
 - Dashboard:
   - steps.md
