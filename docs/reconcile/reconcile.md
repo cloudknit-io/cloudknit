@@ -10,7 +10,7 @@ Go to dashboard or environments view.
 
 ![dashboard-reconcile](../assets/images/environment-card-reconcile.png "dashboard-reconcile")
 
-In the above screenshot you can see a green sync icon, just **click** that icon to **reconcile** the environment.
+In the above screenshot you can see a green sync icon, click that icon to **reconcile** the environment.
 
 ### DAG View
 
