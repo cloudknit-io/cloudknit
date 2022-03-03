@@ -6,4 +6,4 @@ Destroying an environment is composed of 2-steps:-
 
 2. Delete the Environment yaml from github for permanent deletion of an environment
 
-See [How to create an environment yaml](all-about-environment-yaml.md) file to know more.
+
