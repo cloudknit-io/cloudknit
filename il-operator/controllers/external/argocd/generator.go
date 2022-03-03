@@ -41,7 +41,7 @@ func newApplicationDestination(server, namespace string) appv1.ApplicationDestin
 
 func newApplicationSource(repoURL, path string, recurse bool, rewriteUrlToHTTPS bool) appv1.ApplicationSource {
 	if rewriteUrlToHTTPS {
-		repoURL = util.RewriteGitURLToSSH(repoURL)
+		repoURL = util.RewriteGitURLToHTTPS(repoURL)
 	}
 	as := appv1.ApplicationSource{
 		RepoURL:        repoURL,
