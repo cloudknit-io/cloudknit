@@ -15,6 +15,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
 	"sync"
 	"time"
 
@@ -200,10 +201,12 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
 	}
 
-	// try create a webhook, it will fail if git service account does not have permissions to create it
-	_, err = github.CreateRepoWebhook(r.LogV2, watcherServices.CompanyGitClient, companyRepoURL, env.Config.ArgocdWebhookURL, env.Config.GitHubWebhookSecret)
-	if err != nil {
-		r.LogV2.WithError(err).Error("error creating Company webhook")
+	if !util.IsGitLabURL(companyRepoURL) {
+		// try create a webhook, it will fail if git service account does not have permissions to create it
+		_, err = github.CreateRepoWebhook(r.LogV2, watcherServices.CompanyGitClient, companyRepoURL, env.Config.ArgocdWebhookURL, env.Config.GitHubWebhookSecret)
+		if err != nil {
+			r.LogV2.WithError(err).Error("error creating Company webhook")
+		}
 	}
 
 	duration := time.Since(start)

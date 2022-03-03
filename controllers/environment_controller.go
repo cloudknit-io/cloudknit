@@ -164,19 +164,29 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	defer ilService.TFILCleanupF()
 	defer ilService.ZLILCleanupF()
 
-	companyToken, err := github.GenerateInstallationToken(r.LogV2, watcherServices.CompanyGitClient, env.Config.GitHubCompanyOrganization)
-	if err != nil {
-		envErr := zerrors.NewEnvironmentError(
-			environment.Spec.TeamName,
-			environment.Spec.EnvName,
-			perrors.Wrapf(err, "error generating installation token for git organization [%s]", env.Config.GitHubCompanyOrganization),
-		)
-		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
-	}
-	gitClient, err := git.NewGoGit(apmCtx, companyToken)
-	if err != nil {
-		envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error instantiating git client"))
-		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
+	var gitClient git.API
+
+	if env.Config.GitHubCompanyAuthMethod == "ssh" {
+		gitClient, err = git.NewGoGit(apmCtx, env.Config.GitToken)
+		if err != nil {
+			envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error instantiating git client"))
+			return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
+		}
+	} else {
+		companyToken, err := github.GenerateInstallationToken(r.LogV2, watcherServices.CompanyGitClient, env.Config.GitHubCompanyOrganization)
+		if err != nil {
+			envErr := zerrors.NewEnvironmentError(
+				environment.Spec.TeamName,
+				environment.Spec.EnvName,
+				perrors.Wrapf(err, "error generating installation token for git organization [%s]", env.Config.GitHubCompanyOrganization),
+			)
+			return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
+		}
+		gitClient, err = git.NewGoGit(apmCtx, companyToken)
+		if err != nil {
+			envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error instantiating git client"))
+			return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
+		}
 	}
 	fs := file.NewOsFileService()
 
