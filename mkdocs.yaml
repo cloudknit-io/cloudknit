@@ -29,7 +29,7 @@ nav:
   - provision/manual_approval.md
   - provision/manual_reconcile.md
 - Reconcile:
-  - steps.md
+  - reconcile/reconcile.md
 - Teardown:
   - teardown/destroy.md
 - Team:
