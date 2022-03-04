@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	username  = "zlifecycle"
+	username  = "git"
 	ModeSSH   = "ssh"
 	ModeToken = "token"
 )

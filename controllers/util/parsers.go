@@ -83,14 +83,27 @@ func ParseRepositoryName(url string) string {
 
 func ParseRepositoryInfo(url string) (owner string, repo string, err error) {
 	if url == "" {
-		return "", "", errors.New("URL cannot be empty")
+		return "", "", errors.New("url cannot be empty")
 	}
 
-	if httpsPrefix := "https://"; strings.HasPrefix(url, httpsPrefix) {
-		trimmed := strings.TrimPrefix(strings.TrimSuffix(url, ".git"), httpsPrefix)
+	if prefix := "https://"; strings.HasPrefix(url, prefix) {
+		trimmed := strings.TrimPrefix(strings.TrimSuffix(url, ".git"), prefix)
 		splitted := strings.Split(trimmed, "/")
 		owner = splitted[len(splitted)-2]
 		repo = splitted[len(splitted)-1]
+	}
+	if prefix := "git@"; strings.HasPrefix(url, prefix) {
+		trimmed := strings.TrimPrefix(strings.TrimSuffix(url, ".git"), prefix)
+		splitted := strings.Split(trimmed, ":")
+		if len(splitted) != 2 {
+			return "", "", errors.New("invalid url format")
+		}
+		info := strings.Split(splitted[1], "/")
+		if len(info) != 2 {
+			return "", "", errors.New("invalid url format")
+		}
+		owner = info[0]
+		repo = info[1]
 	}
 	return owner, repo, nil
 }
