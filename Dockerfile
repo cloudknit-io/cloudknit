@@ -26,9 +26,9 @@ FROM gcr.io/distroless/base:debug
 # add known hosts
 RUN mkdir -p ~/.ssh \
     && touch ~/.ssh/known_hosts \
-    && ssh-keyscan -t rsa github.com >> /root/.ssh/known_hosts \
-    && ssh-keyscan -t rsa gitlab.com >> /root/.ssh/known_hosts \
-    && ssh-keyscan -t rsa bitbucket.org >> /root/.ssh/known_hosts
+    && ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts \
+    && ssh-keyscan -t rsa gitlab.com >> ~/.ssh/known_hosts \
+    && ssh-keyscan -t rsa bitbucket.org >> ~/.ssh/known_hosts
 
 WORKDIR /
 COPY --from=builder /workspace/manager .
