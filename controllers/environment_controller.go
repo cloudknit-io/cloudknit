@@ -167,7 +167,13 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	var gitClient git.API
 
 	if env.Config.GitHubCompanyAuthMethod == "ssh" {
-		gitClient, err = git.NewGoGit(apmCtx, env.Config.GitToken)
+		key := kClient.ObjectKey{Name: env.Config.GitSSHSecretName, Namespace: env.SystemNamespace()}
+		sshKey, err := util.GetPrivateKey(apmCtx, r.Client, key)
+		if err != nil {
+			envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error fetching git ssh key"))
+			return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
+		}
+		gitClient, err = git.NewGoGit(apmCtx, &git.GoGitOptions{Mode: git.ModeSSH, PrivateKey: sshKey})
 		if err != nil {
 			envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error instantiating git client"))
 			return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
@@ -182,7 +188,7 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 			)
 			return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
 		}
-		gitClient, err = git.NewGoGit(apmCtx, companyToken)
+		gitClient, err = git.NewGoGit(apmCtx, &git.GoGitOptions{Mode: git.ModeToken, Token: companyToken})
 		if err != nil {
 			envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error instantiating git client"))
 			return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)

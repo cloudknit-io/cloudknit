@@ -4,7 +4,6 @@ import (
 	"github.com/pkg/errors"
 
 	gogit "github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing/transport/http"
 )
 
 func (g *GoGit) Push() error {
@@ -12,11 +11,13 @@ func (g *GoGit) Push() error {
 		return errors.Wrapf(ErrRepoNotCloned, "cannot push")
 	}
 
+	auth, err := g.getAuthOptions()
+	if err != nil {
+		return errors.Wrap(err, "error getting auth options")
+	}
+
 	return g.r.Push(&gogit.PushOptions{
-		Auth: &http.BasicAuth{
-			Username: "zlifecycle",
-			Password: g.token,
-		},
+		Auth: auth,
 	})
 }
 

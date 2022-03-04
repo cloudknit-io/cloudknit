@@ -19,12 +19,12 @@ type Service struct {
 }
 
 func NewService(ctx context.Context, token string, log *logrus.Entry) (*Service, error) {
-	zlILGitAPI, err := git.NewGoGit(ctx, token)
+	zlILGitAPI, err := git.NewGoGit(ctx, &git.GoGitOptions{Mode: git.ModeToken, Token: token})
 	if err != nil {
 		return nil, err
 	}
 
-	tfILGitAPI, err := git.NewGoGit(ctx, token)
+	tfILGitAPI, err := git.NewGoGit(ctx, &git.GoGitOptions{Mode: git.ModeToken, Token: token})
 	if err != nil {
 		return nil, err
 	}

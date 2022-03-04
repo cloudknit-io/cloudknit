@@ -36,10 +36,9 @@ func PullOrClone(gitAPI API, repoURL string) error {
 }
 
 func CloneTemp(gitAPI API, repo string, log *logrus.Entry) (dir string, cleanup CleanupFunc, err error) {
-	httpsPrefix := "https://github.com/"
-	gitlabHttpsPrefix := "https://gitlab.com/"
 	httpsRepo := util.RewriteGitURLToHTTPS(repo)
-	dirName := strings.ReplaceAll(strings.TrimPrefix(strings.TrimPrefix(strings.Trim(httpsRepo, ".git"), httpsPrefix), gitlabHttpsPrefix), "/", "-")
+	httpsPrefix := "https://"
+	dirName := strings.ReplaceAll(strings.TrimPrefix(strings.Trim(httpsRepo, ".git"), httpsPrefix), "/", "-")
 	log.Infof("Cloning repository %s into a temp folder", httpsRepo)
 	pattern := fmt.Sprintf("repo-%s-", dirName)
 	tempDir, err := ioutil.TempDir("", pattern)

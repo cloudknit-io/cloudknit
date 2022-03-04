@@ -9,10 +9,10 @@ import (
 )
 
 const (
-	httpsPrefix       = "https://github.com/"
-	sshPrefix         = "git@github.com:"
-	gitlabHttpsPrefix = "https://gitlab.com/"
-	gitlabSshPrefix   = "git@gitlab.com:"
+	githubHTTPSPrefix = "https://github.com/"
+	githubSSHPrefix   = "git@github.com:"
+	gitlabHTTPSPrefix = "https://gitlab.com/"
+	gitlabSSHPrefix   = "git@gitlab.com:"
 )
 
 func ToJSON(data interface{}) ([]byte, error) {
@@ -86,35 +86,31 @@ func ParseRepositoryInfo(url string) (owner string, repo string, err error) {
 		return "", "", errors.New("URL cannot be empty")
 	}
 
-	httpsPrefix := "https://"
-	if strings.HasPrefix(url, httpsPrefix) {
+	if httpsPrefix := "https://"; strings.HasPrefix(url, httpsPrefix) {
 		trimmed := strings.TrimPrefix(strings.TrimSuffix(url, ".git"), httpsPrefix)
 		splitted := strings.Split(trimmed, "/")
 		owner = splitted[len(splitted)-2]
 		repo = splitted[len(splitted)-1]
-	} else {
-		owner = url[strings.LastIndex(url, ":")+1 : strings.LastIndex(url, "/")]
-		repoURI := url[strings.LastIndex(url, "/")+1:]
-		repo = strings.TrimSuffix(repoURI, ".git")
 	}
 	return owner, repo, nil
 }
 
 func RewriteGitURLToHTTPS(repoURL string) string {
 	transformed := repoURL
-	if strings.HasPrefix(transformed, sshPrefix) {
-		transformed = strings.ReplaceAll(transformed, sshPrefix, httpsPrefix)
-	}
-	if strings.HasPrefix(transformed, gitlabSshPrefix) {
-		transformed = strings.ReplaceAll(transformed, gitlabSshPrefix, gitlabHttpsPrefix)
+	if strings.HasPrefix(transformed, githubSSHPrefix) {
+		transformed = strings.ReplaceAll(transformed, githubSSHPrefix, githubHTTPSPrefix)
+	} else if strings.HasPrefix(transformed, gitlabSSHPrefix) {
+		transformed = strings.ReplaceAll(transformed, gitlabSSHPrefix, gitlabHTTPSPrefix)
 	}
 	return transformed
 }
 
 func RewriteGitURLToSSH(repoURL string) string {
 	transformed := repoURL
-	if strings.HasPrefix(transformed, httpsPrefix) {
-		transformed = strings.ReplaceAll(transformed, httpsPrefix, sshPrefix)
+	if strings.HasPrefix(transformed, githubHTTPSPrefix) {
+		transformed = strings.ReplaceAll(transformed, githubHTTPSPrefix, githubSSHPrefix)
+	} else if strings.HasPrefix(transformed, gitlabHTTPSPrefix) {
+		transformed = strings.ReplaceAll(transformed, gitlabHTTPSPrefix, gitlabSSHPrefix)
 	}
 	return transformed
 }
