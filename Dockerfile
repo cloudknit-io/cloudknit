@@ -19,11 +19,11 @@ COPY templates/ templates/
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager main.go
 
 # add known hosts
-RUN mkdir -p ~/.ssh \
-    && touch ~/.ssh/known_hosts \
-    && ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts \
-    && ssh-keyscan -t rsa gitlab.com >> ~/.ssh/known_hosts \
-    && ssh-keyscan -t rsa bitbucket.org >> ~/.ssh/known_hosts
+RUN mkdir -p /.ssh \
+    && touch /.ssh/known_hosts \
+    && ssh-keyscan -t rsa github.com >> /.ssh/known_hosts \
+    && ssh-keyscan -t rsa gitlab.com >> /.ssh/known_hosts \
+    && ssh-keyscan -t rsa bitbucket.org >> /.ssh/known_hosts
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
@@ -34,9 +34,6 @@ WORKDIR /
 COPY --from=builder /workspace/manager .
 COPY --from=builder /workspace/templates ./templates
 
-RUN mkdir -p ~/.ssh \
-    && touch ~/.ssh/known_hosts
-
-COPY --from=builder ~/.ssh ~./ssh
+COPY --from=builder /.ssh /root/.ssh
 
 ENTRYPOINT ["/manager"]
