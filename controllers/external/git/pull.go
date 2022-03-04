@@ -2,13 +2,17 @@ package git
 
 import (
 	gogit "github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/pkg/errors"
 )
 
 func (g *GoGit) Pull() (updated bool, err error) {
 	if g.r == nil {
 		return false, errors.Wrapf(ErrRepoNotCloned, "cannot pull")
+	}
+
+	auth, err := g.getAuthOptions()
+	if err != nil {
+		return false, errors.Wrap(err, "error getting auth options")
 	}
 
 	w, err := g.r.Worktree()
@@ -24,10 +28,7 @@ func (g *GoGit) Pull() (updated bool, err error) {
 		&gogit.PullOptions{
 			RemoteName:   "origin",
 			SingleBranch: true,
-			Auth: &http.BasicAuth{
-				Username: "zlifecycle",
-				Password: g.token,
-			},
+			Auth:         auth,
 		},
 	); err != nil {
 		return false, err

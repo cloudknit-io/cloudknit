@@ -1,9 +1,6 @@
 package git
 
 import (
-	"context"
-
-	gogit "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/pkg/errors"
 )
@@ -22,20 +19,8 @@ type API interface {
 	Push() error
 }
 
-type GoGit struct {
-	ctx   context.Context
-	r     *gogit.Repository
-	token string
-}
-
 type CommitInfo struct {
 	Author string
 	Email  string
 	Msg    string
 }
-
-func NewGoGit(ctx context.Context, token string) (API, error) {
-	return &GoGit{token: token, ctx: ctx}, nil
-}
-
-var _ API = (*GoGit)(nil)
