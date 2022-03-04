@@ -6,7 +6,7 @@ These credentials can be **created** & **updated** using zLifecycle secrets mana
 
 ![settings](../assets/images/secrets.png "Settings")
 
-AWS section has three type of secrets:
+AWS secrets that need to be set:
 
 ![aws-secrets](../assets/images/aws-secrets.png "aws-secrets")
 
