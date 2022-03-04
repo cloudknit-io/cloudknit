@@ -26,4 +26,11 @@ WORKDIR /
 COPY --from=builder /workspace/manager .
 COPY --from=builder /workspace/templates ./templates
 
+# add known hosts
+RUN mkdir -p ~/.ssh \
+    && touch ~/.ssh/known_hosts \
+    && ssh-keyscan -t rsa github.com >> /root/.ssh/known_hosts \
+    && ssh-keyscan -t rsa gitlab.com >> /root/.ssh/known_hosts \
+    && ssh-keyscan -t rsa bitbucket.org >> /root/.ssh/known_hosts
+
 ENTRYPOINT ["/manager"]
