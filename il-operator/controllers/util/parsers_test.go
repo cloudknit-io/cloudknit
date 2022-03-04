@@ -62,4 +62,13 @@ func TestRewriteGitURLToHTTPS(t *testing.T) {
 	testRepo4 := "git@github.com:CompuZest/rocks"
 	transformed4 := util.RewriteGitURLToSSH(testRepo4)
 	assert.Equal(t, transformed4, testRepo4)
+
+	testRepo5 := "git@gitlab.com:CompuZest/rocks"
+	transformed5 := util.RewriteGitURLToSSH(testRepo5)
+	assert.Equal(t, transformed5, testRepo5)
+
+	testRepo6 := "https://gitlab.com/CompuZest/leet"
+	expected6 := "git@gitlab.com:CompuZest/leet"
+	transformed6 := util.RewriteGitURLToSSH(testRepo6)
+	assert.Equal(t, transformed6, expected6)
 }

@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
-	git2 "github.com/compuzest/zlifecycle-il-operator/controllers/external/git"
+	git "github.com/compuzest/zlifecycle-il-operator/controllers/external/git"
 	notifier2 "github.com/compuzest/zlifecycle-il-operator/controllers/external/notifier"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/notifier/uinotifier"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/log"
@@ -232,13 +232,13 @@ func checkTfvarsExist(tfvars *VariablesFile, ec string, log *logrus.Entry) field
 func checkPaths(source string, paths []string, fld *field.Path, log *logrus.Entry) field.ErrorList {
 	var allErrs field.ErrorList
 
-	gitAPI, err := git2.NewGoGit(ctx, env.Config.GitToken)
+	gitAPI, err := git.NewGoGit(ctx, &git.GoGitOptions{Mode: git.ModeToken, Token: env.Config.GitToken})
 	if err != nil {
 		fe := field.InternalError(fld, perrors.New("error validating access to source repository"))
 		allErrs = append(allErrs, fe)
 		return allErrs
 	}
-	dir, cleanup, err := git2.CloneTemp(gitAPI, source, log)
+	dir, cleanup, err := git.CloneTemp(gitAPI, source, log)
 	if err != nil {
 		fe := field.InternalError(fld, perrors.New("error validating access to source repository"))
 		allErrs = append(allErrs, fe)

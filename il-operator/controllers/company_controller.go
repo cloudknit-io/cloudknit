@@ -131,7 +131,7 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		)
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
 	}
-	gitClient, err := git.NewGoGit(apmCtx, token)
+	gitClient, err := git.NewGoGit(apmCtx, &git.GoGitOptions{Mode: git.ModeToken, Token: token})
 	if err != nil {
 		companyErr := zerrors.NewCompanyError(
 			company.Spec.CompanyName,

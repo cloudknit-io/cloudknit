@@ -9,10 +9,10 @@ import (
 )
 
 const (
-	httpsPrefix       = "https://github.com/"
-	sshPrefix         = "git@github.com:"
-	gitlabHttpsPrefix = "https://gitlab.com/"
-	gitlabSshPrefix   = "git@gitlab.com:"
+	githubHTTPSPrefix = "https://github.com/"
+	githubSSHPrefix   = "git@github.com:"
+	gitlabHTTPSPrefix = "https://gitlab.com/"
+	gitlabSSHPrefix   = "git@gitlab.com:"
 )
 
 func ToJSON(data interface{}) ([]byte, error) {
@@ -83,38 +83,47 @@ func ParseRepositoryName(url string) string {
 
 func ParseRepositoryInfo(url string) (owner string, repo string, err error) {
 	if url == "" {
-		return "", "", errors.New("URL cannot be empty")
+		return "", "", errors.New("url cannot be empty")
 	}
 
-	httpsPrefix := "https://"
-	if strings.HasPrefix(url, httpsPrefix) {
-		trimmed := strings.TrimPrefix(strings.TrimSuffix(url, ".git"), httpsPrefix)
+	if prefix := "https://"; strings.HasPrefix(url, prefix) {
+		trimmed := strings.TrimPrefix(strings.TrimSuffix(url, ".git"), prefix)
 		splitted := strings.Split(trimmed, "/")
 		owner = splitted[len(splitted)-2]
 		repo = splitted[len(splitted)-1]
-	} else {
-		owner = url[strings.LastIndex(url, ":")+1 : strings.LastIndex(url, "/")]
-		repoURI := url[strings.LastIndex(url, "/")+1:]
-		repo = strings.TrimSuffix(repoURI, ".git")
+	}
+	if prefix := "git@"; strings.HasPrefix(url, prefix) {
+		trimmed := strings.TrimPrefix(strings.TrimSuffix(url, ".git"), prefix)
+		splitted := strings.Split(trimmed, ":")
+		if len(splitted) != 2 {
+			return "", "", errors.New("invalid url format")
+		}
+		info := strings.Split(splitted[1], "/")
+		if len(info) != 2 {
+			return "", "", errors.New("invalid url format")
+		}
+		owner = info[0]
+		repo = info[1]
 	}
 	return owner, repo, nil
 }
 
 func RewriteGitURLToHTTPS(repoURL string) string {
 	transformed := repoURL
-	if strings.HasPrefix(transformed, sshPrefix) {
-		transformed = strings.ReplaceAll(transformed, sshPrefix, httpsPrefix)
-	}
-	if strings.HasPrefix(transformed, gitlabSshPrefix) {
-		transformed = strings.ReplaceAll(transformed, gitlabSshPrefix, gitlabHttpsPrefix)
+	if strings.HasPrefix(transformed, githubSSHPrefix) {
+		transformed = strings.ReplaceAll(transformed, githubSSHPrefix, githubHTTPSPrefix)
+	} else if strings.HasPrefix(transformed, gitlabSSHPrefix) {
+		transformed = strings.ReplaceAll(transformed, gitlabSSHPrefix, gitlabHTTPSPrefix)
 	}
 	return transformed
 }
 
 func RewriteGitURLToSSH(repoURL string) string {
 	transformed := repoURL
-	if strings.HasPrefix(transformed, httpsPrefix) {
-		transformed = strings.ReplaceAll(transformed, httpsPrefix, sshPrefix)
+	if strings.HasPrefix(transformed, githubHTTPSPrefix) {
+		transformed = strings.ReplaceAll(transformed, githubHTTPSPrefix, githubSSHPrefix)
+	} else if strings.HasPrefix(transformed, gitlabHTTPSPrefix) {
+		transformed = strings.ReplaceAll(transformed, gitlabHTTPSPrefix, gitlabSSHPrefix)
 	}
 	return transformed
 }

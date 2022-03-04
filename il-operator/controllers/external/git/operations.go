@@ -2,6 +2,7 @@ package git
 
 import (
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -36,11 +37,18 @@ func PullOrClone(gitAPI API, repoURL string) error {
 }
 
 func CloneTemp(gitAPI API, repo string, log *logrus.Entry) (dir string, cleanup CleanupFunc, err error) {
-	httpsPrefix := "https://github.com/"
-	gitlabHttpsPrefix := "https://gitlab.com/"
-	httpsRepo := util.RewriteGitURLToHTTPS(repo)
-	dirName := strings.ReplaceAll(strings.TrimPrefix(strings.TrimPrefix(strings.Trim(httpsRepo, ".git"), httpsPrefix), gitlabHttpsPrefix), "/", "-")
-	log.Infof("Cloning repository %s into a temp folder", httpsRepo)
+	var dirName = ""
+	if env.Config.GitHubCompanyAuthMethod == "ssh" && !strings.Contains(repo, "zlifecycle-il") {
+		gitPrefix := "git@"
+		dirName = strings.ReplaceAll(strings.ReplaceAll(strings.TrimPrefix(strings.Trim(repo, ".git"), gitPrefix), "/", "-"), ":", "-")
+	} else {
+		httpsRepo := util.RewriteGitURLToHTTPS(repo)
+		httpsPrefix := "https://"
+		dirName = strings.ReplaceAll(strings.TrimPrefix(strings.Trim(httpsRepo, ".git"), httpsPrefix), "/", "-")
+		repo = httpsRepo
+	}
+
+	log.Infof("Cloning repository %s into a temp folder", repo)
 	pattern := fmt.Sprintf("repo-%s-", dirName)
 	tempDir, err := ioutil.TempDir("", pattern)
 	if err != nil {
@@ -50,7 +58,7 @@ func CloneTemp(gitAPI API, repo string, log *logrus.Entry) (dir string, cleanup 
 		return "", nil, errors.Errorf("invalid tempdir using system tempdir and pattern %s: tempdir is empty", pattern)
 	}
 
-	if err := gitAPI.Clone(httpsRepo, tempDir); err != nil {
+	if err := gitAPI.Clone(repo, tempDir); err != nil {
 		return "", nil, err
 	}
 
