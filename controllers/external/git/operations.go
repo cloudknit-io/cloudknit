@@ -38,7 +38,7 @@ func PullOrClone(gitAPI API, repoURL string) error {
 
 func CloneTemp(gitAPI API, repo string, log *logrus.Entry) (dir string, cleanup CleanupFunc, err error) {
 	var dirName = ""
-	if env.Config.GitHubCompanyAuthMethod == "ssh" {
+	if env.Config.GitHubCompanyAuthMethod == "ssh" && !strings.Contains(repo, "zlifecycle-il") {
 		gitPrefix := "git@"
 		dirName = strings.ReplaceAll(strings.ReplaceAll(strings.TrimPrefix(strings.Trim(repo, ".git"), gitPrefix), "/", "-"), ":", "-")
 	} else {
