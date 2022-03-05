@@ -39,10 +39,8 @@ func newApplicationDestination(server, namespace string) appv1.ApplicationDestin
 	}
 }
 
-func newApplicationSource(repoURL, path string, recurse bool, rewriteUrlToHTTPS bool) appv1.ApplicationSource {
-	if rewriteUrlToHTTPS {
-		repoURL = util.RewriteGitURLToHTTPS(repoURL)
-	}
+func newApplicationSource(repoURL, path string, recurse bool) appv1.ApplicationSource {
+	repoURL = util.RewriteGitURLToHTTPS(repoURL)
 	as := appv1.ApplicationSource{
 		RepoURL:        repoURL,
 		Path:           path,
@@ -85,7 +83,7 @@ func GenerateCompanyApp(company *stablev1.Company) *appv1.Application {
 				},
 			},
 			Destination: newApplicationDestination("https://kubernetes.default.svc", "default"),
-			Source:      newApplicationSource(env.Config.ILZLifecycleRepositoryURL, "./"+il.Config.TeamDirectory, false, true),
+			Source:      newApplicationSource(env.Config.ILZLifecycleRepositoryURL, "./"+il.Config.TeamDirectory, false),
 		},
 		Status: newApplicationStatus(env.Config.ILZLifecycleRepositoryURL),
 	}
@@ -110,7 +108,7 @@ func GenerateTeamApp(team *stablev1.Team) *appv1.Application {
 				},
 			},
 			Destination: newApplicationDestination("https://kubernetes.default.svc", "default"),
-			Source:      newApplicationSource(env.Config.ILZLifecycleRepositoryURL, "./"+il.EnvironmentDirectoryPath(team.Spec.TeamName), false, true),
+			Source:      newApplicationSource(env.Config.ILZLifecycleRepositoryURL, "./"+il.EnvironmentDirectoryPath(team.Spec.TeamName), false),
 		},
 		Status: newApplicationStatus(env.Config.ILZLifecycleRepositoryURL),
 	}
@@ -141,7 +139,6 @@ func GenerateEnvironmentApp(environment *stablev1.Environment) *appv1.Applicatio
 				env.Config.ILZLifecycleRepositoryURL,
 				"./"+il.EnvironmentComponentsDirectoryPath(environment.Spec.TeamName, environment.Spec.EnvName),
 				false,
-				true,
 			),
 		},
 		Status: newApplicationStatus(env.Config.ILZLifecycleRepositoryURL),
@@ -255,7 +252,7 @@ func GenerateTeamConfigWatcherApp(team *stablev1.Team) *appv1.Application {
 				Retry: &appv1.RetryStrategy{Limit: 1},
 			},
 			Destination: newApplicationDestination("https://kubernetes.default.svc", "default"),
-			Source:      newApplicationSource(team.Spec.ConfigRepo.Source, team.Spec.ConfigRepo.Path, true, false),
+			Source:      newApplicationSource(team.Spec.ConfigRepo.Source, team.Spec.ConfigRepo.Path, true),
 		},
 		Status: newApplicationStatus(team.Spec.ConfigRepo.Source),
 	}
@@ -281,7 +278,7 @@ func GenerateCompanyConfigWatcherApp(customerName string, companyConfigRepo stri
 				Retry: &appv1.RetryStrategy{Limit: 1},
 			},
 			Destination: newApplicationDestination("https://kubernetes.default.svc", "default"),
-			Source:      newApplicationSource(companyConfigRepo, ".", true, false),
+			Source:      newApplicationSource(companyConfigRepo, ".", true),
 		},
 		Status: newApplicationStatus(companyConfigRepo),
 	}
@@ -306,7 +303,7 @@ func GenerateCompanyBootstrapApp() *appv1.Application {
 				},
 			},
 			Destination: newApplicationDestination("https://kubernetes.default.svc", "default"),
-			Source:      newApplicationSource(env.Config.ILZLifecycleRepositoryURL, "company", false, true),
+			Source:      newApplicationSource(env.Config.ILZLifecycleRepositoryURL, "company", false),
 		},
 	}
 }
@@ -330,7 +327,7 @@ func GenerateConfigWatcherBootstrapApp() *appv1.Application {
 				},
 			},
 			Destination: newApplicationDestination("https://kubernetes.default.svc", "default"),
-			Source:      newApplicationSource(env.Config.ILZLifecycleRepositoryURL, "config-watcher", false, true),
+			Source:      newApplicationSource(env.Config.ILZLifecycleRepositoryURL, "config-watcher", false),
 		},
 	}
 }
