@@ -48,7 +48,7 @@ func TestRewriteGitURLToHTTPS(t *testing.T) {
 
 	testRepo1 := "git@github.com:test/test"
 	expected1 := "https://github.com/test/test"
-	env.Config.GitHubInternalAuthMethod = "githubApp"
+	env.Config.GitHubCompanyAuthMethod = util.AuthModeGitHubApp
 	transformed1 := util.RewriteGitURLToHTTPS(testRepo1)
 	assert.Equal(t, transformed1, expected1)
 
