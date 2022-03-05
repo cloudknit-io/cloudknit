@@ -23,10 +23,6 @@ import (
 
 //go:generate mockgen --build_flags=--mod=mod -destination=./mock_argocd_api.go -package=argocd "github.com/compuzest/zlifecycle-il-operator/controllers/external/argocd" API
 
-const (
-	RegistrationModeGithubApp = "githubApp"
-)
-
 type API interface {
 	GetAuthToken() (*GetTokenResponse, error)
 	ListRepositories(bearerToken string) (*RepositoryList, *http.Response, error)

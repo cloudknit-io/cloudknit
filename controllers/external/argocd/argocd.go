@@ -112,7 +112,7 @@ func RegisterRepo(log *logrus.Entry, api API, repoOpts *RepoOpts) (bool, error) 
 	l.Infof("Repository %s is not registered on ArgoCD", repoOpts.RepoURL)
 
 	var body interface{}
-	if repoOpts.Mode == RegistrationModeGithubApp {
+	if repoOpts.Mode == util.RegistrationModeGithubApp {
 		l.WithFields(logrus.Fields{
 			"installationId": repoOpts.GitHubAppInstallationID,
 			"appId":          repoOpts.GitHubAppID,
