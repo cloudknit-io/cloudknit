@@ -2,6 +2,7 @@ package util
 
 import (
 	"encoding/json"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -13,6 +14,10 @@ const (
 	githubSSHPrefix   = "git@github.com:"
 	gitlabHTTPSPrefix = "https://gitlab.com/"
 	gitlabSSHPrefix   = "git@gitlab.com:"
+)
+
+const (
+	RegistrationModeGithubApp = "githubApp"
 )
 
 func ToJSON(data interface{}) ([]byte, error) {
@@ -109,13 +114,30 @@ func ParseRepositoryInfo(url string) (owner string, repo string, err error) {
 }
 
 func RewriteGitURLToHTTPS(repoURL string) string {
-	transformed := repoURL
-	if strings.HasPrefix(transformed, githubSSHPrefix) {
-		transformed = strings.ReplaceAll(transformed, githubSSHPrefix, githubHTTPSPrefix)
-	} else if strings.HasPrefix(transformed, gitlabSSHPrefix) {
-		transformed = strings.ReplaceAll(transformed, gitlabSSHPrefix, gitlabHTTPSPrefix)
+	if DoRewriteURL(repoURL) {
+		transformed := repoURL
+		if strings.HasPrefix(transformed, githubSSHPrefix) {
+			transformed = strings.ReplaceAll(transformed, githubSSHPrefix, githubHTTPSPrefix)
+		} else if strings.HasPrefix(transformed, gitlabSSHPrefix) {
+			transformed = strings.ReplaceAll(transformed, gitlabSSHPrefix, gitlabHTTPSPrefix)
+		}
+		return transformed
 	}
-	return transformed
+	return repoURL
+}
+
+func DoRewriteURL(repoURL string) bool {
+	if strings.Contains(repoURL, env.Config.GitILRepositoryOwner) &&
+		env.Config.GitHubInternalAuthMethod == RegistrationModeGithubApp {
+		return true
+	}
+
+	if !strings.Contains(repoURL, env.Config.GitILRepositoryOwner) &&
+		env.Config.GitHubCompanyAuthMethod == RegistrationModeGithubApp {
+		return true
+	}
+
+	return false
 }
 
 func RewriteGitURLToSSH(repoURL string) string {
