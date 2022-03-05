@@ -258,7 +258,7 @@ func GenerateTeamConfigWatcherApp(team *stablev1.Team) *appv1.Application {
 	}
 }
 
-func GenerateCompanyConfigWatcherApp(customerName string, companyConfigRepo string) *appv1.Application {
+func GenerateCompanyConfigWatcherApp(customerName string, companyConfigRepo string, companyConfigRepoPath string) *appv1.Application {
 	return &appv1.Application{
 		TypeMeta: newTypeMeta(),
 		ObjectMeta: metav1.ObjectMeta{
@@ -278,7 +278,7 @@ func GenerateCompanyConfigWatcherApp(customerName string, companyConfigRepo stri
 				Retry: &appv1.RetryStrategy{Limit: 1},
 			},
 			Destination: newApplicationDestination("https://kubernetes.default.svc", "default"),
-			Source:      newApplicationSource(companyConfigRepo, ".", true),
+			Source:      newApplicationSource(companyConfigRepo, companyConfigRepoPath, true),
 		},
 		Status: newApplicationStatus(companyConfigRepo),
 	}

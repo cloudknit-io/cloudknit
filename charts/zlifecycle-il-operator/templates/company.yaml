@@ -7,4 +7,4 @@ spec:
   companyName: {{ .Values.company.config.name }}
   configRepo:
     source: {{ .Values.git.config.companyConfigRepoUrl }}
-    path: "."
+    path: {{ .Values.git.config.companyConfigRepoPath }}

@@ -36,6 +36,7 @@ git:
     terraformIlRepoUrl: ""
     zlifecycleIlRepoUrl: ""
     companyConfigRepoUrl: ""
+    companyConfigRepoPath: "."
     webhookSecret: "zS3cr37"
     companyGithubAppSecretName: company-github-app-ssh
     companyGithubAppId: "170128"

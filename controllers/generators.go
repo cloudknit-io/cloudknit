@@ -30,7 +30,8 @@ func generateAndSaveCompanyApp(fileAPI file.API, company *stablev1.Company, ilRe
 }
 
 func generateAndSaveCompanyConfigWatcher(fileAPI file.API, company *stablev1.Company, ilRepoDir string) error {
-	companyConfigWatcherApp := argocd.GenerateCompanyConfigWatcherApp(company.Spec.CompanyName, company.Spec.ConfigRepo.Source)
+	companyConfigWatcherApp := argocd.GenerateCompanyConfigWatcherApp(company.Spec.CompanyName,
+		company.Spec.ConfigRepo.Source, company.Spec.ConfigRepo.Path)
 
 	return fileAPI.SaveYamlFile(*companyConfigWatcherApp, il.ConfigWatcherDirectoryAbsolutePath(ilRepoDir), company.Spec.CompanyName+".yaml")
 }
