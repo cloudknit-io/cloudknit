@@ -1,6 +1,7 @@
 package util_test
 
 import (
+	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
 	"testing"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
@@ -47,6 +48,7 @@ func TestRewriteGitURLToHTTPS(t *testing.T) {
 
 	testRepo1 := "git@github.com:test/test"
 	expected1 := "https://github.com/test/test"
+	env.Config.GitHubInternalAuthMethod = "githubApp"
 	transformed1 := util.RewriteGitURLToHTTPS(testRepo1)
 	assert.Equal(t, transformed1, expected1)
 
