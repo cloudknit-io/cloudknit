@@ -166,7 +166,7 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 
 	var gitClient git.API
 
-	if env.Config.GitHubCompanyAuthMethod == "ssh" {
+	if env.Config.GitHubCompanyAuthMethod == util.AuthModeSSH {
 		key := kClient.ObjectKey{Name: env.Config.GitSSHSecretName, Namespace: env.SystemNamespace()}
 		sshKey, err := util.GetPrivateKey(apmCtx, r.Client, key)
 		if err != nil {

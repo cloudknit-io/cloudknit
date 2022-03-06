@@ -15,6 +15,7 @@ package v1
 import (
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
+	kClient "sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
@@ -22,7 +23,11 @@ import (
 // log is for logging in this package.
 var environmentlog = logf.Log.WithName("environment-resource")
 
+var client kClient.Client
+
 func (in *Environment) SetupWebhookWithManager(mgr ctrl.Manager) error {
+	client = mgr.GetClient()
+
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(in).
 		Complete()

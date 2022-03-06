@@ -3,7 +3,11 @@ package v1
 import (
 	"context"
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/external/github"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/watcherservices"
 	"os"
+	kClient "sigs.k8s.io/controller-runtime/pkg/client"
 	"time"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
@@ -49,7 +53,7 @@ func ValidateEnvironmentCreate(e *Environment) error {
 
 	var allErrs field.ErrorList
 
-	if err := validateEnvironmentCommon(e, true); err != nil {
+	if err := validateEnvironmentCommon(e, true, logger); err != nil {
 		allErrs = append(allErrs, err...)
 	}
 
@@ -89,7 +93,7 @@ func ValidateEnvironmentUpdate(e *Environment) error {
 
 	var allErrs field.ErrorList
 
-	if err := validateEnvironmentCommon(e, false); err != nil {
+	if err := validateEnvironmentCommon(e, false, logger); err != nil {
 		allErrs = append(allErrs, err...)
 	}
 	if err := validateEnvironmentStatus(e); err != nil {
@@ -119,7 +123,7 @@ func ValidateEnvironmentUpdate(e *Environment) error {
 	)
 }
 
-func validateEnvironmentCommon(e *Environment, isCreate bool) field.ErrorList {
+func validateEnvironmentCommon(e *Environment, isCreate bool, log *logrus.Entry) field.ErrorList {
 	var allErrs field.ErrorList
 
 	if err := validateEnvironmentNamespace(e); err != nil {
@@ -128,7 +132,7 @@ func validateEnvironmentCommon(e *Environment, isCreate bool) field.ErrorList {
 	if err := checkEnvironmentFields(e, isCreate); err != nil {
 		allErrs = append(allErrs, err...)
 	}
-	if err := validateEnvironmentComponents(e, isCreate); err != nil {
+	if err := validateEnvironmentComponents(e, isCreate, log); err != nil {
 		allErrs = append(allErrs, err...)
 	}
 
@@ -168,7 +172,7 @@ func validateEnvironmentStatus(e *Environment) field.ErrorList {
 	return allErrs
 }
 
-func validateEnvironmentComponents(e *Environment, isCreate bool) field.ErrorList {
+func validateEnvironmentComponents(e *Environment, isCreate bool, log *logrus.Entry) field.ErrorList {
 	var allErrs field.ErrorList
 
 	if err := checkEnvironmentComponentsNotEmpty(e.Spec.Components); err != nil {
@@ -183,14 +187,14 @@ func validateEnvironmentComponents(e *Environment, isCreate bool) field.ErrorLis
 		if err := checkEnvironmentComponentDependenciesExist(name, dependsOn, e.Spec.Components, ec.Name); err != nil {
 			allErrs = append(allErrs, err)
 		}
-		//if e.DeletionTimestamp == nil || e.DeletionTimestamp.IsZero() {
-		//	if err := checkOverlaysExist(ec.OverlayFiles, ec.Name); err != nil {
-		//		allErrs = append(allErrs, err...)
-		//	}
-		//	if err := checkTfvarsExist(ec.VariablesFile, ec.Name); err != nil {
-		//		allErrs = append(allErrs, err...)
-		//	}
-		//}
+		if e.DeletionTimestamp == nil || e.DeletionTimestamp.IsZero() {
+			if err := checkOverlaysExist(ec.OverlayFiles, ec.Name, log); err != nil {
+				allErrs = append(allErrs, err...)
+			}
+			if err := checkTfvarsExist(ec.VariablesFile, ec.Name, log); err != nil {
+				allErrs = append(allErrs, err...)
+			}
+		}
 		if isCreate {
 			if err := checkEnvironmentComponentNotInitiallyDestroyed(ec); err != nil {
 				allErrs = append(allErrs, err)
@@ -232,13 +236,35 @@ func checkTfvarsExist(tfvars *VariablesFile, ec string, log *logrus.Entry) field
 func checkPaths(source string, paths []string, fld *field.Path, log *logrus.Entry) field.ErrorList {
 	var allErrs field.ErrorList
 
-	gitAPI, err := git.NewGoGit(ctx, &git.GoGitOptions{Mode: git.ModeToken, Token: env.Config.GitToken})
-	if err != nil {
-		fe := field.InternalError(fld, perrors.New("error validating access to source repository"))
-		allErrs = append(allErrs, fe)
-		return allErrs
+	var gitClient git.API
+
+	if env.Config.GitHubCompanyAuthMethod == util.AuthModeSSH {
+		key := kClient.ObjectKey{Name: env.Config.GitSSHSecretName, Namespace: env.SystemNamespace()}
+		sshKey, err := util.GetPrivateKey(ctx, client, key)
+
+		if err != nil {
+			fe := field.InternalError(fld, perrors.New("error validating access to source repository: Fetching Private Key"))
+			allErrs = append(allErrs, fe)
+			return allErrs
+		}
+		gitClient, err = git.NewGoGit(ctx, &git.GoGitOptions{Mode: git.ModeSSH, PrivateKey: sshKey})
+	} else {
+		watcherServices, err := watcherservices.NewGitHubServices(ctx, client, env.Config.GitHubCompanyOrganization, log)
+		companyToken, err := github.GenerateInstallationToken(log, watcherServices.CompanyGitClient, env.Config.GitHubCompanyOrganization)
+		if err != nil {
+			fe := field.InternalError(fld, perrors.New("error validating access to source repository: GenerateInstallationToken"))
+			allErrs = append(allErrs, fe)
+			return allErrs
+		}
+		gitClient, err = git.NewGoGit(ctx, &git.GoGitOptions{Mode: git.ModeToken, Token: companyToken})
+		if err != nil {
+			fe := field.InternalError(fld, perrors.New("error validating access to source repository: error instantiating git client"))
+			allErrs = append(allErrs, fe)
+			return allErrs
+		}
 	}
-	dir, cleanup, err := git.CloneTemp(gitAPI, source, log)
+
+	dir, cleanup, err := git.CloneTemp(gitClient, source, log)
 	if err != nil {
 		fe := field.InternalError(fld, perrors.New("error validating access to source repository"))
 		allErrs = append(allErrs, fe)
