@@ -80,7 +80,7 @@ export class AuthController {
 
   @Post("setTermAgreementStatus") 
   public async setTermAgreementStatus(@Body() body) {
-    return await this.authService.setTermAgreementStatus(body.company, body.username);
+    return await this.authService.setTermAgreementStatus(body.username, body.company);
   }
 
   private async updateSecret(

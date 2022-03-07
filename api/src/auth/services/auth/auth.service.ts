@@ -19,7 +19,7 @@ export class AuthService {
     return user?.termAgreementStatus || false;
   }
 
-  public async setTermAgreementStatus(company: string, username: string) {
+  public async setTermAgreementStatus(username: string, company: string) {
     return await this.userRepo.save({
       company: company,
       termAgreementStatus: true,
