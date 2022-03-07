@@ -31,10 +31,34 @@ var logger = log.NewLogger().WithFields(logrus.Fields{"name": "controllers.Envir
 
 type EnvironmentValidatorImpl struct {
 	K8sClient kClient.Client
+	gitClient git.API
 }
 
-func NewEnvironmentValidatorImpl(K8sClient kClient.Client) *EnvironmentValidatorImpl {
-	return &EnvironmentValidatorImpl{K8sClient: K8sClient}
+func NewEnvironmentValidatorImpl(k8sClient kClient.Client) *EnvironmentValidatorImpl {
+	return &EnvironmentValidatorImpl{K8sClient: k8sClient}
+}
+
+func (v *EnvironmentValidatorImpl) init(ctx context.Context) error {
+	watcherServices, err := watcherservices.NewGitHubServices(ctx, v.K8sClient, env.Config.GitHubCompanyOrganization, logger)
+	if err != nil {
+		return perrors.Wrap(err, "error instantiating watcher services")
+	}
+	factory := gitfactory.NewFactory(v.K8sClient, logger)
+	var gitOpts gitfactory.Options
+	if env.Config.GitHubCompanyAuthMethod == util.AuthModeSSH {
+		gitOpts.SSHOptions = &gitfactory.SSHOptions{SecretName: env.Config.GitSSHSecretName, SecretNamespace: env.SystemNamespace()}
+	} else {
+		gitOpts.GitHubOptions = &gitfactory.GitHubAppOptions{
+			GitHubClient:       watcherServices.CompanyGitClient,
+			GitHubOrganization: env.Config.GitHubCompanyOrganization,
+		}
+	}
+	gitClient, err := factory.NewGitClient(ctx, &gitOpts)
+	if err != nil {
+		return perrors.Wrap(err, "error instantiating git client")
+	}
+	v.gitClient = gitClient
+	return nil
 }
 
 var _ v1.EnvironmentValidator = (*EnvironmentValidatorImpl)(nil)
@@ -54,9 +78,15 @@ func notifyError(ctx context.Context, e *v1.Environment, ntfr notifier.API, msg 
 }
 
 func (v *EnvironmentValidatorImpl) ValidateEnvironmentCreate(ctx context.Context, e *v1.Environment) error {
+	if v.gitClient == nil {
+		if err := v.init(ctx); err != nil {
+			return perrors.Wrap(err, "error initializing environment validator")
+		}
+	}
+
 	var allErrs field.ErrorList
 
-	if err := v.validateEnvironmentCommon(ctx, e, true, logger); err != nil {
+	if err := v.validateEnvironmentCommon(e, true, logger); err != nil {
 		allErrs = append(allErrs, err...)
 	}
 
@@ -84,9 +114,15 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentCreate(ctx context.Context
 }
 
 func (v *EnvironmentValidatorImpl) ValidateEnvironmentUpdate(ctx context.Context, e *v1.Environment) error {
+	if v.gitClient == nil {
+		if err := v.init(ctx); err != nil {
+			return perrors.Wrap(err, "error initializing environment validator")
+		}
+	}
+
 	var allErrs field.ErrorList
 
-	if err := v.validateEnvironmentCommon(ctx, e, false, logger); err != nil {
+	if err := v.validateEnvironmentCommon(e, false, logger); err != nil {
 		allErrs = append(allErrs, err...)
 	}
 	if err := validateEnvironmentStatus(e); err != nil {
@@ -117,7 +153,6 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentUpdate(ctx context.Context
 }
 
 func (v *EnvironmentValidatorImpl) validateEnvironmentCommon(
-	ctx context.Context,
 	e *v1.Environment,
 	isCreate bool,
 	l *logrus.Entry,
@@ -130,7 +165,7 @@ func (v *EnvironmentValidatorImpl) validateEnvironmentCommon(
 	if err := checkEnvironmentFields(e, isCreate); err != nil {
 		allErrs = append(allErrs, err...)
 	}
-	if err := v.validateEnvironmentComponents(ctx, e, isCreate, l); err != nil {
+	if err := v.validateEnvironmentComponents(e, isCreate, l); err != nil {
 		allErrs = append(allErrs, err...)
 	}
 
@@ -171,7 +206,6 @@ func validateEnvironmentStatus(e *v1.Environment) field.ErrorList {
 }
 
 func (v *EnvironmentValidatorImpl) validateEnvironmentComponents(
-	ctx context.Context,
 	e *v1.Environment,
 	isCreate bool,
 	l *logrus.Entry,
@@ -191,10 +225,10 @@ func (v *EnvironmentValidatorImpl) validateEnvironmentComponents(
 			allErrs = append(allErrs, err)
 		}
 		if e.DeletionTimestamp == nil || e.DeletionTimestamp.IsZero() {
-			if err := v.checkOverlaysExist(ctx, ec.OverlayFiles, ec.Name, l); err != nil {
+			if err := v.checkOverlaysExist(ec.OverlayFiles, ec.Name, l); err != nil {
 				allErrs = append(allErrs, err...)
 			}
-			if err := v.checkTfvarsExist(ctx, ec.VariablesFile, ec.Name, l); err != nil {
+			if err := v.checkTfvarsExist(ec.VariablesFile, ec.Name, l); err != nil {
 				allErrs = append(allErrs, err...)
 			}
 		}
@@ -212,57 +246,34 @@ func (v *EnvironmentValidatorImpl) validateEnvironmentComponents(
 	return allErrs
 }
 
-func (v *EnvironmentValidatorImpl) checkOverlaysExist(ctx context.Context, overlays []*v1.OverlayFile, ec string, l *logrus.Entry) field.ErrorList {
+func (v *EnvironmentValidatorImpl) checkOverlaysExist(overlays []*v1.OverlayFile, ec string, l *logrus.Entry) field.ErrorList {
 	var allErrs field.ErrorList
 
 	for i, overlay := range overlays {
 		fld := field.NewPath("spec").Child("components").Child(ec).Child("overlayFiles").Index(i)
 
-		allErrs = append(allErrs, v.checkPaths(ctx, overlay.Source, overlay.Paths, fld, l)...)
+		allErrs = append(allErrs, v.checkPaths(overlay.Source, overlay.Paths, fld, l)...)
 	}
 
 	return allErrs
 }
 
-func (v *EnvironmentValidatorImpl) checkTfvarsExist(ctx context.Context, tfvars *v1.VariablesFile, ec string, l *logrus.Entry) field.ErrorList {
+func (v *EnvironmentValidatorImpl) checkTfvarsExist(tfvars *v1.VariablesFile, ec string, l *logrus.Entry) field.ErrorList {
 	if tfvars == nil {
 		return field.ErrorList{}
 	}
 
 	fld := field.NewPath("spec").Child("components").Child(ec).Child("variablesFile")
 
-	allErrs := v.checkPaths(ctx, tfvars.Source, []string{tfvars.Path}, fld, l)
+	allErrs := v.checkPaths(tfvars.Source, []string{tfvars.Path}, fld, l)
 
 	return allErrs
 }
 
-func (v *EnvironmentValidatorImpl) checkPaths(ctx context.Context, source string, paths []string, fld *field.Path, l *logrus.Entry) field.ErrorList {
+func (v *EnvironmentValidatorImpl) checkPaths(source string, paths []string, fld *field.Path, l *logrus.Entry) field.ErrorList {
 	var allErrs field.ErrorList
 
-	watcherServices, err := watcherservices.NewGitHubServices(ctx, v.K8sClient, env.Config.GitHubCompanyOrganization, logger)
-	if err != nil {
-		fe := field.InternalError(fld, perrors.New("error validating access to source repository"))
-		allErrs = append(allErrs, fe)
-		return allErrs
-	}
-	factory := gitfactory.NewFactory(v.K8sClient, logger)
-	var gitOpts gitfactory.Options
-	if env.Config.GitHubCompanyAuthMethod == util.AuthModeSSH {
-		gitOpts.SSHOptions = &gitfactory.SSHOptions{SecretName: env.Config.GitSSHSecretName, SecretNamespace: env.SystemNamespace()}
-	} else {
-		gitOpts.GitHubOptions = &gitfactory.GitHubAppOptions{
-			GitHubClient:       watcherServices.CompanyGitClient,
-			GitHubOrganization: env.Config.GitHubCompanyOrganization,
-		}
-	}
-	gitClient, err := factory.NewGitClient(ctx, &gitOpts)
-	if err != nil {
-		fe := field.InternalError(fld, perrors.New("error validating access to source repository"))
-		allErrs = append(allErrs, fe)
-		return allErrs
-	}
-
-	dir, cleanup, err := git.CloneTemp(gitClient, source, l)
+	dir, cleanup, err := git.CloneTemp(v.gitClient, source, l)
 	if err != nil {
 		fe := field.InternalError(fld, perrors.New("error validating access to source repository"))
 		allErrs = append(allErrs, fe)
