@@ -9,9 +9,10 @@ export class AuthService {
     @InjectRepository(User) private readonly userRepo: Repository<User>
   ) {}
 
-  public async getTermAgreementStatus(company: string) {
+  public async getTermAgreementStatus(username: string, company: string) {
     const user = await this.userRepo.findOne({
       where: {
+        username: username,
         company: company,
       },
     });
