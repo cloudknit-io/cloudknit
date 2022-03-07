@@ -2,8 +2,9 @@ package watcherservices
 
 import (
 	"context"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/external/argocd"
 	"strconv"
+
+	"github.com/compuzest/zlifecycle-il-operator/controllers/external/argocd"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/github"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util"

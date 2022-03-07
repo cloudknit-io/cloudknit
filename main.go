@@ -155,9 +155,10 @@ func main() {
 		setupLog.WithError(err).WithField("controller", "Environment").Panic("unable to create controller")
 	}
 
+	environmentValidator := controllers.NewEnvironmentValidatorImpl(mgr.GetClient())
 	if env.Config.KubernetesDisableWebhooks != "true" {
 		setupLog.Info("Initializing webhook service")
-		if err = (&stablev1.Environment{}).SetupWebhookWithManager(mgr); err != nil {
+		if err = (&stablev1.Environment{}).SetupWebhookWithManager(mgr, environmentValidator); err != nil {
 			setupLog.WithError(err).Panic("unable to create webhook", "webhook", "Environment")
 		}
 	}

@@ -48,4 +48,4 @@ func (u *UINotifier) Notify(ctx context.Context, n *notifier2.Notification) erro
 	return nil
 }
 
-var _ notifier2.Notifier = &UINotifier{}
+var _ notifier2.API = &UINotifier{}
