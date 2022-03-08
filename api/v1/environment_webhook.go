@@ -21,6 +21,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
 
+// +k8s:deepcopy-gen=false
 type EnvironmentValidator interface {
 	ValidateEnvironmentCreate(context.Context, *Environment) error
 	ValidateEnvironmentUpdate(context.Context, *Environment) error
@@ -50,7 +51,7 @@ func (in *Environment) ValidateCreate() error {
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type.
 func (in *Environment) ValidateUpdate(old runtime.Object) error {
-	logger.Info("validate update event for environment %s", in.Name)
+	logger.Infof("validate update event for environment %s", in.Name)
 
 	return validator.ValidateEnvironmentUpdate(ctx, in)
 }
