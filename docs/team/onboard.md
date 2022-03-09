@@ -1,16 +1,17 @@
 # Onboard a New Team
 
 When you want to onboard a new team use the following steps:
-1. [Optional] Create a repository that will consist of environments for the team
-2. [Optional] Give github svc account (this will be github apps soon) Admin access (this will be read & webhook creation perms with gh apps) 
-2. Add team config yaml (like below) in the `zlifecycle-config` repo
+
+1. Create a repository that will consist of environments for the team
+2. Make sure the zLifecycle github apps has access to the new repo
+3. Add team config yaml (like below) in the `company-config` repo
 
 ```yaml
 apiVersion: stable.compuzest.com/v1
 kind: Team
 metadata:
   name: zmart-checkout-team
-  namespace: zlifecycle-config
+  namespace: zmart-config
 spec:
   teamName: zmart-checkout-team
   configRepo:
@@ -18,5 +19,4 @@ spec:
     path: "."
 ```
 
-3. Once you commit and push the change it will register the team repo with zLifecycle and watch for any updates
-4. [Optional] Set the AWS credentials for all environments within the team on the Settings page
+4. Once you commit and push the change it will register the team repo with zLifecycle and watch for any updates
