@@ -3,10 +3,14 @@ package controllers
 import (
 	"strings"
 
+	kClient "sigs.k8s.io/controller-runtime/pkg/client"
+
 	"github.com/sirupsen/logrus"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
 )
+
+var k8sclient kClient.Client
 
 func checkIsNamespaceWatched(namespace string) bool {
 	watchedNamespace := env.Config.KubernetesOperatorWatchedNamespace

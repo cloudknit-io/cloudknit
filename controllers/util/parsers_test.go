@@ -1,8 +1,9 @@
 package util_test
 
 import (
-	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
 	"testing"
+
+	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
 

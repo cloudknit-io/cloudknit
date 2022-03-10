@@ -2,6 +2,7 @@ package git
 
 import (
 	"context"
+
 	gogit "github.com/go-git/go-git/v5"
 	"github.com/pkg/errors"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport"
@@ -24,7 +25,6 @@ func NewGoGit(ctx context.Context, opts *GoGitOptions) (API, error) {
 }
 
 func (g *GoGit) getAuthOptions() (transport.AuthMethod, error) {
-
 	if g.options.Mode == ModeToken {
 		if g.options.Token == "" {
 			return nil, errors.New("token is required if auth mode is token")

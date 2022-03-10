@@ -13,16 +13,26 @@
 package v1
 
 import (
+	"context"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/log"
+	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
-	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
 
-// log is for logging in this package.
-var environmentlog = logf.Log.WithName("environment-resource")
+// +k8s:deepcopy-gen=false
+type EnvironmentValidator interface {
+	ValidateEnvironmentCreate(context.Context, *Environment) error
+	ValidateEnvironmentUpdate(context.Context, *Environment) error
+}
 
-func (in *Environment) SetupWebhookWithManager(mgr ctrl.Manager) error {
+var validator EnvironmentValidator
+var ctx = context.Background()
+var logger = log.NewLogger().WithFields(logrus.Fields{"name": "controllers.EnvironmentValidator"})
+
+func (in *Environment) SetupWebhookWithManager(mgr ctrl.Manager, vldtr EnvironmentValidator) error {
+	validator = vldtr
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(in).
 		Complete()
@@ -34,21 +44,21 @@ var _ webhook.Validator = &Environment{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type.
 func (in *Environment) ValidateCreate() error {
-	environmentlog.Info("validating environment create", "name", in.Name)
+	logger.Infof("validating create event for environment %s", in.Name)
 
-	return ValidateEnvironmentCreate(in)
+	return validator.ValidateEnvironmentCreate(ctx, in)
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type.
 func (in *Environment) ValidateUpdate(old runtime.Object) error {
-	environmentlog.Info("validate environment update", "name", in.Name)
+	logger.Infof("validate update event for environment %s", in.Name)
 
-	return ValidateEnvironmentUpdate(in)
+	return validator.ValidateEnvironmentUpdate(ctx, in)
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type.
 func (in *Environment) ValidateDelete() error {
-	environmentlog.Info("validate environment delete", "name", in.Name)
+	logger.Info("validate environment delete", "name", in.Name)
 
 	return nil
 }

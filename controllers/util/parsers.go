@@ -2,8 +2,9 @@ package util
 
 import (
 	"encoding/json"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
 	"strings"
+
+	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
 
 	"github.com/pkg/errors"
 	y "gopkg.in/yaml.v2"

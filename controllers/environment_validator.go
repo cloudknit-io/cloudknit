@@ -1,4 +1,4 @@
-package v1
+package controllers
 
 import (
 	"context"
@@ -6,9 +6,16 @@ import (
 	"os"
 	"time"
 
+	"github.com/compuzest/zlifecycle-il-operator/api/v1"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/factories/gitfactory"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/watcherservices"
+
+	kClient "sigs.k8s.io/controller-runtime/pkg/client"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
-	git "github.com/compuzest/zlifecycle-il-operator/controllers/external/git"
-	notifier2 "github.com/compuzest/zlifecycle-il-operator/controllers/external/notifier"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/external/git"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/external/notifier"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/notifier/uinotifier"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/log"
 
@@ -20,14 +27,48 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 )
 
-var ctx = context.Background()
+var logger = log.NewLogger().WithFields(logrus.Fields{"name": "controllers.EnvironmentValidator"})
 
-func notifyError(e *Environment, ntfr notifier2.Notifier, msg string, debug interface{}) error {
-	n := &notifier2.Notification{
+type EnvironmentValidatorImpl struct {
+	K8sClient kClient.Client
+	gitClient git.API
+}
+
+func NewEnvironmentValidatorImpl(k8sClient kClient.Client) *EnvironmentValidatorImpl {
+	return &EnvironmentValidatorImpl{K8sClient: k8sClient}
+}
+
+func (v *EnvironmentValidatorImpl) init(ctx context.Context) error {
+	watcherServices, err := watcherservices.NewGitHubServices(ctx, v.K8sClient, env.Config.GitHubCompanyOrganization, logger)
+	if err != nil {
+		return perrors.Wrap(err, "error instantiating watcher services")
+	}
+	factory := gitfactory.NewFactory(v.K8sClient, logger)
+	var gitOpts gitfactory.Options
+	if env.Config.GitHubCompanyAuthMethod == util.AuthModeSSH {
+		gitOpts.SSHOptions = &gitfactory.SSHOptions{SecretName: env.Config.GitSSHSecretName, SecretNamespace: env.SystemNamespace()}
+	} else {
+		gitOpts.GitHubOptions = &gitfactory.GitHubAppOptions{
+			GitHubClient:       watcherServices.CompanyGitClient,
+			GitHubOrganization: env.Config.GitHubCompanyOrganization,
+		}
+	}
+	gitClient, err := factory.NewGitClient(ctx, &gitOpts)
+	if err != nil {
+		return perrors.Wrap(err, "error instantiating git client")
+	}
+	v.gitClient = gitClient
+	return nil
+}
+
+var _ v1.EnvironmentValidator = (*EnvironmentValidatorImpl)(nil)
+
+func notifyError(ctx context.Context, e *v1.Environment, ntfr notifier.API, msg string, debug interface{}) error {
+	n := &notifier.Notification{
 		Company:     env.Config.CompanyName,
 		Team:        e.Spec.TeamName,
 		Environment: e.Spec.EnvName,
-		MessageType: notifier2.ERROR,
+		MessageType: notifier.ERROR,
 		Message:     msg,
 		Timestamp:   time.Now(),
 		Debug:       debug,
@@ -36,20 +77,16 @@ func notifyError(e *Environment, ntfr notifier2.Notifier, msg string, debug inte
 	return ntfr.Notify(ctx, n)
 }
 
-func ValidateEnvironmentCreate(e *Environment) error {
-	logger := log.NewLogger().WithFields(logrus.Fields{
-		"logger":      "validator.EnvironmentValidator",
-		"instance":    env.Config.CompanyName,
-		"company":     env.Config.CompanyName,
-		"team":        e.Spec.Teardown,
-		"environment": e.Spec.EnvName,
-	})
-
-	logger.Info("Validating Environment create event")
+func (v *EnvironmentValidatorImpl) ValidateEnvironmentCreate(ctx context.Context, e *v1.Environment) error {
+	if v.gitClient == nil {
+		if err := v.init(ctx); err != nil {
+			return perrors.Wrap(err, "error initializing environment validator")
+		}
+	}
 
 	var allErrs field.ErrorList
 
-	if err := validateEnvironmentCommon(e, true); err != nil {
+	if err := v.validateEnvironmentCommon(e, true, logger); err != nil {
 		allErrs = append(allErrs, err...)
 	}
 
@@ -61,7 +98,7 @@ func ValidateEnvironmentCreate(e *Environment) error {
 		logger.Info("Sending UI error notification")
 		ntfr := uinotifier.NewUINotifier(logger, env.Config.ZLifecycleAPIURL)
 		msg := fmt.Sprintf("error creating environment %s for team %s", e.Spec.EnvName, e.Spec.TeamName)
-		if err := notifyError(e, ntfr, msg, allErrs); err != nil {
+		if err := notifyError(ctx, e, ntfr, msg, allErrs); err != nil {
 			logger.WithError(err).Error("error sending notification to UI")
 		}
 	}
@@ -76,20 +113,16 @@ func ValidateEnvironmentCreate(e *Environment) error {
 	)
 }
 
-func ValidateEnvironmentUpdate(e *Environment) error {
-	logger := log.NewLogger().WithFields(logrus.Fields{
-		"logger":      "validator.EnvironmentValidator",
-		"instance":    env.Config.CompanyName,
-		"company":     env.Config.CompanyName,
-		"team":        e.Spec.Teardown,
-		"environment": e.Spec.EnvName,
-	})
-
-	logger.Info("Validating Environment update event")
+func (v *EnvironmentValidatorImpl) ValidateEnvironmentUpdate(ctx context.Context, e *v1.Environment) error {
+	if v.gitClient == nil {
+		if err := v.init(ctx); err != nil {
+			return perrors.Wrap(err, "error initializing environment validator")
+		}
+	}
 
 	var allErrs field.ErrorList
 
-	if err := validateEnvironmentCommon(e, false); err != nil {
+	if err := v.validateEnvironmentCommon(e, false, logger); err != nil {
 		allErrs = append(allErrs, err...)
 	}
 	if err := validateEnvironmentStatus(e); err != nil {
@@ -104,7 +137,7 @@ func ValidateEnvironmentUpdate(e *Environment) error {
 		logger.Info("Sending UI error notification")
 		ntfr := uinotifier.NewUINotifier(logger, env.Config.ZLifecycleAPIURL)
 		msg := fmt.Sprintf("error updating environment %s for team %s", e.Spec.EnvName, e.Spec.TeamName)
-		if err := notifyError(e, ntfr, msg, allErrs); err != nil {
+		if err := notifyError(ctx, e, ntfr, msg, allErrs); err != nil {
 			logger.WithError(err).Error("error sending notification to UI")
 		}
 	}
@@ -119,7 +152,11 @@ func ValidateEnvironmentUpdate(e *Environment) error {
 	)
 }
 
-func validateEnvironmentCommon(e *Environment, isCreate bool) field.ErrorList {
+func (v *EnvironmentValidatorImpl) validateEnvironmentCommon(
+	e *v1.Environment,
+	isCreate bool,
+	l *logrus.Entry,
+) field.ErrorList {
 	var allErrs field.ErrorList
 
 	if err := validateEnvironmentNamespace(e); err != nil {
@@ -128,7 +165,7 @@ func validateEnvironmentCommon(e *Environment, isCreate bool) field.ErrorList {
 	if err := checkEnvironmentFields(e, isCreate); err != nil {
 		allErrs = append(allErrs, err...)
 	}
-	if err := validateEnvironmentComponents(e, isCreate); err != nil {
+	if err := v.validateEnvironmentComponents(e, isCreate, l); err != nil {
 		allErrs = append(allErrs, err...)
 	}
 
@@ -139,7 +176,7 @@ func validateEnvironmentCommon(e *Environment, isCreate bool) field.ErrorList {
 	return allErrs
 }
 
-func validateEnvironmentNamespace(e *Environment) *field.Error {
+func validateEnvironmentNamespace(e *v1.Environment) *field.Error {
 	ns := env.Config.KubernetesOperatorWatchedNamespace
 	if ns != "" && e.Namespace != env.Config.KubernetesOperatorWatchedNamespace {
 		fld := field.NewPath("meta").Child("namespace")
@@ -149,7 +186,7 @@ func validateEnvironmentNamespace(e *Environment) *field.Error {
 	return nil
 }
 
-func validateEnvironmentStatus(e *Environment) field.ErrorList {
+func validateEnvironmentStatus(e *v1.Environment) field.ErrorList {
 	var allErrs field.ErrorList
 
 	if e.Spec.TeamName != e.Status.TeamName && e.Status.TeamName != "" {
@@ -168,7 +205,11 @@ func validateEnvironmentStatus(e *Environment) field.ErrorList {
 	return allErrs
 }
 
-func validateEnvironmentComponents(e *Environment, isCreate bool) field.ErrorList {
+func (v *EnvironmentValidatorImpl) validateEnvironmentComponents(
+	e *v1.Environment,
+	isCreate bool,
+	l *logrus.Entry,
+) field.ErrorList {
 	var allErrs field.ErrorList
 
 	if err := checkEnvironmentComponentsNotEmpty(e.Spec.Components); err != nil {
@@ -183,14 +224,14 @@ func validateEnvironmentComponents(e *Environment, isCreate bool) field.ErrorLis
 		if err := checkEnvironmentComponentDependenciesExist(name, dependsOn, e.Spec.Components, ec.Name); err != nil {
 			allErrs = append(allErrs, err)
 		}
-		//if e.DeletionTimestamp == nil || e.DeletionTimestamp.IsZero() {
-		//	if err := checkOverlaysExist(ec.OverlayFiles, ec.Name); err != nil {
-		//		allErrs = append(allErrs, err...)
-		//	}
-		//	if err := checkTfvarsExist(ec.VariablesFile, ec.Name); err != nil {
-		//		allErrs = append(allErrs, err...)
-		//	}
-		//}
+		if e.DeletionTimestamp == nil || e.DeletionTimestamp.IsZero() {
+			if err := v.checkOverlaysExist(ec.OverlayFiles, ec.Name, l); err != nil {
+				allErrs = append(allErrs, err...)
+			}
+			if err := v.checkTfvarsExist(ec.VariablesFile, ec.Name, l); err != nil {
+				allErrs = append(allErrs, err...)
+			}
+		}
 		if isCreate {
 			if err := checkEnvironmentComponentNotInitiallyDestroyed(ec); err != nil {
 				allErrs = append(allErrs, err)
@@ -205,40 +246,34 @@ func validateEnvironmentComponents(e *Environment, isCreate bool) field.ErrorLis
 	return allErrs
 }
 
-func checkOverlaysExist(overlays []*OverlayFile, ec string, log *logrus.Entry) field.ErrorList {
+func (v *EnvironmentValidatorImpl) checkOverlaysExist(overlays []*v1.OverlayFile, ec string, l *logrus.Entry) field.ErrorList {
 	var allErrs field.ErrorList
 
 	for i, overlay := range overlays {
 		fld := field.NewPath("spec").Child("components").Child(ec).Child("overlayFiles").Index(i)
 
-		allErrs = append(allErrs, checkPaths(overlay.Source, overlay.Paths, fld, log)...)
+		allErrs = append(allErrs, v.checkPaths(overlay.Source, overlay.Paths, fld, l)...)
 	}
 
 	return allErrs
 }
 
-func checkTfvarsExist(tfvars *VariablesFile, ec string, log *logrus.Entry) field.ErrorList {
+func (v *EnvironmentValidatorImpl) checkTfvarsExist(tfvars *v1.VariablesFile, ec string, l *logrus.Entry) field.ErrorList {
 	if tfvars == nil {
 		return field.ErrorList{}
 	}
 
 	fld := field.NewPath("spec").Child("components").Child(ec).Child("variablesFile")
 
-	allErrs := checkPaths(tfvars.Source, []string{tfvars.Path}, fld, log)
+	allErrs := v.checkPaths(tfvars.Source, []string{tfvars.Path}, fld, l)
 
 	return allErrs
 }
 
-func checkPaths(source string, paths []string, fld *field.Path, log *logrus.Entry) field.ErrorList {
+func (v *EnvironmentValidatorImpl) checkPaths(source string, paths []string, fld *field.Path, l *logrus.Entry) field.ErrorList {
 	var allErrs field.ErrorList
 
-	gitAPI, err := git.NewGoGit(ctx, &git.GoGitOptions{Mode: git.ModeToken, Token: env.Config.GitToken})
-	if err != nil {
-		fe := field.InternalError(fld, perrors.New("error validating access to source repository"))
-		allErrs = append(allErrs, fe)
-		return allErrs
-	}
-	dir, cleanup, err := git.CloneTemp(gitAPI, source, log)
+	dir, cleanup, err := git.CloneTemp(v.gitClient, source, l)
 	if err != nil {
 		fe := field.InternalError(fld, perrors.New("error validating access to source repository"))
 		allErrs = append(allErrs, fe)
@@ -267,7 +302,7 @@ func doesFileExist(repoDir, path string) (bool, error) {
 	return true, nil
 }
 
-func checkEnvironmentFields(e *Environment, isCreate bool) field.ErrorList {
+func checkEnvironmentFields(e *v1.Environment, isCreate bool) field.ErrorList {
 	var allErrs field.ErrorList
 
 	if isCreate {
@@ -296,7 +331,7 @@ func checkEnvironmentFields(e *Environment, isCreate bool) field.ErrorList {
 	return allErrs
 }
 
-func checkEnvironmentComponentsNotEmpty(ecs []*EnvironmentComponent) *field.Error {
+func checkEnvironmentComponentsNotEmpty(ecs []*v1.EnvironmentComponent) *field.Error {
 	if len(ecs) == 0 {
 		fld := field.NewPath("spec").Child("components")
 		return field.Invalid(fld, ecs, "environment must have at least 1 component")
@@ -304,7 +339,7 @@ func checkEnvironmentComponentsNotEmpty(ecs []*EnvironmentComponent) *field.Erro
 	return nil
 }
 
-func checkEnvironmentComponentNotInitiallyDestroyed(ec *EnvironmentComponent) *field.Error {
+func checkEnvironmentComponentNotInitiallyDestroyed(ec *v1.EnvironmentComponent) *field.Error {
 	if ec.Destroy {
 		fld := field.NewPath("spec").Child("components").Child(ec.Name).Child("destroy")
 		return field.Invalid(fld, ec.Destroy, "environment component cannot be initialized with 'destroy' equal to true")
@@ -322,7 +357,7 @@ func checkEnvironmentComponentReferencesItself(name string, deps []string, ec st
 	return nil
 }
 
-func checkEnvironmentComponentDependenciesExist(comp string, deps []string, ecs []*EnvironmentComponent, ec string) *field.Error {
+func checkEnvironmentComponentDependenciesExist(comp string, deps []string, ecs []*v1.EnvironmentComponent, ec string) *field.Error {
 	for _, dep := range deps {
 		exists := false
 		for _, ec := range ecs {
