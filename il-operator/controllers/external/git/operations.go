@@ -2,11 +2,12 @@ package git
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/pkg/errors"
 
 	"github.com/sirupsen/logrus"
 
@@ -40,7 +41,6 @@ func CloneTemp(gitAPI API, repo string, log *logrus.Entry) (dir string, cleanup 
 	log.Infof("Cloning repository %s into a temp folder", repo)
 
 	tempDir, err := createTempDir(repo)
-
 	if err != nil {
 		return "", nil, errors.Wrapf(err, "error generating temp dir using system tempdir")
 	}

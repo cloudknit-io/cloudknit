@@ -17,6 +17,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/compuzest/zlifecycle-il-operator/controllers/factories/gitfactory"
+
 	secrets2 "github.com/compuzest/zlifecycle-il-operator/controllers/codegen/secrets"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/secrets"
 
@@ -166,33 +168,20 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 
 	var gitClient git.API
 
-	if env.Config.GitHubCompanyAuthMethod == "ssh" {
-		key := kClient.ObjectKey{Name: env.Config.GitSSHSecretName, Namespace: env.SystemNamespace()}
-		sshKey, err := util.GetPrivateKey(apmCtx, r.Client, key)
-		if err != nil {
-			envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error fetching git ssh key"))
-			return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
-		}
-		gitClient, err = git.NewGoGit(apmCtx, &git.GoGitOptions{Mode: git.ModeSSH, PrivateKey: sshKey})
-		if err != nil {
-			envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error instantiating git client"))
-			return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
-		}
+	factory := gitfactory.NewFactory(r.Client, r.LogV2)
+	var gitOpts gitfactory.Options
+	if env.Config.GitHubCompanyAuthMethod == util.AuthModeSSH {
+		gitOpts.SSHOptions = &gitfactory.SSHOptions{SecretName: env.Config.GitSSHSecretName, SecretNamespace: env.SystemNamespace()}
 	} else {
-		companyToken, err := github.GenerateInstallationToken(r.LogV2, watcherServices.CompanyGitClient, env.Config.GitHubCompanyOrganization)
-		if err != nil {
-			envErr := zerrors.NewEnvironmentError(
-				environment.Spec.TeamName,
-				environment.Spec.EnvName,
-				perrors.Wrapf(err, "error generating installation token for git organization [%s]", env.Config.GitHubCompanyOrganization),
-			)
-			return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
+		gitOpts.GitHubOptions = &gitfactory.GitHubAppOptions{
+			GitHubClient:       watcherServices.CompanyGitClient,
+			GitHubOrganization: env.Config.GitHubCompanyOrganization,
 		}
-		gitClient, err = git.NewGoGit(apmCtx, &git.GoGitOptions{Mode: git.ModeToken, Token: companyToken})
-		if err != nil {
-			envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error instantiating git client"))
-			return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
-		}
+	}
+	gitClient, err = factory.NewGitClient(apmCtx, &gitOpts)
+	if err != nil {
+		envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error instantiating git client"))
+		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
 	}
 	fs := file.NewOsFileService()
 

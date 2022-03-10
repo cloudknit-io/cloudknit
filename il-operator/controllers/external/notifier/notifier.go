@@ -2,6 +2,6 @@ package notifier
 
 import "context"
 
-type Notifier interface {
+type API interface {
 	Notify(ctx context.Context, n *Notification) error
 }

@@ -15,10 +15,11 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/watcherservices"
 
