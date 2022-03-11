@@ -22,6 +22,7 @@ nav:
   - define/approval.md
   - define/selective_reconcile.md
   - define/destroy.md
+  - define/examples.md
 - Provision:
   - provision/component_details_view.md
   - provision/cost_estimates.md
