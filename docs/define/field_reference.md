@@ -4,7 +4,7 @@ An environment YAML allows you to provide all the details of an environment.
 
 ## Sections
 
-An environment YAML allows you to provide all the details of an environment. It has following main sections:
+It has following main sections:
 
 ### Fields
 
@@ -15,9 +15,7 @@ An environment YAML allows you to provide all the details of an environment. It 
 |`metadata`|[`Metadata`](#Metadata)|_No description available_|
 |`spec`|[`spec`](#spec)|_No description available_|
 
-## Customer Resource Header
-
-An environment YAML allows you to provide all the details of an environment. It has following main sections:
+## Custom Resource Header
 
 ```yaml
 apiVersion: stable.compuzest.com/v1
