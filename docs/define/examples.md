@@ -13,7 +13,6 @@ metadata:
 spec:
   teamName: checkout
   envName: staging
-  autoApprove: true
   components:
     - name: networking
       type: terraform
@@ -30,26 +29,6 @@ spec:
       tags:
         - name: componentType
           value: app
-    - name: platform-eks
-      type: terraform
-      dependsOn: [networking]
-      module:
-        source: git@github.com:terraform-aws-modules/terraform-aws-eks.git?ref=v17.24.0
-      variablesFile:
-        source: "https://github.com/zl-zmart-tech/checkout-team-config.git"
-        path: "staging/tfvars/platform-eks.tfvars"
-      overlayFiles:
-        - source: "https://github.com/zl-zmart-tech/checkout-team-config.git"
-          paths:
-            - staging/tf/eks.tf
-    - name: eks-addons
-      type: terraform
-      dependsOn: [platform-eks]
-      module:
-        source: aws
-        name: s3-bucket
-      outputs:
-        - name: s3_bucket_arn
     - name: platform-ec2
       type: terraform
       dependsOn: [networking]
