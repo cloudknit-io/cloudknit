@@ -1,4 +1,4 @@
-# Examples of Environment YAML
+# Example YAMLs
 
 See below some examples of Environment YAML.
 
