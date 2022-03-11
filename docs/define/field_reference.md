@@ -74,3 +74,18 @@ spec:
   envName: demo
 ```
 ---
+
+## Components
+
+Array of environment components.
+
+### Fields
+| Field Name | Field Type | Description   |
+|:----------:|:----------:|---------------|
+|`name`|`string`| Name of the environment component |
+|`type`|`string`| `terraform` is currently the only supported type |
+|`destroy`|`boolean`| Flag for component level `teardown`. Default is `false`. More info [here](../destroy.md) |
+|`destroyProtection`|`boolean`| If set to `true`, do not run destroy actions against this component (default is `false`) |
+
+
+<div style="background-color: #ccc; height: 1px"></div>
