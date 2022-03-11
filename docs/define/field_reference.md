@@ -84,8 +84,9 @@ Array of environment components.
 |:----------:|:----------:|---------------|
 |`name`|`string`| Name of the environment component |
 |`type`|`string`| `terraform` is currently the only supported type |
-|`destroy`|`boolean`| Flag for component level `teardown`. Default is `false`. More info [here](../destroy.md) |
-|`destroyProtection`|`boolean`| If set to `true`, do not run destroy actions against this component (default is `false`) |
+|`destroy`|`boolean`| Optional field. Flag for component level `teardown`. Default is `false`. More info [here](../destroy.md) |
+|`destroyProtection`|`boolean`| Optional field. If set to `true`, do not run destroy actions against this component (default is `false`) |
+|`aws`| | Optional field. Configuration block for AWS provider |
 
 
 <div style="background-color: #ccc; height: 1px"></div>
