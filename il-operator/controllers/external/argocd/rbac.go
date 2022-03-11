@@ -50,7 +50,7 @@ func (rbacMap *RbacMap) generatePolicyCsv() string {
 }
 
 func (rbacMap *RbacMap) updateRbac(subject string, projects []string, oidcGroup string) {
-	var policies []*RbacPolicy
+	policies := make([]*RbacPolicy, 0, len(projects)+1)
 	policies = append(policies, newRepositoryPolicy(subject))
 	for _, project := range projects {
 		policies = append(policies, newApplicationPolicy(subject, "*", project))
