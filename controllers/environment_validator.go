@@ -103,6 +103,10 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentCreate(ctx context.Context
 		}
 	}
 
+	for _, e := range allErrs {
+		logger.Warnf("validating webhook error for create event: %v", e)
+	}
+
 	return apierrors.NewInvalid(
 		schema.GroupKind{
 			Group: "stable.compuzest.com",
@@ -140,6 +144,10 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentUpdate(ctx context.Context
 		if err := notifyError(ctx, e, ntfr, msg, allErrs); err != nil {
 			logger.WithError(err).Error("error sending notification to UI")
 		}
+	}
+
+	for _, e := range allErrs {
+		logger.Warnf("validating webhook error for update event: %v", e)
 	}
 
 	return apierrors.NewInvalid(
