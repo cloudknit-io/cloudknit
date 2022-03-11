@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/compuzest/zlifecycle-il-operator/api/v1"
+	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/factories/gitfactory"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/watcherservices"
@@ -78,10 +78,10 @@ func notifyError(ctx context.Context, e *v1.Environment, ntfr notifier.API, msg 
 }
 
 func (v *EnvironmentValidatorImpl) ValidateEnvironmentCreate(ctx context.Context, e *v1.Environment) error {
-	if v.gitClient == nil {
-		if err := v.init(ctx); err != nil {
-			return perrors.Wrap(err, "error initializing environment validator")
-		}
+	if err := v.init(ctx); err != nil {
+		msg := "error initializing environment validator"
+		logger.Errorf(msg+": %v", err)
+		return perrors.Wrap(err, msg)
 	}
 
 	var allErrs field.ErrorList
@@ -114,10 +114,10 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentCreate(ctx context.Context
 }
 
 func (v *EnvironmentValidatorImpl) ValidateEnvironmentUpdate(ctx context.Context, e *v1.Environment) error {
-	if v.gitClient == nil {
-		if err := v.init(ctx); err != nil {
-			return perrors.Wrap(err, "error initializing environment validator")
-		}
+	if err := v.init(ctx); err != nil {
+		msg := "error initializing environment validator"
+		logger.Errorf(msg+": %v", err)
+		return perrors.Wrap(err, msg)
 	}
 
 	var allErrs field.ErrorList
@@ -275,6 +275,7 @@ func (v *EnvironmentValidatorImpl) checkPaths(source string, paths []string, fld
 
 	dir, cleanup, err := git.CloneTemp(v.gitClient, source, l)
 	if err != nil {
+		logger.Errorf("error temp cloning repo [%s]: %v", source, err)
 		fe := field.InternalError(fld, perrors.New("error validating access to source repository"))
 		allErrs = append(allErrs, fe)
 		return allErrs

@@ -14,6 +14,7 @@ package v1
 
 import (
 	"context"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/log"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -27,9 +28,11 @@ type EnvironmentValidator interface {
 	ValidateEnvironmentUpdate(context.Context, *Environment) error
 }
 
-var validator EnvironmentValidator
-var ctx = context.Background()
-var logger = log.NewLogger().WithFields(logrus.Fields{"name": "controllers.EnvironmentValidator"})
+var (
+	validator EnvironmentValidator
+	ctx       = context.Background()
+	logger    = log.NewLogger().WithFields(logrus.Fields{"name": "controllers.EnvironmentValidator"})
+)
 
 func (in *Environment) SetupWebhookWithManager(mgr ctrl.Manager, vldtr EnvironmentValidator) error {
 	validator = vldtr

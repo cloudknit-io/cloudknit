@@ -118,12 +118,6 @@ type HTTPRepositoryAPI struct {
 	c   *github.RepositoriesService
 }
 
-type HTTPAppAPI struct {
-	ctx context.Context
-	as  *github.AppsService
-	rs  *github.RepositoriesService
-}
-
 // GitHub models
 
 type HookCfg struct {
