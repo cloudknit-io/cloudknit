@@ -1,3 +1,3 @@
-# Automatic Drift Detection & Reconcile
+# Auto Drift Detection & Reconcile
 
 COMING SOON

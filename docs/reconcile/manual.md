@@ -1,4 +1,4 @@
-# Manual Reconciliation
+# Manual Reconcile
 
 Environment reconciliation can happen in two ways. A gitops push will trigger an environment to reconcile and re-provision based on the latest plan, but you can also manually trigger a reconcile which will re run the last plan.
 
