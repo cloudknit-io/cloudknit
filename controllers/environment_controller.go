@@ -230,7 +230,7 @@ func (r *EnvironmentReconciler) doReconcile(
 	// push zl il changes
 	zlPushed, err := ilService.ZLILGitAPI.CommitAndPush(&commitInfo)
 	if err != nil {
-		return perrors.Wrap(err, "error pushing to zlifecycle IL repo")
+		return perrors.Wrapf(err, "error pushing to zlifecycle IL repo [%s]", env.Config.ILZLifecycleRepositoryURL)
 	}
 
 	if !zlPushed {
@@ -240,7 +240,7 @@ func (r *EnvironmentReconciler) doReconcile(
 	// push zl il changes
 	tfPushed, err := ilService.TFILGitAPI.CommitAndPush(&commitInfo)
 	if err != nil {
-		return perrors.Wrap(err, "error pushing to terraform IL repo")
+		return perrors.Wrapf(err, "error pushing to terraform IL repo [%s]", env.Config.ILTerraformRepositoryURL)
 	}
 
 	if !tfPushed {

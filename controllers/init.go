@@ -61,8 +61,6 @@ func (r *EnvironmentReconciler) initServices(ctx context.Context, environment *v
 	if err != nil {
 		return nil, perrors.Wrap(err, "error getting environment from k8s cache")
 	}
-	defer ilService.TFILCleanupF()
-	defer ilService.ZLILCleanupF()
 
 	var companyGitClient git.API
 
