@@ -43,6 +43,22 @@ func TestInterpolate(t *testing.T) {
 	assert.Equal(t, interpolated.Spec.Components[0].Name, expected.Spec.Components[0].Name)
 }
 
+func TestInterpolateTFVars(t *testing.T) {
+	t.Parallel()
+
+	zlocals := []*v1.LocalVariable{
+		{Name: "bar", Value: "bazz"},
+	}
+	tfvars := `var1="foo"
+var2="${zlocals.bar}"`
+	expectedTFVars := `var1="foo"
+var2="bazz"`
+
+	generatedTFVars, err := interpolator.InterpolateTFVars(tfvars, zlocals)
+	assert.NoError(t, err)
+	assert.Equal(t, generatedTFVars, expectedTFVars)
+}
+
 func TestBuildVariableMap(t *testing.T) {
 	t.Parallel()
 
