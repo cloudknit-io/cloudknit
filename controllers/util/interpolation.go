@@ -12,7 +12,9 @@ const (
 	paramRegex      = "[a-zA-Z1-9]*\\.[a-zA-Z1-9]*"
 )
 
-func Interpolate(template string, vars map[string]string) (string, error) {
+type Variables map[string]string
+
+func Interpolate(template string, vars Variables) (string, error) {
 	params := extractParams(template)
 
 	for _, p := range params {

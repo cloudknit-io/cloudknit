@@ -2,7 +2,7 @@ package interpolator_test
 
 import (
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/interpolator"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/interpolator"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -36,7 +36,7 @@ func TestInterpolate(t *testing.T) {
 		},
 	}
 
-	interpolated, err := interpolator.Interpolate(e)
+	interpolated, err := interpolator.Interpolate(*e)
 	assert.NoError(t, err)
 	assert.Equal(t, interpolated.Spec.TeamName, expected.Spec.TeamName)
 	assert.Equal(t, interpolated.Spec.EnvName, expected.Spec.EnvName)

@@ -150,7 +150,7 @@ func generateTerraformComponent(
 	var tfvars string
 	if ec.VariablesFile != nil {
 		key := kClient.ObjectKey{Namespace: e.Namespace, Name: e.Name}
-		_tfvars, err := gotfvars.GetVariablesFromTfvarsFile(gitReconciler, gitClient, log, &key, ec)
+		_tfvars, err := gotfvars.GetVariablesFromTfvarsFile(gitReconciler, gitClient, log, &key, ec, e.Spec.ZLocals)
 		if err != nil {
 			return zerrors.NewEnvironmentComponentError(ec.Name, perrors.Wrap(err, "error reading variables from tfvars file"))
 		}

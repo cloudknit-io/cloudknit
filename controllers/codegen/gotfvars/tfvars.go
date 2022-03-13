@@ -2,6 +2,7 @@ package gotfvars
 
 import (
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/interpolator"
 	"os"
 	"path/filepath"
 
@@ -34,6 +35,7 @@ func GetVariablesFromTfvarsFile(
 	log *logrus.Entry,
 	key *client.ObjectKey,
 	ec *v1.EnvironmentComponent,
+	zlocals []*v1.LocalVariable,
 ) (string, error) {
 	tempRepoDir, cleanup, err := git.CloneTemp(gitClient, ec.VariablesFile.Source, log)
 	if err != nil {
@@ -51,11 +53,15 @@ func GetVariablesFromTfvarsFile(
 		return "", perrors.Wrapf(err, "error reading file [%s]", path)
 	}
 
+	tfvars := string(buff)
+	interpolated, err := interpolator.InterpolateTFVars(tfvars, zlocals)
+	if err != nil {
+		return "", err
+	}
+
 	submitToGitReconciler(gitReconciler, key, ec, log)
 
-	tfvars := string(buff)
-
-	return tfvars, nil
+	return interpolated, nil
 }
 
 func submitToGitReconciler(gitReconciler gitreconciler.API, key *client.ObjectKey, ec *v1.EnvironmentComponent, log *logrus.Entry) {

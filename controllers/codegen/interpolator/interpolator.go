@@ -11,9 +11,18 @@ const (
 	identifierLocal = "zlocals"
 )
 
-type Variables map[string]string
+func InterpolateTFVars(tfvars string, zlocals []*v1.LocalVariable) (string, error) {
+	vars := BuildZLocalsVariableMap(zlocals)
 
-func Interpolate(e *v1.Environment) (*v1.Environment, error) {
+	interpolated, err := util.Interpolate(tfvars, vars)
+	if err != nil {
+		return "", errors.Wrapf(err, "error interpolating tfvars")
+	}
+
+	return interpolated, nil
+}
+
+func Interpolate(e v1.Environment) (*v1.Environment, error) {
 	vars := BuildZLocalsVariableMap(e.Spec.ZLocals)
 
 	teamName, err := util.Interpolate(e.Spec.TeamName, vars)
@@ -36,10 +45,10 @@ func Interpolate(e *v1.Environment) (*v1.Environment, error) {
 		e.Spec.Components[i] = interpolated
 	}
 
-	return e, nil
+	return &e, nil
 }
 
-func interpolateComponent(ec *v1.EnvironmentComponent, index int, vars Variables) (*v1.EnvironmentComponent, error) {
+func interpolateComponent(ec *v1.EnvironmentComponent, index int, vars util.Variables) (*v1.EnvironmentComponent, error) {
 	name, err := util.Interpolate(ec.Name, vars)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error interpolating environment.spec.components[%d].name: [%s]", index, name)
@@ -57,7 +66,7 @@ func interpolateComponent(ec *v1.EnvironmentComponent, index int, vars Variables
 	return ec, nil
 }
 
-func interpolateVariable(v *v1.Variable, ecIndex, varIndex int, vars Variables) (*v1.Variable, error) {
+func interpolateVariable(v *v1.Variable, ecIndex, varIndex int, vars util.Variables) (*v1.Variable, error) {
 	name, err := util.Interpolate(v.Name, vars)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error interpolating environment.spec.components[%d].variables[%d].name: [%s]", ecIndex, varIndex, name)
@@ -79,7 +88,7 @@ func interpolateVariable(v *v1.Variable, ecIndex, varIndex int, vars Variables) 
 	return v, nil
 }
 
-func BuildZLocalsVariableMap(zlocals []*v1.LocalVariable) Variables {
+func BuildZLocalsVariableMap(zlocals []*v1.LocalVariable) util.Variables {
 	vars := make(map[string]string, len(zlocals))
 
 	for _, l := range zlocals {
