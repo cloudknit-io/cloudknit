@@ -230,7 +230,7 @@ func (r *EnvironmentReconciler) doReconcile(
 	// push zl il changes
 	zlPushed, err := ilService.ZLILGitAPI.CommitAndPush(&commitInfo)
 	if err != nil {
-		return nil
+		return perrors.Wrap(err, "error pushing to zlifecycle IL repo")
 	}
 
 	if !zlPushed {
@@ -240,7 +240,7 @@ func (r *EnvironmentReconciler) doReconcile(
 	// push zl il changes
 	tfPushed, err := ilService.TFILGitAPI.CommitAndPush(&commitInfo)
 	if err != nil {
-		return nil
+		return perrors.Wrap(err, "error pushing to terraform IL repo")
 	}
 
 	if !tfPushed {
@@ -249,13 +249,13 @@ func (r *EnvironmentReconciler) doReconcile(
 
 	if zlPushed || tfPushed {
 		if err := r.handleDirtyILState(argoworkflowClient, environment); err != nil {
-			return nil
+			return perrors.Wrap(err, "error handling dirty IL state")
 		}
 	}
 
 	// persist zlstate
 	if err := zlstateManagerClient.Put(env.Config.CompanyName, environment); err != nil {
-		return nil
+		return perrors.Wrap(err, "error updating zlstate")
 	}
 
 	return nil
