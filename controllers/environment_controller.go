@@ -217,7 +217,7 @@ func (r *EnvironmentReconciler) doReconcile(
 	}
 	r.LogV2.WithField("isDeleteEvent", isDeleteEvent).Infof("Generating %s workflow of workflows", event)
 	if err := generateAndSaveWorkflowOfWorkflows(fileService, ilService, environment); err != nil {
-		return nil
+		return perrors.Wrap(err, "error generating and saving workflow of workflows")
 	}
 
 	// push changes to GitOps repositories
