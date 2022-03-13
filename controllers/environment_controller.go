@@ -17,16 +17,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/compuzest/zlifecycle-il-operator/controllers/factories/gitfactory"
-
-	secrets2 "github.com/compuzest/zlifecycle-il-operator/controllers/codegen/secrets"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/external/secrets"
-
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/k8s"
-
-	"github.com/compuzest/zlifecycle-il-operator/controllers/watcherservices"
-
-	"github.com/compuzest/zlifecycle-il-operator/controllers/external/github"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/il"
@@ -130,71 +121,37 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	}
 
 	// service init
-	zlstateManagerClient := zlstate.NewHTTPStateManager(apmCtx, r.LogV2)
-	argocdClient := argocd.NewHTTPClient(apmCtx, r.LogV2, env.Config.ArgocdServerURL)
-	argoworkflowClient := argoworkflow.NewHTTPClient(apmCtx, env.Config.ArgoWorkflowsServerURL)
-	watcherServices, err := watcherservices.NewGitHubServices(apmCtx, r.Client, env.Config.GitHubCompanyOrganization, r.LogV2)
-	if err != nil {
-		envErr := zerrors.NewEnvironmentError(
-			environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error instantiating watcher services"),
-		)
-		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
-	}
-	secretsClient := secrets.LazyLoadSSM(apmCtx, r.Client)
-
-	secretsMeta := secrets2.Meta{
-		Company:     env.Config.CompanyName,
-		Team:        environment.Spec.TeamName,
-		Environment: environment.Spec.EnvName,
-	}
-	k8sClient := k8s.LazyLoadEKS(apmCtx, secretsClient, &secretsMeta, r.LogV2)
-
-	ilToken, err := github.GenerateInstallationToken(r.LogV2, watcherServices.ILGitClient, env.Config.GitILRepositoryOwner)
+	envServices, err := r.initServices(apmCtx, environment)
 	if err != nil {
 		envErr := zerrors.NewEnvironmentError(
 			environment.Spec.TeamName,
 			environment.Spec.EnvName,
-			perrors.Wrapf(err, "error generating installation token for git organization [%s]", env.Config.GitILRepositoryOwner),
+			perrors.Wrap(err, "error initializing environment services"),
 		)
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
 	}
-	ilService, err := il.NewService(apmCtx, ilToken, r.LogV2)
-	if err != nil {
-		envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error getting environment from k8s cache"))
-		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
-	}
-	defer ilService.TFILCleanupF()
-	defer ilService.ZLILCleanupF()
 
-	var gitClient git.API
-
-	factory := gitfactory.NewFactory(r.Client, r.LogV2)
-	var gitOpts gitfactory.Options
-	if env.Config.GitHubCompanyAuthMethod == util.AuthModeSSH {
-		gitOpts.SSHOptions = &gitfactory.SSHOptions{SecretName: env.Config.GitSSHSecretName, SecretNamespace: env.SystemNamespace()}
-	} else {
-		gitOpts.GitHubOptions = &gitfactory.GitHubAppOptions{
-			GitHubClient:       watcherServices.CompanyGitClient,
-			GitHubOrganization: env.Config.GitHubCompanyOrganization,
-		}
-	}
-	gitClient, err = factory.NewGitClient(apmCtx, &gitOpts)
-	if err != nil {
-		envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error instantiating git client"))
-		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
-	}
-	fs := file.NewOsFileService()
+	defer envServices.ILService.TFILCleanupF()
+	defer envServices.ILService.ZLILCleanupF()
 
 	// finalizer handling
 	if env.Config.KubernetesDisableEnvironmentFinalizer != "true" {
 		finalizer := env.Config.KubernetesEnvironmentFinalizerName
-		finalizerCompleted, err := r.handleFinalizer(apmCtx, environment, finalizer, argocdClient)
+		finalizerCompleted, err := r.handleFinalizer(ctx, environment, finalizer, envServices)
 		if err != nil {
-			envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error handling finalizer"))
+			envErr := zerrors.NewEnvironmentError(
+				environment.Spec.TeamName,
+				environment.Spec.EnvName,
+				perrors.Wrap(err, "error handling environment finalizer"),
+			)
 			return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
 		}
 		if finalizerCompleted {
-			r.LogV2.Info("Finalizer completed, ending reconcile")
+			r.Log.Info(
+				fmt.Sprintf("Environment finalizer completed for %s/%s, ending reconcile", environment.Spec.TeamName, environment.Spec.EnvName),
+				"team", environment.Spec.TeamName,
+				"environment", environment.Spec.EnvName,
+			)
 			return ctrl.Result{}, nil
 		}
 	}
@@ -203,13 +160,13 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	if err = r.doReconcile(
 		apmCtx,
 		environment,
-		ilService,
-		fs,
-		gitClient,
-		argoworkflowClient,
-		zlstateManagerClient,
-		k8sClient,
-		argocdClient,
+		envServices.ILService,
+		envServices.FileService,
+		envServices.CompanyGitClient,
+		envServices.ArgoWorkflowClient,
+		envServices.ZLStateManagerClient,
+		envServices.K8sClient,
+		envServices.ArgocdClient,
 	); err != nil {
 		envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error executing reconcile"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
@@ -245,16 +202,20 @@ func (r *EnvironmentReconciler) doReconcile(
 	isDeleteEvent := isHardDelete || isSoftDelete
 	if !isDeleteEvent {
 		if err := r.updateStatus(ctx, environment); err != nil {
-			return nil
+			return perrors.Wrap(err, "error updating environment CRD status")
 		}
 	}
 	if !isHardDelete {
 		if err := r.handleNonDeleteEvent(ilService, environment, fileService, gitClient, k8sClient, argocdClient); err != nil {
-			return perrors.Wrapf(err, "error handling non-delete event for environment %s", environment.Spec.EnvName)
+			return perrors.Wrap(err, "error handling non-delete event for environment")
 		}
 	}
 
-	r.LogV2.WithField("isDeleteEvent", isDeleteEvent).Info("Generating workflow of workflows")
+	event := "non-delete"
+	if isDeleteEvent {
+		event = "delete"
+	}
+	r.LogV2.WithField("isDeleteEvent", isDeleteEvent).Infof("Generating %s workflow of workflows", event)
 	if err := generateAndSaveWorkflowOfWorkflows(fileService, ilService, environment); err != nil {
 		return nil
 	}
@@ -385,7 +346,7 @@ func (r *EnvironmentReconciler) updateStatus(ctx context.Context, e *stablev1.En
 	isStateDirty := hasEnvironmentInfoChanged || haveComponentsChanged
 
 	if isStateDirty {
-		r.LogV2.WithContext(ctx).Infof("Environment state is dirty and needs to be updated for environment %s", e.Spec.EnvName)
+		r.LogV2.Infof("Environment state is dirty and needs to be updated for environment %s", e.Spec.EnvName)
 		e.Status.TeamName = e.Spec.TeamName
 		e.Status.EnvName = e.Spec.EnvName
 		e.Status.Components = e.Spec.Components
@@ -403,7 +364,7 @@ func (r *EnvironmentReconciler) handleFinalizer(
 	ctx context.Context,
 	e *stablev1.Environment,
 	finalizer string,
-	argocdAPI argocd.API,
+	envServices *EnvironmentServices,
 ) (completed bool, err error) {
 	completed = false
 	if e.DeletionTimestamp.IsZero() {
@@ -416,7 +377,7 @@ func (r *EnvironmentReconciler) handleFinalizer(
 		}
 	} else {
 		if util.ContainsString(e.GetFinalizers(), finalizer) {
-			if err := r.postDeleteHook(ctx, e, argocdAPI); err != nil {
+			if err := r.postDeleteHook(ctx, e, envServices); err != nil {
 				return completed, err
 			}
 
@@ -437,11 +398,22 @@ func (r *EnvironmentReconciler) handleFinalizer(
 func (r *EnvironmentReconciler) postDeleteHook(
 	ctx context.Context,
 	e *stablev1.Environment,
-	argocdAPI argocd.API,
+	envServices *EnvironmentServices,
 ) error {
 	r.LogV2.Infof("Executing post delete hook for finalizer in environment %s", e.Spec.EnvName)
-
-	_ = r.deleteDanglingArgocdApps(e, argocdAPI)
+	if err := r.doReconcile(
+		ctx,
+		e,
+		envServices.ILService,
+		envServices.FileService,
+		envServices.CompanyGitClient,
+		envServices.ArgoWorkflowClient,
+		envServices.ZLStateManagerClient,
+		envServices.K8sClient,
+		envServices.ArgocdClient,
+	); err != nil {
+		return perrors.Wrap(err, "error executing reconcile")
+	}
 	_ = r.removeEnvironmentFromGitReconciler(e)
 	return nil
 }
