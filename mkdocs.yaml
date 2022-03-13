@@ -29,7 +29,8 @@ nav:
   - provision/errors.md
   - provision/manual_approval.md
 - Reconcile:
-  - reconcile/reconcile.md
+  - reconcile/manual.md
+  - reconcile/auto.md
 - teardown/index.md
 - Team:
   - team/onboard.md

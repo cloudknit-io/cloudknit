@@ -1,8 +1,6 @@
-# Reconcile an Environment
+# Manual Reconciliation
 
 Environment reconciliation can happen in two ways. A gitops push will trigger an environment to reconcile and re-provision based on the latest plan, but you can also manually trigger a reconcile which will re run the last plan.
-
-## Manual Reconciliation
 
 You can reconcile and synchronize your environment, either from the **environment card** or from the **DAG view**.
 
@@ -24,12 +22,9 @@ From the Environment DAG view.
 
 There is a sync button, at the top right region of the page, click that icon to **reconcile** the environment.
 
-
-
 # Status
 
 * **Green:** Synced
 * **Grey:** Not In Sync
 * **Red:** Error
 * **Rotating:** Sync In Progress
-
