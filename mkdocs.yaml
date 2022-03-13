@@ -30,8 +30,7 @@ nav:
   - provision/manual_approval.md
 - Reconcile:
   - reconcile/reconcile.md
-- Teardown:
-  - teardown/destroy.md
+- teardown/index.md
 - Team:
   - team/onboard.md
 
