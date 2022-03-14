@@ -2,6 +2,7 @@ package interpolator
 
 import (
 	"fmt"
+
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
 	"github.com/pkg/errors"
@@ -22,23 +23,23 @@ func InterpolateTFVars(tfvars string, zlocals []*v1.LocalVariable) (string, erro
 	return interpolated, nil
 }
 
-func Interpolate(e v1.Environment) (*v1.Environment, error) {
+func Interpolate(e v1.Environment) (*v1.Environment, error) { // nolint
 	vars := BuildZLocalsVariableMap(e.Spec.ZLocals)
 
 	teamName, err := util.Interpolate(e.Spec.TeamName, vars)
 	if err != nil {
-		return nil, errors.Wrapf(err, "error interpolating environment.spec.teamName: [%s]", teamName)
+		return nil, errors.Wrapf(err, "error interpolating environment.spec.teamName: [%s]", e.Spec.TeamName)
 	}
 	e.Spec.TeamName = teamName
 
 	envName, err := util.Interpolate(e.Spec.EnvName, vars)
 	if err != nil {
-		return nil, errors.Wrapf(err, "error interpolating environment.spec.envName: [%s]", envName)
+		return nil, errors.Wrapf(err, "error interpolating environment.spec.envName: [%s]", e.Spec.EnvName)
 	}
 	e.Spec.EnvName = envName
 
 	for i, ec := range e.Spec.Components {
-		interpolated, err := interpolateComponent(ec, i, vars)
+		interpolated, err := interpolateComponent(*ec, i, vars)
 		if err != nil {
 			return nil, err
 		}
@@ -48,25 +49,53 @@ func Interpolate(e v1.Environment) (*v1.Environment, error) {
 	return &e, nil
 }
 
-func interpolateComponent(ec *v1.EnvironmentComponent, index int, vars util.Variables) (*v1.EnvironmentComponent, error) {
+func interpolateComponent(ec v1.EnvironmentComponent, index int, vars util.Variables) (*v1.EnvironmentComponent, error) { // nolint
 	name, err := util.Interpolate(ec.Name, vars)
 	if err != nil {
-		return nil, errors.Wrapf(err, "error interpolating environment.spec.components[%d].name: [%s]", index, name)
+		return nil, errors.Wrapf(err, "error interpolating environment.spec.components[%d].name: [%s]", index, ec.Name)
 	}
 	ec.Name = name
 
+	interpolated, err := interpolateVariablesFile(*ec.VariablesFile, index, vars)
+	if err != nil {
+		return nil, err
+	}
+	ec.VariablesFile = interpolated
+
 	for vIndex, v := range ec.Variables {
-		interpolated, err := interpolateVariable(v, index, vIndex, vars)
+		interpolated, err := interpolateVariable(*v, index, vIndex, vars)
 		if err != nil {
 			return nil, err
 		}
 		ec.Variables[vIndex] = interpolated
 	}
 
-	return ec, nil
+	return &ec, nil
 }
 
-func interpolateVariable(v *v1.Variable, ecIndex, varIndex int, vars util.Variables) (*v1.Variable, error) {
+func interpolateVariablesFile(vf v1.VariablesFile, ecIndex int, vars util.Variables) (*v1.VariablesFile, error) {
+	source, err := util.Interpolate(vf.Source, vars)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error interpolating environment.spec.components[%d].variableaFile.source: [%s]", ecIndex, vf.Source)
+	}
+	vf.Source = source
+
+	path, err := util.Interpolate(vf.Path, vars)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error interpolating environment.spec.components[%d].variableaFile.path: [%s]", ecIndex, vf.Path)
+	}
+	vf.Path = path
+
+	ref, err := util.Interpolate(vf.Ref, vars)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error interpolating environment.spec.components[%d].variableaFile.path: [%s]", ecIndex, vf.Ref)
+	}
+	vf.Ref = ref
+
+	return &vf, nil
+}
+
+func interpolateVariable(v v1.Variable, ecIndex, varIndex int, vars util.Variables) (*v1.Variable, error) {
 	name, err := util.Interpolate(v.Name, vars)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error interpolating environment.spec.components[%d].variables[%d].name: [%s]", ecIndex, varIndex, name)
@@ -85,7 +114,7 @@ func interpolateVariable(v *v1.Variable, ecIndex, varIndex int, vars util.Variab
 	}
 	v.ValueFrom = valueFrom
 
-	return v, nil
+	return &v, nil
 }
 
 func BuildZLocalsVariableMap(zlocals []*v1.LocalVariable) util.Variables {

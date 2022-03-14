@@ -15,8 +15,9 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/interpolator"
 	"time"
+
+	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/interpolator"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/k8s"
 

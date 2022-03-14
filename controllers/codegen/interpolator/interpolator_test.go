@@ -1,10 +1,12 @@
 package interpolator_test
 
 import (
+	"testing"
+
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/interpolator"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestInterpolate(t *testing.T) {
@@ -64,6 +66,6 @@ func TestBuildVariableMap(t *testing.T) {
 
 	zlocals := []*v1.LocalVariable{{Name: "foo", Value: "bar"}, {Name: "test", Value: "baz"}}
 	actualVars := interpolator.BuildZLocalsVariableMap(zlocals)
-	expectedVars := map[string]string{"zlocals.foo": "bar", "zlocals.test": "baz"}
+	expectedVars := util.Variables{"zlocals.foo": "bar", "zlocals.test": "baz"}
 	assert.EqualValues(t, actualVars, expectedVars)
 }

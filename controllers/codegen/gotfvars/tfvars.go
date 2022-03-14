@@ -2,9 +2,10 @@ package gotfvars
 
 import (
 	"fmt"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/interpolator"
 	"os"
 	"path/filepath"
+
+	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/interpolator"
 
 	perrors "github.com/pkg/errors"
 
