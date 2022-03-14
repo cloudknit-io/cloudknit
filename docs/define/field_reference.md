@@ -92,6 +92,9 @@ Array of environment components.
 |`name`|`string`| Name of the terraform module variable |
 |`key`|`string`| Secret name entered in zLifecycle UI settings page |
 |`scope`|`string`| Refers to what scope the secret is valid in. Valid scopes are `org`, `team` and `environment` |
+|`tags`|| Tags are labels attached to components for the purpose of identification. It is an `array` of `string`  |
+|`name`|`string`| Type of tag |
+|`value`|`string`| Identifying tags |
 
 
 
