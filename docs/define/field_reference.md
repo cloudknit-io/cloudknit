@@ -95,6 +95,10 @@ Array of environment components.
 |`tags`|| Tags are labels attached to components for the purpose of identification. It is an `array` of `string`  |
 |`name`|`string`| Type of tag |
 |`value`|`string`| Identifying tags |
+|`variables`||  |
+|`name`|`string`|  |
+|`value`|`string`|  |
+|`valueFrom`|`string`|  |
 
 
 
