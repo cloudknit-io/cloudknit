@@ -56,11 +56,13 @@ func interpolateComponent(ec v1.EnvironmentComponent, index int, vars util.Varia
 	}
 	ec.Name = name
 
-	interpolated, err := interpolateVariablesFile(*ec.VariablesFile, index, vars)
-	if err != nil {
-		return nil, err
+	if ec.VariablesFile != nil {
+		interpolated, err := interpolateVariablesFile(*ec.VariablesFile, index, vars)
+		if err != nil {
+			return nil, err
+		}
+		ec.VariablesFile = interpolated
 	}
-	ec.VariablesFile = interpolated
 
 	for vIndex, v := range ec.Variables {
 		interpolated, err := interpolateVariable(*v, index, vIndex, vars)
