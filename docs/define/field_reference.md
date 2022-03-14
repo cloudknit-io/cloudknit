@@ -88,5 +88,9 @@ Array of environment components.
 |`destroyProtection`|`boolean`| Optional field. If set to `true`, do not run destroy actions against this component (default is `false`) |
 |`aws`| | Optional field. Configuration block for AWS provider |
 
+|`dependsOn`|`array`| Optional field. Array of environment component names, which this module depends on |
+
+
+
 
 <div style="background-color: #ccc; height: 1px"></div>
