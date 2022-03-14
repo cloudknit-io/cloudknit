@@ -88,9 +88,10 @@ Array of environment components.
 |`destroyProtection`|`boolean`| Optional field. If set to `true`, zLifecycle will not destroy this component (default is `false`) |
 |`aws`| | Optional field. Configuration block for AWS provider. More info coming soon |
 |`dependsOn`|`array`| Optional field. Array of environment component names, which this module depends on |
-
-
-
+|`secrets`|| This section references the secret values which are input through the zLifecycle UI |
+|`name`|`string`| Name of the terraform module variable |
+|`key`|`string`| Secret name entered in zLifecycle UI settings page |
+|`scope`|`string`| Refers to what scope the secret is valid in. Valid scopes are `org`, `team` and `environment` |
 
 
 
