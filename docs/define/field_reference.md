@@ -84,11 +84,12 @@ Array of environment components.
 |:----------:|:----------:|---------------|
 |`name`|`string`| Name of the environment component |
 |`type`|`string`| `terraform` is currently the only supported type |
-|`destroy`|`boolean`| Optional field. Flag for component level `teardown`. Default is `false`. More info [here](../destroy.md) |
-|`destroyProtection`|`boolean`| Optional field. If set to `true`, do not run destroy actions against this component (default is `false`) |
-|`aws`| | Optional field. Configuration block for AWS provider |
-
+|`destroy`|`boolean`| Optional field. Flag for destroying a component. Default is `false`. More info [here](../destroy.md) |
+|`destroyProtection`|`boolean`| Optional field. If set to `true`, zLifecycle will not destroy this component (default is `false`) |
+|`aws`| | Optional field. Configuration block for AWS provider. More info coming soon |
 |`dependsOn`|`array`| Optional field. Array of environment component names, which this module depends on |
+
+
 
 
 
