@@ -95,10 +95,11 @@ Array of environment components.
 |`tags`|| Tags are labels attached to components for the purpose of identification. It is an `array` of `string`  |
 |`name`|`string`| Type of tag |
 |`value`|`string`| Identifying tags |
-|`variables`||  |
-|`name`|`string`|  |
-|`value`|`string`|  |
+|`variables`|| **Inline** variables, these will get injected into the terraform module when TF code is generated. `array` of `name -> value` objects |
+|`name`|`string`| Name of the variable |
+|`value`|`string`| Value of the variable |
 |`valueFrom`|`string`|  |
+|`variablesFile`|`string`| Variables from an output defined in a previous module using `outputs` block |
 
 
 
