@@ -99,7 +99,12 @@ Array of environment components.
 |`name`|`string`| Name of the variable |
 |`value`|`string`| Value of the variable |
 |`valueFrom`|`string`|  |
-|`variablesFile`|`string`| Variables from an output defined in a previous module using `outputs` block |
+|`variablesFile`|`string`| Variables can also be passed from an output defined in a previous module using `outputs` block, via a tfvars file |
+|`path`|`string`| Required field, if using `variablesFile`. Path to the file in the `source` repo. |
+|`ref`|`string`| _No description available_ |
+|`source`|`string`| Required field, if using `variablesFile`. Repo where the variables file can be found. |
+
+
 
 
 
