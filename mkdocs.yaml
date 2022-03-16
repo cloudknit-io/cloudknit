@@ -16,6 +16,7 @@ nav:
 - Settings:
   - settings/aws_credentials.md
   - settings/secrets.md
+  - settings/zlifecycle_app_installation.md
 - Define:
   - define/define_environment.md
   - define/field_reference.md
