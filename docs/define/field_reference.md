@@ -94,34 +94,43 @@ Array of environment components.
 |`module`|`string`|  |
 
 
+| Field Name | Field Type | Description   |
+|:----------:|:----------:|---------------|
 |`aws`| | Optional field. Configuration block for AWS provider. More info coming soon |
 
+| Field Name | Field Type | Description   |
+|:----------:|:----------:|---------------|
 |`secrets`|| This section references the secret values which are input through the zLifecycle UI |
 |`name`|`string`| Name of the terraform module variable |
 |`key`|`string`| Secret name entered in zLifecycle UI settings page |
 |`scope`|`string`| Refers to what scope the secret is valid in. Valid scopes are `org`, `team` and `environment` |
 
+| Field Name | Field Type | Description   |
+|:----------:|:----------:|---------------|
 |`tags`|| Tags are labels attached to components for the purpose of identification. It is an `array` of `string`  |
 |`name`|`string`| Type of tag |
 |`value`|`string`| Identifying tags |
 
+| Field Name | Field Type | Description   |
+|:----------:|:----------:|---------------|
 |`variables`|| **Inline** variables, these will get injected into the terraform module when TF code is generated. `array` of `name -> value` objects |
 |`name`|`string`| Name of the variable |
 |`value`|`string`| Value of the variable |
 |`valueFrom`|`string`|  |
 
+| Field Name | Field Type | Description   |
+|:----------:|:----------:|---------------|
 |`variablesFile`|`string`| Variables can also be passed from an output defined in a previous module using `outputs` block, via a tfvars file |
 |`path`|`string`| Required field, if using `variablesFile`. Path to the file in the `source` repo. |
 |`ref`|`string`| _No description available_ |
 |`source`|`string`| Required field, if using `variablesFile`. Repo where the variables file can be found. |
 
+| Field Name | Field Type | Description   |
+|:----------:|:----------:|---------------|
 |`module`|`string`|  |
 |`name`|`string`|  |
 |`path`|`string`|  |
 |`source`|`string`| Required field. |
 |`version`|`string`|  |
-
-
-
 
 <div style="background-color: #ccc; height: 1px"></div>
