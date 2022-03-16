@@ -9,7 +9,7 @@ export class AuthService {
     @InjectRepository(User) private readonly userRepo: Repository<User>
   ) {}
 
-  public async getTermAgreementStatus(username: string, company: string) {
+  public async getTermAgreementStatus({username, company}) {
     const user = await this.userRepo.findOne({
       where: {
         username: username,
@@ -19,11 +19,12 @@ export class AuthService {
     return user?.termAgreementStatus || false;
   }
 
-  public async setTermAgreementStatus(username: string, company: string) {
+  public async setTermAgreementStatus({username, company, email}) {
     return await this.userRepo.save({
       company: company,
       termAgreementStatus: true,
       username: username,
+      email: email
     });
   }
 }
