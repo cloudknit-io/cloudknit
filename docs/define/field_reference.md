@@ -87,17 +87,24 @@ Array of environment components.
 |`destroy`|`boolean`| Optional field. Flag for destroying a component. Default is `false`. More info [here](../destroy.md) |
 |`destroyProtection`|`boolean`| Optional field. If set to `true`, zLifecycle will not destroy this component (default is `false`) |
 |`dependsOn`|`array`| Optional field. Array of environment component names, which this module depends on |
-|`secrets`|| This section references the secret values which are input through the zLifecycle UI |
-|`tags`|| Tags are labels attached to components for the purpose of identification. It is an `array` of `string`  |
-|`variables`|| **Inline** variables, these will get injected into the terraform module when TF code is generated. `array` of `name -> value` objects |
-|`variablesFile`|`string`| Variables can also be passed from an output defined in a previous module using `outputs` block, via a tfvars file |
-|`module`|`string`|  |
+|[`secrets`](#secrets)|| This section references the secret values which are input through the zLifecycle UI |
+|[`tags`](#tags)|| Tags are labels attached to components for the purpose of identification. It is an `array` of `string`  |
+|[`variables`](#inline-variables)|| **Inline** variables, these will get injected into the terraform module when TF code is generated. `array` of `name -> value` objects |
+|[`variablesFile`](#variables-from-a-file)|`string`| Variables can also be passed from an output defined in a previous module using `outputs` block, via a tfvars file |
+|[`module`](#module)|`string`|  |
+
+<div style="background-color: #ccc; height: 1px"></div>
+<div style="background-color: #ccc; height: 1px"></div>
 
 
+
+### AWS
 | Field Name | Field Type | Description   |
 |:----------:|:----------:|---------------|
 |`aws`| | Optional field. Configuration block for AWS provider. More info coming soon |
 
+
+### Secrets
 | Field Name | Field Type | Description   |
 |:----------:|:----------:|---------------|
 |`secrets`|| This section references the secret values which are input through the zLifecycle UI |
@@ -105,12 +112,16 @@ Array of environment components.
 |`key`|`string`| Secret name entered in zLifecycle UI settings page |
 |`scope`|`string`| Refers to what scope the secret is valid in. Valid scopes are `org`, `team` and `environment` |
 
+### Tags
 | Field Name | Field Type | Description   |
 |:----------:|:----------:|---------------|
 |`tags`|| Tags are labels attached to components for the purpose of identification. It is an `array` of `string`  |
 |`name`|`string`| Type of tag |
 |`value`|`string`| Identifying tags |
 
+### Variables
+
+#### Inline Variables
 | Field Name | Field Type | Description   |
 |:----------:|:----------:|---------------|
 |`variables`|| **Inline** variables, these will get injected into the terraform module when TF code is generated. `array` of `name -> value` objects |
@@ -118,6 +129,7 @@ Array of environment components.
 |`value`|`string`| Value of the variable |
 |`valueFrom`|`string`|  |
 
+#### Variables from a file
 | Field Name | Field Type | Description   |
 |:----------:|:----------:|---------------|
 |`variablesFile`|`string`| Variables can also be passed from an output defined in a previous module using `outputs` block, via a tfvars file |
@@ -125,6 +137,7 @@ Array of environment components.
 |`ref`|`string`| _No description available_ |
 |`source`|`string`| Required field, if using `variablesFile`. Repo where the variables file can be found. |
 
+### Module
 | Field Name | Field Type | Description   |
 |:----------:|:----------:|---------------|
 |`module`|`string`|  |
@@ -132,5 +145,8 @@ Array of environment components.
 |`path`|`string`|  |
 |`source`|`string`| Required field. |
 |`version`|`string`|  |
+
+
+
 
 <div style="background-color: #ccc; height: 1px"></div>
