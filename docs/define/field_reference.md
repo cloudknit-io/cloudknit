@@ -91,7 +91,7 @@ Array of environment components.
 |[`tags`](#tags)|| Tags are labels attached to components for the purpose of identification. It is an `array` of `string`  |
 |[`variables`](#inline-variables)|| **Inline** variables, these will get injected into the terraform module when TF code is generated. `array` of `name -> value` objects |
 |[`variablesFile`](#variables-from-a-file)|`string`| Variables can also be passed from an output defined in a previous module using `outputs` block, via a tfvars file |
-|[`module`](#module)|`string`|  |
+|[`module`](#module)|`string`| Modules are containers for multiple resources that are used together. You can either reference a public or private module. |
 
 <div style="background-color: #ccc; height: 1px"></div>
 <div style="background-color: #ccc; height: 1px"></div>
@@ -138,12 +138,13 @@ Array of environment components.
 |`source`|`string`| Required field, if using `variablesFile`. Repo where the variables file can be found. |
 
 ### Module
+
+#### Public Module
 | Field Name | Field Type | Description   |
 |:----------:|:----------:|---------------|
-|`module`|`string`|  |
 |`name`|`string`|  |
 |`path`|`string`|  |
-|`source`|`string`| Required field. |
+|`source`|`string`| Required field. Currently `aws` is the only supported type|
 |`version`|`string`|  |
 
 
