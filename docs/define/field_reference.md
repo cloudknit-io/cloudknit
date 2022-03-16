@@ -86,29 +86,40 @@ Array of environment components.
 |`type`|`string`| `terraform` is currently the only supported type |
 |`destroy`|`boolean`| Optional field. Flag for destroying a component. Default is `false`. More info [here](../destroy.md) |
 |`destroyProtection`|`boolean`| Optional field. If set to `true`, zLifecycle will not destroy this component (default is `false`) |
-|`aws`| | Optional field. Configuration block for AWS provider. More info coming soon |
 |`dependsOn`|`array`| Optional field. Array of environment component names, which this module depends on |
+|`secrets`|| This section references the secret values which are input through the zLifecycle UI |
+|`tags`|| Tags are labels attached to components for the purpose of identification. It is an `array` of `string`  |
+|`variables`|| **Inline** variables, these will get injected into the terraform module when TF code is generated. `array` of `name -> value` objects |
+|`variablesFile`|`string`| Variables can also be passed from an output defined in a previous module using `outputs` block, via a tfvars file |
+|`module`|`string`|  |
+
+
+|`aws`| | Optional field. Configuration block for AWS provider. More info coming soon |
+
 |`secrets`|| This section references the secret values which are input through the zLifecycle UI |
 |`name`|`string`| Name of the terraform module variable |
 |`key`|`string`| Secret name entered in zLifecycle UI settings page |
 |`scope`|`string`| Refers to what scope the secret is valid in. Valid scopes are `org`, `team` and `environment` |
+
 |`tags`|| Tags are labels attached to components for the purpose of identification. It is an `array` of `string`  |
 |`name`|`string`| Type of tag |
 |`value`|`string`| Identifying tags |
+
 |`variables`|| **Inline** variables, these will get injected into the terraform module when TF code is generated. `array` of `name -> value` objects |
 |`name`|`string`| Name of the variable |
 |`value`|`string`| Value of the variable |
 |`valueFrom`|`string`|  |
+
 |`variablesFile`|`string`| Variables can also be passed from an output defined in a previous module using `outputs` block, via a tfvars file |
 |`path`|`string`| Required field, if using `variablesFile`. Path to the file in the `source` repo. |
 |`ref`|`string`| _No description available_ |
 |`source`|`string`| Required field, if using `variablesFile`. Repo where the variables file can be found. |
-|`Module`|`string`|  |
+
+|`module`|`string`|  |
 |`name`|`string`|  |
 |`path`|`string`|  |
 |`source`|`string`| Required field. |
 |`version`|`string`|  |
-
 
 
 
