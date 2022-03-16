@@ -103,6 +103,11 @@ Array of environment components.
 |`path`|`string`| Required field, if using `variablesFile`. Path to the file in the `source` repo. |
 |`ref`|`string`| _No description available_ |
 |`source`|`string`| Required field, if using `variablesFile`. Repo where the variables file can be found. |
+|`Module`|`string`|  |
+|`name`|`string`|  |
+|`path`|`string`|  |
+|`source`|`string`| Required field. |
+|`version`|`string`|  |
 
 
 
