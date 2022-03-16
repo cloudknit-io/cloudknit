@@ -92,6 +92,8 @@ Array of environment components.
 |[`variables`](#inline-variables)|| **Inline** variables, these will get injected into the terraform module when TF code is generated. `array` of `name -> value` objects |
 |[`variablesFile`](#variables-from-a-file)|`string`| Variables can also be passed from an output defined in a previous module using `outputs` block, via a tfvars file |
 |[`module`](#module)|`string`| Modules are containers for multiple resources that are used together. You can either reference a public or private module. |
+|[`outputs`](#outputs)|`string`| If the module supports outputs, name them here so they can be referenced in `variables` block using `valueFrom` |
+
 
 <div style="background-color: #ccc; height: 1px"></div>
 <div style="background-color: #ccc; height: 1px"></div>
@@ -138,14 +140,20 @@ Array of environment components.
 |`source`|`string`| Required field, if using `variablesFile`. Repo where the variables file can be found. |
 
 ### Module
-
-#### Public Module
 | Field Name | Field Type | Description   |
 |:----------:|:----------:|---------------|
-|`name`|`string`| Public terraform modules can be referenced [here](https://registry.terraform.io/modules/terraform-aws-modules/s3-bucket/aws/latest) |
+|`name`|`string`| Public terraform modules can be referenced [here](https://registry.terraform.io/modules/terraform-aws-modules/s3-bucket/aws/latest). For private module, specify the full path |
 |`path`|`string`| If the module is in a subdirectory (monorepo with multiple terraform modules), use this to specify the `path` |
 |`source`|`string`| Required field. Currently `aws` is the only supported type|
 |`version`|`string`| _No description available_ |
+
+### Outputs
+| Field Name | Field Type | Description   |
+|:----------:|:----------:|---------------|
+|`name`|`string`| Required field, if specifying `outputs` |
+|`sensitive`|`boolean`| Optional field. Flag to indicate if the `output` is of sensitive nature. By default the value is set to `false`. To not display it in plaintext, set it to `true` |
+
+
 
 
 <div style="background-color: #ccc; height: 1px"></div>
