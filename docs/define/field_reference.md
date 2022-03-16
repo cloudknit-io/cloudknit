@@ -142,12 +142,10 @@ Array of environment components.
 #### Public Module
 | Field Name | Field Type | Description   |
 |:----------:|:----------:|---------------|
-|`name`|`string`|  |
-|`path`|`string`|  |
+|`name`|`string`| Public terraform modules can be referenced [here](https://registry.terraform.io/modules/terraform-aws-modules/s3-bucket/aws/latest) |
+|`path`|`string`| If the module is in a subdirectory (monorepo with multiple terraform modules), use this to specify the `path` |
 |`source`|`string`| Required field. Currently `aws` is the only supported type|
-|`version`|`string`|  |
-
-
+|`version`|`string`| _No description available_ |
 
 
 <div style="background-color: #ccc; height: 1px"></div>
