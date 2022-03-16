@@ -73,6 +73,7 @@ RUN ./helpers/gh_download.sh -v $ZLI_TAG -f zlifecycle-internal-cli_${ZLI_TAG#v}
 # Adding gitlab.com to known_hosts to avoid "Host key verification failed." error
 RUN mkdir ~/.ssh && \
     touch ~/.ssh/known_hosts && \
-    ssh-keyscan -t rsa gitlab.com >> ~/.ssh/known_hosts
+    ssh-keyscan -t rsa gitlab.com >> ~/.ssh/known_hosts && \
+    ssh-keyscan -t ed255519 github.com >> ~/.ssh/known_hosts
 
 ENTRYPOINT ["sh"]
