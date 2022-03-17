@@ -1,0 +1,92 @@
+import {
+  CoreV1Api,
+  dumpYaml,
+  KubeConfig,
+  loadYaml,
+  V1ConfigMap,
+  V1Secret,
+} from "@kubernetes/client-node";
+import { Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Company } from "src/typeorm/company/Company";
+import { Repository } from "typeorm";
+
+@Injectable()
+export class CompanyService {
+  private k8sApi: CoreV1Api;
+  private debugMode = true;
+  constructor(
+    @InjectRepository(Company) private orgRepo: Repository<Company>
+  ) {
+    const kc = new KubeConfig();
+    if (this.debugMode) kc.loadFromDefault();
+    else kc.loadFromCluster();
+    this.k8sApi = kc.makeApiClient<CoreV1Api>(CoreV1Api);
+  }
+
+  async saveOAuthCredentials({ company, clientId, clientSecret }) {
+    const savedData = await this.orgRepo.save({
+      name: company,
+      clientId,
+      clientSecret,
+    });
+
+    return savedData;
+  }
+
+  async patchOrganisationData({ company, namespace }) {
+    const orgData = await this.orgRepo.findOne({
+      where: {
+        name: company,
+      },
+    });
+    if (!orgData) {
+      throw `No data found for ${company}!`;
+    }
+    if (!this.k8sApi) {
+      throw "Cannot initialize k8s API!";
+    }
+    await this.patchArgoCdConfig(orgData, namespace);
+    await this.patchBffSecret(orgData, namespace);
+  }
+
+  private async patchBffSecret({ clientSecret, name, clientId }, namespace) {
+    const secrets: V1Secret = await this.k8sApi
+      .readNamespacedSecret("zlifecycle-web-bff-development", namespace)
+      .then((x) => x.body)
+      .catch(() => null);
+    if (!secrets) {
+      throw "Error while updating credentials";
+    }
+    secrets.data["OPENID_CLIENT_ID"] = clientId;
+    secrets.data["OPENID_CLIENT_SECRET"] = clientSecret;
+    const updateResponse = await this.k8sApi.replaceNamespacedSecret(
+      "zlifecycle-web-bff-development",
+      namespace,
+      secrets
+    );
+  }
+
+  private async patchArgoCdConfig({ name, clientSecret, clientId }, namespace) {
+    const cm: V1ConfigMap = await this.k8sApi
+      .readNamespacedConfigMap("argocd-cm", namespace)
+      .then((x) => x.body)
+      .catch(() => null);
+    if (!cm) {
+      throw "Error while updating credentials";
+    }
+
+    const dexConfig = loadYaml(cm.data["dex.config"]);
+    dexConfig["config"][0]["clientID"] = clientId;
+    dexConfig["config"][0]["clientSecret"] = clientSecret;
+    dexConfig["config"]["orgs"][0]["name"] = name;
+    dexConfig["staticClients"][0]["secret"] = clientSecret;
+    const dexConfigYaml = dumpYaml(dexConfig);
+    cm.data["dex.config"] = dexConfigYaml;
+    const updateResponse = await this.k8sApi.replaceNamespacedConfigMap(
+      "argocd-cm",
+      namespace,
+      cm
+    );
+  }
+}

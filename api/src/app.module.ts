@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Connection } from 'typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { CostingModule } from './costing/costing.module';
+import { CompanyModule } from './company/company.module';
 import { ReconciliationModule } from './reconciliation/reconciliation.module';
 import { SecretsModule } from './secrets/secrets.module';
 import { entities } from './typeorm';
@@ -30,7 +30,8 @@ import { entities } from './typeorm';
     CostingModule,
     ReconciliationModule,
     SecretsModule,
-    AuthModule
+    AuthModule,
+    CompanyModule
   ],
   controllers: [AppController],
   providers: [AppService],
