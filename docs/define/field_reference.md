@@ -93,6 +93,8 @@ Array of environment components.
 |[`variablesFile`](#variables-from-a-file)|`string`| Variables can also be passed from an output defined in a previous module using `outputs` block, via a tfvars file |
 |[`module`](#module)|`string`| Modules are containers for multiple resources that are used together. You can either reference a public or private module. |
 |[`outputs`](#outputs)|`string`| _Output values make information about your infrastructure available on the command line, and can expose information for other components to use_. Output values are similar to return values in programming languages. If the module supports outputs, name them here so they can be referenced in `variables` block using `valueFrom` |
+|[`overlayFiles`](#overlay-files)| | A file that contains additional information about the current items. By using an overlay file, the metadata of these items can be extended. |
+|[`overlayData`](#overlay-data)| | Rather than have information pointing to the file with overlay information, you can also specify the data. |
 
 
 <div style="background-color: #ccc; height: 1px"></div>
@@ -153,7 +155,18 @@ Array of environment components.
 |`name`|`string`| Required field, if using `outputs` |
 |`sensitive`|`boolean`| Optional field. Flag to indicate if the `output` is of sensitive nature. By default the value is set to `false`. To not display it in plaintext, set it to `true` |
 
+### Overlay Files
+| Field Name | Field Type | Description   |
+|:----------:|:----------:|---------------|
+|`source`|`array` of `string`| Repo where the file is located |
+|`path`|`array` of `string`| Path to the file in the `source` repo |
+|`ref`| | _No description available_ |
 
+### Overlay Data
+| Field Name | Field Type | Description   |
+|:----------:|:----------:|---------------|
+|`data`|`string`| Content of the file (generally it is a multi-line string) |
+|`name`|`string`| Name of the file, containing the afore specified data |
 
 
 <div style="background-color: #ccc; height: 1px"></div>
