@@ -166,15 +166,15 @@ Array of environment components.
 ### Overlay Files
 | Field Name | Field Type | Description   |
 |:----------:|:----------:|---------------|
-|`source`|`array` of `string`| Repo where the file is located |
-|`path`|`array` of `string`| Path to the file in the `source` repo |
+|`source`|`array` of `string`| Required field, if using `overlayFiles`. Repo where the file is located |
+|`path`|`array` of `string`| Required field, if using `overlayFiles`. Path to the file in the `source` repo |
 |`ref`| | _No description available_ |
 
 ### Overlay Data
 | Field Name | Field Type | Description   |
 |:----------:|:----------:|---------------|
-|`data`|`string`| Content of the file (generally it is a multi-line string) |
-|`name`|`string`| Name of the file, containing the afore specified data |
+|`data`|`string`| Required field, if using `overlayData`. Content of the file (generally it is a multi-line string) |
+|`name`|`string`| Required field, if using `overlayData`. Name of the file, containing the afore specified data |
 
 
 <div style="background-color: #ccc; height: 1px"></div>
