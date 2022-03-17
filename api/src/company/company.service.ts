@@ -48,6 +48,7 @@ export class CompanyService {
     }
     await this.patchArgoCdConfig(orgData, namespace);
     await this.patchBffSecret(orgData, namespace);
+    return true;
   }
 
   private async patchBffSecret({ clientSecret, name, clientId }, namespace) {
@@ -77,9 +78,9 @@ export class CompanyService {
     }
 
     const dexConfig = loadYaml(cm.data["dex.config"]);
-    dexConfig["config"][0]["clientID"] = clientId;
-    dexConfig["config"][0]["clientSecret"] = clientSecret;
-    dexConfig["config"]["orgs"][0]["name"] = name;
+    dexConfig["connectors"][0]["config"]["clientID"] = clientId;
+    dexConfig["connectors"][0]["config"]["clientSecret"] = clientSecret;
+    dexConfig["connectors"][0]["config"]["orgs"][0]["name"] = name;
     dexConfig["staticClients"][0]["secret"] = clientSecret;
     const dexConfigYaml = dumpYaml(dexConfig);
     cm.data["dex.config"] = dexConfigYaml;
