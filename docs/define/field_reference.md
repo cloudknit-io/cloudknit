@@ -92,7 +92,7 @@ Array of environment components.
 |[`variables`](#inline-variables)|| **Inline** variables, these will get injected into the terraform module when TF code is generated. `array` of `name -> value` objects |
 |[`variablesFile`](#variables-from-a-file)|`string`| Variables can also be passed from an output defined in a previous module using `outputs` block, via a tfvars file |
 |[`module`](#module)|`string`| Modules are containers for multiple resources that are used together. You can either reference a public or private module. |
-|[`outputs`](#outputs)|`string`| If the module supports outputs, name them here so they can be referenced in `variables` block using `valueFrom` |
+|[`outputs`](#outputs)|`string`| _Output values make information about your infrastructure available on the command line, and can expose information for other components to use_. Output values are similar to return values in programming languages. If the module supports outputs, name them here so they can be referenced in `variables` block using `valueFrom` |
 
 
 <div style="background-color: #ccc; height: 1px"></div>
@@ -150,7 +150,7 @@ Array of environment components.
 ### Outputs
 | Field Name | Field Type | Description   |
 |:----------:|:----------:|---------------|
-|`name`|`string`| Required field, if specifying `outputs` |
+|`name`|`string`| Required field, if using `outputs` |
 |`sensitive`|`boolean`| Optional field. Flag to indicate if the `output` is of sensitive nature. By default the value is set to `false`. To not display it in plaintext, set it to `true` |
 
 
