@@ -14,7 +14,7 @@ import { Repository } from "typeorm";
 @Injectable()
 export class CompanyService {
   private k8sApi: CoreV1Api;
-  private debugMode = true;
+  private debugMode = false;
   constructor(
     @InjectRepository(Company) private orgRepo: Repository<Company>
   ) {
