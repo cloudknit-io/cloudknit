@@ -58,7 +58,7 @@ Spec contains the information about details of the environment to be provisioned
 |`envName`|`string`| Name of the environment |
 |`autoApprove`|`boolean`| To skip the manual approval step of applying the changes to a workflow, set this flag to `true`. If not set, it will default to `false`. More info [here](https://docs.zlifecycle.com/define/approval/) |
 |`teardown`|`boolean`| To teardown an environment, set this flag to `true`. If you are creating a new environment, it must be omitted or set to `false`. If omitted, it will default to `false`. Environment teardown is composed as a 2-step process: First step is to update the `teardown` flag to `true` and wait for the environment to get destroyed (monitor progress on zLifecycle UI). Second step is to delete the Environment yaml from github for permanent deletion of an environment. More info [here](INSERT TEARDOWN LINK HERE) |
-|`selectiveReconcile`| `array` | More info [here](https://docs.zlifecycle.com/define/selective_reconcile/) |
+|[`selectiveReconcile`](#selective-reconcile)| `array` | More info [here](https://docs.zlifecycle.com/define/selective_reconcile/) |
 |`components`|`array`| Array of environment components |
 
 ---
@@ -99,6 +99,14 @@ Array of environment components.
 
 <div style="background-color: #ccc; height: 1px"></div>
 <div style="background-color: #ccc; height: 1px"></div>
+
+
+### Selective Reconcile
+| Field Name | Field Type | Description   |
+|:----------:|:----------:|---------------|
+| `skipMode` |`boolean`|Flag indicating if the tags mentioned for selective reconcile are to skip reconciliation. By default this is set to `false`. If you wish to skip reconciling some components, then set it to `true` and tag the components appropriately|
+|`tagName`|`string`| Required, if using `selectiveReconcile`|
+|`tagValues`|`array` of `string`| Required, if using `selectiveReconcile` |
 
 
 
