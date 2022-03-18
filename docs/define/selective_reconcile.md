@@ -1,10 +1,8 @@
 # Selective Reconcile
 
-Selective reconcile is used when a user wants to **skip reconciliation** of a component be it teardown or provisioning.
+Selective reconcile can be used when you don't need to re-provision the entire environment but only reconcile certain components.
 
-To skip a component you need to follow following steps:-
-
-- The First step is to add **selectiveReconcile** to the **spec** scope in yaml.
+1. The First step is to identify the components you wish to selectively reconcile. Add **selectiveReconcile** to the **spec** scope in yaml.
 ```yaml
 selectiveReconcile:
     tagName: componentType
@@ -13,15 +11,17 @@ selectiveReconcile:
 
 **tagName**: This is a string property that is used by tags property of component.
 
-**tagValues**: This is array of string. Here we add tagValues, this is also used to validate the component that needs to be skipped.
+**tagValues**: An array of string values. Here we specify the values of the property type specified in `tagName`.
 
-- The Second part is the **tags** property of component.
+2. The Second part is the **tags** property, in the **component** scope.
 
 ```yaml
 tags:
     - name: componentType
       value: app
 ```
+
+
 
 **name**: The name property needs to be exactly what we supplied in the **tagName** property of **selectiveReconcile** which in our example is `componentType`.
 **value**: Value needs to be one of the strings passed in the **tagValues** property of **selectiveReconcile** which in our example is `app`.
