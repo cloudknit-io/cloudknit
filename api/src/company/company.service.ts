@@ -1,5 +1,6 @@
 import {
   CoreV1Api,
+  CustomObjectsApi,
   dumpYaml,
   KubeConfig,
   loadYaml,
@@ -14,14 +15,15 @@ import { Repository } from "typeorm";
 @Injectable()
 export class CompanyService {
   private k8sApi: CoreV1Api;
+  private k8sCRDApi: CustomObjectsApi;
   private debugMode = false;
-  constructor(
-    @InjectRepository(Company) private orgRepo: Repository<Company>
-  ) {
+
+  constructor(@InjectRepository(Company) private orgRepo: Repository<Company>) {
     const kc = new KubeConfig();
     if (this.debugMode) kc.loadFromDefault();
     else kc.loadFromCluster();
     this.k8sApi = kc.makeApiClient<CoreV1Api>(CoreV1Api);
+    this.k8sCRDApi = kc.makeApiClient<CustomObjectsApi>(CustomObjectsApi);
   }
 
   async saveOAuthCredentials({ company, clientId, clientSecret }) {
@@ -88,6 +90,30 @@ export class CompanyService {
       "argocd-cm",
       namespace,
       cm
+    );
+  }
+
+  private async patchCRD({ company, path, source }) {
+    const companyCRD = await this.k8sCRDApi
+      .getNamespacedCustomObject(
+        "stable.compuzest.com",
+        "v1",
+        `${company}-config`,
+        "companies",
+        company
+      )
+      .then((x) => x.body);
+
+    companyCRD["spec"]["configRepo"]["path"] = path;
+    companyCRD["spec"]["configRepo"]["source"] = source;
+
+    await this.k8sCRDApi.patchNamespacedCustomObject(
+      "stable.compuzest.com",
+      "v1",
+      `${company}-config`,
+      "companies",
+      company,
+      companyCRD
     );
   }
 }

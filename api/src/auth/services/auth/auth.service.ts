@@ -19,12 +19,14 @@ export class AuthService {
     return user?.termAgreementStatus || false;
   }
 
-  public async setTermAgreementStatus({username, company, email}) {
+  public async setTermAgreementStatus({username, company, email, agreedByEmail, agreedByUsername}) {
     return await this.userRepo.save({
       company: company,
       termAgreementStatus: true,
       username: username,
-      email: email
+      email: email,
+      agreedByEmail: agreedByEmail,
+      agreedByUsername: agreedByUsername
     });
   }
 }

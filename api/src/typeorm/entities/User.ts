@@ -20,6 +20,12 @@ export class User {
   @Column()
   termAgreementStatus: boolean;
 
+  @Column()
+  agreedByUsername: string;
+
+  @Column()
+  agreedByEmail: string;
+
   @CreateDateColumn()
   timeStamp: string;
 }
