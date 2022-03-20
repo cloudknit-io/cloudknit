@@ -51,9 +51,6 @@ argocd app patch $team_env_config_name --patch $data --type merge >null
 #---------- INIT PHASE END ----------#
 
 if [ $is_apply -eq 0 ]; then
-  if [ $is_sync -eq 1 ]; then
-    sh /argocd/patch_env_component.sh $team_env_config_name
-  fi
 
   echo "DEBUG: is_destroy: $is_destroy"
 
