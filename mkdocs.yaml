@@ -12,7 +12,9 @@ markdown_extensions:
 nav:
 - Overview: index.md
 - concepts/index.md
-- getting_started/index.md
+- Getting Started:
+  - getting_started/index.md
+  - getting_started/onboard_team.md
 - Settings:
   - settings/aws_credentials.md
   - settings/secrets.md
@@ -22,19 +24,17 @@ nav:
   - define/field_reference.md
   - define/examples.md
 - Provision:
-  - provision/component_details_view.md
-  - provision/cost_estimates.md
   - provision/errors.md
   - provision/manual_approval.md
-- Reconcile:
-  - reconcile/manual.md
-  - reconcile/auto.md
-- teardown/index.md
 - Policies:
   - policies/approval.md
   - policies/destroy.md
   - policies/selective_reconcile.md
-- Team:
-  - team/onboard.md
+  - policies/manual.md
+  - policies/auto.md
+  - policies/teardown.md
+  - policies/cost_estimates.md
+- component_details_view.md
+- errors.md
 - support/supported_platforms.md
 
