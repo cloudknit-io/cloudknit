@@ -25,6 +25,7 @@ export class CompanyController {
 
   @Patch('github/credentials')
   public async patchGitHubCredentials(@Body() payload) {
+    console.log(payload);
     return await this.initService.patchCRD(payload);
   }
 }

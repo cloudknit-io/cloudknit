@@ -112,6 +112,7 @@ export class CompanyService {
         name: org,
       },
     });
+    console.log(orgData);
     if (!orgData) {
       return false;
     }
@@ -136,5 +137,6 @@ export class CompanyService {
       company,
       companyCRD
     );
+    return true;
   }
 }
