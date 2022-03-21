@@ -12,14 +12,4 @@ It enables organizations to Define, Provision, Detect Drift + Reconcile, and Tea
 
 Here is a quick video explaining zLifecycle in a nutshell.
 
-(https://www.youtube.com/watch?v=TLkiw3WxCwY)
-
-<iframe
-    width="640"
-    height="480"
-    src="https://www.youtube.com/watch?v=TLkiw3WxCwY"
-    frameborder="0"
-    allow="autoplay; encrypted-media"
-    allowfullscreen
->
-</iframe>
+[Explainer Video](https://www.youtube.com/watch?v=TLkiw3WxCwY "Explainer Video")
