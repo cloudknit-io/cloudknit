@@ -11,7 +11,9 @@ markdown_extensions:
     permalink: true
 nav:
 - Overview: index.md
-- concepts/index.md
+- Core Concepts:
+  - concepts/concepts.md
+  - concepts/glossary.md
 - Getting Started:
   - getting_started/index.md
   - getting_started/onboard_team.md
