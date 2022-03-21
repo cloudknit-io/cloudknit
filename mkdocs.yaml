@@ -35,4 +35,6 @@ nav:
 - teardown/index.md
 - Team:
   - team/onboard.md
+- Support:
+  - support/supported_platforms.md
 
