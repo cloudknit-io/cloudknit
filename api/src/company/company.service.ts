@@ -106,10 +106,10 @@ export class CompanyService {
     );
   }
 
-  public async patchCRD({ company, customerName }) {
+  public async patchCRD({ org, company }) {
     const orgData = await this.orgRepo.findOne({
       where: {
-        name: company,
+        name: org,
       },
     });
     if (!orgData) {
@@ -119,9 +119,9 @@ export class CompanyService {
       .getNamespacedCustomObject(
         "stable.compuzest.com",
         "v1",
-        `${customerName}-config`,
+        `${company}-config`,
         "companies",
-        customerName
+        company
       )
       .then((x) => x.body);
 
@@ -131,9 +131,9 @@ export class CompanyService {
     await this.k8sCRDApi.patchNamespacedCustomObject(
       "stable.compuzest.com",
       "v1",
-      `${customerName}-config`,
+      `${company}-config`,
       "companies",
-      customerName,
+      company,
       companyCRD
     );
   }
