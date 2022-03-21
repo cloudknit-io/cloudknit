@@ -42,14 +42,10 @@ export class CompanyService {
         name: company,
       },
     });
-    const savedData = await this.orgRepo.save({
-      name: company,
-      githubRepo,
-      githubPath,
-      githubSource,
-      ...orgData
-    });
-
+    orgData.githubPath = githubPath;
+    orgData.githubRepo = githubRepo;
+    orgData.githubSource = githubSource;
+    const savedData = await this.orgRepo.save(orgData);
     return savedData;
   }
 
