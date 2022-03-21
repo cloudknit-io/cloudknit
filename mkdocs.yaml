@@ -23,11 +23,9 @@ nav:
   - define/define_environment.md
   - define/field_reference.md
   - define/examples.md
-- Provision:
-  - provision/errors.md
-  - provision/manual_approval.md
 - Policies:
   - policies/approval.md
+  - policies/manual_approval.md
   - policies/destroy.md
   - policies/selective_reconcile.md
   - policies/manual.md

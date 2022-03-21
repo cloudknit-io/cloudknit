@@ -9,3 +9,7 @@
 zLifecycle is a Progressive Delivery platform for managing Environments across various cloud providers and on-premises.
 
 It enables organizations to Define, Provision, Detect Drift + Reconcile, and Teardown environments. It also provides dashboards and reports for data-driven decision making.
+
+Here is a quick video explaining zLifecycle in a nutshell.
+
+[!](https://www.youtube.com/watch?v=TLkiw3WxCwY)
