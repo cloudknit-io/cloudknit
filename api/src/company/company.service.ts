@@ -36,7 +36,12 @@ export class CompanyService {
     return savedData;
   }
 
-  async saveGitHubCredentials({ company, githubRepo, githubPath, githubSource }) {
+  async saveGitHubCredentials({
+    company,
+    githubRepo,
+    githubPath,
+    githubSource,
+  }) {
     const orgData = await this.orgRepo.findOne({
       where: {
         name: company,
@@ -116,27 +121,37 @@ export class CompanyService {
     if (!orgData) {
       return false;
     }
-    const companyCRD = await this.k8sCRDApi
-      .getNamespacedCustomObject(
+
+    const patch = {
+      spec: {
+        configRepo: {
+          path: orgData.githubPath,
+          source: orgData.githubSource,
+        },
+      },
+    };
+
+    return await this.k8sCRDApi
+      .patchNamespacedCustomObject(
         "stable.compuzest.com",
         "v1",
         `${company}-config`,
         "companies",
-        company
+        company,
+        patch,
+        undefined,
+        undefined,
+        undefined,
+        {
+          headers: {
+            "content-type": "application/merge-patch+json",
+          },
+        }
       )
-      .then((x) => x.body);
-
-    companyCRD["spec"]["configRepo"]["path"] = orgData.githubPath;
-    companyCRD["spec"]["configRepo"]["source"] = orgData.githubSource;
-
-    await this.k8sCRDApi.patchNamespacedCustomObject(
-      "stable.compuzest.com",
-      "v1",
-      `${company}-config`,
-      "companies",
-      company,
-      companyCRD
-    );
-    return true;
+      .then((x) => true)
+      .catch((e) => {
+        console.log(e);
+        return false;
+      });
   }
 }
