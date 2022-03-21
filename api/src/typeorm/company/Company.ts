@@ -22,6 +22,22 @@ export class Company {
   })
   clientSecret: string;
 
+  @Column({
+    name: "github_repo",
+  })
+  githubRepo: string;
+
+  @Column({
+    name: "github_path",
+  })
+  githubPath: string;
+
+  @Column({
+    name: "github_source",
+  })
+  githubSource: string;
+
+
   @UpdateDateColumn({
     name: "timeStamp",
   })

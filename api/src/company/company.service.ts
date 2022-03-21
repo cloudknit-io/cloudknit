@@ -36,6 +36,23 @@ export class CompanyService {
     return savedData;
   }
 
+  async saveGitHubCredentials({ company, githubRepo, githubPath, githubSource }) {
+    const orgData = await this.orgRepo.findOne({
+      where: {
+        name: company,
+      },
+    });
+    const savedData = await this.orgRepo.save({
+      name: company,
+      githubRepo,
+      githubPath,
+      githubSource,
+      ...orgData
+    });
+
+    return savedData;
+  }
+
   async patchOrganisationData({ company, namespace }) {
     const orgData = await this.orgRepo.findOne({
       where: {
@@ -50,7 +67,7 @@ export class CompanyService {
     }
     await this.patchArgoCdConfig(orgData, namespace);
     await this.patchBffSecret(orgData, namespace);
-    return true;
+    return orgData;
   }
 
   private async patchBffSecret({ clientSecret, name, clientId }, namespace) {
@@ -93,7 +110,15 @@ export class CompanyService {
     );
   }
 
-  private async patchCRD({ company, path, source }) {
+  public async patchCRD({ company }) {
+    const orgData = await this.orgRepo.findOne({
+      where: {
+        name: company,
+      },
+    });
+    if (!orgData) {
+      return false;
+    }
     const companyCRD = await this.k8sCRDApi
       .getNamespacedCustomObject(
         "stable.compuzest.com",
@@ -104,8 +129,8 @@ export class CompanyService {
       )
       .then((x) => x.body);
 
-    companyCRD["spec"]["configRepo"]["path"] = path;
-    companyCRD["spec"]["configRepo"]["source"] = source;
+    companyCRD["spec"]["configRepo"]["path"] = orgData.githubPath;
+    companyCRD["spec"]["configRepo"]["source"] = orgData.githubSource;
 
     await this.k8sCRDApi.patchNamespacedCustomObject(
       "stable.compuzest.com",
