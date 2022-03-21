@@ -20,9 +20,6 @@ nav:
 - Define:
   - define/define_environment.md
   - define/field_reference.md
-  - define/approval.md
-  - define/selective_reconcile.md
-  - define/destroy.md
   - define/examples.md
 - Provision:
   - provision/component_details_view.md
@@ -33,6 +30,10 @@ nav:
   - reconcile/manual.md
   - reconcile/auto.md
 - teardown/index.md
+- Policies:
+  - policies/approval.md
+  - policies/destroy.md
+  - policies/selective_reconcile.md
 - Team:
   - team/onboard.md
 - support/supported_platforms.md
