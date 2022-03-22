@@ -19,8 +19,5 @@ export class Component {
   duration: number;
 
   @ManyToOne((type) => Environment, (environment) => environment.components)
-  @JoinColumn({
-    referencedColumnName: "component_name",
-  })
   environment: Environment;
 }
