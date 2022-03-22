@@ -7,6 +7,7 @@ import { Environment } from "./environment.entity";
 export class Component {
   @Column({
     name: "component_name",
+    primary: true
   })
   componentName: string;
 
