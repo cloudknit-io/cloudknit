@@ -13,7 +13,6 @@ nav:
 - Overview: index.md
 - Core Concepts:
   - concepts/concepts.md
-  - concepts/glossary.md
 - Getting Started:
   - getting_started/index.md
   - getting_started/onboard_team.md
