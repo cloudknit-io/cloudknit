@@ -11,7 +11,7 @@ Component level `autoApprove` flag overrides spec level `autoApprove`
 
 This is an optional field, with the default value as `false`.
 
-In the case that `autoApprove` flag was not specified or set to `false`, a prompt for approval will appear for each component being provisioned or destroyed. For details on how to approve are [here](manual_approval.md).
+In the case that `autoApprove` flag was not specified or set to `false`, a prompt for approval will appear for each component being provisioned or destroyed. Details on how to approve are [here](manual_approval.md).
 
 ---
 **Sample YAML**
