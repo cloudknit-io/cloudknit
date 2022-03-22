@@ -4,11 +4,15 @@ import { Subject } from "rxjs";
 import { Mapper } from "src/costing/utilities/mapper";
 import { S3Handler } from "src/costing/utilities/s3Handler";
 import { ComponentReconcile } from "src/typeorm/reconciliation/component-reconcile.entity";
+import { Component } from "src/typeorm/reconciliation/component.entity";
 import { EnvironmentReconcile } from "src/typeorm/reconciliation/environment-reconcile.entity";
+import { Environment } from "src/typeorm/reconciliation/environment.entity";
 import { Notification } from "src/typeorm/reconciliation/notification.entity";
 import { Like, Not } from "typeorm";
 import { Repository } from "typeorm/repository/Repository";
+import { ComponentDto } from "../dtos/component.dto";
 import { ComponentAudit } from "../dtos/componentAudit.dto";
+import { EnvironmentDto } from "../dtos/environment.dto";
 import { EnvironmentAudit } from "../dtos/environmentAudit.dto";
 import { NotificationDto } from "../dtos/notification.dto";
 import { EvnironmentReconcileDto } from "../dtos/reconcile.Dto";
@@ -16,16 +20,19 @@ import { EvnironmentReconcileDto } from "../dtos/reconcile.Dto";
 @Injectable()
 export class ReconciliationService {
   readonly notifyStream: Subject<{}> = new Subject<{}>();
-  readonly notificationStream: Subject<{}> =
-    new Subject<Notification>();
+  readonly notificationStream: Subject<{}> = new Subject<Notification>();
   private readonly s3h = S3Handler.instance();
   private readonly notFound = "";
-  private readonly zlEnvironment = process.env.ZL_ENVIRONMENT || 'multitenant';
+  private readonly zlEnvironment = process.env.ZL_ENVIRONMENT || "multitenant";
   constructor(
     @InjectRepository(EnvironmentReconcile)
     private readonly environmentReconcileRepository: Repository<EnvironmentReconcile>,
     @InjectRepository(ComponentReconcile)
     private readonly componentReconcileRepository: Repository<ComponentReconcile>,
+    @InjectRepository(Component)
+    private readonly componentRepository: Repository<Component>,
+    @InjectRepository(Environment)
+    private readonly environmentRepository: Repository<Environment>,
     @InjectRepository(Notification)
     private readonly notificationRepository: Repository<Notification>
   ) {
@@ -35,12 +42,54 @@ export class ReconciliationService {
     }, 20000);
   }
 
+  async putEnvironment(environment: EnvironmentDto) {
+    const existing = await this.environmentRepository.findOne({
+      where: {
+        environmentName: environment.environmentName
+      }
+    });
+    if (!existing) {
+      return await this.environmentRepository.save({
+        environmentName: environment.environmentName,
+        duration: environment.duration,
+      });
+    }
+    existing.duration = environment.duration;
+    return await this.environmentRepository.save(existing);
+  }
+
+  async putComponent(component: ComponentDto) {
+    const existing = await this.componentRepository.findOne({
+      where: {
+        environmentName: component.environmentName,
+        componentName: component.componentName
+      }
+    });
+    if (!existing) {
+      const environment = await this.environmentRepository.findOne({
+        where: {
+          environmentName: component.environmentName
+        }
+      });
+      if (!environment) {
+        throw `No parent environment named "${component.environmentName}" found!`;
+      }
+      return await this.componentRepository.save({
+        componentName: component.componentName,
+        duration: component.duration,
+        environment
+      });
+    }
+    existing.duration = component.duration;
+    return await this.componentRepository.save(existing);
+  }
+
   async saveOrUpdateEnvironment(runData: EvnironmentReconcileDto) {
     const reconcileId = Number.isNaN(parseInt(runData.reconcileId))
       ? null
       : parseInt(runData.reconcileId);
 
-    let savedEntry = null;
+    let savedEntry: EnvironmentReconcile = null;
     if (reconcileId) {
       const existingEntry = await this.environmentReconcileRepository.findOne(
         reconcileId
@@ -50,6 +99,13 @@ export class ReconciliationService {
       savedEntry = await this.environmentReconcileRepository.save(
         existingEntry
       );
+      const ed = new Date(savedEntry.end_date_time).getTime();
+      const sd = new Date(savedEntry.start_date_time).getTime()
+      const duration = ed - sd;
+      await this.putEnvironment({
+        environmentName: savedEntry.name,
+        duration,
+      });
     } else {
       const entry: EnvironmentReconcile = {
         reconcile_id: reconcileId,
@@ -99,6 +155,14 @@ export class ReconciliationService {
       existingEntry.end_date_time = componentEntry.end_date_time;
       existingEntry.status = componentEntry.status;
       componentEntry = existingEntry;
+      const ed = new Date(existingEntry.end_date_time).getTime();
+      const sd = new Date(existingEntry.start_date_time).getTime()
+      const duration = ed - sd;
+      await this.putComponent({
+        componentName: existingEntry.name,
+        duration,
+        environmentName: existingEntry.environmentReconcile.name,
+      });
     }
 
     const entry = await this.componentReconcileRepository.save(componentEntry);
@@ -209,7 +273,7 @@ export class ReconciliationService {
     const latestAuditId = await this.componentReconcileRepository.find({
       where: {
         name: `${team}-${environment}-${component}`,
-        status: Not(Like('skipped%')),
+        status: Not(Like("skipped%")),
       },
       order: {
         start_date_time: -1,
@@ -232,8 +296,16 @@ export class ReconciliationService {
     return logs;
   }
 
-  async putObject(customerId: string, path: string, contents: Express.Multer.File) {
-    return await this.s3h.copyToS3(`zlifecycle-${this.zlEnvironment}-tfplan-${customerId}`, path, contents);
+  async putObject(
+    customerId: string,
+    path: string,
+    contents: Express.Multer.File
+  ) {
+    return await this.s3h.copyToS3(
+      `zlifecycle-${this.zlEnvironment}-tfplan-${customerId}`,
+      path,
+      contents
+    );
   }
 
   async downloadObject(customerId: string, path: string) {
@@ -269,7 +341,7 @@ export class ReconciliationService {
       team_name: notification.teamName,
       timestamp: notification.timestamp,
       message_type: notification.messageType,
-      debug: notification.debug
+      debug: notification.debug,
     };
     const savedEntity = await this.notificationRepository.save(
       notificationEntity
@@ -300,7 +372,7 @@ export class ReconciliationService {
       order: {
         notification_id: "DESC",
       },
-      take: 20
+      take: 20,
     });
   }
 

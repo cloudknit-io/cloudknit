@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Res, Sse, UploadedFile, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Put, Res, Sse, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { response } from "express";
 import { from, Observable, Observer } from "rxjs";
@@ -7,7 +7,9 @@ import { Mapper } from "src/costing/utilities/mapper";
 import { ComponentReconcile } from "src/typeorm/reconciliation/component-reconcile.entity";
 import { EnvironmentReconcile } from "src/typeorm/reconciliation/environment-reconcile.entity";
 import { Notification } from "src/typeorm/reconciliation/notification.entity";
+import { ComponentDto } from "./dtos/component.dto";
 import { ComponentAudit } from "./dtos/componentAudit.dto";
+import { EnvironmentDto } from "./dtos/environment.dto";
 import { EnvironmentAudit } from "./dtos/environmentAudit.dto";
 import { NotificationDto } from "./dtos/notification.dto";
 import { EvnironmentReconcileDto } from "./dtos/reconcile.Dto";
@@ -18,6 +20,26 @@ import { ReconciliationService } from "./services/reconciliation.service";
 })
 export class ReconciliationController {
   constructor(private readonly reconciliationService: ReconciliationService) {}
+
+  @Put("environments")
+  async putEnvironment(@Body() body: EnvironmentDto) {
+    return await this.reconciliationService.putEnvironment(body);
+  }
+
+  @Put("components")
+  async putComponent(@Body() body: ComponentDto) {
+    return await this.reconciliationService.putComponent(body);
+  }
+
+  @Get("environments/:id")
+  async getEnvironment(@Param('id') id: string) {
+    // return await this.reconciliationService.putEnvironment(body);
+  }
+
+  @Put("components/:id")
+  async getComponent(@Param('id') id: string) {
+    // return await this.reconciliationService.putComponent(id);
+  }
 
   @Post("environment/save")
   async saveEnvironment(@Body() runData: EvnironmentReconcileDto) {
