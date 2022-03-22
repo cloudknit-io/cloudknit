@@ -1,4 +1,4 @@
-# Access to Github account
+# zLifecycle Github App Set up
 
 1. Sign In to you GitHub account on your browser.
 ---
