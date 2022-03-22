@@ -120,6 +120,10 @@ export class ReconciliationService {
         this.environmentReconcileRepository
       );
       savedEntry = await this.environmentReconcileRepository.save(entry);
+      await this.putEnvironment({
+        environmentName: savedEntry.name,
+        duration: -1,
+      });
     }
     this.notifyStream.next(savedEntry);
     return savedEntry.reconcile_id;
