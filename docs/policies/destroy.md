@@ -15,6 +15,8 @@ You can always safeguard a component from getting destroyed by applying some pro
 
 This is also an optional field, with the default value as `false`.
 
+---
+**Sample YAML**
 ```
  components:
     - name: static-assets
