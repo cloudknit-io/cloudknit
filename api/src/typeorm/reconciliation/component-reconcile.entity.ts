@@ -9,10 +9,11 @@ export class ComponentReconcile {
   reconcile_id?: number
 
   @ManyToOne(() => EnvironmentReconcile, environmentReconcile => environmentReconcile.componentReconciles, {
-    onDelete: 'CASCADE'
+    onDelete: 'CASCADE',
+    eager: true
   })
   @JoinColumn({
-      referencedColumnName: 'reconcile_id'
+      referencedColumnName: 'reconcile_id',
   })
   environmentReconcile: EnvironmentReconcile
 
