@@ -61,7 +61,6 @@ export class ReconciliationService {
   async putComponent(component: ComponentDto) {
     const existing = await this.componentRepository.findOne({
       where: {
-        environmentName: component.environmentName,
         componentName: component.componentName
       }
     });
