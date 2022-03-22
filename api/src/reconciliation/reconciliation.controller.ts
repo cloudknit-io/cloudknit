@@ -36,7 +36,7 @@ export class ReconciliationController {
     // return await this.reconciliationService.putEnvironment(body);
   }
 
-  @Put("components/:id")
+  @Get("components/:id")
   async getComponent(@Param('id') id: string) {
     return await this.reconciliationService.getComponent(id);
   }
