@@ -83,6 +83,14 @@ export class ReconciliationService {
     return await this.componentRepository.save(existing);
   }
 
+  async getComponent(id: string) {
+    return await this.componentRepository.findOne({
+      where: {
+        componentName: id
+      }
+    });
+  }
+
   async saveOrUpdateEnvironment(runData: EvnironmentReconcileDto) {
     const reconcileId = Number.isNaN(parseInt(runData.reconcileId))
       ? null
