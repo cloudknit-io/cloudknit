@@ -8,3 +8,17 @@ This property is used to destroy a component. When an **environment** is brought
 This is an optional field, with the default value as `false`.
 
 You can find more information about teardown [here](teardown.md).
+
+## Destroy Protection
+
+You can always safeguard a component from getting destroyed by applying some protection to it using the `destroyProtection` flag. When set to `true` the current component will not be destroyed, overriding all other flags including the environment-level `teardown`.
+
+This is also an optional field, with the default value as `false`.
+
+```
+ components:
+    - name: static-assets
+      type: terraform
+      destroy: false
+      destroyProtection: true
+```
