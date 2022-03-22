@@ -1,6 +1,6 @@
 # How to Approve 
 
-If the **autoApprove** flag is set to `false` or is omitted (defaults to `false`) the plan will need to be manually approved before it can proceed with applying.
+If the `autoApprove` flag is set to `false` or is omitted (defaults to `false`) the plan will need to be manually approved before it can proceed with applying. Details on how and where to set these flags are [here](approval.md)
 
 In this sample example we are **provisioning** an environment called **sandbox**.
 
@@ -28,7 +28,7 @@ Once your YAML is pushed, you will see a similar card on **zlifecycle Environmen
 
 * Once clicked, you will see a right panel (which is a **component details view**) as shown in the above image. Now you can click on the **approve button** and then on the **confirm button** to continue with the provisioning of your environment.
 
-Click [here](component-details-view.md) to know more about the **component details view**
+Click [here](../component-details-view.md) to know more about the **component details view**
 
 <br/>
 
