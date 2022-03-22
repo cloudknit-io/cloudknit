@@ -161,7 +161,7 @@ export class ReconciliationService {
       await this.putComponent({
         componentName: existingEntry.name,
         duration,
-        environmentName: existingEntry.environmentReconcile.name,
+        environmentName: savedEntry.name,
       });
     }
 
