@@ -158,7 +158,7 @@ export class ReconciliationService {
         this.componentReconcileRepository
       );
     }
-
+    let duration = -1;
     if (componentEntry.reconcile_id) {
       const existingEntry = await this.componentReconcileRepository.findOne(
         componentEntry.reconcile_id
@@ -168,13 +168,14 @@ export class ReconciliationService {
       componentEntry = existingEntry;
       const ed = new Date(existingEntry.end_date_time).getTime();
       const sd = new Date(existingEntry.start_date_time).getTime()
-      const duration = ed - sd;
-      await this.putComponent({
-        componentName: existingEntry.name,
-        duration,
-        environmentName: savedEntry.name,
-      });
+      duration = ed - sd;
     }
+
+    await this.putComponent({
+      componentName: componentEntry.name,
+      duration,
+      environmentName: savedEntry.name,
+    });
 
     const entry = await this.componentReconcileRepository.save(componentEntry);
     this.notifyStream.next(entry);
