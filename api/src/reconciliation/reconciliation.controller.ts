@@ -1,4 +1,16 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, Res, Sse, UploadedFile, UseInterceptors } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Res,
+  Sse,
+  UploadedFile,
+  UseInterceptors,
+} from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { response } from "express";
 import { from, Observable, Observer } from "rxjs";
@@ -32,12 +44,12 @@ export class ReconciliationController {
   }
 
   @Get("environments/:id")
-  async getEnvironment(@Param('id') id: string) {
+  async getEnvironment(@Param("id") id: string) {
     // return await this.reconciliationService.putEnvironment(body);
   }
 
   @Get("components/:id")
-  async getComponent(@Param('id') id: string) {
+  async getComponent(@Param("id") id: string) {
     return await this.reconciliationService.getComponent(id);
   }
 
@@ -56,18 +68,29 @@ export class ReconciliationController {
     return await this.reconciliationService.saveOrUpdateComponent(runData);
   }
 
-  
   @Post("component/putObject")
-  @UseInterceptors(FileInterceptor('file'))
-  async putObject(@UploadedFile() file: Express.Multer.File, @Body() body: any) {
+  @UseInterceptors(FileInterceptor("file"))
+  async putObject(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() body: any
+  ) {
     console.log(file, body);
-    return {"message" : await this.reconciliationService.putObject(body.customerId, body.path, file) };
+    return {
+      message: await this.reconciliationService.putObject(
+        body.customerId,
+        body.path,
+        file
+      ),
+    };
   }
 
   @Post("component/downloadObject")
   async downloadObject(@Res() response, @Body() body: any) {
     console.log(body);
-    const stream = await this.reconciliationService.downloadObject(body.customerId, body.path);
+    const stream = await this.reconciliationService.downloadObject(
+      body.customerId,
+      body.path
+    );
     stream.pipe(response);
   }
 
@@ -243,6 +266,13 @@ export class ReconciliationController {
         ]);
         return { data };
       })
+    );
+  }
+
+  @Sse("applications/:id")
+  notifyApplications(@Param("id") id: string): Observable<MessageEvent> {
+    return from(this.reconciliationService.applicationStream).pipe(
+      map((application: any) => ({ data: application }))
     );
   }
 }

@@ -21,6 +21,7 @@ import { EvnironmentReconcileDto } from "../dtos/reconcile.Dto";
 export class ReconciliationService {
   readonly notifyStream: Subject<{}> = new Subject<{}>();
   readonly notificationStream: Subject<{}> = new Subject<Notification>();
+  readonly applicationStream: Subject<any> = new Subject<any>();
   private readonly s3h = S3Handler.instance();
   private readonly notFound = "";
   private readonly zlEnvironment = process.env.ZL_ENVIRONMENT || "multitenant";
@@ -39,14 +40,15 @@ export class ReconciliationService {
     setInterval(() => {
       this.notifyStream.next({});
       this.notificationStream.next({});
+      this.applicationStream.next({});
     }, 20000);
   }
 
   async putEnvironment(environment: EnvironmentDto) {
     const existing = await this.environmentRepository.findOne({
       where: {
-        environmentName: environment.environmentName
-      }
+        environmentName: environment.environmentName,
+      },
     });
     if (!existing) {
       return await this.environmentRepository.save({
@@ -55,39 +57,50 @@ export class ReconciliationService {
       });
     }
     existing.duration = environment.duration;
-    return await this.environmentRepository.save(existing);
+    const entry = await this.environmentRepository.save(existing);
+    this.notifyApplications(entry.environmentName);
+    return entry;
   }
 
   async putComponent(component: ComponentDto) {
     const existing = await this.componentRepository.findOne({
       where: {
-        componentName: component.componentName
-      }
+        componentName: component.componentName,
+      },
     });
     if (!existing) {
       const environment = await this.environmentRepository.findOne({
         where: {
-          environmentName: component.environmentName
-        }
+          environmentName: component.environmentName,
+        },
       });
       if (!environment) {
         throw `No parent environment named "${component.environmentName}" found!`;
       }
-      return await this.componentRepository.save({
+      const entry = await this.componentRepository.save({
         componentName: component.componentName,
         duration: component.duration,
-        environment
+        environment,
       });
+      this.notifyApplications(component.environmentName);
+      return entry;
     }
     existing.duration = component.duration;
-    return await this.componentRepository.save(existing);
+    const entry = await this.componentRepository.save(existing);
+    const applications = this.environmentRepository.findOne({
+      where: {
+        environmentName: component.environmentName,
+      },
+    });
+    this.notifyApplications(component.environmentName);
+    return entry;
   }
 
   async getComponent(id: string) {
     return await this.componentRepository.findOne({
       where: {
-        componentName: id
-      }
+        componentName: id,
+      },
     });
   }
 
@@ -107,7 +120,7 @@ export class ReconciliationService {
         existingEntry
       );
       const ed = new Date(savedEntry.end_date_time).getTime();
-      const sd = new Date(savedEntry.start_date_time).getTime()
+      const sd = new Date(savedEntry.start_date_time).getTime();
       const duration = ed - sd;
       await this.putEnvironment({
         environmentName: savedEntry.name,
@@ -167,7 +180,7 @@ export class ReconciliationService {
       existingEntry.status = componentEntry.status;
       componentEntry = existingEntry;
       const ed = new Date(existingEntry.end_date_time).getTime();
-      const sd = new Date(existingEntry.start_date_time).getTime()
+      const sd = new Date(existingEntry.start_date_time).getTime();
       duration = ed - sd;
     }
 
@@ -393,5 +406,14 @@ export class ReconciliationService {
       notification_id: notificationId,
       seen: true,
     });
+  }
+
+  private async notifyApplications(environmentName: string) {
+    const apps = await this.environmentRepository.find({
+      where: {
+        environmentName: environmentName,
+      },
+    });
+    this.applicationStream.next(apps);
   }
 }

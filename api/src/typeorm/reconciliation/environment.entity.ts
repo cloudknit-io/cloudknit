@@ -5,7 +5,6 @@ import { Component } from "./component.entity";
   name: "environment",
 })
 export class Environment {
- 
   @Column({
     name: "environment_name",
     primary: true,
@@ -13,12 +12,15 @@ export class Environment {
   environmentName: string;
 
   @UpdateDateColumn({
-    name: 'last_reconcile_datetime'
+    name: "last_reconcile_datetime",
   })
   lastReconcileDatetime: string;
 
   @Column()
   duration: number;
 
-  @OneToMany(type => Component, component => component.environment) components: Component[]
+  @OneToMany((type) => Component, (component) => component.environment, {
+    eager: true,
+  })
+  components: Component[];
 }
