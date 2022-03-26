@@ -104,6 +104,14 @@ export class ReconciliationService {
     });
   }
 
+  async getEnvironment(id: string) {
+    return await this.environmentRepository.findOne({
+      where: {
+        environmentName: id,
+      },
+    });
+  }
+
   async saveOrUpdateEnvironment(runData: EvnironmentReconcileDto) {
     const reconcileId = Number.isNaN(parseInt(runData.reconcileId))
       ? null

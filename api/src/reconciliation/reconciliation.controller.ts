@@ -45,7 +45,7 @@ export class ReconciliationController {
 
   @Get("environments/:id")
   async getEnvironment(@Param("id") id: string) {
-    // return await this.reconciliationService.putEnvironment(body);
+    return await this.reconciliationService.getEnvironment(id);
   }
 
   @Get("components/:id")
