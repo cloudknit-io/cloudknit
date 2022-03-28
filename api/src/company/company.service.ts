@@ -79,8 +79,8 @@ export class CompanyService {
     if (!secrets) {
       throw "Error while updating credentials";
     }
-    secrets.data["OPENID_CLIENT_ID"] = clientId;
-    secrets.data["OPENID_CLIENT_SECRET"] = clientSecret;
+    secrets.data["OPENID_CLIENT_ID"] =  Buffer.from(clientId).toString("base64");
+    secrets.data["OPENID_CLIENT_SECRET"] = Buffer.from(clientSecret).toString("base64");
     const updateResponse = await this.k8sApi.replaceNamespacedSecret(
       "zlifecycle-web-bff-development",
       namespace,
