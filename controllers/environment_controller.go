@@ -210,6 +210,9 @@ func (r *EnvironmentReconciler) doReconcile(
 
 	// interpolate env (replace zlocals references with their values)
 	interpolated, err := interpolator.Interpolate(*environment)
+	if err != nil {
+		return perrors.Wrap(err, "error interpolating environment")
+	}
 
 	if !isHardDelete {
 		if err := r.handleNonDeleteEvent(ilService, interpolated, fileService, gitClient, k8sClient, argocdClient); err != nil {

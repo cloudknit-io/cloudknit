@@ -104,13 +104,13 @@ func interpolateVariable(v v1.Variable, ecIndex, varIndex int, vars util.Variabl
 	}
 	v.Name = name
 
-	value, err := util.Interpolate(v.Name, vars)
+	value, err := util.Interpolate(v.Value, vars)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error interpolating environment.spec.components[%d].variables[%d].value: [%s]", ecIndex, varIndex, value)
 	}
 	v.Value = value
 
-	valueFrom, err := util.Interpolate(v.Name, vars)
+	valueFrom, err := util.Interpolate(v.ValueFrom, vars)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error interpolating environment.spec.components[%d].variables[%d].valueFrom: [%s]", ecIndex, varIndex, valueFrom)
 	}
