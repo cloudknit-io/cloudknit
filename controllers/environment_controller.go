@@ -17,6 +17,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/interpolator"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/k8s"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/file"
@@ -205,8 +207,15 @@ func (r *EnvironmentReconciler) doReconcile(
 			return perrors.Wrap(err, "error updating environment CRD status")
 		}
 	}
+
+	// interpolate env (replace zlocals references with their values)
+	interpolated, err := interpolator.Interpolate(*environment)
+	if err != nil {
+		return perrors.Wrap(err, "error interpolating environment")
+	}
+
 	if !isHardDelete {
-		if err := r.handleNonDeleteEvent(ilService, environment, fileService, gitClient, k8sClient, argocdClient); err != nil {
+		if err := r.handleNonDeleteEvent(ilService, interpolated, fileService, gitClient, k8sClient, argocdClient); err != nil {
 			return perrors.Wrap(err, "error handling non-delete event for environment")
 		}
 	}
@@ -216,7 +225,7 @@ func (r *EnvironmentReconciler) doReconcile(
 		event = "delete"
 	}
 	r.LogV2.WithField("isDeleteEvent", isDeleteEvent).Infof("Generating %s workflow of workflows", event)
-	if err := generateAndSaveWorkflowOfWorkflows(fileService, ilService, environment); err != nil {
+	if err := generateAndSaveWorkflowOfWorkflows(fileService, ilService, interpolated); err != nil {
 		return perrors.Wrap(err, "error generating and saving workflow of workflows")
 	}
 
@@ -224,7 +233,7 @@ func (r *EnvironmentReconciler) doReconcile(
 	commitInfo := git.CommitInfo{
 		Author: env.Config.GitServiceAccountName,
 		Email:  env.Config.GitServiceAccountEmail,
-		Msg:    fmt.Sprintf("Reconciling environment %s", environment.Spec.EnvName),
+		Msg:    fmt.Sprintf("Reconciling environment %s", interpolated.Spec.EnvName),
 	}
 
 	// push zl il changes
@@ -234,7 +243,7 @@ func (r *EnvironmentReconciler) doReconcile(
 	}
 
 	if !zlPushed {
-		r.LogV2.Infof("No git changes in zl il to commit for environment %s, no-op reconciliation.", environment.Spec.EnvName)
+		r.LogV2.Infof("No git changes in zl il to commit for environment %s, no-op reconciliation.", interpolated.Spec.EnvName)
 	}
 
 	// push zl il changes
@@ -244,17 +253,17 @@ func (r *EnvironmentReconciler) doReconcile(
 	}
 
 	if !tfPushed {
-		r.LogV2.Infof("No git changes in tf IL to commit for environment %s, no-op reconciliation.", environment.Spec.EnvName)
+		r.LogV2.Infof("No git changes in tf IL to commit for environment %s, no-op reconciliation.", interpolated.Spec.EnvName)
 	}
 
 	if zlPushed || tfPushed {
-		if err := r.handleDirtyILState(argoworkflowClient, environment); err != nil {
+		if err := r.handleDirtyILState(argoworkflowClient, interpolated); err != nil {
 			return perrors.Wrap(err, "error handling dirty IL state")
 		}
 	}
 
 	// persist zlstate
-	if err := zlstateManagerClient.Put(env.Config.CompanyName, environment); err != nil {
+	if err := zlstateManagerClient.Put(env.Config.CompanyName, interpolated); err != nil {
 		return perrors.Wrap(err, "error updating zlstate")
 	}
 
