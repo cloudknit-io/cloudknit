@@ -216,7 +216,6 @@ spec:
                       type: string
                   required:
                   - name
-                  - type
                   - value
                   type: object
                 type: array
