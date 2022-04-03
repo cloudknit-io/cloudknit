@@ -312,7 +312,7 @@ func exitHandler(e *stablev1.Environment) workflow.Template {
 	}
 }
 
-func skipComponent(destroyProtection bool, destroyFlag bool, selectiveReconcile *stablev1.SelectiveReconcile, tags []*stablev1.Tags) string {
+func skipComponent(destroyProtection bool, destroyFlag bool, selectiveReconcile *stablev1.SelectiveReconcile, tags []*stablev1.Tag) string {
 	noSkipStatus := "noSkip"
 	selectiveReconcileStatus := "selectiveReconcile"
 	destroyProtectionStatus := "destroyProtection"
