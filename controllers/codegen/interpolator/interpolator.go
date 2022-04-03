@@ -72,6 +72,14 @@ func interpolateComponent(ec v1.EnvironmentComponent, index int, vars util.Varia
 		ec.Variables[vIndex] = interpolated
 	}
 
+	for tIndex, t := range ec.Tags {
+		interpolated, err := interpolateTags(*t, index, tIndex, vars)
+		if err != nil {
+			return nil, err
+		}
+		ec.Tags[tIndex] = interpolated
+	}
+
 	return &ec, nil
 }
 
@@ -117,6 +125,22 @@ func interpolateVariable(v v1.Variable, ecIndex, varIndex int, vars util.Variabl
 	v.ValueFrom = valueFrom
 
 	return &v, nil
+}
+
+func interpolateTags(t v1.Tag, ecIndex, tagIndex int, vars util.Variables) (*v1.Tag, error) {
+	name, err := util.Interpolate(t.Name, vars)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error interpolating environment.spec.components[%d].tags[%d].name: [%s]", ecIndex, tagIndex, name)
+	}
+	t.Name = name
+
+	value, err := util.Interpolate(t.Value, vars)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error interpolating environment.spec.components[%d].tags[%d].value: [%s]", ecIndex, tagIndex, value)
+	}
+	t.Value = value
+
+	return &t, nil
 }
 
 func BuildZLocalsVariableMap(zlocals []*v1.LocalVariable) util.Variables {

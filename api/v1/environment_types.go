@@ -52,7 +52,7 @@ type EnvironmentSpec struct {
 type LocalVariable struct {
 	Name  string `json:"name"`
 	Value string `json:"value"`
-	Type  string `json:"type"`
+	Type  string `json:"type,omitempty"`
 }
 
 // SelectiveReconcile lets you reconcile only selected Components.
@@ -80,7 +80,7 @@ type EnvironmentComponent struct {
 	Type      string   `json:"type"`
 	Module    *Module  `json:"module"`
 	DependsOn []string `json:"dependsOn,omitempty"`
-	Tags      []*Tags  `json:"tags,omitempty"`
+	Tags      []*Tag   `json:"tags,omitempty"`
 
 	// IaC settings
 	CronSchedule string `json:"cronSchedule,omitempty"`
@@ -99,7 +99,7 @@ type EnvironmentComponent struct {
 	Outputs       []*Output      `json:"outputs,omitempty"`
 }
 
-type Tags struct {
+type Tag struct {
 	Name  string `json:"name,omitempty"`
 	Value string `json:"value,omitempty"`
 }

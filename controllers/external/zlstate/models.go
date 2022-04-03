@@ -32,7 +32,7 @@ type Component struct {
 	Status        string            `json:"status"`
 	DependsOn     []string          `json:"dependsOn"`
 	Module        *v1.Module        `json:"module,omitempty"`
-	Tags          []*v1.Tags        `json:"tags,omitempty"`
+	Tags          []*v1.Tag         `json:"tags,omitempty"`
 	VariablesFile *v1.VariablesFile `json:"variablesFile,omitempty"`
 	OverlayFiles  []*v1.OverlayFile `json:"overlayFiles,omitempty"`
 	OverlayData   []*v1.OverlayData `json:"overlayData,omitempty"`
