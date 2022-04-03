@@ -131,7 +131,8 @@ func GenerateEnvironmentApp(environment *stablev1.Environment) *appv1.Applicatio
 			Project: environment.Spec.TeamName,
 			SyncPolicy: &appv1.SyncPolicy{
 				Automated: &appv1.SyncPolicyAutomated{
-					Prune: true,
+					Prune:    true,
+					SelfHeal: true,
 				},
 			},
 			Destination: newApplicationDestination("https://kubernetes.default.svc", "default"),
