@@ -18,7 +18,7 @@ RUN wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform
     && rm terraform_${TERRAFORM_VERSION}_linux_amd64.zip \
     && mv terraform /usr/bin/terraform
 
-COPY --from=builder zlifecycle-state-manager /
+COPY zlifecycle-state-manager /
 
 EXPOSE 8080
 
