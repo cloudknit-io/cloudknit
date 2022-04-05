@@ -3,11 +3,6 @@ package controllers
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"io"
-	"net/http"
-	"time"
-
 	"github.com/compuzest/zlifecycle-state-manager/app/apm"
 	http2 "github.com/compuzest/zlifecycle-state-manager/app/web/http"
 	"github.com/compuzest/zlifecycle-state-manager/app/zlog"
@@ -15,6 +10,8 @@ import (
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"io"
+	"net/http"
 )
 
 func ZLStateComponentHandler(w http.ResponseWriter, r *http.Request) {
@@ -42,6 +39,9 @@ func ZLStateComponentHandler(w http.ResponseWriter, r *http.Request) {
 	case "PATCH":
 		resp, err = patchZLStateComponentHandler(r.Context(), zlog.CtxLogger(r.Context()), r.Body, s3Client)
 		statusCode = http.StatusOK
+	case "PUT":
+		resp, err = putZLStateComponentHandler(r.Context(), zlog.CtxLogger(r.Context()), r.Body, s3Client)
+		statusCode = http.StatusOK
 	default:
 		err := apm.NoticeError(
 			txn,
@@ -63,8 +63,8 @@ func ZLStateComponentHandler(w http.ResponseWriter, r *http.Request) {
 	http2.Response(w, resp, statusCode)
 }
 
-func postZLStateComponentHandler(ctx context.Context, log *logrus.Entry, b io.ReadCloser, s3Client zlstate.S3API) (*FetchZLStateComponentResponse, error) {
-	var body FetchZLStateComponentRequest
+func postZLStateComponentHandler(ctx context.Context, log *logrus.Entry, b io.ReadCloser, s3Client zlstate.S3API) (*PostZLStateComponentResponse, error) {
+	var body PostZLStateComponentRequest
 	decoder := json.NewDecoder(b)
 	if err := decoder.Decode(&body); err != nil {
 		return nil, errors.Wrap(err, "invalid get zLstate body")
@@ -87,7 +87,7 @@ func postZLStateComponentHandler(ctx context.Context, log *logrus.Entry, b io.Re
 		return nil, errors.Errorf("zLstate component does not exist: [%s]", body.Component)
 	}
 
-	return &FetchZLStateComponentResponse{Component: component}, nil
+	return &PostZLStateComponentResponse{Component: component}, nil
 }
 
 func findComponent(components []*zlstate.Component, targetComponent string) *zlstate.Component {
@@ -99,19 +99,19 @@ func findComponent(components []*zlstate.Component, targetComponent string) *zls
 	return nil
 }
 
-type FetchZLStateComponentRequest struct {
+type PostZLStateComponentRequest struct {
 	Company     string `json:"company"`
 	Team        string `json:"team"`
 	Environment string `json:"environment"`
 	Component   string `json:"component"`
 }
 
-type FetchZLStateComponentResponse struct {
+type PostZLStateComponentResponse struct {
 	Component *zlstate.Component `json:"component"`
 }
 
-func patchZLStateComponentHandler(ctx context.Context, log *logrus.Entry, b io.ReadCloser, s3Client zlstate.S3API) (*UpdateZLStateComponentResponse, error) {
-	var body UpdateZLStateComponentRequest
+func patchZLStateComponentHandler(ctx context.Context, log *logrus.Entry, b io.ReadCloser, s3Client zlstate.S3API) (*PatchZLStateComponentResponse, error) {
+	var body PatchZLStateComponentRequest
 	decoder := json.NewDecoder(b)
 	if err := decoder.Decode(&body); err != nil {
 		return nil, errors.Wrap(err, "invalid patch zLstate body")
@@ -126,45 +126,15 @@ func patchZLStateComponentHandler(ctx context.Context, log *logrus.Entry, b io.R
 
 	key := BuildZLStateKey(body.Team, body.Environment)
 
-	zlState, err := backend.Get(key)
+	zlst, err := backend.PatchComponent(key, body.Component, body.Status)
 	if err != nil {
-		return nil, errors.Wrap(err, "error getting zLstate from remote backend")
+		return nil, errors.Wrap(err, "error patching component status")
 	}
 
-	var oldStatus string
-	updated := false
-	for _, c := range zlState.Components {
-		if c.Name != body.Component {
-			continue
-		}
-		oldStatus = c.Status
-		c.Status = body.Status
-		c.UpdatedAt = time.Now().UTC()
-		zlState.UpdatedAt = time.Now().UTC()
-		updated = true
-		break
-	}
-	if !updated {
-		return nil, errors.Errorf("component not found: %s", body.Component)
-	}
-
-	if err := backend.Put(key, zlState, true); err != nil {
-		return nil, errors.Wrap(err, "error persisting zLstate to remote backend")
-	}
-
-	msg := fmt.Sprintf("updated environment component [%s] status from [%s] to [%s]", body.Component, oldStatus, body.Status)
-	log.WithFields(logrus.Fields{
-		"company":     body.Company,
-		"team":        body.Team,
-		"environment": body.Environment,
-		"component":   body.Component,
-	}).Info(msg)
-	return &UpdateZLStateComponentResponse{
-		Message: fmt.Sprintf("updated environment component [%s] status from [%s] to [%s]", body.Component, oldStatus, body.Status),
-	}, nil
+	return &PatchZLStateComponentResponse{ZLState: zlst}, nil
 }
 
-type UpdateZLStateComponentRequest struct {
+type PatchZLStateComponentRequest struct {
 	Company     string `json:"company"`
 	Team        string `json:"team"`
 	Environment string `json:"environment"`
@@ -172,6 +142,41 @@ type UpdateZLStateComponentRequest struct {
 	Status      string `json:"status"`
 }
 
-type UpdateZLStateComponentResponse struct {
-	Message string `json:"message"`
+type PatchZLStateComponentResponse struct {
+	ZLState *zlstate.ZLState `json:"zlstate"`
+}
+
+func putZLStateComponentHandler(ctx context.Context, log *logrus.Entry, b io.ReadCloser, s3Client zlstate.S3API) (*PutZLStateComponentResponse, error) {
+	var body PutZLStateComponentRequest
+	decoder := json.NewDecoder(b)
+	if err := decoder.Decode(&body); err != nil {
+		return nil, errors.Wrap(err, "invalid put zLstate body")
+	}
+	if err := validatePutZLStateComponentRequest(&body); err != nil {
+		return nil, errors.Wrap(err, "error validating put zLstate resource body")
+	}
+
+	log.WithField("body", body).Info("Handling put zLstate component status request")
+
+	backend := zlstate.NewS3Backend(ctx, log, BuildZLStateBucketName(body.Company), s3Client)
+
+	key := BuildZLStateKey(body.Team, body.Environment)
+
+	zlst, err := backend.UpsertComponent(key, body.Component)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error upserting component %s", body.Component.Name)
+	}
+
+	return &PutZLStateComponentResponse{ZLState: zlst}, nil
+}
+
+type PutZLStateComponentRequest struct {
+	Company     string             `json:"company"`
+	Team        string             `json:"team"`
+	Environment string             `json:"environment"`
+	Component   *zlstate.Component `json:"component"`
+}
+
+type PutZLStateComponentResponse struct {
+	ZLState *zlstate.ZLState `json:"zlstate"`
 }

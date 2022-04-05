@@ -3,6 +3,7 @@ package zlstate
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -85,6 +86,44 @@ func (s *S3Backend) Get(key string) (*ZLState, error) {
 	return zlstate, nil
 }
 
+func (s *S3Backend) PatchComponent(key string, component, status string) (*ZLState, error) {
+	zlState, err := s.Get(key)
+	if err != nil {
+		return nil, errors.Wrap(err, "error getting zLstate from remote backend")
+	}
+
+	var oldStatus string
+	updated := false
+	for _, c := range zlState.Components {
+		if c.Name != component {
+			continue
+		}
+		oldStatus = c.Status
+		c.Status = status
+		c.UpdatedAt = time.Now().UTC()
+		zlState.UpdatedAt = time.Now().UTC()
+		updated = true
+		break
+	}
+	if !updated {
+		return nil, errors.Errorf("component not found: %s", component)
+	}
+
+	if err := s.Put(key, zlState, true); err != nil {
+		return nil, errors.Wrap(err, "error persisting zLstate to remote backend")
+	}
+
+	msg := fmt.Sprintf("updated environment component [%s] status from [%s] to [%s]", component, oldStatus, status)
+	s.log.WithFields(logrus.Fields{
+		"company":     zlState.Company,
+		"team":        zlState.Team,
+		"environment": zlState.Environment,
+		"component":   component,
+	}).Info(msg)
+
+	return zlState, nil
+}
+
 func (s *S3Backend) Put(key string, state *ZLState, force bool) error {
 	s.log.WithFields(logrus.Fields{
 		"key":     key,
@@ -120,6 +159,31 @@ func (s *S3Backend) Put(key string, state *ZLState, force bool) error {
 	}).Info("zLstate persisted successfully to remote backend [s3]")
 
 	return nil
+}
+
+func (s *S3Backend) UpsertComponent(key string, component *Component) (*ZLState, error) {
+	zlstate, err := s.Get(key)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error getting zlstate with key [%s]", key)
+	}
+
+	patched := false
+	for i, c := range zlstate.Components {
+		if c.Name == component.Name {
+			zlstate.Components[i] = component
+			patched = true
+		}
+	}
+
+	if !patched {
+		zlstate.Components = append(zlstate.Components, component)
+	}
+
+	if err := s.Put(key, zlstate, true); err != nil {
+		return nil, errors.Wrapf(err, "error updating zlstate for key [%s]", key)
+	}
+
+	return zlstate, nil
 }
 
 var _ Backend = (*S3Backend)(nil)

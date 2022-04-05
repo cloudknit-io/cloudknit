@@ -10,6 +10,7 @@ import (
 type Backend interface {
 	Get(key string) (*ZLState, error)
 	Put(key string, state *ZLState, force bool) error
+	UpsertComponent(key string, component *Component) (*ZLState, error)
 }
 
 type ZLState struct {
