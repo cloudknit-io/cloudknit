@@ -3,7 +3,7 @@ FROM alpine
 
 ARG TERRAFORM_VERSION=1.0.9
 
-RUN apk add --update --no-cache git openssh
+RUN apk add --update --no-cache git openssh libc6-compat
 
 # add known hosts
 RUN mkdir -p ~/.ssh \
