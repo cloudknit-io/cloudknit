@@ -22,10 +22,10 @@ func TerraformStateHandler(w http.ResponseWriter, r *http.Request) {
 	var resp interface{}
 	var statusCode int
 	switch r.Method {
-	case "POST":
+	case http.MethodPost:
 		resp, err = postTerraformStateHandler(r.Context(), r.Body)
 		statusCode = http.StatusOK
-	case "DELETE":
+	case http.MethodDelete:
 		resp, err = deleteTerraformStateResourcesHandler(r.Context(), r.Body)
 		statusCode = http.StatusOK
 	default:

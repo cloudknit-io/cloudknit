@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/pkg/errors"
+
 	"github.com/compuzest/zlifecycle-state-manager/app/apm"
 	"github.com/compuzest/zlifecycle-state-manager/app/env"
 	"github.com/compuzest/zlifecycle-state-manager/app/web/controllers"
@@ -36,7 +38,7 @@ func NewServer() {
 		Handler: errorChain.Then(r),
 	}
 
-	zlog.PlainLogger().WithFields(logrus.Fields{"port": port}).Info("Starting HTTP server")
+	zlog.PlainLogger().WithFields(logrus.Fields{"port": port}).Info("Started HTTP server")
 	if err := s.ListenAndServe(); err != nil {
 		zlog.PlainLogger().Fatalf("Error from webserver: %v", err)
 	}
@@ -50,7 +52,7 @@ func initRouter() (*mux.Router, error) {
 		zlog.PlainLogger().Info("Initializing NewRelic APM")
 		app, err := apm.Init()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "error initializing New Relic APM")
 		}
 		r.HandleFunc(newrelic.WrapHandleFunc(app, "/terraform/state", controllers.TerraformStateHandler))
 		r.HandleFunc(newrelic.WrapHandleFunc(app, "/zl/state", controllers.ZLStateHandler))

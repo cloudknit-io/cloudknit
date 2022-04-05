@@ -306,5 +306,47 @@ func TestS3Backend_PatchComponent(t *testing.T) {
 	assert.Equal(t, zlst.Components[1].Name, "comp2")
 	assert.Equal(t, zlst.Components[1].Status, "not_provisioned")
 	assert.Equal(t, zlst.Components[1].Type, "argocd")
+}
 
+func TestS3Backend_DeleteComponent(t *testing.T) {
+	t.Parallel()
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockS3API := zlstate.NewMockS3API(mockCtrl)
+
+	bucket := "testBucket"
+	key := "testKey"
+
+	hoi := &s3.HeadObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(key),
+	}
+	mockS3API.EXPECT().HeadObject(gomock.Any(), hoi).Return(nil, nil)
+	goi := &s3.GetObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(key),
+	}
+
+	comp1 := zlstate.Component{Name: "comp1", Type: "terraform", Status: "not_provisioned"}
+	comp2 := zlstate.Component{Name: "comp2", Type: "argocd", Status: "not_provisioned"}
+
+	testState := zlstate.ZLState{
+		Company:     "compuzest",
+		Team:        "test",
+		Environment: "testEnv",
+		Components:  []*zlstate.Component{&comp1, &comp2},
+	}
+	response := s3.GetObjectOutput{Body: util.CreateMockBody(&testState)}
+	mockS3API.EXPECT().GetObject(gomock.Any(), goi).Return(&response, nil)
+	mockS3API.EXPECT().PutObject(gomock.Any(), gomock.Any()).Return(nil, nil)
+
+	s3Backend := zlstate.NewS3Backend(ctx, log, bucket, mockS3API)
+	zlst, err := s3Backend.DeleteComponent(key, "comp2")
+	assert.NoError(t, err)
+	assert.Len(t, zlst.Components, 1)
+	assert.Equal(t, zlst.Components[0].Name, "comp1")
+	assert.Equal(t, zlst.Components[0].Status, "not_provisioned")
+	assert.Equal(t, zlst.Components[0].Type, "terraform")
 }

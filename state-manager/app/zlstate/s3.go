@@ -186,6 +186,25 @@ func (s *S3Backend) UpsertComponent(key string, component *Component) (*ZLState,
 	return zlstate, nil
 }
 
+func (s *S3Backend) DeleteComponent(key, component string) (*ZLState, error) {
+	zlstate, err := s.Get(key)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error getting zlstate with key [%s]", key)
+	}
+
+	for i, c := range zlstate.Components {
+		if c.Name == component {
+			zlstate.Components = append(zlstate.Components[:i], zlstate.Components[i+1:]...)
+		}
+	}
+
+	if err := s.Put(key, zlstate, true); err != nil {
+		return nil, errors.Wrapf(err, "error updating zlstate for key [%s]", key)
+	}
+
+	return zlstate, nil
+}
+
 var _ Backend = (*S3Backend)(nil)
 
 func (s *S3Backend) exists(key string) (bool, error) {

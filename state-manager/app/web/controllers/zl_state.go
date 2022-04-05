@@ -33,14 +33,14 @@ func ZLStateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	switch r.Method {
-	case "POST":
+	case http.MethodPost:
 		resp, err = postZLStateHandler(r.Context(), zlog.CtxLogger(r.Context()), r.Body, s3Client)
 		statusCode = http.StatusOK
-	case "PUT":
+	case http.MethodPut:
 		resp, err = putZLStateHandler(r.Context(), zlog.CtxLogger(r.Context()), r.Body, s3Client)
 		statusCode = http.StatusOK
 	default:
-		err := apm.NoticeError(
+		err = apm.NoticeError(
 			txn,
 			http2.NewVerboseError("NotFoundError", r.Method, "/zl/state", errors.New("endpoint not implemented")),
 		)

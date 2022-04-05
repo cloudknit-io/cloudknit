@@ -118,3 +118,20 @@ func validatePutZLStateComponentRequest(req *PutZLStateComponentRequest) error {
 
 	return nil
 }
+
+func validateDeleteZLStateComponentRequest(req *DeleteZLStateComponentRequest) error {
+	if req.Company == "" {
+		return errors.New(`request body is missing field: company`)
+	}
+	if req.Team == "" {
+		return errors.New(`request body is missing field: team`)
+	}
+	if req.Environment == "" {
+		return errors.New(`request body is missing field: "environment"`)
+	}
+	if req.Component == "" {
+		return errors.New(`request body is missing field: component`)
+	}
+
+	return nil
+}
