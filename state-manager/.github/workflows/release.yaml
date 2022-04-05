@@ -41,7 +41,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
       - name: "Modules"
-        run: "go mod vendor"
+        run: "go mod tidy"
       - name: "Release"
         uses: "goreleaser/goreleaser-action@v2"
         with:
