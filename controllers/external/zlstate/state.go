@@ -95,7 +95,7 @@ func (s *HTTPClient) Put(company, team string, environment *v1.Environment) erro
 		WithField("message", r.Message).
 		Infof(
 			"Successful response from State Manager for adding zL state for company [%s], team [%s] and environment [%s]",
-			company, team, environment,
+			company, team, environment.Spec.EnvName,
 		)
 
 	return nil
