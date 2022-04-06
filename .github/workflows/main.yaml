@@ -37,7 +37,7 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
-
+      - run: go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.7.0
       - run: make deps
         working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}
       - run: go mod vendor
