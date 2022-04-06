@@ -26,7 +26,7 @@ func ZLStateComponentHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		err = apm.NoticeError(
 			txn,
-			http2.NewVerboseError("InternalError", r.Method, "/zl/state", errors.New("internal server error")),
+			http2.NewVerboseError("InternalError", r.Method, "/zl/state/component", errors.New("internal server error")),
 		)
 		zlog.CtxLogger(r.Context()).Error(err)
 		http2.ErrorResponse(w, err.Error(), http.StatusInternalServerError)
