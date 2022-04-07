@@ -3,10 +3,10 @@ package pull
 import (
 	"context"
 	"fmt"
+	"github.com/compuzest/zlifecycle-internal-cli/app/api/statemanager"
 	"github.com/compuzest/zlifecycle-internal-cli/app/common"
 	"github.com/compuzest/zlifecycle-internal-cli/app/env"
 	"github.com/compuzest/zlifecycle-internal-cli/app/log"
-	"github.com/compuzest/zlifecycle-internal-cli/app/zlstate"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"os"
@@ -21,8 +21,8 @@ var EnvironmentComponentStatePullCmd = &cobra.Command{
 	Long:    `pull command pulls the environment component state from remote backend using zLifecycle State Manager and prints it to stdout`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
-		c := zlstate.NewHTTPStateManager(ctx, log.NewLogger().WithContext(ctx))
-		req := zlstate.FetchZLStateComponentRequest{
+		c := statemanager.NewHTTPStateManager(ctx, log.NewLogger().WithContext(ctx))
+		req := statemanager.FetchZLStateComponentRequest{
 			Company:     env.Company,
 			Team:        env.Team,
 			Environment: env.Environment,
