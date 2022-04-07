@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/compuzest/zlifecycle-internal-cli/app/cmd/git"
 	"github.com/compuzest/zlifecycle-internal-cli/app/cmd/state"
 	"github.com/compuzest/zlifecycle-internal-cli/app/common"
 	"github.com/compuzest/zlifecycle-internal-cli/app/env"
@@ -39,6 +40,7 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
+	rootCmd.AddCommand(git.RootCmd)
 	rootCmd.AddCommand(state.RootCmd)
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,

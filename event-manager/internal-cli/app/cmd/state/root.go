@@ -9,8 +9,8 @@ import (
 var RootCmd = &cobra.Command{
 	Use:     "state {command}",
 	Example: "state environment -h",
-	Short:   "state command offers subcomands for managing environment or component state",
-	Long:    `state command offers subcomands for managing environment or component state on remote backend using zLifecycle State Manager`,
+	Short:   "state command offers subcommands for managing environment or component state",
+	Long:    `state command offers subcommands for managing environment or component state on remote backend using zLifecycle State Manager`,
 }
 
 func init() {
