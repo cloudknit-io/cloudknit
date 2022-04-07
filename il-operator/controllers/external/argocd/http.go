@@ -46,7 +46,7 @@ func (c *HTTPClient) GetAuthToken() (*GetTokenResponse, error) {
 	}
 
 	url := fmt.Sprintf("%s/api/v1/session", c.serverURL)
-	req, err := http.NewRequestWithContext(c.ctx, "POST", url, bytes.NewBuffer(jsonBody))
+	req, err := http.NewRequestWithContext(c.ctx, http.MethodPost, url, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating POST request")
 	}
@@ -82,7 +82,7 @@ func isRepoRegistered(repos *RepositoryList, repoURL string) bool {
 
 func (c *HTTPClient) ListRepositories(bearerToken string) (*RepositoryList, *http.Response, error) {
 	url := fmt.Sprintf("%s/api/v1/repositories", c.serverURL)
-	req, err := http.NewRequestWithContext(c.ctx, "GET", url, http.NoBody)
+	req, err := http.NewRequestWithContext(c.ctx, http.MethodGet, url, http.NoBody)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "error creating GET request")
 	}
@@ -116,7 +116,7 @@ func (c *HTTPClient) CreateRepository(body interface{}, bearerToken string) (*ht
 	}
 
 	url := fmt.Sprintf("%s/api/v1/repositories", c.serverURL)
-	req, err := http.NewRequestWithContext(c.ctx, "POST", url, bytes.NewBuffer(jsonBody))
+	req, err := http.NewRequestWithContext(c.ctx, http.MethodPost, url, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating POST request")
 	}
@@ -140,7 +140,7 @@ func (c *HTTPClient) CreateRepository(body interface{}, bearerToken string) (*ht
 
 func (c *HTTPClient) DoesApplicationExist(name string, bearerToken string) (bool, error) {
 	url := fmt.Sprintf("%s/api/v1/applications/%s", c.serverURL, name)
-	req, err := http.NewRequestWithContext(c.ctx, "GET", url, http.NoBody)
+	req, err := http.NewRequestWithContext(c.ctx, http.MethodGet, url, http.NoBody)
 	if err != nil {
 		return false, errors.Wrap(err, "error creating GET request")
 	}
@@ -184,7 +184,7 @@ func (c *HTTPClient) CreateApplication(application *appv1.Application, bearerTok
 	}
 
 	url := fmt.Sprintf("%s/api/v1/applications", c.serverURL)
-	req, err := http.NewRequestWithContext(c.ctx, "POST", url, bytes.NewBuffer(jsonBody))
+	req, err := http.NewRequestWithContext(c.ctx, http.MethodPost, url, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating POST request")
 	}
@@ -208,7 +208,7 @@ func (c *HTTPClient) CreateApplication(application *appv1.Application, bearerTok
 
 func (c *HTTPClient) DeleteApplication(name string, bearerToken string) error {
 	url := fmt.Sprintf("%s/api/v1/applications/%s", c.serverURL, name)
-	req, err := http.NewRequestWithContext(c.ctx, "DELETE", url, http.NoBody)
+	req, err := http.NewRequestWithContext(c.ctx, http.MethodDelete, url, http.NoBody)
 	if err != nil {
 		return errors.Wrap(err, "error creating DELETE request")
 	}
@@ -237,7 +237,7 @@ func (c *HTTPClient) CreateProject(project *CreateProjectBody, bearerToken strin
 	}
 
 	url := fmt.Sprintf("%s/api/v1/projects", c.serverURL)
-	req, err := http.NewRequestWithContext(c.ctx, "POST", url, bytes.NewBuffer(jsonBody))
+	req, err := http.NewRequestWithContext(c.ctx, http.MethodPost, url, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating POST request")
 	}
@@ -261,7 +261,7 @@ func (c *HTTPClient) CreateProject(project *CreateProjectBody, bearerToken strin
 
 func (c *HTTPClient) DoesProjectExist(name string, bearerToken string) (exists bool, response *http.Response, err error) {
 	url := fmt.Sprintf("%s/api/v1/projects/%s", c.serverURL, name)
-	req, err := http.NewRequestWithContext(c.ctx, "GET", url, http.NoBody)
+	req, err := http.NewRequestWithContext(c.ctx, http.MethodGet, url, http.NoBody)
 	if err != nil {
 		return false, nil, errors.Wrap(err, "error creating GET request")
 	}
@@ -294,7 +294,7 @@ func (c *HTTPClient) UpdateCluster(
 	}
 
 	url := fmt.Sprintf("%s/api/v1/clusters/%s?updatedFields=%s", c.serverURL, url2.QueryEscape(clusterURL), util.ToStringArray(updatedFields))
-	req, err := http.NewRequestWithContext(c.ctx, "PUT", url, bytes.NewBuffer(jsonBody))
+	req, err := http.NewRequestWithContext(c.ctx, http.MethodPut, url, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating PUT request")
 	}
@@ -322,7 +322,7 @@ func (c *HTTPClient) RegisterCluster(body *RegisterClusterBody, bearerToken stri
 	}
 
 	url := fmt.Sprintf("%s/api/v1/clusters", c.serverURL)
-	req, err := http.NewRequestWithContext(c.ctx, "POST", url, bytes.NewBuffer(jsonBody))
+	req, err := http.NewRequestWithContext(c.ctx, http.MethodPost, url, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating POST request")
 	}
@@ -348,7 +348,7 @@ func (c *HTTPClient) ListClusters(name *string, bearerToken string) (*ListCluste
 	if name != nil {
 		url += fmt.Sprintf("?name=%s", *name)
 	}
-	req, err := http.NewRequestWithContext(c.ctx, "GET", url, http.NoBody)
+	req, err := http.NewRequestWithContext(c.ctx, http.MethodGet, url, http.NoBody)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating GET request")
 	}

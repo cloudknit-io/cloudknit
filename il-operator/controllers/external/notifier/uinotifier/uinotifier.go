@@ -27,7 +27,7 @@ func (u *UINotifier) Notify(ctx context.Context, n *notifier2.Notification) erro
 	if err != nil {
 		return err
 	}
-	req, err := http.NewRequestWithContext(ctx, "POST", notificationEndpoint, bytes.NewBuffer(jsonBody))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, notificationEndpoint, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return err
 	}

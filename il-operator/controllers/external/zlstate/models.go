@@ -6,6 +6,16 @@ import (
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 )
 
+type GetZLStateBody struct {
+	Company     string `json:"company"`
+	Team        string `json:"team"`
+	Environment string `json:"environment"`
+}
+
+type GetZLStateResponse struct {
+	ZLState *ZLState `json:"zlstate"`
+}
+
 type PutZLStateBody struct {
 	Company     string   `json:"company"`
 	Team        string   `json:"team"`
@@ -15,6 +25,13 @@ type PutZLStateBody struct {
 
 type PutZLStateResponse struct {
 	Message string `json:"message"`
+}
+
+type PutZLStateComponentBody struct {
+	Company     string     `json:"company"`
+	Team        string     `json:"team"`
+	Environment string     `json:"environment"`
+	Component   *Component `json:"component"`
 }
 
 type ZLState struct {
