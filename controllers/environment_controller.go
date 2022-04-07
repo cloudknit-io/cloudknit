@@ -263,8 +263,13 @@ func (r *EnvironmentReconciler) doReconcile(
 	}
 
 	// persist zlstate
-	if err := zlstateManagerClient.Put(env.Config.CompanyName, interpolated); err != nil {
+	if err := zlstateManagerClient.Put(env.Config.CompanyName, interpolated.Spec.TeamName, interpolated); err != nil {
 		return perrors.Wrap(err, "error updating zlstate")
+	}
+
+	// reconcile zlstate (for new components after zlstate was created)
+	if err := zlstate.ReconcileState(zlstateManagerClient, env.Config.CompanyName, environment.Spec.TeamName, environment, r.LogV2); err != nil {
+		return perrors.Wrap(err, "error reconciling zlstate")
 	}
 
 	return nil
