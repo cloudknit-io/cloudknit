@@ -2,11 +2,12 @@ package git
 
 import (
 	"context"
+	"os"
+
 	"github.com/compuzest/zlifecycle-internal-cli/app/api/github"
 	"github.com/compuzest/zlifecycle-internal-cli/app/env"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"os"
 )
 
 const (

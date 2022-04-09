@@ -2,11 +2,12 @@ package git
 
 import (
 	"fmt"
-	"github.com/compuzest/zlifecycle-internal-cli/app/util"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/compuzest/zlifecycle-internal-cli/app/util"
 
 	"github.com/pkg/errors"
 

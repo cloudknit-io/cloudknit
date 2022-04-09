@@ -13,8 +13,9 @@
 package github
 
 import (
-	"github.com/compuzest/zlifecycle-internal-cli/app/util"
 	"strconv"
+
+	"github.com/compuzest/zlifecycle-internal-cli/app/util"
 
 	"github.com/google/go-github/v42/github"
 	"github.com/pkg/errors"

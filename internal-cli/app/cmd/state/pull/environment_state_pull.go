@@ -3,6 +3,7 @@ package pull
 import (
 	"context"
 	"fmt"
+
 	"github.com/compuzest/zlifecycle-internal-cli/app/api/statemanager"
 	"github.com/compuzest/zlifecycle-internal-cli/app/common"
 	"github.com/compuzest/zlifecycle-internal-cli/app/env"

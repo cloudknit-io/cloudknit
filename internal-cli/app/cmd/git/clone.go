@@ -2,6 +2,7 @@ package git
 
 import (
 	"context"
+
 	"github.com/compuzest/zlifecycle-internal-cli/app/api/git"
 	"github.com/compuzest/zlifecycle-internal-cli/app/env"
 	"github.com/compuzest/zlifecycle-internal-cli/app/log"

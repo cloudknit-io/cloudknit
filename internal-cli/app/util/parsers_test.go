@@ -1,8 +1,9 @@
 package util_test
 
 import (
-	"github.com/compuzest/zlifecycle-internal-cli/app/util"
 	"testing"
+
+	"github.com/compuzest/zlifecycle-internal-cli/app/util"
 
 	"github.com/stretchr/testify/assert"
 )
