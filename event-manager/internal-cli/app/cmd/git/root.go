@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// RootCmd represents the validate command
+// RootCmd represents the validate command.
 var RootCmd = &cobra.Command{
 	Use:     "git {command}",
 	Example: "git clone -h",

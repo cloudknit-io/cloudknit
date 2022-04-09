@@ -16,7 +16,7 @@ const (
 	configFile = ".gitconfig"
 )
 
-// loginCmd represents git clone command
+// loginCmd represents git clone command.
 var loginCmd = &cobra.Command{
 	Use:     "login {gitOrg} [flags]",
 	Example: "zl git login zlifecycle-il",
