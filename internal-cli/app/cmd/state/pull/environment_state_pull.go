@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// stateCmd represents the validate command
+// stateCmd represents the validate command.
 var EnvironmentStatePullCmd = &cobra.Command{
 	Use:     "pull [flags]",
 	Example: "pull --company dev --team checkout --environment test",

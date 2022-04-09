@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// EnvironmentComponentStatusPatchCmd updates the environment component state status
+// EnvironmentComponentStatusPatchCmd updates the environment component state status.
 var EnvironmentComponentStatusPatchCmd = &cobra.Command{
 	Use:     "patch [flags]",
 	Example: "patch --company dev --team checkout --environment test --component networking --status provisioned",

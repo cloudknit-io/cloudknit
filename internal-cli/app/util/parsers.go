@@ -15,10 +15,6 @@ const (
 	gitlabSSHPrefix   = "git@gitlab.com:"
 )
 
-const (
-	RegistrationModeGithubApp = "githubApp"
-)
-
 func ToJSON(data interface{}) ([]byte, error) {
 	jsoned, err := json.Marshal(data)
 	if err != nil {

@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// environmentComponentCmd represents the validate command
+// environmentComponentCmd represents the validate command.
 var environmentComponentCmd = &cobra.Command{
 	Use:     "component {command}",
 	Example: "zl state environment pull -h",

@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// cloneCmd represents git clone command
+// cloneCmd represents git clone command.
 var cloneCmd = &cobra.Command{
 	Use:     "clone {repository} [flags]",
 	Example: "zl git clone https://github.com/some/repo -h",

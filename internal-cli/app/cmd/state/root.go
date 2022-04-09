@@ -5,7 +5,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// RootCmd represents the validate command
+// RootCmd represents the validate command.
 var RootCmd = &cobra.Command{
 	Use:     "state {command}",
 	Example: "state environment -h",
