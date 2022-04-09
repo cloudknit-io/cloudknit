@@ -2,13 +2,14 @@ package git
 
 import (
 	"context"
+	"os"
+	"path/filepath"
+
 	"github.com/compuzest/zlifecycle-internal-cli/app/api/git"
 	"github.com/compuzest/zlifecycle-internal-cli/app/env"
 	"github.com/compuzest/zlifecycle-internal-cli/app/log"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"os"
-	"path/filepath"
 )
 
 const (
@@ -37,7 +38,7 @@ var loginCmd = &cobra.Command{
 		gitconfig := git.Config(token, env.GitBaseURL)
 
 		path := filepath.Join(env.GitConfigDir, configFile)
-		if err := os.WriteFile(path, []byte(gitconfig), 0444); err != nil {
+		if err := os.WriteFile(path, []byte(gitconfig), 0o444); err != nil {
 			return errors.Wrapf(err, "error creating %s file", path)
 		}
 
@@ -48,5 +49,4 @@ var loginCmd = &cobra.Command{
 func init() {
 	loginCmd.Flags().StringVarP(&env.GitBaseURL, "--base-url", "b", "", "Base git https url (ex. https://github.com)")
 	loginCmd.Flags().StringVarP(&env.GitConfigDir, "--config-path", "c", "", "Path where to create .gitconfig")
-
 }

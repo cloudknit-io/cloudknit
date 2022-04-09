@@ -2,12 +2,13 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/compuzest/zlifecycle-internal-cli/app/cmd/git"
 	"github.com/compuzest/zlifecycle-internal-cli/app/cmd/state"
 	"github.com/compuzest/zlifecycle-internal-cli/app/common"
 	"github.com/compuzest/zlifecycle-internal-cli/app/env"
 	"github.com/spf13/cobra"
-	"os"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"

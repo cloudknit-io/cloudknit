@@ -2,10 +2,11 @@ package github
 
 import (
 	"context"
-	"github.com/compuzest/zlifecycle-internal-cli/app/util"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/compuzest/zlifecycle-internal-cli/app/util"
 
 	"github.com/bradleyfalzon/ghinstallation"
 	"github.com/pkg/errors"

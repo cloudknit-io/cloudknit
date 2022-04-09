@@ -3,13 +3,14 @@ package pull
 import (
 	"context"
 	"fmt"
+	"os"
+
 	"github.com/compuzest/zlifecycle-internal-cli/app/api/statemanager"
 	"github.com/compuzest/zlifecycle-internal-cli/app/common"
 	"github.com/compuzest/zlifecycle-internal-cli/app/env"
 	"github.com/compuzest/zlifecycle-internal-cli/app/log"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 // EnvironmentComponentStatePullCmd represents the validate command
