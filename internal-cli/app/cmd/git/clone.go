@@ -14,7 +14,7 @@ import (
 // cloneCmd represents git clone command.
 var cloneCmd = &cobra.Command{
 	Use:     "clone {repository} [flags]",
-	Example: "zl git clone https://github.com/some/repo -h",
+	Example: "zl git clone https://github.com/some/repo --git-auth githubApp --app-id 172698 --ssh /path/to/githubapp/private_key.pem",
 	Args:    cobra.ExactArgs(1),
 	Short:   "clone git repo",
 	Long:    "clone git repo by selecting appropriate auth mode",

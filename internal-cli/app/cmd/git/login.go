@@ -19,7 +19,7 @@ const (
 // loginCmd represents git clone command.
 var loginCmd = &cobra.Command{
 	Use:     "login {gitOrg} [flags]",
-	Example: "zl git login zlifecycle-il",
+	Example: "zl git login zlifecycle-il --git-auth githubApp --app-id 172698 --ssh /path/to/githubapp/private_key.pem",
 	Args:    cobra.ExactArgs(1),
 	Short:   "login to git",
 	Long:    "login to git by creating a .gitconfig file in home directory and replacing github https urls with token",
