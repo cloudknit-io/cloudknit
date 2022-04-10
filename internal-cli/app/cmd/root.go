@@ -2,11 +2,13 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+
+	"github.com/compuzest/zlifecycle-internal-cli/app/cmd/git"
 	"github.com/compuzest/zlifecycle-internal-cli/app/cmd/state"
 	"github.com/compuzest/zlifecycle-internal-cli/app/common"
 	"github.com/compuzest/zlifecycle-internal-cli/app/env"
 	"github.com/spf13/cobra"
-	"os"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
@@ -14,7 +16,7 @@ import (
 
 var cfgFile string
 
-// rootCmd represents the base command when called without any subcommands
+// rootCmd represents the base command when called without any subcommands.
 var rootCmd = &cobra.Command{
 	Use:     "zli [command]",
 	Version: env.Version,
@@ -39,6 +41,7 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
+	rootCmd.AddCommand(git.RootCmd)
 	rootCmd.AddCommand(state.RootCmd)
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,

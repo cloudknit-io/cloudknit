@@ -2,16 +2,16 @@ package patch
 
 import (
 	"context"
-	"fmt"
+
+	"github.com/compuzest/zlifecycle-internal-cli/app/api/statemanager"
 	"github.com/compuzest/zlifecycle-internal-cli/app/common"
 	"github.com/compuzest/zlifecycle-internal-cli/app/env"
 	"github.com/compuzest/zlifecycle-internal-cli/app/log"
-	"github.com/compuzest/zlifecycle-internal-cli/app/zlstate"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
-// EnvironmentComponentStatusPatchCmd updates the environment component state status
+// EnvironmentComponentStatusPatchCmd updates the environment component state status.
 var EnvironmentComponentStatusPatchCmd = &cobra.Command{
 	Use:     "patch [flags]",
 	Example: "patch --company dev --team checkout --environment test --component networking --status provisioned",
@@ -20,8 +20,9 @@ var EnvironmentComponentStatusPatchCmd = &cobra.Command{
 	Long:    `patch command modifies the environment component state status on remote backend using zLifecycle State Manager and prints it to stdout`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
-		c := zlstate.NewHTTPStateManager(ctx, log.NewLogger().WithContext(ctx))
-		req := zlstate.UpdateZLStateComponentStatusRequest{
+		log := log.NewLogger().WithContext(ctx)
+		c := statemanager.NewHTTPStateManager(ctx, log)
+		req := statemanager.UpdateZLStateComponentStatusRequest{
 			Company:     env.Company,
 			Team:        env.Team,
 			Environment: env.Environment,
@@ -38,7 +39,7 @@ var EnvironmentComponentStatusPatchCmd = &cobra.Command{
 			return errors.Wrap(err, "error marshaling patch environment component status response")
 		}
 
-		fmt.Println(string(json))
+		log.Info(string(json))
 
 		return nil
 	},

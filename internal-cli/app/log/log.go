@@ -1,9 +1,10 @@
 package log
 
 import (
+	"io"
+
 	"github.com/compuzest/zlifecycle-internal-cli/app/env"
 	"github.com/sirupsen/logrus"
-	"io"
 )
 
 func NewLogger() *logrus.Logger {
