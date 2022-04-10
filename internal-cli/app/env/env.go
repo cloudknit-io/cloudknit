@@ -2,7 +2,7 @@ package env
 
 import "os"
 
-var Version = "0.0.10" //nolint
+var Version = "0.0.11" //nolint
 
 var (
 	Company             string
