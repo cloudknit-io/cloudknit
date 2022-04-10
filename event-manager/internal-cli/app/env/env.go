@@ -5,20 +5,22 @@ import "os"
 var Version = "0.0.10" //nolint
 
 var (
-	Company          string
-	Team             string
-	Environment      string
-	Component        string
-	Status           string
-	Verbose          bool
-	GitHubAppID      string
-	GitHubAppSSHPath string
-	GitAuth          string
-	GitToken         string
-	GitCloneDir      = "."
-	GitBaseURL       = "https://github.com"
-	GitConfigDir     = "."
-	StateManagerURL  = getOr(
+	Company             string
+	Team                string
+	Environment         string
+	Component           string
+	Status              string
+	Verbose             bool
+	GitHubAppID         string
+	GitHubAppIDInternal = "172698"
+	GitHubAppIDPublic   = "172696"
+	GitHubAppSSHPath    string
+	GitAuth             string
+	GitToken            string
+	GitCloneDir         = "."
+	GitBaseURL          = "github.com"
+	GitConfigDir        = "."
+	StateManagerURL     = getOr(
 		"STATE_MANAGER_URL",
 		"http://zlifecycle-state-manager.zlifecycle-il-operator-system.svc.cluster.local:8080",
 	)

@@ -76,9 +76,9 @@ func createTempDir(repo string) (string, error) {
 
 // Config generates content for .gitconfig file.
 // token is the git (PAT) token and gitURL is the base HTTPS URL of a git provider.
-// example gitURL is https://github.com, https://gitlab.com
-func Config(token string, gitURL string) string {
-	return fmt.Sprintf(`[url "https://oauth2:%s@github.com"]
-	insteadOf = https://github.com
-`, token)
+// example git provider is github.com, gitlab.com
+func Config(token string, gitProvider string) string {
+	return fmt.Sprintf(`[url "https://oauth2:%s@%s"]
+	insteadOf = https://%s
+`, token, gitProvider, gitProvider)
 }
