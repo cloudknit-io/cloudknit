@@ -17,7 +17,7 @@ var cloneCmd = &cobra.Command{
 	Example: "zl git clone https://github.com/some/repo --git-auth githubApp --app-id 172698 --ssh /path/to/githubapp/private_key.pem",
 	Args:    cobra.ExactArgs(1),
 	Short:   "clone git repo",
-	Long:    "clone git repo by selecting appropriate auth mode",
+	Long:    "clone git repo using configurable git auth modes",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 		logger := log.NewLogger().WithContext(ctx)
