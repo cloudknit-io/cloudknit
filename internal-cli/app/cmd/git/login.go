@@ -47,6 +47,6 @@ var loginCmd = &cobra.Command{
 }
 
 func init() {
-	loginCmd.Flags().StringVarP(&env.GitBaseURL, "--base-url", "b", "", "Base git https url (ex. https://github.com)")
-	loginCmd.Flags().StringVarP(&env.GitConfigDir, "--config-path", "c", "", "Path where to create .gitconfig")
+	loginCmd.Flags().StringVarP(&env.GitBaseURL, "base-url", "b", "", "Base git https url (ex. https://github.com)")
+	loginCmd.Flags().StringVarP(&env.GitConfigDir, "config-path", "c", "", "Path where to create .gitconfig")
 }
