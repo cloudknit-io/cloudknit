@@ -48,7 +48,8 @@ cd $ENV_COMPONENT_PATH
 
 zlifecycle-internal-cli git login $customer_git_org \
   --git-auth github-app-public \
-  --ssh /root/public_github_app_ssh/sshPrivateKey
+  --ssh /root/public_github_app_ssh/sshPrivateKey \
+  --config-path $HOME
 
 sh /argocd/login.sh $customer_id
 
