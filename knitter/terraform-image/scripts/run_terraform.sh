@@ -25,7 +25,7 @@ auto_approve=${13}
 zl_env=${14}
 git_auth_mode=${15}
 il_repo=${16}
-customer_git_org="zl-zbank-tech"
+company_git_org=${17}
 
 #---------- INIT PHASE START ----------#
 
@@ -46,14 +46,10 @@ zlifecycle-internal-cli git clone $il_repo \
   -v
 cd $ENV_COMPONENT_PATH
 
-zlifecycle-internal-cli git login $customer_git_org \
+zlifecycle-internal-cli git login $company_git_org \
   --git-auth github-app-public \
   --ssh /root/public_github_app_ssh/sshPrivateKey \
-  --config-path $HOME \
-  -v
-
-echo "debug: cat .gitconfig"
-cat $HOME/.gitconfig
+  --config-path $HOME
 
 sh /argocd/login.sh $customer_id
 
