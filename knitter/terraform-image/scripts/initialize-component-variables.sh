@@ -15,5 +15,5 @@ else
   s3FileName="apply_output"
 fi
 
-
-ENV_COMPONENT_PATH=/home/terraform-config/$terraform_il_path
+IL_REPO_PATH=/home/terraform-il
+ENV_COMPONENT_PATH=$IL_REPO_PATH/$terraform_il_path

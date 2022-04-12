@@ -23,6 +23,8 @@ reconcile_id=${11}
 customer_id=${12}
 auto_approve=${13}
 zl_env=${14}
+git_auth_mode=${15}
+il_repo=${16}
 
 #---------- INIT PHASE START ----------#
 
@@ -36,6 +38,11 @@ sh /client/setup_github.sh || SaveAndExit "Cannot setup github ssh key"
 
 sh /client/setup_aws.sh || SaveAndExit "Cannot setup aws credentials"
 
+zlifecycle-internal-cli git clone $il_repo \
+  --git-auth $git_auth_mode \
+  --git-ssh /root/git_ssh/id_rsa \
+  --dir $IL_REPO_PATH \
+  -v
 cd $ENV_COMPONENT_PATH
 
 sh /argocd/login.sh $customer_id
