@@ -38,6 +38,14 @@ sh /client/setup_github.sh || SaveAndExit "Cannot setup github ssh key"
 
 sh /client/setup_aws.sh || SaveAndExit "Cannot setup aws credentials"
 
+echo $il_repo
+
+echo 'zlifecycle-internal-cli git clone '$il_repo' \
+  --git-auth '$git_auth_mode' \
+  --git-ssh /root/git_ssh/id_rsa \
+  --dir '$IL_REPO_PATH' \
+  -v'
+
 zlifecycle-internal-cli git clone $il_repo \
   --git-auth $git_auth_mode \
   --git-ssh /root/git_ssh/id_rsa \
