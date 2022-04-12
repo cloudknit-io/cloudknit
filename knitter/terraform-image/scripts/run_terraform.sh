@@ -25,6 +25,7 @@ auto_approve=${13}
 zl_env=${14}
 git_auth_mode=${15}
 il_repo=${16}
+customer_git_org="zl-zbank-tech"
 
 #---------- INIT PHASE START ----------#
 
@@ -38,20 +39,17 @@ sh /client/setup_github.sh || SaveAndExit "Cannot setup github ssh key"
 
 sh /client/setup_aws.sh || SaveAndExit "Cannot setup aws credentials"
 
-echo $il_repo
-
-echo 'zlifecycle-internal-cli git clone '$il_repo' \
-  --git-auth '$git_auth_mode' \
-  --git-ssh /root/git_ssh/id_rsa \
-  --dir '$IL_REPO_PATH' \
-  -v'
-
 zlifecycle-internal-cli git clone $il_repo \
-  --git-auth $git_auth_mode \
+  --git-auth "ssh" \
   --git-ssh /root/git_ssh/id_rsa \
   --dir $IL_REPO_PATH \
   -v
 cd $ENV_COMPONENT_PATH
+
+zlifecycle-internal-cli git login $customer_git_org \
+  --git-auth github-app-public \
+  --git-ssh /root/git_ssh/id_rsa \
+  --ssh /root/public_github_app_ssh/sshPrivateKey
 
 sh /argocd/login.sh $customer_id
 
