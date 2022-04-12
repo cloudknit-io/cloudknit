@@ -2,6 +2,8 @@ package git
 
 import (
 	"context"
+	"github.com/sirupsen/logrus"
+	"os"
 
 	"github.com/compuzest/zlifecycle-internal-cli/app/api/git"
 	"github.com/compuzest/zlifecycle-internal-cli/app/env"
@@ -26,16 +28,12 @@ var cloneCmd = &cobra.Command{
 		}
 		repo := args[0]
 
-		gitOrg, _, err := util.ParseRepositoryInfo(repo)
+		auth, err := getGitAuth(ctx, repo, logger)
 		if err != nil {
-			return errors.Wrap(err, "error extracting git organization from git repository url")
-		}
-		token, err := getGitToken(ctx, gitOrg, logger)
-		if err != nil {
-			return errors.Wrap(err, "error getting git token")
+			return errors.Wrap(err, "error getting git auth")
 		}
 
-		c, err := git.NewGoGit(ctx, &git.GoGitOptions{Mode: git.AuthModeToken, Token: token})
+		c, err := git.NewGoGit(ctx, auth)
 		if err != nil {
 			return errors.Wrap(err, "error instantiating git client")
 		}
@@ -48,6 +46,34 @@ var cloneCmd = &cobra.Command{
 	},
 }
 
+func getGitAuth(ctx context.Context, repo string, logger *logrus.Entry) (*git.GoGitOptions, error) {
+	opts := git.GoGitOptions{}
+	if env.GitAuth == authModeSSH {
+		pk, err := os.ReadFile(env.GitSSHPath)
+		if err != nil {
+			return nil, errors.Wrapf(err, "error reading private key at %s", env.GitAuth)
+		}
+		opts.Mode = git.AuthModeSSH
+		opts.PrivateKey = pk
+		return &opts, nil
+	}
+
+	gitOrg, _, err := util.ParseRepositoryInfo(repo)
+	if err != nil {
+		return nil, errors.Wrap(err, "error extracting git organization from git repository url")
+	}
+	token, err := getGitToken(ctx, gitOrg, logger)
+	if err != nil {
+		return nil, errors.Wrap(err, "error getting git token")
+	}
+
+	opts.Mode = git.AuthModeToken
+	opts.Token = token
+
+	return &opts, nil
+}
+
 func init() {
 	cloneCmd.Flags().StringVarP(&env.GitCloneDir, "dir", "d", "", "Directory in which to clone the repo")
+	cloneCmd.Flags().StringVarP(&env.GitCloneDir, "git-ssh", "i", "", "Path to ssh key registered in Git (default is $HOME/.ssh/id_rsa")
 }

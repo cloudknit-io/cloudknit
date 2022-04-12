@@ -15,6 +15,7 @@ const (
 	authModeGitHubAppInternal = "github-app-internal"
 	authModeGitHubAppPublic   = "github-app-public"
 	authModeToken             = "token"
+	authModeSSH               = "ssh"
 	errMsgInstallationToken   = "error generating GitHub App installation token"
 )
 

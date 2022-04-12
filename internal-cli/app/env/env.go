@@ -1,6 +1,9 @@
 package env
 
-import "os"
+import (
+	"os"
+	"path/filepath"
+)
 
 var Version = "0.0.11" //nolint
 
@@ -20,6 +23,7 @@ var (
 	GitCloneDir         = "."
 	GitBaseURL          = "github.com"
 	GitConfigDir        = "."
+	GitSSHPath          = filepath.Join(os.Getenv("HOME"), ".ssh", "id_rsa")
 	StateManagerURL     = getOr(
 		"STATE_MANAGER_URL",
 		"http://zlifecycle-state-manager.zlifecycle-il-operator-system.svc.cluster.local:8080",
