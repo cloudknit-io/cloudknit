@@ -40,7 +40,7 @@ func newApplicationDestination(server, namespace string) appv1.ApplicationDestin
 }
 
 func newApplicationSource(repoURL, path string, recurse bool) appv1.ApplicationSource {
-	repoURL = util.RewriteGitURLToHTTPS(repoURL)
+	repoURL = util.RewriteGitHubURLToHTTPS(repoURL, false)
 	as := appv1.ApplicationSource{
 		RepoURL:        repoURL,
 		Path:           path,
@@ -57,7 +57,7 @@ func newApplicationStatus(repoURL string) appv1.ApplicationStatus {
 		Sync: appv1.SyncStatus{
 			ComparedTo: appv1.ComparedTo{
 				Source: appv1.ApplicationSource{
-					RepoURL: util.RewriteGitURLToHTTPS(repoURL),
+					RepoURL: util.RewriteGitHubURLToHTTPS(repoURL, false),
 				},
 			},
 			Status: "Synced",
@@ -167,7 +167,7 @@ func GenerateEnvironmentComponentApps(e *stablev1.Environment, ec *stablev1.Envi
 	}
 
 	source := appv1.ApplicationSource{
-		RepoURL:        util.RewriteGitURLToHTTPS(env.Config.GitHelmChartsRepository),
+		RepoURL:        util.RewriteGitHubURLToHTTPS(env.Config.GitHelmChartsRepository, false),
 		Path:           "charts/terraform-config",
 		TargetRevision: "HEAD",
 		Helm: &appv1.ApplicationSourceHelm{
@@ -176,7 +176,7 @@ func GenerateEnvironmentComponentApps(e *stablev1.Environment, ec *stablev1.Envi
 	}
 	if ec.Type == "argocd" {
 		source = appv1.ApplicationSource{
-			RepoURL:        util.RewriteGitURLToHTTPS(env.Config.ILZLifecycleRepositoryURL),
+			RepoURL:        util.RewriteGitHubURLToHTTPS(env.Config.ILZLifecycleRepositoryURL, false),
 			Path:           il.EnvironmentComponentArgocdAppsDirectoryPath(e.Spec.TeamName, e.Spec.EnvName, ec.Name),
 			TargetRevision: "HEAD",
 		}

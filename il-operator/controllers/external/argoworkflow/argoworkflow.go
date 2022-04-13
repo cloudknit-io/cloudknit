@@ -14,6 +14,7 @@ package argoworkflow
 
 import (
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/external/zli"
 	"time"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/il"
@@ -251,6 +252,14 @@ func generateWorkflowParams(
 		{
 			Name:  "skip_component",
 			Value: AnyStringPointer(skipComponent(ec.DestroyProtection, destroyFlag, environment.Spec.SelectiveReconcile, ec.Tags)),
+		},
+		{
+			Name:  "git_auth_mode",
+			Value: AnyStringPointer(zli.AuthModeToZLIAuthMode(env.Config.GitHubCompanyAuthMethod, true)),
+		},
+		{
+			Name:  "company_git_org",
+			Value: AnyStringPointer(env.Config.GitHubCompanyOrganization),
 		},
 	}
 }

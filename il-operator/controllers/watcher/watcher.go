@@ -47,11 +47,11 @@ var _ API = (*GitHubAppWatcher)(nil)
 // Watch registers a git repo in ArgoCD using a GitHubApp auth.
 func (s *GitHubAppWatcher) Watch(repoURL string) error {
 	repoOpts := argocd.RepoOpts{
-		RepoURL:                 util.RewriteGitURLToHTTPS(repoURL),
+		RepoURL:                 util.RewriteGitHubURLToHTTPS(repoURL, false),
 		GitHubAppID:             s.appID,
 		GitHubAppInstallationID: s.installationID,
 		GitHubAppPrivateKey:     s.privateKey,
-		Mode:                    util.RegistrationModeGithubApp,
+		Mode:                    util.AuthModeGitHubApp,
 	}
 	if _, err := argocd.RegisterRepo(s.log, s.argocdAPI, &repoOpts); err != nil {
 		return errors.Wrapf(err, "error registering repo in argocd using github app auth method")

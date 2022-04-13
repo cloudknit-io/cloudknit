@@ -36,7 +36,7 @@ func PullOrClone(gitAPI API, repoURL string) error {
 }
 
 func CloneTemp(gitAPI API, repo string, log *logrus.Entry) (dir string, cleanup CleanupFunc, err error) {
-	repo = util.RewriteGitURLToHTTPS(repo)
+	repo = util.RewriteGitHubURLToHTTPS(repo, false)
 
 	log.Infof("Cloning repository %s into a temp folder", repo)
 

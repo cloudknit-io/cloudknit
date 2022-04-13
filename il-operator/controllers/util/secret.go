@@ -9,19 +9,6 @@ import (
 	kClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type (
-	AuthTier = string
-	AuthMode = string
-)
-
-const (
-	AuthTierCompany        AuthTier = "company"
-	AuthTierInternal       AuthTier = "internal"
-	AuthTierServiceAccount AuthTier = "serviceAccount"
-	AuthModeGitHubApp      AuthMode = "githubApp"
-	AuthModeSSH            AuthMode = "ssh"
-)
-
 func GetPrivateKey(ctx context.Context, c kClient.Client, key kClient.ObjectKey) ([]byte, error) {
 	secret := coreV1.Secret{}
 	if err := c.Get(ctx, key, &secret); err != nil {
