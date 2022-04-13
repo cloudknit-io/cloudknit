@@ -79,6 +79,6 @@ func createTempDir(repo string) (string, error) {
 // example git provider is github.com, gitlab.com
 func Config(token string, gitProvider string) string {
 	return fmt.Sprintf(`[url "https://oauth2:%s@%s"]
-	insteadOf = git::https://%s
+	insteadOf = https://%s
 `, token, gitProvider, gitProvider)
 }
