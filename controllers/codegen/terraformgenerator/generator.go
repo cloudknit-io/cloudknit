@@ -14,6 +14,7 @@ package terraformgenerator
 
 import (
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
 	"io"
 	"os"
 	"path/filepath"
@@ -51,9 +52,11 @@ func GenerateTerraform(
 	if err != nil {
 		return err
 	}
+
+	moduleSource := il.EnvironmentComponentModuleSource(vars.EnvCompModuleSource, vars.EnvCompModuleName)
 	moduleConfig := TerraformModuleConfig{
 		ComponentName: componentName,
-		Source:        il.EnvironmentComponentModuleSource(vars.EnvCompModuleSource, vars.EnvCompModuleName),
+		Source:        util.RewriteGitHubURLToHTTPS(moduleSource, true),
 		Path:          vars.EnvCompModulePath,
 		Version:       vars.EnvCompModuleVersion,
 		Variables:     standardizedVariables,

@@ -15,10 +15,7 @@ const (
 	githubSSHPrefix   = "git@github.com:"
 	gitlabHTTPSPrefix = "https://gitlab.com/"
 	gitlabSSHPrefix   = "git@gitlab.com:"
-)
-
-const (
-	RegistrationModeGithubApp = "githubApp"
+	gitPrefix         = "git::"
 )
 
 func ToJSON(data interface{}) ([]byte, error) {
@@ -114,31 +111,37 @@ func ParseRepositoryInfo(url string) (owner string, repo string, err error) {
 	return owner, repo, nil
 }
 
-func RewriteGitURLToHTTPS(repoURL string) string {
-	if DoRewriteURL(repoURL) {
-		transformed := repoURL
-		if strings.HasPrefix(transformed, githubSSHPrefix) {
-			transformed = strings.ReplaceAll(transformed, githubSSHPrefix, githubHTTPSPrefix)
-		} else if strings.HasPrefix(transformed, gitlabSSHPrefix) {
-			transformed = strings.ReplaceAll(transformed, gitlabSSHPrefix, gitlabHTTPSPrefix)
-		}
-		return transformed
+// RewriteGitHubURLToHTTPS does URL rewrite if auth method is GitHub App
+func RewriteGitHubURLToHTTPS(repoURL string, addGitPrefix bool) string {
+	prefix := ""
+	if addGitPrefix && !strings.HasPrefix(repoURL, gitPrefix) {
+		prefix = gitPrefix
+	}
+	if shouldRewriteURL(repoURL) {
+		return prefix + RewriteGitURLToHTTPS(repoURL)
 	}
 	return repoURL
 }
 
-func DoRewriteURL(repoURL string) bool {
-	if strings.Contains(repoURL, env.Config.GitILRepositoryOwner) &&
-		env.Config.GitHubInternalAuthMethod == RegistrationModeGithubApp {
-		return true
+func RewriteGitURLToHTTPS(repoURL string) string {
+	switch {
+	case strings.HasPrefix(repoURL, githubSSHPrefix):
+		return strings.ReplaceAll(repoURL, githubSSHPrefix, githubHTTPSPrefix)
+	case strings.HasPrefix(repoURL, gitlabSSHPrefix):
+		return strings.ReplaceAll(repoURL, gitlabSSHPrefix, gitlabHTTPSPrefix)
+	default:
+		return repoURL
 	}
+}
 
-	if !strings.Contains(repoURL, env.Config.GitILRepositoryOwner) &&
-		env.Config.GitHubCompanyAuthMethod == RegistrationModeGithubApp {
-		return true
-	}
+// shouldRewriteURL checks the repoURL is it an internal or public repo, and the configured auth method, and returns should it be rewritten
+func shouldRewriteURL(repoURL string) bool {
+	isInternalGitHubAppAuth := strings.Contains(repoURL, env.Config.GitILRepositoryOwner) &&
+		env.Config.GitHubInternalAuthMethod == AuthModeGitHubApp
+	isPublicGitHubAppAuth := !strings.Contains(repoURL, env.Config.GitILRepositoryOwner) &&
+		env.Config.GitHubCompanyAuthMethod == AuthModeGitHubApp
 
-	return false
+	return isInternalGitHubAppAuth || isPublicGitHubAppAuth
 }
 
 func RewriteGitURLToSSH(repoURL string) string {

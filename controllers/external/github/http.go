@@ -21,11 +21,6 @@ const (
 	modeToken     = "token"
 )
 
-func NewHTTPRepositoryAPI(ctx context.Context) RepositoryAPI {
-	client := newGitHubClient(ctx)
-	return &HTTPRepositoryAPI{c: client.Repositories, ctx: ctx}
-}
-
 func newGitHubAppClient(privateKey []byte, appID int64) (*github.Client, error) {
 	tr := http.DefaultTransport
 

@@ -44,17 +44,17 @@ func TestParseRepositoryInfo(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestRewriteGitURLToHTTPS(t *testing.T) {
+func TestRewriteGitHubURLToHTTPS(t *testing.T) {
 	t.Parallel()
 
 	testRepo1 := "git@github.com:test/test"
 	expected1 := "https://github.com/test/test"
 	env.Config.GitHubCompanyAuthMethod = util.AuthModeGitHubApp
-	transformed1 := util.RewriteGitURLToHTTPS(testRepo1)
+	transformed1 := util.RewriteGitHubURLToHTTPS(testRepo1, false)
 	assert.Equal(t, transformed1, expected1)
 
 	testRepo2 := "https://github.com/hello/world"
-	transformed2 := util.RewriteGitURLToHTTPS(testRepo2)
+	transformed2 := util.RewriteGitHubURLToHTTPS(testRepo2, false)
 	assert.Equal(t, transformed2, testRepo2)
 
 	testRepo3 := "https://github.com/CompuZest/leet"
@@ -74,4 +74,10 @@ func TestRewriteGitURLToHTTPS(t *testing.T) {
 	expected6 := "git@gitlab.com:CompuZest/leet"
 	transformed6 := util.RewriteGitURLToSSH(testRepo6)
 	assert.Equal(t, transformed6, expected6)
+
+	testRepo7 := "git@github.com:test/test"
+	expected7 := "git::https://github.com/test/test"
+	env.Config.GitHubCompanyAuthMethod = util.AuthModeGitHubApp
+	transformed7 := util.RewriteGitHubURLToHTTPS(testRepo7, true)
+	assert.Equal(t, transformed7, expected7)
 }
