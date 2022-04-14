@@ -1,7 +1,5 @@
 # Setup steps 
 
-Setup steps for zLifecycle
-
 ## Create OAuth application for login to zLifecycle
 
 - Add zLifecycle as an OAuth application by going `Repository Settings -> Developer Settings -> OAuth Apps -> New OAuth App`
@@ -10,7 +8,7 @@ Setup steps for zLifecycle
     * Application description (OPTIONAL): `zLifecycle instance for <client>`
     * Authorization callback URL: `https://<client>.app.zlifecycle.com/api/dex/callback`
 - Generate a new client secret from the Application OAuth page
-- Enter secret on zLifecycle UI
+- Enter secret on zLifecycle UI Settings page
 
 ## Create zLifecycle config repos
 
