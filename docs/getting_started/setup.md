@@ -13,10 +13,8 @@
 ## Create zLifecycle config repos
 
 - Create a repo `zlifecycle-config` in your github org
-- Add Team YAML in `Teams` folder
-- Create team repo 
-- Push code to Github
+- Onboard a Team using [this](https://docs.zlifecycle.com/getting_started/onboard_team/)
 
 ## Give access to zLifecycle config & terraform modules repo
 
-Install zLifecycle Github App iusing steps [here](https://docs.zlifecycle.com/settings/zlifecycle_app_installation/)
+Install zLifecycle Github App using steps [here](https://docs.zlifecycle.com/settings/zlifecycle_app_installation/)
