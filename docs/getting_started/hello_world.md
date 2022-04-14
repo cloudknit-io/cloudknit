@@ -1,4 +1,4 @@
-# Getting Started
+# Hello World Environment
 
 ## Set AWS Credentials
 

@@ -14,8 +14,9 @@ nav:
 - Core Concepts:
   - concepts/concepts.md
 - Getting Started:
-  - getting_started/index.md
+  - getting_started/setup.md
   - getting_started/onboard_team.md
+  - getting_started/hello_world.md
 - Settings:
   - settings/aws_credentials.md
   - settings/secrets.md
