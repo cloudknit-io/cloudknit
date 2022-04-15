@@ -6,6 +6,7 @@ import {
   Patch,
   Post,
   Put,
+  Req,
   Res,
   Sse,
   UploadedFile,
@@ -51,6 +52,12 @@ export class ReconciliationController {
   @Get("components/:id")
   async getComponent(@Param("id") id: string) {
     return await this.reconciliationService.getComponent(id);
+  }
+
+  @Patch("approved-by/:id") 
+  async patchApprovedBy(@Param("id") id: string, @Req() req) {
+    return await this.reconciliationService.patchApprovedBy(req.headers['x-user-email'] || '', id);
+    
   }
 
   @Post("environment/save")

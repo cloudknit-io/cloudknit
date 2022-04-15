@@ -303,16 +303,7 @@ export class ReconciliationService {
     environment: string,
     component: string
   ) {
-    const latestAuditId = await this.componentReconcileRepository.find({
-      where: {
-        name: `${team}-${environment}-${component}`,
-        status: Not(Like("skipped%")),
-      },
-      order: {
-        start_date_time: -1,
-      },
-      take: 1,
-    });
+    const latestAuditId = await this.getLatestAudit(`${team}-${environment}-${component}`);
     if (latestAuditId.length === 0) {
       return this.notFound;
     }
@@ -327,6 +318,15 @@ export class ReconciliationService {
       return logs;
     }
     return logs;
+  }
+
+  async patchApprovedBy(email: string, componentId: string) {
+    const latestAudit = await this.getLatestAudit(componentId);
+    if (latestAudit.length === 0) {
+      return this.notFound;
+    }
+    latestAudit[0].approved_by = email;
+    return await this.componentReconcileRepository.save(latestAudit[0]);
   }
 
   async putObject(
@@ -423,5 +423,20 @@ export class ReconciliationService {
       },
     });
     this.applicationStream.next(apps);
+  }
+
+  private async getLatestAudit(componentId) {
+    const latestAuditId = await this.componentReconcileRepository.find({
+      where: {
+        name: componentId,
+        status: Not(Like("skipped%")),
+      },
+      order: {
+        start_date_time: -1,
+      },
+      take: 1,
+    });
+    
+    return latestAuditId;
   }
 }
