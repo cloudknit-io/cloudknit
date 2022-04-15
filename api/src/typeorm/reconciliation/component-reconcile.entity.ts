@@ -22,6 +22,9 @@ export class ComponentReconcile {
   @Column()
   status: string
 
+  @Column()
+  approved_by?: string;
+
   @Column({
       type: 'datetime'
   })
