@@ -2,8 +2,9 @@ package git
 
 import (
 	"context"
-	"github.com/sirupsen/logrus"
 	"os"
+
+	"github.com/sirupsen/logrus"
 
 	"github.com/compuzest/zlifecycle-internal-cli/app/api/git"
 	"github.com/compuzest/zlifecycle-internal-cli/app/env"
@@ -42,6 +43,8 @@ var cloneCmd = &cobra.Command{
 			return errors.Wrap(err, "error cloning repository")
 		}
 
+		logger.Infof("Successfully cloned repo %s in directory %s", repo, env.GitCloneDir)
+
 		return nil
 	},
 }
@@ -74,6 +77,5 @@ func getGitAuth(ctx context.Context, repo string, logger *logrus.Entry) (*git.Go
 }
 
 func init() {
-	cloneCmd.Flags().StringVarP(&env.GitCloneDir, "dir", "d", "", "Directory in which to clone the repo")
-	cloneCmd.Flags().StringVarP(&env.GitCloneDir, "git-ssh", "i", "", "Path to ssh key registered in Git (default is $HOME/.ssh/id_rsa")
+	cloneCmd.Flags().StringVarP(&env.GitCloneDir, "dir", "d", env.GitCloneDir, "Directory in which to clone the repo")
 }

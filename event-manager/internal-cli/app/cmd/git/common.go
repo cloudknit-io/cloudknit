@@ -20,7 +20,6 @@ const (
 )
 
 func getGitToken(ctx context.Context, repo string, logger *logrus.Entry) (token string, err error) {
-
 	switch env.GitAuth {
 	case authModeGitHubApp:
 		token, err = getGitHubInstallationToken(ctx, authModeGitHubApp, repo, logger)
@@ -57,10 +56,10 @@ func getGitHubInstallationToken(ctx context.Context, authMode, gitOrg string, lo
 	if err != nil {
 		return "", errors.Wrap(err, "error getting github app id")
 	}
-	if env.GitHubAppSSHPath == "" {
+	if env.GitSSHPath == "" {
 		return "", errors.New("path to GitHub App private key file is not provided")
 	}
-	dat, err := os.ReadFile(env.GitHubAppSSHPath)
+	dat, err := os.ReadFile(env.GitSSHPath)
 	if err != nil {
 		return "", errors.Wrap(err, "error reading GitHub App private key file")
 	}
