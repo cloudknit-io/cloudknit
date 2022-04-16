@@ -21,6 +21,7 @@ import (
 	appv1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 )
 
+//nolint
 //go:generate mockgen --build_flags=--mod=mod -destination=./mock_argocd_api.go -package=argocd "github.com/compuzest/zlifecycle-il-operator/controllers/external/argocd" API
 
 type API interface {
@@ -36,6 +37,8 @@ type API interface {
 	RegisterCluster(body *RegisterClusterBody, bearerToken string) (*http.Response, error)
 	UpdateCluster(clusterURL string, body *UpdateClusterBody, updatedFields []string, bearerToken string) (*http.Response, error)
 }
+
+// MODELS
 
 type HTTPClient struct {
 	ctx       context.Context
@@ -163,9 +166,7 @@ type Repository struct {
 
 type UpdateClusterBody map[string]interface{}
 
-/****************************/
-/*           RBAC           */
-/**************************.*.*/
+// RBAC
 type (
 	EntryIdentifier = string
 	Permission      = string

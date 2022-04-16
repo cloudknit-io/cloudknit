@@ -73,7 +73,7 @@ func GetMockEnv1(deleted bool) stablev1.Environment {
 }
 
 //
-//func GetMockEnv2(deleted bool) stablev1.Environment {
+// func GetMockEnv2(deleted bool) stablev1.Environment {
 //	deletionTimestamp := metav1.Time{}
 //	if deleted {
 //		deletionTimestamp = metav1.Now()
@@ -125,7 +125,7 @@ func GetMockEnv1(deleted bool) stablev1.Environment {
 //	}
 //}
 
-//func GetMockEnv3(deleted bool) stablev1.Environment {
+// func GetMockEnv3(deleted bool) stablev1.Environment {
 //	deletionTimestamp := metav1.Time{}
 //	if deleted {
 //		deletionTimestamp = metav1.Now()

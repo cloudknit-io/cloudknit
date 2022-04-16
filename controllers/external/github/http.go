@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
 
 	"github.com/bradleyfalzon/ghinstallation"
@@ -50,13 +49,6 @@ func newGitHubAppClientWithInstallation(privateKey []byte, appID, installationID
 }
 
 func newTokenGitHubClient(ctx context.Context, token string) *github.Client {
-	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
-	tc := oauth2.NewClient(ctx, ts)
-	return github.NewClient(tc)
-}
-
-func newGitHubClient(ctx context.Context) *github.Client {
-	token := env.Config.GitToken
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
 	tc := oauth2.NewClient(ctx, ts)
 	return github.NewClient(tc)
