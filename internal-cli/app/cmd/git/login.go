@@ -2,7 +2,6 @@ package git
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -36,19 +35,21 @@ var loginCmd = &cobra.Command{
 			return errors.Wrap(err, "error getting git token")
 		}
 
+		logger.Infof("Git provider is %s", env.GitBaseURL)
+
 		gitconfig := git.Config(token, env.GitBaseURL)
-		fmt.Printf("git base url: %s", env.GitBaseURL)
-		fmt.Printf("git base dir: %s", env.GitConfigDir)
 		path := filepath.Join(env.GitConfigDir, configFile)
 		if err := os.WriteFile(path, []byte(gitconfig), 0o444); err != nil {
 			return errors.Wrapf(err, "error creating %s file", path)
 		}
 
+		logger.Infof("Successfully wrote .gitconfig file at %s", path)
+		logger.Infof(".gitfile content:\n%s", gitconfig)
 		return nil
 	},
 }
 
 func init() {
-	loginCmd.Flags().StringVarP(&env.GitBaseURL, "base-url", "b", env.GitBaseURL, "Base git https url (ex. https://github.com)")
-	loginCmd.Flags().StringVarP(&env.GitConfigDir, "config-path", "c", env.GitConfigDir, "Path where to create .gitconfig")
+	loginCmd.Flags().StringVarP(&env.GitBaseURL, "git-provider", "b", env.GitBaseURL, "Base git https url (ex. https://github.com)")
+	loginCmd.Flags().StringVarP(&env.GitConfigDir, "git-config-path", "c", env.GitConfigDir, "Path where to create .gitconfig")
 }

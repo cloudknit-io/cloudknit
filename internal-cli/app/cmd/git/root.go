@@ -22,11 +22,8 @@ func init() {
 		fmt.Println(err)
 		common.Failure(3201)
 	}
-
-	RootCmd.PersistentFlags().StringVarP(&env.GitHubAppID, "app-id", "a", "", "GitHub App organization ID")
-
-	RootCmd.PersistentFlags().StringVarP(&env.GitHubAppSSHPath, "ssh", "s", "", "GitHub App private key filepath")
-
+	RootCmd.PersistentFlags().StringVarP(&env.GitSSHPath, "git-ssh", "s", env.GitSSHPath, "Git private key filepath")
+	RootCmd.PersistentFlags().StringVarP(&env.GitHubAppID, "github-app-id", "a", "", "GitHub App organization ID")
 	RootCmd.PersistentFlags().StringVarP(&env.GitToken, "token", "t", "", "Git token")
 
 	RootCmd.AddCommand(cloneCmd)

@@ -17,7 +17,6 @@ var (
 	GitHubAppID         string
 	GitHubAppIDInternal = "172698"
 	GitHubAppIDPublic   = "172696"
-	GitHubAppSSHPath    string
 	GitAuth             string
 	GitToken            string
 	GitCloneDir         = "."
