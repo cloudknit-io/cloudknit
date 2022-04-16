@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 )
 
-var Version = "0.0.17" //nolint
+var Version = "0.0.18" //nolint
 
 var (
 	Company             string
