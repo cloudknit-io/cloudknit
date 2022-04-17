@@ -2,6 +2,7 @@ package validators
 
 import (
 	"context"
+	"github.com/sirupsen/logrus"
 	"testing"
 
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
@@ -68,7 +69,8 @@ func TestValidateTeamExists(t *testing.T) {
 		teamList.Items = []v1.Team{team}
 	})
 
-	err := validateTeamExists(context.Background(), &env, mockKClient, &teamList)
+	log := logrus.NewEntry(logrus.New())
+	err := validateTeamExists(context.Background(), &env, mockKClient, &teamList, log)
 	assert.Nil(t, err)
 	assert.Len(t, teamList.Items, 1)
 	assert.Equal(t, teamList.Items[0].Spec.TeamName, teamName)
