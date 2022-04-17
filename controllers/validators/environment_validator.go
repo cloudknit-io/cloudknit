@@ -176,7 +176,7 @@ func (v *EnvironmentValidatorImpl) validateEnvironmentCommon(
 ) field.ErrorList {
 	var allErrs field.ErrorList
 
-	if err := validateTeamExists(ctx, e, kc, &v1.TeamList{}); err != nil {
+	if err := validateTeamExists(ctx, e, kc, &v1.TeamList{}, l); err != nil {
 		allErrs = append(allErrs, err)
 	}
 	if err := validateNames(e); err != nil {
@@ -195,18 +195,21 @@ func (v *EnvironmentValidatorImpl) validateEnvironmentCommon(
 	return allErrs
 }
 
-func validateTeamExists(ctx context.Context, e *v1.Environment, kc kClient.Client, list *v1.TeamList) *field.Error {
-	opts := []kClient.ListOption{kClient.InNamespace(e.Namespace), kClient.MatchingFields{"spec.teamName": e.Spec.TeamName}}
+func validateTeamExists(ctx context.Context, e *v1.Environment, kc kClient.Client, list *v1.TeamList, l *logrus.Entry) *field.Error {
+	opts := []kClient.ListOption{kClient.InNamespace(e.Namespace)}
 	fld := field.NewPath("spec").Child("teamName")
 	if err := kc.List(ctx, list, opts...); err != nil {
+		l.Errorf("error listing teams in %s namespace: %v", e.Namespace, err)
 		return field.InternalError(fld, err)
 	}
 
-	if len(list.Items) == 0 {
-		return field.NotFound(fld, "referenced team name does not exist")
+	for _, t := range list.Items {
+		if t.Spec.TeamName == e.Spec.TeamName {
+			return nil
+		}
 	}
 
-	return nil
+	return field.Invalid(fld, e.Spec.TeamName, "referenced team name does not exist")
 }
 
 func validateNames(e *v1.Environment) field.ErrorList {
@@ -267,13 +270,16 @@ func (v *EnvironmentValidatorImpl) validateEnvironmentComponents(
 	if err := checkEnvironmentComponentsNotEmpty(e.Spec.Components); err != nil {
 		allErrs = append(allErrs, err)
 	}
-	for _, ec := range e.Spec.Components {
+	for i, ec := range e.Spec.Components {
 		name := ec.Name
+		if err := checkEnvironmentComponentName(name, i); err != nil {
+			allErrs = append(allErrs, err...)
+		}
 		dependsOn := ec.DependsOn
-		if err := checkEnvironmentComponentReferencesItself(name, dependsOn, ec.Name); err != nil {
+		if err := checkEnvironmentComponentReferencesItself(name, dependsOn, i); err != nil {
 			allErrs = append(allErrs, err)
 		}
-		if err := checkEnvironmentComponentDependenciesExist(name, dependsOn, e.Spec.Components, ec.Name); err != nil {
+		if err := checkEnvironmentComponentDependenciesExist(name, dependsOn, e.Spec.Components, i); err != nil {
 			allErrs = append(allErrs, err)
 		}
 		if e.DeletionTimestamp == nil || e.DeletionTimestamp.IsZero() {
@@ -285,13 +291,27 @@ func (v *EnvironmentValidatorImpl) validateEnvironmentComponents(
 			}
 		}
 		if isCreate {
-			if err := checkEnvironmentComponentNotInitiallyDestroyed(ec); err != nil {
+			if err := checkEnvironmentComponentNotInitiallyDestroyed(ec, i); err != nil {
 				allErrs = append(allErrs, err)
 			}
 		}
 	}
 
 	return allErrs
+}
+
+func checkEnvironmentComponentName(name string, i int) field.ErrorList {
+	var allErrs field.ErrorList
+
+	fld := field.NewPath("spec").Child("components").Index(i).Child("name")
+	if !regexp.MustCompile(nameRegex).MatchString(name) {
+		allErrs = append(allErrs, field.Invalid(fld, name, "environment component name must be combination of alphanumerical and hyphen characters"))
+	}
+	if len(name) > maxFieldLength {
+		allErrs = append(allErrs, field.Invalid(fld, name, "environment component name must not exceed 64 characters"))
+	}
+
+	return nil
 }
 
 func (v *EnvironmentValidatorImpl) checkOverlaysExist(overlays []*v1.OverlayFile, ec string, l *logrus.Entry) field.ErrorList {
@@ -377,25 +397,25 @@ func checkEnvironmentComponentsNotEmpty(ecs []*v1.EnvironmentComponent) *field.E
 	return nil
 }
 
-func checkEnvironmentComponentNotInitiallyDestroyed(ec *v1.EnvironmentComponent) *field.Error {
+func checkEnvironmentComponentNotInitiallyDestroyed(ec *v1.EnvironmentComponent, i int) *field.Error {
 	if ec.Destroy {
-		fld := field.NewPath("spec").Child("components").Child(ec.Name).Child("destroy")
+		fld := field.NewPath("spec").Child("components").Index(i).Child("destroy")
 		return field.Invalid(fld, ec.Destroy, "environment component cannot be initialized with destroy field equal to true")
 	}
 	return nil
 }
 
-func checkEnvironmentComponentReferencesItself(name string, deps []string, ec string) *field.Error {
+func checkEnvironmentComponentReferencesItself(name string, deps []string, i int) *field.Error {
 	for _, dep := range deps {
 		if name == dep {
-			fld := field.NewPath("spec").Child("components").Child(ec).Child("dependsOn").Key(name)
+			fld := field.NewPath("spec").Child("components").Index(i).Child("dependsOn").Key(name)
 			return field.Invalid(fld, name, fmt.Sprintf("component '%s' has a dependency on itself", name))
 		}
 	}
 	return nil
 }
 
-func checkEnvironmentComponentDependenciesExist(comp string, deps []string, ecs []*v1.EnvironmentComponent, ec string) *field.Error {
+func checkEnvironmentComponentDependenciesExist(comp string, deps []string, ecs []*v1.EnvironmentComponent, i int) *field.Error {
 	for _, dep := range deps {
 		exists := false
 		for _, ec := range ecs {
@@ -405,7 +425,7 @@ func checkEnvironmentComponentDependenciesExist(comp string, deps []string, ecs 
 			}
 		}
 		if !exists {
-			fld := field.NewPath("spec").Child("components").Child(ec).Child("dependsOn").Key(dep)
+			fld := field.NewPath("spec").Child("components").Index(i).Child("dependsOn").Key(dep)
 			return field.Invalid(fld, dep, fmt.Sprintf("component '%s' depends on non-existing component: '%s'", comp, dep))
 		}
 	}
