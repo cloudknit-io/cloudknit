@@ -39,17 +39,21 @@ sh /client/setup_github.sh || SaveAndExit "Cannot setup github ssh key"
 
 sh /client/setup_aws.sh || SaveAndExit "Cannot setup aws credentials"
 
+internal_git_auth="github-app-internal"
 zlifecycle-internal-cli git clone $il_repo \
-  --git-auth "ssh" \
-  --git-ssh /root/git_ssh/id_rsa \
+  --git-auth $internal_git_auth \
+  --git-ssh /root/internal_github_app_ssh/sshPrivateKey \
   --dir $IL_REPO_PATH \
   -v
 cd $ENV_COMPONENT_PATH
 
-zlifecycle-internal-cli git login $company_git_org \
-  --git-auth github-app-public \
-  --ssh /root/public_github_app_ssh/sshPrivateKey \
-  --config-path $HOME
+if [ $customer_git_org != "ssh" ]; then
+  zlifecycle-internal-cli git login $company_git_org \
+    --git-auth $git_auth_mode \
+    --git-ssh /root/public_github_app_ssh/sshPrivateKey \
+    --git-config-path $HOME \
+    -v
+fi
 
 sh /argocd/login.sh $customer_id
 
