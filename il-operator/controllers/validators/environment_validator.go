@@ -1,9 +1,9 @@
-package controllers
+package validators
 
 import (
 	"context"
 	"fmt"
-	"os"
+	"regexp"
 	"time"
 
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
@@ -19,12 +19,18 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/notifier/uinotifier"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/log"
 
-	perrors "github.com/pkg/errors"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+)
+
+const (
+	errInitValidator = "error initializing environment validator"
+	nameRegex        = `^[a-zA-Z0-9-]*$`
+	maxFieldLength   = 64
 )
 
 var logger = log.NewLogger().WithFields(logrus.Fields{"name": "controllers.EnvironmentValidator"})
@@ -41,8 +47,9 @@ func NewEnvironmentValidatorImpl(k8sClient kClient.Client) *EnvironmentValidator
 func (v *EnvironmentValidatorImpl) init(ctx context.Context) error {
 	watcherServices, err := watcherservices.NewGitHubServices(ctx, v.K8sClient, env.Config.GitHubCompanyOrganization, logger)
 	if err != nil {
-		return perrors.Wrap(err, "error instantiating watcher services")
+		return errors.Wrap(err, "error instantiating watcher services")
 	}
+
 	factory := gitfactory.NewFactory(v.K8sClient, logger)
 	var gitOpts gitfactory.Options
 	if env.Config.GitHubCompanyAuthMethod == util.AuthModeSSH {
@@ -55,9 +62,11 @@ func (v *EnvironmentValidatorImpl) init(ctx context.Context) error {
 	}
 	gitClient, err := factory.NewGitClient(ctx, &gitOpts)
 	if err != nil {
-		return perrors.Wrap(err, "error instantiating git client")
+		return errors.Wrap(err, "error instantiating git client")
 	}
+
 	v.gitClient = gitClient
+
 	return nil
 }
 
@@ -79,14 +88,13 @@ func notifyError(ctx context.Context, e *v1.Environment, ntfr notifier.API, msg 
 
 func (v *EnvironmentValidatorImpl) ValidateEnvironmentCreate(ctx context.Context, e *v1.Environment) error {
 	if err := v.init(ctx); err != nil {
-		msg := "error initializing environment validator"
-		logger.Errorf(msg+": %v", err)
-		return perrors.Wrap(err, msg)
+		logger.Errorf(errInitValidator+": %v", err)
+		return apierrors.NewInternalError(errors.Wrap(err, errInitValidator))
 	}
 
 	var allErrs field.ErrorList
 
-	if err := v.validateEnvironmentCommon(e, true, logger); err != nil {
+	if err := v.validateEnvironmentCommon(ctx, e, true, v.K8sClient, logger); err != nil {
 		allErrs = append(allErrs, err...)
 	}
 
@@ -109,8 +117,8 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentCreate(ctx context.Context
 
 	return apierrors.NewInvalid(
 		schema.GroupKind{
-			Group: "stable.compuzest.com",
-			Kind:  "Environment",
+			Group: v1.CRDGroup,
+			Kind:  v1.CRDEnvironment,
 		},
 		e.Name,
 		allErrs,
@@ -119,14 +127,13 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentCreate(ctx context.Context
 
 func (v *EnvironmentValidatorImpl) ValidateEnvironmentUpdate(ctx context.Context, e *v1.Environment) error {
 	if err := v.init(ctx); err != nil {
-		msg := "error initializing environment validator"
-		logger.Errorf(msg+": %v", err)
-		return perrors.Wrap(err, msg)
+		logger.Errorf(errInitValidator+": %v", err)
+		return apierrors.NewInternalError(errors.Wrap(err, errInitValidator))
 	}
 
 	var allErrs field.ErrorList
 
-	if err := v.validateEnvironmentCommon(e, false, logger); err != nil {
+	if err := v.validateEnvironmentCommon(ctx, e, false, v.K8sClient, logger); err != nil {
 		allErrs = append(allErrs, err...)
 	}
 	if err := validateEnvironmentStatus(e); err != nil {
@@ -152,8 +159,8 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentUpdate(ctx context.Context
 
 	return apierrors.NewInvalid(
 		schema.GroupKind{
-			Group: "stable.compuzest.com",
-			Kind:  "Environment",
+			Group: v1.CRDGroup,
+			Kind:  v1.CRDEnvironment,
 		},
 		e.Name,
 		allErrs,
@@ -161,12 +168,20 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentUpdate(ctx context.Context
 }
 
 func (v *EnvironmentValidatorImpl) validateEnvironmentCommon(
+	ctx context.Context,
 	e *v1.Environment,
 	isCreate bool,
+	kc kClient.Client,
 	l *logrus.Entry,
 ) field.ErrorList {
 	var allErrs field.ErrorList
 
+	if err := validateTeamExists(ctx, e, kc, &v1.TeamList{}, l); err != nil {
+		allErrs = append(allErrs, err)
+	}
+	if err := validateNames(e); err != nil {
+		allErrs = append(allErrs, err...)
+	}
 	if err := validateEnvironmentNamespace(e); err != nil {
 		allErrs = append(allErrs, err)
 	}
@@ -177,8 +192,44 @@ func (v *EnvironmentValidatorImpl) validateEnvironmentCommon(
 		allErrs = append(allErrs, err...)
 	}
 
-	if len(allErrs) == 0 {
-		return nil
+	return allErrs
+}
+
+func validateTeamExists(ctx context.Context, e *v1.Environment, kc kClient.Client, list *v1.TeamList, l *logrus.Entry) *field.Error {
+	opts := []kClient.ListOption{kClient.InNamespace(e.Namespace)}
+	fld := field.NewPath("spec").Child("teamName")
+	if err := kc.List(ctx, list, opts...); err != nil {
+		l.Errorf("error listing teams in %s namespace: %v", e.Namespace, err)
+		return field.InternalError(fld, err)
+	}
+
+	for _, t := range list.Items {
+		if t.Spec.TeamName == e.Spec.TeamName {
+			return nil
+		}
+	}
+
+	return field.Invalid(fld, e.Spec.TeamName, "referenced team name does not exist")
+}
+
+func validateNames(e *v1.Environment) field.ErrorList {
+	var allErrs field.ErrorList
+
+	if !regexp.MustCompile(nameRegex).MatchString(e.Spec.EnvName) {
+		fld := field.NewPath("spec").Child("envName")
+		allErrs = append(allErrs, field.Invalid(fld, e.Spec.EnvName, "environment name must be combination of alphanumerical and hyphen characters"))
+	}
+	if len(e.Spec.EnvName) > maxFieldLength {
+		fld := field.NewPath("spec").Child("envName")
+		allErrs = append(allErrs, field.Invalid(fld, e.Spec.EnvName, "environment name must not exceed 64 characters"))
+	}
+	if !regexp.MustCompile(nameRegex).MatchString(e.Spec.TeamName) {
+		fld := field.NewPath("spec").Child("teamName")
+		allErrs = append(allErrs, field.Invalid(fld, e.Spec.TeamName, "team name must be combination of alphanumerical and hyphen characters"))
+	}
+	if len(e.Spec.TeamName) > maxFieldLength {
+		fld := field.NewPath("spec").Child("teamName")
+		allErrs = append(allErrs, field.Invalid(fld, e.Spec.TeamName, "team name must not exceed 64 characters"))
 	}
 
 	return allErrs
@@ -199,15 +250,11 @@ func validateEnvironmentStatus(e *v1.Environment) field.ErrorList {
 
 	if e.Spec.TeamName != e.Status.TeamName && e.Status.TeamName != "" {
 		fld := field.NewPath("status").Child("teamName")
-		allErrs = append(allErrs, field.Invalid(fld, e.Spec.TeamName, "environment property 'teamName' cannot be updated"))
+		allErrs = append(allErrs, field.Invalid(fld, e.Spec.TeamName, "field cannot be updated"))
 	}
 	if e.Spec.EnvName != e.Status.EnvName && e.Status.EnvName != "" {
 		fld := field.NewPath("status").Child("envName")
-		allErrs = append(allErrs, field.Invalid(fld, e.Spec.EnvName, "environment property 'envName' cannot be updated"))
-	}
-
-	if len(allErrs) == 0 {
-		return nil
+		allErrs = append(allErrs, field.Invalid(fld, e.Spec.EnvName, "field cannot be updated"))
 	}
 
 	return allErrs
@@ -223,13 +270,16 @@ func (v *EnvironmentValidatorImpl) validateEnvironmentComponents(
 	if err := checkEnvironmentComponentsNotEmpty(e.Spec.Components); err != nil {
 		allErrs = append(allErrs, err)
 	}
-	for _, ec := range e.Spec.Components {
+	for i, ec := range e.Spec.Components {
 		name := ec.Name
+		if err := checkEnvironmentComponentName(name, i); err != nil {
+			allErrs = append(allErrs, err...)
+		}
 		dependsOn := ec.DependsOn
-		if err := checkEnvironmentComponentReferencesItself(name, dependsOn, ec.Name); err != nil {
+		if err := checkEnvironmentComponentReferencesItself(name, dependsOn, i); err != nil {
 			allErrs = append(allErrs, err)
 		}
-		if err := checkEnvironmentComponentDependenciesExist(name, dependsOn, e.Spec.Components, ec.Name); err != nil {
+		if err := checkEnvironmentComponentDependenciesExist(name, dependsOn, e.Spec.Components, i); err != nil {
 			allErrs = append(allErrs, err)
 		}
 		if e.DeletionTimestamp == nil || e.DeletionTimestamp.IsZero() {
@@ -241,17 +291,27 @@ func (v *EnvironmentValidatorImpl) validateEnvironmentComponents(
 			}
 		}
 		if isCreate {
-			if err := checkEnvironmentComponentNotInitiallyDestroyed(ec); err != nil {
+			if err := checkEnvironmentComponentNotInitiallyDestroyed(ec, i); err != nil {
 				allErrs = append(allErrs, err)
 			}
 		}
 	}
 
-	if len(allErrs) == 0 {
-		return nil
+	return allErrs
+}
+
+func checkEnvironmentComponentName(name string, i int) field.ErrorList {
+	var allErrs field.ErrorList
+
+	fld := field.NewPath("spec").Child("components").Index(i).Child("name")
+	if !regexp.MustCompile(nameRegex).MatchString(name) {
+		allErrs = append(allErrs, field.Invalid(fld, name, "environment component name must be combination of alphanumerical and hyphen characters"))
+	}
+	if len(name) > maxFieldLength {
+		allErrs = append(allErrs, field.Invalid(fld, name, "environment component name must not exceed 64 characters"))
 	}
 
-	return allErrs
+	return nil
 }
 
 func (v *EnvironmentValidatorImpl) checkOverlaysExist(overlays []*v1.OverlayFile, ec string, l *logrus.Entry) field.ErrorList {
@@ -284,13 +344,13 @@ func (v *EnvironmentValidatorImpl) checkPaths(source string, paths []string, fld
 	dir, cleanup, err := git.CloneTemp(v.gitClient, source, l)
 	if err != nil {
 		logger.Errorf("error temp cloning repo [%s]: %v", source, err)
-		fe := field.InternalError(fld, perrors.New("error validating access to source repository"))
+		fe := field.InternalError(fld, errors.New("error validating access to source repository"))
 		allErrs = append(allErrs, fe)
 		return allErrs
 	}
 
 	for _, path := range paths {
-		if exists, _ := doesFileExist(dir, path); !exists {
+		if exists, _ := util.FileExistsInDir(dir, path); !exists {
 			fe := field.Invalid(fld, path, "file does not exist on given path in source repository")
 			allErrs = append(allErrs, fe)
 		}
@@ -300,36 +360,25 @@ func (v *EnvironmentValidatorImpl) checkPaths(source string, paths []string, fld
 	return allErrs
 }
 
-func doesFileExist(repoDir, path string) (bool, error) {
-	if _, err := os.Stat(fmt.Sprintf("%s/%s", repoDir, path)); err != nil {
-		if perrors.Is(err, os.ErrNotExist) {
-			return false, nil
-		}
-		return false, err
-	}
-
-	return true, nil
-}
-
 func checkEnvironmentFields(e *v1.Environment, isCreate bool) field.ErrorList {
 	var allErrs field.ErrorList
 
 	if isCreate {
 		if e.Spec.Teardown {
 			fld := field.NewPath("spec").Child("teardown")
-			fe := field.Invalid(fld, e.Spec.Teardown, "environment cannot be created with 'Teardown' equal to true")
+			fe := field.Invalid(fld, e.Spec.Teardown, "environment cannot be created with teardown equal to true")
 			allErrs = append(allErrs, fe)
 		}
 	}
 
 	if e.Spec.TeamName == "" {
 		fld := field.NewPath("spec").Child("teamName")
-		fe := field.Invalid(fld, e.Spec.TeamName, "environment cannot have empty 'TeamName'")
+		fe := field.Invalid(fld, e.Spec.TeamName, "field cannot be empty")
 		allErrs = append(allErrs, fe)
 	}
 	if e.Spec.EnvName == "" {
 		fld := field.NewPath("spec").Child("envName")
-		fe := field.Invalid(fld, e.Spec.TeamName, "environment cannot have empty 'EnvName'")
+		fe := field.Invalid(fld, e.Spec.TeamName, "field cannot be empty")
 		allErrs = append(allErrs, fe)
 	}
 
@@ -348,25 +397,25 @@ func checkEnvironmentComponentsNotEmpty(ecs []*v1.EnvironmentComponent) *field.E
 	return nil
 }
 
-func checkEnvironmentComponentNotInitiallyDestroyed(ec *v1.EnvironmentComponent) *field.Error {
+func checkEnvironmentComponentNotInitiallyDestroyed(ec *v1.EnvironmentComponent, i int) *field.Error {
 	if ec.Destroy {
-		fld := field.NewPath("spec").Child("components").Child(ec.Name).Child("destroy")
-		return field.Invalid(fld, ec.Destroy, "environment component cannot be initialized with 'destroy' equal to true")
+		fld := field.NewPath("spec").Child("components").Index(i).Child("destroy")
+		return field.Invalid(fld, ec.Destroy, "environment component cannot be initialized with destroy field equal to true")
 	}
 	return nil
 }
 
-func checkEnvironmentComponentReferencesItself(name string, deps []string, ec string) *field.Error {
+func checkEnvironmentComponentReferencesItself(name string, deps []string, i int) *field.Error {
 	for _, dep := range deps {
 		if name == dep {
-			fld := field.NewPath("spec").Child("components").Child(ec).Child("dependsOn").Key(name)
+			fld := field.NewPath("spec").Child("components").Index(i).Child("dependsOn").Key(name)
 			return field.Invalid(fld, name, fmt.Sprintf("component '%s' has a dependency on itself", name))
 		}
 	}
 	return nil
 }
 
-func checkEnvironmentComponentDependenciesExist(comp string, deps []string, ecs []*v1.EnvironmentComponent, ec string) *field.Error {
+func checkEnvironmentComponentDependenciesExist(comp string, deps []string, ecs []*v1.EnvironmentComponent, i int) *field.Error {
 	for _, dep := range deps {
 		exists := false
 		for _, ec := range ecs {
@@ -376,7 +425,7 @@ func checkEnvironmentComponentDependenciesExist(comp string, deps []string, ecs 
 			}
 		}
 		if !exists {
-			fld := field.NewPath("spec").Child("components").Child(ec).Child("dependsOn").Key(dep)
+			fld := field.NewPath("spec").Child("components").Index(i).Child("dependsOn").Key(dep)
 			return field.Invalid(fld, dep, fmt.Sprintf("component '%s' depends on non-existing component: '%s'", comp, dep))
 		}
 	}

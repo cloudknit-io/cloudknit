@@ -5,6 +5,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/pkg/errors"
+	ssh2 "golang.org/x/crypto/ssh"
 )
 
 const (
@@ -37,6 +38,8 @@ func getSSHAuth(privateKey []byte) (*ssh.PublicKeys, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating public keys from private key")
 	}
+	pk.HostKeyCallback = ssh2.InsecureIgnoreHostKey() //nolint
+
 	return pk, nil
 }
 
