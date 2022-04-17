@@ -1,4 +1,4 @@
-package controllers
+package validators
 
 import (
 	"context"
@@ -29,7 +29,7 @@ import (
 
 const (
 	errInitValidator = "error initializing environment validator"
-	nameRegex        = `[A-Za-z0-9_-]+`
+	nameRegex        = `^[a-zA-Z0-9-]*$`
 	maxFieldLength   = 64
 )
 
@@ -176,7 +176,7 @@ func (v *EnvironmentValidatorImpl) validateEnvironmentCommon(
 ) field.ErrorList {
 	var allErrs field.ErrorList
 
-	if err := validateTeamExists(ctx, e, kc); err != nil {
+	if err := validateTeamExists(ctx, e, kc, &v1.TeamList{}); err != nil {
 		allErrs = append(allErrs, err)
 	}
 	if err := validateNames(e); err != nil {
@@ -195,13 +195,13 @@ func (v *EnvironmentValidatorImpl) validateEnvironmentCommon(
 	return allErrs
 }
 
-func validateTeamExists(ctx context.Context, e *v1.Environment, kc kClient.Client) *field.Error {
+func validateTeamExists(ctx context.Context, e *v1.Environment, kc kClient.Client, list *v1.TeamList) *field.Error {
 	opts := []kClient.ListOption{kClient.InNamespace(e.Namespace), kClient.MatchingFields{"spec.teamName": e.Spec.TeamName}}
-	list := v1.EnvironmentList{}
 	fld := field.NewPath("spec").Child("teamName")
-	if err := kc.List(ctx, &list, opts...); err != nil {
+	if err := kc.List(ctx, list, opts...); err != nil {
 		return field.InternalError(fld, err)
 	}
+
 	if len(list.Items) == 0 {
 		return field.NotFound(fld, "referenced team name does not exist")
 	}
@@ -212,25 +212,21 @@ func validateTeamExists(ctx context.Context, e *v1.Environment, kc kClient.Clien
 func validateNames(e *v1.Environment) field.ErrorList {
 	var allErrs field.ErrorList
 
-	if len(e.Spec.EnvName) > maxFieldLength {
-		if !regexp.MustCompile(nameRegex).MatchString(e.Spec.EnvName) {
-			fld := field.NewPath("spec").Child("envName")
-			allErrs = append(allErrs, field.Invalid(fld, e.Spec.EnvName, "environment name must not exceed 64 characters"))
-		}
-	}
-	if len(e.Spec.TeamName) > maxFieldLength {
-		if !regexp.MustCompile(nameRegex).MatchString(e.Spec.TeamName) {
-			fld := field.NewPath("spec").Child("teamName")
-			allErrs = append(allErrs, field.Invalid(fld, e.Spec.EnvName, "team name must not exceed 64 characters"))
-		}
-	}
 	if !regexp.MustCompile(nameRegex).MatchString(e.Spec.EnvName) {
 		fld := field.NewPath("spec").Child("envName")
 		allErrs = append(allErrs, field.Invalid(fld, e.Spec.EnvName, "environment name must be combination of alphanumerical and hyphen characters"))
 	}
+	if len(e.Spec.EnvName) > maxFieldLength {
+		fld := field.NewPath("spec").Child("envName")
+		allErrs = append(allErrs, field.Invalid(fld, e.Spec.EnvName, "environment name must not exceed 64 characters"))
+	}
 	if !regexp.MustCompile(nameRegex).MatchString(e.Spec.TeamName) {
 		fld := field.NewPath("spec").Child("teamName")
-		allErrs = append(allErrs, field.Invalid(fld, e.Spec.EnvName, "team name must be combination of alphanumerical and hyphen characters"))
+		allErrs = append(allErrs, field.Invalid(fld, e.Spec.TeamName, "team name must be combination of alphanumerical and hyphen characters"))
+	}
+	if len(e.Spec.TeamName) > maxFieldLength {
+		fld := field.NewPath("spec").Child("teamName")
+		allErrs = append(allErrs, field.Invalid(fld, e.Spec.TeamName, "team name must not exceed 64 characters"))
 	}
 
 	return allErrs
