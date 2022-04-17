@@ -111,7 +111,7 @@ func ParseRepositoryInfo(url string) (owner string, repo string, err error) {
 	return owner, repo, nil
 }
 
-// RewriteGitHubURLToHTTPS does URL rewrite if auth method is GitHub App
+// RewriteGitHubURLToHTTPS does URL rewrite if auth method is GitHub App.
 func RewriteGitHubURLToHTTPS(repoURL string, addGitPrefix bool) string {
 	prefix := ""
 	if addGitPrefix && !strings.HasPrefix(repoURL, gitPrefix) {
@@ -134,7 +134,7 @@ func RewriteGitURLToHTTPS(repoURL string) string {
 	}
 }
 
-// shouldRewriteURL checks the repoURL is it an internal or public repo, and the configured auth method, and returns should it be rewritten
+// shouldRewriteURL checks the repoURL is it an internal or public repo, and the configured auth method, and returns should it be rewritten.
 func shouldRewriteURL(repoURL string) bool {
 	isInternalGitHubAppAuth := strings.Contains(repoURL, env.Config.GitILRepositoryOwner) &&
 		env.Config.GitHubInternalAuthMethod == AuthModeGitHubApp

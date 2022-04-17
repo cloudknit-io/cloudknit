@@ -14,11 +14,12 @@ package terraformgenerator
 
 import (
 	"fmt"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
 	"io"
 	"os"
 	"path/filepath"
 	"text/template"
+
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/il"

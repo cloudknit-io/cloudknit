@@ -21,18 +21,6 @@ type Repo struct {
 	Path   string `json:"path"`
 }
 
-// TeamSpec defines the desired state of Team.
-type TeamSpec struct {
-	TeamName    string   `json:"teamName"`
-	ConfigRepo  *Repo    `json:"configRepo"`
-	Permissions []string `json:"permissions,omitempty"`
-}
-
-// TeamStatus defines the observed state of Team.
-type TeamStatus struct { // INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-}
-
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 
@@ -43,6 +31,18 @@ type Team struct {
 
 	Spec   TeamSpec   `json:"spec,omitempty"`
 	Status TeamStatus `json:"status,omitempty"`
+}
+
+// TeamSpec defines the desired state of Team.
+type TeamSpec struct {
+	TeamName    string   `json:"teamName"`
+	ConfigRepo  *Repo    `json:"configRepo"`
+	Permissions []string `json:"permissions,omitempty"`
+}
+
+// TeamStatus defines the observed state of Team.
+type TeamStatus struct { // INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
+	// Important: Run "make" to regenerate code after modifying this file
 }
 
 // +kubebuilder:object:root=true

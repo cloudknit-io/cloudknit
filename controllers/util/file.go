@@ -72,3 +72,16 @@ func IsFile(path string) bool {
 
 	return !fileInfo.IsDir()
 }
+
+// FileExistsInDir returns true or false if the given path exists relatively to a dir
+func FileExistsInDir(dir, path string) (bool, error) {
+	joined := filepath.Join(dir, path)
+	if _, err := os.Stat(joined); err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return false, nil
+		}
+		return false, err
+	}
+
+	return true, nil
+}

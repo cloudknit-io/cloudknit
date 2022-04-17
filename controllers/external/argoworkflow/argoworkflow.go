@@ -14,8 +14,9 @@ package argoworkflow
 
 import (
 	"fmt"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/external/zli"
 	"time"
+
+	"github.com/compuzest/zlifecycle-il-operator/controllers/external/zli"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/il"
 
