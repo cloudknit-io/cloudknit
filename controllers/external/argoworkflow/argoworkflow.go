@@ -224,7 +224,7 @@ func generateWorkflowParams(
 		},
 		{
 			Name:  "il_repo",
-			Value: AnyStringPointer(util.RewriteGitURLToSSH(ilRepo)),
+			Value: AnyStringPointer(util.RewriteGitHubURLToHTTPS(ilRepo, true)),
 		},
 		{
 			Name:  "terraform_il_path",
