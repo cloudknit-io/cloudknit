@@ -10,44 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestParseRepositoryInfo(t *testing.T) {
-	t.Parallel()
-
-	if env.TestMode != env.TestModeUnit && env.TestMode != env.TestModeAll {
-		t.Skip()
-	}
-
-	url1 := "https://github.com/CompuZest/zlifecycle-il-operator"
-
-	owner, repo, err := util.ParseRepositoryInfo(url1)
-	assert.NoError(t, err)
-	assert.Equal(t, owner, "CompuZest")
-	assert.Equal(t, repo, "zlifecycle-il-operator")
-
-	url2 := "https://github.com/CompuZest/zlifecycle-il-operator.git"
-	owner, repo, err = util.ParseRepositoryInfo(url2)
-	assert.NoError(t, err)
-	assert.Equal(t, owner, "CompuZest")
-	assert.Equal(t, repo, "zlifecycle-il-operator")
-
-	url3 := "git@github.com:CompuZest/zlifecycle-il-operator"
-	owner, repo, err = util.ParseRepositoryInfo(url3)
-	assert.NoError(t, err)
-	assert.Equal(t, owner, "CompuZest")
-	assert.Equal(t, repo, "zlifecycle-il-operator")
-
-	url4 := "git@github.com:CompuZest/zlifecycle-il-operator.git"
-	owner, repo, err = util.ParseRepositoryInfo(url4)
-	assert.NoError(t, err)
-	assert.Equal(t, owner, "CompuZest")
-	assert.Equal(t, repo, "zlifecycle-il-operator")
-
-	owner, repo, err = util.ParseRepositoryInfo("")
-	assert.Empty(t, owner)
-	assert.Empty(t, repo)
-	assert.Error(t, err)
-}
-
 func TestReverseParseGitURL(t *testing.T) {
 	t.Parallel()
 
@@ -62,11 +24,11 @@ func TestReverseParseGitURL(t *testing.T) {
 	assert.Equal(t, owner, "CompuZest")
 	assert.Equal(t, repo, "zlifecycle-il-operator")
 
-	url2 := "https://github.com/CompuZest/zlifecycle-il-operator.git"
+	url2 := "git::https://github.com/zlifecycle-il/dev-zlab-tf-il.git"
 	owner, repo, err = util.ReverseParseGitURL(url2)
 	assert.NoError(t, err)
-	assert.Equal(t, owner, "CompuZest")
-	assert.Equal(t, repo, "zlifecycle-il-operator")
+	assert.Equal(t, owner, "zlifecycle-il")
+	assert.Equal(t, repo, "dev-zlab-tf-il")
 
 	url3 := "git@github.com:CompuZest/zlifecycle-il-operator"
 	owner, repo, err = util.ReverseParseGitURL(url3)
