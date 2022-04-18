@@ -3,6 +3,7 @@ package git
 import (
 	"context"
 	"os"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 
@@ -28,6 +29,7 @@ func NewCloneCmd() *cobra.Command {
 				return errors.Errorf("invalid number of args (must be 1 - repository URL): %d", len(args))
 			}
 			repo := args[0]
+			repo = strings.TrimPrefix(repo, "git::")
 
 			auth, err := getGitAuth(ctx, repo, logger)
 			if err != nil {
