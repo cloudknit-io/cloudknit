@@ -56,9 +56,10 @@ func NewCloneCmd() *cobra.Command {
 
 func getGitAuth(ctx context.Context, repo string, logger *logrus.Entry) (*git.GoGitOptions, error) {
 	if env.GitAuth == authModeSSH {
+		logger.Infof("Using SSH auth mode for git")
 		return getGitSSHAuth(env.GitSSHPath)
 	}
-
+	logger.Infof("Using token auth mode for git")
 	return getGitTokenAuth(ctx, repo, logger)
 }
 
@@ -74,7 +75,10 @@ func getGitSSHAuth(sshPath string) (*git.GoGitOptions, error) {
 func getGitTokenAuth(ctx context.Context, repoURL string, logger *logrus.Entry) (*git.GoGitOptions, error) {
 	gitOrg, _, err := util.ReverseParseGitURL(repoURL)
 	if err != nil {
-		return nil, errors.Wrap(err, "error extracting git organization from git url")
+		return nil, errors.Wrapf(err, "error parsing git url [%s]", repoURL)
+	}
+	if gitOrg == "" {
+		return nil, errors.Errorf("error parsing repo url [%s]: error parsing git organization", repoURL)
 	}
 	token, err := getGitToken(ctx, gitOrg, logger)
 	if err != nil {
