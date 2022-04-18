@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 )
 
-var Version = "0.0.21" //nolint
+var Version = "0.0.22" //nolint
 
 var (
 	TestMode            = getOr("ZLI_TEST_MODE", "unit")
