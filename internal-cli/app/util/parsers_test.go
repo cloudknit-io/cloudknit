@@ -1,8 +1,9 @@
 package util_test
 
 import (
-	"github.com/compuzest/zlifecycle-internal-cli/app/env"
 	"testing"
+
+	"github.com/compuzest/zlifecycle-internal-cli/app/env"
 
 	"github.com/compuzest/zlifecycle-internal-cli/app/util"
 
