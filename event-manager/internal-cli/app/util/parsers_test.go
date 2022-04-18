@@ -1,6 +1,7 @@
 package util_test
 
 import (
+	"github.com/compuzest/zlifecycle-internal-cli/app/env"
 	"testing"
 
 	"github.com/compuzest/zlifecycle-internal-cli/app/util"
@@ -10,6 +11,10 @@ import (
 
 func TestParseRepositoryInfo(t *testing.T) {
 	t.Parallel()
+
+	if env.TestMode != env.TestModeUnit && env.TestMode != env.TestModeAll {
+		t.Skip()
+	}
 
 	url1 := "https://github.com/CompuZest/zlifecycle-il-operator"
 
@@ -42,8 +47,50 @@ func TestParseRepositoryInfo(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestReverseParseGitURL(t *testing.T) {
+	t.Parallel()
+
+	if env.TestMode != env.TestModeUnit && env.TestMode != env.TestModeAll {
+		t.Skip()
+	}
+
+	url1 := "https://github.com/CompuZest/zlifecycle-il-operator"
+
+	owner, repo, err := util.ReverseParseGitURL(url1)
+	assert.NoError(t, err)
+	assert.Equal(t, owner, "CompuZest")
+	assert.Equal(t, repo, "zlifecycle-il-operator")
+
+	url2 := "https://github.com/CompuZest/zlifecycle-il-operator.git"
+	owner, repo, err = util.ReverseParseGitURL(url2)
+	assert.NoError(t, err)
+	assert.Equal(t, owner, "CompuZest")
+	assert.Equal(t, repo, "zlifecycle-il-operator")
+
+	url3 := "git@github.com:CompuZest/zlifecycle-il-operator"
+	owner, repo, err = util.ReverseParseGitURL(url3)
+	assert.NoError(t, err)
+	assert.Equal(t, owner, "CompuZest")
+	assert.Equal(t, repo, "zlifecycle-il-operator")
+
+	url4 := "git@github.com:CompuZest/zlifecycle-il-operator.git"
+	owner, repo, err = util.ReverseParseGitURL(url4)
+	assert.NoError(t, err)
+	assert.Equal(t, owner, "CompuZest")
+	assert.Equal(t, repo, "zlifecycle-il-operator")
+
+	owner, repo, err = util.ReverseParseGitURL("")
+	assert.Empty(t, owner)
+	assert.Empty(t, repo)
+	assert.Error(t, err)
+}
+
 func TestRewriteGitURLToHTTPS(t *testing.T) {
 	t.Parallel()
+
+	if env.TestMode != env.TestModeUnit && env.TestMode != env.TestModeAll {
+		t.Skip()
+	}
 
 	testRepo1 := "git@github.com:test/test"
 	expected1 := "https://github.com/test/test"

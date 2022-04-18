@@ -41,7 +41,7 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.AddCommand(git.RootCmd)
+	rootCmd.AddCommand(git.NewRootCmd())
 	rootCmd.AddCommand(state.RootCmd)
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,

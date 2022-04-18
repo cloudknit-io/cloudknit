@@ -32,7 +32,7 @@ func getSSHAuth(privateKey []byte) (*ssh.PublicKeys, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating public keys from private key")
 	}
-	pk.HostKeyCallback = ssh2.InsecureIgnoreHostKey()
+	pk.HostKeyCallback = ssh2.InsecureIgnoreHostKey() //nolint
 
 	return pk, nil
 }
