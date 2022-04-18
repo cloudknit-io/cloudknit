@@ -24,5 +24,5 @@ var environmentCmd = &cobra.Command{
 }
 
 func init() {
-	environmentCmd.AddCommand(pull.EnvironmentStatePullCmd)
+	environmentCmd.AddCommand(pull.NewEnvironmentStatePullCmd())
 }

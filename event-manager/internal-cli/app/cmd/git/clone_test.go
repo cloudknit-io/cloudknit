@@ -1,13 +1,14 @@
 package git_test
 
 import (
+	"os"
+	"path/filepath"
+	"testing"
+
 	"github.com/compuzest/zlifecycle-internal-cli/app/cmd/git"
 	"github.com/compuzest/zlifecycle-internal-cli/app/env"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"os"
-	"path/filepath"
-	"testing"
 )
 
 func TestCloneCmdGitHubAppInternal(t *testing.T) {

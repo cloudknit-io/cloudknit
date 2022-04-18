@@ -1,12 +1,13 @@
 package git_test
 
 import (
-	"github.com/compuzest/zlifecycle-internal-cli/app/cmd/git"
-	"github.com/compuzest/zlifecycle-internal-cli/app/env"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/compuzest/zlifecycle-internal-cli/app/cmd/git"
+	"github.com/compuzest/zlifecycle-internal-cli/app/env"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {
