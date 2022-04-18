@@ -31,6 +31,8 @@ func NewCloneCmd() *cobra.Command {
 			repo := args[0]
 			repo = strings.TrimPrefix(repo, "git::")
 
+			logger.Infof("Cloning git repo %s using auth mode %s", repo, env.GitAuth)
+
 			auth, err := getGitAuth(ctx, repo, logger)
 			if err != nil {
 				return errors.Wrap(err, "error getting git auth")
