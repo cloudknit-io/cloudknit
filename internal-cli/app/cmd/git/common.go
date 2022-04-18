@@ -59,6 +59,7 @@ func getGitHubInstallationToken(ctx context.Context, authMode, gitOrg string, lo
 	if env.GitSSHPath == "" {
 		return "", errors.New("path to GitHub App private key file is not provided")
 	}
+	logger.Infof("Reading GitHub App private key from %s", env.GitSSHPath)
 	dat, err := os.ReadFile(env.GitSSHPath)
 	if err != nil {
 		return "", errors.Wrap(err, "error reading GitHub App private key file")
@@ -72,8 +73,6 @@ func getGitHubInstallationToken(ctx context.Context, authMode, gitOrg string, lo
 	if err != nil {
 		return "", errors.Wrap(err, "error generating GitHub App installation token")
 	}
-
-	logger.Infof("Generated git token %s", token)
 
 	return token, nil
 }

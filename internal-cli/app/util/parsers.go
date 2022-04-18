@@ -63,8 +63,8 @@ func FromJSONMap(m map[string]interface{}, s interface{}) error {
 	return nil
 }
 
-func FromYaml(yamlstring string, out interface{}) error {
-	return y.Unmarshal([]byte(yamlstring), out)
+func FromYaml(in string, out interface{}) error {
+	return y.Unmarshal([]byte(in), out)
 }
 
 func ToYaml(in interface{}) (ymlstring string, e error) {
@@ -76,9 +76,35 @@ func ToYaml(in interface{}) (ymlstring string, e error) {
 	return string(out), nil
 }
 
-func ParseRepositoryName(url string) string {
-	repoURI := url[strings.LastIndex(url, "/")+1:]
-	return strings.TrimSuffix(repoURI, ".git")
+func ReverseParseGitURL(url string) (org, repo string, err error) {
+	if url == "" {
+		return "", "", errors.New("url param cannot be empty")
+	}
+	url = strings.TrimSuffix(url, ".git")
+	repoParsed := false
+	end := len(url) - 1
+	isDelimiter := func(c int32) bool { return c == '/' || c == ':' }
+	for i := range url {
+		c := int32(url[end-i])
+		if isDelimiter(c) {
+			if !repoParsed {
+				repoParsed = true
+				continue
+			}
+			break
+		}
+		if !repoParsed {
+			repo = string(c) + repo
+			continue
+		}
+		org = string(c) + org
+	}
+
+	if org == "" || repo == "" {
+		return "", "", errors.Errorf("invalid git url: %s", url)
+	}
+
+	return
 }
 
 func ParseRepositoryInfo(url string) (owner string, repo string, err error) {
@@ -109,25 +135,23 @@ func ParseRepositoryInfo(url string) (owner string, repo string, err error) {
 }
 
 func RewriteGitURLToHTTPS(repoURL string) string {
-	transformed := repoURL
-	if strings.HasPrefix(transformed, githubSSHPrefix) {
-		transformed = strings.ReplaceAll(transformed, githubSSHPrefix, githubHTTPSPrefix)
-	} else if strings.HasPrefix(transformed, gitlabSSHPrefix) {
-		transformed = strings.ReplaceAll(transformed, gitlabSSHPrefix, gitlabHTTPSPrefix)
+	switch {
+	case strings.Contains(repoURL, githubSSHPrefix):
+		return strings.ReplaceAll(repoURL, githubSSHPrefix, githubHTTPSPrefix)
+	case strings.Contains(repoURL, gitlabSSHPrefix):
+		return strings.ReplaceAll(repoURL, gitlabSSHPrefix, gitlabHTTPSPrefix)
+	default:
+		return repoURL
 	}
-	return transformed
 }
 
 func RewriteGitURLToSSH(repoURL string) string {
-	transformed := repoURL
-	if strings.HasPrefix(transformed, githubHTTPSPrefix) {
-		transformed = strings.ReplaceAll(transformed, githubHTTPSPrefix, githubSSHPrefix)
-	} else if strings.HasPrefix(transformed, gitlabHTTPSPrefix) {
-		transformed = strings.ReplaceAll(transformed, gitlabHTTPSPrefix, gitlabSSHPrefix)
+	switch {
+	case strings.Contains(repoURL, githubHTTPSPrefix):
+		return strings.ReplaceAll(repoURL, githubHTTPSPrefix, githubSSHPrefix)
+	case strings.Contains(repoURL, gitlabHTTPSPrefix):
+		return strings.ReplaceAll(repoURL, gitlabHTTPSPrefix, gitlabSSHPrefix)
+	default:
+		return repoURL
 	}
-	return transformed
-}
-
-func IsGitLabURL(repoURL string) bool {
-	return strings.Contains(repoURL, "gitlab.com")
 }

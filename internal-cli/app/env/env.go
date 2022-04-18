@@ -8,6 +8,11 @@ import (
 var Version = "0.0.18" //nolint
 
 var (
+	TestMode            = getOr("ZLI_TEST_MODE", "unit")
+	TestModeIntegration = "integration"
+	TestModeUnit        = "unit"
+	TestModeAll         = "all"
+	TestDir             = "/tmp/zli_test"
 	Company             string
 	Team                string
 	Environment         string
@@ -15,14 +20,14 @@ var (
 	Status              string
 	Verbose             bool
 	GitHubAppID         string
-	GitHubAppIDInternal = "172698"
-	GitHubAppIDPublic   = "172696"
+	GitHubAppIDInternal = getOr("GITHUB_APP_ID_INTERNAL", "172698")
+	GitHubAppIDPublic   = getOr("GITHUB_APP_ID_PUBLIC", "172696")
 	GitAuth             string
 	GitToken            string
-	GitCloneDir         = "."
-	GitBaseURL          = "github.com"
-	GitConfigDir        = "."
-	GitSSHPath          = filepath.Join(os.Getenv("HOME"), ".ssh", "id_rsa")
+	GitCloneDir         = getOr("GIT_CLONE_DIR", ".")
+	GitBaseURL          = getOr("GIT_BASE_URL", "github.com")
+	GitConfigDir        = getOr("GIT_CONFIG_DIR", ".")
+	GitSSHPath          = getOr("GIT_SSH_PATH", filepath.Join(os.Getenv("HOME"), ".ssh", "id_rsa"))
 	StateManagerURL     = getOr(
 		"STATE_MANAGER_URL",
 		"http://zlifecycle-state-manager.zlifecycle-il-operator-system.svc.cluster.local:8080",

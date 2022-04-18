@@ -1,6 +1,12 @@
 # IDE
 .idea
 
+# .env files
+*.env
+
+# internal
+ssh
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
