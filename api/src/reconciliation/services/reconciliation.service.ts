@@ -303,7 +303,9 @@ export class ReconciliationService {
     environment: string,
     component: string
   ) {
-    const latestAuditId = await this.getLatestAudit(`${team}-${environment}-${component}`);
+    const latestAuditId = await this.getLatestAudit(
+      `${team}-${environment}-${component}`
+    );
     if (latestAuditId.length === 0) {
       return this.notFound;
     }
@@ -327,6 +329,21 @@ export class ReconciliationService {
     }
     latestAudit[0].approved_by = email;
     return await this.componentReconcileRepository.save(latestAudit[0]);
+  }
+
+  async getApprovedBy(id: string, rid: string) {
+    if (rid === "-1") {
+      const latestAudit = await this.getLatestAudit(id);
+      if (latestAudit.length === 0) {
+        return this.notFound;
+      }
+      return latestAudit[0];
+    }
+    return await this.componentReconcileRepository.findOne({
+      where : {
+        reconcile_id : rid
+      }
+    });
   }
 
   async putObject(
@@ -436,7 +453,7 @@ export class ReconciliationService {
       },
       take: 1,
     });
-    
+
     return latestAuditId;
   }
 }

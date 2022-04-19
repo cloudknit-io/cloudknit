@@ -60,6 +60,12 @@ export class ReconciliationController {
     
   }
 
+  @Get("approved-by/:id/:rid") 
+  async getApprovedBy(@Param("id") id: string, @Param("rid") rid: string) {
+    return await this.reconciliationService.getApprovedBy(id, rid);
+    
+  }
+
   @Post("environment/save")
   async saveEnvironment(@Body() runData: EvnironmentReconcileDto) {
     return await this.reconciliationService.saveOrUpdateEnvironment(runData);
