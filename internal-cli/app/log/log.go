@@ -14,3 +14,5 @@ func NewLogger() *logrus.Logger {
 	}
 	return l
 }
+
+var Logger = NewLogger().WithField("version", env.Version)

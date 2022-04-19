@@ -2,7 +2,6 @@ package pull
 
 import (
 	"context"
-	"fmt"
 	"os"
 
 	"github.com/compuzest/zlifecycle-internal-cli/app/api/statemanager"
@@ -13,37 +12,58 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// EnvironmentComponentStatePullCmd represents the validate command.
-var EnvironmentComponentStatePullCmd = &cobra.Command{
-	Use:     "pull [flags]",
-	Example: "pull --company dev --team checkout --environment test --component networking",
-	Args:    cobra.NoArgs,
-	Short:   "pull command pulls the environment component state and prints to stdout",
-	Long:    `pull command pulls the environment component state from remote backend using zLifecycle State Manager and prints it to stdout`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		ctx := context.Background()
-		c := statemanager.NewHTTPStateManager(ctx, log.NewLogger().WithContext(ctx))
-		req := statemanager.FetchZLStateComponentRequest{
-			Company:     env.Company,
-			Team:        env.Team,
-			Environment: env.Environment,
-			Component:   env.Component,
-		}
-		componentState, err := c.GetComponent(&req)
-		if err != nil {
-			return errors.Wrap(err, "error fetching environment component zLstate")
-		}
-		// print output
-		json, err := common.ToJSON(componentState)
-		if err != nil {
-			return errors.Wrap(err, "error marshaling environment component zLstate")
-		}
+func NewEnvironmentComponentStatePullCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "pull [flags]",
+		Example: "pull --company dev --team checkout --environment test --component networking",
+		Args:    cobra.NoArgs,
+		Short:   "pull command pulls the environment component state and prints to stdout",
+		Long:    `pull command pulls the environment component state from remote backend using zLifecycle State Manager and prints it to stdout`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := context.Background()
+			logger := log.Logger.WithContext(ctx)
+			c := statemanager.NewHTTPStateManager(ctx, log.Logger.WithContext(ctx))
+			req := statemanager.FetchZLStateComponentRequest{
+				Company:     env.Company,
+				Team:        env.Team,
+				Environment: env.Environment,
+				Component:   env.Component,
+			}
+			componentState, err := c.GetComponent(&req)
+			if err != nil {
+				return errors.Wrap(err, "error fetching environment component zLstate")
+			}
+			// print output
+			json, err := common.ToJSON(componentState)
+			if err != nil {
+				return errors.Wrap(err, "error marshaling environment component zLstate")
+			}
 
-		fmt.Println(string(json))
+			logger.Info(string(json))
 
-		os.Exit(getExitCode(componentState.Component.Status))
-		return nil
-	},
+			os.Exit(getExitCode(componentState.Component.Status))
+			return nil
+		},
+	}
+
+	cmd.Flags().StringVarP(&env.Company, "company", "c", env.Company, "Company name")
+	if err := cmd.MarkFlagRequired("company"); err != nil {
+		common.Failure(1201)
+	}
+	cmd.Flags().StringVarP(&env.Team, "team", "t", env.Team, "Team name")
+	if err := cmd.MarkFlagRequired("team"); err != nil {
+		common.Failure(1202)
+	}
+	cmd.Flags().StringVarP(&env.Environment, "environment", "e", env.Environment, "Environment name")
+	if err := cmd.MarkFlagRequired("environment"); err != nil {
+		common.Failure(1203)
+	}
+	cmd.Flags().StringVarP(&env.Component, "component", "m", env.Component, "Environment Component name")
+	if err := cmd.MarkFlagRequired("environment"); err != nil {
+		common.Failure(1204)
+	}
+
+	return cmd
 }
 
 func getExitCode(status string) int {
@@ -62,24 +82,5 @@ func getExitCode(status string) int {
 		return 6
 	default:
 		return 99
-	}
-}
-
-func init() {
-	EnvironmentComponentStatePullCmd.Flags().StringVarP(&env.Company, "company", "c", "", "Company name")
-	if err := EnvironmentComponentStatePullCmd.MarkFlagRequired("company"); err != nil {
-		common.Failure(1201)
-	}
-	EnvironmentComponentStatePullCmd.Flags().StringVarP(&env.Team, "team", "t", "", "Team name")
-	if err := EnvironmentComponentStatePullCmd.MarkFlagRequired("team"); err != nil {
-		common.Failure(1202)
-	}
-	EnvironmentComponentStatePullCmd.Flags().StringVarP(&env.Environment, "environment", "e", "", "Environment name")
-	if err := EnvironmentComponentStatePullCmd.MarkFlagRequired("environment"); err != nil {
-		common.Failure(1203)
-	}
-	EnvironmentComponentStatePullCmd.Flags().StringVarP(&env.Component, "component", "m", "", "Environment Component name")
-	if err := EnvironmentComponentStatePullCmd.MarkFlagRequired("environment"); err != nil {
-		common.Failure(1204)
 	}
 }

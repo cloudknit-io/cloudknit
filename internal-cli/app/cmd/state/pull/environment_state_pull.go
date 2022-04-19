@@ -10,7 +10,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// NewEnvironmentStatePullCmd creates the validate pull environment state command.
 func NewEnvironmentStatePullCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "pull [flags]",
@@ -20,7 +19,7 @@ func NewEnvironmentStatePullCmd() *cobra.Command {
 		Long:    `environment state pull command pulls the environment state from remote backend using zLifecycle State Manager and prints it to stdout`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.Background()
-			logger := log.NewLogger().WithContext(ctx)
+			logger := log.Logger.WithContext(ctx)
 			c := statemanager.NewHTTPStateManager(ctx, logger)
 			req := statemanager.FetchZLStateRequest{
 				Company:     env.Company,

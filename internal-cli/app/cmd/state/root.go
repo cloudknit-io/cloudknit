@@ -5,17 +5,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// RootCmd represents the validate command.
-var RootCmd = &cobra.Command{
-	Use:     "state {command}",
-	Example: "state environment -h",
-	Short:   "state command offers subcommands for managing environment or component state",
-	Long:    `state command offers subcommands for managing environment or component state on remote backend using zLifecycle State Manager`,
-}
+func NewRootCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "state {command}",
+		Example: "state environment -h",
+		Short:   "state command offers subcommands for managing environment or component state",
+		Long:    `state command offers subcommands for managing environment or component state on remote backend using zLifecycle State Manager`,
+	}
 
-func init() {
-	RootCmd.PersistentFlags().StringVarP(&env.StateManagerURL, "url", "u", env.StateManagerURL, "zLifecycle State Manager URL")
+	cmd.PersistentFlags().StringVarP(&env.StateManagerURL, "url", "u", env.StateManagerURL, "zLifecycle State Manager URL")
 
-	RootCmd.AddCommand(environmentCmd)
-	RootCmd.AddCommand(environmentComponentCmd)
+	cmd.AddCommand(NewEnvironmentCmd())
+	cmd.AddCommand(NewEnvironmentComponentCmd())
+
+	return cmd
 }

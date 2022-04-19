@@ -6,23 +6,24 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// environmentCmd represents the validate command.
-var environmentCmd = &cobra.Command{
-	Use:     "environment {command}",
-	Example: "zl state environment pull -h",
-	Args:    cobra.ExactArgs(1),
-	Short:   "environment command exposes subcommands for managing environment state",
-	Long:    `environment command exposes subcommands for managing environment state from remote backend using zLifecycle State Manager and prints it to stdout`,
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			if err := cmd.Help(); err != nil {
-				common.Failure(1)
+func NewEnvironmentCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "environment {command}",
+		Example: "zl state environment pull -h",
+		Args:    cobra.ExactArgs(1),
+		Short:   "environment command exposes subcommands for managing environment state",
+		Long:    `environment command exposes subcommands for managing environment state from remote backend using zLifecycle State Manager and prints it to stdout`,
+		Run: func(cmd *cobra.Command, args []string) {
+			if len(args) == 0 {
+				if err := cmd.Help(); err != nil {
+					common.Failure(1)
+				}
+				common.Success()
 			}
-			common.Success()
-		}
-	},
-}
+		},
+	}
 
-func init() {
-	environmentCmd.AddCommand(pull.NewEnvironmentStatePullCmd())
+	cmd.AddCommand(pull.NewEnvironmentStatePullCmd())
+
+	return cmd
 }

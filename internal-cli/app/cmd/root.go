@@ -16,38 +16,36 @@ import (
 
 var cfgFile string
 
-// rootCmd represents the base command when called without any subcommands.
-var rootCmd = &cobra.Command{
-	Use:     "zli [command]",
-	Version: env.Version,
-	Short:   "zLifecycle internal CLI",
-	Long:    `zLifecycle internal CLI for administrative management and workflow executor`,
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			if err := cmd.Help(); err != nil {
-				common.Failure(1)
+func NewRootCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "zli [command]",
+		Version: env.Version,
+		Short:   "zLifecycle internal CLI",
+		Long:    `zLifecycle internal CLI for administrative management and workflow executor`,
+		Run: func(cmd *cobra.Command, args []string) {
+			if len(args) == 0 {
+				if err := cmd.Help(); err != nil {
+					common.Failure(1)
+				}
+				common.Success()
 			}
-			common.Success()
-		}
-	},
+		},
+	}
+
+	cobra.OnInitialize(initConfig)
+
+	cmd.AddCommand(git.NewRootCmd())
+	cmd.AddCommand(state.NewRootCmd())
+	cmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.zl.yaml)")
+	cmd.PersistentFlags().BoolVarP(&env.Verbose, "verbose", "v", false, "enable command logs")
+
+	return cmd
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	cobra.CheckErr(rootCmd.Execute())
-}
-
-func init() {
-	cobra.OnInitialize(initConfig)
-
-	rootCmd.AddCommand(git.NewRootCmd())
-	rootCmd.AddCommand(state.RootCmd)
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.zl.yaml)")
-	rootCmd.PersistentFlags().BoolVarP(&env.Verbose, "verbose", "v", false, "enable command logs")
+	cobra.CheckErr(NewRootCmd().Execute())
 }
 
 // initConfig reads in config file and ENV variables if set.

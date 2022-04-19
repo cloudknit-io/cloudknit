@@ -18,20 +18,20 @@ import (
 func NewCloneCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "clone {repository} [flags]",
-		Example: "zl git clone https://github.com/some/repo --git-auth githubApp --app-id 172698 --ssh /path/to/githubapp/private_key.pem",
+		Example: "clone https://github.com/some/repo --git-auth github-app-public --ssh /path/to/githubapp/private_key.pem",
 		Args:    cobra.ExactArgs(1),
 		Short:   "clone git repo",
 		Long:    "clone git repo using configurable git auth modes",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.Background()
-			logger := log.NewLogger().WithContext(ctx)
+			logger := log.Logger.WithContext(ctx).WithField("gitAuthMode", env.GitAuth)
 			if len(args) != 1 {
 				return errors.Errorf("invalid number of args (must be 1 - repository URL): %d", len(args))
 			}
 			repo := args[0]
 			repo = strings.TrimPrefix(repo, "git::")
 
-			logger.Infof("Cloning git repo %s using auth mode %s", repo, env.GitAuth)
+			logger.Infof("Cloning git repo [%s] using auth mode %s", repo, env.GitAuth)
 
 			auth, err := getGitAuth(ctx, repo, logger)
 			if err != nil {
