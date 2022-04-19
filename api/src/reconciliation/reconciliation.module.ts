@@ -7,15 +7,15 @@ import { ReconciliationService } from './services/reconciliation.service';
 
 @Module({
   imports: [
-    // TypeOrmModule.forFeature([
-    //   ...reconcileEntities
-    // ])
+    TypeOrmModule.forFeature([
+      ...reconcileEntities
+    ])
   ],
   controllers: [
     ReconciliationController
   ],
   providers: [
-    // ReconciliationService
+    ReconciliationService
   ],
 })
 export class ReconciliationModule {
