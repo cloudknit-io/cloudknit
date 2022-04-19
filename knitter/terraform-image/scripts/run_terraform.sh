@@ -47,7 +47,7 @@ zlifecycle-internal-cli git clone $il_repo \
   -v
 cd $ENV_COMPONENT_PATH
 
-if [ $customer_git_org != "ssh" ]; then
+if [ $git_auth_mode != "ssh" ]; then
   zlifecycle-internal-cli git login $company_git_org \
     --git-auth $git_auth_mode \
     --git-ssh /root/public_github_app_ssh/sshPrivateKey \
