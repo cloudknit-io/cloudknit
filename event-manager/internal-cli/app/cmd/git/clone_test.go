@@ -14,7 +14,7 @@ import (
 func TestCloneCmdGitHubAppInternal(t *testing.T) {
 	t.Parallel()
 
-	if env.TestMode != "integration" {
+	if env.TestMode != env.TestModeIntegration && env.TestMode != env.TestModeAll {
 		t.Skip()
 	}
 

@@ -7,16 +7,20 @@ import (
 
 var Version = "0.0.22" //nolint
 
-var (
-	TestMode            = getOr("ZLI_TEST_MODE", "unit")
+const (
 	TestModeIntegration = "integration"
 	TestModeUnit        = "unit"
 	TestModeAll         = "all"
+)
+
+var (
+	TestMode = getOr("ZLI_TEST_MODE", "unit")
+
 	TestDir             = "/tmp/zli_test"
-	Company             string
-	Team                string
-	Environment         string
-	Component           string
+	Company             = os.Getenv("ZLI_COMPANY")
+	Team                = os.Getenv("ZLI_TEAM")
+	Environment         = os.Getenv("ZLI_ENVIRONMENT")
+	Component           = os.Getenv("ZLI_TEAM")
 	Status              string
 	Verbose             bool
 	GitHubAppID         string
