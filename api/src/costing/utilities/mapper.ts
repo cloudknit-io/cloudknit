@@ -154,6 +154,7 @@ export class Mapper {
         startDateTime: c.start_date_time,
         duration: diff,
         status: c.status,
+        approvedBy: c.approved_by,
       };
     });
   }

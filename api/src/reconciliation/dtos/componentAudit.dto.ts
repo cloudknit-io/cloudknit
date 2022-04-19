@@ -3,4 +3,5 @@ export interface ComponentAudit {
     duration: number;
     status: string;
     startDateTime: string;
+    approvedBy?: string;
 }
