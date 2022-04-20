@@ -341,7 +341,7 @@ export class ReconciliationService {
     }
     return await this.componentReconcileRepository.findOne({
       where : {
-        reconcile_id : rid
+        reconcile_id : parseInt(rid)
       }
     });
   }
