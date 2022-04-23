@@ -6,12 +6,12 @@ When you are [defining an environment](../define/define_environment.md), you can
 
 When the plan is run, the reconciler looks for this property which tells it whether to ask for explicit approval at the time of provisioning, teardown, or reconciling the environment - or - to automatically approve the plan.
 
-**NOTE:**
-Component level `autoApprove` flag overrides spec level `autoApprove`
-
 This is an optional field, with the default value as `false`.
 
 In the case that `autoApprove` flag was not specified or set to `false`, a prompt for approval will appear for each component being provisioned or destroyed. Details on how to approve are [here](manual_approval.md).
+
+**NOTE:**
+The `autoApprove` flag can be configured for all components in an environment at the spec level, and can also be specified at the component level, which will override the spec level configuration for that environment.
 
 ---
 **Sample YAML**

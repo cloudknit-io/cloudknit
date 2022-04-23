@@ -132,7 +132,7 @@ type: terraform
   Destroy
 </h4>
 
-This property is similar to `teardown` property of [spec scope](#spec), the only difference being, it applies on environment component level.
+This property is used to override the `teardown` property of [spec](#spec), which applies to all components in the Environment file. It will override the `teardown` value for the component it is applied to.
 
 **NOTE**: This property overrides the teardown property at the spec level, which means that if teardown is false and destroy is true, the current component gets destroyed.
 
@@ -221,7 +221,7 @@ Adds additional information to the component.
 
 ```yaml
 tags:
-  - name: componentType # for selective reconcile to work this needs to be the same value used in tagName property of selectiveReconcile
+  - name: helloWorldComponentType # for selective reconcile to work this needs to be the same value used in tagName property of selectiveReconcile
     value: data
   - name: cloudProvider
     value: aws
@@ -456,7 +456,7 @@ dependsOn: [networking]
     - name: static-assets
       type: terraform
       tags:
-        - name: componentType # for selective reconcile to work this needs to be the same value used in tagName property of selectiveReconcile
+        - name: helloWorldComponentType # for selective reconcile to work this needs to be the same value used in tagName property of selectiveReconcile
           value: data
         - name: cloudProvider
           value: aws

@@ -1,7 +1,5 @@
 # Onboard a New Team
 
-When you want to onboard a new team use the following steps:
-
 1. Create a repository that will consist of environments for the team
 2. Make sure the zLifecycle github app has access to the new repo
 3. Add team config yaml (like below) in the `company-config` repo

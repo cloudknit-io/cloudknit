@@ -336,7 +336,7 @@ Adds additional information to the component.
 
 ```yaml
 tags:
-  - name: componentType # for selective reconcile to work this needs to be the same value used in tagName property of selectiveReconcile
+  - name: helloWorldComponentType # for selective reconcile to work this needs to be the same value used in tagName property of selectiveReconcile
     value: data
   - name: cloudProvider
     value: aws
@@ -571,7 +571,7 @@ dependsOn: [networking]
     - name: static-assets
       type: terraform
       tags:
-        - name: componentType # for selective reconcile to work this needs to be the same value used in tagName property of selectiveReconcile
+        - name: helloWorldComponentType # for selective reconcile to work this needs to be the same value used in tagName property of selectiveReconcile
           value: data
         - name: cloudProvider
           value: aws

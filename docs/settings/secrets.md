@@ -2,7 +2,9 @@
 
 If you want to pass a secret to a component (for example a terraform module) you can create a secret using settings page and then reference it in the environment YAML. 
 
-Similar to AWS secrets we have 3 scopes here as well `company`, `team`, `environment`. To add a secret, go to the appropriate scope and click on the Add button.
+Similar to AWS secrets, there are 3 scopes to which these secrets can be added, `company`, `team`, `environment`. By default, zlifecycle tries to find secrets at environment level, then at team level and lastly at company level.
+
+To add a secret, go to the appropriate scope and click on the Add button.
 
 ![environment-secrets](../assets/images/environment-secrets.png "environment-secrets")
 

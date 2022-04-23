@@ -16,8 +16,7 @@ zLifecycle provides the user with two types of logs:
 
 * **Concise Logs:** These logs do not show any unnecessary or verbose information to the end-user.
 
-*  **Detailed Logs:** As the name suggests these logs show every bit of information emitted by zlifecycle logging mechanism, these usually aren't required except for a few cases that require thorough debugging.
-
+*  **Detailed Logs:** As the name suggests these logs show every bit of information emitted by zlifecycle's logging mechanism and can sometimes be useful for troubleshooting.
 
 ### Detailed Cost Breakdown
 
