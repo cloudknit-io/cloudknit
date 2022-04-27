@@ -2,8 +2,9 @@ package validators
 
 import (
 	"context"
-	"github.com/sirupsen/logrus"
 	"testing"
+
+	"github.com/sirupsen/logrus"
 
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/mocks"
@@ -43,6 +44,23 @@ func TestValidateNames(t *testing.T) {
 	assert.Equal(t, errList3[0].Type, field.ErrorTypeInvalid)
 	assert.Equal(t, errList3[1].Field, "spec.teamName")
 	assert.Equal(t, errList3[1].Type, field.ErrorTypeInvalid)
+}
+
+func TestCheckEnvironmentComponentNames(t *testing.T) {
+	t.Parallel()
+
+	errList1 := checkEnvironmentComponentName("some-component", 0)
+	assert.Len(t, errList1, 0)
+
+	errList2 := checkEnvironmentComponentName("some_component", 0)
+	assert.Len(t, errList2, 1)
+	assert.Equal(t, errList2[0].Field, "spec.components[0].name")
+	assert.Equal(t, errList2[0].Type, field.ErrorTypeInvalid)
+
+	errList3 := checkEnvironmentComponentName("reallyreallyreallyreallyreallyreallyreallyreallyreallyreallyreallylongenvname", 1)
+	assert.Len(t, errList3, 1)
+	assert.Equal(t, errList3[0].Field, "spec.components[1].name")
+	assert.Equal(t, errList3[0].Type, field.ErrorTypeInvalid)
 }
 
 func TestValidateTeamExists(t *testing.T) {
