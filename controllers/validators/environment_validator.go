@@ -214,8 +214,9 @@ func validateTeamExists(ctx context.Context, e *v1.Environment, kc kClient.Clien
 
 func validateNames(e *v1.Environment) field.ErrorList {
 	var allErrs field.ErrorList
+	r := regexp.MustCompile(nameRegex)
 
-	if !regexp.MustCompile(nameRegex).MatchString(e.Spec.EnvName) {
+	if !r.MatchString(e.Spec.EnvName) {
 		fld := field.NewPath("spec").Child("envName")
 		allErrs = append(allErrs, field.Invalid(fld, e.Spec.EnvName, "environment name must be combination of alphanumerical and hyphen characters"))
 	}
@@ -223,7 +224,7 @@ func validateNames(e *v1.Environment) field.ErrorList {
 		fld := field.NewPath("spec").Child("envName")
 		allErrs = append(allErrs, field.Invalid(fld, e.Spec.EnvName, "environment name must not exceed 64 characters"))
 	}
-	if !regexp.MustCompile(nameRegex).MatchString(e.Spec.TeamName) {
+	if !r.MatchString(e.Spec.TeamName) {
 		fld := field.NewPath("spec").Child("teamName")
 		allErrs = append(allErrs, field.Invalid(fld, e.Spec.TeamName, "team name must be combination of alphanumerical and hyphen characters"))
 	}
@@ -302,16 +303,17 @@ func (v *EnvironmentValidatorImpl) validateEnvironmentComponents(
 
 func checkEnvironmentComponentName(name string, i int) field.ErrorList {
 	var allErrs field.ErrorList
+	r := regexp.MustCompile(nameRegex)
 
 	fld := field.NewPath("spec").Child("components").Index(i).Child("name")
-	if !regexp.MustCompile(nameRegex).MatchString(name) {
+	if !r.MatchString(name) {
 		allErrs = append(allErrs, field.Invalid(fld, name, "environment component name must be combination of alphanumerical and hyphen characters"))
 	}
 	if len(name) > maxFieldLength {
 		allErrs = append(allErrs, field.Invalid(fld, name, "environment component name must not exceed 64 characters"))
 	}
 
-	return nil
+	return allErrs
 }
 
 func (v *EnvironmentValidatorImpl) checkOverlaysExist(overlays []*v1.OverlayFile, ec string, l *logrus.Entry) field.ErrorList {
