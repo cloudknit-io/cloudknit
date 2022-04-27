@@ -9,7 +9,12 @@ Make sure you set [AWS Credentials](../settings/aws_credentials.md) that you wan
 After you have setup AWS Credentials, you will want to provision a simple environment to see how it works end to end.
 
 1. Clone your team repo locally on your machine
-2. Go to root directory of the team repo and create a new folder called `hello-world`
+2. Go to root directory of the team repo and create a new folder to represent your team called `hello-world`
+```
+mkdir hello-world;
+cd hello-world;
+```
+
 3. Run the below bash script using terminal and enter `Company`, `Team` and `Environment` Names when asked.
 
 ```
@@ -62,7 +67,7 @@ spec:
 
 After you have provisioned your first environment, let's go through the teardown exercise.
 
-1. In the `hello-world.yaml` that you created in the Provision step above add a 'teardown' flag to `true` at the spec level. See exampple below.
+1. In the `hello-world.yaml` that you created in the Provision step above add a 'teardown' flag to `true` at the spec level which will apply to all of the environment's components in the file. See example below.
 
 <details>
   <summary>Click to expand!</summary>
