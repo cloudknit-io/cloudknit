@@ -22,13 +22,13 @@ type EKS struct {
 	ctx          context.Context
 	secretClient secrets.API
 	eksClient    *eksv2.Client
-	secretMeta   *secrets2.Meta
-	creds        *secrets.AWSCreds
+	secretMeta   *secrets2.Identifier
+	creds        *secrets.AWSCredentials
 	cfg          *awsv2.Config
 	log          *logrus.Entry
 }
 
-func LazyLoadEKS(ctx context.Context, secretClient secrets.API, secretMeta *secrets2.Meta, log *logrus.Entry) *EKS {
+func LazyLoadEKS(ctx context.Context, secretClient secrets.API, secretMeta *secrets2.Identifier, log *logrus.Entry) *EKS {
 	return &EKS{
 		ctx:          ctx,
 		secretMeta:   secretMeta,
@@ -37,8 +37,8 @@ func LazyLoadEKS(ctx context.Context, secretClient secrets.API, secretMeta *secr
 	}
 }
 
-func NewEKS(ctx context.Context, secretClient secrets.API, secretMeta *secrets2.Meta, log *logrus.Entry) (*EKS, error) {
-	creds, err := secrets.GetAWSCreds(secretClient, secretMeta, log)
+func NewEKS(ctx context.Context, secretClient secrets.API, secretMeta *secrets2.Identifier, log *logrus.Entry) (*EKS, error) {
+	creds, err := secrets.GetAWSCredentials(secretClient, secretMeta, log)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error fetching AWS creds for eks")
 	}
@@ -60,7 +60,7 @@ func NewEKS(ctx context.Context, secretClient secrets.API, secretMeta *secrets2.
 }
 
 func (e *EKS) init() error {
-	creds, err := secrets.GetAWSCreds(e.secretClient, e.secretMeta, e.log)
+	creds, err := secrets.GetAWSCredentials(e.secretClient, e.secretMeta, e.log)
 	if err != nil {
 		return errors.Wrapf(err, "error fetching AWS creds for eks")
 	}

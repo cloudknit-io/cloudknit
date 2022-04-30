@@ -15,12 +15,14 @@ package main
 import (
 	"context"
 	"flag"
+
+	apm2 "github.com/compuzest/zlifecycle-il-operator/controllers/lib/apm"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/gitreconciler"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/log"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/validators"
 
-	"github.com/compuzest/zlifecycle-il-operator/controllers/apm"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/gitreconciler"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/log"
 	"github.com/newrelic/go-agent/v3/integrations/logcontext/nrlogrusplugin"
 	"github.com/sirupsen/logrus"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
@@ -104,17 +106,17 @@ func main() {
 	}
 
 	// new relic
-	var _apm apm.APM
+	var _apm apm2.APM
 
 	if env.Config.EnableNewRelic == "true" {
 		setupLog.Info("Initializing NewRelic APM")
 		logrus.SetFormatter(nrlogrusplugin.ContextFormatter{})
-		_apm, err = apm.NewNewRelic()
+		_apm, err = apm2.NewNewRelic()
 		if err != nil {
 			setupLog.WithError(err).Panic("unable to init new relic")
 		}
 	} else {
-		_apm = apm.NewNoop()
+		_apm = apm2.NewNoop()
 		setupLog.Info("Defaulting to no-op APM")
 	}
 

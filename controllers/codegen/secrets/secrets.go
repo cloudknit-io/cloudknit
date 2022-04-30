@@ -2,39 +2,49 @@ package secrets
 
 import (
 	"fmt"
+	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
 
 	"github.com/pkg/errors"
 )
 
-type Meta struct {
+type Identifier struct {
 	Company              string
 	Team                 string
 	Environment          string
 	EnvironmentComponent string
 }
 
-func CreateKey(name string, scope string, meta *Meta) (string, error) {
-	if meta.Company == "" {
+func NewIdentifierFromEnvironment(e *v1.Environment) *Identifier {
+	return &Identifier{
+		Company:     env.Config.CompanyName,
+		Team:        e.Spec.TeamName,
+		Environment: e.Spec.EnvName,
+	}
+}
+
+func (i *Identifier) GenerateKey(name, scope string) (string, error) {
+	if i.Company == "" {
 		return "", errors.New("missing company name in secret meta")
 	}
 	switch scope {
 	case "org":
-		return GenerateOrgSecretKey(meta.Company, name), nil
+		return GenerateOrgSecretKey(i.Company, name), nil
 	case "team":
-		if meta.Team == "" {
+		if i.Team == "" {
 			return "", errors.New("missing team name in secret meta")
 		}
-		return GenerateTeamSecretKey(meta.Company, meta.Team, name), nil
+		return GenerateTeamSecretKey(i.Company, i.Team, name), nil
 	case "environment":
-		if meta.Team == "" || meta.Environment == "" {
+		if i.Team == "" || i.Environment == "" {
 			return "", errors.New("missing team/environment name in secret meta")
 		}
-		return GenerateEnvironmentSecretKey(meta.Company, meta.Team, meta.Environment, name), nil
+		return GenerateEnvironmentSecretKey(i.Company, i.Team, i.Environment, name), nil
 	case "component":
-		if meta.Team == "" || meta.Environment == "" || meta.EnvironmentComponent == "" {
+		if i.Team == "" || i.Environment == "" || i.EnvironmentComponent == "" {
 			return "", errors.New("missing team/environment/component name in secret meta")
 		}
-		return GenerateEnvironmentComponentSecretKey(meta.Company, meta.Team, meta.Environment, meta.EnvironmentComponent, name), nil
+		return GenerateEnvironmentComponentSecretKey(i.Company, i.Team, i.Environment, i.EnvironmentComponent, name), nil
 	default:
 		return "", errors.Errorf("invalid scope: %s", scope)
 	}

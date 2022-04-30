@@ -6,6 +6,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/gitreconciler"
+
+	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/gitreconciler"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/argocd"
@@ -14,7 +18,6 @@ import (
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/git"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/gitreconciler"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
 	perrors "github.com/pkg/errors"
 	"github.com/sirupsen/logrus"

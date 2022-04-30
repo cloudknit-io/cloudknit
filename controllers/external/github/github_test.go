@@ -22,8 +22,7 @@ func TestTryCreateRepositoryExisting(t *testing.T) {
 
 	mockClient := github2.NewMockAPI(mockCtrl)
 
-	testOwner := "compuzest"
-	testRepo := "test_repo"
+	testOwner, testRepo := "compuzest1", "test_repo1"
 	testURL := fmt.Sprintf("git@github.com:%s/%s", testOwner, testRepo)
 	testGitHubRepo := github.Repository{Name: &testRepo, URL: &testURL}
 	mockResponse := github.Response{Response: util.CreateMockResponse(200)}
@@ -44,8 +43,7 @@ func TestTryCreateRepositoryNew(t *testing.T) {
 
 	mockClient := github2.NewMockAPI(mockCtrl)
 
-	testOwner := "compuzest"
-	testRepo := "test_repo"
+	testOwner, testRepo := "compuzest3", "test_repo3"
 	testURL := fmt.Sprintf("git@github.com:%s/%s", testOwner, testRepo)
 	mockResponse1 := github.Response{Response: util.CreateMockResponse(200)}
 	mockClient.EXPECT().GetRepository(testOwner, testRepo).Return(nil, &mockResponse1, nil)
@@ -71,7 +69,7 @@ func TestCreateRepoWebhookNew(t *testing.T) {
 	active := true
 	events := []string{"push"}
 
-	testOwner, testRepo := "CompuZest", "test_repo"
+	testOwner, testRepo := "CompuZest2", "test_repo2"
 	testPayloadURL1 := "https://test1.webhook.com"
 	testCfg1 := map[string]interface{}{"content_type": "json", "url": testPayloadURL1}
 	testHook1 := github.Hook{Active: &active, Config: testCfg1, Events: events}
@@ -85,9 +83,8 @@ func TestCreateRepoWebhookNew(t *testing.T) {
 	webHookSecret2 := "secret"
 	testCfg2 := map[string]interface{}{"content_type": "json", "secret": "secret", "url": testPayloadURL2}
 	testHook2 := github.Hook{Active: &active, Config: testCfg2, Events: events}
-	expectedURL := "https://test2.webhook.com"
 	expectedID := int64(1)
-	expectedHook := github.Hook{Active: &active, Config: testCfg2, Events: events, URL: &expectedURL, ID: &expectedID}
+	expectedHook := github.Hook{Active: &active, Config: testCfg2, Events: events, URL: &testPayloadURL2, ID: &expectedID}
 	mockResponse2 := github.Response{Response: util.CreateMockResponse(200)}
 	mockClient.EXPECT().CreateHook(
 		gomock.Eq(testOwner),
@@ -115,7 +112,7 @@ func TestCreateRepoWebhookExisting(t *testing.T) {
 	events := []string{"push"}
 
 	testOwner, testRepo := "CompuZest", "test_repo"
-	testPayloadURL1 := "https://test1.webhook.com"
+	testPayloadURL1 := "https://test11.webhook.com"
 	webHookSecret1 := "secret"
 	testCfg1 := map[string]interface{}{"content_type": "json", "url": testPayloadURL1}
 	testHook1 := github.Hook{Active: &active, Config: testCfg1, Events: events}

@@ -17,6 +17,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/apm"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/gitreconciler"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/zerrors"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/interpolator"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/k8s"
@@ -30,12 +34,8 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/zlstate"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
 
-	"github.com/compuzest/zlifecycle-il-operator/controllers/apm"
 	"github.com/sirupsen/logrus"
 
-	"github.com/compuzest/zlifecycle-il-operator/controllers/zerrors"
-
-	"github.com/compuzest/zlifecycle-il-operator/controllers/gitreconciler"
 	"github.com/google/go-cmp/cmp"
 	"go.uber.org/atomic"
 

@@ -248,7 +248,7 @@ func generateWorkflowParams(
 		},
 		{
 			Name:  "zl_environment",
-			Value: AnyStringPointer(env.Config.Environment),
+			Value: AnyStringPointer(env.Config.ZLEnvironment),
 		},
 		{
 			Name:  "skip_component",

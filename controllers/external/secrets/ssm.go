@@ -3,6 +3,8 @@ package secrets
 import (
 	"context"
 
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
+
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
@@ -10,11 +12,6 @@ import (
 	"github.com/pkg/errors"
 	v1 "k8s.io/api/core/v1"
 	kClient "sigs.k8s.io/controller-runtime/pkg/client"
-)
-
-const (
-	keyAWSAccessKeyID     = "aws_access_key_id"
-	keyAWSSecretAccessKey = "aws_secret_access_key"
 )
 
 type SSM struct {
@@ -65,21 +62,21 @@ func (s *SSM) init() error {
 	return nil
 }
 
-func getCreds(ctx context.Context, client kClient.Client) (*AWSCreds, error) {
+func getCreds(ctx context.Context, client kClient.Client) (*AWSCredentials, error) {
 	var credsSecret v1.Secret
 	key := kClient.ObjectKey{Name: env.Config.SharedAWSCredsSecret, Namespace: env.ExecutorNamespace()}
 	if err := client.Get(ctx, key, &credsSecret); err != nil {
 		return nil, errors.Wrap(err, "error getting shared aws secret")
 	}
 
-	accessKeyID := string(credsSecret.Data[keyAWSAccessKeyID])
-	secretAccessKey := string(credsSecret.Data[keyAWSSecretAccessKey])
+	accessKeyID := string(credsSecret.Data[util.AWSAccessKeyID])
+	secretAccessKey := string(credsSecret.Data[util.AWSSecretAccessKey])
 
 	if accessKeyID == "" || secretAccessKey == "" {
 		return nil, errors.New("missing AWS Access Key ID and/or AWS Secret Access key in shared aws secret")
 	}
 
-	return &AWSCreds{AccessKeyID: accessKeyID, SecretAccessKey: secretAccessKey}, nil
+	return &AWSCredentials{AccessKeyID: accessKeyID, SecretAccessKey: secretAccessKey}, nil
 }
 
 func (s *SSM) GetSecret(key string) (*Secret, error) {

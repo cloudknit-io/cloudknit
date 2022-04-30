@@ -3,6 +3,9 @@ package controllers
 import (
 	"context"
 
+	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/factories/gitfactory"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/watcherservices"
+
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/il"
@@ -15,9 +18,7 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/k8s"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/secrets"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/zlstate"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/factories/gitfactory"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/watcherservices"
 	perrors "github.com/pkg/errors"
 )
 
@@ -47,7 +48,7 @@ func (r *EnvironmentReconciler) initServices(ctx context.Context, environment *v
 	}
 	secretsClient := secrets.LazyLoadSSM(ctx, r.Client)
 
-	secretsMeta := secrets2.Meta{
+	secretsMeta := secrets2.Identifier{
 		Company:     env.Config.CompanyName,
 		Team:        environment.Spec.TeamName,
 		Environment: environment.Spec.EnvName,

@@ -9,7 +9,7 @@ type config struct {
 	App  string
 	Mode string
 
-	Environment string
+	ZLEnvironment string
 
 	CompanyName      string
 	CompanyNamespace string
@@ -27,11 +27,13 @@ type config struct {
 	SharedAWSCredsSecret string
 	AWSRegion            string
 
-	TerraformDefaultVersion          string
-	TerraformDefaultAWSRegion        string
-	TerraformDefaultSharedAWSRegion  string
-	TerraformDefaultSharedAWSProfile string
-	TerraformDefaultSharedAWSAlias   string
+	TerraformDefaultVersion            string
+	TerraformDefaultAWSProviderVersion string
+	TerraformDefaultAWSRegion          string
+	TerraformDefaultSharedAWSRegion    string
+	TerraformCustomerStateAWSProfile   string
+	TerraformDefaultSharedAWSProfile   string
+	TerraformDefaultSharedAWSAlias     string
 
 	// git
 	GitHelmChartsRepository string
@@ -96,7 +98,7 @@ var Config = config{
 	SlackWebhookURL:      os.Getenv("SLACK_WEBHOOK_URL"),
 	EnableErrorNotifier:  getOr("ENABLE_ERROR_NOTIFIER", "false"),
 
-	Environment: os.Getenv("ENVIRONMENT"),
+	ZLEnvironment: os.Getenv("ENVIRONMENT"),
 
 	// company/customer config
 	CompanyName:      os.Getenv("COMPANY_NAME"),
@@ -124,11 +126,13 @@ var Config = config{
 	AWSRegion:            getOr("AWS_REGION", "us-east-1"),
 
 	// terraform config
-	TerraformDefaultVersion:          getOr("TERRAFORM_DEFAULT_VERSION", "1.0.9"),
-	TerraformDefaultAWSRegion:        getOr("TERRAFORM_DEFAULT_REGION", "us-east-1"),
-	TerraformDefaultSharedAWSRegion:  getOr("TERRAFORM_DEFAULT_SHARED_REGION", "us-east-1"),
-	TerraformDefaultSharedAWSProfile: getOr("TERRAFORM_DEFAULT_SHARED_PROFILE", "compuzest-shared"),
-	TerraformDefaultSharedAWSAlias:   getOr("TERRAFORM_DEFAULT_SHARED_ALIAS", "shared"),
+	TerraformDefaultVersion:            getOr("TERRAFORM_DEFAULT_VERSION", "1.0.9"),
+	TerraformDefaultAWSProviderVersion: getOr("TERRAFORM_DEFAULT_AWS_VERSION", "4.0"),
+	TerraformDefaultAWSRegion:          getOr("TERRAFORM_DEFAULT_REGION", "us-east-1"),
+	TerraformDefaultSharedAWSRegion:    getOr("TERRAFORM_DEFAULT_SHARED_REGION", "us-east-1"),
+	TerraformDefaultSharedAWSProfile:   getOr("TERRAFORM_DEFAULT_SHARED_PROFILE", "compuzest-shared"),
+	TerraformCustomerStateAWSProfile:   getOr("TERRAFORM_DEFAULT_CLIENT_STATE_PROFILE", "customer-state"),
+	TerraformDefaultSharedAWSAlias:     getOr("TERRAFORM_DEFAULT_SHARED_ALIAS", "shared"),
 
 	// new relic
 	EnableNewRelic: getOr("ENABLE_NEW_RELIC", "false"),
