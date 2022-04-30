@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+
 	secrets2 "github.com/compuzest/zlifecycle-il-operator/controllers/codegen/secrets"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/secrets"
 
@@ -77,10 +78,11 @@ func generateAndSaveEnvironmentApp(fileService file.API, environment *stablev1.E
 func generateAndSaveEnvironmentComponents(
 	log *logrus.Entry,
 	ilService *il.Service,
-	fileAPI file.API,
+	fileService file.API,
 	gitReconciler gitreconciler.API,
 	gitClient git.API,
 	k8sClient k8s.API,
+	secretsClient secrets.API,
 	argocdClient argocd.API,
 	e *stablev1.Environment,
 ) error {
@@ -88,7 +90,7 @@ func generateAndSaveEnvironmentComponents(
 		ecDirectory := il.EnvironmentComponentsDirectoryAbsolutePath(ilService.ZLILTempDir, e.Spec.TeamName, e.Spec.EnvName)
 
 		application := argocd.GenerateEnvironmentComponentApps(e, ec)
-		if err := fileAPI.SaveYamlFile(*application, ecDirectory, fmt.Sprintf("%s.yaml", ec.Name)); err != nil {
+		if err := fileService.SaveYamlFile(*application, ecDirectory, fmt.Sprintf("%s.yaml", ec.Name)); err != nil {
 			return zerrors.NewEnvironmentComponentError(ec.Name, errors.Wrap(err, "error saving yaml file"))
 		}
 
@@ -96,7 +98,17 @@ func generateAndSaveEnvironmentComponents(
 
 		switch ec.Type {
 		case "terraform":
-			if err := generateTerraformComponent(gitReconciler, ilService, gitClient, fileAPI, e, ec, &gitReconcilerKey, log); err != nil {
+			if err := generateTerraformComponent(
+				gitReconciler,
+				ilService,
+				gitClient,
+				fileService,
+				secretsClient,
+				e,
+				ec,
+				&gitReconcilerKey,
+				log,
+			); err != nil {
 				return zerrors.NewEnvironmentComponentError(ec.Name, errors.Wrap(err, "error generating component terraform"))
 			}
 		case "argocd":
@@ -104,7 +116,7 @@ func generateAndSaveEnvironmentComponents(
 				gitReconciler,
 				ilService,
 				gitClient,
-				fileAPI,
+				fileService,
 				k8sClient,
 				argocdClient,
 				e,
@@ -162,19 +174,18 @@ func generateTerraformComponent(
 		generatedTFVars = extracted
 	}
 
+	// Deleting terraform folder so that it gets recreated so that any dangling files are cleaned up
+	if err := fileService.RemoveAll(tfDirectory); err != nil {
+		return zerrors.NewEnvironmentComponentError(ec.Name, errors.Wrap(err, "error deleting terraform directory"))
+	}
+
 	// TODO: this should be obtained through zLstate
 	secretIdentifier := secrets2.NewIdentifierFromEnvironment(e)
 	tfcfg, err := secrets.GetCustomerTerraformStateConfig(secretsClient, secretIdentifier, log)
 	if err != nil && !errors.Is(err, secrets.ErrTerraformStateConfigMissing) {
 		return errors.Wrap(err, "error getting terraform state config")
 	}
-
-	// Deleting terraform folder so that it gets recreated so that any dangling files are cleaned up
-	if err := fileService.RemoveAll(tfDirectory); err != nil {
-		return zerrors.NewEnvironmentComponentError(ec.Name, errors.Wrap(err, "error deleting terraform directory"))
-	}
-
-	vars := tfgen.NewTemplateVariablesFromEnvironment(e, ec, generatedTFVars)
+	vars := tfgen.NewTemplateVariablesFromEnvironment(e, ec, generatedTFVars, tfcfg)
 	if err := tfgen.GenerateTerraform(fileService, vars, tfDirectory); err != nil {
 		return zerrors.NewEnvironmentComponentError(ec.Name, errors.Wrap(err, "error generating terraform"))
 	}

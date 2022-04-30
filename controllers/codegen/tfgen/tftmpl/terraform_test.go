@@ -1,9 +1,10 @@
 package tftmpl_test
 
 import (
-	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"strings"
 	"testing"
+
+	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/tfgen"
 

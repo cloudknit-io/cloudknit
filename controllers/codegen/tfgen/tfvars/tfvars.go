@@ -2,11 +2,9 @@ package tfvars
 
 import (
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/gitreconciler"
 	"os"
 	"path/filepath"
-	"strings"
-
-	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/gitreconciler"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/interpolator"
 
@@ -74,19 +72,6 @@ func GetVariablesFromTfvarsFile(
 	submitToGitReconciler(gitReconciler, key, ec, log)
 
 	return interpolated, nil
-}
-
-func ParseTFVars(tfvars string) (*TFVars, error) {
-	lines := strings.Split(tfvars, "\n")
-	vars := make([]*Variable, 0, len(lines))
-	for i, l := range lines {
-		tokens := strings.Split(l, "=")
-		if len(tokens) != 2 {
-			return nil, errors.Errorf("error on line %d in tfvars file: %s", i, l)
-		}
-		v := Variable{Name: strings.TrimSpace(tokens[0]), Value: strings.TrimSpace(tokens[1])}
-		vars = append(vars, &v)
-	}
 }
 
 func submitToGitReconciler(gitReconciler gitreconciler.API, key *client.ObjectKey, ec *v1.EnvironmentComponent, log *logrus.Entry) {

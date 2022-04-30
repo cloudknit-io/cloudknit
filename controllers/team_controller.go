@@ -19,7 +19,6 @@ import (
 	"sync"
 	"time"
 
-
 	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/apm"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/watcherservices"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/zerrors"

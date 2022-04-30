@@ -1,14 +1,15 @@
 package tfgen_test
 
 import (
+	"os"
+	"testing"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/tfgen"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
 	"github.com/compuzest/zlifecycle-il-operator/mocks"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"os"
-	"testing"
 )
 
 func TestGenerateTerraform(t *testing.T) {

@@ -8,8 +8,6 @@ import (
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/gitreconciler"
 
-	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/gitreconciler"
-
 	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/argocd"

@@ -2,9 +2,10 @@ package tftmpl
 
 import (
 	_ "embed"
-	"github.com/Masterminds/sprig"
 	"strings"
 	"text/template"
+
+	"github.com/Masterminds/sprig"
 
 	"github.com/pkg/errors"
 	"go.uber.org/zap/buffer"

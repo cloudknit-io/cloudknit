@@ -3,7 +3,6 @@ package overlay
 import (
 	"path/filepath"
 
-
 	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/gitreconciler"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/file"

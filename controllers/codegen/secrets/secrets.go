@@ -2,6 +2,7 @@ package secrets
 
 import (
 	"fmt"
+
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
 

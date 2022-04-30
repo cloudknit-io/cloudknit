@@ -15,6 +15,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/external/secrets"
 	"time"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/apm"
@@ -169,6 +170,7 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		envServices.ZLStateManagerClient,
 		envServices.K8sClient,
 		envServices.ArgocdClient,
+		envServices.SecretsClient,
 	); err != nil {
 		envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error executing reconcile"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
@@ -197,6 +199,7 @@ func (r *EnvironmentReconciler) doReconcile(
 	zlstateManagerClient zlstate.API,
 	k8sClient k8s.API,
 	argocdClient argocd.API,
+	secretsClient secrets.API,
 ) error {
 	// reconcile logic
 	isHardDelete := !environment.DeletionTimestamp.IsZero()
@@ -215,7 +218,7 @@ func (r *EnvironmentReconciler) doReconcile(
 	}
 
 	if !isHardDelete {
-		if err := r.handleNonDeleteEvent(ilService, interpolated, fileService, gitClient, k8sClient, argocdClient); err != nil {
+		if err := r.handleNonDeleteEvent(ilService, interpolated, fileService, gitClient, k8sClient, argocdClient, secretsClient); err != nil {
 			return perrors.Wrap(err, "error handling non-delete event for environment")
 		}
 	}
@@ -311,6 +314,7 @@ func (r *EnvironmentReconciler) handleNonDeleteEvent(
 	gitClient git.API,
 	k8sClient k8s.API,
 	argocdClient argocd.API,
+	secretsClient secrets.API,
 ) error {
 	r.LogV2.Infof("Generating Environment application for environment %s", e.Spec.EnvName)
 
@@ -326,6 +330,7 @@ func (r *EnvironmentReconciler) handleNonDeleteEvent(
 		r.GitReconciler,
 		gitClient,
 		k8sClient,
+		secretsClient,
 		argocdClient,
 		e,
 	); err != nil {
@@ -425,6 +430,7 @@ func (r *EnvironmentReconciler) postDeleteHook(
 		envServices.ZLStateManagerClient,
 		envServices.K8sClient,
 		envServices.ArgocdClient,
+		envServices.SecretsClient,
 	); err != nil {
 		return perrors.Wrap(err, "error executing reconcile")
 	}

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"testing"
 
-
 	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/gitreconciler"
 
 	"github.com/compuzest/zlifecycle-il-operator/mocks"

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"testing"
 
-
 	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/watcher"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/argocd"

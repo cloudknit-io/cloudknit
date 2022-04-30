@@ -2,9 +2,10 @@ package gitreconciler
 
 import (
 	"context"
-	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"strings"
 	"time"
+
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/watcherservices"
 
