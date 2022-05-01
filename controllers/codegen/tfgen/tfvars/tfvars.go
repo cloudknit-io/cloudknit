@@ -2,9 +2,10 @@ package tfvars
 
 import (
 	"fmt"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/gitreconciler"
 	"os"
 	"path/filepath"
+
+	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/gitreconciler"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/interpolator"
 

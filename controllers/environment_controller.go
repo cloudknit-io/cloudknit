@@ -15,8 +15,9 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/external/secrets"
 	"time"
+
+	"github.com/compuzest/zlifecycle-il-operator/controllers/external/secrets"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/apm"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/gitreconciler"
