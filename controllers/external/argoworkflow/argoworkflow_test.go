@@ -27,7 +27,7 @@ func TestGenerateLegacyWorkflowOfWorkflows(t *testing.T) {
 
 	env := mocks.GetMockEnv1(false)
 
-	wow := argoworkflow.GenerateLegacyWorkflowOfWorkflows(&env)
+	wow := argoworkflow.GenerateLegacyWorkflowOfWorkflows(&env, nil)
 
 	assert.Equal(t, wow.DeletionTimestamp.IsZero(), true)
 
@@ -60,7 +60,7 @@ func TestGenerateLegacyWorkflowOfWorkflowsDeletedEnvironment(t *testing.T) {
 
 	env := mocks.GetMockEnv1(true)
 
-	wow := argoworkflow.GenerateLegacyWorkflowOfWorkflows(&env)
+	wow := argoworkflow.GenerateLegacyWorkflowOfWorkflows(&env, nil)
 
 	assert.Equal(t, wow.DeletionTimestamp.IsZero(), true)
 

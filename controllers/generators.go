@@ -3,7 +3,6 @@ package controllers
 import (
 	"fmt"
 
-	secrets2 "github.com/compuzest/zlifecycle-il-operator/controllers/codegen/secrets"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/secrets"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/tfgen/tfvars"
@@ -34,8 +33,11 @@ func generateAndSaveCompanyApp(fileAPI file.API, company *stablev1.Company, ilRe
 }
 
 func generateAndSaveCompanyConfigWatcher(fileAPI file.API, company *stablev1.Company, ilRepoDir string) error {
-	companyConfigWatcherApp := argocd.GenerateCompanyConfigWatcherApp(company.Spec.CompanyName,
-		company.Spec.ConfigRepo.Source, company.Spec.ConfigRepo.Path)
+	companyConfigWatcherApp := argocd.GenerateCompanyConfigWatcherApp(
+		company.Spec.CompanyName,
+		company.Spec.ConfigRepo.Source,
+		company.Spec.ConfigRepo.Path,
+	)
 
 	return fileAPI.SaveYamlFile(*companyConfigWatcherApp, il.ConfigWatcherDirectoryAbsolutePath(ilRepoDir), company.Spec.CompanyName+".yaml")
 }
@@ -56,7 +58,12 @@ func generateAndSaveConfigWatchers(fileAPI file.API, team *stablev1.Team, filena
 
 // ENVIRONMENT
 
-func generateAndSaveWorkflowOfWorkflows(fileAPI file.API, ilService *il.Service, environment *stablev1.Environment) error {
+func generateAndSaveWorkflowOfWorkflows(
+	fileAPI file.API,
+	ilService *il.Service,
+	environment *stablev1.Environment,
+	tfcfg *secrets.TerraformStateConfig,
+) error {
 	// WIP, below command is for testing
 	// experimentalworkflow := argoWorkflow.GenerateWorkflowOfWorkflows(*environment)
 	// if err := fileAPI.SaveYamlFile(*experimentalworkflow, envComponentDirectory, "/experimental_wofw.yaml"); err != nil {
@@ -64,7 +71,7 @@ func generateAndSaveWorkflowOfWorkflows(fileAPI file.API, ilService *il.Service,
 	// }
 	ilEnvComponentDirectory := il.EnvironmentComponentsDirectoryAbsolutePath(ilService.ZLILTempDir, environment.Spec.TeamName, environment.Spec.EnvName)
 
-	workflow := argoworkflow.GenerateLegacyWorkflowOfWorkflows(environment)
+	workflow := argoworkflow.GenerateLegacyWorkflowOfWorkflows(environment, tfcfg)
 	return fileAPI.SaveYamlFile(*workflow, ilEnvComponentDirectory, "/wofw.yaml")
 }
 
@@ -82,9 +89,9 @@ func generateAndSaveEnvironmentComponents(
 	gitReconciler gitreconciler.API,
 	gitClient git.API,
 	k8sClient k8s.API,
-	secretsClient secrets.API,
 	argocdClient argocd.API,
 	e *stablev1.Environment,
+	tfcfg *secrets.TerraformStateConfig,
 ) error {
 	for _, ec := range e.Spec.Components {
 		ecDirectory := il.EnvironmentComponentsDirectoryAbsolutePath(ilService.ZLILTempDir, e.Spec.TeamName, e.Spec.EnvName)
@@ -103,10 +110,10 @@ func generateAndSaveEnvironmentComponents(
 				ilService,
 				gitClient,
 				fileService,
-				secretsClient,
 				e,
 				ec,
 				&gitReconcilerKey,
+				tfcfg,
 				log,
 			); err != nil {
 				return zerrors.NewEnvironmentComponentError(ec.Name, errors.Wrap(err, "error generating component terraform"))
@@ -139,10 +146,10 @@ func generateTerraformComponent(
 	ilService *il.Service,
 	gitClient git.API,
 	fileService file.API,
-	secretsClient secrets.API,
 	e *stablev1.Environment,
 	ec *stablev1.EnvironmentComponent,
 	key *kClient.ObjectKey,
+	tfcfg *secrets.TerraformStateConfig,
 	log *logrus.Entry,
 ) error {
 	tfDirectory := il.EnvironmentComponentTerraformDirectoryAbsolutePath(ilService.TFILTempDir, e.Spec.TeamName, e.Spec.EnvName, ec.Name)
@@ -179,12 +186,6 @@ func generateTerraformComponent(
 		return zerrors.NewEnvironmentComponentError(ec.Name, errors.Wrap(err, "error deleting terraform directory"))
 	}
 
-	// TODO: this should be obtained through zLstate
-	secretIdentifier := secrets2.NewIdentifierFromEnvironment(e)
-	tfcfg, err := secrets.GetCustomerTerraformStateConfig(secretsClient, secretIdentifier, log)
-	if err != nil && !errors.Is(err, secrets.ErrTerraformStateConfigMissing) {
-		return errors.Wrap(err, "error getting terraform state config")
-	}
 	vars := tfgen.NewTemplateVariablesFromEnvironment(e, ec, generatedTFVars, tfcfg)
 	if err := tfgen.GenerateTerraform(fileService, vars, tfDirectory); err != nil {
 		return zerrors.NewEnvironmentComponentError(ec.Name, errors.Wrap(err, "error generating terraform"))

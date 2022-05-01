@@ -15,6 +15,8 @@ package controllers
 import (
 	"context"
 	"fmt"
+	secrets2 "github.com/compuzest/zlifecycle-il-operator/controllers/codegen/secrets"
+	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
 	"time"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/secrets"
@@ -41,11 +43,9 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"go.uber.org/atomic"
 
-	perrors "github.com/pkg/errors"
-	"k8s.io/apimachinery/pkg/api/errors"
-
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/go-logr/logr"
+	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	kClient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -99,7 +99,7 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 
 	exists, err := r.tryGetEnvironment(ctx, req, environment)
 	if err != nil {
-		envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error getting environment from k8s cache"))
+		envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, errors.Wrap(err, "error getting environment from k8s cache"))
 		return ctrl.Result{}, envErr
 	}
 	if !exists {
@@ -130,7 +130,7 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		envErr := zerrors.NewEnvironmentError(
 			environment.Spec.TeamName,
 			environment.Spec.EnvName,
-			perrors.Wrap(err, "error initializing environment services"),
+			errors.Wrap(err, "error initializing environment services"),
 		)
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
 	}
@@ -146,7 +146,7 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 			envErr := zerrors.NewEnvironmentError(
 				environment.Spec.TeamName,
 				environment.Spec.EnvName,
-				perrors.Wrap(err, "error handling environment finalizer"),
+				errors.Wrap(err, "error handling environment finalizer"),
 			)
 			return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
 		}
@@ -173,7 +173,7 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		envServices.ArgocdClient,
 		envServices.SecretsClient,
 	); err != nil {
-		envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, perrors.Wrap(err, "error executing reconcile"))
+		envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, errors.Wrap(err, "error executing reconcile"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
 	}
 
@@ -208,19 +208,29 @@ func (r *EnvironmentReconciler) doReconcile(
 	isDeleteEvent := isHardDelete || isSoftDelete
 	if !isDeleteEvent {
 		if err := r.updateStatus(ctx, environment); err != nil {
-			return perrors.Wrap(err, "error updating environment CRD status")
+			return errors.Wrap(err, "error updating environment CRD status")
 		}
+	}
+
+	identifier := secrets2.Identifier{
+		Company:     env.Config.CompanyName,
+		Team:        environment.Spec.TeamName,
+		Environment: environment.Spec.EnvName,
+	}
+	tfcfg, err := secrets.GetCustomerTerraformStateConfig(secretsClient, &identifier, r.LogV2)
+	if err != nil && !errors.Is(err, secrets.ErrTerraformStateConfigMissing) {
+		return errors.Wrap(err, "error checking for custom terraform state config")
 	}
 
 	// interpolate env (replace zlocals references with their values)
 	interpolated, err := interpolator.Interpolate(*environment)
 	if err != nil {
-		return perrors.Wrap(err, "error interpolating environment")
+		return errors.Wrap(err, "error interpolating environment")
 	}
 
 	if !isHardDelete {
-		if err := r.handleNonDeleteEvent(ilService, interpolated, fileService, gitClient, k8sClient, argocdClient, secretsClient); err != nil {
-			return perrors.Wrap(err, "error handling non-delete event for environment")
+		if err := r.handleNonDeleteEvent(ilService, interpolated, fileService, gitClient, k8sClient, argocdClient, tfcfg); err != nil {
+			return errors.Wrap(err, "error handling non-delete event for environment")
 		}
 	}
 
@@ -229,8 +239,8 @@ func (r *EnvironmentReconciler) doReconcile(
 		event = "delete"
 	}
 	r.LogV2.WithField("isDeleteEvent", isDeleteEvent).Infof("Generating %s workflow of workflows", event)
-	if err := generateAndSaveWorkflowOfWorkflows(fileService, ilService, interpolated); err != nil {
-		return perrors.Wrap(err, "error generating and saving workflow of workflows")
+	if err := generateAndSaveWorkflowOfWorkflows(fileService, ilService, interpolated, tfcfg); err != nil {
+		return errors.Wrap(err, "error generating and saving workflow of workflows")
 	}
 
 	// push changes to GitOps repositories
@@ -243,7 +253,7 @@ func (r *EnvironmentReconciler) doReconcile(
 	// push zl il changes
 	zlPushed, err := ilService.ZLILGitAPI.CommitAndPush(&commitInfo)
 	if err != nil {
-		return perrors.Wrapf(err, "error pushing to zlifecycle IL repo [%s]", env.Config.ILZLifecycleRepositoryURL)
+		return errors.Wrapf(err, "error pushing to zlifecycle IL repo [%s]", env.Config.ILZLifecycleRepositoryURL)
 	}
 
 	if !zlPushed {
@@ -253,7 +263,7 @@ func (r *EnvironmentReconciler) doReconcile(
 	// push zl il changes
 	tfPushed, err := ilService.TFILGitAPI.CommitAndPush(&commitInfo)
 	if err != nil {
-		return perrors.Wrapf(err, "error pushing to terraform IL repo [%s]", env.Config.ILTerraformRepositoryURL)
+		return errors.Wrapf(err, "error pushing to terraform IL repo [%s]", env.Config.ILTerraformRepositoryURL)
 	}
 
 	if !tfPushed {
@@ -262,18 +272,18 @@ func (r *EnvironmentReconciler) doReconcile(
 
 	if zlPushed || tfPushed {
 		if err := r.handleDirtyILState(argoworkflowClient, interpolated); err != nil {
-			return perrors.Wrap(err, "error handling dirty IL state")
+			return errors.Wrap(err, "error handling dirty IL state")
 		}
 	}
 
 	// persist zlstate
 	if err := zlstateManagerClient.Put(env.Config.CompanyName, interpolated.Spec.TeamName, interpolated); err != nil {
-		return perrors.Wrap(err, "error updating zlstate")
+		return errors.Wrap(err, "error updating zlstate")
 	}
 
 	// reconcile zlstate (for new components after zlstate was created)
 	if err := zlstate.ReconcileState(zlstateManagerClient, env.Config.CompanyName, environment.Spec.TeamName, environment, r.LogV2); err != nil {
-		return perrors.Wrap(err, "error reconciling zlstate")
+		return errors.Wrap(err, "error reconciling zlstate")
 	}
 
 	return nil
@@ -289,7 +299,7 @@ func (r *EnvironmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 func (r *EnvironmentReconciler) tryGetEnvironment(ctx context.Context, req ctrl.Request, e *stablev1.Environment) (exists bool, err error) {
 	exists = false
 	if err = r.Get(ctx, req.NamespacedName, e); err != nil {
-		if errors.IsNotFound(err) {
+		if k8sErrors.IsNotFound(err) {
 			r.LogV2.WithFields(logrus.Fields{
 				"name":      req.Name,
 				"namespace": req.Namespace,
@@ -315,13 +325,13 @@ func (r *EnvironmentReconciler) handleNonDeleteEvent(
 	gitClient git.API,
 	k8sClient k8s.API,
 	argocdClient argocd.API,
-	secretsClient secrets.API,
+	tfcfg *secrets.TerraformStateConfig,
 ) error {
 	r.LogV2.Infof("Generating Environment application for environment %s", e.Spec.EnvName)
 
 	envDirectory := il.EnvironmentDirectoryAbsolutePath(ilService.ZLILTempDir, e.Spec.TeamName)
 	if err := generateAndSaveEnvironmentApp(fileAPI, e, envDirectory); err != nil {
-		return perrors.Wrap(err, "error generating and saving environment apps")
+		return errors.Wrap(err, "error generating and saving environment apps")
 	}
 
 	if err := generateAndSaveEnvironmentComponents(
@@ -331,11 +341,11 @@ func (r *EnvironmentReconciler) handleNonDeleteEvent(
 		r.GitReconciler,
 		gitClient,
 		k8sClient,
-		secretsClient,
 		argocdClient,
 		e,
+		tfcfg,
 	); err != nil {
-		return perrors.Wrap(err, "error generating and saving environment components")
+		return errors.Wrap(err, "error generating and saving environment components")
 	}
 
 	return nil
@@ -433,7 +443,7 @@ func (r *EnvironmentReconciler) postDeleteHook(
 		envServices.ArgocdClient,
 		envServices.SecretsClient,
 	); err != nil {
-		return perrors.Wrap(err, "error executing reconcile")
+		return errors.Wrap(err, "error executing reconcile")
 	}
 	_ = r.removeEnvironmentFromGitReconciler(e)
 	return nil
