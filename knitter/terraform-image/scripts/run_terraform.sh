@@ -58,6 +58,8 @@ if [ $git_auth_mode != "ssh" ]; then
     -v
 fi
 
+. /set-aws-creds.sh
+
 if [ $use_custom_state == "true" ]; then
   zlifecycle-internal-cli aws configure \
     --auth-mode profile                 \
@@ -74,8 +76,6 @@ sh /argocd/login.sh $customer_id
 # add last argo workflow run id to config application so it can fetch workflow details on UI
 data='{"metadata":{"labels":{"last_workflow_run_id":"'$workflow_id'"}}}'
 argocd app patch $team_env_config_name --patch $data --type merge >null
-
-. /set-aws-creds.sh
 
 . /initialize-terraform.sh
 
