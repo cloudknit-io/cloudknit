@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 )
 
-var Version = "0.0.23" //nolint
+var Version = "0.0.24" //nolint
 
 const (
 	TestModeIntegration = "integration"
