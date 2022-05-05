@@ -2,6 +2,7 @@ package secrets
 
 import (
 	"context"
+	"github.com/aws/aws-sdk-go-v2/credentials"
 
 	aws2 "github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/compuzest/zlifecycle-internal-cli/app/api/aws"
@@ -40,6 +41,15 @@ func newConfig(ctx context.Context, auth *aws.Auth) (aws2.Config, error) {
 			return aws2.Config{}, errors.New("profile not provided")
 		}
 		return config.LoadDefaultConfig(ctx, config.WithSharedConfigProfile(auth.Profile), config.WithRegion(auth.Region))
+	case aws.AuthModeStatic:
+		if auth.AccessKeyID == "" {
+			return aws2.Config{}, errors.New("aws access key id not provided")
+		}
+		if auth.SecretAccessKey == "" {
+			return aws2.Config{}, errors.New("aws secret access key not provided")
+		}
+		loader := config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(auth.AccessKeyID, auth.SecretAccessKey, ""))
+		return config.LoadDefaultConfig(ctx, loader)
 	default:
 		return config.LoadDefaultConfig(ctx, config.WithRegion(auth.Region))
 	}

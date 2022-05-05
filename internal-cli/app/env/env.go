@@ -37,6 +37,8 @@ var (
 	AWSGeneratedProfile string
 	AWSRegion           = getOr("AWS_REGION", "us-east-1")
 	AWSConfigFile       = getOr("AWS_CONFIG_FILE", filepath.Join(os.Getenv("HOME"), ".aws", "credentials"))
+	AWSAccessKeyID      string
+	AWSSecretAccessKey  string
 	StateManagerURL     = getOr(
 		"STATE_MANAGER_URL",
 		"http://zlifecycle-state-manager.zlifecycle-il-operator-system.svc.cluster.local:8080",

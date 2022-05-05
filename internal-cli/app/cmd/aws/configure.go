@@ -99,6 +99,8 @@ func NewConfigureCmd() *cobra.Command {
 	}
 	cmd.Flags().StringVarP(&env.Team, "team", "t", env.Team, "Team name")
 	cmd.Flags().StringVarP(&env.Environment, "environment", "e", env.Environment, "Environment name")
+	cmd.Flags().StringVarP(&env.AWSAccessKeyID, "access-key-id", "k", env.AWSAccessKeyID, "AWS Access Key ID")
+	cmd.Flags().StringVarP(&env.AWSSecretAccessKey, "secret-access-key", "s", env.AWSSecretAccessKey, "AWS Secret Access Key")
 
 	return cmd
 }
@@ -112,9 +114,18 @@ func getAuth() (*aws.Auth, error) {
 		}
 		auth.Mode = aws.AuthModeProfile
 		auth.Profile = env.AWSProfile
-		return &auth, nil
+	case aws.AuthModeStatic:
+		if env.AWSAccessKeyID == "" {
+			return nil, errors.New("aws access key id not provided")
+		}
+		if env.AWSSecretAccessKey == "" {
+			return nil, errors.New("aws secret access key not provided")
+		}
+		auth.Mode = aws.AuthModeStatic
+		auth.AccessKeyID = env.AWSAccessKeyID
+		auth.SecretAccessKey = env.AWSSecretAccessKey
 	default:
 		auth.Mode = aws.AuthModeDefault
-		return &auth, nil
 	}
+	return &auth, nil
 }
