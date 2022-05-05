@@ -26,6 +26,9 @@ zl_env=${14}
 git_auth_mode=${15}
 il_repo=${16}
 company_git_org=${17}
+use_custom_state=${18}
+custom_state_bucket=${19}
+custom_state_lock_table=${20}
 
 #---------- INIT PHASE START ----------#
 
@@ -40,19 +43,30 @@ sh /client/setup_github.sh || SaveAndExit "Cannot setup github ssh key"
 sh /client/setup_aws.sh || SaveAndExit "Cannot setup aws credentials"
 
 internal_git_auth="github-app-internal"
-zlifecycle-internal-cli git clone $il_repo \
-  --git-auth $internal_git_auth \
+zlifecycle-internal-cli git clone $il_repo              \
+  --git-auth $internal_git_auth                         \
   --git-ssh /root/internal_github_app_ssh/sshPrivateKey \
-  --dir $IL_REPO_PATH \
+  --dir $IL_REPO_PATH                                   \
   -v
 cd $ENV_COMPONENT_PATH
 
 if [ $git_auth_mode != "ssh" ]; then
-  zlifecycle-internal-cli git login $company_git_org \
-    --git-auth $git_auth_mode \
+  zlifecycle-internal-cli git login $company_git_org    \
+    --git-auth $git_auth_mode                           \
     --git-ssh /root/public_github_app_ssh/sshPrivateKey \
-    --git-config-path $HOME \
+    --git-config-path $HOME                             \
     -v
+fi
+
+if [ $use_custom_state == "true" ]; then
+  zlifecycle-internal-cli aws configure \
+    --auth-mode profile                 \
+    --profile compuzest-shared          \
+    --generated-profile customer-state  \
+    --company $customer_id              \
+    --team $team_name                   \
+    --environment $env_name             \
+    --verbose
 fi
 
 sh /argocd/login.sh $customer_id
