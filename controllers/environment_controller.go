@@ -16,6 +16,7 @@ import (
 	"context"
 	"fmt"
 	secrets2 "github.com/compuzest/zlifecycle-il-operator/controllers/codegen/secrets"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/external/aws/awseks"
 	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
 	"time"
 
@@ -26,8 +27,6 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/zerrors"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/interpolator"
-
-	"github.com/compuzest/zlifecycle-il-operator/controllers/external/k8s"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/il"
@@ -105,6 +104,8 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	if !exists {
 		return ctrl.Result{}, nil
 	}
+
+	r.LogV2 = r.LogV2.WithFields(logrus.Fields{"team": environment.Spec.TeamName, "environment": environment.Spec.EnvName})
 
 	// start APM transaction
 	txName := fmt.Sprintf("environmentreconciler.%s.%s", environment.Spec.TeamName, environment.Spec.EnvName)
@@ -198,7 +199,7 @@ func (r *EnvironmentReconciler) doReconcile(
 	gitClient git.API,
 	argoworkflowClient argoworkflow.API,
 	zlstateManagerClient zlstate.API,
-	k8sClient k8s.API,
+	k8sClient awseks.API,
 	argocdClient argocd.API,
 	secretsClient secrets.API,
 ) error {
@@ -212,12 +213,15 @@ func (r *EnvironmentReconciler) doReconcile(
 		}
 	}
 
+	if environment.Spec.EnvName == "seventh-env" {
+		r.LogV2.Info("break")
+	}
 	identifier := secrets2.Identifier{
 		Company:     env.Config.CompanyName,
 		Team:        environment.Spec.TeamName,
 		Environment: environment.Spec.EnvName,
 	}
-	tfcfg, err := secrets.GetCustomerTerraformStateConfig(secretsClient, &identifier, r.LogV2)
+	tfcfg, err := secrets.GetCustomerTerraformStateConfig(ctx, secretsClient, &identifier, r.LogV2)
 	if err != nil && !errors.Is(err, secrets.ErrTerraformStateConfigMissing) {
 		return errors.Wrap(err, "error checking for custom terraform state config")
 	}
@@ -229,7 +233,7 @@ func (r *EnvironmentReconciler) doReconcile(
 	}
 
 	if !isHardDelete {
-		if err := r.handleNonDeleteEvent(ilService, interpolated, fileService, gitClient, k8sClient, argocdClient, tfcfg); err != nil {
+		if err := r.handleNonDeleteEvent(ctx, ilService, interpolated, fileService, gitClient, k8sClient, argocdClient, tfcfg); err != nil {
 			return errors.Wrap(err, "error handling non-delete event for environment")
 		}
 	}
@@ -257,7 +261,7 @@ func (r *EnvironmentReconciler) doReconcile(
 	}
 
 	if !zlPushed {
-		r.LogV2.Infof("No git changes in zl il to commit for environment %s, no-op reconciliation.", interpolated.Spec.EnvName)
+		r.LogV2.Infof("No git changes in ZL il to commit for environment %s, no-op reconciliation.", interpolated.Spec.EnvName)
 	}
 
 	// push zl il changes
@@ -267,7 +271,7 @@ func (r *EnvironmentReconciler) doReconcile(
 	}
 
 	if !tfPushed {
-		r.LogV2.Infof("No git changes in tf IL to commit for environment %s, no-op reconciliation.", interpolated.Spec.EnvName)
+		r.LogV2.Infof("No git changes in TF IL to commit for environment %s, no-op reconciliation.", interpolated.Spec.EnvName)
 	}
 
 	if zlPushed || tfPushed {
@@ -319,11 +323,12 @@ func (r *EnvironmentReconciler) tryGetEnvironment(ctx context.Context, req ctrl.
 }
 
 func (r *EnvironmentReconciler) handleNonDeleteEvent(
+	ctx context.Context,
 	ilService *il.Service,
 	e *stablev1.Environment,
 	fileAPI file.API,
 	gitClient git.API,
-	k8sClient k8s.API,
+	k8sClient awseks.API,
 	argocdClient argocd.API,
 	tfcfg *secrets.TerraformStateConfig,
 ) error {
@@ -335,6 +340,7 @@ func (r *EnvironmentReconciler) handleNonDeleteEvent(
 	}
 
 	if err := generateAndSaveEnvironmentComponents(
+		ctx,
 		r.LogV2,
 		ilService,
 		fileAPI,

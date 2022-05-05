@@ -102,7 +102,6 @@ type TemplateVariables struct {
 	AWSProfile             string
 	AWSStateBucket         string
 	AWSStateLockTable      string
-	AWSProviderAlias       string
 	AWSStateKey            string
 	AWSStateProfile        string
 }
@@ -134,9 +133,9 @@ func NewTemplateVariablesFromEnvironment(
 		AWSRegion:              env.Config.AWSRegion,
 		AWSSharedRegion:        env.Config.TerraformDefaultSharedAWSRegion,
 		AWSSharedProviderAlias: env.Config.TerraformDefaultSharedAWSAlias,
-		AWSSharedProfile:       env.Config.TerraformDefaultSharedAWSProfile,
-		AWSProfile:             env.Config.TerraformDefaultSharedAWSProfile,
-		AWSStateProfile:        env.Config.TerraformDefaultSharedAWSProfile,
+		AWSSharedProfile:       env.Config.AWSSharedProfile,
+		AWSProfile:             env.Config.AWSSharedProfile,
+		AWSStateProfile:        env.Config.AWSSharedProfile,
 	}
 
 	if tfcfg != nil {

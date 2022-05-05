@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"context"
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/external/aws/awseks"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/secrets"
 
@@ -18,7 +20,6 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/argocd"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/argoworkflow"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/git"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/external/k8s"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	kClient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -83,12 +84,13 @@ func generateAndSaveEnvironmentApp(fileService file.API, environment *stablev1.E
 }
 
 func generateAndSaveEnvironmentComponents(
+	ctx context.Context,
 	log *logrus.Entry,
 	ilService *il.Service,
 	fileService file.API,
 	gitReconciler gitreconciler.API,
 	gitClient git.API,
-	k8sClient k8s.API,
+	k8sClient awseks.API,
 	argocdClient argocd.API,
 	e *stablev1.Environment,
 	tfcfg *secrets.TerraformStateConfig,
@@ -120,6 +122,7 @@ func generateAndSaveEnvironmentComponents(
 			}
 		case "argocd":
 			if err := generateAppsComponent(
+				ctx,
 				gitReconciler,
 				ilService,
 				gitClient,
@@ -199,18 +202,19 @@ func generateTerraformComponent(
 }
 
 func generateAppsComponent(
+	ctx context.Context,
 	gitReconciler gitreconciler.API,
 	ilService *il.Service,
 	gitClient git.API,
 	fileAPI file.API,
-	k8sClient k8s.API,
+	k8sClient awseks.API,
 	argocdClient argocd.API,
 	e *stablev1.Environment,
 	ec *stablev1.EnvironmentComponent,
 	key *kClient.ObjectKey,
 	log *logrus.Entry,
 ) error {
-	info, err := argocd.RegisterNewCluster(k8sClient, argocdClient, "dev-checkout-staging-eks", log)
+	info, err := argocd.RegisterNewCluster(ctx, k8sClient, argocdClient, "dev-checkout-staging-eks", log)
 	if err != nil {
 		return errors.Wrap(err, "error registering cluster %s for environment %s")
 	}

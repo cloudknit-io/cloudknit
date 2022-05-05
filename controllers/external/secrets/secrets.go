@@ -1,6 +1,7 @@
 package secrets
 
 import (
+	"context"
 	"strings"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
@@ -15,10 +16,11 @@ var (
 	ErrAWSCredentialsMissing       = errors.New("aws credentials not configured in any scope")
 )
 
-func GetCustomerTerraformStateConfig(client API, meta *secrets.Identifier, log *logrus.Entry) (*TerraformStateConfig, error) {
+func GetCustomerTerraformStateConfig(ctx context.Context, client API, meta *secrets.Identifier, log *logrus.Entry) (*TerraformStateConfig, error) {
 	secretsToFetch := []string{util.StateBucketSecret, util.StateLockTableSecret}
 	log.Info("Checking for terraform state config in environment scope")
 	scrts, err := client.GetSecrets(
+		ctx,
 		getEnvironmentScopeSecrets(
 			meta.Company,
 			meta.Team,
@@ -36,6 +38,7 @@ func GetCustomerTerraformStateConfig(client API, meta *secrets.Identifier, log *
 
 	log.Info("Checking for terraform state config in team scope")
 	scrts, err = client.GetSecrets(
+		ctx,
 		getTeamScopeSecrets(
 			meta.Company,
 			meta.Team,
@@ -51,7 +54,7 @@ func GetCustomerTerraformStateConfig(client API, meta *secrets.Identifier, log *
 	}
 
 	log.Info("Checking for terraform state config in company scope")
-	scrts, err = client.GetSecrets(getCompanyScopeSecrets(meta.Company, secretsToFetch...)...)
+	scrts, err = client.GetSecrets(ctx, getCompanyScopeSecrets(meta.Company, secretsToFetch...)...)
 	if err != nil {
 		return nil, errors.Wrap(err, "error getting AWS credentials from company scope secrets")
 	}
@@ -63,10 +66,11 @@ func GetCustomerTerraformStateConfig(client API, meta *secrets.Identifier, log *
 	return nil, errors.WithStack(ErrTerraformStateConfigMissing)
 }
 
-func GetAWSCredentials(client API, meta *secrets.Identifier, log *logrus.Entry) (*AWSCredentials, error) {
+func GetAWSCredentials(ctx context.Context, client API, meta *secrets.Identifier, log *logrus.Entry) (*AWSCredentials, error) {
 	secretsToFetch := []string{util.AWSAccessKeyID, util.AWSSecretAccessKey}
 	log.Info("Checking for AWS credentials in environment scope")
 	scrts, err := client.GetSecrets(
+		ctx,
 		getEnvironmentScopeSecrets(
 			meta.Company,
 			meta.Team,
@@ -84,6 +88,7 @@ func GetAWSCredentials(client API, meta *secrets.Identifier, log *logrus.Entry) 
 
 	log.Info("Checking for AWS credentials in team scope")
 	scrts, err = client.GetSecrets(
+		ctx,
 		getTeamScopeSecrets(
 			meta.Company,
 			meta.Team,
@@ -99,7 +104,7 @@ func GetAWSCredentials(client API, meta *secrets.Identifier, log *logrus.Entry) 
 	}
 
 	log.Info("Checking for AWS credentials in company scope")
-	scrts, err = client.GetSecrets(getCompanyScopeSecrets(meta.Company, secretsToFetch...)...)
+	scrts, err = client.GetSecrets(ctx, getCompanyScopeSecrets(meta.Company, secretsToFetch...)...)
 	if err != nil {
 		return nil, errors.Wrap(err, "error getting AWS credentials from company scope secrets")
 	}

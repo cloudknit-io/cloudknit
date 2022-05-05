@@ -2,7 +2,7 @@
 // Source: github.com/compuzest/zlifecycle-il-operator/controllers/external/k8s (interfaces: API)
 
 // Package k8s is a generated GoMock package.
-package k8s
+package awseks
 
 import (
 	reflect "reflect"

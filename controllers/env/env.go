@@ -32,7 +32,7 @@ type config struct {
 	TerraformDefaultAWSRegion          string
 	TerraformDefaultSharedAWSRegion    string
 	TerraformCustomerStateAWSProfile   string
-	TerraformDefaultSharedAWSProfile   string
+	AWSSharedProfile                   string
 	TerraformDefaultSharedAWSAlias     string
 
 	// git
@@ -124,13 +124,13 @@ var Config = config{
 	// aws
 	SharedAWSCredsSecret: getOr("AWS_SHARED_CREDS_SECRET", "shared-aws-creds"),
 	AWSRegion:            getOr("AWS_REGION", "us-east-1"),
+	AWSSharedProfile:     getOr("AWS_SHARED_PROFILE", "compuzest-shared"),
 
 	// terraform config
 	TerraformDefaultVersion:            getOr("TERRAFORM_DEFAULT_VERSION", "1.0.9"),
 	TerraformDefaultAWSProviderVersion: getOr("TERRAFORM_DEFAULT_AWS_VERSION", "4.0"),
 	TerraformDefaultAWSRegion:          getOr("TERRAFORM_DEFAULT_REGION", "us-east-1"),
 	TerraformDefaultSharedAWSRegion:    getOr("TERRAFORM_DEFAULT_SHARED_REGION", "us-east-1"),
-	TerraformDefaultSharedAWSProfile:   getOr("TERRAFORM_DEFAULT_SHARED_PROFILE", "compuzest-shared"),
 	TerraformCustomerStateAWSProfile:   getOr("TERRAFORM_DEFAULT_CLIENT_STATE_PROFILE", "customer-state"),
 	TerraformDefaultSharedAWSAlias:     getOr("TERRAFORM_DEFAULT_SHARED_ALIAS", "shared"),
 

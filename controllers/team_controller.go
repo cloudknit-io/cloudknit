@@ -123,6 +123,8 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		return ctrl.Result{}, teamErr
 	}
 
+	r.LogV2 = r.LogV2.WithField("team", team.Spec.TeamName)
+
 	// start apm transaction
 	txName := fmt.Sprintf("teamreconciler.%s", team.Spec.TeamName)
 	tx := r.APM.StartTransaction(txName)
