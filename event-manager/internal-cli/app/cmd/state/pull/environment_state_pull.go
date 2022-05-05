@@ -2,6 +2,7 @@ package pull
 
 import (
 	"context"
+
 	"github.com/compuzest/zlifecycle-internal-cli/app/api/statemanager"
 	"github.com/compuzest/zlifecycle-internal-cli/app/common"
 	"github.com/compuzest/zlifecycle-internal-cli/app/env"
@@ -19,7 +20,7 @@ func NewEnvironmentStatePullCmd() *cobra.Command {
 		Long:    `environment state pull command pulls the environment state from remote backend using zLifecycle State Manager and prints it to stdout`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.Background()
-			logger := log.Logger.WithContext(ctx)
+			logger := log.NewLogger().WithContext(ctx)
 			c := statemanager.NewHTTPStateManager(ctx, logger)
 			req := statemanager.FetchZLStateRequest{
 				Company:     env.Company,

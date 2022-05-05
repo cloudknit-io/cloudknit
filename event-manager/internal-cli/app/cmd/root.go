@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/compuzest/zlifecycle-internal-cli/app/cmd/aws"
 	"github.com/compuzest/zlifecycle-internal-cli/app/cmd/git"
 	"github.com/compuzest/zlifecycle-internal-cli/app/cmd/state"
+
 	"github.com/compuzest/zlifecycle-internal-cli/app/common"
 	"github.com/compuzest/zlifecycle-internal-cli/app/env"
 	"github.com/spf13/cobra"
@@ -34,10 +36,11 @@ func NewRootCmd() *cobra.Command {
 
 	cobra.OnInitialize(initConfig)
 
-	cmd.AddCommand(git.NewRootCmd())
-	cmd.AddCommand(state.NewRootCmd())
 	cmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.zl.yaml)")
 	cmd.PersistentFlags().BoolVarP(&env.Verbose, "verbose", "v", false, "enable command logs")
+	cmd.AddCommand(git.NewRootCmd())
+	cmd.AddCommand(state.NewRootCmd())
+	cmd.AddCommand(aws.NewRootCmd())
 
 	return cmd
 }
