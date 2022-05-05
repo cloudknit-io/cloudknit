@@ -2,6 +2,7 @@ package aws
 
 const (
 	AuthModeProfile = "profile"
+	AuthModeStatic  = "static"
 	AuthModeDefault = "default"
 )
 
@@ -12,7 +13,9 @@ type Credentials struct {
 }
 
 type Auth struct {
-	Mode    string `json:"mode"`
-	Profile string `json:"profile"`
-	Region  string `json:"region"`
+	Mode            string `json:"mode"`
+	Profile         string `json:"profile"`
+	Region          string `json:"region"`
+	AccessKeyID     string `json:"accessKeyID"`
+	SecretAccessKey string `json:"secretAccessKey"`
 }
