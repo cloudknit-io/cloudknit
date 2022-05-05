@@ -3,14 +3,14 @@ package overlay
 import (
 	"path/filepath"
 
+	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/gitreconciler"
+
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/file"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/git"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
 
 	"github.com/sirupsen/logrus"
-
-	"github.com/compuzest/zlifecycle-il-operator/controllers/gitreconciler"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 

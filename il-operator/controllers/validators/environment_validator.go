@@ -6,19 +6,18 @@ import (
 	"regexp"
 	"time"
 
-	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/factories/gitfactory"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/watcherservices"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/factories/gitfactory"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/log"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/watcherservices"
 
+	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
 	kClient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/git"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/notifier"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/notifier/uinotifier"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/log"
-
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 

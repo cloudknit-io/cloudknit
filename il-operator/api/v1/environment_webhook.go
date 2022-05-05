@@ -15,7 +15,8 @@ package v1
 import (
 	"context"
 
-	"github.com/compuzest/zlifecycle-il-operator/controllers/log"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/log"
+
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"

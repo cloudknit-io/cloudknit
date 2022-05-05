@@ -18,19 +18,19 @@ import (
 	"sync"
 	"time"
 
-	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/apm"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/watcherservices"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/zerrors"
 
-	"github.com/compuzest/zlifecycle-il-operator/controllers/watcherservices"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/argocd"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/git"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/github"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/zerrors"
 	perrors "github.com/pkg/errors"
 
-	"github.com/compuzest/zlifecycle-il-operator/controllers/apm"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/api/errors"

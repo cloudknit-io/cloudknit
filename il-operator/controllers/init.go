@@ -2,6 +2,11 @@ package controllers
 
 import (
 	"context"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/external/aws/awscfg"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/external/aws/awseks"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/external/aws/awsssm"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/factories/gitfactory"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/watcherservices"
 
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/file"
@@ -12,12 +17,9 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/argoworkflow"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/git"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/github"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/external/k8s"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/secrets"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/zlstate"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/factories/gitfactory"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/watcherservices"
 	perrors "github.com/pkg/errors"
 )
 
@@ -27,7 +29,7 @@ type EnvironmentServices struct {
 	ArgoWorkflowClient   argoworkflow.API
 	WatcherServices      *watcherservices.WatcherServices
 	SecretsClient        secrets.API
-	K8sClient            k8s.API
+	K8sClient            awseks.API
 	ILService            *il.Service
 	CompanyGitClient     git.API
 	FileService          file.API
@@ -45,14 +47,15 @@ func (r *EnvironmentReconciler) initServices(ctx context.Context, environment *v
 	if err != nil {
 		return nil, perrors.Wrap(err, "error instantiating watcher services")
 	}
-	secretsClient := secrets.LazyLoadSSM(ctx, r.Client)
+	secretsClient := awsssm.LazyLoadSSM(awscfg.NewK8sSecretCredentialsLoader(r.Client))
 
-	secretsMeta := secrets2.Meta{
+	secretsMeta := secrets2.Identifier{
 		Company:     env.Config.CompanyName,
 		Team:        environment.Spec.TeamName,
 		Environment: environment.Spec.EnvName,
 	}
-	k8sClient := k8s.LazyLoadEKS(ctx, secretsClient, &secretsMeta, r.LogV2)
+	cl := awscfg.NewSSMCredentialsLoader(secretsClient, &secretsMeta, r.LogV2)
+	k8sClient := awseks.LazyLoadEKS(ctx, cl, r.LogV2)
 
 	ilToken, err := github.GenerateInstallationToken(r.LogV2, watcherServices.ILGitClient, env.Config.GitILRepositoryOwner)
 	if err != nil {

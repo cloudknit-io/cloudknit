@@ -166,7 +166,7 @@ type Repository struct {
 
 type UpdateClusterBody map[string]interface{}
 
-// RBAC
+// RBAC.
 type (
 	EntryIdentifier = string
 	Permission      = string
