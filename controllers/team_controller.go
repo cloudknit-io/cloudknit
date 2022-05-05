@@ -19,21 +19,21 @@ import (
 	"sync"
 	"time"
 
-	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/apm"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/watcherservices"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/zerrors"
 
-	"github.com/compuzest/zlifecycle-il-operator/controllers/watcherservices"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/file"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/codegen/il"
 
-	"github.com/compuzest/zlifecycle-il-operator/controllers/apm"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/argocd"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/git"
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/github"
 	"github.com/sirupsen/logrus"
 
-	"github.com/compuzest/zlifecycle-il-operator/controllers/zerrors"
 	perrors "github.com/pkg/errors"
 
 	"k8s.io/apiserver/pkg/registry/generic/registry"
@@ -122,6 +122,8 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error getting team from k8s cache"))
 		return ctrl.Result{}, teamErr
 	}
+
+	r.LogV2 = r.LogV2.WithField("team", team.Spec.TeamName)
 
 	// start apm transaction
 	txName := fmt.Sprintf("teamreconciler.%s", team.Spec.TeamName)

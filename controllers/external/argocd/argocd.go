@@ -15,9 +15,8 @@ package argocd
 import (
 	"context"
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/external/aws/awseks"
 	"strings"
-
-	"github.com/compuzest/zlifecycle-il-operator/controllers/external/k8s"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/util"
 
@@ -243,7 +242,7 @@ func TryCreateProject(ctx context.Context, api API, log logr.Logger, name string
 	return false, nil
 }
 
-func RegisterNewCluster(k8sClient k8s.API, argocdClient API, cluster string, log *logrus.Entry) (*k8s.ClusterInfo, error) {
+func RegisterNewCluster(ctx context.Context, k8sClient awseks.API, argocdClient API, cluster string, log *logrus.Entry) (*awseks.ClusterInfo, error) {
 	tokenResponse, err := argocdClient.GetAuthToken()
 	if err != nil {
 		return nil, errors.Wrap(err, "error getting auth token")
@@ -251,7 +250,7 @@ func RegisterNewCluster(k8sClient k8s.API, argocdClient API, cluster string, log
 	bearer := toBearerToken(tokenResponse.Token)
 
 	log.Infof("Describing cluster %s", cluster)
-	info, err := k8sClient.DescribeCluster(cluster)
+	info, err := k8sClient.DescribeCluster(ctx, cluster)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error describing cluster %s", cluster)
 	}

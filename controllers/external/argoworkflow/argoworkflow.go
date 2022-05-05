@@ -14,6 +14,7 @@ package argoworkflow
 
 import (
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controllers/external/secrets"
 	"time"
 
 	"github.com/compuzest/zlifecycle-il-operator/controllers/external/zli"
@@ -98,7 +99,7 @@ func GenerateWorkflowOfWorkflows(environment *stablev1.Environment) *workflow.Wo
 	}
 }
 
-func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment) *workflow.Workflow {
+func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment, tfcfg *secrets.TerraformStateConfig) *workflow.Workflow {
 	workflowTemplate := "terraform-sync-template"
 
 	var tasks []workflow.DAGTask
@@ -133,7 +134,7 @@ func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment) *workf
 		}
 
 		dependencies = append(dependencies, "trigger-audit")
-		parameters := generateWorkflowParams(environment, ec, workflowTemplate, tfPath, destroyFlag, autoApproveFlag)
+		parameters := generateWorkflowParams(environment, ec, workflowTemplate, tfPath, destroyFlag, autoApproveFlag, tfcfg)
 
 		tasks = append(tasks, generateWorkflowTriggerDAGTask(ec.Name, dependencies, parameters))
 	}
@@ -199,9 +200,21 @@ func generateWorkflowParams(
 	tfPath string,
 	destroyFlag bool,
 	autoApproveFlag bool,
+	tfcfg *secrets.TerraformStateConfig,
 ) []workflow.Parameter {
 	ilRepo := util.RewriteGitURLToSSH(env.Config.ILTerraformRepositoryURL)
-	return []workflow.Parameter{
+
+	// TODO: this should be fetched from zLstate
+	useCustomState := "false"
+	customStateBucket := ""
+	customStateLockTable := ""
+	if tfcfg != nil {
+		useCustomState = "true"
+		customStateBucket = tfcfg.Bucket
+		customStateLockTable = tfcfg.LockTable
+	}
+
+	params := []workflow.Parameter{
 		{
 			Name:  "workflowtemplate",
 			Value: AnyStringPointer(workflowTemplate),
@@ -248,7 +261,7 @@ func generateWorkflowParams(
 		},
 		{
 			Name:  "zl_environment",
-			Value: AnyStringPointer(env.Config.Environment),
+			Value: AnyStringPointer(env.Config.ZLEnvironment),
 		},
 		{
 			Name:  "skip_component",
@@ -262,7 +275,21 @@ func generateWorkflowParams(
 			Name:  "company_git_org",
 			Value: AnyStringPointer(env.Config.GitHubCompanyOrganization),
 		},
+		{
+			Name:  "use_custom_state",
+			Value: AnyStringPointer(useCustomState),
+		},
+		{
+			Name:  "custom_state_bucket",
+			Value: AnyStringPointer(customStateBucket),
+		},
+		{
+			Name:  "custom_state_lock_table",
+			Value: AnyStringPointer(customStateLockTable),
+		},
 	}
+
+	return params
 }
 
 func exitHandler(e *stablev1.Environment) workflow.Template {

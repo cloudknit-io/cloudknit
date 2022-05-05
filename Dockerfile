@@ -13,7 +13,6 @@ RUN go mod download
 COPY main.go main.go
 COPY api/ api/
 COPY controllers/ controllers/
-COPY templates/ templates/
 
 # Build
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager main.go
@@ -32,7 +31,6 @@ FROM gcr.io/distroless/base:debug
 
 WORKDIR /
 COPY --from=builder /workspace/manager .
-COPY --from=builder /workspace/templates ./templates
 
 COPY --from=builder /.ssh /root/.ssh
 
