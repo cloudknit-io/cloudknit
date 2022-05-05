@@ -20,8 +20,8 @@ func NewEnvironmentComponentStatusPatchCmd() *cobra.Command {
 		Long:    `patch command modifies the environment component state status on remote backend using zLifecycle State Manager and prints it to stdout`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.Background()
-			log := log.Logger.WithContext(ctx)
-			c := statemanager.NewHTTPStateManager(ctx, log)
+			logger := log.NewLogger().WithContext(ctx)
+			c := statemanager.NewHTTPStateManager(ctx, logger)
 			req := statemanager.UpdateZLStateComponentStatusRequest{
 				Company:     env.Company,
 				Team:        env.Team,
@@ -39,7 +39,7 @@ func NewEnvironmentComponentStatusPatchCmd() *cobra.Command {
 				return errors.Wrap(err, "error marshaling patch environment component status response")
 			}
 
-			log.Info(string(json))
+			logger.Info(string(json))
 
 			return nil
 		},

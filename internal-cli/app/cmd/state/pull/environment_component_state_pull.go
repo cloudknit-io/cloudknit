@@ -21,8 +21,8 @@ func NewEnvironmentComponentStatePullCmd() *cobra.Command {
 		Long:    `pull command pulls the environment component state from remote backend using zLifecycle State Manager and prints it to stdout`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.Background()
-			logger := log.Logger.WithContext(ctx)
-			c := statemanager.NewHTTPStateManager(ctx, log.Logger.WithContext(ctx))
+			logger := log.NewLogger().WithContext(ctx)
+			c := statemanager.NewHTTPStateManager(ctx, logger)
 			req := statemanager.FetchZLStateComponentRequest{
 				Company:     env.Company,
 				Team:        env.Team,

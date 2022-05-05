@@ -7,12 +7,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func NewLogger() *logrus.Logger {
+func NewLogger() *logrus.Entry {
 	l := logrus.New()
 	if !env.Verbose {
 		l.Out = io.Discard
 	}
-	return l
+	return l.WithField("version", env.Version)
 }
-
-var Logger = NewLogger().WithField("version", env.Version)

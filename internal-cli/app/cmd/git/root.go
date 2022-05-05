@@ -14,7 +14,6 @@ func NewRootCmd() *cobra.Command {
 		Use:     "git {command}",
 		Example: "git clone -h",
 		Short:   "git command offers subcommands for cloning zlifecycle repos",
-		Long:    "git command offers subcommands for cloning zlifecycle repos",
 	}
 
 	cmd.PersistentFlags().StringVarP(&env.GitAuth, "git-auth", "g", "", "Git auth method")

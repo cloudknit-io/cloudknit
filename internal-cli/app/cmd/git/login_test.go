@@ -1,6 +1,7 @@
 package git_test
 
 import (
+	"github.com/compuzest/zlifecycle-internal-cli/app/util"
 	"os"
 	"path/filepath"
 	"testing"
@@ -11,10 +12,11 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	_ = os.Mkdir(env.TestDir, 0o744)
+	td := util.NewTestDirName()
+	_ = os.Mkdir(td, 0o744)
 	exitVal := m.Run()
 
-	_ = os.RemoveAll(env.TestDir)
+	_ = os.RemoveAll(td)
 	os.Exit(exitVal)
 }
 

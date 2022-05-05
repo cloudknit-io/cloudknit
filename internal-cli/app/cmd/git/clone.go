@@ -24,10 +24,8 @@ func NewCloneCmd() *cobra.Command {
 		Long:    "clone git repo using configurable git auth modes",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.Background()
-			logger := log.Logger.WithContext(ctx).WithField("gitAuthMode", env.GitAuth)
-			if len(args) != 1 {
-				return errors.Errorf("invalid number of args (must be 1 - repository URL): %d", len(args))
-			}
+			logger := log.NewLogger().WithContext(ctx).WithField("gitAuthMode", env.GitAuth)
+
 			repo := args[0]
 			repo = strings.TrimPrefix(repo, "git::")
 

@@ -26,7 +26,7 @@ func NewLoginCmd() *cobra.Command {
 		Long:    "login to git by creating a .gitconfig file in home directory and replacing github https urls with token",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.Background()
-			logger := log.Logger.WithContext(ctx).WithField("gitAuthMode", env.GitAuth)
+			logger := log.NewLogger().WithContext(ctx).WithField("gitAuthMode", env.GitAuth)
 			if len(args) != 1 {
 				return errors.Errorf("invalid number of args (must be 1 - repository URL): %d", len(args))
 			}

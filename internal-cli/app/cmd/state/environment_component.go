@@ -13,7 +13,8 @@ func NewEnvironmentComponentCmd() *cobra.Command {
 		Example: "zl state environment pull -h",
 		Args:    cobra.ExactArgs(1),
 		Short:   "component command exposes subcommands for managing environment component state",
-		Long:    `component command exposes subcommands for managing environment component state from remote backend using zLifecycle State Manager and prints it to stdout`,
+		Long: "component command exposes subcommands for managing environment component state" +
+			" from remote backend using zLifecycle State Manager and prints it to stdout",
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {
 				if err := cmd.Help(); err != nil {

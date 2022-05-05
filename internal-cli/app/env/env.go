@@ -32,6 +32,11 @@ var (
 	GitBaseURL          = getOr("GIT_BASE_URL", "github.com")
 	GitConfigDir        = getOr("GIT_CONFIG_DIR", ".")
 	GitSSHPath          = getOr("GIT_SSH_PATH", filepath.Join(os.Getenv("HOME"), ".ssh", "id_rsa"))
+	AWSAuthMode         string
+	AWSProfile          string
+	AWSGeneratedProfile string
+	AWSRegion           = getOr("AWS_REGION", "us-east-1")
+	AWSConfigFile       = getOr("AWS_CONFIG_FILE", filepath.Join(os.Getenv("HOME"), ".aws", "credentials"))
 	StateManagerURL     = getOr(
 		"STATE_MANAGER_URL",
 		"http://zlifecycle-state-manager.zlifecycle-il-operator-system.svc.cluster.local:8080",
