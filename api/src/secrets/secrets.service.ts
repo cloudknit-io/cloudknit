@@ -13,6 +13,10 @@ export class SecretsService {
     "aws_access_key_id",
     "aws_secret_access_key",
     "aws_session_token",
+    "state_aws_access_key_id",
+    "state_aws_secret_access_key",
+    "state_bucket",
+    "state_lock_table"
   ]);
 
   constructor() {
