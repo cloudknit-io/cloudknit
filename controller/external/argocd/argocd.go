@@ -28,7 +28,7 @@ import (
 	"github.com/go-logr/logr"
 )
 
-func GenerateNewRbacConfig(log logr.Logger, oldPolicyCsv string, oidcGroup string, role string, additionalRoles []string) (newPolicyCsv string, err error) {
+func GenerateNewRbacConfig(log *logrus.Entry, oldPolicyCsv string, oidcGroup string, role string, additionalRoles []string) (newPolicyCsv string, err error) {
 	rbacMap, err := parsePolicyCsv(oldPolicyCsv)
 	if err != nil {
 		return "", errors.Wrap(err, "error parsing policy CSV")
@@ -37,53 +37,50 @@ func GenerateNewRbacConfig(log logr.Logger, oldPolicyCsv string, oidcGroup strin
 	var projects []string
 	projects = append(projects, role)
 	projects = append(projects, additionalRoles...)
-	log.Info(
+	log.WithFields(logrus.Fields{
+		"subject":         subject,
+		"additionalRoles": additionalRoles,
+		"projects":        projects,
+		"oidcGroup":       oidcGroup,
+	}).Info(
 		"Generating new RBAC configuration",
-		"subject", subject,
-		"additionalRoles", additionalRoles,
-		"projects", projects,
-		"oidcGroup", oidcGroup,
 	)
 	rbacMap.updateRbac(subject, projects, oidcGroup)
 
 	return rbacMap.generatePolicyCsv(), nil
 }
 
-func GenerateAdminRbacConfig(log logr.Logger, oldPolicyCsv string, oidcGroup string, admin string) (newPolicyCsv string, err error) {
+func GenerateAdminRbacConfig(log *logrus.Entry, oldPolicyCsv string, oidcGroup string, admin string) (newPolicyCsv string, err error) {
 	rbacMap, err := parsePolicyCsv(oldPolicyCsv)
 	if err != nil {
 		return "", errors.Wrap(err, "error parsing policy CSV")
 	}
 	adminSubject := fmt.Sprintf("role:%s", admin)
-	log.Info(
-		"Generating admin RBAC configuration",
-		"subject", adminSubject,
-		"oidcGroup", oidcGroup,
-	)
+	log.WithFields(logrus.Fields{
+		"subject":   adminSubject,
+		"oidcGroup": oidcGroup,
+	}).Info("Generating admin RBAC configuration")
 
 	return rbacMap.generateAdminRbac(adminSubject, oidcGroup), nil
 }
 
-func DeleteApplication(log logr.Logger, api API, name string) error {
+func DeleteApplication(log *logrus.Entry, api API, app string) error {
 	tokenResponse, err := api.GetAuthToken()
 	if err != nil {
 		return err
 	}
 	bearer := toBearerToken(tokenResponse.Token)
 
-	exists, err := api.DoesApplicationExist(name, bearer)
+	exists, err := api.DoesApplicationExist(app, bearer)
 	if err != nil {
-		return errors.Wrapf(err, "error checking does application [%s] exist", name)
+		return errors.Wrapf(err, "error checking does application [%s] exist", app)
 	}
 	if !exists {
-		log.Info(
-			"Application does not exist, probably it has been already deleted",
-			"application", name,
-		)
+		log.WithField("argocdApp", app).Info("Application does not exist, probably it has been already deleted")
 		return nil
 	}
 
-	return api.DeleteApplication(name, bearer)
+	return api.DeleteApplication(app, bearer)
 }
 
 func RegisterRepo(log *logrus.Entry, api API, repoOpts *RepoOpts) (bool, error) {
@@ -213,14 +210,16 @@ func UpdateDefaultClusterNamespaces(log logr.Logger, api API, namespaces []strin
 	return nil
 }
 
-func TryCreateProject(ctx context.Context, api API, log logr.Logger, name string, group string) (exists bool, err error) {
+func TryCreateProject(ctx context.Context, api API, log *logrus.Entry, name string, group string) (exists bool, err error) {
+	l := log.WithField("project", name)
+
 	tokenResponse, err := api.GetAuthToken()
 	if err != nil {
 		return false, errors.Wrap(err, "error getting auth token")
 	}
 	bearer := toBearerToken(tokenResponse.Token)
 
-	log.Info("Checking does AppProject already exist", "name", name)
+	l.Info("Checking does AppProject already exist")
 	exists, resp1, err1 := api.DoesProjectExist(name, bearer)
 	if err1 != nil {
 		return false, errors.Wrapf(err1, "error checking does argocd project [%s] exists", name)
@@ -228,12 +227,12 @@ func TryCreateProject(ctx context.Context, api API, log logr.Logger, name string
 	defer util.CloseBody(resp1.Body)
 
 	if exists {
-		log.Info("AppProject already exist", "name", name)
+		l.Info("ArgoCD AppProject already exist")
 		return true, nil
 	}
 
 	body := CreateProjectBody{Project: toProject(name, group)}
-	log.Info("AppProject does not exist, creating new one", "name", name)
+	l.Info("ArgoCD AppProject does not exist, creating new one")
 	resp2, err2 := api.CreateProject(&body, bearer)
 	if err2 != nil {
 		return false, errors.Wrap(err2, "error creating argocd project")
