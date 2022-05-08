@@ -8,4 +8,4 @@ dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $dir/..
 
 echo "=== formatting ==="
-gofumpt -l -w ./controllers
+gofumpt -l -w ./controller

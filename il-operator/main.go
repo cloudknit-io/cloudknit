@@ -16,13 +16,13 @@ import (
 	"context"
 	"flag"
 
-	apm2 "github.com/compuzest/zlifecycle-il-operator/controllers/lib/apm"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/gitreconciler"
-	"github.com/compuzest/zlifecycle-il-operator/controllers/lib/log"
+	apm2 "github.com/compuzest/zlifecycle-il-operator/controller/lib/apm"
+	"github.com/compuzest/zlifecycle-il-operator/controller/lib/gitreconciler"
+	"github.com/compuzest/zlifecycle-il-operator/controller/lib/log"
 
-	"github.com/compuzest/zlifecycle-il-operator/controllers/validators"
+	"github.com/compuzest/zlifecycle-il-operator/controller/validator"
 
-	"github.com/compuzest/zlifecycle-il-operator/controllers/env"
+	"github.com/compuzest/zlifecycle-il-operator/controller/env"
 	"github.com/newrelic/go-agent/v3/integrations/logcontext/nrlogrusplugin"
 	"github.com/sirupsen/logrus"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
@@ -35,7 +35,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
-	"github.com/compuzest/zlifecycle-il-operator/controllers"
+	"github.com/compuzest/zlifecycle-il-operator/controller"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -121,9 +121,9 @@ func main() {
 	}
 
 	// company controller init
-	if err = (&controllers.CompanyReconciler{
+	if err = (&controller.CompanyReconciler{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Company"),
+		Log:    ctrl.Log.WithName("controller").WithName("Company"),
 		LogV2:  log.NewLogger().WithFields(logrus.Fields{"logger": "controller.Company", "instance": env.Config.CompanyName, "company": env.Config.CompanyName}),
 		Scheme: mgr.GetScheme(),
 		APM:    _apm,
@@ -132,9 +132,9 @@ func main() {
 	}
 
 	// team controller init
-	if err = (&controllers.TeamReconciler{
+	if err = (&controller.TeamReconciler{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Team"),
+		Log:    ctrl.Log.WithName("controller").WithName("Team"),
 		LogV2:  log.NewLogger().WithFields(logrus.Fields{"logger": "controller.Team", "instance": env.Config.CompanyName, "company": env.Config.CompanyName}),
 		Scheme: mgr.GetScheme(),
 		APM:    _apm,
@@ -143,9 +143,9 @@ func main() {
 	}
 
 	// environment controller init
-	if err = (&controllers.EnvironmentReconciler{
+	if err = (&controller.EnvironmentReconciler{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Environment"),
+		Log:    ctrl.Log.WithName("controller").WithName("Environment"),
 		LogV2: log.NewLogger().WithFields(
 			logrus.Fields{
 				"logger": "controller.Environment", "instance": env.Config.CompanyName, "company": env.Config.CompanyName,
@@ -158,7 +158,7 @@ func main() {
 		setupLog.WithError(err).WithField("controller", "Environment").Panic("unable to create controller")
 	}
 
-	environmentValidator := validators.NewEnvironmentValidatorImpl(mgr.GetClient())
+	environmentValidator := validator.NewEnvironmentValidatorImpl(mgr.GetClient())
 	if env.Config.KubernetesDisableWebhooks != "true" {
 		setupLog.Info("Initializing webhook service")
 		if err = (&stablev1.Environment{}).SetupWebhookWithManager(mgr, environmentValidator); err != nil {

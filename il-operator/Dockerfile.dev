@@ -15,7 +15,7 @@ RUN go mod download
 # Copy the go source
 COPY main.go main.go
 COPY api/ api/
-COPY controllers/ controllers/
+COPY controller/ controller/
 
 # Build
 RUN --mount=type=cache,target=/root/.cache/go-build \
