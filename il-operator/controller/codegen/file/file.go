@@ -34,13 +34,13 @@ type API interface {
 	RemoveAll(path string) error
 }
 
-type OsFileService struct{}
+type OSFileService struct{}
 
-func NewOsFileService() *OsFileService {
-	return &OsFileService{}
+func NewOSFileService() *OSFileService {
+	return &OSFileService{}
 }
 
-func (f *OsFileService) NewFile(folderName string, fileName string) (*os.File, error) {
+func (f *OSFileService) NewFile(folderName string, fileName string) (*os.File, error) {
 	file, err := createFileRecursive(folderName, fileName)
 	if err != nil {
 		return nil, err
@@ -49,7 +49,7 @@ func (f *OsFileService) NewFile(folderName string, fileName string) (*os.File, e
 	return file, nil
 }
 
-func (f *OsFileService) SaveVarsToFile(variables []*stablev1.Variable, folderName string, fileName string) error {
+func (f *OSFileService) SaveVarsToFile(variables []*stablev1.Variable, folderName string, fileName string) error {
 	file, err := createFileRecursive(folderName, fileName)
 	if err != nil {
 		return err
@@ -66,7 +66,7 @@ func (f *OsFileService) SaveVarsToFile(variables []*stablev1.Variable, folderNam
 }
 
 // SaveFileFromTemplate creates a file with variables.
-func (f *OsFileService) SaveFileFromTemplate(t *template.Template, vars interface{}, folderName string, fileName string) error {
+func (f *OSFileService) SaveFileFromTemplate(t *template.Template, vars interface{}, folderName string, fileName string) error {
 	file, err := createFileRecursive(folderName, fileName)
 	if err != nil {
 		return err
@@ -97,21 +97,21 @@ func createFileRecursive(folderName string, fileName string) (*os.File, error) {
 }
 
 // SaveFileFromString Create file.
-func (f *OsFileService) SaveFileFromString(input string, folderName string, fileName string) error {
+func (f *OSFileService) SaveFileFromString(input string, folderName string, fileName string) error {
 	return saveBytesToFile([]byte(input), folderName, fileName)
 }
 
-func (f *OsFileService) SaveFileFromByteArray(input []byte, folderName string, fileName string) error {
+func (f *OSFileService) SaveFileFromByteArray(input []byte, folderName string, fileName string) error {
 	return saveBytesToFile(input, folderName, fileName)
 }
 
 // CreateEmptyDirectory creates empty directory with a .keep file.
-func (f *OsFileService) CreateEmptyDirectory(folderName string) error {
+func (f *OSFileService) CreateEmptyDirectory(folderName string) error {
 	return saveBytesToFile(nil, folderName, ".keep")
 }
 
 // SaveYamlFile creates file and directory, does not validate yaml.
-func (f *OsFileService) SaveYamlFile(obj interface{}, folderName string, fileName string) error {
+func (f *OSFileService) SaveYamlFile(obj interface{}, folderName string, fileName string) error {
 	jsonBytes, err := json.Marshal(obj)
 	if err != nil {
 		return fmt.Errorf("error: failed to marshal json: %w", err)
@@ -137,6 +137,6 @@ func saveBytesToFile(bytes []byte, folderName string, fileName string) error {
 // It removes everything it can but returns the first error
 // it encounters. If the path does not exist, RemoveAll
 // returns nil (no error).
-func (f *OsFileService) RemoveAll(path string) error {
+func (f *OSFileService) RemoveAll(path string) error {
 	return os.RemoveAll(path)
 }

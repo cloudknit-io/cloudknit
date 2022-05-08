@@ -83,7 +83,7 @@ func (r *EnvironmentReconciler) initServices(ctx context.Context, environment *v
 	if err != nil {
 		return nil, perrors.Wrap(err, "error instantiating git client")
 	}
-	fs := file.NewOsFileService()
+	fs := file.NewOSFileService()
 
 	return &EnvironmentServices{
 		ZLStateManagerClient: zlstateManagerClient,
