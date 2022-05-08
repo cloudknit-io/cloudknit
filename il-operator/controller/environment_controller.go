@@ -464,7 +464,7 @@ func (r *EnvironmentReconciler) deleteDanglingArgocdApps(e *stablev1.Environment
 			"component": ec.Name,
 			"app":       appName,
 		}).Info("Deleting argocd application")
-		if err := argocd.DeleteApplication(r.Log, argocdAPI, appName); err != nil {
+		if err := argocd.DeleteApplication(r.LogV2, argocdAPI, appName); err != nil {
 			r.LogV2.WithError(err).Error("Error deleting argocd app")
 		}
 	}

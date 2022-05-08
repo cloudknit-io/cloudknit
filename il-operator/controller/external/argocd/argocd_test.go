@@ -24,13 +24,12 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 func TestGenerateNewRbacConfigEmptyPolicyCsv(t *testing.T) {
 	t.Parallel()
 
-	log := ctrl.Log.WithName("TestGenerateNewRbacConfigEmptyPolicyCsv")
+	log := logrus.NewEntry(logrus.New())
 	policyCsv, err := argocd.GenerateNewRbacConfig(log, "", "test:payment", "payment", []string{"design"})
 	assert.NoError(t, err)
 	expectedPolicyCsv := `p,role:payment,repositories,get,*,allow
@@ -44,7 +43,7 @@ g,test:payment,role:payment
 func TestGenerateNewRbacConfigExistingPolicyCsv(t *testing.T) {
 	t.Parallel()
 
-	log := ctrl.Log.WithName("TestGenerateNewRbacConfigExistingPolicyCsv")
+	log := logrus.NewEntry(logrus.New())
 	existingPolicyCsv := `p,role:design,repositories,get,*,allow
 p,role:design,applications,*,design/*,allow
 g,test:design,role:design
@@ -65,7 +64,7 @@ g,test:payment,role:payment
 func TestGenerateAdminRbacConfigEmptyPolicyCsv(t *testing.T) {
 	t.Parallel()
 
-	log := ctrl.Log.WithName("TestGenerateAdminRbacConfigEmptyPolicyCsv")
+	log := logrus.NewEntry(logrus.New())
 	policyCsv, err := argocd.GenerateAdminRbacConfig(log, "", "test:admin", "admin")
 	assert.NoError(t, err)
 	expectedPolicyCsv := `p,role:admin,certificates,*,*,allow
@@ -87,7 +86,7 @@ func TestGenerateAdminRbacConfigExistingPolicyCsv(t *testing.T) {
 p,role:design,applications,*,design/*,allow
 g,zmart-tech-sandbox:design,role:design
 `
-	log := ctrl.Log.WithName("TestGenerateAdminRbacConfigEmptyPolicyCsv")
+	log := logrus.NewEntry(logrus.New())
 	policyCsv, err := argocd.GenerateAdminRbacConfig(log, existingPolicyCsv, "test:admin", "admin")
 	assert.NoError(t, err)
 	expectedPolicyCsv := `p,role:design,repositories,get,*,allow
