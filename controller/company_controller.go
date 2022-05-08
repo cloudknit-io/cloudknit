@@ -115,7 +115,7 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	ilZLRepoURL := env.Config.ILZLifecycleRepositoryURL
 
 	// services init
-	fileAPI := file.NewOsFileService()
+	fileAPI := file.NewOSFileService()
 	watcherServices, err := watcherservices.NewGitHubServices(apmCtx, r.Client, env.Config.GitHubCompanyOrganization, r.LogV2)
 	if err != nil {
 		companyErr := zerrors.NewCompanyError(

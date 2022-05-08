@@ -141,7 +141,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	teamRepoURL := team.Spec.ConfigRepo.Source
 
 	// services init
-	fileAPI := &file.OsFileService{}
+	fileAPI := file.NewOSFileService()
 	watcherServices, err := watcherservices.NewGitHubServices(apmCtx, r.Client, env.Config.GitHubCompanyOrganization, r.LogV2)
 	if err != nil {
 		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error instantiating watcher services"))
