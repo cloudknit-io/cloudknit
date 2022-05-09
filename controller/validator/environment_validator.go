@@ -28,8 +28,12 @@ import (
 
 const (
 	errInitValidator = "error initializing environment validator"
-	nameRegex        = `^[a-zA-Z0-9-]*$`
-	maxFieldLength   = 64
+	// https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#rfc-1035-label-names
+	// starts with alpha
+	// ends with alphanumeric
+	// cannot contain conecutive hyphens
+	nameRegex      = `^[a-zA-Z]([a-zA-Z0-9]|-(?!-))*[a-zA-Z0-9]$`
+	maxFieldLength = 63
 )
 
 var logger = log.NewLogger().WithFields(logrus.Fields{"name": "controllers.EnvironmentValidator"})
