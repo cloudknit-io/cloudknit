@@ -32,7 +32,7 @@ const (
 	// starts with alpha
 	// ends with alphanumeric
 	// cannot contain conecutive hyphens
-	nameRegex      = `^[a-zA-Z]([a-zA-Z0-9]|-(?!-))*[a-zA-Z0-9]$`
+	nameRegex      = `^[a-zA-Z]+[a-zA-Z0-9]*(-[a-zA-Z0-9]+)*$`
 	maxFieldLength = 63
 )
 
@@ -225,7 +225,7 @@ func validateNames(e *v1.Environment) field.ErrorList {
 	}
 	if len(e.Spec.EnvName) > maxFieldLength {
 		fld := field.NewPath("spec").Child("envName")
-		allErrs = append(allErrs, field.Invalid(fld, e.Spec.EnvName, "environment name must not exceed 64 characters"))
+		allErrs = append(allErrs, field.Invalid(fld, e.Spec.EnvName, fmt.Sprintf("environment name must not exceed %d characters", maxFieldLength)))
 	}
 	if !r.MatchString(e.Spec.TeamName) {
 		fld := field.NewPath("spec").Child("teamName")
@@ -233,7 +233,7 @@ func validateNames(e *v1.Environment) field.ErrorList {
 	}
 	if len(e.Spec.TeamName) > maxFieldLength {
 		fld := field.NewPath("spec").Child("teamName")
-		allErrs = append(allErrs, field.Invalid(fld, e.Spec.TeamName, "team name must not exceed 64 characters"))
+		allErrs = append(allErrs, field.Invalid(fld, e.Spec.TeamName, fmt.Sprintf("team name must not exceed %d characters", maxFieldLength)))
 	}
 
 	return allErrs
@@ -313,7 +313,7 @@ func checkEnvironmentComponentName(name string, i int) field.ErrorList {
 		allErrs = append(allErrs, field.Invalid(fld, name, "environment component name must be combination of alphanumerical and hyphen characters"))
 	}
 	if len(name) > maxFieldLength {
-		allErrs = append(allErrs, field.Invalid(fld, name, "environment component name must not exceed 64 characters"))
+		allErrs = append(allErrs, field.Invalid(fld, name, fmt.Sprintf("environment component name must not exceed %d characters", maxFieldLength)))
 	}
 
 	return allErrs
