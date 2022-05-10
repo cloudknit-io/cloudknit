@@ -33,7 +33,7 @@ jobs:
       - name: "Modules vendor"
         run: "go mod vendor"
       - name: "Test"
-        run: go test -json ./controllers/... > test.json
+        run: go test -json ./controller/... > test.json
       - name: "Annotate"
         if: always()
         uses: guyarb/golang-test-annotations@v0.5.0
