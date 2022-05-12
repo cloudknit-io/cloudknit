@@ -11,9 +11,10 @@ To add a secret, go to the appropriate scope and click on the Add button.
 Once added these secrets can be used in the secrets property of the environment YAML as below.
 
 **Example**
+
 ```yaml
 secrets:
-  - name: bucket
-    key: s3-name # secret id
-    scope: org
+  - name: bucket      # Terraform variable name
+    key: s3-name      # Secret Id
+    scope: company    # Should be one of: company, team, environment
 ```
