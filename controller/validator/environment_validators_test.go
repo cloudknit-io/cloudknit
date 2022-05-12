@@ -18,12 +18,26 @@ import (
 func TestValidateNames(t *testing.T) {
 	t.Parallel()
 
+	invalidName1 := v1.Environment{
+		Spec: v1.EnvironmentSpec{EnvName: "validenv1", TeamName: "invalid--team"},
+	}
+
+	invalidErrorList := validateNames(&invalidName1)
+	assert.Len(t, invalidErrorList, 1)
+
+	invalidName2 := v1.Environment{
+		Spec: v1.EnvironmentSpec{EnvName: "validenv1", TeamName: "invalid-team-"},
+	}
+
+	invalidErrorList1 := validateNames(&invalidName2)
+	assert.Len(t, invalidErrorList1, 1)
+
 	e1 := v1.Environment{
-		Spec: v1.EnvironmentSpec{EnvName: "validenv1", TeamName: "1-valid-team"},
+		Spec: v1.EnvironmentSpec{EnvName: "validenv1", TeamName: "1-invalid-team"},
 	}
 
 	errList1 := validateNames(&e1)
-	assert.Len(t, errList1, 0)
+	assert.Len(t, errList1, 1)
 
 	e2 := v1.Environment{
 		Spec: v1.EnvironmentSpec{EnvName: "invalid_env", TeamName: "team1"},
