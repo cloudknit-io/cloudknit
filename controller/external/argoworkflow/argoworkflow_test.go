@@ -39,6 +39,9 @@ func TestGenerateLegacyWorkflowOfWorkflows(t *testing.T) {
 	destroyFlag1 := findParam(task1.Arguments.Parameters, "is_destroy")
 	assert.NotNil(t, destroyFlag1)
 	assert.Equal(t, destroyFlag1.Value, argoworkflow.AnyStringPointer("false"))
+	autoApproveFlag1 := findParam(task1.Arguments.Parameters, "auto_approve")
+	assert.NotNil(t, autoApproveFlag1)
+	assert.Equal(t, autoApproveFlag1.Value, argoworkflow.AnyStringPointer("false"))
 
 	task2 := findTasks(tasks, "rebrand")
 	assert.NotNil(t, task2)
@@ -46,6 +49,9 @@ func TestGenerateLegacyWorkflowOfWorkflows(t *testing.T) {
 	destroyFlag2 := findParam(task2.Arguments.Parameters, "is_destroy")
 	assert.NotNil(t, destroyFlag2)
 	assert.Equal(t, destroyFlag2.Value, argoworkflow.AnyStringPointer("false"))
+	autoApproveFlag2 := findParam(task2.Arguments.Parameters, "auto_approve")
+	assert.NotNil(t, autoApproveFlag2)
+	assert.Equal(t, autoApproveFlag2.Value, argoworkflow.AnyStringPointer("true"))
 
 	task3 := findTasks(tasks, "overlay")
 	assert.NotNil(t, task3)
@@ -53,6 +59,9 @@ func TestGenerateLegacyWorkflowOfWorkflows(t *testing.T) {
 	destroyFlag3 := findParam(task3.Arguments.Parameters, "is_destroy")
 	assert.NotNil(t, destroyFlag3)
 	assert.Equal(t, destroyFlag3.Value, argoworkflow.AnyStringPointer("false"))
+	autoApproveFlag3 := findParam(task3.Arguments.Parameters, "auto_approve")
+	assert.NotNil(t, autoApproveFlag3)
+	assert.Equal(t, autoApproveFlag3.Value, argoworkflow.AnyStringPointer("true"))
 }
 
 func TestGenerateLegacyWorkflowOfWorkflowsDeletedEnvironment(t *testing.T) {

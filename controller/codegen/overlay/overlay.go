@@ -8,8 +8,6 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/file"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/external/git"
-	"github.com/compuzest/zlifecycle-il-operator/controller/util"
-
 	"github.com/sirupsen/logrus"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -19,7 +17,7 @@ import (
 
 func GenerateOverlayFiles(
 	log *logrus.Entry,
-	fileAPI file.API,
+	fileService file.API,
 	gitClient git.API,
 	gitReconciler gitreconciler.API,
 	key *client.ObjectKey,
@@ -43,12 +41,12 @@ func GenerateOverlayFiles(
 					"component":   ec.Name,
 				}).Infof("Generating overlay file(s) for environment component %s", ec.Name)
 				absolutePath := filepath.Join(tempDir, path)
-				if util.IsDir(absolutePath) {
-					if err := util.CopyDirContent(absolutePath, destinationFolder); err != nil {
+				if fileService.IsDir(absolutePath) {
+					if err := fileService.CopyDirContent(absolutePath, destinationFolder); err != nil {
 						return err
 					}
 				} else {
-					if err := util.CopyFile(absolutePath, destinationFolder); err != nil {
+					if err := fileService.CopyFile(absolutePath, destinationFolder); err != nil {
 						return err
 					}
 				}
@@ -67,7 +65,7 @@ func GenerateOverlayFiles(
 			"destination": destinationFolder,
 			"component":   ec.Name,
 		}).Infof("Generating overlay file from data field for environment component %s", ec.Name)
-		if err := fileAPI.SaveFileFromString(overlay.Data, destinationFolder, overlay.Name); err != nil {
+		if err := fileService.SaveFileFromString(overlay.Data, destinationFolder, overlay.Name); err != nil {
 			return err
 		}
 	}

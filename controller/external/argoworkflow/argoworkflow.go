@@ -122,9 +122,9 @@ func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment, tfcfg 
 
 		tfPath := il.EnvironmentComponentTerraformDirectoryPath(environment.Spec.TeamName, environment.Spec.EnvName, ec.Name)
 
-		autoApproveFlag := ec.AutoApprove
-		if autoApproveAll {
-			autoApproveFlag = true
+		autoApproveFlag := autoApproveAll
+		if ec.AutoApprove != nil {
+			autoApproveFlag = *ec.AutoApprove
 		}
 
 		dependencies := ec.DependsOn

@@ -26,6 +26,11 @@ import (
 	kClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+const (
+	TerraformSubtypeCustom = "custom"
+	TerraformSubtypeIL     = "il"
+)
+
 // COMPANY
 
 func generateAndSaveCompanyApp(fileAPI file.API, company *stablev1.Company, ilRepoDir string) error {
@@ -191,8 +196,14 @@ func generateTerraformComponent(
 	}
 
 	vars := tfgen.NewTemplateVariablesFromEnvironment(e, ec, generatedTFVars, tfcfg)
-	if err := tfgen.GenerateTerraform(fileService, vars, tfDirectory); err != nil {
-		return zerrors.NewEnvironmentComponentError(ec.Name, errors.Wrap(err, "error generating terraform"))
+	if ec.Subtype == TerraformSubtypeCustom {
+		if err := tfgen.GenerateCustomTerraform(fileService, gitClient, ec.Module.Source, tfDirectory); err != nil {
+			return zerrors.NewEnvironmentComponentError(ec.Name, errors.Wrap(err, "error generating custom terraform"))
+		}
+	} else {
+		if err := tfgen.GenerateTerraform(fileService, vars, tfDirectory); err != nil {
+			return zerrors.NewEnvironmentComponentError(ec.Name, errors.Wrap(err, "error generating terraform"))
+		}
 	}
 
 	if err := overlay.GenerateOverlayFiles(log, fileService, gitClient, gitReconciler, key, ec, tfDirectory); err != nil {

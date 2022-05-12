@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/file"
+
 	"github.com/compuzest/zlifecycle-il-operator/controller/lib/factories/gitfactory"
 	"github.com/compuzest/zlifecycle-il-operator/controller/lib/log"
 	"github.com/compuzest/zlifecycle-il-operator/controller/lib/watcherservices"
@@ -37,10 +39,11 @@ var logger = log.NewLogger().WithFields(logrus.Fields{"name": "controllers.Envir
 type EnvironmentValidatorImpl struct {
 	K8sClient kClient.Client
 	gitClient git.API
+	fs        file.API
 }
 
-func NewEnvironmentValidatorImpl(k8sClient kClient.Client) *EnvironmentValidatorImpl {
-	return &EnvironmentValidatorImpl{K8sClient: k8sClient}
+func NewEnvironmentValidatorImpl(k8sClient kClient.Client, fileService file.API) *EnvironmentValidatorImpl {
+	return &EnvironmentValidatorImpl{K8sClient: k8sClient, fs: fileService}
 }
 
 func (v *EnvironmentValidatorImpl) init(ctx context.Context) error {
@@ -351,7 +354,7 @@ func (v *EnvironmentValidatorImpl) checkPaths(source string, paths []string, fld
 	}
 
 	for _, path := range paths {
-		if exists, _ := util.FileExistsInDir(dir, path); !exists {
+		if exists, _ := v.fs.FileExistsInDir(dir, path); !exists {
 			fe := field.Invalid(fld, path, "file does not exist on given path in source repository")
 			allErrs = append(allErrs, fe)
 		}

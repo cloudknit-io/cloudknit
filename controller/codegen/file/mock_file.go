@@ -36,6 +36,34 @@ func (m *MockAPI) EXPECT() *MockAPIMockRecorder {
 	return m.recorder
 }
 
+// CopyDirContent mocks base method.
+func (m *MockAPI) CopyDirContent(arg0, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CopyDirContent", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CopyDirContent indicates an expected call of CopyDirContent.
+func (mr *MockAPIMockRecorder) CopyDirContent(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CopyDirContent", reflect.TypeOf((*MockAPI)(nil).CopyDirContent), arg0, arg1)
+}
+
+// CopyFile mocks base method.
+func (m *MockAPI) CopyFile(arg0, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CopyFile", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CopyFile indicates an expected call of CopyFile.
+func (mr *MockAPIMockRecorder) CopyFile(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CopyFile", reflect.TypeOf((*MockAPI)(nil).CopyFile), arg0, arg1)
+}
+
 // CreateEmptyDirectory mocks base method.
 func (m *MockAPI) CreateEmptyDirectory(arg0 string) error {
 	m.ctrl.T.Helper()
@@ -48,6 +76,49 @@ func (m *MockAPI) CreateEmptyDirectory(arg0 string) error {
 func (mr *MockAPIMockRecorder) CreateEmptyDirectory(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateEmptyDirectory", reflect.TypeOf((*MockAPI)(nil).CreateEmptyDirectory), arg0)
+}
+
+// FileExistsInDir mocks base method.
+func (m *MockAPI) FileExistsInDir(arg0, arg1 string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FileExistsInDir", arg0, arg1)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FileExistsInDir indicates an expected call of FileExistsInDir.
+func (mr *MockAPIMockRecorder) FileExistsInDir(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FileExistsInDir", reflect.TypeOf((*MockAPI)(nil).FileExistsInDir), arg0, arg1)
+}
+
+// IsDir mocks base method.
+func (m *MockAPI) IsDir(arg0 string) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsDir", arg0)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// IsDir indicates an expected call of IsDir.
+func (mr *MockAPIMockRecorder) IsDir(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsDir", reflect.TypeOf((*MockAPI)(nil).IsDir), arg0)
+}
+
+// IsFile mocks base method.
+func (m *MockAPI) IsFile(arg0 string) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsFile", arg0)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// IsFile indicates an expected call of IsFile.
+func (mr *MockAPIMockRecorder) IsFile(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsFile", reflect.TypeOf((*MockAPI)(nil).IsFile), arg0)
 }
 
 // NewFile mocks base method.

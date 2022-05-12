@@ -140,6 +140,8 @@ spec:
                         - scope
                         type: object
                       type: array
+                    subtype:
+                      type: string
                     tags:
                       items:
                         properties:
@@ -179,6 +181,7 @@ spec:
                   required:
                   - module
                   - name
+                  - subtype
                   - type
                   type: object
                 type: array
@@ -330,6 +333,8 @@ spec:
                         - scope
                         type: object
                       type: array
+                    subtype:
+                      type: string
                     tags:
                       items:
                         properties:
@@ -369,6 +374,7 @@ spec:
                   required:
                   - module
                   - name
+                  - subtype
                   - type
                   type: object
                 type: array

@@ -241,7 +241,7 @@ func (r *CompanyReconciler) initCompany(ctx context.Context, services *watcherse
 
 	r.LogV2.Info("Updating default argocd cluster namespaces")
 	if err := argocd.UpdateDefaultClusterNamespaces(
-		r.Log,
+		r.LogV2,
 		services.ArgocdClient,
 		[]string{env.ArgocdNamespace(), env.ConfigNamespace(), env.ExecutorNamespace()},
 	); err != nil {

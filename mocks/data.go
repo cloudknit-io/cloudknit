@@ -5,6 +5,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+func newBool(val bool) *bool {
+	t := val
+	return &t
+}
+
 func GetMockEnv1(deleted bool) stablev1.Environment {
 	deletionTimestamp := metav1.Time{}
 	if deleted {
@@ -24,10 +29,12 @@ func GetMockEnv1(deleted bool) stablev1.Environment {
 			TeamName:    "design",
 			EnvName:     "dev",
 			Description: "test",
+			AutoApprove: true,
 			Components: []*stablev1.EnvironmentComponent{
 				{
-					Name: "networking",
-					Type: "terraform",
+					Name:        "networking",
+					Type:        "terraform",
+					AutoApprove: newBool(false),
 					Module: &stablev1.Module{
 						Source: "aws",
 						Name:   "vpc",
@@ -38,9 +45,10 @@ func GetMockEnv1(deleted bool) stablev1.Environment {
 					},
 				},
 				{
-					Name:      "rebrand",
-					Type:      "terraform",
-					DependsOn: []string{"networking"},
+					Name:        "rebrand",
+					Type:        "terraform",
+					AutoApprove: newBool(true),
+					DependsOn:   []string{"networking"},
 					Module: &stablev1.Module{
 						Source: "aws",
 						Name:   "s3-bucket",
