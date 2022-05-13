@@ -1,11 +1,6 @@
-name: Main Branch Workflow
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+name: Build Image & Push to ECR
+
+on: push
 
 env:
   image_name: zlifecycle-api
@@ -43,6 +38,7 @@ jobs:
         with:
           context: .
           file: Dockerfile
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
