@@ -8,35 +8,43 @@ on:
       - main
 
 env:
-  module_name: github.com/CompuZest/zlifecycle-api
+  image_name: zlifecycle-api
+
 jobs:
   build-test-push:
     name: Build, test, and push
     runs-on: ubuntu-20.04
     steps:
-      # - uses: actions/setup-go@v1
-      # - run: docker-compose -f docker-compose.test.yml build
-      # - run: docker-compose -f docker-compose.test.yml up
-
-      # Login to ECR
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
+          
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
       - uses: actions/checkout@v2
 
-      - run: docker build -t ${{ env.ECR_REPO }}/zlifecycle-api:latest .
-        env:
-          ECR_REPO: ${{ steps.login-ecr.outputs.registry }}
-      - run: docker push ${{ env.ECR_REPO }}/zlifecycle-api:latest
-        env:
-          ECR_REPO: ${{ steps.login-ecr.outputs.registry }}
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@e5622373a38e60fb6d795a4421e56882f2d7a681
+        with:
+          images: ${{ steps.login-ecr.outputs.registry }}/${{ env.image_name }}
+          tags: |
+            type=ref,event=tag
+            type=sha,prefix=,suffix=-{{branch}}
+
+      - name: Build and Push ${{ env.image_name }}
+        uses: docker/build-push-action@7f9d37fa544684fb73bfe4835ed7214c255ce02b
+        id: build-push
+        with:
+          context: .
+          file: Dockerfile
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
       - name: Send Slack Notfication
         uses: ravsamhq/notify-slack-action@master
