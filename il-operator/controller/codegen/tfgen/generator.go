@@ -162,7 +162,7 @@ func getStateBucket(vars *TemplateVariables) string {
 func generateData(tpl *tftmpl.TerraformTemplates, vars *TemplateVariables) (string, error) {
 	dataConfig := TerraformDataConfig{
 		Region:      vars.AWSRegion,
-		Profile:     vars.AWSProfile,
+		Profile:     vars.AWSStateProfile,
 		Bucket:      getStateBucket(vars),
 		Team:        vars.Team,
 		Environment: vars.Environment,
