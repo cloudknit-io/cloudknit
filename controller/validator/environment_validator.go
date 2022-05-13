@@ -221,7 +221,7 @@ func validateNames(e *v1.Environment) field.ErrorList {
 
 	if !r.MatchString(e.Spec.EnvName) {
 		fld := field.NewPath("spec").Child("envName")
-		allErrs = append(allErrs, field.Invalid(fld, e.Spec.EnvName, "environment name must be combination of alphanumerical and hyphen characters"))
+		allErrs = append(allErrs, field.Invalid(fld, e.Spec.EnvName, "environment name must contain only lowercase alphanumeric characters or '-', start with an alphabetic character, and end with an alphanumeric character"))
 	}
 	if len(e.Spec.EnvName) > maxFieldLength {
 		fld := field.NewPath("spec").Child("envName")
@@ -229,7 +229,7 @@ func validateNames(e *v1.Environment) field.ErrorList {
 	}
 	if !r.MatchString(e.Spec.TeamName) {
 		fld := field.NewPath("spec").Child("teamName")
-		allErrs = append(allErrs, field.Invalid(fld, e.Spec.TeamName, "team name must be combination of alphanumerical and hyphen characters"))
+		allErrs = append(allErrs, field.Invalid(fld, e.Spec.TeamName, "team name must contain only lowercase alphanumeric characters or '-', start with an alphabetic character, and end with an alphanumeric character"))
 	}
 	if len(e.Spec.TeamName) > maxFieldLength {
 		fld := field.NewPath("spec").Child("teamName")
@@ -310,7 +310,7 @@ func checkEnvironmentComponentName(name string, i int) field.ErrorList {
 
 	fld := field.NewPath("spec").Child("components").Index(i).Child("name")
 	if !r.MatchString(name) {
-		allErrs = append(allErrs, field.Invalid(fld, name, "environment component name must be combination of alphanumerical and hyphen characters"))
+		allErrs = append(allErrs, field.Invalid(fld, name, "environment component name must contain only lowercase alphanumeric characters or '-', start with an alphabetic character, and end with an alphanumeric character"))
 	}
 	if len(name) > maxFieldLength {
 		allErrs = append(allErrs, field.Invalid(fld, name, fmt.Sprintf("environment component name must not exceed %d characters", maxFieldLength)))
