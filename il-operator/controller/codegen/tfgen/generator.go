@@ -119,18 +119,16 @@ func GenerateTerraform(
 }
 
 func generateBackend(tpl *tftmpl.TerraformTemplates, vars *TemplateVariables) (string, error) {
-	bucket := vars.AWSStateBucket
-	if bucket == "" {
-		bucket = defaultStateBucket(vars.ZLEnvironment, vars.Company)
-	}
 	lockTable := vars.AWSStateLockTable
+
 	if lockTable == "" {
 		lockTable = defaultStateLockTable(vars.ZLEnvironment, vars.Company)
 	}
+
 	backendConfig := TerraformBackendConfig{
 		Region:        vars.AWSSharedRegion,
 		Profile:       vars.AWSStateProfile,
-		Bucket:        bucket,
+		Bucket:        getStateBucket(vars),
 		DynamoDBTable: lockTable,
 		Key:           defaultStateKey(vars.Team, vars.Environment, vars.EnvironmentComponent),
 		Encrypt:       true,
@@ -151,11 +149,21 @@ func defaultStateKey(team, environment, component string) string {
 	return fmt.Sprintf("%s/%s/%s/terraform.tfstate", team, environment, component)
 }
 
+func getStateBucket(vars *TemplateVariables) string {
+	bucket := vars.AWSStateBucket
+
+	if bucket == "" {
+		bucket = defaultStateBucket(vars.ZLEnvironment, vars.Company)
+	}
+
+	return bucket
+}
+
 func generateData(tpl *tftmpl.TerraformTemplates, vars *TemplateVariables) (string, error) {
 	dataConfig := TerraformDataConfig{
 		Region:      vars.AWSRegion,
 		Profile:     vars.AWSProfile,
-		Bucket:      defaultStateBucket(vars.ZLEnvironment, vars.Company),
+		Bucket:      getStateBucket(vars),
 		Team:        vars.Team,
 		Environment: vars.Environment,
 		DependsOn:   vars.EnvCompDependsOn,
