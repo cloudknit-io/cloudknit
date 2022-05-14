@@ -38,6 +38,7 @@ jobs:
           tags: |
             type=ref,prefix=${{ github.run_number }}-pr-,event=pr
             type=sha,prefix=${{ github.run_number }}-,event=branch,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
+            type=raw,value=${{ github.run_number }},event=branch,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
 
       - name: Build and Push ${{ env.image_name }}
         uses: docker/build-push-action@7f9d37fa544684fb73bfe4835ed7214c255ce02b
