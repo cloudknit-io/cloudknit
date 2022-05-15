@@ -35,6 +35,9 @@ jobs:
         uses: docker/metadata-action@e5622373a38e60fb6d795a4421e56882f2d7a681
         with:
           images: ${{ steps.login-ecr.outputs.registry }}/${{ env.image_name }}
+          # applies the following image tags (does not apply or use git tags):
+          # PR's: 175-pr-3 [build number]-pr-[pr-number]
+          # push to main applies 2 tags: 176 & 176-abc1234 [build-numner] & [build-number]-sha
           tags: |
             type=ref,prefix=${{ github.run_number }}-pr-,event=pr
             type=sha,prefix=${{ github.run_number }}-,event=branch,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
@@ -46,7 +49,7 @@ jobs:
         with:
           context: .
           file: Dockerfile
-          # only push on PR and commits to main
+          # only push to ECR on PR and commits to main branch
           push: ${{ github.event_name == 'pull_request' || github.ref_name == 'main' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
