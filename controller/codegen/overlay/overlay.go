@@ -42,7 +42,7 @@ func GenerateOverlayFiles(
 				}).Infof("Generating overlay file(s) for environment component %s", ec.Name)
 				absolutePath := filepath.Join(tempDir, path)
 				if fileService.IsDir(absolutePath) {
-					if err := fileService.CopyDirContent(absolutePath, destinationFolder); err != nil {
+					if err := fileService.CopyDirContent(absolutePath, destinationFolder, false); err != nil {
 						return err
 					}
 				} else {

@@ -1,9 +1,10 @@
 package util_test
 
 import (
+	"testing"
+
 	"github.com/compuzest/zlifecycle-il-operator/controller/env"
 	"github.com/compuzest/zlifecycle-il-operator/controller/util"
-	"testing"
 
 	"github.com/stretchr/testify/assert"
 )

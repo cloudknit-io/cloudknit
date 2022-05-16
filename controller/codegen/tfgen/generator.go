@@ -42,7 +42,10 @@ func GenerateCustomTerraform(
 	defer cleanup()
 
 	sourceTFModuleAbsPath := filepath.Join(dir, sourceTFModulePath)
-	return fs.CopyDirContent(sourceTFModuleAbsPath, tfDirectory)
+	if err := fs.CopyDirContent(sourceTFModuleAbsPath, tfDirectory, true); err != nil {
+		return errors.Wrapf(err, "error copying content from directory [%s]", sourceTFModulePath)
+	}
+	return nil
 }
 
 func GenerateTerraform(

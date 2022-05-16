@@ -1,4 +1,4 @@
-package secrets
+package secret
 
 type TerraformStateConfig struct {
 	Bucket    string `json:"bucket"`

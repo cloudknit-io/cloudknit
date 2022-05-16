@@ -6,7 +6,7 @@ import (
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/external/aws/awseks"
 
-	"github.com/compuzest/zlifecycle-il-operator/controller/external/secrets"
+	"github.com/compuzest/zlifecycle-il-operator/controller/external/secret"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/tfgen/tfvar"
 	"github.com/compuzest/zlifecycle-il-operator/controller/lib/gitreconciler"
@@ -69,7 +69,7 @@ func generateAndSaveWorkflowOfWorkflows(
 	fileAPI file.API,
 	ilService *il.Service,
 	environment *stablev1.Environment,
-	tfcfg *secrets.TerraformStateConfig,
+	tfcfg *secret.TerraformStateConfig,
 ) error {
 	// WIP, below command is for testing
 	// experimentalworkflow := argoWorkflow.GenerateWorkflowOfWorkflows(*environment)
@@ -99,7 +99,7 @@ func generateAndSaveEnvironmentComponents(
 	k8sClient awseks.API,
 	argocdClient argocd.API,
 	e *stablev1.Environment,
-	tfcfg *secrets.TerraformStateConfig,
+	tfcfg *secret.TerraformStateConfig,
 ) error {
 	for _, ec := range e.Spec.Components {
 		ecDirectory := il.EnvironmentComponentsDirectoryAbsolutePath(ilService.ZLILTempDir, e.Spec.TeamName, e.Spec.EnvName)
@@ -158,7 +158,7 @@ func generateTerraformComponent(
 	e *stablev1.Environment,
 	ec *stablev1.EnvironmentComponent,
 	key *kClient.ObjectKey,
-	tfcfg *secrets.TerraformStateConfig,
+	tfcfg *secret.TerraformStateConfig,
 	log *logrus.Entry,
 ) error {
 	tfDirectory := il.EnvironmentComponentTerraformDirectoryAbsolutePath(ilService.TFILTempDir, e.Spec.TeamName, e.Spec.EnvName, ec.Name)
@@ -197,7 +197,7 @@ func generateTerraformComponent(
 
 	vars := tfgen.NewTemplateVariablesFromEnvironment(e, ec, generatedTFVars, tfcfg)
 	if ec.Subtype == TerraformSubtypeCustom {
-		if err := tfgen.GenerateCustomTerraform(fileService, gitClient, ec.Module.Source, tfDirectory); err != nil {
+		if err := tfgen.GenerateCustomTerraform(fileService, gitClient, ec.Module.Source, ec.Module.Path, tfDirectory, log); err != nil {
 			return zerrors.NewEnvironmentComponentError(ec.Name, errors.Wrap(err, "error generating custom terraform"))
 		}
 	} else {

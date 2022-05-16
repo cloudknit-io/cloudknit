@@ -181,7 +181,6 @@ spec:
                   required:
                   - module
                   - name
-                  - subtype
                   - type
                   type: object
                 type: array
@@ -374,7 +373,6 @@ spec:
                   required:
                   - module
                   - name
-                  - subtype
                   - type
                   type: object
                 type: array

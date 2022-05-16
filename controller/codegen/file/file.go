@@ -40,7 +40,7 @@ type API interface {
 	SaveFileFromTemplate(t *template.Template, vars interface{}, folderName string, fileName string) error
 	NewFile(folderName string, fileName string) (*os.File, error)
 	RemoveAll(path string) error
-	CopyDirContent(src string, dst string) error
+	CopyDirContent(src string, dst string, mkdir bool) error
 	CopyFile(src string, dst string) error
 	IsDir(path string) bool
 	IsFile(path string) bool
@@ -55,7 +55,12 @@ func NewOSFileService() *OSFileService {
 	return &OSFileService{}
 }
 
-func (f *OSFileService) CopyDirContent(src string, dst string) error {
+func (f *OSFileService) CopyDirContent(src string, dst string, mkdir bool) error {
+	if mkdir {
+		if err := os.MkdirAll(dst, os.ModePerm); err != nil {
+			return errors.Wrapf(err, "error creating folder [%s]", dst)
+		}
+	}
 	if !f.IsDir(src) {
 		return errors.New("source is not a directory")
 	}
