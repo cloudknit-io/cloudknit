@@ -29,7 +29,7 @@ func TestGenerateCustomTerraform(t *testing.T) {
 	testTFDirectory := "/tmp/some/dir"
 
 	mockGitClient.EXPECT().Clone(testRepo, gomock.Any()).Return(nil)
-	mockFileService.EXPECT().CopyDirContent(gomock.Any(), testTFDirectory).Return(nil)
+	mockFileService.EXPECT().CopyDirContent(gomock.Any(), testTFDirectory, true).Return(nil)
 
 	log := logrus.NewEntry(logrus.New())
 	err := tfgen.GenerateCustomTerraform(mockFileService, mockGitClient, testRepo, testPath, testTFDirectory, log)
