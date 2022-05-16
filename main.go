@@ -15,6 +15,7 @@ package main
 import (
 	"context"
 	"flag"
+	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/file"
 
 	apm2 "github.com/compuzest/zlifecycle-il-operator/controller/lib/apm"
 	"github.com/compuzest/zlifecycle-il-operator/controller/lib/gitreconciler"
@@ -158,7 +159,7 @@ func main() {
 		setupLog.WithError(err).WithField("controller", "Environment").Panic("unable to create controller")
 	}
 
-	environmentValidator := validator.NewEnvironmentValidatorImpl(mgr.GetClient())
+	environmentValidator := validator.NewEnvironmentValidatorImpl(mgr.GetClient(), file.NewOSFileService())
 	if env.Config.KubernetesDisableWebhooks != "true" {
 		setupLog.Info("Initializing webhook service")
 		if err = (&stablev1.Environment{}).SetupWebhookWithManager(mgr, environmentValidator); err != nil {

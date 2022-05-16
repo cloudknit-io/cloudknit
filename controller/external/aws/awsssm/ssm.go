@@ -5,7 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
 	"github.com/compuzest/zlifecycle-il-operator/controller/external/aws/awscfg"
-	"github.com/compuzest/zlifecycle-il-operator/controller/external/secrets"
+	"github.com/compuzest/zlifecycle-il-operator/controller/external/secret"
 	"github.com/pkg/errors"
 )
 
@@ -42,7 +42,7 @@ func (s *SSM) init(ctx context.Context) error {
 	return nil
 }
 
-func (s *SSM) GetSecret(ctx context.Context, key string) (*secrets.Secret, error) {
+func (s *SSM) GetSecret(ctx context.Context, key string) (*secret.Secret, error) {
 	if s.ssmClient == nil {
 		if err := s.init(ctx); err != nil {
 			return nil, errors.Wrap(err, "error initializing ssm client")
@@ -58,10 +58,10 @@ func (s *SSM) GetSecret(ctx context.Context, key string) (*secrets.Secret, error
 		return nil, errors.Wrapf(err, "error getting parameter %s from ssm", key)
 	}
 
-	return &secrets.Secret{Value: output.Parameter.Value, Key: *output.Parameter.Name, Exists: output.Parameter.Value != nil}, nil
+	return &secret.Secret{Value: output.Parameter.Value, Key: *output.Parameter.Name, Exists: output.Parameter.Value != nil}, nil
 }
 
-func (s *SSM) GetSecrets(ctx context.Context, keys ...string) ([]*secrets.Secret, error) {
+func (s *SSM) GetSecrets(ctx context.Context, keys ...string) ([]*secret.Secret, error) {
 	if s.ssmClient == nil {
 		if err := s.init(ctx); err != nil {
 			return nil, errors.Wrap(err, "error initializing ssm client")
@@ -77,14 +77,14 @@ func (s *SSM) GetSecrets(ctx context.Context, keys ...string) ([]*secrets.Secret
 		return nil, errors.Wrapf(err, "error getting parameters %s from ssm", keys)
 	}
 
-	scrts := make([]*secrets.Secret, 0, len(keys))
+	scrts := make([]*secret.Secret, 0, len(keys))
 
 	for _, s := range output.Parameters {
-		scrt := &secrets.Secret{Value: s.Value, Key: *s.Name, Exists: s.Value != nil}
+		scrt := &secret.Secret{Value: s.Value, Key: *s.Name, Exists: s.Value != nil}
 		scrts = append(scrts, scrt)
 	}
 
 	return scrts, nil
 }
 
-var _ secrets.API = (*SSM)(nil)
+var _ secret.API = (*SSM)(nil)

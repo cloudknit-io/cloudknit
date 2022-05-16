@@ -4,6 +4,9 @@ import (
 	"os"
 	"testing"
 
+	"github.com/compuzest/zlifecycle-il-operator/controller/external/git"
+	"github.com/sirupsen/logrus"
+
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/file"
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/tfgen"
 	"github.com/compuzest/zlifecycle-il-operator/controller/env"
@@ -11,6 +14,27 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestGenerateCustomTerraform(t *testing.T) {
+	t.Parallel()
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockFileService := file.NewMockAPI(mockCtrl)
+	mockGitClient := git.NewMockAPI(mockCtrl)
+
+	testRepo := "git@github.com:test/foo.git"
+	testPath := "/some/module"
+	testTFDirectory := "/tmp/some/dir"
+
+	mockGitClient.EXPECT().Clone(testRepo, gomock.Any()).Return(nil)
+	mockFileService.EXPECT().CopyDirContent(gomock.Any(), testTFDirectory, true).Return(nil)
+
+	log := logrus.NewEntry(logrus.New())
+	err := tfgen.GenerateCustomTerraform(mockFileService, mockGitClient, testRepo, testPath, testTFDirectory, log)
+	assert.Nil(t, err)
+}
 
 func TestGenerateTerraform(t *testing.T) {
 	t.Parallel()

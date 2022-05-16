@@ -14,6 +14,10 @@ package tfgen
 
 import (
 	"fmt"
+	"path/filepath"
+
+	"github.com/compuzest/zlifecycle-il-operator/controller/external/git"
+	"github.com/sirupsen/logrus"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/file"
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/il"
@@ -22,6 +26,27 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controller/util"
 	"github.com/pkg/errors"
 )
+
+func GenerateCustomTerraform(
+	fs file.API,
+	gitService git.API,
+	sourceRepoURL string,
+	sourceTFModulePath string,
+	tfDirectory string,
+	log *logrus.Entry,
+) error {
+	dir, cleanup, err := git.CloneTemp(gitService, sourceRepoURL, log)
+	if err != nil {
+		return errors.Wrapf(err, "error cloning repo [%s]", sourceRepoURL)
+	}
+	defer cleanup()
+
+	sourceTFModuleAbsPath := filepath.Join(dir, sourceTFModulePath)
+	if err := fs.CopyDirContent(sourceTFModuleAbsPath, tfDirectory, true); err != nil {
+		return errors.Wrapf(err, "error copying content from directory [%s]", sourceTFModulePath)
+	}
+	return nil
+}
 
 func GenerateTerraform(
 	fileService file.API,

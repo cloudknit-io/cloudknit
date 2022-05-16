@@ -78,6 +78,7 @@ type SubscribedRepository struct {
 type EnvironmentComponent struct {
 	Name      string   `json:"name"`
 	Type      string   `json:"type"`
+	Subtype   string   `json:"subtype,omitempty"`
 	Module    *Module  `json:"module"`
 	DependsOn []string `json:"dependsOn,omitempty"`
 	Tags      []*Tag   `json:"tags,omitempty"`
@@ -87,9 +88,9 @@ type EnvironmentComponent struct {
 
 	AWS *AWS `json:"aws,omitempty"`
 
-	AutoApprove       bool `json:"autoApprove,omitempty"`
-	Destroy           bool `json:"destroy,omitempty"`
-	DestroyProtection bool `json:"destroyProtection,omitempty"`
+	AutoApprove       *bool `json:"autoApprove,omitempty"`
+	Destroy           bool  `json:"destroy,omitempty"`
+	DestroyProtection bool  `json:"destroyProtection,omitempty"`
 
 	VariablesFile *VariablesFile `json:"variablesFile,omitempty"`
 	OverlayFiles  []*OverlayFile `json:"overlayFiles,omitempty"`

@@ -15,11 +15,19 @@ package file
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 	"text/template"
+
+	"github.com/pkg/errors"
 
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/ghodss/yaml"
 	"k8s.io/apimachinery/pkg/util/json"
+)
+
+const (
+	DefaultFilePermission = 0o600
 )
 
 //go:generate mockgen --build_flags=--mod=mod -destination=./mock_file.go -package=file "github.com/compuzest/zlifecycle-il-operator/controller/codegen/file" API
@@ -32,12 +40,104 @@ type API interface {
 	SaveFileFromTemplate(t *template.Template, vars interface{}, folderName string, fileName string) error
 	NewFile(folderName string, fileName string) (*os.File, error)
 	RemoveAll(path string) error
+	CopyDirContent(src string, dst string, mkdir bool) error
+	CopyFile(src string, dst string) error
+	IsDir(path string) bool
+	IsFile(path string) bool
+	FileExistsInDir(dir, path string) (bool, error)
 }
 
 type OSFileService struct{}
 
+var _ API = (*OSFileService)(nil)
+
 func NewOSFileService() *OSFileService {
 	return &OSFileService{}
+}
+
+func (f *OSFileService) CopyDirContent(src string, dst string, mkdir bool) error {
+	if mkdir {
+		if err := os.MkdirAll(dst, os.ModePerm); err != nil {
+			return errors.Wrapf(err, "error creating folder [%s]", dst)
+		}
+	}
+	if !f.IsDir(src) {
+		return errors.New("source is not a directory")
+	}
+
+	files, err := os.ReadDir(src)
+	if err != nil {
+		return err
+	}
+
+	for _, file := range files {
+		absoluteSrc := filepath.Join(src, file.Name())
+		// skip subfolders
+		if f.IsDir(absoluteSrc) {
+			continue
+		}
+		absoluteDst := filepath.Join(dst, file.Name())
+		if err := f.CopyFile(absoluteSrc, absoluteDst); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (f *OSFileService) FileExistsInDir(dir, path string) (bool, error) {
+	joined := filepath.Join(dir, path)
+	if _, err := os.Stat(joined); err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return false, nil
+		}
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (f *OSFileService) CopyFile(src string, dst string) error {
+	input, err := os.ReadFile(src)
+	if err != nil {
+		return err
+	}
+
+	safeDst := dst
+	if f.IsDir(safeDst) {
+		name := f.ExtractNameFromPath(src)
+		safeDst = filepath.Join(dst, name)
+	}
+
+	err = os.WriteFile(safeDst, input, DefaultFilePermission)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (f *OSFileService) IsDir(path string) bool {
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+
+	return fileInfo.IsDir()
+}
+
+func (f *OSFileService) IsFile(path string) bool {
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+
+	return !fileInfo.IsDir()
+}
+
+func (f *OSFileService) ExtractNameFromPath(path string) string {
+	tokens := strings.Split(path, "/")
+	return tokens[len(tokens)-1]
 }
 
 func (f *OSFileService) NewFile(folderName string, fileName string) (*os.File, error) {

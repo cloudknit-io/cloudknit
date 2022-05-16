@@ -18,7 +18,7 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controller/external/argoworkflow"
 	"github.com/compuzest/zlifecycle-il-operator/controller/external/git"
 	"github.com/compuzest/zlifecycle-il-operator/controller/external/github"
-	"github.com/compuzest/zlifecycle-il-operator/controller/external/secrets"
+	"github.com/compuzest/zlifecycle-il-operator/controller/external/secret"
 	"github.com/compuzest/zlifecycle-il-operator/controller/external/zlstate"
 	"github.com/compuzest/zlifecycle-il-operator/controller/util"
 	perrors "github.com/pkg/errors"
@@ -29,7 +29,7 @@ type EnvironmentServices struct {
 	ArgocdClient         argocd.API
 	ArgoWorkflowClient   argoworkflow.API
 	WatcherServices      *watcherservices.WatcherServices
-	SecretsClient        secrets.API
+	SecretsClient        secret.API
 	K8sClient            awseks.API
 	ILService            *il.Service
 	CompanyGitClient     git.API
