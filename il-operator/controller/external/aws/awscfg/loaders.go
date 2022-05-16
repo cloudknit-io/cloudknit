@@ -8,7 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	secrets2 "github.com/compuzest/zlifecycle-il-operator/controller/codegen/secret"
 	"github.com/compuzest/zlifecycle-il-operator/controller/env"
-	"github.com/compuzest/zlifecycle-il-operator/controller/external/secrets"
+	"github.com/compuzest/zlifecycle-il-operator/controller/external/secret"
 	"github.com/compuzest/zlifecycle-il-operator/controller/util"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -21,13 +21,13 @@ type ConfigLoader interface {
 }
 
 type SSMCredentialsLoader struct {
-	s secrets.API
+	s secret.API
 	l *logrus.Entry
 	i *secrets2.Identifier
 }
 
 func (l *SSMCredentialsLoader) LoadConfig(ctx context.Context) (awsv2.Config, error) {
-	creds, err := secrets.GetAWSCredentials(ctx, l.s, l.i, l.l)
+	creds, err := secret.GetAWSCredentials(ctx, l.s, l.i, l.l)
 	if err != nil {
 		return awsv2.Config{}, errors.Wrapf(err, "error fetching AWS creds for eks")
 	}
@@ -36,7 +36,7 @@ func (l *SSMCredentialsLoader) LoadConfig(ctx context.Context) (awsv2.Config, er
 	return config.LoadDefaultConfig(ctx, config.WithCredentialsProvider(p))
 }
 
-func NewSSMCredentialsLoader(secretsClient secrets.API, id *secrets2.Identifier, logger *logrus.Entry) *SSMCredentialsLoader {
+func NewSSMCredentialsLoader(secretsClient secret.API, id *secrets2.Identifier, logger *logrus.Entry) *SSMCredentialsLoader {
 	return &SSMCredentialsLoader{
 		s: secretsClient,
 		i: id,
@@ -63,9 +63,9 @@ func (l *K8sSecretCredentialsLoader) LoadConfig(ctx context.Context) (awsv2.Conf
 	return cfg, nil
 }
 
-func getCredentialsFromSecret(ctx context.Context, secret string, client kClient.Client) (*secrets.AWSCredentials, error) {
+func getCredentialsFromSecret(ctx context.Context, secretName string, client kClient.Client) (*secret.AWSCredentials, error) {
 	var credsSecret v1.Secret
-	key := kClient.ObjectKey{Name: secret, Namespace: env.ExecutorNamespace()}
+	key := kClient.ObjectKey{Name: secretName, Namespace: env.ExecutorNamespace()}
 	if err := client.Get(ctx, key, &credsSecret); err != nil {
 		return nil, errors.Wrap(err, "error getting shared aws secret")
 	}
@@ -77,7 +77,7 @@ func getCredentialsFromSecret(ctx context.Context, secret string, client kClient
 		return nil, errors.New("missing AWS Access Key ID and/or AWS Secret Access key in shared aws secret")
 	}
 
-	return &secrets.AWSCredentials{AccessKeyID: accessKeyID, SecretAccessKey: secretAccessKey}, nil
+	return &secret.AWSCredentials{AccessKeyID: accessKeyID, SecretAccessKey: secretAccessKey}, nil
 }
 
 func NewK8sSecretCredentialsLoader(kc kClient.Client, secret string) *K8sSecretCredentialsLoader {

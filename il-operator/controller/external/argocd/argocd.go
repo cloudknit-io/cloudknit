@@ -185,7 +185,7 @@ func TryCreateBootstrapApps(ctx context.Context, api API, log logr.Logger) error
 	return nil
 }
 
-func UpdateDefaultClusterNamespaces(log logr.Logger, api API, namespaces []string) error {
+func UpdateDefaultClusterNamespaces(log *logrus.Entry, api API, namespaces []string) error {
 	tokenResponse, err := api.GetAuthToken()
 	if err != nil {
 		return errors.Wrap(err, "error getting auth token")
@@ -195,16 +195,11 @@ func UpdateDefaultClusterNamespaces(log logr.Logger, api API, namespaces []strin
 	defaultClusterURL := "https://kubernetes.default.svc"
 	body := make(UpdateClusterBody, 1)
 	body["namespaces"] = namespaces
-	log.Info("Updating default cluster namespaces", "namespaces", namespaces)
+	log.WithField("namespaces", namespaces).Info("Updating default cluster namespaces")
 	resp, err := api.UpdateCluster(defaultClusterURL, &body, []string{"namespaces"}, bearer)
 	if err != nil {
 		return errors.Wrap(err, "error updating default cluster")
 	}
-	jsonBody, err := util.ReadBody(resp.Body)
-	if err != nil {
-		return errors.Wrap(err, "error reading response body")
-	}
-	log.Info("Response from argocd", "response", string(jsonBody))
 	defer util.CloseBody(resp.Body)
 
 	return nil

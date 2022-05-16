@@ -221,6 +221,11 @@ func (in *EnvironmentComponent) DeepCopyInto(out *EnvironmentComponent) {
 		*out = new(AWS)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.AutoApprove != nil {
+		in, out := &in.AutoApprove, &out.AutoApprove
+		*out = new(bool)
+		**out = **in
+	}
 	if in.VariablesFile != nil {
 		in, out := &in.VariablesFile, &out.VariablesFile
 		*out = new(VariablesFile)

@@ -21,7 +21,7 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controller/external/aws/awseks"
 	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
 
-	"github.com/compuzest/zlifecycle-il-operator/controller/external/secrets"
+	"github.com/compuzest/zlifecycle-il-operator/controller/external/secret"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/lib/apm"
 	"github.com/compuzest/zlifecycle-il-operator/controller/lib/gitreconciler"
@@ -202,7 +202,7 @@ func (r *EnvironmentReconciler) doReconcile(
 	zlstateManagerClient zlstate.API,
 	k8sClient awseks.API,
 	argocdClient argocd.API,
-	secretsClient secrets.API,
+	secretsClient secret.API,
 ) error {
 	// reconcile logic
 	isHardDelete := !environment.DeletionTimestamp.IsZero()
@@ -214,7 +214,7 @@ func (r *EnvironmentReconciler) doReconcile(
 		}
 	}
 
-	if environment.Spec.EnvName == "seventh-env" {
+	if environment.Spec.EnvName == "fifth-env" {
 		r.LogV2.Info("break")
 	}
 	identifier := secrets2.Identifier{
@@ -222,8 +222,8 @@ func (r *EnvironmentReconciler) doReconcile(
 		Team:        environment.Spec.TeamName,
 		Environment: environment.Spec.EnvName,
 	}
-	tfcfg, err := secrets.GetCustomerTerraformStateConfig(ctx, secretsClient, &identifier, r.LogV2)
-	if err != nil && !errors.Is(err, secrets.ErrTerraformStateConfigMissing) {
+	tfcfg, err := secret.GetCustomerTerraformStateConfig(ctx, secretsClient, &identifier, r.LogV2)
+	if err != nil && !errors.Is(err, secret.ErrTerraformStateConfigMissing) {
 		return errors.Wrap(err, "error checking for custom terraform state config")
 	}
 
@@ -331,7 +331,7 @@ func (r *EnvironmentReconciler) handleNonDeleteEvent(
 	gitClient git.API,
 	k8sClient awseks.API,
 	argocdClient argocd.API,
-	tfcfg *secrets.TerraformStateConfig,
+	tfcfg *secret.TerraformStateConfig,
 ) error {
 	r.LogV2.Infof("Generating Environment application for environment %s", e.Spec.EnvName)
 

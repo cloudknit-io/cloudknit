@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/env"
-
 	"github.com/compuzest/zlifecycle-il-operator/controller/util"
 
 	"github.com/stretchr/testify/assert"

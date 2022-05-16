@@ -16,7 +16,6 @@ import (
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/file"
 	"github.com/compuzest/zlifecycle-il-operator/controller/external/git"
-	"github.com/compuzest/zlifecycle-il-operator/controller/util"
 	perrors "github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -27,7 +26,7 @@ import (
 
 func GenerateArgocdApps(
 	log *logrus.Entry,
-	fileAPI file.API,
+	fs file.API,
 	gitClient git.API,
 	gitReconciler gitreconciler.API,
 	key *client.ObjectKey,
@@ -50,7 +49,7 @@ func GenerateArgocdApps(
 			}
 
 			sourceAbsolutePath := filepath.Join(tempDir, ec.Module.Path)
-			if util.IsDir(sourceAbsolutePath) {
+			if fs.IsDir(sourceAbsolutePath) {
 				apps, err = parseArgocdApplicationFolder(sourceAbsolutePath, e, ec, k8sCluster)
 				if err != nil {
 					return err
@@ -70,7 +69,7 @@ func GenerateArgocdApps(
 				"destination": destinationFolder,
 				"component":   ec.Name,
 			}).Infof("Generating ArgoCD App of Apps Helm chart for environment component %s", ec.Name)
-			if err := generateHelmChart(fileAPI, destinationFolder, ec.Name); err != nil {
+			if err := generateHelmChart(fs, destinationFolder, ec.Name); err != nil {
 				return err
 			}
 
@@ -81,7 +80,7 @@ func GenerateArgocdApps(
 				"destination": destinationFolder,
 				"component":   ec.Name,
 			}).Infof("Generating ArgoCD Applications in  App of Apps Helm chart for environment component %s", ec.Name)
-			if err := generateArgocdApplications(apps, destinationFolder, fileAPI); err != nil {
+			if err := generateArgocdApplications(apps, destinationFolder, fs); err != nil {
 				return err
 			}
 

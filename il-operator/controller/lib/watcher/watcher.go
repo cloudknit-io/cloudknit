@@ -10,7 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-//go:generate mockgen --build_flags=--mod=mod -destination=./mock_watcher_api.go -package=watcher "github.com/compuzest/zlifecycle-il-operator/controller/watcher" API
+//go:generate mockgen --build_flags=--mod=mod -destination=./mock_watcher_api.go -package=watcher "github.com/compuzest/zlifecycle-il-operator/controller/lib/watcher" API
 type API interface {
 	Watch(repoURL string) error
 }

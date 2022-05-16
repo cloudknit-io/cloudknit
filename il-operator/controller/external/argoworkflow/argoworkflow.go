@@ -16,7 +16,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/compuzest/zlifecycle-il-operator/controller/external/secrets"
+	"github.com/compuzest/zlifecycle-il-operator/controller/external/secret"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/external/zli"
 
@@ -100,7 +100,7 @@ func GenerateWorkflowOfWorkflows(environment *stablev1.Environment) *workflow.Wo
 	}
 }
 
-func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment, tfcfg *secrets.TerraformStateConfig) *workflow.Workflow {
+func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment, tfcfg *secret.TerraformStateConfig) *workflow.Workflow {
 	workflowTemplate := "terraform-sync-template"
 
 	var tasks []workflow.DAGTask
@@ -122,9 +122,9 @@ func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment, tfcfg 
 
 		tfPath := il.EnvironmentComponentTerraformDirectoryPath(environment.Spec.TeamName, environment.Spec.EnvName, ec.Name)
 
-		autoApproveFlag := ec.AutoApprove
-		if autoApproveAll {
-			autoApproveFlag = true
+		autoApproveFlag := autoApproveAll
+		if ec.AutoApprove != nil {
+			autoApproveFlag = *ec.AutoApprove
 		}
 
 		dependencies := ec.DependsOn
@@ -201,7 +201,7 @@ func generateWorkflowParams(
 	tfPath string,
 	destroyFlag bool,
 	autoApproveFlag bool,
-	tfcfg *secrets.TerraformStateConfig,
+	tfcfg *secret.TerraformStateConfig,
 ) []workflow.Parameter {
 	ilRepo := util.RewriteGitURLToSSH(env.Config.ILTerraformRepositoryURL)
 

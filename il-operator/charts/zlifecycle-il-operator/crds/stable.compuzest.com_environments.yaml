@@ -140,6 +140,8 @@ spec:
                         - scope
                         type: object
                       type: array
+                    subtype:
+                      type: string
                     tags:
                       items:
                         properties:
@@ -330,6 +332,8 @@ spec:
                         - scope
                         type: object
                       type: array
+                    subtype:
+                      type: string
                     tags:
                       items:
                         properties:

@@ -3,7 +3,7 @@ package tfgen
 import (
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controller/env"
-	"github.com/compuzest/zlifecycle-il-operator/controller/external/secrets"
+	"github.com/compuzest/zlifecycle-il-operator/controller/external/secret"
 )
 
 // TerraformBackendConfig variables for creating tf backend.
@@ -110,7 +110,7 @@ func NewTemplateVariablesFromEnvironment(
 	e *stablev1.Environment,
 	ec *stablev1.EnvironmentComponent,
 	tfvars string,
-	tfcfg *secrets.TerraformStateConfig,
+	tfcfg *secret.TerraformStateConfig,
 ) *TemplateVariables {
 	vars := &TemplateVariables{
 		ZLEnvironment:          env.Config.ZLEnvironment,
