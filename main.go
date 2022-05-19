@@ -14,6 +14,7 @@ package main
 
 import (
 	"context"
+	_ "embed"
 	"flag"
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/file"
 
@@ -40,7 +41,8 @@ import (
 	// +kubebuilder:scaffold:imports
 )
 
-var Version = "0.0.1"
+//go:embed .version
+var Version string
 
 var (
 	scheme   = runtime.NewScheme()

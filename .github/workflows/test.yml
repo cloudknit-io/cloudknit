@@ -31,7 +31,7 @@ jobs:
       - name: "Modules download"
         run: "go mod download"
       - name: "Modules vendor"
-        run: "go mod vendor"
+        run: "go mod tidy"
       - name: "Test"
         run: go test -json ./controller/... > test.json
       - name: "Annotate"
