@@ -18,7 +18,7 @@ jobs:
           status: ${{ job.status }}
           notify_when: 'failure'
         env:
-          SLACK_WEBHOOK_URL: "${{ secrets.FAILURE_SLACK_INCOMING_WEBHOOK }}"
+          SLACK_WEBHOOK_URL: "${{ secrets.SLACK_INCOMING_WEBHOOK }}"
       - name: "Checkout"
         uses: "actions/checkout@v2"
         with:
@@ -34,16 +34,14 @@ jobs:
           username: "${{ secrets.AWS_ACCESS_KEY_ID }}"
           password: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
       - name: "Cache"
-        uses: "actions/cache@v2"
+        uses: actions/cache@v2
         with:
-          path: "./vendor"
-          key: "${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}"
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-      - name: "Modules download"
-        run: "go mod download"
-      - name: "Modules vendor"
-        run: "go mod vendor"
+      - name: "Modules tidy"
+        run: "go mod tidy"
       - name: "Release"
         uses: "goreleaser/goreleaser-action@v2"
         with:

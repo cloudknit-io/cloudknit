@@ -17,11 +17,11 @@ the default value http://argocd-server.argocd.svc.cluster.local.
 Check LastPass for secret values.
 TODO: Refactor ARGOCD_WEBHOOK_URL and ARGOCD_API_URL to be a config variable instead of a secret value
 
-## Vendoring
+## Dependencies
 
-We are using `go mod vendor` for our code so that all dependencies are available to the operator without relying on external sources. 
+We are using `go mod vendor` for dependency management.
 
-Note: Any time go dependencies change remember to run `go mod vendor` at the repo root directory and commit the latest folder to source control.
+Note: Any time go dependencies change remember to run `go mod tidy` at the repo root directory and commit the latest folder to source control.
 
 ## [Bootstrap zlifecycle-il-operator locally](./zlifecycle/runbook/setup/bootstrap-operator-locally.md)
 
@@ -49,7 +49,7 @@ This operator combines a few things.
 When creating new controllers, `operator-sdk` works well with `kustomize` and will generate templates into kustomize default directories such as `config/crd/bases` and `config/rbac`. For now, the `make manifests` command has been configured to generate files into `helm/templates` and future `operator-sdk` commands should also be run with a custom output folder to generate into that directory (can also be moved manually).
 
 ## Deploy controller to k8s cluster
-helm install 
+helm install
 
 ## Local Development
 For faster docker builds, and the ability to shell into a contianer, use `Dockerfile.dev`, you can do this with `make docker-dev-build` or

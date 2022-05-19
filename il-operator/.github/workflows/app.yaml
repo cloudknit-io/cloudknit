@@ -36,7 +36,7 @@ jobs:
       - run: go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.7.0
       - run: make deps
         working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}
-      - run: go mod vendor
+      - run: go mod tidy
         working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}
       - run: make check
         working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}
