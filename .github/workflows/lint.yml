@@ -1,6 +1,8 @@
 name: lint
 on:
   push:
+    tags:
+      - v*
     branches-ignore:
       - master
       - main
