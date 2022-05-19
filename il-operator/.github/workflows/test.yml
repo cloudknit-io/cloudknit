@@ -22,15 +22,13 @@ jobs:
         with:
           go-version: "1.18"
       - name: "Cache"
-        uses: "actions/cache@v2"
+        uses: actions/cache@v2
         with:
-          path: "./vendor"
-          key: "${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}"
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-      - name: "Modules download"
-        run: "go mod download"
-      - name: "Modules vendor"
+      - name: "Download dependencies"
         run: "go mod tidy"
       - name: "Test"
         run: go test -json ./controller/... > test.json
