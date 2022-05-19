@@ -19,7 +19,7 @@ echo "$TGT"
 
 find . -type f -name ".version" -print0 | xargs -0 sed -i '' -e "s/[v]*[0-9]*[0-9]\.[0-9]*[0-9]\.[0-9]*[0-9]/${TGT}/g"
 
-make build
+go build
 
 git add .
 git commit -m "v${TGT}" || true
