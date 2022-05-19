@@ -19,6 +19,13 @@ jobs:
           go-version: "1.18"
       - name: checkout
         uses: actions/checkout@v2
+      - name: "Cache"
+        uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
       - name: "Lint"
         uses: golangci/golangci-lint-action@v2
         with:
