@@ -33,15 +33,6 @@ jobs:
           registry: "${{ secrets.ECR_REPO }}"
           username: "${{ secrets.AWS_ACCESS_KEY_ID }}"
           password: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
-      - name: "Cache"
-        uses: actions/cache@v2
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-      - name: "Modules tidy"
-        run: "go mod tidy"
       - name: "Release"
         uses: "goreleaser/goreleaser-action@v2"
         with:
