@@ -214,9 +214,6 @@ func (r *EnvironmentReconciler) doReconcile(
 		}
 	}
 
-	if environment.Spec.EnvName == "fifth-env" {
-		r.LogV2.Info("break")
-	}
 	identifier := secrets2.Identifier{
 		Company:     env.Config.CompanyName,
 		Team:        environment.Spec.TeamName,
