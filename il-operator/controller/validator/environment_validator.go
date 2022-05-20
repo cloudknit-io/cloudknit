@@ -100,6 +100,10 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentCreate(ctx context.Context
 
 	var allErrs field.ErrorList
 
+	if err := isUniqueEnvAndTeam(e, &v1.EnvironmentList{}); err != nil {
+		allErrs = append(allErrs, err)
+	}
+
 	if err := v.validateEnvironmentCommon(ctx, e, true, v.K8sClient, logger); err != nil {
 		allErrs = append(allErrs, err...)
 	}
@@ -199,6 +203,20 @@ func (v *EnvironmentValidatorImpl) validateEnvironmentCommon(
 	}
 
 	return allErrs
+}
+
+func isUniqueEnvAndTeam(e *v1.Environment, envList *v1.EnvironmentList) *field.Error {
+	teamName := e.Spec.TeamName
+	envName := e.Spec.EnvName
+
+	for _, env := range envList.Items {
+		if env.Spec.TeamName == teamName && env.Spec.EnvName == envName {
+			fld := field.NewPath("spec").Child("envName")
+			return field.Invalid(fld, envName, fmt.Sprintf("the environment %s already exists within team %s", envName, teamName))
+		}
+	}
+
+	return nil
 }
 
 func validateTeamExists(ctx context.Context, e *v1.Environment, kc kClient.Client, list *v1.TeamList, l *logrus.Entry) *field.Error {

@@ -2,6 +2,7 @@ package validator
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -75,6 +76,35 @@ func TestCheckEnvironmentComponentNames(t *testing.T) {
 	assert.Len(t, errList3, 1)
 	assert.Equal(t, errList3[0].Field, "spec.components[1].name")
 	assert.Equal(t, errList3[0].Type, field.ErrorTypeInvalid)
+}
+
+func TestIsUniqueEnvAndTeam(t *testing.T) {
+	t.Parallel()
+
+	envName := "test"
+	teamName := "some-team"
+
+	env := v1.Environment{
+		Spec: v1.EnvironmentSpec{TeamName: teamName, EnvName: envName},
+	}
+
+	envList := v1.EnvironmentList{
+		Items: []v1.Environment{{
+			Spec: v1.EnvironmentSpec{TeamName: teamName, EnvName: "diff-env"},
+		}},
+	}
+
+	envListDuplicate := v1.EnvironmentList{
+		Items: []v1.Environment{{
+			Spec: v1.EnvironmentSpec{TeamName: teamName, EnvName: envName},
+		}},
+	}
+
+	err := isUniqueEnvAndTeam(&env, &envListDuplicate)
+	assert.Contains(t, err.Detail, fmt.Sprintf("the environment %s already exists within team %s", envName, teamName))
+
+	err1 := isUniqueEnvAndTeam(&env, &envList)
+	assert.Nil(t, err1)
 }
 
 func TestValidateTeamExists(t *testing.T) {
