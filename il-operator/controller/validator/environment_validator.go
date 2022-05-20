@@ -289,6 +289,9 @@ func (v *EnvironmentValidatorImpl) validateEnvironmentComponents(
 		if err := checkEnvironmentComponentDependenciesExist(name, dependsOn, e.Spec.Components, i); err != nil {
 			allErrs = append(allErrs, err)
 		}
+		if err := checkEnvironmentComponentDuplicateDependencies(dependsOn, i); err != nil {
+			allErrs = append(allErrs, err)
+		}
 		if e.DeletionTimestamp == nil || e.DeletionTimestamp.IsZero() {
 			if err := v.checkOverlaysExist(ec.OverlayFiles, ec.Name, l); err != nil {
 				allErrs = append(allErrs, err...)
@@ -437,5 +440,25 @@ func checkEnvironmentComponentDependenciesExist(comp string, deps []string, ecs 
 			return field.Invalid(fld, dep, fmt.Sprintf("component '%s' depends on non-existing component: '%s'", comp, dep))
 		}
 	}
+	return nil
+}
+
+func checkEnvironmentComponentDuplicateDependencies(deps []string, i int) *field.Error {
+	found := []string{}
+	duplicates := []string{}
+
+	for _, dep := range deps {
+		if util.Contains(found, dep) {
+			duplicates = append(duplicates, dep)
+		} else {
+			found = append(found, dep)
+		}
+	}
+
+	if len(duplicates) > 0 {
+		fld := field.NewPath("spec").Child("components").Index(i).Child("dependsOn")
+		return field.Invalid(fld, duplicates[0], fmt.Sprintf("dependsOn cannot contain duplicates: %v", duplicates))
+	}
+
 	return nil
 }
