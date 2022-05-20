@@ -160,7 +160,6 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	defer cleanup()
 
 	// reconcile logic
-
 	if err := watcherServices.CompanyWatcher.Watch(companyRepoURL); err != nil {
 		companyErr := zerrors.NewCompanyError(company.Spec.CompanyName, perrors.Wrap(err, "error registering company config repo in argocd using github app auth"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)

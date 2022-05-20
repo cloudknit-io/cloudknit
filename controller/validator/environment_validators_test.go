@@ -107,3 +107,16 @@ func TestValidateTeamExists(t *testing.T) {
 	assert.Len(t, teamList.Items, 1)
 	assert.Equal(t, teamList.Items[0].Spec.TeamName, teamName)
 }
+
+func TestCheckEnvironmentComponentDuplicateDependencies(t *testing.T) {
+	t.Parallel()
+
+	err1 := checkEnvironmentComponentDuplicateDependencies([]string{"here", "are", "duplicate", "duplicate", "entries"}, 5)
+	assert.Contains(t, err1.Detail, "dependsOn cannot contain duplicates: [duplicate]")
+
+	err2 := checkEnvironmentComponentDuplicateDependencies([]string{"here", "are", "duplicate", "duplicate", "entries", "entries", "entries", "duplicate"}, 5)
+	assert.Contains(t, err2.Detail, "dependsOn cannot contain duplicates: [duplicate entries entries duplicate]")
+
+	err := checkEnvironmentComponentDuplicateDependencies([]string{"here", "are", "duplicate", "entries"}, 5)
+	assert.Nil(t, err)
+}
