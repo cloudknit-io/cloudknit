@@ -27,7 +27,7 @@ import (
 )
 
 const (
-	TerraformSubtypeCustom = "custom"
+	TerraformSubtypeCustom = "config"
 	TerraformSubtypeIL     = "il"
 )
 
