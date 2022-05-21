@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { AWSError } from "aws-sdk";
-import { GetParametersByPathRequest } from "aws-sdk/clients/ssm";
+import { GetParametersByPathRequest, Parameter } from "aws-sdk/clients/ssm";
 import { AwsSecretDto } from "./dtos/aws-secret.dto";
 import { AWSSSMHandler } from "./utilities/awsSsmHandler";
 
@@ -67,8 +67,8 @@ export class SecretsService {
     return this.constKeys.has(lastToken[0]);
   }
 
-  private mapToKeyValue(data: any) {
-    const { Name } = data;
+  private mapToKeyValue(data: Parameter) {
+    const { Name, LastModifiedDate } = data;
     const tokens = Name.split("/");
     let key = "";
     switch (tokens.length) {
@@ -85,6 +85,7 @@ export class SecretsService {
     return {
       key,
       value: tokens.slice(-1)[0],
+      lastModifiedDate: LastModifiedDate
     };
   }
 
@@ -208,6 +209,7 @@ export class SecretsService {
         ...awsRes.Parameters.map((e) => ({
           key: e.Name.split("/").slice(-1)[0],
           exists: true,
+          lastModifiedDate: e.LastModifiedDate
         }))
       );
 
