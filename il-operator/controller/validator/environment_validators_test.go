@@ -100,10 +100,10 @@ func TestIsUniqueEnvAndTeam(t *testing.T) {
 		}},
 	}
 
-	err := isUniqueEnvAndTeam(&env, &envListDuplicate)
+	err := isUniqueEnvAndTeam(&env, envListDuplicate)
 	assert.Contains(t, err.Detail, fmt.Sprintf("the environment %s already exists within team %s", envName, teamName))
 
-	err1 := isUniqueEnvAndTeam(&env, &envList)
+	err1 := isUniqueEnvAndTeam(&env, envList)
 	assert.Nil(t, err1)
 }
 

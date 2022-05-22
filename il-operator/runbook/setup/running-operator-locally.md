@@ -15,25 +15,27 @@ When you want to test a piece of code by running the operator locally first
 
 ## Initial Steps Overview
 
-- [Create a local env file](#create-local-env-file)
-- [Proxy your machine to k8s cluster](#proxy-your-machine-to-k8s-cluster)
+- [Local System Setup](#local-system-setup)
 - [Running the operator](#running-the-operator)
 - [Enabling Webhook Service](#enabling-webhook-service)
 
 ## Detailed Steps
 
-### Create local env file
-1. Run the following script to get the Operator environment variables
-	```shell script
-	POD_NAME=$(kubectl get pods --namespace zlifecycle-il-operator-system -l "app.kubernetes.io/instance=zlifecycle-il-operator" -o jsonpath="{.items[0].metadata.name}")
-	kubectl exec --namespace zlifecycle-il-operator-system -it $POD_NAME -- env
-	```
-2. Save the environment variables into `PROJECT_ROOT/<environment_name>.env` (ex. `sandbox.env`)
-3. Add `DISABLE_WEBHOOKS=true` so it doesn't run the webhook server locally, until we fix the local cert issue
+### Local System Setup
 
-### Proxy your machine to k8s cluster
-1. Select kubecontext (ie. sandbox, demo...)
-2. Run `telepresence connect`
+1. Get kubecontext for the appropriate k8s cluter
+	- eg: `aws eks --region us-east-1 update-kubeconfig --name dev-eks`
+1. `sudo telepresence connect`
+1. `./bin/update_env.sh [company]`
+	- `[company]` must exist within the cluster you've connected to
+	- eg: `./bin/update_env.sh zlab` works on the **dev** cluster but not **prod**
+	- creates the following
+		- `./[company].env`
+		- `./certs/[company]/ca.crt`
+		- `./certs/[company]/tls.crt`
+		- `./certs/[company]/tls.key`
+1. You're now ready to remotely debug
+1. To switch companies simply rerun `./bin/update_env.sh [company]`
 
 ### Running the operator
 
@@ -53,21 +55,21 @@ When you want to test a piece of code by running the operator locally first
 		"version": "0.2.0",
 		"configurations": [
 			{
-				"name": "DEV",
+				"name": "DEV - zlab",
 				"type": "go",
 				"request": "launch",
 				"mode": "debug",
 				"program": "<absolute path to project>/main.go",
-				"envFile": "<absolute path to project>/dev.env"
+				"envFile": "<absolute path to project>/zlab.env"
 			},
 			{
-				"name": "SANDBOX",
+				"name": "DEV - zbank",
 				"type": "go",
 				"request": "launch",
 				"mode": "debug",
 				"program": "<absolute path to project>/main.go",
-				"envFile": "<absolute path to project>/sandbox.env"
-			}
+				"envFile": "<absolute path to project>/zbank.env"
+			},
 		]
 	}
 	```
