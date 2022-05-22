@@ -100,7 +100,9 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentCreate(ctx context.Context
 
 	var allErrs field.ErrorList
 
-	if err := isUniqueEnvAndTeam(e, &v1.EnvironmentList{}); err != nil {
+	envList := &v1.EnvironmentList{}
+	getEnvironmentList(ctx, envList, v.K8sClient, logger)
+	if err := isUniqueEnvAndTeam(e, *envList); err != nil {
 		allErrs = append(allErrs, err)
 	}
 
@@ -205,7 +207,14 @@ func (v *EnvironmentValidatorImpl) validateEnvironmentCommon(
 	return allErrs
 }
 
-func isUniqueEnvAndTeam(e *v1.Environment, envList *v1.EnvironmentList) *field.Error {
+func getEnvironmentList(ctx context.Context, envList *v1.EnvironmentList, kc kClient.Client, l *logrus.Entry) {
+	// Gets all Environment objects within namespace
+	kc.List(ctx, envList)
+
+	l.Debugf("Environment List length [%d] and contents: %v", len(envList.Items), envList.Items)
+}
+
+func isUniqueEnvAndTeam(e *v1.Environment, envList v1.EnvironmentList) *field.Error {
 	teamName := e.Spec.TeamName
 	envName := e.Spec.EnvName
 
