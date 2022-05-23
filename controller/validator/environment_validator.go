@@ -222,7 +222,7 @@ func isUniqueEnvAndTeam(e *v1.Environment, envList v1.EnvironmentList) *field.Er
 
 	for _, env := range envList.Items {
 		if env.Spec.TeamName == teamName && env.Spec.EnvName == envName {
-			logger.Infof("Found duplicate envName [%s] teamName [%s] for Environment UID [%s]", env.Spec.EnvName, env.Spec.TeamName, e.UID, env.UID)
+			logger.Infof("Found duplicate envName [%s] teamName [%s] for Environment UID [%s]", env.Spec.EnvName, env.Spec.TeamName, e.UID)
 			fld := field.NewPath("spec").Child("envName")
 			return field.Invalid(fld, envName, fmt.Sprintf("the environment %s already exists within team %s", envName, teamName))
 		}
