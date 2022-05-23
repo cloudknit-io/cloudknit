@@ -93,6 +93,8 @@ func notifyError(ctx context.Context, e *v1.Environment, ntfr notifier.API, msg 
 }
 
 func (v *EnvironmentValidatorImpl) ValidateEnvironmentCreate(ctx context.Context, e *v1.Environment) error {
+	logger.Infof("ValidateEnvironmentCreate Environment: [%v] Context: [%v]", e, ctx)
+
 	if err := v.init(ctx); err != nil {
 		logger.Errorf(errInitValidator+": %v", err)
 		return apierrors.NewInternalError(errors.Wrap(err, errInitValidator))
@@ -101,7 +103,7 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentCreate(ctx context.Context
 	var allErrs field.ErrorList
 
 	envList := &v1.EnvironmentList{}
-	getEnvironmentList(ctx, envList, v.K8sClient, logger)
+	getEnvironmentList(ctx, envList, v.K8sClient)
 	if err := isUniqueEnvAndTeam(e, *envList); err != nil {
 		allErrs = append(allErrs, err)
 	}
@@ -138,6 +140,8 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentCreate(ctx context.Context
 }
 
 func (v *EnvironmentValidatorImpl) ValidateEnvironmentUpdate(ctx context.Context, e *v1.Environment) error {
+	logger.Infof("ValidateEnvironmentUpdate Environment: [%v] Context: [%v]", e, ctx)
+
 	if err := v.init(ctx); err != nil {
 		logger.Errorf(errInitValidator+": %v", err)
 		return apierrors.NewInternalError(errors.Wrap(err, errInitValidator))
@@ -207,11 +211,9 @@ func (v *EnvironmentValidatorImpl) validateEnvironmentCommon(
 	return allErrs
 }
 
-func getEnvironmentList(ctx context.Context, envList *v1.EnvironmentList, kc kClient.Client, l *logrus.Entry) {
+func getEnvironmentList(ctx context.Context, envList *v1.EnvironmentList, kc kClient.Client) {
 	// Gets all Environment objects within namespace
-	kc.List(ctx, envList)
-
-	l.Debugf("Environment List length [%d] and contents: %v", len(envList.Items), envList.Items)
+	kc.List(ctx, envList, &kClient.ListOptions{Namespace: fmt.Sprintf("%s-config", env.Config.CompanyName)})
 }
 
 func isUniqueEnvAndTeam(e *v1.Environment, envList v1.EnvironmentList) *field.Error {
@@ -220,6 +222,7 @@ func isUniqueEnvAndTeam(e *v1.Environment, envList v1.EnvironmentList) *field.Er
 
 	for _, env := range envList.Items {
 		if env.Spec.TeamName == teamName && env.Spec.EnvName == envName {
+			logger.Infof("Found duplicate envName [%s] teamName [%s] for Environment UID [%s]", env.Spec.EnvName, env.Spec.TeamName, e.UID, env.UID)
 			fld := field.NewPath("spec").Child("envName")
 			return field.Invalid(fld, envName, fmt.Sprintf("the environment %s already exists within team %s", envName, teamName))
 		}
