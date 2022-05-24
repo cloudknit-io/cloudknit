@@ -513,7 +513,7 @@ func checkValueFromsExist(ec *v1.EnvironmentComponent, ecs []*v1.EnvironmentComp
 
 	for _, vf := range vfs {
 		// Get component name and output variable name from valueFrom string
-		compName, varName, err := util.SplitValueFrom(vf)
+		compName, varName, err := SplitValueFrom(vf)
 
 		if err != nil {
 			fld := field.NewPath("spec").Child("components").Child(ec.Name).Child("variables").Child("valueFrom")
@@ -525,7 +525,7 @@ func checkValueFromsExist(ec *v1.EnvironmentComponent, ecs []*v1.EnvironmentComp
 		found := false
 		for _, comp := range ecs {
 			if compName == comp.Name {
-				if output := util.GetOutputFromComponent(varName, comp); output == nil {
+				if output := GetOutputFromComponent(varName, comp); output == nil {
 					fld := field.NewPath("spec").Child("components").Child(ec.Name).Child("variables")
 					allErrs = append(allErrs, field.Invalid(fld, vf, fmt.Sprintf("valueFrom %s does not match any outputs defined on component %s", vf, comp.Name)))
 				}
