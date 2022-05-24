@@ -150,3 +150,71 @@ func TestCheckEnvironmentComponentDuplicateDependencies(t *testing.T) {
 	err := checkEnvironmentComponentDuplicateDependencies([]string{"here", "are", "duplicate", "entries"}, 5)
 	assert.Nil(t, err)
 }
+
+func TestCheckValueFromsExist(t *testing.T) {
+	t.Parallel()
+
+	ec := v1.EnvironmentComponent{
+		Variables: []*v1.Variable{
+			{Name: "name", Value: "some-value"},
+			{Name: "should-match", ValueFrom: "context.context"},
+		},
+	}
+
+	ecs := []*v1.EnvironmentComponent{
+		{
+			Name: "unused",
+			Outputs: []*v1.Output{
+				{Name: "unused", Sensitive: false},
+				{Name: "blah-unused", Sensitive: false},
+			},
+		},
+		{
+			Name: "context",
+			Outputs: []*v1.Output{
+				{Name: "context"},
+				{Name: "doesnt-match"},
+			},
+		},
+	}
+
+	errs := checkValueFromsExist(&ec, ecs)
+	assert.Nil(t, errs)
+}
+
+func TestCheckValueFromsExistBadValueFrom(t *testing.T) {
+	t.Parallel()
+
+	ecBadValueFrom := v1.EnvironmentComponent{
+		Variables: []*v1.Variable{
+			{Name: "bad-value-from", ValueFrom: "blah-context"},
+			{Name: "unused", Value: "some-value"},
+			{Name: "no-match", ValueFrom: "blah.context"},
+			{Name: "should-match", ValueFrom: "context.context"},
+			{Name: "good-component", ValueFrom: "context.badVariable"},
+		},
+	}
+
+	ecs := []*v1.EnvironmentComponent{
+		{
+			Name: "unused",
+			Outputs: []*v1.Output{
+				{Name: "unused", Sensitive: false},
+				{Name: "blah-unused", Sensitive: false},
+			},
+		},
+		{
+			Name: "context",
+			Outputs: []*v1.Output{
+				{Name: "context"},
+				{Name: "doesnt-match"},
+			},
+		},
+	}
+
+	errs := checkValueFromsExist(&ecBadValueFrom, ecs)
+	assert.Len(t, errs, 3)
+	assert.Contains(t, errs[0].Detail, "valueFrom must be 'componentName.componentOutputName'")
+	assert.Contains(t, errs[1].Detail, "valueFrom blah.context references component blah which does not exist")
+	assert.Contains(t, errs[2].Detail, "valueFrom context.badVariable does not match any outputs")
+}
