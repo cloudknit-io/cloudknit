@@ -307,6 +307,7 @@ func (v *EnvironmentValidatorImpl) validateEnvironmentComponents(
 	if err := checkEnvironmentComponentsNotEmpty(e.Spec.Components); err != nil {
 		allErrs = append(allErrs, err)
 	}
+
 	for i, ec := range e.Spec.Components {
 		name := ec.Name
 		if err := checkEnvironmentComponentName(name, i); err != nil {
@@ -321,6 +322,9 @@ func (v *EnvironmentValidatorImpl) validateEnvironmentComponents(
 		}
 		if err := checkEnvironmentComponentDuplicateDependencies(dependsOn, i); err != nil {
 			allErrs = append(allErrs, err)
+		}
+		if err := checkValueFromsExist(ec, e.Spec.Components); err != nil {
+			allErrs = append(allErrs, err...)
 		}
 		if e.DeletionTimestamp == nil || e.DeletionTimestamp.IsZero() {
 			if err := v.checkOverlaysExist(ec.OverlayFiles, ec.Name, l); err != nil {
@@ -491,4 +495,51 @@ func checkEnvironmentComponentDuplicateDependencies(deps []string, i int) *field
 	}
 
 	return nil
+}
+
+func checkValueFromsExist(ec *v1.EnvironmentComponent, ecs []*v1.EnvironmentComponent) field.ErrorList {
+	var allErrs field.ErrorList
+
+	var vfs []string
+
+	// Get all valueFrom entries in current component
+	for _, v := range ec.Variables {
+		if v.ValueFrom == "" {
+			continue
+		}
+
+		vfs = append(vfs, v.ValueFrom)
+	}
+
+	for _, vf := range vfs {
+		// Get component name and output variable name from valueFrom string
+		compName, varName, err := SplitValueFrom(vf)
+
+		if err != nil {
+			fld := field.NewPath("spec").Child("components").Child(ec.Name).Child("variables").Child("valueFrom")
+			allErrs = append(allErrs, field.Invalid(fld, vf, fmt.Sprintf("valueFrom must be 'componentName.componentOutputName' instead got %s", vf)))
+			continue
+		}
+
+		// Get associated v1.Output entry from component specified in valueFrom string
+		found := false
+		for _, comp := range ecs {
+			if compName == comp.Name {
+				if output := GetOutputFromComponent(varName, comp); output == nil {
+					fld := field.NewPath("spec").Child("components").Child(ec.Name).Child("variables")
+					allErrs = append(allErrs, field.Invalid(fld, vf, fmt.Sprintf("valueFrom %s does not match any outputs defined on component %s", vf, comp.Name)))
+				}
+
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			fld := field.NewPath("spec").Child("components").Child(ec.Name).Child("variables")
+			allErrs = append(allErrs, field.Invalid(fld, vf, fmt.Sprintf("valueFrom %s references component %s which does not exist", vf, compName)))
+		}
+	}
+
+	return allErrs
 }
