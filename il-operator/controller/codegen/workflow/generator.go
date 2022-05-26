@@ -160,7 +160,7 @@ func generateWorkflow(environment *stablev1.Environment, tasks []workflow.DAGTas
 		Spec: workflow.WorkflowSpec{
 			Entrypoint: "main",
 			OnExit:     "exit-handler",
-			PodGC:      &workflow.PodGC{Strategy: workflow.PodGCOnPodSuccess},
+			PodGC:      &workflow.PodGC{Strategy: workflow.PodGCOnPodCompletion},
 			Templates: []workflow.Template{
 				{
 					Name: "main",

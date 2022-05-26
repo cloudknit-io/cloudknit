@@ -19,9 +19,9 @@ TODO: Refactor ARGOCD_WEBHOOK_URL and ARGOCD_API_URL to be a config variable ins
 
 ## Dependencies
 
-We are using `go mod vendor` for dependency management.
+We are using `go mod tidy` for dependency management.
 
-Note: Any time go dependencies change remember to run `go mod tidy` at the repo root directory and commit the latest folder to source control.
+Any time go dependencies change remember to run `go mod tidy` at the repo root directory and commit the latest folder to source control.
 
 ## [Bootstrap zlifecycle-il-operator locally](./zlifecycle/runbook/setup/bootstrap-operator-locally.md)
 
