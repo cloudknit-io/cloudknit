@@ -17,11 +17,10 @@ import (
 	_ "embed"
 	"flag"
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/file"
+	"github.com/compuzest/zlifecycle-il-operator/controller/common/apm"
+	"github.com/compuzest/zlifecycle-il-operator/controller/common/log"
 
-	apm2 "github.com/compuzest/zlifecycle-il-operator/controller/lib/apm"
-	"github.com/compuzest/zlifecycle-il-operator/controller/lib/gitreconciler"
-	"github.com/compuzest/zlifecycle-il-operator/controller/lib/log"
-
+	"github.com/compuzest/zlifecycle-il-operator/controller/components/gitreconciler"
 	"github.com/compuzest/zlifecycle-il-operator/controller/validator"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/env"
@@ -98,7 +97,7 @@ func main() {
 	// Git reconciler
 	gitReconciler, err := gitreconciler.NewReconciler(
 		ctx,
-		log.NewLogger().WithFields(logrus.Fields{"logger": "GitReconciler", "instance": env.Config.CompanyName, "company": env.Config.CompanyName}),
+		log.NewLogger().WithFields(logrus.Fields{"logger": "GitReconciler", "instance": env.Config.CompanyName, "company": env.Config.CompanyName, "version": Version}),
 		mgr.GetClient(),
 	)
 	if err != nil {
@@ -109,17 +108,17 @@ func main() {
 	}
 
 	// new relic
-	var _apm apm2.APM
+	var _apm apm.APM
 
 	if env.Config.EnableNewRelic == "true" {
 		setupLog.Info("Initializing NewRelic APM")
 		logrus.SetFormatter(nrlogrusplugin.ContextFormatter{})
-		_apm, err = apm2.NewNewRelic()
+		_apm, err = apm.NewNewRelic()
 		if err != nil {
 			setupLog.WithError(err).Panic("unable to init new relic")
 		}
 	} else {
-		_apm = apm2.NewNoop()
+		_apm = apm.NewNoop()
 		setupLog.Info("Defaulting to no-op APM")
 	}
 
@@ -127,7 +126,7 @@ func main() {
 	if err = (&controller.CompanyReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controller").WithName("Company"),
-		LogV2:  log.NewLogger().WithFields(logrus.Fields{"logger": "controller.Company", "instance": env.Config.CompanyName, "company": env.Config.CompanyName}),
+		LogV2:  log.NewLogger().WithFields(logrus.Fields{"logger": "controller.Company", "instance": env.Config.CompanyName, "company": env.Config.CompanyName, "version": Version}),
 		Scheme: mgr.GetScheme(),
 		APM:    _apm,
 	}).SetupWithManager(mgr); err != nil {
@@ -138,7 +137,7 @@ func main() {
 	if err = (&controller.TeamReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controller").WithName("Team"),
-		LogV2:  log.NewLogger().WithFields(logrus.Fields{"logger": "controller.Team", "instance": env.Config.CompanyName, "company": env.Config.CompanyName}),
+		LogV2:  log.NewLogger().WithFields(logrus.Fields{"logger": "controller.Team", "instance": env.Config.CompanyName, "company": env.Config.CompanyName, "version": Version}),
 		Scheme: mgr.GetScheme(),
 		APM:    _apm,
 	}).SetupWithManager(mgr); err != nil {
@@ -151,7 +150,7 @@ func main() {
 		Log:    ctrl.Log.WithName("controller").WithName("Environment"),
 		LogV2: log.NewLogger().WithFields(
 			logrus.Fields{
-				"logger": "controller.Environment", "instance": env.Config.CompanyName, "company": env.Config.CompanyName,
+				"logger": "controller.Environment", "instance": env.Config.CompanyName, "company": env.Config.CompanyName, "version": Version,
 			},
 		),
 		Scheme:        mgr.GetScheme(),
