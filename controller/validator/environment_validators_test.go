@@ -2,6 +2,7 @@ package validator
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -77,6 +78,35 @@ func TestCheckEnvironmentComponentNames(t *testing.T) {
 	assert.Equal(t, errList3[0].Type, field.ErrorTypeInvalid)
 }
 
+func TestIsUniqueEnvAndTeam(t *testing.T) {
+	t.Parallel()
+
+	envName := "test"
+	teamName := "some-team"
+
+	env := v1.Environment{
+		Spec: v1.EnvironmentSpec{TeamName: teamName, EnvName: envName},
+	}
+
+	envList := v1.EnvironmentList{
+		Items: []v1.Environment{{
+			Spec: v1.EnvironmentSpec{TeamName: teamName, EnvName: "diff-env"},
+		}},
+	}
+
+	envListDuplicate := v1.EnvironmentList{
+		Items: []v1.Environment{{
+			Spec: v1.EnvironmentSpec{TeamName: teamName, EnvName: envName},
+		}},
+	}
+
+	err := isUniqueEnvAndTeam(&env, envListDuplicate)
+	assert.Contains(t, err.Detail, fmt.Sprintf("the environment %s already exists within team %s", envName, teamName))
+
+	err1 := isUniqueEnvAndTeam(&env, envList)
+	assert.Nil(t, err1)
+}
+
 func TestValidateTeamExists(t *testing.T) {
 	t.Parallel()
 
@@ -106,4 +136,85 @@ func TestValidateTeamExists(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Len(t, teamList.Items, 1)
 	assert.Equal(t, teamList.Items[0].Spec.TeamName, teamName)
+}
+
+func TestCheckEnvironmentComponentDuplicateDependencies(t *testing.T) {
+	t.Parallel()
+
+	err1 := checkEnvironmentComponentDuplicateDependencies([]string{"here", "are", "duplicate", "duplicate", "entries"}, 5)
+	assert.Contains(t, err1.Detail, "dependsOn cannot contain duplicates: [duplicate]")
+
+	err2 := checkEnvironmentComponentDuplicateDependencies([]string{"here", "are", "duplicate", "duplicate", "entries", "entries", "entries", "duplicate"}, 5)
+	assert.Contains(t, err2.Detail, "dependsOn cannot contain duplicates: [duplicate entries entries duplicate]")
+
+	err := checkEnvironmentComponentDuplicateDependencies([]string{"here", "are", "duplicate", "entries"}, 5)
+	assert.Nil(t, err)
+}
+
+func TestCheckValueFromsExist(t *testing.T) {
+	t.Parallel()
+
+	ec := v1.EnvironmentComponent{
+		Variables: []*v1.Variable{
+			{Name: "name", Value: "some-value"},
+			{Name: "should-match", ValueFrom: "context.context"},
+		},
+	}
+
+	ecs := []*v1.EnvironmentComponent{
+		{
+			Name: "unused",
+			Outputs: []*v1.Output{
+				{Name: "unused", Sensitive: false},
+				{Name: "blah-unused", Sensitive: false},
+			},
+		},
+		{
+			Name: "context",
+			Outputs: []*v1.Output{
+				{Name: "context"},
+				{Name: "doesnt-match"},
+			},
+		},
+	}
+
+	errs := checkValueFromsExist(&ec, ecs)
+	assert.Nil(t, errs)
+}
+
+func TestCheckValueFromsExistBadValueFrom(t *testing.T) {
+	t.Parallel()
+
+	ecBadValueFrom := v1.EnvironmentComponent{
+		Variables: []*v1.Variable{
+			{Name: "bad-value-from", ValueFrom: "blah-context"},
+			{Name: "unused", Value: "some-value"},
+			{Name: "no-match", ValueFrom: "blah.context"},
+			{Name: "should-match", ValueFrom: "context.context"},
+			{Name: "good-component", ValueFrom: "context.badVariable"},
+		},
+	}
+
+	ecs := []*v1.EnvironmentComponent{
+		{
+			Name: "unused",
+			Outputs: []*v1.Output{
+				{Name: "unused", Sensitive: false},
+				{Name: "blah-unused", Sensitive: false},
+			},
+		},
+		{
+			Name: "context",
+			Outputs: []*v1.Output{
+				{Name: "context"},
+				{Name: "doesnt-match"},
+			},
+		},
+	}
+
+	errs := checkValueFromsExist(&ecBadValueFrom, ecs)
+	assert.Len(t, errs, 3)
+	assert.Contains(t, errs[0].Detail, "valueFrom must be 'componentName.componentOutputName'")
+	assert.Contains(t, errs[1].Detail, "valueFrom blah.context references component blah which does not exist")
+	assert.Contains(t, errs[2].Detail, "valueFrom context.badVariable does not match any outputs")
 }

@@ -1,11 +1,13 @@
-# IntelliJ
+# IDE's
 .idea
+.vscode/
 
 # Environment files
 *.env
 
 # Kubernetes cert
 cert
+certs/**
 
 # Local Operator files
 company/
@@ -34,3 +36,9 @@ test-results/
 *.swo
 
 manager
+
+# go binary
+zlifecycle-il-operator
+
+# use `go mod tidy`
+vendor

@@ -94,12 +94,20 @@ func notifyError(ctx context.Context, e *v1.Environment, ntfr notifier2.API, msg
 }
 
 func (v *EnvironmentValidatorImpl) ValidateEnvironmentCreate(ctx context.Context, e *v1.Environment) error {
+	logger.Infof("ValidateEnvironmentCreate Environment: [%v] Context: [%v]", e, ctx)
+
 	if err := v.init(ctx); err != nil {
 		logger.Errorf(errInitValidator+": %v", err)
 		return apierrors.NewInternalError(errors.Wrap(err, errInitValidator))
 	}
 
 	var allErrs field.ErrorList
+
+	envList := &v1.EnvironmentList{}
+	getEnvironmentList(ctx, envList, v.K8sClient)
+	if err := isUniqueEnvAndTeam(e, *envList); err != nil {
+		allErrs = append(allErrs, err)
+	}
 
 	if err := v.validateEnvironmentCommon(ctx, e, true, v.K8sClient, logger); err != nil {
 		allErrs = append(allErrs, err...)
@@ -133,6 +141,8 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentCreate(ctx context.Context
 }
 
 func (v *EnvironmentValidatorImpl) ValidateEnvironmentUpdate(ctx context.Context, e *v1.Environment) error {
+	logger.Infof("ValidateEnvironmentUpdate Environment: [%v] Context: [%v]", e, ctx)
+
 	if err := v.init(ctx); err != nil {
 		logger.Errorf(errInitValidator+": %v", err)
 		return apierrors.NewInternalError(errors.Wrap(err, errInitValidator))
@@ -200,6 +210,26 @@ func (v *EnvironmentValidatorImpl) validateEnvironmentCommon(
 	}
 
 	return allErrs
+}
+
+func getEnvironmentList(ctx context.Context, envList *v1.EnvironmentList, kc kClient.Client) {
+	// Gets all Environment objects within namespace
+	kc.List(ctx, envList, &kClient.ListOptions{Namespace: fmt.Sprintf("%s-config", env.Config.CompanyName)})
+}
+
+func isUniqueEnvAndTeam(e *v1.Environment, envList v1.EnvironmentList) *field.Error {
+	teamName := e.Spec.TeamName
+	envName := e.Spec.EnvName
+
+	for _, env := range envList.Items {
+		if env.Spec.TeamName == teamName && env.Spec.EnvName == envName {
+			logger.Infof("Found duplicate envName [%s] teamName [%s] for Environment UID [%s]", env.Spec.EnvName, env.Spec.TeamName, e.UID)
+			fld := field.NewPath("spec").Child("envName")
+			return field.Invalid(fld, envName, fmt.Sprintf("the environment %s already exists within team %s", envName, teamName))
+		}
+	}
+
+	return nil
 }
 
 func validateTeamExists(ctx context.Context, e *v1.Environment, kc kClient.Client, list *v1.TeamList, l *logrus.Entry) *field.Error {
@@ -278,6 +308,7 @@ func (v *EnvironmentValidatorImpl) validateEnvironmentComponents(
 	if err := checkEnvironmentComponentsNotEmpty(e.Spec.Components); err != nil {
 		allErrs = append(allErrs, err)
 	}
+
 	for i, ec := range e.Spec.Components {
 		name := ec.Name
 		if err := checkEnvironmentComponentName(name, i); err != nil {
@@ -289,6 +320,12 @@ func (v *EnvironmentValidatorImpl) validateEnvironmentComponents(
 		}
 		if err := checkEnvironmentComponentDependenciesExist(name, dependsOn, e.Spec.Components, i); err != nil {
 			allErrs = append(allErrs, err)
+		}
+		if err := checkEnvironmentComponentDuplicateDependencies(dependsOn, i); err != nil {
+			allErrs = append(allErrs, err)
+		}
+		if err := checkValueFromsExist(ec, e.Spec.Components); err != nil {
+			allErrs = append(allErrs, err...)
 		}
 		if e.DeletionTimestamp == nil || e.DeletionTimestamp.IsZero() {
 			if err := v.checkOverlaysExist(ec.OverlayFiles, ec.Name, l); err != nil {
@@ -439,4 +476,71 @@ func checkEnvironmentComponentDependenciesExist(comp string, deps []string, ecs 
 		}
 	}
 	return nil
+}
+
+func checkEnvironmentComponentDuplicateDependencies(deps []string, i int) *field.Error {
+	found := []string{}
+	duplicates := []string{}
+
+	for _, dep := range deps {
+		if util.Contains(found, dep) {
+			duplicates = append(duplicates, dep)
+		} else {
+			found = append(found, dep)
+		}
+	}
+
+	if len(duplicates) > 0 {
+		fld := field.NewPath("spec").Child("components").Index(i).Child("dependsOn")
+		return field.Invalid(fld, duplicates[0], fmt.Sprintf("dependsOn cannot contain duplicates: %v", duplicates))
+	}
+
+	return nil
+}
+
+func checkValueFromsExist(ec *v1.EnvironmentComponent, ecs []*v1.EnvironmentComponent) field.ErrorList {
+	var allErrs field.ErrorList
+
+	var vfs []string
+
+	// Get all valueFrom entries in current component
+	for _, v := range ec.Variables {
+		if v.ValueFrom == "" {
+			continue
+		}
+
+		vfs = append(vfs, v.ValueFrom)
+	}
+
+	for _, vf := range vfs {
+		// Get component name and output variable name from valueFrom string
+		compName, varName, err := SplitValueFrom(vf)
+
+		if err != nil {
+			fld := field.NewPath("spec").Child("components").Child(ec.Name).Child("variables").Child("valueFrom")
+			allErrs = append(allErrs, field.Invalid(fld, vf, fmt.Sprintf("valueFrom must be 'componentName.componentOutputName' instead got %s", vf)))
+			continue
+		}
+
+		// Get associated v1.Output entry from component specified in valueFrom string
+		found := false
+		for _, comp := range ecs {
+			if compName == comp.Name {
+				if output := GetOutputFromComponent(varName, comp); output == nil {
+					fld := field.NewPath("spec").Child("components").Child(ec.Name).Child("variables")
+					allErrs = append(allErrs, field.Invalid(fld, vf, fmt.Sprintf("valueFrom %s does not match any outputs defined on component %s", vf, comp.Name)))
+				}
+
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			fld := field.NewPath("spec").Child("components").Child(ec.Name).Child("variables")
+			allErrs = append(allErrs, field.Invalid(fld, vf, fmt.Sprintf("valueFrom %s references component %s which does not exist", vf, compName)))
+		}
+	}
+
+	return allErrs
 }
