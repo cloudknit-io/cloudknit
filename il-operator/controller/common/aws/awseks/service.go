@@ -2,7 +2,7 @@ package awseks
 
 import "context"
 
-//go:generate mockgen --build_flags=--mod=mod -destination=./mock_eks_api.go -package=awseks "github.com/compuzest/zlifecycle-il-operator/controller/external/aws/awseks" API
+//go:generate mockgen --build_flags=--mod=mod -destination=./mock_eks_api.go -package=awseks "github.com/compuzest/zlifecycle-il-operator/controller/common/aws/awseks" API
 type API interface {
 	DescribeCluster(ctx context.Context, name string) (*ClusterInfo, error)
 }
