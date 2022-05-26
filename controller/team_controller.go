@@ -15,13 +15,18 @@ package controller
 import (
 	"context"
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controller/common/apm"
+	git2 "github.com/compuzest/zlifecycle-il-operator/controller/common/git"
+	"github.com/compuzest/zlifecycle-il-operator/controller/common/git/gogit"
+	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/argocd"
+	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/git"
+	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/github"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/compuzest/zlifecycle-il-operator/controller/lib/apm"
-	"github.com/compuzest/zlifecycle-il-operator/controller/lib/watcherservices"
-	"github.com/compuzest/zlifecycle-il-operator/controller/lib/zerrors"
+	"github.com/compuzest/zlifecycle-il-operator/controller/components/watcherservices"
+	"github.com/compuzest/zlifecycle-il-operator/controller/components/zerrors"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/util"
 
@@ -29,9 +34,6 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/il"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/env"
-	"github.com/compuzest/zlifecycle-il-operator/controller/external/argocd"
-	"github.com/compuzest/zlifecycle-il-operator/controller/external/git"
-	"github.com/compuzest/zlifecycle-il-operator/controller/external/github"
 	"github.com/sirupsen/logrus"
 
 	perrors "github.com/pkg/errors"
@@ -154,7 +156,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		)
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
 	}
-	gitClient, err := git.NewGoGit(apmCtx, &git.GoGitOptions{Mode: git.ModeToken, Token: token})
+	gitClient, err := gogit.NewGoGit(apmCtx, &gogit.Options{Mode: gogit.ModeToken, Token: token})
 	if err != nil {
 		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error instantiating git client"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
@@ -204,7 +206,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
 	}
 
-	commitInfo := git.CommitInfo{
+	commitInfo := git2.CommitInfo{
 		Author: env.Config.GitServiceAccountName,
 		Email:  env.Config.GitServiceAccountEmail,
 		Msg:    fmt.Sprintf("Reconciling team %s", team.Spec.TeamName),

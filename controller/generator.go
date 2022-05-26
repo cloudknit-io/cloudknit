@@ -3,24 +3,23 @@ package controller
 import (
 	"context"
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/workflow"
+	"github.com/compuzest/zlifecycle-il-operator/controller/common/aws/awseks"
+	"github.com/compuzest/zlifecycle-il-operator/controller/common/git"
+	"github.com/compuzest/zlifecycle-il-operator/controller/common/secret"
+	argocd2 "github.com/compuzest/zlifecycle-il-operator/controller/components/operations/argocd"
 
-	"github.com/compuzest/zlifecycle-il-operator/controller/external/aws/awseks"
-
-	"github.com/compuzest/zlifecycle-il-operator/controller/external/secret"
-
-	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/tfgen/tfvar"
-	"github.com/compuzest/zlifecycle-il-operator/controller/lib/gitreconciler"
-	"github.com/compuzest/zlifecycle-il-operator/controller/lib/zerrors"
+	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/terraform/tfvar"
+	"github.com/compuzest/zlifecycle-il-operator/controller/components/gitreconciler"
+	"github.com/compuzest/zlifecycle-il-operator/controller/components/zerrors"
 
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/apps"
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/file"
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/il"
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/overlay"
-	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/tfgen"
-	"github.com/compuzest/zlifecycle-il-operator/controller/external/argocd"
-	"github.com/compuzest/zlifecycle-il-operator/controller/external/argoworkflow"
-	"github.com/compuzest/zlifecycle-il-operator/controller/external/git"
+	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/terraform"
+	"github.com/compuzest/zlifecycle-il-operator/controller/common/argocd"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	kClient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -34,13 +33,13 @@ const (
 // COMPANY
 
 func generateAndSaveCompanyApp(fileAPI file.API, company *stablev1.Company, ilRepoDir string) error {
-	companyApp := argocd.GenerateCompanyApp(company)
+	companyApp := argocd2.GenerateCompanyApp(company)
 
 	return fileAPI.SaveYamlFile(*companyApp, il.CompanyDirectoryAbsolutePath(ilRepoDir), company.Spec.CompanyName+".yaml")
 }
 
 func generateAndSaveCompanyConfigWatcher(fileAPI file.API, company *stablev1.Company, ilRepoDir string) error {
-	companyConfigWatcherApp := argocd.GenerateCompanyConfigWatcherApp(
+	companyConfigWatcherApp := argocd2.GenerateCompanyConfigWatcherApp(
 		company.Spec.CompanyName,
 		company.Spec.ConfigRepo.Source,
 		company.Spec.ConfigRepo.Path,
@@ -52,13 +51,13 @@ func generateAndSaveCompanyConfigWatcher(fileAPI file.API, company *stablev1.Com
 // TEAM
 
 func generateAndSaveTeamApp(fileAPI file.API, team *stablev1.Team, filename string, ilRepoDir string) error {
-	teamApp := argocd.GenerateTeamApp(team)
+	teamApp := argocd2.GenerateTeamApp(team)
 
 	return fileAPI.SaveYamlFile(*teamApp, il.TeamDirectoryAbsolutePath(ilRepoDir), filename)
 }
 
 func generateAndSaveConfigWatchers(fileAPI file.API, team *stablev1.Team, filename string, ilRepoDir string) error {
-	teamConfigWatcherApp := argocd.GenerateTeamConfigWatcherApp(team)
+	teamConfigWatcherApp := argocd2.GenerateTeamConfigWatcherApp(team)
 
 	return fileAPI.SaveYamlFile(*teamConfigWatcherApp, il.ConfigWatcherDirectoryAbsolutePath(ilRepoDir), filename)
 }
@@ -78,12 +77,12 @@ func generateAndSaveWorkflowOfWorkflows(
 	// }
 	ilEnvComponentDirectory := il.EnvironmentComponentsDirectoryAbsolutePath(ilService.ZLILTempDir, environment.Spec.TeamName, environment.Spec.EnvName)
 
-	workflow := argoworkflow.GenerateLegacyWorkflowOfWorkflows(environment, tfcfg)
+	workflow := workflow.GenerateLegacyWorkflowOfWorkflows(environment, tfcfg)
 	return fileAPI.SaveYamlFile(*workflow, ilEnvComponentDirectory, "/wofw.yaml")
 }
 
 func generateAndSaveEnvironmentApp(fileService file.API, environment *stablev1.Environment, envDirectory string) error {
-	envApp := argocd.GenerateEnvironmentApp(environment)
+	envApp := argocd2.GenerateEnvironmentApp(environment)
 	envYAML := fmt.Sprintf("%s-environment.yaml", environment.Spec.EnvName)
 
 	return fileService.SaveYamlFile(*envApp, envDirectory, envYAML)
@@ -104,7 +103,7 @@ func generateAndSaveEnvironmentComponents(
 	for _, ec := range e.Spec.Components {
 		ecDirectory := il.EnvironmentComponentsDirectoryAbsolutePath(ilService.ZLILTempDir, e.Spec.TeamName, e.Spec.EnvName)
 
-		application := argocd.GenerateEnvironmentComponentApps(e, ec)
+		application := argocd2.GenerateEnvironmentComponentApps(e, ec)
 		if err := fileService.SaveYamlFile(*application, ecDirectory, fmt.Sprintf("%s.yaml", ec.Name)); err != nil {
 			return zerrors.NewEnvironmentComponentError(ec.Name, errors.Wrap(err, "error saving yaml file"))
 		}
@@ -195,13 +194,13 @@ func generateTerraformComponent(
 		return zerrors.NewEnvironmentComponentError(ec.Name, errors.Wrap(err, "error deleting terraform directory"))
 	}
 
-	vars := tfgen.NewTemplateVariablesFromEnvironment(e, ec, generatedTFVars, tfcfg)
+	vars := terraform.NewTemplateVariablesFromEnvironment(e, ec, generatedTFVars, tfcfg)
 	if ec.Subtype == TerraformSubtypeCustom {
-		if err := tfgen.GenerateCustomTerraform(fileService, gitClient, ec.Module.Source, ec.Module.Path, tfDirectory, log); err != nil {
+		if err := terraform.GenerateCustomTerraform(fileService, gitClient, ec.Module.Source, ec.Module.Path, tfDirectory, log); err != nil {
 			return zerrors.NewEnvironmentComponentError(ec.Name, errors.Wrap(err, "error generating custom terraform"))
 		}
 	} else {
-		if err := tfgen.GenerateTerraform(fileService, vars, tfDirectory); err != nil {
+		if err := terraform.GenerateTerraform(fileService, vars, tfDirectory); err != nil {
 			return zerrors.NewEnvironmentComponentError(ec.Name, errors.Wrap(err, "error generating terraform"))
 		}
 	}
@@ -226,7 +225,7 @@ func generateAppsComponent(
 	key *kClient.ObjectKey,
 	log *logrus.Entry,
 ) error {
-	info, err := argocd.RegisterNewCluster(ctx, k8sClient, argocdClient, "dev-checkout-staging-eks", log)
+	info, err := argocd2.RegisterNewCluster(ctx, k8sClient, argocdClient, "dev-checkout-staging-eks", log)
 	if err != nil {
 		return errors.Wrap(err, "error registering cluster %s for environment %s")
 	}

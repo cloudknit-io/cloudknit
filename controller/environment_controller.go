@@ -15,27 +15,30 @@ package controller
 import (
 	"context"
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controller/common/apm"
+	argoworkflowapi "github.com/compuzest/zlifecycle-il-operator/controller/common/argoworkflow"
+	"github.com/compuzest/zlifecycle-il-operator/controller/common/aws/awseks"
+	"github.com/compuzest/zlifecycle-il-operator/controller/common/git"
+	secretapi "github.com/compuzest/zlifecycle-il-operator/controller/common/secret"
+	"github.com/compuzest/zlifecycle-il-operator/controller/common/state_manager"
+	argocd2 "github.com/compuzest/zlifecycle-il-operator/controller/components/operations/argocd"
+	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/argoworkflow"
+	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/secret"
+	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/zlstate"
 	"time"
 
 	secrets2 "github.com/compuzest/zlifecycle-il-operator/controller/codegen/secret"
-	"github.com/compuzest/zlifecycle-il-operator/controller/external/aws/awseks"
 	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
 
-	"github.com/compuzest/zlifecycle-il-operator/controller/external/secret"
-
-	"github.com/compuzest/zlifecycle-il-operator/controller/lib/apm"
-	"github.com/compuzest/zlifecycle-il-operator/controller/lib/gitreconciler"
-	"github.com/compuzest/zlifecycle-il-operator/controller/lib/zerrors"
+	"github.com/compuzest/zlifecycle-il-operator/controller/components/gitreconciler"
+	"github.com/compuzest/zlifecycle-il-operator/controller/components/zerrors"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/interpolator"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/file"
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/il"
+	argocdapi "github.com/compuzest/zlifecycle-il-operator/controller/common/argocd"
 	"github.com/compuzest/zlifecycle-il-operator/controller/env"
-	"github.com/compuzest/zlifecycle-il-operator/controller/external/argocd"
-	"github.com/compuzest/zlifecycle-il-operator/controller/external/argoworkflow"
-	"github.com/compuzest/zlifecycle-il-operator/controller/external/git"
-	"github.com/compuzest/zlifecycle-il-operator/controller/external/zlstate"
 	"github.com/compuzest/zlifecycle-il-operator/controller/util"
 
 	"github.com/sirupsen/logrus"
@@ -198,11 +201,11 @@ func (r *EnvironmentReconciler) doReconcile(
 	ilService *il.Service,
 	fileService file.API,
 	gitClient git.API,
-	argoworkflowClient argoworkflow.API,
-	zlstateManagerClient zlstate.API,
+	argoworkflowClient argoworkflowapi.API,
+	zlstateManagerClient state_manager.API,
 	k8sClient awseks.API,
-	argocdClient argocd.API,
-	secretsClient secret.API,
+	argocdClient argocdapi.API,
+	secretsClient secretapi.API,
 ) error {
 	// reconcile logic
 	isHardDelete := !environment.DeletionTimestamp.IsZero()
@@ -214,9 +217,6 @@ func (r *EnvironmentReconciler) doReconcile(
 		}
 	}
 
-	if environment.Spec.EnvName == "fifth-env" {
-		r.LogV2.Info("break")
-	}
 	identifier := secrets2.Identifier{
 		Company:     env.Config.CompanyName,
 		Team:        environment.Spec.TeamName,
@@ -330,8 +330,8 @@ func (r *EnvironmentReconciler) handleNonDeleteEvent(
 	fileAPI file.API,
 	gitClient git.API,
 	k8sClient awseks.API,
-	argocdClient argocd.API,
-	tfcfg *secret.TerraformStateConfig,
+	argocdClient argocdapi.API,
+	tfcfg *secretapi.TerraformStateConfig,
 ) error {
 	r.LogV2.Infof("Generating Environment application for environment %s", e.Spec.EnvName)
 
@@ -366,7 +366,7 @@ func delayEnvironmentReconcileOnInitialRun(log *logrus.Entry, seconds int64) {
 	}
 }
 
-func (r *EnvironmentReconciler) handleDirtyILState(argoworkflowAPI argoworkflow.API, e *stablev1.Environment) error {
+func (r *EnvironmentReconciler) handleDirtyILState(argoworkflowAPI argoworkflowapi.API, e *stablev1.Environment) error {
 	r.LogV2.Infof("Committed new changes to IL repo(s) for environment %s", e.Spec.EnvName)
 	r.LogV2.Infof("Re-syncing Workflow of Workflows for environment %s", e.Spec.EnvName)
 	wow := fmt.Sprintf("%s-%s", e.Spec.TeamName, e.Spec.EnvName)
@@ -456,7 +456,7 @@ func (r *EnvironmentReconciler) postDeleteHook(
 	return nil
 }
 
-func (r *EnvironmentReconciler) deleteDanglingArgocdApps(e *stablev1.Environment, argocdAPI argocd.API) error {
+func (r *EnvironmentReconciler) deleteDanglingArgocdApps(e *stablev1.Environment, argocdAPI argocdapi.API) error {
 	r.LogV2.Info("Cleaning up dangling argocd apps")
 	for _, ec := range e.Spec.Components {
 		appName := fmt.Sprintf("%s-%s-%s", e.Spec.TeamName, e.Spec.EnvName, ec.Name)
@@ -464,7 +464,7 @@ func (r *EnvironmentReconciler) deleteDanglingArgocdApps(e *stablev1.Environment
 			"component": ec.Name,
 			"app":       appName,
 		}).Info("Deleting argocd application")
-		if err := argocd.DeleteApplication(r.LogV2, argocdAPI, appName); err != nil {
+		if err := argocd2.DeleteApplication(r.LogV2, argocdAPI, appName); err != nil {
 			r.LogV2.WithError(err).Error("Error deleting argocd app")
 		}
 	}

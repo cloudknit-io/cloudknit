@@ -17,3 +17,6 @@ indent_style = space
 
 [Makefile]
 indent_size = 4
+
+[.version]
+insert_final_newline = false

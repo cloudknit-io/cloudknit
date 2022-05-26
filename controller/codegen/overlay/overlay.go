@@ -1,13 +1,14 @@
 package overlay
 
 import (
+	git2 "github.com/compuzest/zlifecycle-il-operator/controller/common/git"
+	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/git"
 	"path/filepath"
 
-	"github.com/compuzest/zlifecycle-il-operator/controller/lib/gitreconciler"
+	"github.com/compuzest/zlifecycle-il-operator/controller/components/gitreconciler"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/file"
 
-	"github.com/compuzest/zlifecycle-il-operator/controller/external/git"
 	"github.com/sirupsen/logrus"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -18,7 +19,7 @@ import (
 func GenerateOverlayFiles(
 	log *logrus.Entry,
 	fileService file.API,
-	gitClient git.API,
+	gitClient git2.API,
 	gitReconciler gitreconciler.API,
 	key *client.ObjectKey,
 	ec *stablev1.EnvironmentComponent,

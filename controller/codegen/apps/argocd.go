@@ -1,21 +1,21 @@
 package apps
 
 import (
+	git2 "github.com/compuzest/zlifecycle-il-operator/controller/common/git"
+	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/argocd"
+	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/git"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/compuzest/zlifecycle-il-operator/controller/lib/gitreconciler"
+	"github.com/compuzest/zlifecycle-il-operator/controller/components/gitreconciler"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/env"
-
-	"github.com/compuzest/zlifecycle-il-operator/controller/external/argocd"
 
 	"github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/file"
-	"github.com/compuzest/zlifecycle-il-operator/controller/external/git"
 	perrors "github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -27,7 +27,7 @@ import (
 func GenerateArgocdApps(
 	log *logrus.Entry,
 	fs file.API,
-	gitClient git.API,
+	gitClient git2.API,
 	gitReconciler gitreconciler.API,
 	key *client.ObjectKey,
 	e *stablev1.Environment,

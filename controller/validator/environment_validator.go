@@ -3,23 +3,24 @@ package validator
 import (
 	"context"
 	"fmt"
+	git2 "github.com/compuzest/zlifecycle-il-operator/controller/common/git"
+	"github.com/compuzest/zlifecycle-il-operator/controller/common/log"
+	notifier2 "github.com/compuzest/zlifecycle-il-operator/controller/common/notifier"
+	"github.com/compuzest/zlifecycle-il-operator/controller/common/notifier/uinotifier"
+	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/git"
 	"regexp"
 	"time"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/file"
 
-	"github.com/compuzest/zlifecycle-il-operator/controller/lib/factories/gitfactory"
-	"github.com/compuzest/zlifecycle-il-operator/controller/lib/log"
-	"github.com/compuzest/zlifecycle-il-operator/controller/lib/watcherservices"
+	"github.com/compuzest/zlifecycle-il-operator/controller/components/factories/gitfactory"
+	"github.com/compuzest/zlifecycle-il-operator/controller/components/watcherservices"
 
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controller/util"
 	kClient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/env"
-	"github.com/compuzest/zlifecycle-il-operator/controller/external/git"
-	"github.com/compuzest/zlifecycle-il-operator/controller/external/notifier"
-	"github.com/compuzest/zlifecycle-il-operator/controller/external/notifier/uinotifier"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -42,7 +43,7 @@ var logger = log.NewLogger().WithFields(logrus.Fields{"name": "controllers.Envir
 
 type EnvironmentValidatorImpl struct {
 	K8sClient kClient.Client
-	gitClient git.API
+	gitClient git2.API
 	fs        file.API
 }
 
@@ -78,12 +79,12 @@ func (v *EnvironmentValidatorImpl) init(ctx context.Context) error {
 
 var _ v1.EnvironmentValidator = (*EnvironmentValidatorImpl)(nil)
 
-func notifyError(ctx context.Context, e *v1.Environment, ntfr notifier.API, msg string, debug interface{}) error {
-	n := &notifier.Notification{
+func notifyError(ctx context.Context, e *v1.Environment, ntfr notifier2.API, msg string, debug interface{}) error {
+	n := &notifier2.Notification{
 		Company:     env.Config.CompanyName,
 		Team:        e.Spec.TeamName,
 		Environment: e.Spec.EnvName,
-		MessageType: notifier.ERROR,
+		MessageType: notifier2.ERROR,
 		Message:     msg,
 		Timestamp:   time.Now(),
 		Debug:       debug,

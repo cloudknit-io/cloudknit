@@ -15,20 +15,22 @@ package controller
 import (
 	"context"
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controller/common/apm"
+	git2 "github.com/compuzest/zlifecycle-il-operator/controller/common/git"
+	"github.com/compuzest/zlifecycle-il-operator/controller/common/git/gogit"
+	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/argocd"
+	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/git"
+	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/github"
 	"sync"
 	"time"
 
-	"github.com/compuzest/zlifecycle-il-operator/controller/lib/apm"
-	"github.com/compuzest/zlifecycle-il-operator/controller/lib/watcherservices"
-	"github.com/compuzest/zlifecycle-il-operator/controller/lib/zerrors"
+	"github.com/compuzest/zlifecycle-il-operator/controller/components/watcherservices"
+	"github.com/compuzest/zlifecycle-il-operator/controller/components/zerrors"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/util"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/file"
 	"github.com/compuzest/zlifecycle-il-operator/controller/env"
-	"github.com/compuzest/zlifecycle-il-operator/controller/external/argocd"
-	"github.com/compuzest/zlifecycle-il-operator/controller/external/git"
-	"github.com/compuzest/zlifecycle-il-operator/controller/external/github"
 	perrors "github.com/pkg/errors"
 
 	"github.com/sirupsen/logrus"
@@ -132,7 +134,7 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		)
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
 	}
-	gitClient, err := git.NewGoGit(apmCtx, &git.GoGitOptions{Mode: git.ModeToken, Token: token})
+	gitClient, err := gogit.NewGoGit(apmCtx, &gogit.Options{Mode: gogit.ModeToken, Token: token})
 	if err != nil {
 		companyErr := zerrors.NewCompanyError(
 			company.Spec.CompanyName,
@@ -181,7 +183,7 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
 	}
 
-	commitInfo := git.CommitInfo{
+	commitInfo := git2.CommitInfo{
 		Author: env.Config.GitServiceAccountName,
 		Email:  env.Config.GitServiceAccountEmail,
 		Msg:    fmt.Sprintf("Reconciling company %s", company.Spec.CompanyName),
