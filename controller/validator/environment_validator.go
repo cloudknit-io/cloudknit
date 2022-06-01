@@ -3,13 +3,14 @@ package validator
 import (
 	"context"
 	"fmt"
+	"regexp"
+	"time"
+
 	git2 "github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/log"
 	notifier2 "github.com/compuzest/zlifecycle-il-operator/controller/common/notifier"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/notifier/uinotifier"
 	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/git"
-	"regexp"
-	"time"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/file"
 

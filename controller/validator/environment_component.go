@@ -2,6 +2,7 @@ package validator
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
@@ -24,5 +25,18 @@ func SplitValueFrom(vf string) (string, string, error) {
 		return "", "", fmt.Errorf("valueFrom string is not properly formatted: %s", vf)
 	}
 
+	outputName := output[1]
+
+	if left := strings.Index(outputName, "["); left >= 0 {
+		right := strings.Index(outputName, "]")
+
+		if _, err := strconv.ParseInt(outputName[left+1:right], 10, 64); err != nil {
+			return "", "", fmt.Errorf("valueFrom index is not an integer: %s", outputName)
+		}
+
+		return output[0], outputName[:left], nil
+	}
+
+	// component name, output variable name, error
 	return output[0], output[1], nil
 }
