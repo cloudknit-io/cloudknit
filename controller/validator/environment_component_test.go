@@ -39,6 +39,12 @@ func TestSplitValueFrom(t *testing.T) {
 	assert.Equal(t, "varname", variable)
 	assert.Nil(t, err)
 
+	comp, variable, err = SplitValueFrom("blah.varname[0")
+
+	assert.Equal(t, "", comp)
+	assert.Equal(t, "", variable)
+	assert.NotNil(t, err)
+
 	comp, variable, err = SplitValueFrom("blah.varname[jfkd]")
 
 	assert.Equal(t, "", comp)

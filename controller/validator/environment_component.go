@@ -30,6 +30,10 @@ func SplitValueFrom(vf string) (string, string, error) {
 	if left := strings.Index(outputName, "["); left >= 0 {
 		right := strings.Index(outputName, "]")
 
+		if right == -1 {
+			return "", "", fmt.Errorf("valueFrom is not formatted properly: %s", outputName)
+		}
+
 		if _, err := strconv.ParseInt(outputName[left+1:right], 10, 64); err != nil {
 			return "", "", fmt.Errorf("valueFrom index is not an integer: %s", outputName)
 		}
