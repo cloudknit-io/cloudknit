@@ -15,6 +15,8 @@ package controller
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/apm"
 	argoworkflowapi "github.com/compuzest/zlifecycle-il-operator/controller/common/argoworkflow"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/aws/awseks"
@@ -25,7 +27,6 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/argoworkflow"
 	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/secret"
 	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/zlstate"
-	"time"
 
 	secrets2 "github.com/compuzest/zlifecycle-il-operator/controller/codegen/secret"
 	k8sErrors "k8s.io/apimachinery/pkg/api/errors"

@@ -5,6 +5,7 @@
 package file
 
 import (
+	fs "io/fs"
 	os "os"
 	reflect "reflect"
 	template "text/template"
@@ -34,6 +35,20 @@ func NewMockAPI(ctrl *gomock.Controller) *MockAPI {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockAPI) EXPECT() *MockAPIMockRecorder {
 	return m.recorder
+}
+
+// CleanDir mocks base method.
+func (m *MockAPI) CleanDir(arg0 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CleanDir", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CleanDir indicates an expected call of CleanDir.
+func (mr *MockAPIMockRecorder) CleanDir(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CleanDir", reflect.TypeOf((*MockAPI)(nil).CleanDir), arg0)
 }
 
 // CopyDirContent mocks base method.
@@ -134,6 +149,21 @@ func (m *MockAPI) NewFile(arg0, arg1 string) (*os.File, error) {
 func (mr *MockAPIMockRecorder) NewFile(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewFile", reflect.TypeOf((*MockAPI)(nil).NewFile), arg0, arg1)
+}
+
+// ReadDir mocks base method.
+func (m *MockAPI) ReadDir(arg0 string) ([]fs.DirEntry, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReadDir", arg0)
+	ret0, _ := ret[0].([]fs.DirEntry)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReadDir indicates an expected call of ReadDir.
+func (mr *MockAPIMockRecorder) ReadDir(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadDir", reflect.TypeOf((*MockAPI)(nil).ReadDir), arg0)
 }
 
 // RemoveAll mocks base method.

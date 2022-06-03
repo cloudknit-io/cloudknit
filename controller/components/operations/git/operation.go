@@ -2,11 +2,12 @@ package git
 
 import (
 	"fmt"
-	gitapi "github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+
+	gitapi "github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 
 	"github.com/pkg/errors"
 
