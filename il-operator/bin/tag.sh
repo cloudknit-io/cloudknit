@@ -21,7 +21,7 @@ find . -type f -name ".version" -print0 | xargs -0 sed -i '' -e "s/[v]*[0-9]*[0-
 
 go build
 
-git add .
+git add .version
 git commit -m "v${TGT}" || true
 
 git tag "v${TGT}"
