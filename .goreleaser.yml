@@ -27,7 +27,7 @@ dockers:
       - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
       - "--label=org.opencontainers.image.version={{ .Version }}"
       - "--label=org.opencontainers.image.vendor=CompuZest"
-    dockerfile: ./Dockerfile.goreleaser
+    dockerfile: ./Dockerfile.prod.goreleaser
 
 dist: "build/dist"
 
@@ -86,4 +86,3 @@ announce:
   slack:
     enabled: true
     message_template: "*zLifecycle IL Operator* `{{ .Tag }}` has been released from the `{{ .Branch }}` branch at commit `{{ .ShortCommit }}` ({{ .CommitDate }})\nhttps://github.com/CompuZest/zlifecycle-il-operator/releases/tag/{{ .Tag }}\n\n{{ .ReleaseNotes }}"
-
