@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "embed"
+
 	"github.com/compuzest/zlifecycle-event-service/app/services"
 	"github.com/compuzest/zlifecycle-event-service/app/web"
 	"github.com/compuzest/zlifecycle-event-service/app/zlog"

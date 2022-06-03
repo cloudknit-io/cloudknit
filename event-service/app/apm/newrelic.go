@@ -26,7 +26,7 @@ func Init() (*newrelic.Application, error) {
 	return app, nil
 }
 
-func NoticeError(txn *newrelic.Transaction, err *http.VerboseError) error {
+func NoticeError(txn *newrelic.Transaction, err *http.VerboseError) *http.VerboseError {
 	if txn != nil {
 		txn.NoticeError(newrelic.Error{
 			Message: err.Error(),

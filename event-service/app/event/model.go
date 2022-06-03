@@ -1,6 +1,10 @@
 package event
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Type string
 
@@ -18,6 +22,28 @@ type Event struct {
 	EventType   Type      `json:"eventType" db:"event_type"`
 	Message     string    `json:"message" db:"message"`
 	Debug       any       `json:"debug" db:"debug"`
+}
+
+func NewEvent(company, team, environment, message string, eventType Type, debug any) *Event {
+	return &Event{
+		ID:          uuid.New().String(),
+		Company:     company,
+		Team:        team,
+		Environment: environment,
+		CreatedAt:   time.Now(),
+		EventType:   eventType,
+		Message:     message,
+		Debug:       debug,
+	}
+}
+
+type RecordPayload struct {
+	Company     string `json:"company"`
+	Team        string `json:"team"`
+	Environment string `json:"environment"`
+	EventType   string `json:"eventType"`
+	Message     string `json:"message"`
+	Debug       any    `json:"debug"`
 }
 
 type ListPayload struct {

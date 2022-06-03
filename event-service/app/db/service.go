@@ -60,7 +60,7 @@ func newConnectionURL(cfg *config) (string, error) {
 	case DriverSQLMock:
 		return "sqlmock", nil
 	case DriverMySQL:
-		return fmt.Sprintf("%s:%s@(%s:%s)/%s", cfg.Username, cfg.Password, cfg.Host, cfg.Port, cfg.Database), nil
+		return fmt.Sprintf("%s:%s@(%s:%s)/%s?parseTime=true", cfg.Username, cfg.Password, cfg.Host, cfg.Port, cfg.Database), nil
 	default:
 		return "", errors.Errorf("unsupported database driver: %s", cfg.Driver)
 	}

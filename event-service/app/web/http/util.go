@@ -13,7 +13,7 @@ func ErrorResponse(w http.ResponseWriter, message string, httpStatusCode int) {
 	_, _ = w.Write(jsonResp)
 }
 
-func Response(w http.ResponseWriter, body interface{}, httpStatusCode int) {
+func WriteResponse(w http.ResponseWriter, body any, httpStatusCode int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(httpStatusCode)
 	jsonResp, _ := json.Marshal(body)

@@ -57,9 +57,11 @@ func initRouter(svcs *services.Services) (*mux.Router, error) {
 			return nil, errors.Wrap(err, "error initializing New Relic APM")
 		}
 		r.HandleFunc(newrelic.WrapHandleFunc(app, "/events", controllers.EventsHandler(svcs)))
+		r.HandleFunc(newrelic.WrapHandleFunc(app, "/health", controllers.HealthHandler(svcs)))
 	} else {
 		zlog.PlainLogger().Info("Initializing application without APM")
 		r.HandleFunc("/events", controllers.EventsHandler(svcs))
+		r.HandleFunc("/health", controllers.HealthHandler(svcs))
 	}
 
 	r.NotFoundHandler = http.HandlerFunc(controllers.NotFoundHandler)

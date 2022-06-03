@@ -1,5 +1,5 @@
 CREATE TABLE event(
-  id BINARY(16) PRIMARY KEY,
+  id VARCHAR(36) PRIMARY KEY,
   company TEXT NOT NULL,
   team TEXT NOT NULL,
   environment TEXT NOT NULL,

@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"github.com/compuzest/zlifecycle-event-service/app/health"
 
 	"github.com/compuzest/zlifecycle-event-service/app/db"
 	"github.com/compuzest/zlifecycle-event-service/app/event"
@@ -10,15 +11,17 @@ import (
 
 type Services struct {
 	ES event.API
+	HS health.API
 }
 
 func NewServices() (*Services, error) {
 	ctx := context.Background()
-	db, err := db.NewDatabase(ctx)
+	sqldb, err := db.NewDatabase(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating new database")
 	}
-	es := event.NewService(db)
+	es := event.NewService(sqldb)
+	hs := health.NewService(es)
 
-	return &Services{ES: es}, nil
+	return &Services{ES: es, HS: hs}, nil
 }
