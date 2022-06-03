@@ -14,7 +14,9 @@ package file
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"text/template"
@@ -45,6 +47,8 @@ type API interface {
 	IsDir(path string) bool
 	IsFile(path string) bool
 	FileExistsInDir(dir, path string) (bool, error)
+	ReadDir(path string) ([]fs.DirEntry, error)
+	CleanDir(path string) error
 }
 
 type OSFileService struct{}
@@ -223,6 +227,42 @@ func (f *OSFileService) SaveYamlFile(obj interface{}, folderName string, fileNam
 	}
 
 	return saveBytesToFile(bytes, folderName, fileName)
+}
+
+func (f *OSFileService) ReadDir(path string) ([]fs.DirEntry, error) {
+	return os.ReadDir(path)
+}
+
+// Cleans directory prior to generating files from controllers
+func (f *OSFileService) CleanDir(dir string) (err error) {
+	files, err := f.ReadDir(dir)
+
+	keeps := []string{".git"}
+
+	if err != nil {
+		return err
+	}
+
+	for _, file := range files {
+		keep := false
+
+		for _, k := range keeps {
+			if file.Name() == k {
+				keep = true
+				break
+			}
+		}
+
+		if keep {
+			continue
+		}
+
+		if err := f.RemoveAll(path.Join(dir, file.Name())); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func saveBytesToFile(bytes []byte, folderName string, fileName string) error {

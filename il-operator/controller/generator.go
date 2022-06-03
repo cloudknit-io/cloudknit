@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"fmt"
+
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/workflow"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/aws/awseks"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/git"
@@ -100,9 +101,13 @@ func generateAndSaveEnvironmentComponents(
 	e *stablev1.Environment,
 	tfcfg *secret.TerraformStateConfig,
 ) error {
-	for _, ec := range e.Spec.Components {
-		ecDirectory := il.EnvironmentComponentsDirectoryAbsolutePath(ilService.ZLILTempDir, e.Spec.TeamName, e.Spec.EnvName)
+	ecDirectory := il.EnvironmentComponentsDirectoryAbsolutePath(ilService.ZLILTempDir, e.Spec.TeamName, e.Spec.EnvName)
 
+	if err := fileService.CleanDir(ecDirectory); err != nil {
+		return errors.Wrap(err, fmt.Sprintf("could not clean environment-component directory %s", ecDirectory))
+	}
+
+	for _, ec := range e.Spec.Components {
 		application := argocd2.GenerateEnvironmentComponentApps(e, ec)
 		if err := fileService.SaveYamlFile(*application, ecDirectory, fmt.Sprintf("%s.yaml", ec.Name)); err != nil {
 			return zerrors.NewEnvironmentComponentError(ec.Name, errors.Wrap(err, "error saving yaml file"))
