@@ -1,11 +1,11 @@
 package validator
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
+	"github.com/pkg/errors"
 )
 
 func GetOutputFromComponent(name string, ec *v1.EnvironmentComponent) *v1.Output {
@@ -18,29 +18,30 @@ func GetOutputFromComponent(name string, ec *v1.EnvironmentComponent) *v1.Output
 	return nil
 }
 
-func SplitValueFrom(vf string) (string, string, error) {
+func SplitValueFrom(vf string) (compName string, outputVarName string, err error) {
 	output := strings.Split(vf, ".")
 
 	if len(output) != 2 {
-		return "", "", fmt.Errorf("valueFrom string is not properly formatted: %s", vf)
+		return compName, outputVarName, errors.Errorf("valueFrom string is not properly formatted: %s", vf)
 	}
 
-	outputName := output[1]
+	compName = output[0]
+	outputVarName = output[1]
 
-	if left := strings.Index(outputName, "["); left >= 0 {
-		right := strings.Index(outputName, "]")
+	if left := strings.Index(outputVarName, "["); left >= 0 {
+		right := strings.Index(outputVarName, "]")
 
 		if right == -1 {
-			return "", "", fmt.Errorf("valueFrom is not formatted properly: %s", outputName)
+			return "", "", errors.Errorf("valueFrom is not formatted properly: %s", outputVarName)
 		}
 
-		if _, err := strconv.ParseInt(outputName[left+1:right], 10, 64); err != nil {
-			return "", "", fmt.Errorf("valueFrom index is not an integer: %s", outputName)
+		if _, err := strconv.ParseInt(outputVarName[left+1:right], 10, 64); err != nil {
+			return "", "", errors.Errorf("valueFrom index is not an integer: %s", outputVarName)
 		}
 
-		return output[0], outputName[:left], nil
+		return compName, outputVarName[:left], nil
 	}
 
 	// component name, output variable name, error
-	return output[0], output[1], nil
+	return compName, outputVarName, nil
 }
