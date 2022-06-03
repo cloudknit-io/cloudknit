@@ -173,6 +173,7 @@ func TestCheckValueFromsExist(t *testing.T) {
 			Name: "context",
 			Outputs: []*v1.Output{
 				{Name: "context"},
+				{Name: "private-subnets"},
 				{Name: "doesnt-match"},
 			},
 		},
