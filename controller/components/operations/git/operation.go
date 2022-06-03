@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -59,10 +58,6 @@ func CloneTemp(gitAPI gitapi.API, repo string, log *logrus.Entry) (dir string, c
 		_ = os.RemoveAll(tempDir)
 	}
 
-	if err := PrepRepo(tempDir); err != nil {
-		return "", nil, errors.Wrapf(err, "failed while preparing temporary git repo")
-	}
-
 	return tempDir, cleanupFunc, nil
 }
 
@@ -79,41 +74,4 @@ func createTempDir(repo string) (string, error) {
 	pattern := fmt.Sprintf("repo-%s-", dirName)
 	tempDir, err := ioutil.TempDir("", pattern)
 	return tempDir, err
-}
-
-func PrepRepo(dir string) (err error) {
-	files, err := os.ReadDir(dir)
-
-	keeps := []string{".git"}
-
-	if err != nil {
-		return err
-	}
-
-	for _, file := range files {
-		keep := false
-
-		for _, k := range keeps {
-			if file.Name() == k {
-				keep = true
-				break
-			}
-		}
-
-		if keep {
-			continue
-		}
-
-		if file.IsDir() {
-			if err := os.RemoveAll(path.Join(dir, file.Name())); err != nil {
-				return err
-			}
-		} else {
-			if err := os.Remove(path.Join(dir, file.Name())); err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
 }
