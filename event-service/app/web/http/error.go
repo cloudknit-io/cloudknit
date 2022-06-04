@@ -2,9 +2,10 @@ package http
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"net/http"
 )
 
 type Error struct {

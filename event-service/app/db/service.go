@@ -5,13 +5,19 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/compuzest/zlifecycle-event-service/app/env"
+	"github.com/golang-migrate/migrate/v4"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 )
 
+type MigrationCommand string
+
 const (
-	DriverSQLMock = "sqlmock"
-	DriverMySQL   = "mysql"
+	DriverSQLMock                  = "sqlmock"
+	DriverMySQL                    = "mysql"
+	MigrateUp     MigrationCommand = "up"
+	MigrateDown   MigrationCommand = "down"
 )
 
 type config struct {
@@ -55,11 +61,14 @@ func newConfig() *config {
 	return &c
 }
 
-func newConnectionURL(cfg *config) (string, error) {
+func newConnectionURL(cfg *config, withProtocol bool) (string, error) {
 	switch cfg.Driver {
 	case DriverSQLMock:
 		return "sqlmock", nil
 	case DriverMySQL:
+		if withProtocol {
+			return fmt.Sprintf("mysql://%s:%s@tcp(%s:%s)/%s", cfg.Username, cfg.Password, cfg.Host, cfg.Port, cfg.Database), nil
+		}
 		return fmt.Sprintf("%s:%s@(%s:%s)/%s?parseTime=true", cfg.Username, cfg.Password, cfg.Host, cfg.Port, cfg.Database), nil
 	default:
 		return "", errors.Errorf("unsupported database driver: %s", cfg.Driver)
@@ -69,7 +78,7 @@ func newConnectionURL(cfg *config) (string, error) {
 func NewDatabase(ctx context.Context) (*sqlx.DB, error) {
 	cfg := newConfig()
 
-	connURL, err := newConnectionURL(newConfig())
+	connURL, err := newConnectionURL(newConfig(), false)
 	if err != nil {
 		return nil, err
 	}
@@ -80,4 +89,32 @@ func NewDatabase(ctx context.Context) (*sqlx.DB, error) {
 	}
 
 	return db, nil
+}
+
+func Migrate(command MigrationCommand) (change bool, err error) {
+	connURL, err := newConnectionURL(newConfig(), true)
+	if err != nil {
+		return false, err
+	}
+
+	m, err := migrate.New(env.Config().MigrationsDir, connURL)
+	if err != nil {
+		return false, errors.Wrap(err, "error creating migrations runner")
+	}
+	switch command {
+	case MigrateUp:
+		err = m.Up()
+	case MigrateDown:
+		err = m.Down()
+	default:
+		return false, errors.Errorf("invalid migration command: %s", command)
+	}
+
+	if errors.Is(err, migrate.ErrNoChange) {
+		return false, nil
+	}
+	if err != nil {
+		return false, errors.Wrapf(err, "error executing migrate %s command", command)
+	}
+	return true, nil
 }

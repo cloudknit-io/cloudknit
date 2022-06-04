@@ -4,18 +4,14 @@ import (
 	"context"
 	"sort"
 
+	"github.com/compuzest/zlifecycle-event-service/app/util"
+
 	"github.com/compuzest/zlifecycle-event-service/app/event"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
 type StatusType string
-
-const (
-	StatusOK      StatusType = "ok"
-	StatusUnknown StatusType = "unknown"
-	StatusError   StatusType = "error"
-)
 
 type API interface {
 	Healthcheck(ctx context.Context, company string, log *logrus.Entry) (TeamStatus, error)
@@ -29,17 +25,6 @@ func NewService(es event.API) *Service {
 	return &Service{es: es}
 }
 
-type (
-	TeamStatus        map[string]EnvironmentStatus
-	TeamEvents        map[string]EnvironmentEvents
-	EnvironmentStatus map[string][]*Status
-	EnvironmentEvents map[string][]*event.Event
-	Status            struct {
-		Events []*event.Event `json:"events"`
-		Status StatusType     `json:"status"`
-	}
-)
-
 func (s *Service) Healthcheck(ctx context.Context, company string, log *logrus.Entry) (TeamStatus, error) {
 	log.Infof("Performing healthcheck for company [%s]", company)
 
@@ -50,36 +35,60 @@ func (s *Service) Healthcheck(ctx context.Context, company string, log *logrus.E
 	}
 
 	teamEvents := buildTeamEvents(events)
+	teamStatus, err := buildTeamStatus(teamEvents)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error running healthcheck for company [%s]", company)
+	}
 
-	return buildTeamStatus(teamEvents), nil
+	return teamStatus, nil
 }
 
-func buildTeamStatus(teamEvents TeamEvents) TeamStatus {
+func buildTeamStatus(teamEvents TeamEvents) (TeamStatus, error) {
 	teamStatus := make(TeamStatus)
 
 	for team, ee := range teamEvents {
-		teamStatus[team] = buildEnvironmentStatus(ee)
+		environmentStatus, err := buildEnvironmentStatus(ee)
+		if err != nil {
+			return nil, errors.Wrapf(err, "error creating team status for team [%s]", team)
+		}
+		teamStatus[team] = environmentStatus
 	}
 
-	return teamStatus
+	return teamStatus, nil
 }
 
-func buildEnvironmentStatus(ee EnvironmentEvents) EnvironmentStatus {
+func buildEnvironmentStatus(ee EnvironmentEvents) (EnvironmentStatus, error) {
 	environmentStatus := make(EnvironmentStatus)
 
 	for env, events := range ee {
-		environmentStatus[env] = append(environmentStatus[env], newEnvironmentStatus(events))
+		status, err := NewEnvironmentStatus(events)
+		if err != nil {
+			return nil, errors.Wrapf(err, "error creating environment status for environment [%s]", env)
+		}
+		environmentStatus[env] = append(environmentStatus[env], status)
 	}
 
-	return environmentStatus
+	return environmentStatus, nil
 }
 
-func newEnvironmentStatus(events []*event.Event) *Status {
+func NewEnvironmentStatus(events []*event.Event) (*Status, error) {
+	var errorMessages []string
 	status := StatusOK
-	if events[0].EventType == event.ValidationError {
+	latest := events[0]
+	if latest.EventType == event.ValidationError {
 		status = StatusError
+		if err := util.CycleJSON(latest.Payload, &errorMessages); err != nil {
+			return nil, errors.Wrapf(err, "error unmarshalling event [%s] payload", events[0].ID)
+		}
 	}
-	return &Status{Status: status, Events: events}
+	return &Status{
+		Events:      events,
+		Company:     latest.Company,
+		Team:        latest.Team,
+		Environment: latest.Environment,
+		Status:      status,
+		Errors:      errorMessages,
+	}, nil
 }
 
 func buildTeamEvents(events []*event.Event) TeamEvents {
@@ -98,7 +107,7 @@ func buildEnvironmentEvents(events []*event.Event, team string) EnvironmentEvent
 	environmentEvents := make(EnvironmentEvents)
 
 	for _, e := range events {
-		if e.Team != team {
+		if !IsValidationEvent(e.EventType) || e.Team != team {
 			continue
 		}
 		if environmentEvents[e.Environment] == nil {
@@ -116,4 +125,8 @@ func buildEnvironmentEvents(events []*event.Event, team string) EnvironmentEvent
 	}
 
 	return environmentEvents
+}
+
+func IsValidationEvent(eventType event.Type) bool {
+	return util.StringInSlice(string(eventType), []string{string(event.ValidationError), string(event.ValidationSuccess)})
 }

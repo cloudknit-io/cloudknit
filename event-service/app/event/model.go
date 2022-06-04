@@ -1,7 +1,10 @@
 package event
 
 import (
+	"encoding/json"
 	"time"
+
+	"github.com/compuzest/zlifecycle-event-service/app/util"
 
 	"github.com/google/uuid"
 )
@@ -14,17 +17,17 @@ const (
 )
 
 type Event struct {
-	ID          string    `json:"id" db:"id"`
-	Company     string    `json:"company" db:"company"`
-	Team        string    `json:"team" db:"team"`
-	Environment string    `json:"environment" db:"environment"`
-	CreatedAt   time.Time `json:"createdAt" db:"created_at"`
-	EventType   Type      `json:"eventType" db:"event_type"`
-	Message     string    `json:"message" db:"message"`
-	Debug       any       `json:"debug" db:"debug"`
+	ID          string          `json:"id" db:"id"`
+	Company     string          `json:"company" db:"company"`
+	Team        string          `json:"team" db:"team"`
+	Environment string          `json:"environment" db:"environment"`
+	CreatedAt   time.Time       `json:"createdAt" db:"created_at"`
+	EventType   Type            `json:"eventType" db:"event_type"`
+	Payload     json.RawMessage `json:"payload" db:"payload"`
+	Debug       any             `json:"debug" db:"debug"`
 }
 
-func NewEvent(company, team, environment, message string, eventType Type, debug any) *Event {
+func NewEvent(company, team, environment string, payload any, eventType Type, debug any) *Event {
 	return &Event{
 		ID:          uuid.New().String(),
 		Company:     company,
@@ -32,7 +35,7 @@ func NewEvent(company, team, environment, message string, eventType Type, debug 
 		Environment: environment,
 		CreatedAt:   time.Now(),
 		EventType:   eventType,
-		Message:     message,
+		Payload:     util.ToJSONBytes(payload, false),
 		Debug:       debug,
 	}
 }
@@ -42,7 +45,7 @@ type RecordPayload struct {
 	Team        string `json:"team"`
 	Environment string `json:"environment"`
 	EventType   string `json:"eventType"`
-	Message     string `json:"message"`
+	Payload     any    `json:"payload"`
 	Debug       any    `json:"debug"`
 }
 

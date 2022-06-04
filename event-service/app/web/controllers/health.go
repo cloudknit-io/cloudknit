@@ -2,6 +2,8 @@ package controllers
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/compuzest/zlifecycle-event-service/app/apm"
 	"github.com/compuzest/zlifecycle-event-service/app/health"
 	"github.com/compuzest/zlifecycle-event-service/app/services"
@@ -10,7 +12,6 @@ import (
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"net/http"
 )
 
 func HealthHandler(svcs *services.Services) func(w http.ResponseWriter, r *http.Request) {

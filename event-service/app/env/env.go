@@ -9,6 +9,7 @@ type Cfg struct {
 	NewRelicAPIKey string
 	Instance       string
 	Environment    string
+	MigrationsDir  string
 }
 
 func Config() *Cfg {
@@ -19,6 +20,7 @@ func Config() *Cfg {
 		NewRelicAPIKey: os.Getenv("NEW_RELIC_API_KEY"),
 		Instance:       getOr("META_INSTANCE", "dev"),
 		Environment:    getOr("ENVIRONMENT", "dev"),
+		MigrationsDir:  getOr("MIGRATIONS_DIR", "file://db/migrations"),
 	}
 }
 

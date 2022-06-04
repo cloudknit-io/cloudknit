@@ -40,7 +40,7 @@ func (s *Service) Record(ctx context.Context, p *RecordPayload, log *logrus.Entr
 		return nil, errors.Wrap(err, "error validating record payload")
 	}
 
-	event := NewEvent(p.Company, p.Team, p.Environment, p.Message, Type(p.EventType), p.Debug)
+	event := NewEvent(p.Company, p.Team, p.Environment, p.Payload, Type(p.EventType), p.Debug)
 
 	log.Infof(
 		"Recording new %s event with ID [%s] for company [%s], team [%s] and environment [%s]",

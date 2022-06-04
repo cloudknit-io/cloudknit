@@ -39,6 +39,10 @@ func (s *Service) selectEvents(ctx context.Context, payload *ListPayload, scope 
 		return nil, errors.Wrapf(err, "error listing events for %s scope and %s filter", scope, filter)
 	}
 
+	if events == nil {
+		events = []*Event{}
+	}
+
 	return events, nil
 }
 
@@ -87,7 +91,7 @@ func (s *Service) getListStmt(scope Scope, filter Filter) (stmt *sqlx.NamedStmt,
 
 func (s *Service) sqlInsertEvent() (*sqlx.NamedStmt, error) {
 	return s.db.PrepareNamed(
-		"INSERT INTO event(id, company, team, environment, created_at, event_type, message, debug) VALUES(:id, :company, :team, :environment, :created_at, :event_type, :message, :debug)",
+		"INSERT INTO event(id, company, team, environment, created_at, event_type, payload, debug) VALUES(:id, :company, :team, :environment, :created_at, :event_type, :payload, :debug)",
 	)
 }
 

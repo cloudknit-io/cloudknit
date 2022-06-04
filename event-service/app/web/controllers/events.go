@@ -3,8 +3,10 @@ package controllers
 import (
 	"context"
 	"encoding/json"
-	"github.com/compuzest/zlifecycle-event-service/app/apm"
 	"net/http"
+
+	"github.com/compuzest/zlifecycle-event-service/app/apm"
+	"github.com/compuzest/zlifecycle-event-service/app/health"
 
 	"github.com/sirupsen/logrus"
 
@@ -17,7 +19,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func EventsHandler(svcs *services.Services) func(w http.ResponseWriter, r *http.Request) {
+func EventsHandler(svcs *services.Services) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		txn := newrelic.FromContext(r.Context())
 		log := zlog.CtxLogger(r.Context())
@@ -84,19 +86,35 @@ func postEventsHandler(ctx context.Context, r *http.Request, svcs *services.Serv
 		Team:        body.Team,
 		Environment: body.Environment,
 		EventType:   body.EventType,
-		Message:     body.Message,
+		Payload:     body.Payload,
 		Debug:       body.Debug,
 	}
-	event, err := svcs.ES.Record(ctx, &p, log)
+	evt, err := svcs.ES.Record(ctx, &p, log)
 	if err != nil {
 		return nil, errors.Wrapf(
 			err,
-			"error recording event for company %s, team %s and environment %s",
+			"error recording event for company [%s], team [%s] and environment [%s]",
 			p.Company, p.Team, p.Environment,
 		)
 	}
 
-	return &PostEventsResponse{*event}, nil
+	status, err := health.NewEnvironmentStatus([]*event.Event{evt})
+	if err != nil {
+		return nil, errors.Wrapf(
+			err,
+			"error generating event healthcheck status for company [%s], team [%s] and environment [%s]",
+			p.Company, p.Team, p.Environment,
+		)
+	}
+
+	if err := svcs.SSEBroker.Send(status); err != nil {
+		return nil, errors.Wrapf(
+			err,
+			"error streaming healthcheck for company [%s]", p.Company,
+		)
+	}
+
+	return &PostEventsResponse{*evt}, nil
 }
 
 type PostEventsRequest struct {
@@ -104,7 +122,7 @@ type PostEventsRequest struct {
 	Team        string `json:"team"`
 	Environment string `json:"environment"`
 	EventType   string `json:"eventType"`
-	Message     string `json:"message"`
+	Payload     any    `json:"payload"`
 	Debug       any    `json:"debug"`
 }
 

@@ -13,6 +13,11 @@ func EnforceJSONHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		contentType := r.Header.Get("Content-Type")
 
+		if r.URL.Path == "/events/stream" {
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		if contentType != "" {
 			mt, _, err := mime.ParseMediaType(contentType)
 			if err != nil {

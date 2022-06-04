@@ -1,14 +1,17 @@
 package event
 
-import "github.com/pkg/errors"
+import (
+	"github.com/compuzest/zlifecycle-event-service/app/util"
+	"github.com/pkg/errors"
+)
 
 func validateRecordPayload(e *RecordPayload) error {
 	if e == nil {
 		return errors.New("record payload is nil")
 	}
 
-	if e.EventType == "" {
-		return errors.New("eventType cannot be empty")
+	if err := validateEventType(e.EventType); err != nil {
+		return err
 	}
 	if e.Company == "" {
 		return errors.New("company cannot be empty")
@@ -18,6 +21,18 @@ func validateRecordPayload(e *RecordPayload) error {
 	}
 	if e.Environment == "" {
 		return errors.New("environment cannot be empty")
+	}
+
+	return nil
+}
+
+func validateEventType(eventType string) error {
+	if eventType == "" {
+		return errors.New("eventType cannot be empty")
+	}
+
+	if !util.StringInSlice(eventType, []string{string(ValidationSuccess), string(ValidationError)}) {
+		return errors.Errorf("unsupported event type: %s", eventType)
 	}
 
 	return nil
