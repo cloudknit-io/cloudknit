@@ -1,0 +1,29 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: workflow-executor
+  namespace: "{{.Values.companyName}}-executor"
+rules:
+  - apiGroups:
+      - "argoproj.io"
+    resources:
+      - workflows
+    verbs:
+      - create
+      - get
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: zlifecycle-executor
+  namespace: "{{.Values.companyName}}-executor"
+subjects:
+  - kind: ServiceAccount
+    name: "{{.Values.serviceAccountName}}"
+    namespace: "{{.Values.companyName}}-executor"
+roleRef:
+  kind: Role
+  name: workflow-executor
+  apiGroup: rbac.authorization.k8s.io

@@ -1,0 +1,94 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  annotations:
+    workflows.argoproj.io/description: >-
+      A template for sending slack notifications with workflow status details when the workflow begins and completes.
+    workflows.argoproj.io/maintainer: '@courtneygreif'
+    workflows.argoproj.io/tags: slack-workflow-notifications
+    workflows.argoproj.io/version: '>= 2.9.0'
+  name: slack-notification
+spec:
+  templates:
+    - name: send-completion
+      inputs:
+        parameters:
+          - name: WORKFLOW_NAME
+          - name: WORKFLOW_STATUS
+          - name: WORKFLOW_TEAM
+          - name: WORKFLOW_ENVIRONMENT
+          - name: SLACK_WEBHOOK_URL
+          - name: WORKFLOW_FAILURES
+          - name: WORKFLOW_URL
+      script:
+        imagePullPolicy: IfNotPresent
+        image: badouralix/curl-jq
+        env:
+          - name: WORKFLOW_NAME
+            value: '{{ print "{{inputs.parameters.WORKFLOW_NAME}}"}}'
+          - name: WORKFLOW_STATUS
+            value: '{{ print "{{inputs.parameters.WORKFLOW_STATUS}}"}}'
+          - name: WORKFLOW_TEAM
+            value: '{{ print "{{inputs.parameters.WORKFLOW_TEAM}}"}}'
+          - name: WORKFLOW_ENVIRONMENT
+            value: '{{ print "{{inputs.parameters.WORKFLOW_ENVIRONMENT}}"}}'
+          - name: WORKFLOW_FAILURES
+            value: '{{ print "{{inputs.parameters.WORKFLOW_FAILURES}}"}}'
+          - name: SLACK_WEBHOOK_URL
+            value: '{{ print "{{inputs.parameters.SLACK_WEBHOOK_URL}}"}}'
+          - name: WORKFLOW_URL
+            value: '{{ print "{{inputs.parameters.WORKFLOW_URL}}"}}'
+        command: ["sh"]
+        # If any optional environment variables above were removed, remove them from the curl as well
+        source: |
+          if [[ {{ print "{{inputs.parameters.WORKFLOW_STATUS}}" }} == "Succeeded" ]]; then
+          EMOJI=":celebrate:"
+          COLOR="#00ff00"
+          else
+          EMOJI=":failed:"
+          COLOR="#ff0000"
+          fi
+
+          echo $WORKFLOW_FAILURES > /tmp/failures.log
+
+          cat >> /tmp/payload.json << EOF
+          {
+            "text": "zLifecycle Workflow Error",
+            "blocks": [
+              {
+                "type": "divider"
+              },
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "Workflow [*$WORKFLOW_NAME*] returned a non-successful status: [*$WORKFLOW_STATUS*]"
+                }
+              },
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Team:*\n${WORKFLOW_TEAM}"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Environment:*\n${WORKFLOW_ENVIRONMENT}"
+                  }
+                ]
+              },
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "<$WORKFLOW_URL|View environment in zLifecycle>"
+                }
+              }
+            ]
+          }
+          EOF
+          cat /tmp/payload.json
+          curl -s --fail --show-error -X POST \
+            -d @/tmp/payload.json \
+            $SLACK_WEBHOOK_URL > /dev/null

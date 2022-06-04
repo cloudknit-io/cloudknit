@@ -1,0 +1,6 @@
+alb:
+  environment: dev
+  instance: zCustomer-a
+  domains: !!!COMMA SEPARATED STRING OF DOMAINS!!!
+  certificate:
+    arn: !!!CERTIFICATE ARN!!!

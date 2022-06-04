@@ -1,0 +1,122 @@
+# Copyright (C) 2020 CompuZest, Inc. - All Rights Reserved
+#
+# Unauthorized copying of this file, via any medium, is strictly prohibited
+# Proprietary and confidential
+#
+# NOTICE: All information contained herein is, and remains the property of
+# CompuZest, Inc. The intellectual and technical concepts contained herein are
+# proprietary to CompuZest, Inc. and are protected by trade secret or copyright
+# law. Dissemination of this information or reproduction of this material is
+# strictly forbidden unless prior written permission is obtained from CompuZest, Inc.
+---
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: terraform-run-template
+spec:
+  entrypoint: run
+  podGC:
+    strategy: OnPodCompletion
+  ttlStrategy:
+    secondsAfterSuccess: 600
+    secondsAfterCompletion: 600
+  templates:
+    - name: run
+      inputs:
+        parameters:
+          - name: customer_id
+          - name: team_name
+          - name: env_name
+          - name: config_name
+          - name: il_repo
+          - name: terraform_il_path
+          - name: is_apply
+          - name: lock_state
+            value: "true"
+          - name: is_sync
+            value: "0"
+          - name: is_destroy
+          - name: config_reconcile_id
+          - name: reconcile_id
+          - name: auto_approve
+          - name: zl_environment
+          - name: git_auth_mode
+          - name: company_git_org
+          - name: use_custom_state
+          - name: custom_state_bucket
+          - name: custom_state_lock_table
+      serviceAccountName: {{.Values.serviceAccountName}}
+      script:
+        imagePullPolicy: Always
+        image: "413422438110.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-terraform:{{.Values.imageTag}}"
+        cmd:
+          - sh
+        source: |
+          ./run_terraform.sh \
+            '{{ printf "{{inputs.parameters.team_name}}" }}' \
+            '{{ printf "{{inputs.parameters.env_name}}" }}' \
+            '{{ printf "{{inputs.parameters.config_name}}" }}' \
+            '{{ printf "{{inputs.parameters.is_apply}}" }}' \
+            '{{ printf "{{inputs.parameters.lock_state}}" }}' \
+            '{{ printf "{{inputs.parameters.is_sync}}" }}' \
+            '{{ printf "{{workflow.name}}" }}' \
+            '{{ printf "{{inputs.parameters.terraform_il_path}}" }}' \
+            '{{ printf "{{inputs.parameters.is_destroy}}" }}' \
+            '{{ printf "{{inputs.parameters.config_reconcile_id}}" }}' \
+            '{{ printf "{{inputs.parameters.reconcile_id}}" }}' \
+            '{{ printf "{{inputs.parameters.customer_id}}" }}' \
+            '{{ printf "{{inputs.parameters.auto_approve}}" }}' \
+            '{{ printf "{{inputs.parameters.zl_environment}}" }}' \
+            '{{ printf "{{inputs.parameters.git_auth_mode}}" }}' \
+            '{{ printf "{{inputs.parameters.il_repo}}" }}' \
+            '{{ printf "{{inputs.parameters.company_git_org}}" }}' \
+            '{{ printf "{{inputs.parameters.use_custom_state}}" }}' \
+            '{{ printf "{{inputs.parameters.custom_state_bucket}}" }}' \
+            '{{ printf "{{inputs.parameters.custom_state_lock_table}}" }}'
+        env:
+          - name: CUSTOMER_AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: aws-creds
+                key: aws_access_key_id
+          - name: CUSTOMER_AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: aws-creds
+                key: aws_secret_access_key
+          - name: SHARED_AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: shared-aws-creds
+                key: aws_access_key_id
+          - name: SHARED_AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: shared-aws-creds
+                key: aws_secret_access_key
+          - name: ARGOCD_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: argocd-creds
+                key: ARGOCD_PASSWORD
+        volumeMounts:
+          - name: github-ssh-key-mount
+            mountPath: "/root/git_ssh"
+            readOnly: false
+          - name: internal-github-app-ssh
+            mountPath: "/root/internal_github_app_ssh"
+            readOnly: false
+          - name: public-github-app-ssh
+            mountPath: "/root/public_github_app_ssh"
+            readOnly: false
+          - name: tmp
+            mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      outputs:
+        parameters:
+          - name: planCode
+            valueFrom:
+              path: /tmp/plan_code.txt
+            globalName: plan-code

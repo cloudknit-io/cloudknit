@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-notifications-cm
+data:
+  config.yaml: |
+    triggers:
+      - name: on-sync-succeeded
+        enabled: true
+      - name: on-sync-failed
+        enabled: true
+    templates:
+      - name: app-sync-succeeded
+        body: |
+          Application {{ "{{" }}.app.metadata.name{{ "}}" }} sync succeeded.
+        slack:
+          attachments: |
+            [{
+              "title": "{{ "{{" }}.app.metadata.name{{ "}}" }}",
+              "title_link": "{{$.Values.argocdUrl}}/applications/{{ "{{" }}.app.metadata.name{{ "}}" }}",
+              "color": "#18be52",
+              "fields": [{
+                "title": "Sync Status",
+                "value": "{{ "{{" }}.app.status.sync.status{{ "}}" }}",
+                "short": false
+              },{
+                "title": "Docker Images",
+                "value": "{{ "{{" }}.app.status.summary.images{{ "}}" }}",
+                "short": false
+              },{
+                "title": "Argo Link",
+                "value": "{{$.Values.argocdUrl}}/applications/{{ "{{" }}.app.metadata.name{{ "}}" }}",
+                "short": false
+              }]
+            }]
+      - name: app-sync-failed
+        body: |
+          Application {{ "{{" }}.app.metadata.name{{ "}}" }} sync failed.
+        slack:
+          attachments: |
+            [{
+              "title": "{{ "{{" }}.app.metadata.name{{ "}}" }}",
+              "title_link": "{{$.Values.argocdUrl}}/applications/{{ "{{" }}.app.metadata.name{{ "}}" }}",
+              "color": "#c72917",
+              "fields": [{
+                "title": "Sync Status",
+                "value": "{{ "{{" }}.app.status.sync.status{{ "}}" }}",
+                "short": false
+              },{
+                "title": "Helm Chart Version",
+                "value": "{{ "{{" }}.app.spec.source.targetRevision{{ "}}" }}",
+                "short": false
+              },{
+                "title": "Docker Images",
+                "value": "{{ "{{" }}.app.status.summary.images{{ "}}" }}",
+                "short": false
+              },{
+                "title": "Argo Link",
+                "value": "{{$.Values.argocdUrl}}/applications/{{ "{{" }}.app.metadata.name{{ "}}" }}",
+                "short": false
+              }]
+            }]

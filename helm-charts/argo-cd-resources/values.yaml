@@ -1,0 +1,7 @@
+corsAllowOrigin:
+company: !!!CompanyName!!!
+argocd:
+  domain:
+  web_domain:
+  paths:
+  - "/api/webhook"
