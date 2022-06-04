@@ -29,6 +29,8 @@ dockers:
       - "--label=org.opencontainers.image.version={{ .Version }}"
       - "--label=org.opencontainers.image.vendor=CompuZest"
     dockerfile: ./Dockerfile
+    extra_files:
+      - db/migrations
 
 dist: "build/dist"
 
