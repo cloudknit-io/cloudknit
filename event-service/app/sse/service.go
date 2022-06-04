@@ -1,6 +1,8 @@
 package sse
 
-import "github.com/pkg/errors"
+import (
+	"github.com/pkg/errors"
+)
 
 type API interface {
 	Close()
@@ -33,6 +35,13 @@ func (s *SSE) Send(message any) error {
 	if s.pipe == nil {
 		return errors.New("cannot send message to a closed channel")
 	}
-	s.pipe <- message
+
+	select {
+	case s.pipe <- message:
+		break
+	default:
+		break
+	}
+
 	return nil
 }

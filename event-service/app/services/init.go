@@ -2,12 +2,11 @@ package services
 
 import (
 	"context"
-
-	"github.com/compuzest/zlifecycle-event-service/app/health"
-	"github.com/compuzest/zlifecycle-event-service/app/web/sse"
+	"github.com/compuzest/zlifecycle-event-service/app/sse"
 
 	"github.com/compuzest/zlifecycle-event-service/app/db"
 	"github.com/compuzest/zlifecycle-event-service/app/event"
+	"github.com/compuzest/zlifecycle-event-service/app/health"
 	"github.com/pkg/errors"
 )
 

@@ -81,8 +81,12 @@ func NewEnvironmentStatus(events []*event.Event) (*Status, error) {
 			return nil, errors.Wrapf(err, "error unmarshalling event [%s] payload", events[0].ID)
 		}
 	}
+	limit := 5
+	if len(events) < limit {
+		limit = len(events)
+	}
 	return &Status{
-		Events:      events,
+		Events:      events[0:limit],
 		Company:     latest.Company,
 		Team:        latest.Team,
 		Environment: latest.Environment,
