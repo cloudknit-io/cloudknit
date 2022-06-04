@@ -87,4 +87,4 @@ builds:
 announce:
   slack:
     enabled: true
-    message_template: "*zLifecycle State Manager* `{{ .Tag }}` has been released from the `{{ .Branch }}` branch at commit `{{ .ShortCommit }}` ({{ .CommitDate }})\nhttps://github.com/CompuZest/zlifecycle-event-service/releases/tag/{{ .Tag }}\n\n{{ .ReleaseNotes }}"
+    message_template: "*zLifecycle Event Service* `{{ .Tag }}` has been released from the `{{ .Branch }}` branch at commit `{{ .ShortCommit }}` ({{ .CommitDate }})\nhttps://github.com/CompuZest/zlifecycle-event-service/releases/tag/{{ .Tag }}\n\n{{ .ReleaseNotes }}"

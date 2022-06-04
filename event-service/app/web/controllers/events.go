@@ -78,7 +78,7 @@ func postEventsHandler(ctx context.Context, r *http.Request, svcs *services.Serv
 	var body PostEventsRequest
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&body); err != nil {
-		return nil, errors.Wrap(err, "invalid delete state resource request body")
+		return nil, errors.Wrap(err, "invalid post events request body")
 	}
 
 	p := event.RecordPayload{
