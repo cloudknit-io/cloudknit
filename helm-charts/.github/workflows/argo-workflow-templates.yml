@@ -2,8 +2,11 @@ name: Argo Workflow Templates Release
 
 on:
   push:
+    branches:
+      - main
     paths:
       - 'argo-workflow-templates/**'
+      - .github/workflows/argo-workflow-templates.yml
 
 env:
   chart_dir: argo-workflow-templates

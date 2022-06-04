@@ -1,12 +1,15 @@
-name: Argo Workflow Addons Release
+name: Terraform Config Release
 
 on:
   push:
+    branches:
+      - main
     paths:
-      - 'argo-workflow-addons/**'
+      - 'terraform-config/**'
+      - .github/workflows/terraform-config.yml
 
 env:
-  chart_dir: argo-workflow-addons
+  chart_dir: terraform-config
 
 jobs:
   build:

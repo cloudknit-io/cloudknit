@@ -2,8 +2,11 @@ name: zLifecycle Ingress Release
 
 on:
   push:
+    branches:
+      - main
     paths:
       - 'zlifecycle-ingress/**'
+      - .github/workflows/zlifecycle-ingress.yml
 
 env:
   chart_dir: zlifecycle-ingress

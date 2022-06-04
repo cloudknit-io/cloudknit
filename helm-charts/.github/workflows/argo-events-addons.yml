@@ -1,12 +1,15 @@
-name: Terraform Config Release
+name: Argo Events Addons Release
 
 on:
   push:
+    branches:
+      - main
     paths:
-      - 'terraform-config/**'
+      - 'argo-events-addons/**'
+      - .github/workflows/argo-events-addons.yml
 
 env:
-  chart_dir: terraform-config
+  chart_dir: argo-events-addons
 
 jobs:
   build:

@@ -1,12 +1,15 @@
-name: Argo Events Addons Release
+name: Argo CD Resources Release
 
 on:
   push:
+    branches:
+      - main
     paths:
-      - 'argo-events-addons/**'
+      - 'argo-cd-resources/**'
+      - .github/workflows/argo-cd-resources.yml
 
 env:
-  chart_dir: argo-events-addons
+  chart_dir: argo-cd-resources
 
 jobs:
   build:

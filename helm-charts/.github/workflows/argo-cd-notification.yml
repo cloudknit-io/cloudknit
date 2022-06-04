@@ -1,12 +1,15 @@
-name: Argo CD Resources Release
+name: Argo CD Notification Release
 
 on:
   push:
+    branches:
+      - main
     paths:
-      - 'argo-cd-resources/**'
+      - 'argo-cd-notification/**'
+      - .github/workflows/argo-cd-notification.yml
 
 env:
-  chart_dir: argo-cd-resources
+  chart_dir: argo-cd-notification
 
 jobs:
   build:

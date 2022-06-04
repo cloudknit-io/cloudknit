@@ -1,12 +1,15 @@
-name: Argo CD Notification Release
+name: Argo Workflow Addons Release
 
 on:
   push:
+    branches:
+      - main
     paths:
-      - 'argo-cd-notification/**'
+      - 'argo-workflow-addons/**'
+      - .github/workflows/argo-workflow-addons.yml
 
 env:
-  chart_dir: argo-cd-notification
+  chart_dir: argo-workflow-addons
 
 jobs:
   build:
