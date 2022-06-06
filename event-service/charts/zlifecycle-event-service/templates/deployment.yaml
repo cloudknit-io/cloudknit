@@ -31,7 +31,7 @@ spec:
         - name: zlifecycle-event-service-db-migration
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: ["--migrate", "up"]
+          args: ["--migrate", "up"]
           env:
             - name: DB_HOST
               value: {{ .Values.env.DB_HOST }}
@@ -54,11 +54,11 @@ spec:
           livenessProbe:
             httpGet:
               path: /health/liveness
-              port: 8080
+              port: 8081
           readinessProbe:
             httpGet:
               path: /health/readiness
-              port: 8080
+              port: 8081
           ports:
             - name: http
               containerPort: 8081

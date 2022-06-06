@@ -20,7 +20,7 @@ func NewServices() (*Services, error) {
 	ctx := context.Background()
 	sqldb, err := db.NewDatabase(ctx)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating new database")
+		return nil, errors.Wrap(err, "error creating new database connection")
 	}
 	es := event.NewService(sqldb)
 	hs := health.NewService(es, sqldb)

@@ -23,7 +23,7 @@ func main() {
 	log.Info("Initializing zlifecycle-event-service...")
 	svcs, err := services.NewServices()
 	if err != nil {
-		log.Fatal("error instantiating services", "cause", err)
+		log.Fatalf("error instantiating services: %v", err)
 	}
 	defer svcs.SSEBroker.Close()
 
