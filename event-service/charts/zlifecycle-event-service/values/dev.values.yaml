@@ -1,0 +1,5 @@
+env:
+  DB_HOST: db.dev.zbank.zlifecycle-internal.com
+  DB_USERNAME: admin
+  DB_PASSWORD: 'CzBank1357#'
+  DB_NAME: 'zlifecycle'
