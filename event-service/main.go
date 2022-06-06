@@ -20,6 +20,7 @@ var Version string
 
 func main() {
 	log := zlog.PlainLogger().WithField("version", Version)
+	log.Info("Initializing zlifecycle-event-service...")
 	svcs, err := services.NewServices()
 	if err != nil {
 		log.Fatal("error instantiating services", "cause", err)
@@ -33,7 +34,7 @@ func main() {
 		return
 	}
 
-	log.Info("Starting zlifecycle event service on localhost:8080")
+	log.Info("Starting zlifecycle-event-service on localhost:8080")
 	web.NewServer(svcs)
 }
 
