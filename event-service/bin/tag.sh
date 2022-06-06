@@ -17,7 +17,7 @@ fi
 
 echo "$TGT"
 
-find . -type f -name "main.go" -print0 | xargs -0 sed -i '' -e "s/Version = \\\"[v]*[0-9]*[0-9]\.[0-9]*[0-9]\.[0-9]*[0-9]\\\"/Version = \"${TGT}\"/g"
+find . -type f -name ".version" -print0 | xargs -0 sed -i '' -e "s/[v]*[0-9]*[0-9]\.[0-9]*[0-9]\.[0-9]*[0-9]/${TGT}/g"
 
 make build
 

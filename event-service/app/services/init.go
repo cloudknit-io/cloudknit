@@ -12,7 +12,7 @@ import (
 
 type Services struct {
 	ES        event.API
-	HS        health.API
+	SS        health.API
 	SSEBroker sse.API
 }
 
@@ -23,8 +23,8 @@ func NewServices() (*Services, error) {
 		return nil, errors.Wrap(err, "error creating new database")
 	}
 	es := event.NewService(sqldb)
-	hs := health.NewService(es)
+	hs := health.NewService(es, sqldb)
 	sseBroker := sse.NewSSE()
 
-	return &Services{ES: es, HS: hs, SSEBroker: sseBroker}, nil
+	return &Services{ES: es, SS: hs, SSEBroker: sseBroker}, nil
 }

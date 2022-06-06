@@ -24,7 +24,7 @@ func initLogger() *log.Logger {
 	if env.Config().DevMode != "true" {
 		l.SetFormatter(nrlogrusplugin.ContextFormatter{})
 	} else {
-		l.SetFormatter(&log.TextFormatter{})
+		l.SetFormatter(&log.TextFormatter{FullTimestamp: true})
 	}
 
 	return l

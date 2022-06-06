@@ -13,7 +13,7 @@ func EnforceJSONHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		contentType := r.Header.Get("Content-Type")
 
-		if r.URL.Path == "/events/stream" {
+		if r.Method == http.MethodGet {
 			next.ServeHTTP(w, r)
 			return
 		}

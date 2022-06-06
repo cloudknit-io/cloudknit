@@ -58,12 +58,16 @@ func initRouter(svcs *services.Services) (*mux.Router, error) {
 		}
 		r.HandleFunc(newrelic.WrapHandleFunc(app, "/events", controllers.EventsHandler(svcs)))
 		r.HandleFunc(newrelic.WrapHandleFunc(app, "/events/stream", controllers.SSEHandler(svcs)))
-		r.HandleFunc(newrelic.WrapHandleFunc(app, "/health", controllers.HealthHandler(svcs)))
+		r.HandleFunc(newrelic.WrapHandleFunc(app, "/status", controllers.StatusHandler(svcs)))
+		r.HandleFunc(newrelic.WrapHandleFunc(app, "/health/liveness", controllers.HealthHandler(svcs, false)))
+		r.HandleFunc(newrelic.WrapHandleFunc(app, "/health/readiness", controllers.HealthHandler(svcs, true)))
 	} else {
 		zlog.PlainLogger().Info("Initializing application without APM")
 		r.HandleFunc("/events", controllers.EventsHandler(svcs))
 		r.HandleFunc("/events/stream", controllers.SSEHandler(svcs))
-		r.HandleFunc("/health", controllers.HealthHandler(svcs))
+		r.HandleFunc("/status", controllers.StatusHandler(svcs))
+		r.HandleFunc("/health/liveness", controllers.HealthHandler(svcs, false))
+		r.HandleFunc("/health/readiness", controllers.HealthHandler(svcs, true))
 	}
 
 	r.NotFoundHandler = http.HandlerFunc(controllers.NotFoundHandler)

@@ -9,6 +9,9 @@ indent_style = tab
 indent_size = 2
 max_line_length = 150
 
+[*.yaml]
+indent_style = space
+
 [.version]
 insert_final_newline = false
 

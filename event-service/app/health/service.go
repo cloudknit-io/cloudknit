@@ -2,7 +2,9 @@ package health
 
 import (
 	"context"
+	"github.com/jmoiron/sqlx"
 	"sort"
+	"time"
 
 	"github.com/compuzest/zlifecycle-event-service/app/util"
 
@@ -11,22 +13,96 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type StatusType string
-
 type API interface {
-	Healthcheck(ctx context.Context, company string, log *logrus.Entry) (TeamStatus, error)
+	CompanyStatus(ctx context.Context, company string, log *logrus.Entry) (TeamStatus, error)
+	Healthcheck(ctx context.Context, fullCheck bool, log *logrus.Entry) *Healthcheck
 }
 
 type Service struct {
 	es event.API
+	db *sqlx.DB
 }
 
-func NewService(es event.API) *Service {
-	return &Service{es: es}
+func NewService(es event.API, db *sqlx.DB) *Service {
+	return &Service{es: es, db: db}
 }
 
-func (s *Service) Healthcheck(ctx context.Context, company string, log *logrus.Entry) (TeamStatus, error) {
-	log.Infof("Performing healthcheck for company [%s]", company)
+func (s *Service) Healthcheck(ctx context.Context, fullCheck bool, log *logrus.Entry) *Healthcheck {
+	log.Info("Performing app healthcheck")
+
+	hc := Healthcheck{
+		Timestamp: time.Now(),
+	}
+
+	if fullCheck {
+		hc.Components = s.fullCheck(ctx)
+	}
+
+	s.checkComponentStatus(&hc, log)
+
+	return &hc
+}
+
+func (s *Service) fullCheck(ctx context.Context) []*Component {
+	var components []*Component
+
+	dbComponent := Component{
+		Name:     "db",
+		Critical: true,
+	}
+	if err := s.checkDB(ctx); err != nil {
+		dbComponent.Status = HealthcheckError
+	} else {
+		dbComponent.Status = HealthcheckOK
+	}
+	components = append(components, &dbComponent)
+
+	return components
+}
+
+func (s *Service) checkComponentStatus(hc *Healthcheck, log *logrus.Entry) {
+	hc.Status = HealthcheckOK
+	hc.Code = 200
+	for _, c := range hc.Components {
+		if c.Status == HealthcheckDegraded && hc.Status != HealthcheckError {
+			log.Warnf("Component [%s] status is in degraded state and critial status is set to %t", c.Name, c.Critical)
+			log.Warnf("Marking healthcheck status as degraded")
+			hc.Status = HealthcheckDegraded
+		}
+		if c.Status == HealthcheckError {
+			log.Warnf("Component [%s] status is in error state and critial status is set to %t", c.Name, c.Critical)
+			if c.Critical {
+				log.Warnf("Marking healthcheck status as failed")
+				hc.Status = HealthcheckError
+				hc.Code = 500
+			} else {
+				log.Errorf("Marking healthcheck status as degraded")
+				hc.Status = HealthcheckDegraded
+				hc.Code = 200
+			}
+
+			break
+		}
+	}
+	return
+}
+
+func (s *Service) checkDB(ctx context.Context) error {
+	q, err := s.sqlDBHealthcheck()
+	if err != nil {
+		return errors.Wrap(err, "error preparing healthcheck sql query")
+	}
+
+	_, err = q.ExecContext(ctx)
+	if err != nil {
+		return errors.Wrap(err, "error executing healthcheck sql query")
+	}
+
+	return nil
+}
+
+func (s *Service) CompanyStatus(ctx context.Context, company string, log *logrus.Entry) (TeamStatus, error) {
+	log.Infof("Performing status check for company [%s]", company)
 
 	payload := event.ListPayload{Company: company}
 	events, err := s.es.List(ctx, &payload, event.ScopeCompany, event.FilterAll, log)
