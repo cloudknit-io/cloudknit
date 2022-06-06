@@ -36,7 +36,7 @@ spec:
             - name: DB_HOST
               value: {{ .Values.env.DB_HOST }}
             - name: DB_PORT
-              value: {{ .Values.env.DB_PORT }}
+              value: "{{ .Values.env.DB_PORT }}"
             - name: DB_USERNAME
               value: {{ .Values.env.DB_USERNAME }}
             - name: DB_PASSWORD
@@ -61,13 +61,13 @@ spec:
               port: 8080
           ports:
             - name: http
-              containerPort: 8080
+              containerPort: 8081
               protocol: TCP
           env:
             - name: DB_HOST
               value: {{ .Values.env.DB_HOST }}
             - name: DB_PORT
-              value: {{ .Values.env.DB_PORT }}
+              value: "{{ .Values.env.DB_PORT }}"
             - name: DB_USERNAME
               value: {{ .Values.env.DB_USERNAME }}
             - name: DB_PASSWORD
