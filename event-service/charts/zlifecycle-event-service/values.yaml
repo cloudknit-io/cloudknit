@@ -11,7 +11,12 @@ image:
   tag: "latest"
 
 env:
-  GIT_TOKEN: ""
+  DB_HOST: ""
+  DB_PORT: "8080"
+  DB_USERNAME: ""
+  DB_PASSWORD: ""
+  DB_NAME: ""
+  DB_DRIVER: "mysql"
   ENABLE_NEW_RELIC: "false"
   NEW_RELIC_API_KEY: ""
   ENVIRONMENT: "DEV"
@@ -22,7 +27,7 @@ fullnameOverride: ""
 
 serviceAccount:
   # Specifies whether a service account should be created
-  create: true
+  create: false
   # Annotations to add to the service account
   annotations: {}
   # The name of the service account to use.
