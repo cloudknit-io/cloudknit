@@ -11,5 +11,9 @@ spec:
       targetPort: http
       protocol: TCP
       name: http
+    - port: {{ .Values.service.streamPort }}
+      targetPort: http2
+      protocol: TCP
+      name: http2
   selector:
     {{- include "zlifecycle-event-service.selectorLabels" . | nindent 4 }}

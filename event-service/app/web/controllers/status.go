@@ -14,7 +14,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func StatusHandler(svcs *services.Services) func(w http.ResponseWriter, r *http.Request) {
+func StatusHandler(svcs *services.Services) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		txn := newrelic.FromContext(r.Context())
 		log := zlog.CtxLogger(r.Context())

@@ -2,7 +2,8 @@ package services
 
 import (
 	"context"
-	"github.com/compuzest/zlifecycle-event-service/app/sse"
+
+	"github.com/compuzest/zlifecycle-event-service/app/stream"
 
 	"github.com/compuzest/zlifecycle-event-service/app/db"
 	"github.com/compuzest/zlifecycle-event-service/app/event"
@@ -13,7 +14,7 @@ import (
 type Services struct {
 	ES        event.API
 	SS        health.API
-	SSEBroker sse.API
+	SSEBroker stream.API
 }
 
 func NewServices() (*Services, error) {
@@ -24,7 +25,7 @@ func NewServices() (*Services, error) {
 	}
 	es := event.NewService(sqldb)
 	hs := health.NewService(es, sqldb)
-	sseBroker := sse.NewSSE()
+	sseBroker := stream.NewService()
 
 	return &Services{ES: es, SS: hs, SSEBroker: sseBroker}, nil
 }

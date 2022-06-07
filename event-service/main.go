@@ -25,7 +25,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("error instantiating services: %v", err)
 	}
-	defer svcs.SSEBroker.Close()
 
 	if len(os.Args) > 1 {
 		if err := migrate(log); err != nil {
@@ -33,8 +32,9 @@ func main() {
 		}
 		return
 	}
-
-	log.Info("Starting zlifecycle-event-service on localhost:8080")
+	go func() {
+		web.NewStreamingServer(svcs)
+	}()
 	web.NewServer(svcs)
 }
 

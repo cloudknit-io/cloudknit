@@ -1,8 +1,9 @@
 package health
 
 import (
-	"github.com/compuzest/zlifecycle-event-service/app/event"
 	"time"
+
+	"github.com/compuzest/zlifecycle-event-service/app/event"
 )
 
 const (

@@ -50,6 +50,7 @@ securityContext: {}
 service:
   type: ClusterIP
   port: 8081
+  streamPort: 8082
 
 ingress:
   enabled: false

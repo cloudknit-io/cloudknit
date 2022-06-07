@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/compuzest/zlifecycle-event-service/app/util"
+
 	"github.com/compuzest/zlifecycle-event-service/app/apm"
 	"github.com/compuzest/zlifecycle-event-service/app/health"
 
@@ -107,12 +109,9 @@ func postEventsHandler(ctx context.Context, r *http.Request, svcs *services.Serv
 		)
 	}
 
-	if err := svcs.SSEBroker.Send(status); err != nil {
-		return nil, errors.Wrapf(
-			err,
-			"error streaming healthcheck for company [%s]", p.Company,
-		)
-	}
+	msg := util.ToJSONBytes(status, false)
+	svcs.SSEBroker.Notify(msg)
+	log.Infof("Successfully notified %d client(s) for new event", svcs.SSEBroker.Clients())
 
 	return &PostEventsResponse{*evt}, nil
 }

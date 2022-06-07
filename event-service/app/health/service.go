@@ -2,9 +2,10 @@ package health
 
 import (
 	"context"
-	"github.com/jmoiron/sqlx"
 	"sort"
 	"time"
+
+	"github.com/jmoiron/sqlx"
 
 	"github.com/compuzest/zlifecycle-event-service/app/util"
 
@@ -84,7 +85,6 @@ func (s *Service) checkComponentStatus(hc *Healthcheck, log *logrus.Entry) {
 			break
 		}
 	}
-	return
 }
 
 func (s *Service) checkDB(ctx context.Context) error {

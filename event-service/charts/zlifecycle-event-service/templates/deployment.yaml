@@ -63,6 +63,9 @@ spec:
             - name: http
               containerPort: 8081
               protocol: TCP
+            - name: http2
+              containerPort: 8082
+              protocol: TCP
           env:
             - name: DB_HOST
               value: {{ .Values.env.DB_HOST }}

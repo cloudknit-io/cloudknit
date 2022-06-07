@@ -2,6 +2,8 @@ package controllers
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/compuzest/zlifecycle-event-service/app/apm"
 	"github.com/compuzest/zlifecycle-event-service/app/health"
 	"github.com/compuzest/zlifecycle-event-service/app/services"
@@ -9,10 +11,9 @@ import (
 	"github.com/compuzest/zlifecycle-event-service/app/zlog"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/sirupsen/logrus"
-	"net/http"
 )
 
-func HealthHandler(svcs *services.Services, fullCheck bool) func(w http.ResponseWriter, r *http.Request) {
+func HealthHandler(svcs *services.Services, fullCheck bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		txn := newrelic.FromContext(r.Context())
 		log := zlog.CtxLogger(r.Context())
