@@ -13,6 +13,7 @@ require (
 	github.com/newrelic/go-agent/v3 v3.15.0
 	github.com/newrelic/go-agent/v3/integrations/logcontext/nrlogrusplugin v1.0.1
 	github.com/pkg/errors v0.9.1
+	github.com/r3labs/sse/v2 v2.8.0
 	github.com/sirupsen/logrus v1.8.1
 )
 
@@ -22,7 +23,6 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
-	github.com/r3labs/sse/v2 v2.8.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
 	golang.org/x/sys v0.0.0-20220317061510-51cd9980dadf // indirect
