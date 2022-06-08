@@ -1,4 +1,3 @@
 FROM gcr.io/distroless/base:debug
-USER nonroot:nonroot
 ENTRYPOINT ["/zlifecycle-il-operator"]
 COPY zlifecycle-il-operator /manager
