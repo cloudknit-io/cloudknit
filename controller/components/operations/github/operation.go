@@ -13,8 +13,9 @@
 package github
 
 import (
-	githubapi "github.com/compuzest/zlifecycle-il-operator/controller/common/github"
 	"strconv"
+
+	githubapi "github.com/compuzest/zlifecycle-il-operator/controller/common/github"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/util"
 

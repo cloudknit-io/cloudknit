@@ -14,9 +14,10 @@ package terraform
 
 import (
 	"fmt"
+	"path/filepath"
+
 	git2 "github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/git"
-	"path/filepath"
 
 	"github.com/sirupsen/logrus"
 
@@ -151,7 +152,7 @@ func generateBackend(tpl *tftmpl.TerraformTemplates, vars *TemplateVariables) (s
 		lockTable = defaultStateLockTable(vars.ZLEnvironment, vars.Company)
 	}
 
-	backendConfig := TerraformBackendConfig{
+	backendConfig := BackendConfig{
 		Region:        vars.AWSSharedRegion,
 		Profile:       vars.AWSStateProfile,
 		Bucket:        getStateBucket(vars),
@@ -186,7 +187,7 @@ func getStateBucket(vars *TemplateVariables) string {
 }
 
 func generateData(tpl *tftmpl.TerraformTemplates, vars *TemplateVariables) (string, error) {
-	dataConfig := TerraformDataConfig{
+	dataConfig := DataConfig{
 		Region:      vars.AWSRegion,
 		Profile:     vars.AWSStateProfile,
 		Bucket:      getStateBucket(vars),
@@ -205,7 +206,7 @@ func generateModule(tpl *tftmpl.TerraformTemplates, vars *TemplateVariables) (st
 	}
 
 	moduleSource := il.EnvironmentComponentModuleSource(vars.EnvCompModuleSource, vars.EnvCompModuleName)
-	moduleConfig := TerraformModuleConfig{
+	moduleConfig := ModuleConfig{
 		Component:     vars.EnvironmentComponent,
 		Source:        util.RewriteGitHubURLToHTTPS(moduleSource, true),
 		Path:          vars.EnvCompModulePath,
@@ -222,7 +223,7 @@ func generateOutputs(tpl *tftmpl.TerraformTemplates, vars *TemplateVariables) (s
 	if len(vars.EnvCompOutputs) == 0 {
 		return "", nil
 	}
-	outputsConfig := TerraformOutputsConfig{
+	outputsConfig := OutputsConfig{
 		Component: vars.EnvironmentComponent,
 		Outputs:   vars.EnvCompOutputs,
 	}
@@ -245,7 +246,7 @@ func generateProviders(tpl *tftmpl.TerraformTemplates, vars *TemplateVariables) 
 		region = vars.EnvCompAWSConfig.Region
 	}
 
-	providerConfig := TerraformProviderConfig{
+	providerConfig := ProviderConfig{
 		Region:     region,
 		AssumeRole: assumeRole,
 	}
@@ -254,7 +255,7 @@ func generateProviders(tpl *tftmpl.TerraformTemplates, vars *TemplateVariables) 
 }
 
 func generateSharedProviders(tpl *tftmpl.TerraformTemplates, vars *TemplateVariables) (string, error) {
-	sharedProviderConfig := TerraformProviderConfig{
+	sharedProviderConfig := ProviderConfig{
 		Region:  vars.AWSRegion,
 		Profile: vars.AWSSharedProfile,
 		Alias:   vars.AWSSharedProviderAlias,
@@ -279,7 +280,7 @@ func generateSecrets(tpl *tftmpl.TerraformTemplates, vars *TemplateVariables) (s
 }
 
 func generateVersions(tpl *tftmpl.TerraformTemplates, vars *TemplateVariables) (string, error) {
-	versionsConfig := TerraformVersionsConfig{
+	versionsConfig := VersionsConfig{
 		TerraformVersion: vars.TerraformVersion,
 		AWSVersion:       vars.AWSProviderVersion,
 	}

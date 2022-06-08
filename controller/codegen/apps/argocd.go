@@ -1,13 +1,14 @@
 package apps
 
 import (
-	git2 "github.com/compuzest/zlifecycle-il-operator/controller/common/git"
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/argocd"
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/git"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
+
+	git2 "github.com/compuzest/zlifecycle-il-operator/controller/common/git"
+	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/argocd"
+	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/git"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/components/gitreconciler"
 

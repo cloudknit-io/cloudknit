@@ -2,8 +2,9 @@ package secret
 
 import (
 	"context"
-	secret2 "github.com/compuzest/zlifecycle-il-operator/controller/common/secret"
 	"strings"
+
+	secret2 "github.com/compuzest/zlifecycle-il-operator/controller/common/secret"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/util"
 

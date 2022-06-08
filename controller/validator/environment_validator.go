@@ -4,12 +4,10 @@ import (
 	"context"
 	"fmt"
 	"regexp"
-	"time"
 
-	git2 "github.com/compuzest/zlifecycle-il-operator/controller/common/git"
+	"github.com/compuzest/zlifecycle-il-operator/controller/common/eventservice"
+	gitapi "github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/log"
-	notifier2 "github.com/compuzest/zlifecycle-il-operator/controller/common/notifier"
-	"github.com/compuzest/zlifecycle-il-operator/controller/common/notifier/uinotifier"
 	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/git"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/file"
@@ -43,22 +41,23 @@ const (
 var logger = log.NewLogger().WithFields(logrus.Fields{"name": "controllers.EnvironmentValidator"})
 
 type EnvironmentValidatorImpl struct {
-	K8sClient kClient.Client
-	gitClient git2.API
+	kc        kClient.Client
+	gitClient gitapi.API
 	fs        file.API
+	es        eventservice.API
 }
 
-func NewEnvironmentValidatorImpl(k8sClient kClient.Client, fileService file.API) *EnvironmentValidatorImpl {
-	return &EnvironmentValidatorImpl{K8sClient: k8sClient, fs: fileService}
+func NewEnvironmentValidatorImpl(kc kClient.Client, fs file.API, es eventservice.API) *EnvironmentValidatorImpl {
+	return &EnvironmentValidatorImpl{kc: kc, fs: fs, es: es}
 }
 
 func (v *EnvironmentValidatorImpl) init(ctx context.Context) error {
-	watcherServices, err := watcherservices.NewGitHubServices(ctx, v.K8sClient, env.Config.GitHubCompanyOrganization, logger)
+	watcherServices, err := watcherservices.NewGitHubServices(ctx, v.kc, env.Config.GitHubCompanyOrganization, logger)
 	if err != nil {
 		return errors.Wrap(err, "error instantiating watcher services")
 	}
 
-	factory := gitfactory.NewFactory(v.K8sClient, logger)
+	factory := gitfactory.NewFactory(v.kc, logger)
 	var gitOpts gitfactory.Options
 	if env.Config.GitHubCompanyAuthMethod == util.AuthModeSSH {
 		gitOpts.SSHOptions = &gitfactory.SSHOptions{SecretName: env.Config.GitSSHSecretName, SecretNamespace: env.SystemNamespace()}
@@ -80,20 +79,6 @@ func (v *EnvironmentValidatorImpl) init(ctx context.Context) error {
 
 var _ v1.EnvironmentValidator = (*EnvironmentValidatorImpl)(nil)
 
-func notifyError(ctx context.Context, e *v1.Environment, ntfr notifier2.API, msg string, debug interface{}) error {
-	n := &notifier2.Notification{
-		Company:     env.Config.CompanyName,
-		Team:        e.Spec.TeamName,
-		Environment: e.Spec.EnvName,
-		MessageType: notifier2.ERROR,
-		Message:     msg,
-		Timestamp:   time.Now(),
-		Debug:       debug,
-	}
-
-	return ntfr.Notify(ctx, n)
-}
-
 func (v *EnvironmentValidatorImpl) ValidateEnvironmentCreate(ctx context.Context, e *v1.Environment) error {
 	logger.Infof("ValidateEnvironmentCreate Environment: [%v] Context: [%v]", e, ctx)
 
@@ -105,26 +90,23 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentCreate(ctx context.Context
 	var allErrs field.ErrorList
 
 	envList := &v1.EnvironmentList{}
-	getEnvironmentList(ctx, envList, v.K8sClient)
+	getEnvironmentList(ctx, envList, v.kc)
 	if err := isUniqueEnvAndTeam(e, *envList); err != nil {
 		allErrs = append(allErrs, err)
 	}
 
-	if err := v.validateEnvironmentCommon(ctx, e, true, v.K8sClient, logger); err != nil {
+	if err := v.validateEnvironmentCommon(ctx, e, true, v.kc, logger); err != nil {
 		allErrs = append(allErrs, err...)
+	}
+
+	if env.Config.EnableErrorNotifier == "true" {
+		if err := v.sendEvent(ctx, env.Config.CompanyName, e.Spec.TeamName, e.Spec.EnvName, allErrs); err != nil {
+			logger.Errorf("error sending validation event for environment create action for company [%s], team [%s] and environment [%s]: %v", env.Config.CompanyName, e.Spec.TeamName, e.Spec.EnvName, err)
+		}
 	}
 
 	if len(allErrs) == 0 {
 		return nil
-	}
-
-	if env.Config.EnableErrorNotifier == "true" {
-		logger.Info("Sending UI error notification")
-		ntfr := uinotifier.NewUINotifier(logger, env.Config.ZLifecycleAPIURL)
-		msg := fmt.Sprintf("error creating environment %s for team %s", e.Spec.EnvName, e.Spec.TeamName)
-		if err := notifyError(ctx, e, ntfr, msg, allErrs); err != nil {
-			logger.WithError(err).Error("error sending notification to UI")
-		}
 	}
 
 	for _, e := range allErrs {
@@ -151,24 +133,21 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentUpdate(ctx context.Context
 
 	var allErrs field.ErrorList
 
-	if err := v.validateEnvironmentCommon(ctx, e, false, v.K8sClient, logger); err != nil {
+	if err := v.validateEnvironmentCommon(ctx, e, false, v.kc, logger); err != nil {
 		allErrs = append(allErrs, err...)
 	}
 	if err := validateEnvironmentStatus(e); err != nil {
 		allErrs = append(allErrs, err...)
 	}
 
-	if len(allErrs) == 0 {
-		return nil
+	if env.Config.EnableErrorNotifier == "true" {
+		if err := v.sendEvent(ctx, env.Config.CompanyName, e.Spec.TeamName, e.Spec.EnvName, allErrs); err != nil {
+			logger.Errorf("error sending validation event for company [%s], team [%s] and environment [%s]: %v", env.Config.CompanyName, e.Spec.TeamName, e.Spec.EnvName, err)
+		}
 	}
 
-	if env.Config.EnableErrorNotifier == "true" {
-		logger.Info("Sending UI error notification")
-		ntfr := uinotifier.NewUINotifier(logger, env.Config.ZLifecycleAPIURL)
-		msg := fmt.Sprintf("error updating environment %s for team %s", e.Spec.EnvName, e.Spec.TeamName)
-		if err := notifyError(ctx, e, ntfr, msg, allErrs); err != nil {
-			logger.WithError(err).Error("error sending notification to UI")
-		}
+	if len(allErrs) == 0 {
+		return nil
 	}
 
 	for _, e := range allErrs {
@@ -183,6 +162,29 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentUpdate(ctx context.Context
 		e.Name,
 		allErrs,
 	)
+}
+
+func (v *EnvironmentValidatorImpl) sendEvent(ctx context.Context, company, team, environment string, validationErrors field.ErrorList) error {
+	eventType := eventservice.ValidationSuccess
+	if len(validationErrors) > 0 {
+		eventType = eventservice.ValidationError
+	}
+	errMsgs := make([]string, 0, len(validationErrors))
+	for _, err := range validationErrors {
+		errMsgs = append(errMsgs, err.Error())
+	}
+	event := &eventservice.Event{
+		Company:     company,
+		Team:        team,
+		Environment: environment,
+		EventType:   string(eventType),
+		Payload:     errMsgs,
+	}
+	if err := v.es.Record(ctx, event, logger); err != nil {
+		return errors.Wrapf(err, "error pushing [%s] event to event service", eventType)
+	}
+
+	return nil
 }
 
 func (v *EnvironmentValidatorImpl) validateEnvironmentCommon(
@@ -516,7 +518,6 @@ func checkValueFromsExist(ec *v1.EnvironmentComponent, ecs []*v1.EnvironmentComp
 	for _, vf := range vfs {
 		// Get component name and output variable name from valueFrom string
 		compName, varName, err := SplitValueFrom(vf)
-
 		if err != nil {
 			fld := field.NewPath("spec").Child("components").Child(ec.Name).Child("variables").Child("valueFrom")
 			allErrs = append(allErrs, field.Invalid(fld, vf, fmt.Sprintf("valueFrom must be 'componentName.componentOutputName' instead got %s", vf)))

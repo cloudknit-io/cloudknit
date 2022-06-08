@@ -1,9 +1,10 @@
 package terraform_test
 
 import (
-	"github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 	"os"
 	"testing"
+
+	"github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 
 	"github.com/sirupsen/logrus"
 

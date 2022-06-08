@@ -1,8 +1,9 @@
 package gogit
 
 import (
-	"github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 	"time"
+
+	"github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 
 	"github.com/pkg/errors"
 

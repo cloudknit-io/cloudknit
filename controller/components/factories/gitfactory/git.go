@@ -2,6 +2,7 @@ package gitfactory
 
 import (
 	"context"
+
 	git2 "github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/git/gogit"
 	github2 "github.com/compuzest/zlifecycle-il-operator/controller/components/operations/github"

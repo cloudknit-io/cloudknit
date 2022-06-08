@@ -78,8 +78,8 @@ func generateAndSaveWorkflowOfWorkflows(
 	// }
 	ilEnvComponentDirectory := il.EnvironmentComponentsDirectoryAbsolutePath(ilService.ZLILTempDir, environment.Spec.TeamName, environment.Spec.EnvName)
 
-	workflow := workflow.GenerateLegacyWorkflowOfWorkflows(environment, tfcfg)
-	return fileAPI.SaveYamlFile(*workflow, ilEnvComponentDirectory, "/wofw.yaml")
+	wrkflw := workflow.GenerateLegacyWorkflowOfWorkflows(environment, tfcfg)
+	return fileAPI.SaveYamlFile(*wrkflw, ilEnvComponentDirectory, "/wofw.yaml")
 }
 
 func generateAndSaveEnvironmentApp(fileService file.API, environment *stablev1.Environment, envDirectory string) error {

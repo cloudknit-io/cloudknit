@@ -6,8 +6,8 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controller/env"
 )
 
-// TerraformBackendConfig variables for creating tf backend.
-type TerraformBackendConfig struct {
+// BackendConfig variables for creating tf backend.
+type BackendConfig struct {
 	Region        string
 	Key           string
 	Bucket        string
@@ -16,14 +16,14 @@ type TerraformBackendConfig struct {
 	Encrypt       bool
 }
 
-// TerraformVersionsConfig variables for creating tf versions.
-type TerraformVersionsConfig struct {
+// VersionsConfig variables for creating tf versions.
+type VersionsConfig struct {
 	TerraformVersion string
 	AWSVersion       string
 }
 
-// TerraformModuleConfig variables for creating tf module.
-type TerraformModuleConfig struct {
+// ModuleConfig variables for creating tf module.
+type ModuleConfig struct {
 	Component     string
 	Source        string
 	Path          string
@@ -38,18 +38,18 @@ type Variable struct {
 	Value string
 }
 
-// TerraformOutputsConfig for creating tf module outputs.
-type TerraformOutputsConfig struct {
+// OutputsConfig for creating tf module outputs.
+type OutputsConfig struct {
 	Component string
 	Outputs   []*stablev1.Output
 }
 
-// TerraformSecretsConfig for creating tf secrets.
-type TerraformSecretsConfig struct {
+// SecretsConfig for creating tf secrets.
+type SecretsConfig struct {
 	Secrets []*Secret
 }
 
-type TerraformProviderConfig struct {
+type ProviderConfig struct {
 	Region     string
 	AssumeRole *AssumeRole
 	Profile    string
@@ -67,8 +67,8 @@ type Secret struct {
 	Name string
 }
 
-// TerraformDataConfig variables for creating tf backend.
-type TerraformDataConfig struct {
+// DataConfig variables for creating tf backend.
+type DataConfig struct {
 	Region      string
 	Bucket      string
 	Profile     string

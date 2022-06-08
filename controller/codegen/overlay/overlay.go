@@ -1,9 +1,10 @@
 package overlay
 
 import (
+	"path/filepath"
+
 	git2 "github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/git"
-	"path/filepath"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/components/gitreconciler"
 

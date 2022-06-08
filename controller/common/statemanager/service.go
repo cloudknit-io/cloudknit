@@ -1,4 +1,4 @@
-package state_manager
+package statemanager
 
 import v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 

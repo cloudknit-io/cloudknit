@@ -22,7 +22,7 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/aws/awseks"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 	secretapi "github.com/compuzest/zlifecycle-il-operator/controller/common/secret"
-	"github.com/compuzest/zlifecycle-il-operator/controller/common/state_manager"
+	"github.com/compuzest/zlifecycle-il-operator/controller/common/statemanager"
 	argocd2 "github.com/compuzest/zlifecycle-il-operator/controller/components/operations/argocd"
 	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/argoworkflow"
 	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/secret"
@@ -203,7 +203,7 @@ func (r *EnvironmentReconciler) doReconcile(
 	fileService file.API,
 	gitClient git.API,
 	argoworkflowClient argoworkflowapi.API,
-	zlstateManagerClient state_manager.API,
+	zlstateManagerClient statemanager.API,
 	k8sClient awseks.API,
 	argocdClient argocdapi.API,
 	secretsClient secretapi.API,

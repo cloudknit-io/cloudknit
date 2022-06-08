@@ -9,7 +9,7 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/aws/awsssm"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/secret"
-	"github.com/compuzest/zlifecycle-il-operator/controller/common/state_manager"
+	"github.com/compuzest/zlifecycle-il-operator/controller/common/statemanager"
 	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/github"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/components/factories/gitfactory"
@@ -26,7 +26,7 @@ import (
 )
 
 type EnvironmentServices struct {
-	ZLStateManagerClient state_manager.API
+	ZLStateManagerClient statemanager.API
 	ArgocdClient         argocd.API
 	ArgoWorkflowClient   argoworkflow2.API
 	WatcherServices      *watcherservices.WatcherServices
@@ -42,7 +42,7 @@ type Tokens struct {
 }
 
 func (r *EnvironmentReconciler) initServices(ctx context.Context, environment *v1.Environment) (*EnvironmentServices, error) {
-	zlstateManagerClient := state_manager.NewHTTPStateManager(ctx, r.LogV2)
+	zlstateManagerClient := statemanager.NewHTTPStateManager(ctx, r.LogV2)
 	argocdClient := argocd.NewHTTPClient(ctx, r.LogV2, env.Config.ArgocdServerURL)
 	argoworkflowClient := argoworkflow2.NewHTTPClient(ctx, env.Config.ArgoWorkflowsServerURL)
 	watcherServices, err := watcherservices.NewGitHubServices(ctx, r.Client, env.Config.GitHubCompanyOrganization, r.LogV2)

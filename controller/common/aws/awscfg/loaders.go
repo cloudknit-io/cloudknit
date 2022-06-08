@@ -2,6 +2,7 @@ package awscfg
 
 import (
 	"context"
+
 	secret2 "github.com/compuzest/zlifecycle-il-operator/controller/common/secret"
 	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/secret"
 
@@ -81,8 +82,8 @@ func getCredentialsFromSecret(ctx context.Context, secretName string, client kCl
 	return &secret2.AWSCredentials{AccessKeyID: accessKeyID, SecretAccessKey: secretAccessKey}, nil
 }
 
-func NewK8sSecretCredentialsLoader(kc kClient.Client, secret string) *K8sSecretCredentialsLoader {
-	return &K8sSecretCredentialsLoader{kc: kc, secret: secret}
+func NewK8sSecretCredentialsLoader(kc kClient.Client, k8sSecretName string) *K8sSecretCredentialsLoader {
+	return &K8sSecretCredentialsLoader{kc: kc, secret: k8sSecretName}
 }
 
 type DefaultCredentialsLoader struct{}

@@ -14,10 +14,11 @@ package argocd_test
 
 import (
 	"fmt"
-	argocd2 "github.com/compuzest/zlifecycle-il-operator/controller/common/argocd"
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/argocd"
 	"strings"
 	"testing"
+
+	argocd2 "github.com/compuzest/zlifecycle-il-operator/controller/common/argocd"
+	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/argocd"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/util"
 

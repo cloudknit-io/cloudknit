@@ -2,10 +2,11 @@ package tfvar
 
 import (
 	"fmt"
-	git2 "github.com/compuzest/zlifecycle-il-operator/controller/common/git"
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/git"
 	"os"
 	"path/filepath"
+
+	git2 "github.com/compuzest/zlifecycle-il-operator/controller/common/git"
+	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/git"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/components/gitreconciler"
 

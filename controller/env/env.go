@@ -84,6 +84,7 @@ type config struct {
 
 	ZLifecycleStateManagerURL string
 	ZLifecycleAPIURL          string
+	ZLifecycleEventServiceURL string
 
 	// test
 	ReconcileMode string
@@ -96,7 +97,7 @@ var Config = config{
 	Mode:                 getOr("MODE", "cloud"),
 	TelemetryEnvironment: getOr("TELEMETRY_ENVIRONMENT", "dev"),
 	SlackWebhookURL:      os.Getenv("SLACK_WEBHOOK_URL"),
-	EnableErrorNotifier:  getOr("ENABLE_ERROR_NOTIFIER", "false"),
+	EnableErrorNotifier:  getOr("ENABLE_ERROR_NOTIFIER", "true"),
 
 	ZLEnvironment: os.Getenv("ENVIRONMENT"),
 
@@ -181,6 +182,10 @@ var Config = config{
 	),
 	ZLifecycleAPIURL: getOr("ZLIFECYCLE_API_URL", fmt.Sprintf(
 		"http://zlifecycle-api.%s.svc.cluster.local",
+		APINamespace(),
+	)),
+	ZLifecycleEventServiceURL: getOr("ZLIFECYCLE_EVENT_SERVICE_URL", fmt.Sprintf(
+		"http://zlifecycle-event-service.%s.svc.cluster.local:8081",
 		APINamespace(),
 	)),
 
