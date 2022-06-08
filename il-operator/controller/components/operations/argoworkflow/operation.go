@@ -13,8 +13,9 @@
 package argoworkflow
 
 import (
-	argoworkflowapi "github.com/compuzest/zlifecycle-il-operator/controller/common/argoworkflow"
 	"strings"
+
+	argoworkflowapi "github.com/compuzest/zlifecycle-il-operator/controller/common/argoworkflow"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/util"
 

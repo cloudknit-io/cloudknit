@@ -16,7 +16,6 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 	"text/template"
@@ -233,7 +232,7 @@ func (f *OSFileService) ReadDir(path string) ([]fs.DirEntry, error) {
 	return os.ReadDir(path)
 }
 
-// Cleans directory prior to generating files from controllers
+// CleanDir cleans directory prior to generating files from controllers.
 func (f *OSFileService) CleanDir(dir string) (err error) {
 	files, err := f.ReadDir(dir)
 
@@ -257,7 +256,7 @@ func (f *OSFileService) CleanDir(dir string) (err error) {
 			continue
 		}
 
-		if err := f.RemoveAll(path.Join(dir, file.Name())); err != nil {
+		if err := f.RemoveAll(filepath.Join(dir, file.Name())); err != nil {
 			return err
 		}
 	}

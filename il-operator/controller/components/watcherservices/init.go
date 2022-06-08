@@ -2,16 +2,16 @@ package watcherservices
 
 import (
 	"context"
+	"strconv"
+
 	argocdapi "github.com/compuzest/zlifecycle-il-operator/controller/common/argocd"
 	githubapi "github.com/compuzest/zlifecycle-il-operator/controller/common/github"
 	github3 "github.com/compuzest/zlifecycle-il-operator/controller/components/operations/github"
-	"strconv"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/components/watcher"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/argocd"
 
-	"github.com/compuzest/zlifecycle-il-operator/controller/common/github"
 	"github.com/compuzest/zlifecycle-il-operator/controller/util"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -22,9 +22,9 @@ import (
 
 type WatcherServices struct {
 	ArgocdClient      argocd.API
-	CompanyGitClient  github.API
-	InternalGitClient github.API
-	ILGitClient       github.API
+	CompanyGitClient  githubapi.API
+	InternalGitClient githubapi.API
+	ILGitClient       githubapi.API
 	CompanyWatcher    watcher.API
 	InternalWatcher   watcher.API
 	ILWatcher         watcher.API
@@ -96,7 +96,7 @@ func newGitHubClient(
 	privateKey []byte,
 	gitOrg string,
 	log *logrus.Entry,
-) (github.API, error) {
+) (githubapi.API, error) {
 	b := githubapi.NewClientBuilder()
 
 	switch mode {
@@ -122,11 +122,11 @@ func newGitHubClient(
 
 func newGitHubAppClientWithInstallationID(
 	ctx context.Context,
-	client github.API,
+	client githubapi.API,
 	privateKey []byte,
 	gitOrg string,
 	log *logrus.Entry,
-) (github.API, error) {
+) (githubapi.API, error) {
 	installationID, appID, err := github3.GetAppInstallationID(log, client, gitOrg)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error getting github app installation id for git organization [%s]", gitOrg)

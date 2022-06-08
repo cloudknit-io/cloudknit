@@ -1,4 +1,4 @@
-package state_manager
+package statemanager
 
 import (
 	"bytes"

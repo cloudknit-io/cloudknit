@@ -15,15 +15,16 @@ package controller
 import (
 	"context"
 	"fmt"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/apm"
 	git2 "github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/git/gogit"
 	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/argocd"
 	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/git"
 	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/github"
-	"strings"
-	"sync"
-	"time"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/components/watcherservices"
 	"github.com/compuzest/zlifecycle-il-operator/controller/components/zerrors"

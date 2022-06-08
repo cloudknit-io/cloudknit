@@ -2,12 +2,13 @@ package gitreconciler
 
 import (
 	"context"
+	"strings"
+	"time"
+
 	git2 "github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/git/gogit"
 	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/git"
 	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/github"
-	"strings"
-	"time"
 
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 

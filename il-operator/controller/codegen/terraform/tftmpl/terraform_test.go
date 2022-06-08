@@ -47,7 +47,7 @@ func TestTerraformTemplates_ExecuteVersions(t *testing.T) {
 	tpl, err := tftmpl.NewTerraformTemplates()
 	assert.Nil(t, err)
 
-	vars := terraform.TerraformVersionsConfig{
+	vars := terraform.VersionsConfig{
 		TerraformVersion: "1.2.3",
 		AWSVersion:       "4.1",
 	}
@@ -76,7 +76,7 @@ func TestTerraformTemplates_ExecuteBackend(t *testing.T) {
 	tpl, err := tftmpl.NewTerraformTemplates()
 	assert.Nil(t, err)
 
-	vars := terraform.TerraformBackendConfig{
+	vars := terraform.BackendConfig{
 		Region:        "us-east-1",
 		Key:           "some/test/key.tfstate",
 		Bucket:        "test-state",
@@ -110,7 +110,7 @@ func TestTerraformTemplates_ExecuteData(t *testing.T) {
 	tpl, err := tftmpl.NewTerraformTemplates()
 	assert.Nil(t, err)
 
-	vars := terraform.TerraformDataConfig{
+	vars := terraform.DataConfig{
 		Region:      "us-east-2",
 		Bucket:      "tfstate",
 		Profile:     "test-profile",
@@ -141,7 +141,7 @@ func TestTerraformTemplates_ExecuteModule(t *testing.T) {
 	tpl, err := tftmpl.NewTerraformTemplates()
 	assert.Nil(t, err)
 
-	vars := terraform.TerraformModuleConfig{
+	vars := terraform.ModuleConfig{
 		Component: "k8s",
 		Source:    "git@github.com:CompuZest/test",
 		Path:      "modules/k8s",
@@ -179,7 +179,7 @@ func TestTerraformTemplates_ExecuteOutputs(t *testing.T) {
 	tpl, err := tftmpl.NewTerraformTemplates()
 	assert.Nil(t, err)
 
-	vars := terraform.TerraformOutputsConfig{
+	vars := terraform.OutputsConfig{
 		Component: "k8s",
 		Outputs: []*v1.Output{{
 			Name:      "cluster_name",
@@ -204,7 +204,7 @@ func TestTerraformTemplates_ExecuteProviderNoAssumeRole(t *testing.T) {
 	tpl, err := tftmpl.NewTerraformTemplates()
 	assert.Nil(t, err)
 
-	vars := terraform.TerraformProviderConfig{
+	vars := terraform.ProviderConfig{
 		Region:     "eu-west-1",
 		AssumeRole: nil,
 		Profile:    "test-profile",
@@ -229,7 +229,7 @@ func TestTerraformTemplates_ExecuteProviderAssumeRole(t *testing.T) {
 	tpl, err := tftmpl.NewTerraformTemplates()
 	assert.Nil(t, err)
 
-	vars := terraform.TerraformProviderConfig{
+	vars := terraform.ProviderConfig{
 		Region: "eu-west-1",
 		AssumeRole: &terraform.AssumeRole{
 			RoleARN:     "some-role-arn",
@@ -263,7 +263,7 @@ func TestTerraformTemplates_ExecuteSecrets(t *testing.T) {
 	tpl, err := tftmpl.NewTerraformTemplates()
 	assert.Nil(t, err)
 
-	vars := terraform.TerraformSecretsConfig{
+	vars := terraform.SecretsConfig{
 		Secrets: []*terraform.Secret{{
 			Key:  "/app/database/admin_password",
 			Name: "db_password",

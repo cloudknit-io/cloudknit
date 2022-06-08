@@ -15,9 +15,10 @@ package argocd
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	argocdapi "github.com/compuzest/zlifecycle-il-operator/controller/common/argocd"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/aws/awseks"
-	"strings"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/util"
 

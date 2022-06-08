@@ -1,8 +1,9 @@
 package github
 
 import (
-	"github.com/google/go-github/v42/github"
 	"io"
+
+	"github.com/google/go-github/v42/github"
 )
 
 //go:generate mockgen --build_flags=--mod=mod -destination=./mock_github_api.go -package=github "github.com/compuzest/zlifecycle-il-operator/controller/common/github" API

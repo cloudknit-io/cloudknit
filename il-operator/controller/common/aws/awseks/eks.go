@@ -2,6 +2,7 @@ package awseks
 
 import (
 	"context"
+
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/aws/awscfg"
 
 	awsv1 "github.com/aws/aws-sdk-go/aws"
