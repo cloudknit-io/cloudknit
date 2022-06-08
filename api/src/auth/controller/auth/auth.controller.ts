@@ -83,6 +83,16 @@ export class AuthController {
     return await this.authService.setTermAgreementStatus(body);
   }
 
+  @Get("users")
+  public async getUsers(@Param('company') company: string) {
+    return await this.authService.getUserList(company);
+  }
+
+  @Post("users")
+  public async addUser(@Body() body) {
+    return await this.authService.addUser(body);
+  }
+
   private async updateSecret(
     client: any,
     secret: any,
