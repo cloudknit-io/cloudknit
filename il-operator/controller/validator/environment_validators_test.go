@@ -81,6 +81,9 @@ func TestCheckEnvironmentComponentNames(t *testing.T) {
 func TestIsUniqueEnvAndTeam(t *testing.T) {
 	t.Parallel()
 
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
 	envName := "test"
 	teamName := "some-team"
 
@@ -100,8 +103,8 @@ func TestIsUniqueEnvAndTeam(t *testing.T) {
 		}},
 	}
 
-	err := isUniqueEnvAndTeam(&env, envListDuplicate)
-	assert.Contains(t, err.Detail, fmt.Sprintf("the environment %s already exists within team %s", envName, teamName))
+	verrs := isUniqueEnvAndTeam(&env, envListDuplicate)
+	assert.Contains(t, verrs[0].Detail, fmt.Sprintf("the environment %s already exists within team %s", envName, teamName))
 
 	err1 := isUniqueEnvAndTeam(&env, envList)
 	assert.Nil(t, err1)

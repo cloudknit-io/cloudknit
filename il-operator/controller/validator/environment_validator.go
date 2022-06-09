@@ -89,12 +89,13 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentCreate(ctx context.Context
 
 	var allErrs field.ErrorList
 
-	verr, err := v.isUniqueEnvAndTeam(ctx, e)
-	if err != nil {
-		logger.Errorf("error validating is team and environment unique: %v", err)
+	envList := &v1.EnvironmentList{}
+	if err := v.kc.List(ctx, envList, &kClient.ListOptions{Namespace: env.ConfigNamespace()}); err != nil {
+		logger.Errorf(errInitValidator+": %v", err)
+		return apierrors.NewInternalError(errors.Wrap(err, errInitValidator))
 	}
-	if verr != nil {
-		allErrs = append(allErrs, verr...)
+	if verrs := isUniqueEnvAndTeam(e, *envList); verrs != nil {
+		allErrs = append(allErrs, verrs...)
 	}
 	if err := v.validateEnvironmentCommon(ctx, e, true, v.kc, logger); err != nil {
 		allErrs = append(allErrs, err...)
@@ -217,27 +218,22 @@ func (v *EnvironmentValidatorImpl) validateEnvironmentCommon(
 	return allErrs
 }
 
-func (v *EnvironmentValidatorImpl) isUniqueEnvAndTeam(ctx context.Context, e *v1.Environment) (field.ErrorList, error) {
-	envList := &v1.EnvironmentList{}
-	if err := v.kc.List(ctx, envList, &kClient.ListOptions{Namespace: env.ConfigNamespace()}); err != nil {
-		return nil, errors.Wrap(err, "error listing environments")
-	}
-
-	var errorList field.ErrorList
+func isUniqueEnvAndTeam(e *v1.Environment, envList v1.EnvironmentList) field.ErrorList {
+	var allErrs field.ErrorList
 
 	teamName := e.Spec.TeamName
 	envName := e.Spec.EnvName
 
-	for _, env := range envList.Items {
-		if env.Spec.TeamName == teamName && env.Spec.EnvName == envName {
-			logger.Infof("Found duplicate envName [%s] teamName [%s] for Environment UID [%s]", env.Spec.EnvName, env.Spec.TeamName, e.UID)
+	for _, _e := range envList.Items {
+		if _e.Spec.TeamName == teamName && _e.Spec.EnvName == envName {
+			logger.Infof("Found duplicate envName [%s] teamName [%s] for Environment UID [%s]", _e.Spec.EnvName, _e.Spec.TeamName, e.UID)
 			fld := field.NewPath("spec").Child("envName")
 			verr := field.Invalid(fld, envName, fmt.Sprintf("the environment %s already exists within team %s", envName, teamName))
-			errorList = append(errorList, verr)
+			allErrs = append(allErrs, verr)
 		}
 	}
 
-	return errorList, nil
+	return allErrs
 }
 
 func validateTeamExists(ctx context.Context, e *v1.Environment, kc kClient.Client, list *v1.TeamList, l *logrus.Entry) *field.Error {
