@@ -5,10 +5,15 @@ theme:
   favicon: assets/images/favicon.png
   logo: assets/images/logo.png
 markdown_extensions:
-- codehilite
-- admonition
-- toc:
-    permalink: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - codehilite
+  - admonition
+  - toc:
+      permalink: true
 nav:
 - Overview: index.md
 - concepts/concepts.md
@@ -36,4 +41,3 @@ nav:
 - component_details_view.md
 - errors.md
 - support/supported_platforms.md
-
