@@ -33,7 +33,7 @@ const (
 	// https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#rfc-1035-label-names
 	// starts with alpha
 	// ends with alphanumeric
-	// cannot contain conecutive hyphens
+	// cannot contain connective hyphens
 	nameRegex      = `^[a-zA-Z]+[a-zA-Z0-9]*(-[a-zA-Z0-9]+)*$`
 	maxFieldLength = 63
 )
@@ -89,18 +89,19 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentCreate(ctx context.Context
 
 	var allErrs field.ErrorList
 
-	envList := &v1.EnvironmentList{}
-	getEnvironmentList(ctx, envList, v.kc)
-	if err := isUniqueEnvAndTeam(e, *envList); err != nil {
-		allErrs = append(allErrs, err)
+	verr, err := v.isUniqueEnvAndTeam(ctx, e)
+	if err != nil {
+		logger.Errorf("error validating is team and environment unique: %v", err)
 	}
-
+	if verr != nil {
+		allErrs = append(allErrs, verr...)
+	}
 	if err := v.validateEnvironmentCommon(ctx, e, true, v.kc, logger); err != nil {
 		allErrs = append(allErrs, err...)
 	}
 
 	if env.Config.EnableErrorNotifier == "true" {
-		if err := v.sendEvent(ctx, env.Config.CompanyName, e.Spec.TeamName, e.Spec.EnvName, allErrs); err != nil {
+		if err := v.sendEvent(ctx, env.Config.CompanyName, e.Spec.TeamName, e.Spec.EnvName, allErrs, logger); err != nil {
 			logger.Errorf("error sending validation event for environment create action for company [%s], team [%s] and environment [%s]: %v", env.Config.CompanyName, e.Spec.TeamName, e.Spec.EnvName, err)
 		}
 	}
@@ -141,7 +142,7 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentUpdate(ctx context.Context
 	}
 
 	if env.Config.EnableErrorNotifier == "true" {
-		if err := v.sendEvent(ctx, env.Config.CompanyName, e.Spec.TeamName, e.Spec.EnvName, allErrs); err != nil {
+		if err := v.sendEvent(ctx, env.Config.CompanyName, e.Spec.TeamName, e.Spec.EnvName, allErrs, logger); err != nil {
 			logger.Errorf("error sending validation event for company [%s], team [%s] and environment [%s]: %v", env.Config.CompanyName, e.Spec.TeamName, e.Spec.EnvName, err)
 		}
 	}
@@ -164,11 +165,12 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentUpdate(ctx context.Context
 	)
 }
 
-func (v *EnvironmentValidatorImpl) sendEvent(ctx context.Context, company, team, environment string, validationErrors field.ErrorList) error {
+func (v *EnvironmentValidatorImpl) sendEvent(ctx context.Context, company, team, environment string, validationErrors field.ErrorList, log *logrus.Entry) error {
 	eventType := eventservice.ValidationSuccess
 	if len(validationErrors) > 0 {
 		eventType = eventservice.ValidationError
 	}
+	logger.Infof("Sending [%s] event to event service for company [%s], team [%s] and environment [%s]", eventType, company, team, environment)
 	errMsgs := make([]string, 0, len(validationErrors))
 	for _, err := range validationErrors {
 		errMsgs = append(errMsgs, err.Error())
@@ -215,12 +217,14 @@ func (v *EnvironmentValidatorImpl) validateEnvironmentCommon(
 	return allErrs
 }
 
-func getEnvironmentList(ctx context.Context, envList *v1.EnvironmentList, kc kClient.Client) {
-	// Gets all Environment objects within namespace
-	kc.List(ctx, envList, &kClient.ListOptions{Namespace: fmt.Sprintf("%s-config", env.Config.CompanyName)})
-}
+func (v *EnvironmentValidatorImpl) isUniqueEnvAndTeam(ctx context.Context, e *v1.Environment) (field.ErrorList, error) {
+	envList := &v1.EnvironmentList{}
+	if err := v.kc.List(ctx, envList, &kClient.ListOptions{Namespace: env.ConfigNamespace()}); err != nil {
+		return nil, errors.Wrap(err, "error listing environments")
+	}
 
-func isUniqueEnvAndTeam(e *v1.Environment, envList v1.EnvironmentList) *field.Error {
+	var errorList field.ErrorList
+
 	teamName := e.Spec.TeamName
 	envName := e.Spec.EnvName
 
@@ -228,11 +232,12 @@ func isUniqueEnvAndTeam(e *v1.Environment, envList v1.EnvironmentList) *field.Er
 		if env.Spec.TeamName == teamName && env.Spec.EnvName == envName {
 			logger.Infof("Found duplicate envName [%s] teamName [%s] for Environment UID [%s]", env.Spec.EnvName, env.Spec.TeamName, e.UID)
 			fld := field.NewPath("spec").Child("envName")
-			return field.Invalid(fld, envName, fmt.Sprintf("the environment %s already exists within team %s", envName, teamName))
+			verr := field.Invalid(fld, envName, fmt.Sprintf("the environment %s already exists within team %s", envName, teamName))
+			errorList = append(errorList, verr)
 		}
 	}
 
-	return nil
+	return errorList, nil
 }
 
 func validateTeamExists(ctx context.Context, e *v1.Environment, kc kClient.Client, list *v1.TeamList, l *logrus.Entry) *field.Error {
@@ -258,7 +263,11 @@ func validateNames(e *v1.Environment) field.ErrorList {
 
 	if !r.MatchString(e.Spec.EnvName) {
 		fld := field.NewPath("spec").Child("envName")
-		allErrs = append(allErrs, field.Invalid(fld, e.Spec.EnvName, "environment name must contain only lowercase alphanumeric characters or '-', start with an alphabetic character, and end with an alphanumeric character"))
+		allErrs = append(allErrs, field.Invalid(
+			fld,
+			e.Spec.EnvName,
+			"environment name must contain only lowercase alphanumeric characters or '-', start with an alphabetic character, and end with an alphanumeric character",
+		))
 	}
 	if len(e.Spec.EnvName) > maxFieldLength {
 		fld := field.NewPath("spec").Child("envName")
@@ -266,11 +275,21 @@ func validateNames(e *v1.Environment) field.ErrorList {
 	}
 	if !r.MatchString(e.Spec.TeamName) {
 		fld := field.NewPath("spec").Child("teamName")
-		allErrs = append(allErrs, field.Invalid(fld, e.Spec.TeamName, "team name must contain only lowercase alphanumeric characters or '-', start with an alphabetic character, and end with an alphanumeric character"))
+		allErrs = append(
+			allErrs,
+			field.Invalid(
+				fld,
+				e.Spec.TeamName,
+				"team name must contain only lowercase alphanumeric characters or '-', start with an alphabetic character, and end with an alphanumeric character",
+			),
+		)
 	}
 	if len(e.Spec.TeamName) > maxFieldLength {
 		fld := field.NewPath("spec").Child("teamName")
-		allErrs = append(allErrs, field.Invalid(fld, e.Spec.TeamName, fmt.Sprintf("team name must not exceed %d characters", maxFieldLength)))
+		allErrs = append(
+			allErrs,
+			field.Invalid(fld, e.Spec.TeamName, fmt.Sprintf("team name must not exceed %d characters", maxFieldLength)),
+		)
 	}
 
 	return allErrs
