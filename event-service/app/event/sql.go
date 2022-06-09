@@ -12,6 +12,7 @@ func (s *Service) insertEvent(ctx context.Context, event *Event) error {
 	if err != nil {
 		return errors.Wrap(err, "error preparing statement: insert-event")
 	}
+	defer stmt.Close()
 
 	result, err := stmt.ExecContext(ctx, event)
 	if err != nil {
@@ -34,6 +35,7 @@ func (s *Service) selectEvents(ctx context.Context, payload *ListPayload, scope 
 	if err != nil {
 		return nil, err
 	}
+	defer stmt.Close()
 
 	if err = stmt.SelectContext(ctx, &events, payload); err != nil {
 		return nil, errors.Wrapf(err, "error listing events for %s scope and %s filter", scope, filter)

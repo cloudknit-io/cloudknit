@@ -88,20 +88,6 @@ func (s *Service) checkComponentStatus(hc *Healthcheck, log *logrus.Entry) {
 	}
 }
 
-func (s *Service) checkDB(ctx context.Context) error {
-	q, err := s.sqlDBHealthcheck()
-	if err != nil {
-		return errors.Wrap(err, "error preparing healthcheck sql query")
-	}
-
-	_, err = q.ExecContext(ctx)
-	if err != nil {
-		return errors.Wrap(err, "error executing healthcheck sql query")
-	}
-
-	return nil
-}
-
 func (s *Service) CompanyStatus(ctx context.Context, company string, log *logrus.Entry) (TeamStatus, error) {
 	log.Infof("Performing status check for company [%s]", company)
 

@@ -1,7 +1,19 @@
 package health
 
-import "github.com/jmoiron/sqlx"
+import (
+	"context"
+	"github.com/pkg/errors"
+)
 
-func (s *Service) sqlDBHealthcheck() (*sqlx.Stmt, error) {
-	return s.db.Preparex("SELECT 1")
+func (s *Service) checkDB(ctx context.Context) error {
+	_, err := s.db.ExecContext(ctx, sqlDBHealthcheck())
+	if err != nil {
+		return errors.Wrap(err, "error executing healthcheck sql query")
+	}
+
+	return nil
+}
+
+func sqlDBHealthcheck() string {
+	return "SELECT 1"
 }
