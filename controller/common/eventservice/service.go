@@ -11,6 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+//go:generate mockgen --build_flags=--mod=mod -destination=./mock_event_service.go -package=eventservice "github.com/compuzest/zlifecycle-il-operator/controller/common/eventservice" API
 type API interface {
 	Record(ctx context.Context, n *Event, log *logrus.Entry) error
 }
