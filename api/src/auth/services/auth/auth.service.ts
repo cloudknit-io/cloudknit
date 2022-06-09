@@ -36,19 +36,20 @@ export class AuthService {
     });
   }
 
-  public async getUserList(company: string) {
+  public async getUserList(organizationId: string) {
     return this.userRepo.find({
       where: {
-        company: company,
+        company: organizationId,
       },
     });
   }
 
-  public async addUser({ username, company, email }) {
+  public async addUser({ username, organizationId, email, role }) {
     return this.userRepo.save({
       username,
-      company,
+      company: organizationId,
       email,
+      role : role || 'User'
     });
   }
 }

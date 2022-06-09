@@ -1,5 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+} from "typeorm";
 
 @Entity({ name: "users" })
 export class User {
@@ -25,6 +30,11 @@ export class User {
 
   @Column()
   agreedByEmail: string;
+
+  @Column({
+    default: "User",
+  })
+  role: string;
 
   @CreateDateColumn()
   timeStamp: string;
