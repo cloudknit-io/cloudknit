@@ -36,7 +36,7 @@ func (s *Service) Healthcheck(ctx context.Context, fullCheck bool, log *logrus.E
 	}
 
 	if fullCheck {
-		hc.Components = s.fullCheck(ctx)
+		hc.Components = s.fullCheck(ctx, log)
 	}
 
 	s.checkComponentStatus(&hc, log)
@@ -44,7 +44,7 @@ func (s *Service) Healthcheck(ctx context.Context, fullCheck bool, log *logrus.E
 	return &hc
 }
 
-func (s *Service) fullCheck(ctx context.Context) []*Component {
+func (s *Service) fullCheck(ctx context.Context, log *logrus.Entry) []*Component {
 	var components []*Component
 
 	dbComponent := Component{
@@ -52,6 +52,7 @@ func (s *Service) fullCheck(ctx context.Context) []*Component {
 		Critical: true,
 	}
 	if err := s.checkDB(ctx); err != nil {
+		log.Errorf("error performing db healthcheck: %v", err)
 		dbComponent.Status = HealthcheckError
 	} else {
 		dbComponent.Status = HealthcheckOK

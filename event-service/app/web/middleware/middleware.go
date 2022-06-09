@@ -3,6 +3,7 @@ package middleware
 import (
 	"mime"
 	"net/http"
+	"strings"
 	"time"
 
 	http2 "github.com/compuzest/zlifecycle-event-service/app/web/http"
@@ -44,6 +45,10 @@ func TimeoutHandler(h http.Handler) http.Handler {
 
 func LoggerHandler(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/health") {
+			h.ServeHTTP(w, r)
+			return
+		}
 		start := time.Now()
 		zlog.CtxLogger(r.Context()).Printf("REQUEST START %s %s", r.Method, r.URL.Path)
 		h.ServeHTTP(w, r)
