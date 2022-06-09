@@ -9,14 +9,18 @@ export class AuthService {
     @InjectRepository(User) private readonly userRepo: Repository<User>
   ) {}
 
-  public async getTermAgreementStatus({ username, company }) {
-    const user = await this.userRepo.findOne({
+  public async getUser({ username }) {
+    return this.userRepo.findOne({
       where: {
         username: username,
-        company: company,
       },
     });
-    return user?.termAgreementStatus || false;
+  }
+
+  public async getTermAgreementStatus(body: any) {
+    return this.getUser(body).then(
+      (user: User) => user?.termAgreementStatus || false
+    );
   }
 
   public async setTermAgreementStatus({
@@ -49,7 +53,7 @@ export class AuthService {
       username,
       company: organizationId,
       email,
-      role : role || 'User'
+      role: role || "User",
     });
   }
 }

@@ -4,8 +4,7 @@ import { AuthService } from "src/auth/services/auth/auth.service";
 
 @Controller("auth")
 export class AuthController {
-
-  constructor(private readonly authService: AuthService){}
+  constructor(private readonly authService: AuthService) {}
 
   /*
    * user will login via this route
@@ -15,8 +14,8 @@ export class AuthController {
     @Param("accessKeyId") accessKeyId: string,
     @Param("secretAccessKey") secretAccessKey: string
   ) {
-    console.log(Buffer.from(accessKeyId, 'base64').toString());
-    console.log(Buffer.from(secretAccessKey, 'base64').toString());
+    console.log(Buffer.from(accessKeyId, "base64").toString());
+    console.log(Buffer.from(secretAccessKey, "base64").toString());
     const separator = "[compuzest-shared]";
     const k8s = require("@kubernetes/client-node");
     const kc = new k8s.KubeConfig();
@@ -51,21 +50,34 @@ export class AuthController {
       console.log(credentials);
       console.log(credentials.data);
       console.log(credentials.data.credentials);
-      const decoded = Buffer.from(credentials.data.credentials, 'base64').toString();
+      const decoded = Buffer.from(
+        credentials.data.credentials,
+        "base64"
+      ).toString();
       const splitTokens = decoded.split(separator);
       const updatedCreds = splitTokens[0].replace(
         /aws_access_key_id = \S+\naws_secret_access_key = \S+/,
-        `aws_access_key_id = ${Buffer.from(accessKeyId, 'base64').toString()}\naws_secret_access_key = ${Buffer.from(secretAccessKey, 'base64').toString()}`
+        `aws_access_key_id = ${Buffer.from(
+          accessKeyId,
+          "base64"
+        ).toString()}\naws_secret_access_key = ${Buffer.from(
+          secretAccessKey,
+          "base64"
+        ).toString()}`
       );
       splitTokens[0] = updatedCreds;
-      const encoded = Buffer.from(splitTokens.join(separator)).toString('base64');
-      updates.push(this.updateSecret(
-        k8sApi,
-        credentials,
-        { credentials: encoded },
-        "argocd",
-        "aws-credentials-file"
-      ));
+      const encoded = Buffer.from(splitTokens.join(separator)).toString(
+        "base64"
+      );
+      updates.push(
+        this.updateSecret(
+          k8sApi,
+          credentials,
+          { credentials: encoded },
+          "argocd",
+          "aws-credentials-file"
+        )
+      );
     }
 
     const res = await Promise.all(updates);
@@ -73,19 +85,24 @@ export class AuthController {
     return res;
   }
 
-  @Post("termAgreementStatus") 
+  @Post("termAgreementStatus")
   public async getTermAgreementStatus(@Body() body) {
-    return await this.authService.getTermAgreementStatus(body);
+    return this.authService.getTermAgreementStatus(body);
   }
 
-  @Post("setTermAgreementStatus") 
+  @Post("setTermAgreementStatus")
   public async setTermAgreementStatus(@Body() body) {
     return await this.authService.setTermAgreementStatus(body);
   }
 
   @Get("users/:organizationId")
-  public async getUsers(@Param('organizationId') organizationId: string) {
+  public async getUsers(@Param("organizationId") organizationId: string) {
     return this.authService.getUserList(organizationId);
+  }
+
+  @Get("user/:username")
+  public async getUser(@Param("username") username: string) {
+    return this.authService.getUser({ username });
   }
 
   @Post("add")
