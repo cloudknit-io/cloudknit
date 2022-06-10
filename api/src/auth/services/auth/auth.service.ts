@@ -49,11 +49,23 @@ export class AuthService {
   }
 
   public async addUser({ username, organizationId, email, role }) {
+    const existing = await this.getUser({ username });
+    if (existing) {
+      throw "User with Github Id already exists!";
+    }
     return this.userRepo.save({
       username,
       company: organizationId,
       email,
       role: role || "User",
     });
+  }
+
+  public async deleteUser({ username }) {
+    const existing = await this.getUser({ username });
+    if (!existing) {
+      throw "User with Github Id does not exist!";
+    }
+    return this.userRepo.delete(existing);
   }
 }

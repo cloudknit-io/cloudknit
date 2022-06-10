@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Res } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Res } from "@nestjs/common";
 import { Response } from "express";
 import { AuthService } from "src/auth/services/auth/auth.service";
 
@@ -108,6 +108,11 @@ export class AuthController {
   @Post("add")
   public async addUser(@Body() body) {
     return await this.authService.addUser(body);
+  }
+
+  @Delete("delete")
+  public async deleteUser(@Body() body) {
+    return await this.authService.deleteUser(body);
   }
 
   private async updateSecret(
