@@ -1,65 +1,60 @@
 # Hello World Environment
 
-## Set AWS Credentials
-
-Make sure you set [AWS Credentials](../settings/aws_credentials.md) that you want to use for provisioning your environment.
+Make sure you've completed [configuring AWS Credentials](../settings/aws_credentials.md) and [onboarded a team](./onboard_team.md) before starting this walkthrough.
 
 ## Provision your first Environment
 
-After you have setup AWS Credentials, you will want to provision a simple environment to see how it works end to end.
-
-1. Clone your team repo locally on your machine
-2. Go to root directory of the team repo and create a new folder to represent your team called `hello-world`
-```
-mkdir hello-world;
-cd hello-world;
-```
-
-3. Run the below bash script using terminal and enter `Company`, `Team` and `Environment` Names when asked.
-
-```
-bash <(curl -s https://docs.zlifecycle.com/scripts/getting_started.sh)
-```
-4. It will create a env.yaml like below:
-<details>
-  <summary>Click to expand!</summary>
-```yaml
-apiVersion: stable.compuzest.com/v1
-kind: Environment
-metadata:
-  name: zmart-checkout-hello-world
-  namespace: zmart-config
-spec:
-  teamName: checkout
-  envName: hello-world
-  components:
-    - name: images
-      type: terraform
-      module:
-        source: aws
-        name: s3-bucket
-      variables:
-        - name: bucket
-          value: "zmart-checkout-hello-world-images-abcde"
-    - name: videos
-      type: terraform
-      dependsOn: [images]
-      module:
-        source: aws
-        name: s3-bucket
-      variables:
-        - name: bucket
-          value: "zmart-checkout-hello-world-videos-vwxyz"
-```
-</details>
-
-4. Commit and push this file to your team repository
-5. Go to Environments page on zLifecycle UI
-   * After a few mins you should see the new environment with the team & env name you entered getting provisioned
-   * It will start provisioning the `images` s3 bucket first and then `videos` s3 bucket
-   * Once it starts provisioning, you can click on the `images` component and open the right panel
-   * Right panel should show the terraform plan
-6. Once the status changes to `Waiting For Approval` you will need to approve the changes by clicking on the `Approve` button below the terraform plan (as shown in the image below) to start provisoning the `images` s3 bucket (which is terraform apply)
+1. Clone the team repo (`zl-[team-name]-config`) you created in [onboarding a team](./onboard_team.md)
+1. Create a `hello-world` directory in the cloned repo
+  ```bash
+  cd zl-[team-name]-config
+  mkdir hello-world
+  cd hello-world
+  ```
+1. Run the below bash script using terminal and enter `Company`, `Team` and `Environment` Names when asked.
+  ```bash
+  bash <(curl -s https://docs.zlifecycle.com/scripts/getting_started.sh)
+  ```
+1. It will create the following `hello-world.yaml`:
+  <details>
+    <summary>Click to expand!</summary>
+  ```yaml
+  apiVersion: stable.compuzest.com/v1
+  kind: Environment
+  metadata:
+    name: company-hello-world
+    namespace: company-config
+  spec:
+    teamName: your-team
+    envName: hello-world
+    components:
+      - name: images
+        type: terraform
+        module:
+          source: aws
+          name: s3-bucket
+        variables:
+          - name: bucket
+            value: "company-hello-world-images-abcde"
+      - name: videos
+        type: terraform
+        dependsOn: [images]
+        module:
+          source: aws
+          name: s3-bucket
+        variables:
+          - name: bucket
+            value: "company-hello-world-videos-vwxyz"
+  ```
+  </details>
+1. Commit the changes and push to Github
+1. Go to Environments page on **zLifecycle** UI
+    * After a few minutes you should see your new environment
+    * It will provision the `images` s3 bucket first, then `videos` s3 bucket
+1. Once it starts provisioning, click on the `images` component
+1. You should see the **provision plan** in the right panel
+1. Once the plan finishes you need to approve the changes by clicking `Approve` below the terraform plan (as shown in the image below)
+1. This will start provisoning the `images` s3 bucket (which is terraform apply)
 
 ![sample-right-panel](../assets/images/sample-right-panel.png "Sample Right Panel")
 
@@ -67,42 +62,42 @@ spec:
 
 After you have provisioned your first environment, let's go through the teardown exercise.
 
-1. In the `hello-world.yaml` that you created in the Provision step above add a 'teardown' flag to `true` at the spec level which will apply to all of the environment's components in the file. See example below.
+You can read more about `teardown` [here](../policies/teardown.md).
 
-<details>
-  <summary>Click to expand!</summary>
-```yaml
-apiVersion: stable.compuzest.com/v1
-kind: Environment
-metadata:
-  name: zmart-checkout-hello-world
-  namespace: zmart-config
-spec:
-  teamName: checkout
-  envName: hello-world
-  teardown: true
-  components:
-    - name: images
-      type: terraform
-      module:
-        source: aws
-        name: s3-bucket
-      variables:
-        - name: bucket
-          value: "zmart-checkout-hello-world-images-abcde"
-    - name: videos
-      type: terraform
-      dependsOn: [images]
-      module:
-        source: aws
-        name: s3-bucket
-      variables:
-        - name: bucket
-          value: "zmart-checkout-hello-world-videos-vwxyz"
-```
-</details>
-
-2. Commit and push changes to your team repository
+1. Add `teardown: true` in `hello-world.yaml` at the `spec` level. See example below:
+  <details>
+    <summary>Click to expand!</summary>
+  ```yaml
+  apiVersion: stable.compuzest.com/v1
+  kind: Environment
+  metadata:
+    name: zmart-hello-world
+    namespace: zmart-config
+  spec:
+    teamName: your-team
+    envName: hello-world
+    teardown: true # Add this
+    components:
+      - name: images
+        type: terraform
+        module:
+          source: aws
+          name: s3-bucket
+        variables:
+          - name: bucket
+            value: "zmart-hello-world-images-abcde"
+      - name: videos
+        type: terraform
+        dependsOn: [images]
+        module:
+          source: aws
+          name: s3-bucket
+        variables:
+          - name: bucket
+            value: "zmart-hello-world-videos-vwxyz"
+  ```
+  </details>
+1. Commit and push changes to Github
     * The teardown will start at the bottom most leaf node
-3. Approve the teardown plan when prompted
-4. Monitor the progress on zLifecycle UI
+1. Approve the teardown plan when prompted
+1. Monitor the progress on **zLifecycle** UI

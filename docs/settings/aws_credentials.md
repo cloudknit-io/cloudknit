@@ -1,8 +1,8 @@
 # AWS Credentials
 
-AWS credentials are used by zlifecycle to provision your environment on AWS. You can provision an environment on AWS only after setting these credentials.
+AWS credentials are used by **zLifecycle** to provision your environment on AWS. You can provision an environment on AWS only after setting these credentials.
 
-These credentials can be **created** & **updated** using zLifecycle secrets manager, which is accessible by clicking on the **Settings** Navigation button, as highlighted in the below image.
+These credentials can be **created** & **updated** using **zLifecycle** secrets manager, which is accessible by clicking on the **Settings** Navigation button, as highlighted in the below image.
 
 ![settings](../assets/images/secrets.png "Settings")
 
@@ -14,4 +14,4 @@ AWS secrets that need to be set:
 * `Secret Access Key`
 * `Session Token` [Optional]
 
-There are 3 scopes to which these secrets can be added, `company`, `team`, `environment`. By default, zlifecycle tries to find secrets at environment level, then at team level and lastly at company level.
+There are 3 scopes to which these secrets can be added, `company`, `team`, `environment`. By default, **zLifecycle** tries to find secrets at environment level, then at team level and lastly at company level.
