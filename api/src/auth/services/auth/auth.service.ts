@@ -66,6 +66,8 @@ export class AuthService {
     if (!existing) {
       throw "User with Github Id does not exist!";
     }
-    return this.userRepo.delete(existing);
+    return this.userRepo.delete({
+      username: username,
+    });
   }
 }
