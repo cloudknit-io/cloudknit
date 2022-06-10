@@ -61,7 +61,7 @@ export class AuthService {
     });
   }
 
-  public async deleteUser({ username }) {
+  public async deleteUser(username: string) {
     const existing = await this.getUser({ username });
     if (!existing) {
       throw "User with Github Id does not exist!";

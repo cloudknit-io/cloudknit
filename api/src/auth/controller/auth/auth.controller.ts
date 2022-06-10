@@ -110,9 +110,9 @@ export class AuthController {
     return await this.authService.addUser(body);
   }
 
-  @Delete("delete")
-  public async deleteUser(@Body() body) {
-    return await this.authService.deleteUser(body);
+  @Delete("delete/:username")
+  public async deleteUser(@Param('username') username: string) {
+    return await this.authService.deleteUser(username);
   }
 
   private async updateSecret(
