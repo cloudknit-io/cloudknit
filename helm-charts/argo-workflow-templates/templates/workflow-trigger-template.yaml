@@ -17,9 +17,6 @@ spec:
   entrypoint: run
   podGC:
     strategy: OnPodCompletion
-  ttlStrategy:
-    secondsAfterSuccess: 600
-    secondsAfterCompletion: 600
   templates:
     - name: run
       serviceAccountName: {{.Values.serviceAccountName}}
@@ -174,7 +171,7 @@ spec:
               terraform/sync: 'true'
           spec:
             podGC:
-              strategy: OnPodSuccess
+              strategy: OnPodCompletion
             arguments:
               parameters:
               - name: team_name

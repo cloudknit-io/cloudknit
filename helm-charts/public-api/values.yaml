@@ -2,12 +2,14 @@ image:
   name: public-api
   tag:
   repository:
-# rename zcustomer with the client name
-domain:
 ingressPaths:
   - "/organization-exists"
   - "/register-organization"
-protocol:
+alb:
+  instance: public-api
+  domain: !!!DOMAIN!!!
+  certificate:
+    arn: !!!CERTIFICATE ARN!!!
 database:
   host:
   username:

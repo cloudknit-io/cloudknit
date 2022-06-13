@@ -17,9 +17,6 @@ spec:
   entrypoint: run
   podGC:
     strategy: OnPodCompletion
-  ttlStrategy:
-    secondsAfterSuccess: 600
-    secondsAfterCompletion: 600
   templates:
     - name: run
       inputs:
