@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zlifecycle-web-bff
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zlifecycle-web-bff
+  template:
+    metadata:
+     labels:
+        app: zlifecycle-web-bff
+    spec:
+      containers:
+        - name: zlifecycle-web-bff
+          env:
+            - name: PORT
+              value: "8080"
+            - name: COMPANY
+              value: {{ .Values.company }}
+            - name: SITE_URL
+              value: {{ .Values.protocol | default "https://" }}{{ .Values.domain }}
+            - name: OPENID_ISSUER
+              value: {{ .Values.argocd.openIdIssuerUrl }}
+            - name: OPENID_CALLBACK
+              value: {{ .Values.protocol | default "https://" }}{{ .Values.domain }}/auth/callback
+            - name: COOKIE_SAME_SITE
+              value: "lax"
+            - name: COOKIE_DOMAIN
+              value: {{ .Values.domain }}
+            - name: COOKIE_SECRET
+              value: "test"
+            - name: ARGO_WORKFLOW_API_URL
+              value: {{ .Values.argoWorkflowApiUrl }}
+            - name: ARGO_CD_API_URL
+              value: {{ .Values.argocd.urlWithProtocol }}
+            - name: ZLIFECYCLE_API_URL
+              value: {{ .Values.zlifecycleApiUrl }}
+            - name: ZLIFECYCLE_STATE_MANAGER_URL
+              value: {{ .Values.zlifecycleStateManagerUrl }}
+            - name: ZLIFECYCLE_EVENT_API_URL
+              value: {{ .Values.zlifecycleEventApiUrl }}
+          envFrom:
+            - secretRef:
+                name: zlifecycle-web-bff-development
+          image: {{ .Values.image.repository }}/{{ .Values.image.name }}:{{ .Values.image.tag }}
+          ports:
+            - containerPort: 8080
+          command: [ "/bin/sh", "-c" ]
+          args:
+            - NODE_ENV=development npm run server
+          imagePullPolicy: Always
