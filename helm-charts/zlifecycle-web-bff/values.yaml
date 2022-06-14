@@ -18,7 +18,7 @@ ingressPaths:
   - "/state"
   - "/company"
   - "/registration"
-  - "/event-api"
+  - "/error-api"
   - "/events"
 protocol:
 argocd:
