@@ -15,7 +15,7 @@ import (
 )
 
 type API interface {
-	CompanyStatus(ctx context.Context, company string, log *logrus.Entry) (TeamStatus, error)
+	CompanyStatus(ctx context.Context, company string, eventEntries int, log *logrus.Entry) (TeamStatus, error)
 	Healthcheck(ctx context.Context, fullCheck bool, log *logrus.Entry) *Healthcheck
 }
 
@@ -39,7 +39,7 @@ func (s *Service) Healthcheck(ctx context.Context, fullCheck bool, log *logrus.E
 		hc.Components = s.fullCheck(ctx, log)
 	}
 
-	s.checkComponentStatus(&hc, log)
+	checkComponentHealth(&hc, log)
 
 	return &hc
 }
@@ -62,7 +62,7 @@ func (s *Service) fullCheck(ctx context.Context, log *logrus.Entry) []*Component
 	return components
 }
 
-func (s *Service) checkComponentStatus(hc *Healthcheck, log *logrus.Entry) {
+func checkComponentHealth(hc *Healthcheck, log *logrus.Entry) {
 	hc.Status = HealthcheckOK
 	hc.Code = 200
 	for _, c := range hc.Components {
@@ -88,7 +88,7 @@ func (s *Service) checkComponentStatus(hc *Healthcheck, log *logrus.Entry) {
 	}
 }
 
-func (s *Service) CompanyStatus(ctx context.Context, company string, log *logrus.Entry) (TeamStatus, error) {
+func (s *Service) CompanyStatus(ctx context.Context, company string, eventEntries int, log *logrus.Entry) (TeamStatus, error) {
 	log.Infof("Performing status check for company [%s]", company)
 
 	payload := event.ListPayload{Company: company}
@@ -98,7 +98,7 @@ func (s *Service) CompanyStatus(ctx context.Context, company string, log *logrus
 	}
 
 	teamEvents := buildTeamEvents(events)
-	teamStatus, err := buildTeamStatus(teamEvents)
+	teamStatus, err := buildTeamStatus(teamEvents, eventEntries)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error running healthcheck for company [%s]", company)
 	}
@@ -106,11 +106,11 @@ func (s *Service) CompanyStatus(ctx context.Context, company string, log *logrus
 	return teamStatus, nil
 }
 
-func buildTeamStatus(teamEvents TeamEvents) (TeamStatus, error) {
+func buildTeamStatus(teamEvents TeamEvents, eventEntries int) (TeamStatus, error) {
 	teamStatus := make(TeamStatus)
 
 	for team, ee := range teamEvents {
-		environmentStatus, err := buildEnvironmentStatus(ee)
+		environmentStatus, err := buildEnvironmentStatus(ee, eventEntries)
 		if err != nil {
 			return nil, errors.Wrapf(err, "error creating team status for team [%s]", team)
 		}
@@ -120,11 +120,11 @@ func buildTeamStatus(teamEvents TeamEvents) (TeamStatus, error) {
 	return teamStatus, nil
 }
 
-func buildEnvironmentStatus(ee EnvironmentEvents) (EnvironmentStatus, error) {
+func buildEnvironmentStatus(ee EnvironmentEvents, eventEntries int) (EnvironmentStatus, error) {
 	environmentStatus := make(EnvironmentStatus)
 
 	for env, events := range ee {
-		status, err := NewEnvironmentStatus(events)
+		status, err := NewEnvironmentStatus(events, eventEntries)
 		if err != nil {
 			return nil, errors.Wrapf(err, "error creating environment status for environment [%s]", env)
 		}
@@ -134,7 +134,7 @@ func buildEnvironmentStatus(ee EnvironmentEvents) (EnvironmentStatus, error) {
 	return environmentStatus, nil
 }
 
-func NewEnvironmentStatus(events []*event.Event) (*Status, error) {
+func NewEnvironmentStatus(events []*event.Event, entries int) (*Status, error) {
 	var errorMessages []string
 	status := StatusOK
 	latest := events[0]
@@ -144,12 +144,8 @@ func NewEnvironmentStatus(events []*event.Event) (*Status, error) {
 			return nil, errors.Wrapf(err, "error unmarshalling event [%s] payload", events[0].ID)
 		}
 	}
-	limit := 5
-	if len(events) < limit {
-		limit = len(events)
-	}
 	return &Status{
-		Events:      events[0:limit],
+		Events:      util.Truncate(events, entries),
 		Company:     latest.Company,
 		Team:        latest.Team,
 		Environment: latest.Environment,

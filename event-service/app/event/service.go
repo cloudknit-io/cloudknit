@@ -58,7 +58,13 @@ func (s *Service) Record(ctx context.Context, p *RecordPayload, log *logrus.Entr
 	return event, nil
 }
 
-func (s *Service) List(ctx context.Context, payload *ListPayload, scope Scope, filter Filter, log *logrus.Entry) (events []*Event, err error) {
+func (s *Service) List(
+	ctx context.Context,
+	payload *ListPayload,
+	scope Scope,
+	filter Filter,
+	log *logrus.Entry,
+) (events []*Event, err error) {
 	if err = validateListPayload(payload, scope); err != nil {
 		return nil, errors.Wrap(err, "error validating list events payload")
 	}

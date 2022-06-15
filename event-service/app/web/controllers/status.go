@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"net/http"
+	"strconv"
 
 	"github.com/compuzest/zlifecycle-event-service/app/apm"
 	"github.com/compuzest/zlifecycle-event-service/app/health"
@@ -45,8 +46,16 @@ func getStatusHandler(ctx context.Context, r *http.Request, svcs *services.Servi
 	if company == "" {
 		return nil, errors.New("missing query param: company")
 	}
+	history := 1
+	if val := r.URL.Query().Get("history"); val != "" {
+		h, err := strconv.Atoi(val)
+		if err != nil {
+			return nil, errors.Wrapf(err, "invalid value for history parameter, must be integer: %s", val)
+		}
+		history = h
+	}
 
-	status, err := svcs.SS.CompanyStatus(ctx, company, log)
+	status, err := svcs.SS.CompanyStatus(ctx, company, history, log)
 	if err != nil {
 		return nil, errors.Wrap(err, "error inspecting company status")
 	}

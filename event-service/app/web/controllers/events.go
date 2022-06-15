@@ -100,7 +100,7 @@ func postEventsHandler(ctx context.Context, r *http.Request, svcs *services.Serv
 		)
 	}
 
-	status, err := health.NewEnvironmentStatus([]*event.Event{evt})
+	status, err := health.NewEnvironmentStatus([]*event.Event{evt}, 1)
 	if err != nil {
 		return nil, errors.Wrapf(
 			err,
