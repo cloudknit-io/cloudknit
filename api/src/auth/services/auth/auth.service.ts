@@ -25,19 +25,14 @@ export class AuthService {
 
   public async setTermAgreementStatus({
     username,
-    company,
-    email,
-    agreedByEmail,
-    agreedByUsername,
   }) {
-    return await this.userRepo.save({
-      company: company,
-      termAgreementStatus: true,
-      username: username,
-      email: email,
-      agreedByEmail: agreedByEmail,
-      agreedByUsername: agreedByUsername,
-    });
+    const user = await this.userRepo.findOne({
+      where: {
+        username : username
+      }
+    })
+    user.termAgreementStatus = true;
+    return await this.userRepo.save(user);
   }
 
   public async getUserList(organizationId: string) {
