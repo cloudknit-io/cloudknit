@@ -29,4 +29,4 @@ argocd:
 argoWorkflowApiUrl: http://argo-workflow-server.argocd.svc.cluster.local:2746
 zlifecycleApiUrl: http://zlifecycle-api.zlifecycle-ui.svc.cluster.local
 zlifecycleStateManagerUrl: http://zlifecycle-state-manager.zlifecycle-il-operator-system.svc.cluster.local
-zlifecycleEventApiUrl: http://zlifecycle-event-service.zbank-system.svc.cluster.local
+zlifecycleEventApiUrl: http://event-service.zbank-system.svc.cluster.local
