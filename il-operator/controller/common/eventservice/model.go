@@ -8,6 +8,7 @@ const (
 type Type string
 
 type Event struct {
+	Object      string `json:"object"`
 	Company     string `json:"company"`
 	Team        string `json:"team"`
 	Environment string `json:"environment"`
