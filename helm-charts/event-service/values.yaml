@@ -5,10 +5,10 @@
 replicaCount: 1
 
 image:
-  repository: 413422438110.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-event-service
+  name: zlifecycle-event-service
+  tag: latest
   pullPolicy: Always
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: "latest"
+  repository:
 
 env:
   DB_HOST: ""
