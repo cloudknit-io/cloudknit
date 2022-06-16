@@ -23,7 +23,7 @@ env:
 
 imagePullSecrets: []
 nameOverride: ""
-fullnameOverride: ""
+fullnameOverride: "event-service"
 
 serviceAccount:
   # Specifies whether a service account should be created
