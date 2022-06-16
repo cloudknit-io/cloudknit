@@ -24,6 +24,7 @@ type (
 	EnvironmentEvents map[string][]*event.Event
 	Status            struct {
 		Events      []*event.Event `json:"events"`
+		Object      string         `json:"object"`
 		Company     string         `json:"company"`
 		Team        string         `json:"team"`
 		Environment string         `json:"environment"`

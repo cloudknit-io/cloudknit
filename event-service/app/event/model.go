@@ -18,6 +18,7 @@ const (
 
 type Event struct {
 	ID          string          `json:"id" db:"id"`
+	Object      string          `json:"object" db:"object"`
 	Company     string          `json:"company" db:"company"`
 	Team        string          `json:"team" db:"team"`
 	Environment string          `json:"environment" db:"environment"`
@@ -27,9 +28,10 @@ type Event struct {
 	Debug       any             `json:"debug" db:"debug"`
 }
 
-func NewEvent(company, team, environment string, payload any, eventType Type, debug any) *Event {
+func NewEvent(object, company, team, environment string, payload any, eventType Type, debug any) *Event {
 	return &Event{
 		ID:          uuid.New().String(),
+		Object:      object,
 		Company:     company,
 		Team:        team,
 		Environment: environment,
@@ -41,6 +43,7 @@ func NewEvent(company, team, environment string, payload any, eventType Type, de
 }
 
 type RecordPayload struct {
+	Object      string `json:"object"`
 	Company     string `json:"company"`
 	Team        string `json:"team"`
 	Environment string `json:"environment"`

@@ -40,18 +40,18 @@ func (s *Service) Record(ctx context.Context, p *RecordPayload, log *logrus.Entr
 		return nil, errors.Wrap(err, "error validating record payload")
 	}
 
-	event := NewEvent(p.Company, p.Team, p.Environment, p.Payload, Type(p.EventType), p.Debug)
+	event := NewEvent(p.Object, p.Company, p.Team, p.Environment, p.Payload, Type(p.EventType), p.Debug)
 
 	log.Infof(
-		"Recording new %s event with ID [%s] for company [%s], team [%s] and environment [%s]",
-		event.EventType, event.ID, event.Company, event.Team, event.Environment,
+		"Recording new %s event with ID [%s] for object [%s], company [%s], team [%s] and environment [%s]",
+		event.EventType, event.ID, event.Object, event.Company, event.Team, event.Environment,
 	)
 
 	if err := s.insertEvent(ctx, event); err != nil {
 		return nil, errors.Wrapf(
 			err,
-			"error persisting event [%s] for company [%s], team [%s] and environment [%s]",
-			event.ID, event.Company, event.Team, event.Environment,
+			"error persisting event [%s] for object [%s], company [%s], team [%s] and environment [%s]",
+			event.ID, event.Object, event.Company, event.Team, event.Environment,
 		)
 	}
 

@@ -1,0 +1,12 @@
+consumes:
+- application/json
+info:
+  description: Event Services captures all system events
+  title: zLifecycle Event Service
+  version: 0.0.15
+paths: {}
+produces:
+- application/json
+schemes:
+- http
+swagger: "2.0"

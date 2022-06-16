@@ -50,6 +50,18 @@ func EventsHandler(svcs *services.Services) http.HandlerFunc {
 	}
 }
 
+// swagger:route GET /events events listEvents
+// List events for a company
+//
+//  Parameters:
+//   + name: company
+//     in: query
+//     description: z
+//     required: true
+//     type: string
+// responses:
+//  500: CommonError
+//  200: GetEventsResponse
 func getEventsHandler(ctx context.Context, r *http.Request, svcs *services.Services, log *logrus.Entry) (*GetEventsResponse, error) {
 	filter := r.URL.Query().Get("filter")
 	scope := r.URL.Query().Get("scope")
@@ -72,7 +84,12 @@ func getEventsHandler(ctx context.Context, r *http.Request, svcs *services.Servi
 
 type GetEventsRequest struct{}
 
+// GetEventsResponse represents the response for GET /events endpoint
+//
+// swagger:response GetEventsResponse
 type GetEventsResponse struct {
+	// List of events
+	// in:body
 	Events []*event.Event `json:"events"`
 }
 
@@ -84,6 +101,7 @@ func postEventsHandler(ctx context.Context, r *http.Request, svcs *services.Serv
 	}
 
 	p := event.RecordPayload{
+		Object:      body.Object,
 		Company:     body.Company,
 		Team:        body.Team,
 		Environment: body.Environment,
@@ -117,6 +135,7 @@ func postEventsHandler(ctx context.Context, r *http.Request, svcs *services.Serv
 }
 
 type PostEventsRequest struct {
+	Object      string `json:"object"`
 	Company     string `json:"company"`
 	Team        string `json:"team"`
 	Environment string `json:"environment"`

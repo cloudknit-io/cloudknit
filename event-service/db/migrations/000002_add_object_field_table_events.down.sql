@@ -1,0 +1,2 @@
+ALTER TABLE event
+	DROP COLUMN object;

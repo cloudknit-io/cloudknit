@@ -73,12 +73,12 @@ func (s *Service) getListStmt(scope Scope, filter Filter) (stmt *sqlx.NamedStmt,
 			}
 		}
 	case ScopeEnvironment:
-		stmt, err = s.sqlGetEventsForEnvironment()
+		stmt, err = s.sqlGetEventsForEnvironmentObject()
 		if err != nil {
 			return nil, errors.Wrap(err, "error preparing get-events-for-environment statement")
 		}
 		if filter == FilterLatest {
-			stmt, err = s.sqlGetLatestEventForEnvironment()
+			stmt, err = s.sqlGetLatestEventForEnvironmentObject()
 			if err != nil {
 				return nil, errors.Wrap(err, "error preparing get-latest-events-for-environment statement")
 			}
@@ -93,8 +93,16 @@ func (s *Service) getListStmt(scope Scope, filter Filter) (stmt *sqlx.NamedStmt,
 
 func (s *Service) sqlInsertEvent() (*sqlx.NamedStmt, error) {
 	return s.db.PrepareNamed(
-		"INSERT INTO event(id, company, team, environment, created_at, event_type, payload, debug) VALUES(:id, :company, :team, :environment, :created_at, :event_type, :payload, :debug)",
+		"INSERT INTO event(id, object, company, team, environment, created_at, event_type, payload, debug) VALUES(:id, :object, :company, :team, :environment, :created_at, :event_type, :payload, :debug)",
 	)
+}
+
+func (s *Service) sqlGetEventsForEnvironmentObject() (*sqlx.NamedStmt, error) {
+	return s.db.PrepareNamed("SELECT * FROM event WHERE event.object = :object ORDER BY event.created_at DESC")
+}
+
+func (s *Service) sqlGetLatestEventForEnvironmentObject() (*sqlx.NamedStmt, error) {
+	return s.db.PrepareNamed("SELECT * FROM event WHERE event.object = :object ORDER BY event.created_at DESC LIMIT 1")
 }
 
 func (s *Service) sqlGetEventsForEnvironment() (*sqlx.NamedStmt, error) {
@@ -108,17 +116,17 @@ func (s *Service) sqlGetLatestEventForEnvironment() (*sqlx.NamedStmt, error) {
 }
 
 func (s *Service) sqlGetEventsForTeam() (*sqlx.NamedStmt, error) {
-	return s.db.PrepareNamed("SELECT * from event WHERE event.company = :company AND event.team = :team ORDER BY event.company, event.team, event.created_at DESC")
+	return s.db.PrepareNamed("SELECT * FROM event WHERE event.company = :company AND event.team = :team ORDER BY event.company, event.team, event.created_at DESC")
 }
 
 func (s *Service) sqlGetLatestEventForTeam() (*sqlx.NamedStmt, error) {
-	return s.db.PrepareNamed("SELECT * from event WHERE event.company = :company AND event.team = :team ORDER BY event.company, event.team, event.created_at DESC LIMIT 1")
+	return s.db.PrepareNamed("SELECT * FROM event WHERE event.company = :company AND event.team = :team ORDER BY event.company, event.team, event.created_at DESC LIMIT 1")
 }
 
 func (s *Service) sqlGetEventsForCompany() (*sqlx.NamedStmt, error) {
-	return s.db.PrepareNamed("SELECT * from event WHERE event.company = :company ORDER BY event.company, event.created_at DESC")
+	return s.db.PrepareNamed("SELECT * FROM event WHERE event.company = :company ORDER BY event.company, event.created_at DESC")
 }
 
 func (s *Service) sqlGetLatestEventForCompany() (*sqlx.NamedStmt, error) {
-	return s.db.PrepareNamed("SELECT * from event WHERE event.company = :company ORDER BY event.company, event.created_at DESC LIMIT 1")
+	return s.db.PrepareNamed("SELECT * FROM event WHERE event.company = :company ORDER BY event.company, event.created_at DESC LIMIT 1")
 }

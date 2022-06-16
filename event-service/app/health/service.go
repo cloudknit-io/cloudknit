@@ -29,8 +29,6 @@ func NewService(es event.API, db *sqlx.DB) *Service {
 }
 
 func (s *Service) Healthcheck(ctx context.Context, fullCheck bool, log *logrus.Entry) *Healthcheck {
-	log.Info("Performing app healthcheck")
-
 	hc := Healthcheck{
 		Timestamp: time.Now(),
 	}
@@ -146,6 +144,7 @@ func NewEnvironmentStatus(events []*event.Event, entries int) (*Status, error) {
 	}
 	return &Status{
 		Events:      util.Truncate(events, entries),
+		Object:      latest.Object,
 		Company:     latest.Company,
 		Team:        latest.Team,
 		Environment: latest.Environment,
@@ -173,21 +172,25 @@ func buildEnvironmentEvents(events []*event.Event, team string) EnvironmentEvent
 		if !IsValidationEvent(e.EventType) || e.Team != team {
 			continue
 		}
-		if environmentEvents[e.Environment] == nil {
-			environmentEvents[e.Environment] = make([]*event.Event, 0)
-		}
 		if e.Team == team {
-			environmentEvents[e.Environment] = append(environmentEvents[e.Environment], e)
+			if environmentEvents[e.Object] == nil {
+				environmentEvents[e.Object] = make([]*event.Event, 0)
+			}
+			environmentEvents[e.Object] = append(environmentEvents[e.Object], e)
 		}
 	}
 
 	for _, evts := range environmentEvents {
-		sort.Slice(evts, func(i, j int) bool {
-			return evts[i].CreatedAt.After(evts[j].CreatedAt)
-		})
+		sortEvents(evts)
 	}
 
 	return environmentEvents
+}
+
+func sortEvents(events []*event.Event) {
+	sort.Slice(events, func(i, j int) bool {
+		return events[i].CreatedAt.After(events[j].CreatedAt)
+	})
 }
 
 func IsValidationEvent(eventType event.Type) bool {
