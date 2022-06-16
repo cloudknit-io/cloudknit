@@ -185,7 +185,7 @@ var Config = config{
 		APINamespace(),
 	)),
 	ZLifecycleEventServiceURL: getOr("ZLIFECYCLE_EVENT_SERVICE_URL", fmt.Sprintf(
-		"http://zlifecycle-event-service.%s.svc.cluster.local:8081",
+		"http://event-service.%s.svc.cluster.local:8081",
 		APINamespace(),
 	)),
 
