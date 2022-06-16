@@ -102,7 +102,7 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentCreate(ctx context.Context
 	}
 
 	if env.Config.EnableErrorNotifier == "true" {
-		if err := v.sendEvent(ctx, env.Config.CompanyName, e.Spec.TeamName, e.Spec.EnvName, allErrs, logger); err != nil {
+		if err := v.sendEvent(ctx, e.Name, env.Config.CompanyName, e.Spec.TeamName, e.Spec.EnvName, allErrs, logger); err != nil {
 			logger.Errorf("error sending validation event for environment create action for company [%s], team [%s] and environment [%s]: %v", env.Config.CompanyName, e.Spec.TeamName, e.Spec.EnvName, err)
 		}
 	}
@@ -143,7 +143,7 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentUpdate(ctx context.Context
 	}
 
 	if env.Config.EnableErrorNotifier == "true" {
-		if err := v.sendEvent(ctx, env.Config.CompanyName, e.Spec.TeamName, e.Spec.EnvName, allErrs, logger); err != nil {
+		if err := v.sendEvent(ctx, e.Name, env.Config.CompanyName, e.Spec.TeamName, e.Spec.EnvName, allErrs, logger); err != nil {
 			logger.Errorf("error sending validation event for company [%s], team [%s] and environment [%s]: %v", env.Config.CompanyName, e.Spec.TeamName, e.Spec.EnvName, err)
 		}
 	}
@@ -166,7 +166,7 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentUpdate(ctx context.Context
 	)
 }
 
-func (v *EnvironmentValidatorImpl) sendEvent(ctx context.Context, company, team, environment string, validationErrors field.ErrorList, log *logrus.Entry) error {
+func (v *EnvironmentValidatorImpl) sendEvent(ctx context.Context, object, company, team, environment string, validationErrors field.ErrorList, log *logrus.Entry) error {
 	eventType := eventservice.ValidationSuccess
 	if len(validationErrors) > 0 {
 		eventType = eventservice.ValidationError
@@ -177,6 +177,7 @@ func (v *EnvironmentValidatorImpl) sendEvent(ctx context.Context, company, team,
 		errMsgs = append(errMsgs, err.Error())
 	}
 	event := &eventservice.Event{
+		Object:      object,
 		Company:     company,
 		Team:        team,
 		Environment: environment,
