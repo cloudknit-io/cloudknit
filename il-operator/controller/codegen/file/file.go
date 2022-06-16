@@ -234,6 +234,9 @@ func (f *OSFileService) ReadDir(path string) ([]fs.DirEntry, error) {
 
 // CleanDir cleans directory prior to generating files from controllers.
 func (f *OSFileService) CleanDir(dir string) (err error) {
+	if !f.IsDir(dir) {
+		return nil
+	}
 	files, err := f.ReadDir(dir)
 
 	keeps := []string{".git"}
