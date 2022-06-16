@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/typeorm/entities/User";
 import { Repository } from "typeorm";
@@ -23,14 +23,12 @@ export class AuthService {
     );
   }
 
-  public async setTermAgreementStatus({
-    username,
-  }) {
+  public async setTermAgreementStatus({ username }) {
     const user = await this.userRepo.findOne({
       where: {
-        username : username
-      }
-    })
+        username: username,
+      },
+    });
     user.termAgreementStatus = true;
     return await this.userRepo.save(user);
   }
@@ -46,7 +44,9 @@ export class AuthService {
   public async addUser({ username, organizationId, email, role }) {
     const existing = await this.getUser({ username });
     if (existing) {
-      throw "User with Github Id already exists!";
+      throw new BadRequestException({
+        message: "User with Github Id already exists!",
+      });
     }
     return this.userRepo.save({
       username,
@@ -59,7 +59,9 @@ export class AuthService {
   public async deleteUser(username: string) {
     const existing = await this.getUser({ username });
     if (!existing) {
-      throw "User with Github Id does not exist!";
+      throw new BadRequestException({
+        message: "User with Github Id does not exist!",
+      });
     }
     return this.userRepo.delete({
       username: username,
