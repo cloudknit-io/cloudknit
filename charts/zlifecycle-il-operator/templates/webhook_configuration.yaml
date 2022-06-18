@@ -32,3 +32,38 @@ webhooks:
           - environments
     sideEffects: None
     timeoutSeconds: 30
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: {{ .Values.company.config.name }}-mutating-webhook-configuration
+  namespace: {{ .Values.company.config.name }}-system
+  annotations:
+    cert-manager.io/inject-ca-from: {{ .Values.company.config.name }}-system/serving-cert
+webhooks:
+  - admissionReviewVersions:
+      - v1beta1
+    clientConfig:
+      service:
+        name: webhook-service
+        namespace: {{ .Values.company.config.name }}-system
+        path: /mutate-stable-compuzest-com-v1-environment
+    namespaceSelector:
+      matchExpressions:
+        - key: "zlifecycle.com/validation"
+          operator: In
+          values: ["{{ .Values.company.config.name }}-config"]
+    failurePolicy: Fail
+    name: venvironment.kb.io
+    rules:
+      - apiGroups:
+          - stable.compuzest.com
+        apiVersions:
+          - v1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - environments
+    sideEffects: None
+    timeoutSeconds: 30
