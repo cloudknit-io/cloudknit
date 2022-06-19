@@ -136,7 +136,8 @@ func NewEnvironmentStatus(events []*event.Event, entries int) (*Status, error) {
 	var errorMessages []string
 	status := StatusOK
 	latest := events[0]
-	if latest.EventType == event.ValidationError {
+	isErrorEvent := latest.EventType == event.ValidationError || latest.EventType == event.SchemaValidationError
+	if isErrorEvent {
 		status = StatusError
 		if err := util.CycleJSON(latest.Payload, &errorMessages); err != nil {
 			return nil, errors.Wrapf(err, "error unmarshalling event [%s] payload", events[0].ID)
@@ -169,7 +170,7 @@ func buildEnvironmentEvents(events []*event.Event, team string) EnvironmentEvent
 	environmentEvents := make(EnvironmentEvents)
 
 	for _, e := range events {
-		if !IsValidationEvent(e.EventType) || e.Team != team {
+		if !event.IsValidationEvent(e.EventType) || e.Team != team {
 			continue
 		}
 		if e.Team == team {
@@ -191,8 +192,4 @@ func sortEvents(events []*event.Event) {
 	sort.Slice(events, func(i, j int) bool {
 		return events[i].CreatedAt.After(events[j].CreatedAt)
 	})
-}
-
-func IsValidationEvent(eventType event.Type) bool {
-	return util.StringInSlice(string(eventType), []string{string(event.ValidationError), string(event.ValidationSuccess)})
 }

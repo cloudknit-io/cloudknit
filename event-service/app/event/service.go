@@ -2,6 +2,7 @@ package event
 
 import (
 	"context"
+	"github.com/compuzest/zlifecycle-event-service/app/util"
 
 	"github.com/sirupsen/logrus"
 
@@ -83,4 +84,16 @@ func (s *Service) List(
 	}
 
 	return events, err
+}
+
+func IsValidationEvent(eventType Type) bool {
+	return util.StringInSlice(
+		string(eventType),
+		[]string{
+			string(ValidationError),
+			string(ValidationSuccess),
+			string(SchemaValidationError),
+			string(SchemaValidationSuccess),
+		},
+	)
 }

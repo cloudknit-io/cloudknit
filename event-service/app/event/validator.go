@@ -1,7 +1,6 @@
 package event
 
 import (
-	"github.com/compuzest/zlifecycle-event-service/app/util"
 	"github.com/pkg/errors"
 )
 
@@ -31,7 +30,7 @@ func validateEventType(eventType string) error {
 		return errors.New("eventType cannot be empty")
 	}
 
-	if !util.StringInSlice(eventType, []string{string(ValidationSuccess), string(ValidationError)}) {
+	if !IsValidationEvent(Type(eventType)) {
 		return errors.Errorf("unsupported event type: %s", eventType)
 	}
 
