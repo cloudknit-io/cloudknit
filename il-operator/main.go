@@ -16,10 +16,14 @@ import (
 	"context"
 	_ "embed"
 	"flag"
+
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/file"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/apm"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/eventservice"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/log"
+	"github.com/compuzest/zlifecycle-il-operator/controller/mutatingwebhook"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/components/gitreconciler"
 	"github.com/compuzest/zlifecycle-il-operator/controller/validator"
@@ -53,6 +57,7 @@ var (
 
 // +kubebuilder:rbac:groups="",resources=configmaps;secrets,verbs=get;list;watch;update;patch
 // +kubebuilder:rbac:groups=coordination.k8s.io,resources=leases,verbs=get;create;update
+// +kubebuilder:rbac:groups=apiextensions.k8s.io,resources=customresourcedefinitions=get;list;watch
 // nolint
 func init() {
 	l := logrus.New()
@@ -60,7 +65,7 @@ func init() {
 	setupLog = l.WithField("logger", "setup")
 
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
-
+	utilruntime.Must(apiextensionsv1.AddToScheme(scheme))
 	utilruntime.Must(stablev1.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
 }
@@ -168,6 +173,13 @@ func main() {
 			setupLog.WithError(err).Panic("unable to create webhook", "webhook", "Environment")
 		}
 	}
+
+	hs := mgr.GetWebhookServer()
+	es := eventservice.NewService(env.Config.ZLifecycleEventServiceURL)
+	hs.Register(
+		"/mutate-stable-compuzest-com-v1-environment",
+		&webhook.Admission{Handler: mutatingwebhook.NewService(mgr.GetClient(), es, setupLog.WithField("logger", "environmentMutatingWebhook"))},
+	)
 
 	// +kubebuilder:scaffold:builder
 

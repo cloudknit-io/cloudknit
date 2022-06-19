@@ -1,8 +1,10 @@
 package eventservice
 
 const (
-	ValidationSuccess Type = "validation_success"
-	ValidationError   Type = "validation_error"
+	ValidationSuccess       Type = "validation_success"
+	ValidationError         Type = "validation_error"
+	SchemaValidationError   Type = "schema_validation_error"
+	SchemaValidationSuccess Type = "schema_validation_success"
 )
 
 type Type string
