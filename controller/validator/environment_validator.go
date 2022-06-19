@@ -33,7 +33,7 @@ const (
 	// https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#rfc-1035-label-names
 	// starts with alpha
 	// ends with alphanumeric
-	// cannot contain connective hyphens
+	// cannot contain connective hyphens.
 	nameRegex      = `^[a-zA-Z]+[a-zA-Z0-9]*(-[a-zA-Z0-9]+)*$`
 	maxFieldLength = 63
 )
@@ -200,6 +200,16 @@ func (v *EnvironmentValidatorImpl) validateEnvironmentCommon(
 ) field.ErrorList {
 	var allErrs field.ErrorList
 
+	if e.Spec.TeamName == "" {
+		fld := field.NewPath("spec").Child("teamName")
+		verr := field.NotFound(fld, "team name must be defined")
+		allErrs = append(allErrs, verr)
+	}
+	if e.Spec.EnvName == "" {
+		fld := field.NewPath("spec").Child("envName")
+		verr := field.NotFound(fld, "environment name must be defined")
+		allErrs = append(allErrs, verr)
+	}
 	if err := validateTeamExists(ctx, e, kc, &v1.TeamList{}, l); err != nil {
 		allErrs = append(allErrs, err)
 	}
