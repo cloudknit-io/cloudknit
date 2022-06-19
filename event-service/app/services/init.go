@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"github.com/compuzest/zlifecycle-event-service/app/status"
 
 	"github.com/compuzest/zlifecycle-event-service/app/stream"
 
@@ -13,7 +14,8 @@ import (
 
 type Services struct {
 	ES        event.API
-	SS        health.API
+	HS        health.API
+	SS        status.API
 	SSEBroker stream.API
 }
 
@@ -24,8 +26,9 @@ func NewServices() (*Services, error) {
 		return nil, errors.Wrap(err, "error creating new database connection")
 	}
 	es := event.NewService(sqldb)
-	hs := health.NewService(es, sqldb)
+	hs := health.NewService(sqldb)
+	ss := status.NewService(es, sqldb)
 	sseBroker := stream.NewService()
 
-	return &Services{ES: es, SS: hs, SSEBroker: sseBroker}, nil
+	return &Services{ES: es, HS: hs, SS: ss, SSEBroker: sseBroker}, nil
 }

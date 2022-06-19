@@ -3,13 +3,12 @@ package controllers
 import (
 	"context"
 	"encoding/json"
+	"github.com/compuzest/zlifecycle-event-service/app/status"
 	"net/http"
 
 	"github.com/compuzest/zlifecycle-event-service/app/util"
 
 	"github.com/compuzest/zlifecycle-event-service/app/apm"
-	"github.com/compuzest/zlifecycle-event-service/app/health"
-
 	"github.com/sirupsen/logrus"
 
 	"github.com/compuzest/zlifecycle-event-service/app/event"
@@ -118,7 +117,7 @@ func postEventsHandler(ctx context.Context, r *http.Request, svcs *services.Serv
 		)
 	}
 
-	status, err := health.NewEnvironmentStatus([]*event.Event{evt}, 1)
+	status, err := status.NewEnvironmentStatus([]*event.Event{evt}, 1)
 	if err != nil {
 		return nil, errors.Wrapf(
 			err,

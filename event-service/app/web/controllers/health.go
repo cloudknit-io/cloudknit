@@ -41,7 +41,7 @@ func HealthHandler(svcs *services.Services, fullCheck bool) http.HandlerFunc {
 }
 
 func getHealthHandler(ctx context.Context, svcs *services.Services, fullCheck bool, log *logrus.Entry) *GetHealthResponse {
-	hc := svcs.SS.Healthcheck(ctx, fullCheck, log)
+	hc := svcs.HS.Healthcheck(ctx, fullCheck, log)
 
 	return &GetHealthResponse{*hc}
 }

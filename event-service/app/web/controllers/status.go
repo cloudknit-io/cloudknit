@@ -2,11 +2,11 @@ package controllers
 
 import (
 	"context"
+	"github.com/compuzest/zlifecycle-event-service/app/status"
 	"net/http"
 	"strconv"
 
 	"github.com/compuzest/zlifecycle-event-service/app/apm"
-	"github.com/compuzest/zlifecycle-event-service/app/health"
 	"github.com/compuzest/zlifecycle-event-service/app/services"
 	http2 "github.com/compuzest/zlifecycle-event-service/app/web/http"
 	"github.com/compuzest/zlifecycle-event-service/app/zlog"
@@ -64,5 +64,5 @@ func getStatusHandler(ctx context.Context, r *http.Request, svcs *services.Servi
 }
 
 type GetStatusResponse struct {
-	Status health.TeamStatus `json:"status"`
+	Status status.TeamStatus `json:"status"`
 }

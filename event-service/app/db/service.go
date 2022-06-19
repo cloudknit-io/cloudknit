@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"os"
 
 	"github.com/compuzest/zlifecycle-event-service/app/env"
@@ -67,9 +68,10 @@ func newConnectionURL(cfg *config, withProtocol bool) (string, error) {
 		return "sqlmock", nil
 	case DriverMySQL:
 		if withProtocol {
-			return fmt.Sprintf("mysql://%s:%s@tcp(%s:%s)/%s", cfg.Username, cfg.Password, cfg.Host, cfg.Port, cfg.Database), nil
+			escapedPW := url.QueryEscape(cfg.Password)
+			return fmt.Sprintf("mysql://%s:%s@tcp(%s:%s)/%s", cfg.Username, escapedPW, cfg.Host, cfg.Port, cfg.Database), nil
 		}
-		return fmt.Sprintf("%s:%s@(%s:%s)/%s?parseTime=true", cfg.Username, cfg.Password, cfg.Host, cfg.Port, cfg.Database), nil
+		return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", cfg.Username, cfg.Password, cfg.Host, cfg.Port, cfg.Database), nil
 	default:
 		return "", errors.Errorf("unsupported database driver: %s", cfg.Driver)
 	}
