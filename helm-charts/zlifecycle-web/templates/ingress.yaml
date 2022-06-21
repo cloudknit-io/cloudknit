@@ -13,6 +13,7 @@ spec:
       http:
         paths:
           - path: /
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: zlifecycle-web
