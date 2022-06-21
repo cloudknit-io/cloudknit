@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: public-api
+  name: zlifecycle
   annotations:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/backend-protocol: HTTP
@@ -9,12 +9,10 @@ metadata:
     nginx.ingress.kubernetes.io/cors-allow-methods: "PUT, GET, POST, OPTIONS"
 spec:
   rules:
-{{- range $path := .Values.ingressPaths }}
-    - host: {{ $.Values.domain }}
+    - host: {{ .Values.domain }}
       http:
         paths:
-          - path: {{ . }}
+          - path: /
             backend:
-              serviceName: public-api
+              serviceName: zlifecycle-web
               servicePort: http
-{{- end }}
