@@ -145,8 +145,4 @@ export class ComponentService {
       resources: roots,
     };
   }
-
-  async execute(query: string) {
-    return await this.connection.query(query);
-  }
 }
