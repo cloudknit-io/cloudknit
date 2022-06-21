@@ -13,6 +13,9 @@ spec:
       http:
         paths:
           - path: /
+            pathType: ImplementationSpecific
             backend:
-              serviceName: zlifecycle-web
-              servicePort: http
+              service:
+                name: zlifecycle-web
+                port:
+                  number: 80
