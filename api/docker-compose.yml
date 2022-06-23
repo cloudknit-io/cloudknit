@@ -2,29 +2,18 @@ version: '3.8'
 
 services: 
   mysqldb:
-    image: mysql
+    image: mysql:oracle
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: nestjsrealworld
     ports:
-      - 3306:3306
+      - "3306:3306"
     volumes: 
       - db-config:/etc/mysql
       - db-data:/var/lib/mysql
       - ./db/backup/files/:/data_backup/data
-  app:
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-    image: zlifecycle-api
-    ports:
-      - 3000:3000
-    depends_on:
-      - mysqldb
-    stdin_open: true
-    tty: true
-
+      
 volumes: 
   db-config:
   db-data:

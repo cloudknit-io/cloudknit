@@ -1,26 +1,4 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo_text.svg" width="320" alt="Nest Logo" /></a>
-</p>
-
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+# zLifecycle Internal API
 
 ## Description
 
@@ -32,18 +10,26 @@
 $ npm install
 ```
 
-## Running the app
+## Running Locally
 
-```bash
-# development
-$ npm run start
+1. `cp run.sh.example run.sh`
+1. Configure your `run.sh` with the appropriate organizations
+    > Note: zbank and local already exist. Copy and paste as needed.
 
-# watch mode
-$ npm run start:dev
+### Local MySQL Database
 
-# production mode
-$ npm run start:prod
-```
+1. Requires [Docker](https://docs.docker.com/desktop/#download-and-install)
+1. `sh run.sh local`
+    * This starts the API via `npm run start:debug` and a MySQL instance via `docker-compose`
+1. Run `docker-compose down -v` to kill the MySQL container
+
+### RDS
+
+1. Connect to [VPN](https://github.com/CompuZest/engineering/blob/main/docs/onboarding.md).
+1. Set the proper credentials in `run.sh` for the org you want to use
+1. You can get RDS credentials by viewing the helm chart of `zlifecycle-api` pod
+1. `sh run.sh zbank`
+    > Note: `run.sh` uses named AWS profiles such as `zl-dev`. It's advisable to follow this convention but not required. Modify `run.sh` to suit your needs.
 
 ## Test
 

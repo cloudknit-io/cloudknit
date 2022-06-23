@@ -1,0 +1,29 @@
+organization=$1
+
+if [[ $organization == "zbank" ]] ; # Copy this block in order to use a different organization
+then
+        HOST=$(AWS_PROFILE=zl-dev aws rds describe-db-instances --db-instance-identifier=dev-zbank-db | \
+        jq -r ".DBInstances[0].Endpoint.Address")
+        PORT=3306
+        USERNAME=admin
+        PASSWORD={password}
+        DATABASE=zlifecycle
+elif [[ $organization == "local" ]] ;
+then
+        docker-compose up -d        
+        HOST=localhost
+        PORT=3306
+        USERNAME=root
+        PASSWORD=password
+        DATABASE=nestjsrealworld
+else
+        echo "${organization} was not found"
+        echo "Usage:"
+        echo ""
+        echo "  run.sh [organization|local]"
+        echo "  run.sh zbank - Run and connect to Zbank"
+        echo "  run.sh local - Run and connect to local MySQL"
+        exit 0;
+fi
+
+TYPEORM_HOST=$HOST TYPEORM_PORT=$PORT TYPEORM_USERNAME=$USERNAME TYPEORM_PASSWORD=$PASSWORD TYPEORM_DATABASE=$DATABASE npm run start:debug
