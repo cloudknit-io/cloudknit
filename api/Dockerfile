@@ -16,7 +16,6 @@ COPY package.json .
 RUN npm install --production
 
 COPY --from=build ./dist/ ./dist/
-COPY --from=build ./ormconfig.js .
 
 EXPOSE 3000
 

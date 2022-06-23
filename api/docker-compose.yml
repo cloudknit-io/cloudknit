@@ -13,7 +13,23 @@ services:
       - db-config:/etc/mysql
       - db-data:/var/lib/mysql
       - ./db/backup/files/:/data_backup/data
-      
+
+  # TODO : re-enable this but with HRL
+  # api:
+  #   build: .
+  #   command: npm run start:prod
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - TYPEORM_HOST=mysqldb
+  #     - TYPEORM_PORT=3306
+  #     - TYPEORM_USERNAME=root
+  #     - TYPEORM_PASSWORD=password
+  #     - TYPEORM_DATABASE=zlifecycle
+  #   depends_on:
+  #     - mysqldb
+
 volumes: 
   db-config:
   db-data:

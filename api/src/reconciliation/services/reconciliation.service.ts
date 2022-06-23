@@ -114,7 +114,11 @@ export class ReconciliationService {
     let savedEntry: EnvironmentReconcile = null;
     if (reconcileId) {
       const existingEntry = await this.environmentReconcileRepository.findOne(
-        reconcileId
+        {
+          where: {
+            reconcile_id: reconcileId
+          }
+        }
       );
       existingEntry.end_date_time = runData.endDateTime;
       existingEntry.status = runData.status;
@@ -159,7 +163,11 @@ export class ReconciliationService {
       throw "Reconcile Id is mandatory to save or update component";
     }
     const savedEntry = await this.environmentReconcileRepository.findOne(
-      reconcileId
+      {
+        where: {
+          reconcile_id: reconcileId
+        }
+      }
     );
 
     let componentEntry: ComponentReconcile = Mapper.mapToComponentReconcile(
@@ -176,7 +184,11 @@ export class ReconciliationService {
     let duration = -1;
     if (componentEntry.reconcile_id) {
       const existingEntry = await this.componentReconcileRepository.findOne(
-        componentEntry.reconcile_id
+        {
+          where: {
+            reconcile_id: componentEntry.reconcile_id
+          }
+        }
       );
       existingEntry.end_date_time = componentEntry.end_date_time;
       existingEntry.status = componentEntry.status;
@@ -197,13 +209,14 @@ export class ReconciliationService {
     return entry.reconcile_id;
   }
 
-  async updateSkippedWorkflows<T>(id: any, repo: Repository<T>) {
+  async updateSkippedWorkflows<T>(id: string, repo: Repository<ComponentReconcile|EnvironmentReconcile>) {
     const entries = await repo.find({
       where: {
         name: id,
         end_date_time: null,
       },
     });
+
     if (entries.length > 0) {
       const newEntries = entries.map((entry) => ({
         ...entry,

@@ -30,7 +30,7 @@ export class ComponentService {
   async getAll(): Promise<Component[]> {
     const components = await this.componentRepository.find({
       where: {
-        isDeleted: 0,
+        isDeleted: false,
       },
     });
     return components;
@@ -71,7 +71,7 @@ export class ComponentService {
 
   async saveComponents(costing: CostingDto): Promise<boolean> {
     const id = `${costing.teamName}-${costing.environmentName}-${costing.component.componentName}`;
-    let savedComponent = (await this.componentRepository.findOne(id)) || null;
+    let savedComponent = (await this.componentRepository.findOne({ where: { id } })) || null;
     if (costing.component.isDeleted && savedComponent) {
       savedComponent = await this.softDelete(savedComponent);
     } else {

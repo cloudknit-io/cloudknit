@@ -101,6 +101,7 @@ export class AuthController {
 
   @Post("add")
   public async addUser(@Body() body) {
+    console.log(body);
     return await this.authService.addUser(body);
   }
 
