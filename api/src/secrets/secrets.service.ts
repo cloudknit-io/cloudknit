@@ -219,7 +219,6 @@ export class SecretsService {
           exists: false,
         }))
       );
-      console.log(resp);
       return resp;
     } catch (err) {
       const e = err as AWSError;
@@ -322,10 +321,8 @@ export class SecretsService {
       const dp = await this.ssm.deleteParameter({
         Name: path,
       });
-      console.log(dp);
       return dp;
     } catch (err) {
-      console.log(err);
       const e = err as AWSError;
       if (e.code === "ParameterNotFound") {
         return false;

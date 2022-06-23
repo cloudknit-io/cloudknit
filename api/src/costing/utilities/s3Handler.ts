@@ -88,7 +88,6 @@ export class S3Handler {
         },
         (err, data) => {
           if (err) {
-            console.log('There was an error getting your files: ' + err)
             reject(err)
             return
           }
@@ -106,7 +105,6 @@ export class S3Handler {
     });
 
     const response = await uploadProcess.promise();
-    console.log(response);
     return response.Key;
   }
 
@@ -119,7 +117,6 @@ export class S3Handler {
           Key: key,
         },
         (err, data) => {
-          console.log(err);
           if (err) {
             rej(err)
           }

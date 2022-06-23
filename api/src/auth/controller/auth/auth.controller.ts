@@ -1,5 +1,4 @@
 import { Body, Controller, Delete, Get, Param, Post, Res } from "@nestjs/common";
-import { Response } from "express";
 import { AuthService } from "src/auth/services/auth/auth.service";
 
 @Controller("auth")
@@ -14,8 +13,6 @@ export class AuthController {
     @Param("accessKeyId") accessKeyId: string,
     @Param("secretAccessKey") secretAccessKey: string
   ) {
-    console.log(Buffer.from(accessKeyId, "base64").toString());
-    console.log(Buffer.from(secretAccessKey, "base64").toString());
     const separator = "[compuzest-shared]";
     const k8s = require("@kubernetes/client-node");
     const kc = new k8s.KubeConfig();
@@ -47,9 +44,6 @@ export class AuthController {
     );
 
     if (credentials) {
-      console.log(credentials);
-      console.log(credentials.data);
-      console.log(credentials.data.credentials);
       const decoded = Buffer.from(
         credentials.data.credentials,
         "base64"
@@ -141,18 +135,4 @@ export class AuthController {
       .replaceNamespacedSecret(name, namespace, secret)
       .then((x) => x.body);
   }
-
-  /*
-   * Redirect route that OAuth2 will call
-   */
-  @Get("redirect")
-  public redirect(@Res() res: Response) {
-    return res.send(200);
-  }
-
-  @Get("status")
-  public status() {}
-
-  @Get("logout")
-  public logout() {}
 }

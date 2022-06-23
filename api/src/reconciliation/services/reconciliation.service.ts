@@ -7,20 +7,17 @@ import { ComponentReconcile } from "src/typeorm/reconciliation/component-reconci
 import { Component } from "src/typeorm/reconciliation/component.entity";
 import { EnvironmentReconcile } from "src/typeorm/reconciliation/environment-reconcile.entity";
 import { Environment } from "src/typeorm/reconciliation/environment.entity";
-import { Notification } from "src/typeorm/reconciliation/notification.entity";
 import { Like, Not } from "typeorm";
 import { Repository } from "typeorm/repository/Repository";
 import { ComponentDto } from "../dtos/component.dto";
 import { ComponentAudit } from "../dtos/componentAudit.dto";
 import { EnvironmentDto } from "../dtos/environment.dto";
 import { EnvironmentAudit } from "../dtos/environmentAudit.dto";
-import { NotificationDto } from "../dtos/notification.dto";
 import { EvnironmentReconcileDto } from "../dtos/reconcile.Dto";
 
 @Injectable()
 export class ReconciliationService {
   readonly notifyStream: Subject<{}> = new Subject<{}>();
-  readonly notificationStream: Subject<{}> = new Subject<Notification>();
   readonly applicationStream: Subject<any> = new Subject<any>();
   private readonly s3h = S3Handler.instance();
   private readonly notFound = "";
@@ -33,13 +30,10 @@ export class ReconciliationService {
     @InjectRepository(Component)
     private readonly componentRepository: Repository<Component>,
     @InjectRepository(Environment)
-    private readonly environmentRepository: Repository<Environment>,
-    @InjectRepository(Notification)
-    private readonly notificationRepository: Repository<Notification>
+    private readonly environmentRepository: Repository<Environment>
   ) {
     setInterval(() => {
       this.notifyStream.next({});
-      this.notificationStream.next({});
       this.applicationStream.next({});
     }, 20000);
   }
@@ -381,56 +375,6 @@ export class ReconciliationService {
       ...resp,
       data: (resp.data?.Body || "").toString() || "",
     };
-  }
-
-  async saveNotification(notification: NotificationDto) {
-    const notificationEntity: Notification = {
-      company_id: notification.companyId,
-      environment_name: notification.environmentName,
-      message: notification.message,
-      team_name: notification.teamName,
-      timestamp: notification.timestamp,
-      message_type: notification.messageType,
-      debug: notification.debug,
-    };
-    const savedEntity = await this.notificationRepository.save(
-      notificationEntity
-    );
-    this.notificationStream.next(savedEntity);
-  }
-
-  getNotification(companyId: string, teamName: string) {
-    this.notificationRepository
-      .find({
-        where: {
-          company_id: companyId,
-          team_name: teamName,
-          seen: false,
-        },
-      })
-      .then((notification) => {
-        notification.forEach((e) => this.notificationStream.next(e));
-      });
-  }
-
-  async getAllNotification(companyId: string, teamName: string) {
-    return await this.notificationRepository.find({
-      where: {
-        company_id: companyId,
-        team_name: teamName,
-      },
-      order: {
-        notification_id: "DESC",
-      },
-      take: 20,
-    });
-  }
-
-  async setSeenStatusForNotification(notificationId: number) {
-    await this.notificationRepository.save({
-      notification_id: notificationId,
-      seen: true,
-    });
   }
 
   private async notifyApplications(environmentName: string) {

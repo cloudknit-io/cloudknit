@@ -117,7 +117,6 @@ export class CompanyService {
         name: org,
       },
     });
-    console.log(orgData);
     if (!orgData) {
       return false;
     }
@@ -149,8 +148,7 @@ export class CompanyService {
         }
       )
       .then((x) => true)
-      .catch((e) => {
-        console.log(e);
+      .catch((e) => {;
         return false;
       });
   }

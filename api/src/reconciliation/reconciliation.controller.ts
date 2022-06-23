@@ -19,12 +19,10 @@ import { map } from "rxjs/operators";
 import { Mapper } from "src/costing/utilities/mapper";
 import { ComponentReconcile } from "src/typeorm/reconciliation/component-reconcile.entity";
 import { EnvironmentReconcile } from "src/typeorm/reconciliation/environment-reconcile.entity";
-import { Notification } from "src/typeorm/reconciliation/notification.entity";
 import { ComponentDto } from "./dtos/component.dto";
 import { ComponentAudit } from "./dtos/componentAudit.dto";
 import { EnvironmentDto } from "./dtos/environment.dto";
 import { EnvironmentAudit } from "./dtos/environmentAudit.dto";
-import { NotificationDto } from "./dtos/notification.dto";
 import { EvnironmentReconcileDto } from "./dtos/reconcile.Dto";
 import { ReconciliationService } from "./services/reconciliation.service";
 
@@ -71,11 +69,6 @@ export class ReconciliationController {
     return await this.reconciliationService.saveOrUpdateEnvironment(runData);
   }
 
-  @Post("notification/save")
-  async saveNotification(@Body() notification: NotificationDto) {
-    return await this.reconciliationService.saveNotification(notification);
-  }
-
   @Post("component/save")
   async saveComponent(@Body() runData: EvnironmentReconcileDto) {
     return await this.reconciliationService.saveOrUpdateComponent(runData);
@@ -87,7 +80,6 @@ export class ReconciliationController {
     @UploadedFile() file: Express.Multer.File,
     @Body() body: any
   ) {
-    console.log(file, body);
     return {
       message: await this.reconciliationService.putObject(
         body.customerId,
@@ -99,7 +91,6 @@ export class ReconciliationController {
 
   @Post("component/downloadObject")
   async downloadObject(@Res() response, @Body() body: any) {
-    console.log(body);
     const stream = await this.reconciliationService.downloadObject(
       body.customerId,
       body.path
@@ -115,13 +106,6 @@ export class ReconciliationController {
   @Get("component/:id")
   async getComponents(@Param("id") id: string): Promise<ComponentAudit[]> {
     return await this.reconciliationService.getComponentAuditList(id);
-  }
-
-  @Get("notification/seen/:id")
-  async setSeenStatusForNotification(@Param("id") id: string): Promise<void> {
-    return await this.reconciliationService.setSeenStatusForNotification(
-      parseInt(id)
-    );
   }
 
   @Get("environment/:id")
@@ -216,40 +200,6 @@ export class ReconciliationController {
       id,
       latest === "true"
     );
-  }
-
-  @Get("notifications/get/:companyId/:teamName")
-  async getNotifications(
-    @Param("companyId") companyId: string,
-    @Param("teamName") teamName: string
-  ) {
-    await this.reconciliationService.getNotification(companyId, teamName);
-    return await this.reconciliationService.getAllNotification(
-      companyId,
-      teamName
-    );
-  }
-
-  @Sse("notifications/:companyId/:teamName")
-  sendNotification(
-    @Param("companyId") companyId: string,
-    @Param("teamName") teamName: string
-  ): Observable<MessageEvent> {
-    return new Observable((observer: Observer<MessageEvent>) => {
-      this.reconciliationService.notificationStream.subscribe(
-        async (notification: Notification) => {
-          if (
-            notification.company_id !== companyId ||
-            notification.team_name !== teamName
-          ) {
-            return;
-          }
-          observer.next({
-            data: notification,
-          });
-        }
-      );
-    });
   }
 
   @Sse("components/notify/:id")

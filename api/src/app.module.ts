@@ -1,8 +1,6 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
-import { AppController } from "./app.controller";
-import { AppService } from "./app.service";
 import { AuthModule } from "./auth/auth.module";
 import { CostingModule } from "./costing/costing.module";
 import { CompanyModule } from "./company/company.module";
@@ -34,7 +32,7 @@ const typeOrmModuleOptions: TypeOrmModuleOptions = {
     AuthModule,
     CompanyModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}
