@@ -10,10 +10,10 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/secret"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/statemanager"
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/github"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/github"
 
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/factories/gitfactory"
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/watcherservices"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/factories/gitfactory"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/watcherservices"
 
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/file"

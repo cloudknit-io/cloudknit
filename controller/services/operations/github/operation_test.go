@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	github3 "github.com/compuzest/zlifecycle-il-operator/controller/common/github"
-	github2 "github.com/compuzest/zlifecycle-il-operator/controller/components/operations/github"
+	github2 "github.com/compuzest/zlifecycle-il-operator/controller/services/operations/github"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/util"
 

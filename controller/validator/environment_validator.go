@@ -8,12 +8,12 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/eventservice"
 	gitapi "github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/log"
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/git"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/git"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/file"
 
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/factories/gitfactory"
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/watcherservices"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/factories/gitfactory"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/watcherservices"
 
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controller/util"
@@ -38,26 +38,25 @@ const (
 	maxFieldLength = 63
 )
 
-var logger = log.NewLogger().WithFields(logrus.Fields{"name": "controllers.EnvironmentValidator"})
-
 type EnvironmentValidatorImpl struct {
 	kc        kClient.Client
 	gitClient gitapi.API
 	fs        file.API
 	es        eventservice.API
+	l         *logrus.Entry
 }
 
 func NewEnvironmentValidatorImpl(kc kClient.Client, fs file.API, es eventservice.API) *EnvironmentValidatorImpl {
-	return &EnvironmentValidatorImpl{kc: kc, fs: fs, es: es}
+	return &EnvironmentValidatorImpl{kc: kc, fs: fs, es: es, l: log.NewLogger().WithFields(logrus.Fields{"name": "controllers.EnvironmentValidator"})}
 }
 
 func (v *EnvironmentValidatorImpl) init(ctx context.Context) error {
-	watcherServices, err := watcherservices.NewGitHubServices(ctx, v.kc, env.Config.GitHubCompanyOrganization, logger)
+	watcherServices, err := watcherservices.NewGitHubServices(ctx, v.kc, env.Config.GitHubCompanyOrganization, v.l)
 	if err != nil {
 		return errors.Wrap(err, "error instantiating watcher services")
 	}
 
-	factory := gitfactory.NewFactory(v.kc, logger)
+	factory := gitfactory.NewFactory(v.kc, v.l)
 	var gitOpts gitfactory.Options
 	if env.Config.GitHubCompanyAuthMethod == util.AuthModeSSH {
 		gitOpts.SSHOptions = &gitfactory.SSHOptions{SecretName: env.Config.GitSSHSecretName, SecretNamespace: env.SystemNamespace()}
@@ -80,10 +79,10 @@ func (v *EnvironmentValidatorImpl) init(ctx context.Context) error {
 var _ v1.EnvironmentValidator = (*EnvironmentValidatorImpl)(nil)
 
 func (v *EnvironmentValidatorImpl) ValidateEnvironmentCreate(ctx context.Context, e *v1.Environment) error {
-	logger.Infof("ValidateEnvironmentCreate Environment: [%v] Context: [%v]", e, ctx)
+	v.l.Infof("ValidateEnvironmentCreate Environment: [%v] Context: [%v]", e, ctx)
 
 	if err := v.init(ctx); err != nil {
-		logger.Errorf(errInitValidator+": %v", err)
+		v.l.Errorf(errInitValidator+": %v", err)
 		return apierrors.NewInternalError(errors.Wrap(err, errInitValidator))
 	}
 
@@ -91,19 +90,22 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentCreate(ctx context.Context
 
 	envList := &v1.EnvironmentList{}
 	if err := v.kc.List(ctx, envList, &kClient.ListOptions{Namespace: env.ConfigNamespace()}); err != nil {
-		logger.Errorf(errInitValidator+": %v", err)
+		v.l.Errorf(errInitValidator+": %v", err)
 		return apierrors.NewInternalError(errors.Wrap(err, errInitValidator))
 	}
-	if verrs := isUniqueEnvAndTeam(e, *envList); verrs != nil {
+	if verrs := isUniqueEnvAndTeam(e, envList, v.l); verrs != nil {
 		allErrs = append(allErrs, verrs...)
 	}
-	if err := v.validateEnvironmentCommon(ctx, e, true, v.kc, logger); err != nil {
+	if err := v.validateEnvironmentCommon(ctx, e, true, v.kc, v.l); err != nil {
 		allErrs = append(allErrs, err...)
 	}
 
 	if env.Config.EnableErrorNotifier == "true" {
-		if err := v.sendEvent(ctx, e.Name, env.Config.CompanyName, e.Spec.TeamName, e.Spec.EnvName, allErrs, logger); err != nil {
-			logger.Errorf("error sending validation event for environment create action for company [%s], team [%s] and environment [%s]: %v", env.Config.CompanyName, e.Spec.TeamName, e.Spec.EnvName, err)
+		if err := v.sendEvent(ctx, e.Name, env.Config.CompanyName, e.Spec.TeamName, e.Spec.EnvName, allErrs, v.l); err != nil {
+			v.l.Errorf(
+				"error sending validation event for environment create action for company [%s], team [%s] and environment [%s]: %v",
+				env.Config.CompanyName, e.Spec.TeamName, e.Spec.EnvName, err,
+			)
 		}
 	}
 
@@ -112,7 +114,7 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentCreate(ctx context.Context
 	}
 
 	for _, e := range allErrs {
-		logger.Warnf("validating webhook error for create event: %v", e)
+		v.l.Warnf("validating webhook error for create event: %v", e)
 	}
 
 	return apierrors.NewInvalid(
@@ -126,16 +128,16 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentCreate(ctx context.Context
 }
 
 func (v *EnvironmentValidatorImpl) ValidateEnvironmentUpdate(ctx context.Context, e *v1.Environment) error {
-	logger.Infof("ValidateEnvironmentUpdate Environment: [%v] Context: [%v]", e, ctx)
+	v.l.Infof("ValidateEnvironmentUpdate Environment: [%v] Context: [%v]", e, ctx)
 
 	if err := v.init(ctx); err != nil {
-		logger.Errorf(errInitValidator+": %v", err)
+		v.l.Errorf(errInitValidator+": %v", err)
 		return apierrors.NewInternalError(errors.Wrap(err, errInitValidator))
 	}
 
 	var allErrs field.ErrorList
 
-	if err := v.validateEnvironmentCommon(ctx, e, false, v.kc, logger); err != nil {
+	if err := v.validateEnvironmentCommon(ctx, e, false, v.kc, v.l); err != nil {
 		allErrs = append(allErrs, err...)
 	}
 	if err := validateEnvironmentStatus(e); err != nil {
@@ -143,8 +145,8 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentUpdate(ctx context.Context
 	}
 
 	if env.Config.EnableErrorNotifier == "true" {
-		if err := v.sendEvent(ctx, e.Name, env.Config.CompanyName, e.Spec.TeamName, e.Spec.EnvName, allErrs, logger); err != nil {
-			logger.Errorf("error sending validation event for company [%s], team [%s] and environment [%s]: %v", env.Config.CompanyName, e.Spec.TeamName, e.Spec.EnvName, err)
+		if err := v.sendEvent(ctx, e.Name, env.Config.CompanyName, e.Spec.TeamName, e.Spec.EnvName, allErrs, v.l); err != nil {
+			v.l.Errorf("error sending validation event for company [%s], team [%s] and environment [%s]: %v", env.Config.CompanyName, e.Spec.TeamName, e.Spec.EnvName, err)
 		}
 	}
 
@@ -153,7 +155,7 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentUpdate(ctx context.Context
 	}
 
 	for _, e := range allErrs {
-		logger.Warnf("validating webhook error for update event: %v", e)
+		v.l.Warnf("validating webhook error for update event: %v", e)
 	}
 
 	return apierrors.NewInvalid(
@@ -166,7 +168,7 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentUpdate(ctx context.Context
 	)
 }
 
-func (v *EnvironmentValidatorImpl) sendEvent(ctx context.Context, object, company, team, environment string, validationErrors field.ErrorList, log *logrus.Entry) error {
+func (v *EnvironmentValidatorImpl) sendEvent(ctx context.Context, object, company, team, environment string, validationErrors field.ErrorList, logger *logrus.Entry) error {
 	eventType := eventservice.ValidationSuccess
 	if len(validationErrors) > 0 {
 		eventType = eventservice.ValidationError
@@ -229,7 +231,7 @@ func (v *EnvironmentValidatorImpl) validateEnvironmentCommon(
 	return allErrs
 }
 
-func isUniqueEnvAndTeam(e *v1.Environment, envList v1.EnvironmentList) field.ErrorList {
+func isUniqueEnvAndTeam(e *v1.Environment, envList *v1.EnvironmentList, logger *logrus.Entry) field.ErrorList {
 	var allErrs field.ErrorList
 
 	teamName := e.Spec.TeamName
@@ -343,6 +345,9 @@ func (v *EnvironmentValidatorImpl) validateEnvironmentComponents(
 		if err := checkEnvironmentComponentName(name, i); err != nil {
 			allErrs = append(allErrs, err...)
 		}
+		if err := checkEnvironmentComponentType(ec, i); err != nil {
+			allErrs = append(allErrs, err)
+		}
 		dependsOn := ec.DependsOn
 		if err := checkEnvironmentComponentReferencesItself(name, dependsOn, i); err != nil {
 			allErrs = append(allErrs, err)
@@ -374,13 +379,29 @@ func (v *EnvironmentValidatorImpl) validateEnvironmentComponents(
 	return allErrs
 }
 
+func checkEnvironmentComponentType(ec *v1.EnvironmentComponent, i int) *field.Error {
+	if ec.Type != v1.CompTypeArgoCD && ec.Type != v1.CompTypeTerraform {
+		fld := field.NewPath("spec").Child("components").Index(i).Child("name")
+		return field.Invalid(
+			fld,
+			ec.Type,
+			"unsupported environment component type",
+		)
+	}
+	return nil
+}
+
 func checkEnvironmentComponentName(name string, i int) field.ErrorList {
 	var allErrs field.ErrorList
 	r := regexp.MustCompile(nameRegex)
 
 	fld := field.NewPath("spec").Child("components").Index(i).Child("name")
 	if !r.MatchString(name) {
-		allErrs = append(allErrs, field.Invalid(fld, name, "environment component name must contain only lowercase alphanumeric characters or '-', start with an alphabetic character, and end with an alphanumeric character"))
+		allErrs = append(allErrs, field.Invalid(
+			fld,
+			name,
+			"environment component name must contain only lowercase alphanumeric characters or '-', start with an alphabetic character, and end with an alphanumeric character"),
+		)
 	}
 	if len(name) > maxFieldLength {
 		allErrs = append(allErrs, field.Invalid(fld, name, fmt.Sprintf("environment component name must not exceed %d characters", maxFieldLength)))
@@ -418,7 +439,7 @@ func (v *EnvironmentValidatorImpl) checkPaths(source string, paths []string, fld
 
 	dir, cleanup, err := git.CloneTemp(v.gitClient, source, l)
 	if err != nil {
-		logger.Errorf("error temp cloning repo [%s]: %v", source, err)
+		v.l.Errorf("error temp cloning repo [%s]: %v", source, err)
 		fe := field.InternalError(fld, errors.New("error validating access to source repository"))
 		allErrs = append(allErrs, fe)
 		return allErrs

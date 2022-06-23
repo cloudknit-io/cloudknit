@@ -18,7 +18,7 @@ import (
 	"testing"
 
 	argocd2 "github.com/compuzest/zlifecycle-il-operator/controller/common/argocd"
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/argocd"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/argocd"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/util"
 

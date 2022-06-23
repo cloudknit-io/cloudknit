@@ -8,11 +8,11 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/aws/awseks"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/secret"
-	argocd2 "github.com/compuzest/zlifecycle-il-operator/controller/components/operations/argocd"
+	argocd2 "github.com/compuzest/zlifecycle-il-operator/controller/services/operations/argocd"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/terraform/tfvar"
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/gitreconciler"
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/zerrors"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/gitreconciler"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/zerrors"
 
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/apps"

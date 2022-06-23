@@ -16,16 +16,16 @@ import (
 	"context"
 	_ "embed"
 	"flag"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/mutatingwebhook"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/file"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/apm"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/eventservice"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/log"
-	"github.com/compuzest/zlifecycle-il-operator/controller/mutatingwebhook"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/gitreconciler"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/gitreconciler"
 	"github.com/compuzest/zlifecycle-il-operator/controller/validator"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/env"

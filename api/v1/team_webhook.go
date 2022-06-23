@@ -14,6 +14,7 @@ package v1
 
 import (
 	"context"
+
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/log"
 
 	"github.com/sirupsen/logrus"
@@ -23,44 +24,44 @@ import (
 )
 
 // +k8s:deepcopy-gen=false
-type EnvironmentValidator interface {
-	ValidateEnvironmentCreate(context.Context, *Environment) error
-	ValidateEnvironmentUpdate(context.Context, *Environment) error
+type TeamValidator interface {
+	ValidateTeamCreate(context.Context, *Team) error
+	ValidateTeamUpdate(context.Context, *Team) error
 }
 
 var (
-	ev     EnvironmentValidator
-	logger = log.NewLogger().WithFields(logrus.Fields{"name": "controller.EnvironmentValidator"})
+	tv TeamValidator
+	tl = log.NewLogger().WithFields(logrus.Fields{"name": "controller.TeamValidator"})
 )
 
-func (in *Environment) SetupWebhookWithManager(mgr ctrl.Manager, vldtr EnvironmentValidator) error {
-	ev = vldtr
+func (in *Team) SetupWebhookWithManager(mgr ctrl.Manager, vldtr TeamValidator) error {
+	tv = vldtr
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(in).
 		Complete()
 }
 
-//+kubebuilder:webhook:path=/validate-stable-compuzest-com-v1-environment,mutating=false,failurePolicy=fail,sideEffects=None,groups=stable.compuzest.com,resources=environments,verbs=create;update,versions=v1,name=venvironment.kb.io,admissionReviewVersions=v1beta1
+//+kubebuilder:webhook:path=/validate-stable-compuzest-com-v1-team,mutating=false,failurePolicy=fail,sideEffects=None,groups=stable.compuzest.com,resources=teans,verbs=create;update,versions=v1,name=vTeam.kb.io,admissionReviewVersions=v1beta1
 
-var _ webhook.Validator = &Environment{}
+var _ webhook.Validator = &Team{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type.
-func (in *Environment) ValidateCreate() error {
-	logger.Infof("validating create event for environment %s", in.Name)
+func (in *Team) ValidateCreate() error {
+	tl.Infof("validating create event for team %s", in.Name)
 
-	return ev.ValidateEnvironmentCreate(ctx, in)
+	return tv.ValidateTeamCreate(ctx, in)
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type.
-func (in *Environment) ValidateUpdate(old runtime.Object) error {
-	logger.Infof("validate update event for environment %s", in.Name)
+func (in *Team) ValidateUpdate(old runtime.Object) error {
+	tl.Infof("validate update event for team %s", in.Name)
 
-	return ev.ValidateEnvironmentUpdate(ctx, in)
+	return tv.ValidateTeamUpdate(ctx, in)
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type.
-func (in *Environment) ValidateDelete() error {
-	logger.Info("validate environment delete", "name", in.Name)
+func (in *Team) ValidateDelete() error {
+	tl.Infof("validate delete event for team %s", in.Name)
 
 	return nil
 }

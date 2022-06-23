@@ -23,16 +23,16 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 	secretapi "github.com/compuzest/zlifecycle-il-operator/controller/common/secret"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/statemanager"
-	argocd2 "github.com/compuzest/zlifecycle-il-operator/controller/components/operations/argocd"
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/argoworkflow"
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/secret"
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/zlstate"
+	argocd2 "github.com/compuzest/zlifecycle-il-operator/controller/services/operations/argocd"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/argoworkflow"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/secret"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/zlstate"
 
 	secrets2 "github.com/compuzest/zlifecycle-il-operator/controller/codegen/secret"
 	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
 
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/gitreconciler"
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/zerrors"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/gitreconciler"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/zerrors"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/interpolator"
 

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	secret2 "github.com/compuzest/zlifecycle-il-operator/controller/common/secret"
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/secret"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/secret"
 
 	awsv2 "github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"

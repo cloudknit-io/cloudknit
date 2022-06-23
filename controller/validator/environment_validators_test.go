@@ -103,10 +103,12 @@ func TestIsUniqueEnvAndTeam(t *testing.T) {
 		}},
 	}
 
-	verrs := isUniqueEnvAndTeam(&env, envListDuplicate)
+	log := logrus.NewEntry(logrus.New())
+
+	verrs := isUniqueEnvAndTeam(&env, &envListDuplicate, log)
 	assert.Contains(t, verrs[0].Detail, fmt.Sprintf("the environment %s already exists within team %s", envName, teamName))
 
-	err1 := isUniqueEnvAndTeam(&env, envList)
+	err1 := isUniqueEnvAndTeam(&env, &envList, log)
 	assert.Nil(t, err1)
 }
 
@@ -152,6 +154,34 @@ func TestCheckEnvironmentComponentDuplicateDependencies(t *testing.T) {
 
 	err := checkEnvironmentComponentDuplicateDependencies([]string{"here", "are", "duplicate", "entries"}, 5)
 	assert.Nil(t, err)
+}
+
+func TestEnvironmentComponentType(t *testing.T) {
+	t.Parallel()
+
+	validEC1 := v1.EnvironmentComponent{
+		Type: "terraform",
+	}
+	err := checkEnvironmentComponentType(&validEC1, 0)
+	assert.Nil(t, err)
+
+	validEC2 := v1.EnvironmentComponent{
+		Type: "argocd",
+	}
+	err = checkEnvironmentComponentType(&validEC2, 0)
+	assert.Nil(t, err)
+
+	invalidEC1 := v1.EnvironmentComponent{
+		Type: "",
+	}
+	err = checkEnvironmentComponentType(&invalidEC1, 0)
+	assert.NotNil(t, err)
+
+	invalidEC2 := v1.EnvironmentComponent{
+		Type: "flux",
+	}
+	err = checkEnvironmentComponentType(&invalidEC2, 0)
+	assert.NotNil(t, err)
 }
 
 func TestCheckValueFromsExist(t *testing.T) {

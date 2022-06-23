@@ -32,6 +32,32 @@ webhooks:
           - environments
     sideEffects: None
     timeoutSeconds: 30
+  - admissionReviewVersions:
+      - v1beta1
+    clientConfig:
+      service:
+        name: webhook-service
+        namespace: {{ .Values.company.config.name }}-system
+        path: /validate-stable-compuzest-com-v1-team
+    namespaceSelector:
+      matchExpressions:
+        - key: "zlifecycle.com/validation"
+          operator: In
+          values: ["{{ .Values.company.config.name }}-config"]
+    failurePolicy: Fail
+    name: vteam.kb.io
+    rules:
+      - apiGroups:
+          - stable.compuzest.com
+        apiVersions:
+          - v1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - team
+    sideEffects: None
+    timeoutSeconds: 30
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
