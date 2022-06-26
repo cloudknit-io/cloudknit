@@ -141,7 +141,7 @@ var Config = config{
 
 	// git
 	GitHelmChartsRepository: os.Getenv("GIT_HELM_CHARTS_REPOSITORY"),
-	GitCoreRepositoryOwner:  getOr("GIT_CORE_REPOSITORY_OWNER", "CompuZest"),
+	GitCoreRepositoryOwner:  getOr("GIT_CORE_REPOSITORY_OWNER", "zlifecycle"),
 	GitILRepositoryOwner:    getOr("GIT_IL_REPOSITORY_OWNER", "zlifecycle-il"),
 	GitSSHSecretName:        getOr("GIT_SSH_SECRET_NAME", "zlifecycle-operator-ssh"),
 	GitServiceAccountName:   getOr("GIT_SERVICE_ACCOUNT_NAME", "zLifecycle"),

@@ -32,7 +32,7 @@ git:
   secretRef: github-auth-token
   config:
     sshSecretName: zlifecycle-operator-ssh
-    helmChartsRepoUrl: "https://github.com/CompuZest/helm-charts.git"
+    helmChartsRepoUrl: "https://github.com/zLifecycle/helm-charts.git"
     terraformIlRepoUrl: ""
     zlifecycleIlRepoUrl: ""
     companyConfigRepoUrl: ""
