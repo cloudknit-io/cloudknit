@@ -181,7 +181,7 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 
 	event := newEventForEnvironmentReconcile(environment, err)
 	r.LogV2.Infof(
-		"Recording %s event for comapny [%s], team [%s] and environment [%s]",
+		"Recording %s event for company [%s], team [%s] and environment [%s]",
 		event.EventType, event.Meta.Company, event.Meta.Team, event.Meta.Environment,
 	)
 	if err := envServices.EventService.Record(apmCtx, event, r.LogV2); err != nil {
