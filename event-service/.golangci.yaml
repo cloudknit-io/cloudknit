@@ -17,17 +17,6 @@ linters-settings:
   goconst:
     min-len: 4
     min-occurrences: 5
-  gocritic:
-    enabled-tags:
-      - diagnostic
-      - experimental
-      - opinionated
-      - performance
-      - style
-    disabled-checks:
-      - commentedOutCode
-      - paramTypeCombine
-      - unnamedResult
   gocyclo:
     min-complexity: 15
   nestif:

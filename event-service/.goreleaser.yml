@@ -28,7 +28,7 @@ dockers:
       - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
       - "--label=org.opencontainers.image.version={{ .Version }}"
       - "--label=org.opencontainers.image.vendor=CompuZest"
-    dockerfile: ./Dockerfile
+    dockerfile: ./deployments/Dockerfile
     extra_files:
       - db/migrations
 
@@ -64,6 +64,7 @@ universal_binaries:
 
 builds:
   - id: "darwin"
+    main: "./cmd/zlifecycle-event-service"
     goos:
       - darwin
     goarch:
@@ -72,6 +73,7 @@ builds:
     mod_timestamp: "{{ .CommitTimestamp }}"
 
   - id: "linux"
+    main: "./cmd/zlifecycle-event-service"
     goos:
       - linux
     goarch:
@@ -80,6 +82,7 @@ builds:
     mod_timestamp: "{{ .CommitTimestamp }}"
 
   - id: "windows"
+    main: "./cmd/zlifecycle-event-service"
     goos:
       - windows
     goarch:

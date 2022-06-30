@@ -1,13 +1,13 @@
 package main
 
 import (
-	"github.com/compuzest/zlifecycle-event-service/app/zlog"
+	"github.com/compuzest/zlifecycle-event-service/internal/zlog"
 	"github.com/r3labs/sse/v2"
 )
 
 func main() {
 	url := "http://localhost:8082"
-	log := zlog.PlainLogger()
+	log := zlog.NewLogger()
 	client := sse.NewClient(url)
 
 	log.Infof("Connecting test client with event stream at %s", url)

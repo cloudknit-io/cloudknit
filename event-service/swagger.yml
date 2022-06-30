@@ -1,9 +1,9 @@
 consumes:
 - application/json
 info:
-  description: Event Services captures all system events
-  title: zLifecycle Event Service
-  version: 0.0.15
+  description: Service for collecting and reporting zLifecycle events
+  title: Event Service
+  version: 1.0.0
 paths: {}
 produces:
 - application/json

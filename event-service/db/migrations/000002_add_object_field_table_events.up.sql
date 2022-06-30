@@ -1,2 +1,0 @@
-ALTER TABLE event
-	ADD COLUMN object TEXT NOT NULL;
