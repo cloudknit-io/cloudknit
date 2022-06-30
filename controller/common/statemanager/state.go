@@ -9,7 +9,6 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/compuzest/zlifecycle-il-operator/controller/env"
 	"github.com/compuzest/zlifecycle-il-operator/controller/util"
 
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
@@ -21,23 +20,19 @@ const (
 	statusNotProvisioned = "not_provisioned"
 )
 
-type HTTPClient struct {
-	ctx        context.Context
-	log        *logrus.Entry
+type Service struct {
 	host       string
 	httpClient *http.Client
 }
 
-func NewHTTPStateManager(ctx context.Context, log *logrus.Entry) *HTTPClient {
-	return &HTTPClient{
-		ctx:        ctx,
-		log:        log,
-		host:       env.Config.ZLifecycleStateManagerURL,
+func NewService(host string) *Service {
+	return &Service{
+		host:       host,
 		httpClient: util.GetHTTPClient(),
 	}
 }
 
-func (s *HTTPClient) Put(company, team string, environment *v1.Environment) error {
+func (s *Service) Put(ctx context.Context, company, team string, environment *v1.Environment, log *logrus.Entry) error {
 	endpoint := fmt.Sprintf("%s/%s", s.host, "zl/state")
 
 	zlstate := newZLState(company, environment)
@@ -48,7 +43,7 @@ func (s *HTTPClient) Put(company, team string, environment *v1.Environment) erro
 		ZLState:     zlstate,
 	}
 
-	s.log.
+	log.
 		WithField("state", util.ToJSONString(zlstate)).
 		Infof(
 			"Persisting zLstate for company [%s], team [%s] and environment [%s] via State Manager",
@@ -60,7 +55,7 @@ func (s *HTTPClient) Put(company, team string, environment *v1.Environment) erro
 		return errors.Wrap(err, "error marshaling put zLstate body")
 	}
 
-	req, err := http.NewRequestWithContext(s.ctx, http.MethodPut, endpoint, bytes.NewBuffer(jsonBody))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, endpoint, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return errors.Wrap(err, "error creating PUT zLstate request")
 	}
@@ -85,7 +80,7 @@ func (s *HTTPClient) Put(company, team string, environment *v1.Environment) erro
 		return errors.Wrap(err, "error unmarshaling PUT zLstate response body")
 	}
 
-	s.log.
+	log.
 		WithField("message", r.Message).
 		Infof(
 			"Successful response from State Manager for adding zL state for company [%s], team [%s] and environment [%s]",
@@ -127,7 +122,7 @@ func ToZLStateComponent(ec *v1.EnvironmentComponent) *Component {
 	}
 }
 
-func (s *HTTPClient) Get(company, team, environment string) (*GetZLStateResponse, error) {
+func (s *Service) Get(ctx context.Context, company, team, environment string, log *logrus.Entry) (*GetZLStateResponse, error) {
 	endpoint := fmt.Sprintf("%s/%s", s.host, "zl/state")
 
 	body := GetZLStateBody{
@@ -136,7 +131,7 @@ func (s *HTTPClient) Get(company, team, environment string) (*GetZLStateResponse
 		Environment: environment,
 	}
 
-	s.log.
+	log.
 		Infof(
 			"Fetching zLstate for company [%s], team [%s] and environment [%s] via State Manager",
 			company, team, environment,
@@ -147,7 +142,7 @@ func (s *HTTPClient) Get(company, team, environment string) (*GetZLStateResponse
 		return nil, errors.Wrap(err, "error marshaling get zLstate body")
 	}
 
-	req, err := http.NewRequestWithContext(s.ctx, http.MethodPost, endpoint, bytes.NewBuffer(jsonBody))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating GET zLstate request")
 	}
@@ -172,7 +167,7 @@ func (s *HTTPClient) Get(company, team, environment string) (*GetZLStateResponse
 		return nil, errors.Wrap(err, "error unmarshaling GET zLstate response body")
 	}
 
-	s.log.
+	log.
 		Infof(
 			"Successful response from State Manager for getting zL state for company [%s], team [%s] and environment [%s]",
 			company, team, environment,
@@ -181,7 +176,7 @@ func (s *HTTPClient) Get(company, team, environment string) (*GetZLStateResponse
 	return &r, nil
 }
 
-func (s *HTTPClient) PutComponent(company, team, environment string, component *Component) error {
+func (s *Service) PutComponent(ctx context.Context, company, team, environment string, component *Component, log *logrus.Entry) error {
 	endpoint := fmt.Sprintf("%s/%s", s.host, "zl/state/component")
 
 	body := PutZLStateComponentBody{
@@ -191,7 +186,7 @@ func (s *HTTPClient) PutComponent(company, team, environment string, component *
 		Component:   component,
 	}
 
-	s.log.
+	log.
 		Infof(
 			"Adding zLstate component [%s] for company [%s], team [%s] and environment [%s] via State Manager",
 			component.Name, company, team, environment,
@@ -202,7 +197,7 @@ func (s *HTTPClient) PutComponent(company, team, environment string, component *
 		return errors.Wrap(err, "error marshaling put zLstate component body")
 	}
 
-	req, err := http.NewRequestWithContext(s.ctx, http.MethodPut, endpoint, bytes.NewBuffer(jsonBody))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, endpoint, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return errors.Wrap(err, "error creating PUT zLstate component request")
 	}
@@ -217,7 +212,7 @@ func (s *HTTPClient) PutComponent(company, team, environment string, component *
 		return errors.Errorf("PUT zLstate component returned a non-OK status code: [%d]", resp.StatusCode)
 	}
 
-	s.log.
+	log.
 		Infof(
 			"Successful response from State Manager for adding new component to zL state for company [%s], team [%s] and environment [%s]",
 			company, team, environment,
