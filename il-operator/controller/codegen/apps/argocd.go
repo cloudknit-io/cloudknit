@@ -7,10 +7,10 @@ import (
 	"strings"
 
 	git2 "github.com/compuzest/zlifecycle-il-operator/controller/common/git"
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/argocd"
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/git"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/argocd"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/git"
 
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/gitreconciler"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/gitreconciler"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/env"
 

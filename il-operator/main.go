@@ -17,15 +17,16 @@ import (
 	_ "embed"
 	"flag"
 
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/mutatingwebhook"
+
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/file"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/apm"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/eventservice"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/log"
-	"github.com/compuzest/zlifecycle-il-operator/controller/mutatingwebhook"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/gitreconciler"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/gitreconciler"
 	"github.com/compuzest/zlifecycle-il-operator/controller/validator"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/env"
@@ -166,11 +167,15 @@ func main() {
 		setupLog.WithError(err).WithField("controller", "Environment").Panic("unable to create controller")
 	}
 
-	environmentValidator := validator.NewEnvironmentValidatorImpl(mgr.GetClient(), file.NewOSFileService(), eventservice.NewService(env.Config.ZLifecycleEventServiceURL))
 	if env.Config.KubernetesDisableWebhooks != "true" {
 		setupLog.Info("Initializing webhook service")
+		environmentValidator := validator.NewEnvironmentValidatorImpl(mgr.GetClient(), file.NewOSFileService(), eventservice.NewService(env.Config.ZLifecycleEventServiceURL))
 		if err = (&stablev1.Environment{}).SetupWebhookWithManager(mgr, environmentValidator); err != nil {
-			setupLog.WithError(err).Panic("unable to create webhook", "webhook", "Environment")
+			setupLog.WithError(err).Panic("unable to create Environment webhook")
+		}
+		teamValidator := validator.NewTeamValidatorImpl(mgr.GetClient(), file.NewOSFileService(), eventservice.NewService(env.Config.ZLifecycleEventServiceURL))
+		if err = (&stablev1.Team{}).SetupWebhookWithManager(mgr, teamValidator); err != nil {
+			setupLog.WithError(err).Panic("unable to create Team webhook")
 		}
 	}
 
@@ -178,14 +183,18 @@ func main() {
 	es := eventservice.NewService(env.Config.ZLifecycleEventServiceURL)
 	hs.Register(
 		"/mutate-stable-compuzest-com-v1-environment",
-		&webhook.Admission{Handler: mutatingwebhook.NewService(mgr.GetClient(), es, setupLog.WithField("logger", "environmentMutatingWebhook"))},
+		&webhook.Admission{Handler: mutatingwebhook.NewEnvironmentMutatingWebhook(mgr.GetClient(), es, setupLog.WithField("logger", "controllers.EnvironmentMutatingWebhook"))},
+	)
+	hs.Register(
+		"/mutate-stable-compuzest-com-v1-team",
+		&webhook.Admission{Handler: mutatingwebhook.NewTeamMutatingWebhook(mgr.GetClient(), es, setupLog.WithField("logger", "controllers.TeamMutatingWebhook"))},
 	)
 
 	// +kubebuilder:scaffold:builder
 
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
-		setupLog.WithError(err).Panic("problem running manager")
+		setupLog.WithError(err).Panic("error running manager")
 	}
 }
 

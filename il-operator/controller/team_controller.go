@@ -22,12 +22,12 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/apm"
 	git2 "github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/git/gogit"
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/argocd"
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/git"
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/github"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/argocd"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/git"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/github"
 
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/watcherservices"
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/zerrors"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/watcherservices"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/zerrors"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/util"
 

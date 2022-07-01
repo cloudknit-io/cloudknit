@@ -17,7 +17,7 @@ import (
 	"time"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/secret"
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/zli"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/zli"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/il"
 

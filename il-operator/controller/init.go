@@ -3,6 +3,8 @@ package controller
 import (
 	"context"
 
+	"github.com/compuzest/zlifecycle-il-operator/controller/common/eventservice"
+
 	argoworkflow2 "github.com/compuzest/zlifecycle-il-operator/controller/common/argoworkflow"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/aws/awscfg"
 	awseks2 "github.com/compuzest/zlifecycle-il-operator/controller/common/aws/awseks"
@@ -10,10 +12,10 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/secret"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/statemanager"
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/github"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/github"
 
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/factories/gitfactory"
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/watcherservices"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/factories/gitfactory"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/watcherservices"
 
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/file"
@@ -26,15 +28,16 @@ import (
 )
 
 type EnvironmentServices struct {
-	ZLStateManagerClient statemanager.API
-	ArgocdClient         argocd.API
-	ArgoWorkflowClient   argoworkflow2.API
-	WatcherServices      *watcherservices.WatcherServices
-	SecretsClient        secret.API
-	K8sClient            awseks2.API
-	ILService            *il.Service
-	CompanyGitClient     git.API
-	FileService          file.API
+	StateManagerClient statemanager.API
+	EventService       eventservice.API
+	ArgocdClient       argocd.API
+	ArgoWorkflowClient argoworkflow2.API
+	WatcherServices    *watcherservices.WatcherServices
+	SecretsClient      secret.API
+	K8sClient          awseks2.API
+	ILService          *il.Service
+	CompanyGitClient   git.API
+	FileService        file.API
 }
 
 type Tokens struct {
@@ -42,7 +45,8 @@ type Tokens struct {
 }
 
 func (r *EnvironmentReconciler) initServices(ctx context.Context, environment *v1.Environment) (*EnvironmentServices, error) {
-	zlstateManagerClient := statemanager.NewHTTPStateManager(ctx, r.LogV2)
+	stateManagerClient := statemanager.NewService(env.Config.ZLifecycleStateManagerURL)
+	eventServiceClient := eventservice.NewService(env.Config.ZLifecycleEventServiceURL)
 	argocdClient := argocd.NewHTTPClient(ctx, r.LogV2, env.Config.ArgocdServerURL)
 	argoworkflowClient := argoworkflow2.NewHTTPClient(ctx, env.Config.ArgoWorkflowsServerURL)
 	watcherServices, err := watcherservices.NewGitHubServices(ctx, r.Client, env.Config.GitHubCompanyOrganization, r.LogV2)
@@ -87,14 +91,15 @@ func (r *EnvironmentReconciler) initServices(ctx context.Context, environment *v
 	fs := file.NewOSFileService()
 
 	return &EnvironmentServices{
-		ZLStateManagerClient: zlstateManagerClient,
-		ArgocdClient:         argocdClient,
-		ArgoWorkflowClient:   argoworkflowClient,
-		WatcherServices:      watcherServices,
-		SecretsClient:        secretsClient,
-		K8sClient:            k8sClient,
-		ILService:            ilService,
-		CompanyGitClient:     companyGitClient,
-		FileService:          fs,
+		StateManagerClient: stateManagerClient,
+		EventService:       eventServiceClient,
+		ArgocdClient:       argocdClient,
+		ArgoWorkflowClient: argoworkflowClient,
+		WatcherServices:    watcherServices,
+		SecretsClient:      secretsClient,
+		K8sClient:          k8sClient,
+		ILService:          ilService,
+		CompanyGitClient:   companyGitClient,
+		FileService:        fs,
 	}, nil
 }

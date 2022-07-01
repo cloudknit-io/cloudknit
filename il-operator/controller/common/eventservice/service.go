@@ -13,24 +13,25 @@ import (
 
 //go:generate mockgen --build_flags=--mod=mod -destination=./mock_event_service.go -package=eventservice "github.com/compuzest/zlifecycle-il-operator/controller/common/eventservice" API
 type API interface {
-	Record(ctx context.Context, n *Event, log *logrus.Entry) error
+	Record(ctx context.Context, e *Event, log *logrus.Entry) error
 }
 
 type Service struct {
-	apiURL string
+	apiURL     string
+	httpClient *http.Client
 }
 
 func NewService(apiURL string) *Service {
-	return &Service{apiURL: apiURL}
+	return &Service{apiURL: apiURL, httpClient: util.GetHTTPClient()}
 }
 
-func (u *Service) Record(ctx context.Context, e *Event, log *logrus.Entry) error {
+func (s *Service) Record(ctx context.Context, e *Event, log *logrus.Entry) error {
 	log = log.WithFields(logrus.Fields{
 		"eventType": e.EventType,
 	})
 	log.Infof("Sending [%s] event to event service", e.EventType)
 
-	eventsEndpoint := fmt.Sprintf("%s/events", u.apiURL)
+	eventsEndpoint := fmt.Sprintf("%s/events", s.apiURL)
 
 	jsonBody, err := util.ToJSON(e)
 	if err != nil {
@@ -43,8 +44,7 @@ func (u *Service) Record(ctx context.Context, e *Event, log *logrus.Entry) error
 
 	req.Header.Add("Content-Type", "application/json")
 
-	client := util.GetHTTPClient()
-	resp, err := client.Do(req)
+	resp, err := s.httpClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("failed to send POST request to %s: %w", eventsEndpoint, err)
 	}

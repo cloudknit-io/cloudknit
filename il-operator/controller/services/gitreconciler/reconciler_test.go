@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/gitreconciler"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/gitreconciler"
 
 	"github.com/compuzest/zlifecycle-il-operator/mocks"
 	"github.com/golang/mock/gomock"
