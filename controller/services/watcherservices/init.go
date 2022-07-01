@@ -6,9 +6,9 @@ import (
 
 	argocdapi "github.com/compuzest/zlifecycle-il-operator/controller/common/argocd"
 	githubapi "github.com/compuzest/zlifecycle-il-operator/controller/common/github"
-	github3 "github.com/compuzest/zlifecycle-il-operator/controller/components/operations/github"
+	github3 "github.com/compuzest/zlifecycle-il-operator/controller/services/operations/github"
 
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/watcher"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/watcher"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/argocd"
 

@@ -7,12 +7,12 @@ import (
 
 	git2 "github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/git/gogit"
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/git"
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/github"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/git"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/github"
 
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/watcherservices"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/watcherservices"
 
 	"github.com/pkg/errors"
 

@@ -17,22 +17,25 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/compuzest/zlifecycle-il-operator/controller/common/eventservice"
+	"github.com/newrelic/go-agent/v3/newrelic"
+
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/apm"
 	argoworkflowapi "github.com/compuzest/zlifecycle-il-operator/controller/common/argoworkflow"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/aws/awseks"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 	secretapi "github.com/compuzest/zlifecycle-il-operator/controller/common/secret"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/statemanager"
-	argocd2 "github.com/compuzest/zlifecycle-il-operator/controller/components/operations/argocd"
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/argoworkflow"
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/secret"
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/operations/zlstate"
+	argocd2 "github.com/compuzest/zlifecycle-il-operator/controller/services/operations/argocd"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/argoworkflow"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/secret"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/zlstate"
 
 	secrets2 "github.com/compuzest/zlifecycle-il-operator/controller/codegen/secret"
 	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
 
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/gitreconciler"
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/zerrors"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/gitreconciler"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/zerrors"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/interpolator"
 
@@ -110,23 +113,9 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		return ctrl.Result{}, nil
 	}
 
-	r.LogV2 = r.LogV2.WithFields(logrus.Fields{"team": environment.Spec.TeamName, "environment": environment.Spec.EnvName})
-
 	// start APM transaction
-	txName := fmt.Sprintf("environmentreconciler.%s.%s", environment.Spec.TeamName, environment.Spec.EnvName)
-	tx := r.APM.StartTransaction(txName)
-	apmCtx := ctx
+	apmCtx, tx := r.startAPMTransaction(ctx, environment)
 	if tx != nil {
-		tx.AddAttribute("company", env.Config.CompanyName)
-		tx.AddAttribute("team", environment.Spec.TeamName)
-		tx.AddAttribute("environment", environment.Spec.EnvName)
-		apmCtx = r.APM.NewContext(ctx, tx)
-		r.LogV2 = r.LogV2.WithFields(logrus.Fields{
-			"team":        environment.Spec.TeamName,
-			"environment": environment.Spec.EnvName,
-		}).WithContext(apmCtx)
-		r.LogV2.WithField("name", txName).Infof("Creating APM transaction for environment %s", environment.Spec.EnvName)
-
 		defer tx.End()
 	}
 
@@ -174,13 +163,32 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		envServices.FileService,
 		envServices.CompanyGitClient,
 		envServices.ArgoWorkflowClient,
-		envServices.ZLStateManagerClient,
+		envServices.StateManagerClient,
 		envServices.K8sClient,
 		envServices.ArgocdClient,
 		envServices.SecretsClient,
 	); err != nil {
+		event := newEventForEnvironmentReconcile(environment, err)
+		if err := envServices.EventService.Record(apmCtx, event, r.LogV2); err != nil {
+			r.LogV2.Errorf(
+				"Error recording %s event for company [%s], team [%s] and environment [%s]: %v",
+				event.EventType, event.Meta.Company, event.Meta.Team, event.Meta.Environment, err,
+			)
+		}
 		envErr := zerrors.NewEnvironmentError(environment.Spec.TeamName, environment.Spec.EnvName, errors.Wrap(err, "error executing reconcile"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, envErr)
+	}
+
+	event := newEventForEnvironmentReconcile(environment, err)
+	r.LogV2.Infof(
+		"Recording %s event for company [%s], team [%s] and environment [%s]",
+		event.EventType, event.Meta.Company, event.Meta.Team, event.Meta.Environment,
+	)
+	if err := envServices.EventService.Record(apmCtx, event, r.LogV2); err != nil {
+		r.LogV2.Errorf(
+			"Error recording %s event for company [%s], team [%s] and environment [%s]: %v",
+			event.EventType, event.Meta.Company, event.Meta.Team, event.Meta.Environment, err,
+		)
 	}
 
 	// finish successful reconcile
@@ -194,6 +202,40 @@ func (r *EnvironmentReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	r.APM.RecordCustomEvent("eventreconciler", attrs)
 
 	return ctrl.Result{}, nil
+}
+
+func newEventForEnvironmentReconcile(e *stablev1.Environment, err error) *eventservice.Event {
+	event := &eventservice.Event{
+		Scope:  string(eventservice.ScopeEnvironment),
+		Object: e.Name,
+		Meta: &eventservice.Meta{
+			Company:     env.Config.CompanyName,
+			Team:        e.Spec.TeamName,
+			Environment: e.Spec.EnvName,
+		},
+		EventType: string(eventservice.EnvironmentReconcileSuccess),
+	}
+	if err != nil {
+		event.EventType = string(eventservice.EnvironmentReconcileError)
+		event.Payload = []string{err.Error()}
+	}
+	return event
+}
+
+func (r *EnvironmentReconciler) startAPMTransaction(baseCtx context.Context, e *stablev1.Environment) (context.Context, *newrelic.Transaction) {
+	r.LogV2 = r.LogV2.WithFields(logrus.Fields{"team": e.Spec.TeamName, "environment": e.Spec.EnvName})
+	txName := fmt.Sprintf("environmentreconciler.%s.%s", e.Spec.TeamName, e.Spec.EnvName)
+	tx := r.APM.StartTransaction(txName)
+	apmCtx := baseCtx
+	if tx != nil {
+		tx.AddAttribute("company", env.Config.CompanyName)
+		tx.AddAttribute("team", e.Spec.TeamName)
+		tx.AddAttribute("environment", e.Spec.EnvName)
+		apmCtx = r.APM.NewContext(baseCtx, tx)
+		r.LogV2 = r.LogV2.WithContext(apmCtx)
+		r.LogV2.WithField("name", txName).Infof("Created APM transaction for environment %s", e.Spec.EnvName)
+	}
+	return apmCtx, tx
 }
 
 func (r *EnvironmentReconciler) doReconcile(
@@ -283,12 +325,12 @@ func (r *EnvironmentReconciler) doReconcile(
 	}
 
 	// persist zlstate
-	if err := zlstateManagerClient.Put(env.Config.CompanyName, interpolated.Spec.TeamName, interpolated); err != nil {
+	if err := zlstateManagerClient.Put(ctx, env.Config.CompanyName, interpolated.Spec.TeamName, interpolated, r.LogV2); err != nil {
 		return errors.Wrap(err, "error updating zlstate")
 	}
 
 	// reconcile zlstate (for new components after zlstate was created)
-	if err := zlstate.ReconcileState(zlstateManagerClient, env.Config.CompanyName, environment.Spec.TeamName, environment, r.LogV2); err != nil {
+	if err := zlstate.ReconcileState(ctx, zlstateManagerClient, env.Config.CompanyName, environment.Spec.TeamName, environment, r.LogV2); err != nil {
 		return errors.Wrap(err, "error reconciling zlstate")
 	}
 
@@ -446,7 +488,7 @@ func (r *EnvironmentReconciler) postDeleteHook(
 		envServices.FileService,
 		envServices.CompanyGitClient,
 		envServices.ArgoWorkflowClient,
-		envServices.ZLStateManagerClient,
+		envServices.StateManagerClient,
 		envServices.K8sClient,
 		envServices.ArgocdClient,
 		envServices.SecretsClient,

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/compuzest/zlifecycle-il-operator/controller/components/zerrors"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/zerrors"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/env"
 
