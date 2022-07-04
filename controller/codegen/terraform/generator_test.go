@@ -4,6 +4,8 @@ import (
 	"os"
 	"testing"
 
+	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
+
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 
 	"github.com/sirupsen/logrus"
@@ -31,9 +33,18 @@ func TestGenerateCustomTerraform(t *testing.T) {
 
 	mockGitClient.EXPECT().Clone(testRepo, gomock.Any()).Return(nil)
 	mockFileService.EXPECT().CopyDirContent(gomock.Any(), testTFDirectory, true).Return(nil)
+	expectedOutputs := `output "test_output" {
+  	value = module.test.test_output
+}
+`
+	mockFileService.EXPECT().SaveFileFromString(expectedOutputs, testTFDirectory, "zl_autogen_outputs.tf")
 
 	log := logrus.NewEntry(logrus.New())
-	err := terraform.GenerateCustomTerraform(mockFileService, mockGitClient, testRepo, testPath, testTFDirectory, log)
+	vars := &terraform.TemplateVariables{EnvironmentComponent: "test", EnvCompOutputs: []*v1.Output{{
+		Name:      "test_output",
+		Sensitive: false,
+	}}}
+	err := terraform.GenerateCustomTerraform(mockFileService, mockGitClient, vars, testRepo, testPath, testTFDirectory, log)
 	assert.Nil(t, err)
 }
 
