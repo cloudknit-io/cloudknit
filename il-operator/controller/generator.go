@@ -103,7 +103,7 @@ func generateAndSaveEnvironmentComponents(
 ) error {
 	ecDirectory := il.EnvironmentComponentsDirectoryAbsolutePath(ilService.ZLILTempDir, e.Spec.TeamName, e.Spec.EnvName)
 
-	if err := fileService.CleanDir(ecDirectory); err != nil {
+	if err := fileService.CleanDir(ecDirectory, []string{".git"}); err != nil {
 		return errors.Wrap(err, fmt.Sprintf("could not clean environment-component directory %s", ecDirectory))
 	}
 
@@ -201,7 +201,7 @@ func generateTerraformComponent(
 
 	vars := terraform.NewTemplateVariablesFromEnvironment(e, ec, generatedTFVars, tfcfg)
 	if ec.Subtype == TerraformSubtypeCustom {
-		if err := terraform.GenerateCustomTerraform(fileService, gitClient, ec.Module.Source, ec.Module.Path, tfDirectory, log); err != nil {
+		if err := terraform.GenerateCustomTerraform(fileService, gitClient, vars, ec.Module.Source, ec.Module.Path, tfDirectory, log); err != nil {
 			return zerrors.NewEnvironmentComponentError(ec.Name, errors.Wrap(err, "error generating custom terraform"))
 		}
 	} else {

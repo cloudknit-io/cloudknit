@@ -32,11 +32,17 @@ import (
 func GenerateCustomTerraform(
 	fs file.API,
 	gitService git2.API,
+	vars *TemplateVariables,
 	sourceRepoURL string,
 	sourceTFModulePath string,
 	tfDirectory string,
 	log *logrus.Entry,
 ) error {
+	tpl, err := tftmpl.NewTerraformTemplates()
+	if err != nil {
+		return errors.Wrap(err, "error instantiating terraform templates service")
+	}
+
 	dir, cleanup, err := git.CloneTemp(gitService, sourceRepoURL, log)
 	if err != nil {
 		return errors.Wrapf(err, "error cloning repo [%s]", sourceRepoURL)
@@ -47,6 +53,18 @@ func GenerateCustomTerraform(
 	if err := fs.CopyDirContent(sourceTFModuleAbsPath, tfDirectory, true); err != nil {
 		return errors.Wrapf(err, "error copying content from directory [%s]", sourceTFModulePath)
 	}
+
+	outputs, err := generateOutputs(tpl, vars)
+	if err != nil {
+		return errors.Wrap(err, "error generating outputs from template")
+	}
+
+	if len(vars.EnvCompOutputs) > 0 {
+		if err := fs.SaveFileFromString(outputs, tfDirectory, "zl_autogen_outputs.tf"); err != nil {
+			return errors.Wrap(err, "error saving content to zl_autogen_outputs.tf")
+		}
+	}
+
 	return nil
 }
 
@@ -105,41 +123,41 @@ func GenerateTerraform(
 	// SAVE TEMPLATES
 
 	if err := fileService.SaveFileFromString(backend, tfDirectory, "terraform.tf"); err != nil {
-		return err
+		return errors.Wrap(err, "error saving content to terraform.tf")
 	}
 
 	if len(vars.EnvCompDependsOn) > 0 {
 		if err := fileService.SaveFileFromString(data, tfDirectory, "data.tf"); err != nil {
-			return err
+			return errors.Wrap(err, "error saving content to data.tf")
 		}
 	}
 
 	if err := fileService.SaveFileFromString(module, tfDirectory, "module.tf"); err != nil {
-		return err
+		return errors.Wrap(err, "error saving content to module.tf")
 	}
 
 	if len(vars.EnvCompOutputs) > 0 {
 		if err := fileService.SaveFileFromString(outputs, tfDirectory, "outputs.tf"); err != nil {
-			return err
+			return errors.Wrap(err, "error saving content to outputs.tf")
 		}
 	}
 
 	if err := fileService.SaveFileFromString(provider, tfDirectory, "provider.tf"); err != nil {
-		return err
+		return errors.Wrap(err, "error saving content to provider.tf")
 	}
 
 	if err := fileService.SaveFileFromString(sharedProvider, tfDirectory, "provider_shared.tf"); err != nil {
-		return err
+		return errors.Wrap(err, "error saving content to provider_shared.tf")
 	}
 
 	if len(vars.EnvCompSecrets) > 0 {
 		if err := fileService.SaveFileFromString(scrts, tfDirectory, "secrets.tf"); err != nil {
-			return err
+			return errors.Wrap(err, "error saving content to secrets.tf")
 		}
 	}
 
 	if err := fileService.SaveFileFromString(versions, tfDirectory, "versions.tf"); err != nil {
-		return err
+		return errors.Wrap(err, "error saving content to versions.tf")
 	}
 
 	return nil

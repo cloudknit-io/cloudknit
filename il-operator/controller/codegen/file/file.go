@@ -47,7 +47,7 @@ type API interface {
 	IsFile(path string) bool
 	FileExistsInDir(dir, path string) (bool, error)
 	ReadDir(path string) ([]fs.DirEntry, error)
-	CleanDir(path string) error
+	CleanDir(path string, exclude []string) error
 }
 
 type OSFileService struct{}
@@ -233,14 +233,11 @@ func (f *OSFileService) ReadDir(path string) ([]fs.DirEntry, error) {
 }
 
 // CleanDir cleans directory prior to generating files from controllers.
-func (f *OSFileService) CleanDir(dir string) (err error) {
+func (f *OSFileService) CleanDir(dir string, exclude []string) (err error) {
 	if !f.IsDir(dir) {
 		return nil
 	}
 	files, err := f.ReadDir(dir)
-
-	keeps := []string{".git"}
-
 	if err != nil {
 		return err
 	}
@@ -248,7 +245,7 @@ func (f *OSFileService) CleanDir(dir string) (err error) {
 	for _, file := range files {
 		keep := false
 
-		for _, k := range keeps {
+		for _, k := range exclude {
 			if file.Name() == k {
 				keep = true
 				break
@@ -269,7 +266,7 @@ func (f *OSFileService) CleanDir(dir string) (err error) {
 
 func saveBytesToFile(bytes []byte, folderName string, fileName string) error {
 	if err := os.MkdirAll(folderName, os.ModePerm); err != nil {
-		return fmt.Errorf("error: failed to create directory: %w", err)
+		return errors.Wrapf(err, "error recursively creating directories for path [%s] with perms [%s]", folderName, os.ModePerm)
 	}
 
 	return os.WriteFile(fmt.Sprintf("%s/%s", folderName, fileName), bytes, 0o600)
