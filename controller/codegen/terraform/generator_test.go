@@ -18,7 +18,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGenerateCustomTerraform(t *testing.T) {
+func TestGenerateCustomTerraformSingleOutput(t *testing.T) {
 	t.Parallel()
 
 	mockCtrl := gomock.NewController(t)
@@ -40,10 +40,57 @@ func TestGenerateCustomTerraform(t *testing.T) {
 	mockFileService.EXPECT().SaveFileFromString(expectedOutputs, testTFDirectory, "zl_autogen_outputs.tf")
 
 	log := logrus.NewEntry(logrus.New())
-	vars := &terraform.TemplateVariables{EnvironmentComponent: "test", EnvCompOutputs: []*v1.Output{{
-		Name:      "test_output",
-		Sensitive: false,
-	}}}
+	vars := &terraform.TemplateVariables{
+		EnvironmentComponent: "test",
+		EnvCompOutputs: []*v1.Output{
+			{
+				Name:      "test_output",
+				Sensitive: false,
+			},
+		},
+	}
+	err := terraform.GenerateCustomTerraform(mockFileService, mockGitClient, vars, testRepo, testPath, testTFDirectory, log)
+	assert.Nil(t, err)
+}
+
+func TestGenerateCustomTerraformMultipleOutputs(t *testing.T) {
+	t.Parallel()
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockFileService := file.NewMockAPI(mockCtrl)
+	mockGitClient := git.NewMockAPI(mockCtrl)
+
+	testRepo := "git@github.com:test/foo.git"
+	testPath := "/some/module"
+	testTFDirectory := "/tmp/some/dir"
+
+	mockGitClient.EXPECT().Clone(testRepo, gomock.Any()).Return(nil)
+	mockFileService.EXPECT().CopyDirContent(gomock.Any(), testTFDirectory, true).Return(nil)
+	expectedOutputs := `output "test_output1" {
+  	value = module.test.test_output1
+}
+output "test_output2" {
+  	value = module.test.test_output2
+}
+`
+	mockFileService.EXPECT().SaveFileFromString(expectedOutputs, testTFDirectory, "zl_autogen_outputs.tf")
+
+	log := logrus.NewEntry(logrus.New())
+	vars := &terraform.TemplateVariables{
+		EnvironmentComponent: "test",
+		EnvCompOutputs: []*v1.Output{
+			{
+				Name:      "test_output1",
+				Sensitive: false,
+			},
+			{
+				Name:      "test_output2",
+				Sensitive: false,
+			},
+		},
+	}
 	err := terraform.GenerateCustomTerraform(mockFileService, mockGitClient, vars, testRepo, testPath, testTFDirectory, log)
 	assert.Nil(t, err)
 }
