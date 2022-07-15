@@ -18,5 +18,6 @@ spec:
             backend:
               service:
                 name: zlifecycle-web-bff
-                port: http
+                port:
+                  number: 80
 {{- end }}
