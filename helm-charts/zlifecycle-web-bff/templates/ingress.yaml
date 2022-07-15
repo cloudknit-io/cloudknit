@@ -14,7 +14,9 @@ spec:
       http:
         paths:
           - path: {{ . }}
+            pathType: ImplementationSpecific
             backend:
-              serviceName: zlifecycle-web-bff
-              servicePort: http
+              service:
+                name: zlifecycle-web-bff
+                port: http
 {{- end }}
