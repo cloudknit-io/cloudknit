@@ -32,7 +32,7 @@ spec:
       script:
         imagePullPolicy: IfNotPresent
         image: "413422438110.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-terraform:{{.Values.imageTag}}"
-        cmd:
+        command:
           - sh
         source: |
           ./audit.sh '{{ printf "{{inputs.parameters.team_name}}" }}' '{{ printf "{{inputs.parameters.env_name}}" }}' "0" '{{ printf "{{inputs.parameters.status}}" }}' "0" '{{ printf "{{inputs.parameters.reconcile_id}}" }}' "0" '{{ printf "{{inputs.parameters.is_destroy}}" }}' '{{ printf "{{inputs.parameters.phase}}" }}' "noSkip" '{{ printf "{{inputs.parameters.customer_id}}" }}'
