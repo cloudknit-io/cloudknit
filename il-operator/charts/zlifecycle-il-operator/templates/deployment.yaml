@@ -17,6 +17,7 @@ spec:
         {{- include "core.labels" . | indent 8 }}
         control-plane: controller-manager
     spec:
+      hostNetwork: {{ .Values.operator.hostNetwork }}
       containers:
         - name: manager
           command:
