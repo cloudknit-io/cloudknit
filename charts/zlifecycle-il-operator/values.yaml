@@ -46,6 +46,7 @@ git:
     internalAuthMethod: ssh
 
 operator:
+  hostNetwork: false
   finalizer:
     environment:
       disabled: false
