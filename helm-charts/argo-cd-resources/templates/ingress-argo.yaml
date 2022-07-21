@@ -18,21 +18,30 @@ spec:
     http:
       paths:
       - path: {{ . }}
+        pathType: Prefix
         backend:
-          serviceName: argocd-{{ $.Values.company }}-server
-          servicePort: http
+          service:
+            name: argocd-{{ $.Values.company }}-server
+            port:
+              name: http
 {{- end }}
   - host: {{ .Values.argocd.web_domain }}
     http:
       paths:
       - path: /api/dex
+        pathType: Prefix
         backend:
-          serviceName: argocd-{{ .Values.company }}-server
-          servicePort: http
+          service:
+            name: argocd-{{ .Values.company }}-server
+            port:
+              name: http
   - host: {{ .Values.argocd.domain }}
     http:
       paths:
       - path: /api/v1/workflows
+        pathType: Prefix
         backend:
-          serviceName: argo-workflow-server
-          servicePort: 2746
+          service:
+            name: argo-workflow-server
+            port:
+              number: 2746
