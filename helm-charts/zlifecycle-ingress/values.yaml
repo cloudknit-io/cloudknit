@@ -2,5 +2,6 @@ alb:
   environment: dev
   instance: zCustomer-a
   domains: !!!COMMA SEPARATED STRING OF DOMAINS!!!
+  subnets: !!!COMMA SEPARATED STRING OF SUBNETS!!!
   certificate:
     arn: !!!CERTIFICATE ARN!!!
