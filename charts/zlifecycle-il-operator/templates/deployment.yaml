@@ -18,6 +18,9 @@ spec:
         control-plane: controller-manager
     spec:
       hostNetwork: {{ .Values.operator.hostNetwork }}
+      {{- if .Values.operator.hostNetwork }}
+      dnsPolicy: ClusterFirstWithHostNet
+      {{- end }}
       containers:
         - name: manager
           command:
