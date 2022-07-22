@@ -37,8 +37,6 @@ test-results/
 
 manager
 
-# go binary
-zlifecycle-il-operator
 
 # use `go mod tidy`
 vendor
