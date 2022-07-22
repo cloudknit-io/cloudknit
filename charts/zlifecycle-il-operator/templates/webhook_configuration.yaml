@@ -10,8 +10,8 @@ webhooks:
       - v1beta1
     clientConfig:
       service:
-        name: webhook-service
-        namespace: {{ .Values.company.config.name }}-system
+        name: {{ .Values.operator.webhooks.service.name }}
+        namespace: {{ .Values.operator.webhooks.service.namespace }}
         path: /validate-stable-compuzest-com-v1-environment
     namespaceSelector:
       matchExpressions:
@@ -36,8 +36,8 @@ webhooks:
       - v1beta1
     clientConfig:
       service:
-        name: webhook-service
-        namespace: {{ .Values.company.config.name }}-system
+        name: {{ .Values.operator.webhooks.service.name }}
+        namespace: {{ .Values.operator.webhooks.service.namespace }}
         path: /validate-stable-compuzest-com-v1-team
     namespaceSelector:
       matchExpressions:
@@ -71,8 +71,8 @@ webhooks:
       - v1beta1
     clientConfig:
       service:
-        name: webhook-service
-        namespace: {{ .Values.company.config.name }}-system
+        name: {{ .Values.operator.webhooks.service.name }}
+        namespace: {{ .Values.operator.webhooks.service.namespace }}
         path: /mutate-stable-compuzest-com-v1-environment
     namespaceSelector:
       matchExpressions:
@@ -97,8 +97,8 @@ webhooks:
       - v1beta1
     clientConfig:
       service:
-        name: webhook-service
-        namespace: {{ .Values.company.config.name }}-system
+        name: {{ .Values.operator.webhooks.service.name }}
+        namespace: {{ .Values.operator.webhooks.service.namespace }}
         path: /mutate-stable-compuzest-com-v1-team
     namespaceSelector:
       matchExpressions:
