@@ -2,6 +2,7 @@ package validator
 
 import (
 	"context"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/webhooks/api"
 
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/file"
@@ -151,4 +152,4 @@ func (v *TeamValidatorImpl) validateNames(t *v1.Team) field.ErrorList {
 	return allErrs
 }
 
-var _ v1.TeamValidator = (*TeamValidatorImpl)(nil)
+var _ api.TeamValidator = (*TeamValidatorImpl)(nil)

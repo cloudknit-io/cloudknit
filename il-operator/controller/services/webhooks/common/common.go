@@ -1,4 +1,4 @@
-package mutatingwebhook
+package common
 
 import (
 	"fmt"
@@ -8,7 +8,12 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 )
 
-func logErrors(verrors []gojsonschema.ResultError, log *logrus.Entry) {
+const (
+	EnvironmentCRDName = "environments.stable.compuzest.com"
+	TeamCRDName        = "teams.stable.compuzest.com"
+)
+
+func LogErrors(verrors []gojsonschema.ResultError, log *logrus.Entry) {
 	log.Error("error validating Environment CRD JSON schema")
 	for _, verr := range verrors {
 		// Err implements the ResultError interface
@@ -16,7 +21,7 @@ func logErrors(verrors []gojsonschema.ResultError, log *logrus.Entry) {
 	}
 }
 
-func stringifyValidationErrors(validationErrors []gojsonschema.ResultError) []string {
+func StringifyValidationErrors(validationErrors []gojsonschema.ResultError) []string {
 	stringErrors := make([]string, 0, len(validationErrors))
 	for _, e := range validationErrors {
 		stringErrors = append(stringErrors, e.String())
@@ -24,7 +29,7 @@ func stringifyValidationErrors(validationErrors []gojsonschema.ResultError) []st
 	return stringErrors
 }
 
-func buildValidationError(verrors []gojsonschema.ResultError) error {
+func BuildValidationError(verrors []gojsonschema.ResultError) error {
 	var msg string
 	for i, verr := range verrors {
 		if i == 0 {
@@ -36,7 +41,7 @@ func buildValidationError(verrors []gojsonschema.ResultError) error {
 	return errors.New(msg)
 }
 
-func validateJSONSchema(input []byte, schema string) (*gojsonschema.Result, error) {
+func ValidateJSONSchema(input []byte, schema string) (*gojsonschema.Result, error) {
 	schemaLoader := gojsonschema.NewStringLoader(schema)
 	documentLoader := gojsonschema.NewBytesLoader(input)
 

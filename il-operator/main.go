@@ -16,8 +16,10 @@ import (
 	"context"
 	_ "embed"
 	"flag"
-
-	"github.com/compuzest/zlifecycle-il-operator/controller/services/mutatingwebhook"
+	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/webhooks/mutating"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/webhooks/validating"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/file"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/apm"
@@ -168,34 +170,38 @@ func main() {
 	}
 
 	if env.Config.KubernetesDisableWebhooks != "true" {
-		setupLog.Info("Initializing webhook service")
-		environmentValidator := validator.NewEnvironmentValidatorImpl(mgr.GetClient(), file.NewOSFileService(), eventservice.NewService(env.Config.ZLifecycleEventServiceURL))
-		if err = (&stablev1.Environment{}).SetupWebhookWithManager(mgr, environmentValidator); err != nil {
-			setupLog.WithError(err).Panic("unable to create Environment webhook")
-		}
-		teamValidator := validator.NewTeamValidatorImpl(mgr.GetClient(), file.NewOSFileService(), eventservice.NewService(env.Config.ZLifecycleEventServiceURL))
-		if err = (&stablev1.Team{}).SetupWebhookWithManager(mgr, teamValidator); err != nil {
-			setupLog.WithError(err).Panic("unable to create Team webhook")
-		}
+		registerWebhooks(mgr)
 	}
 
-	hs := mgr.GetWebhookServer()
-	es := eventservice.NewService(env.Config.ZLifecycleEventServiceURL)
-	hs.Register(
-		"/mutate-stable-compuzest-com-v1-environment",
-		&webhook.Admission{Handler: mutatingwebhook.NewEnvironmentMutatingWebhook(mgr.GetClient(), es, setupLog.WithField("logger", "controllers.EnvironmentMutatingWebhook"))},
-	)
-	hs.Register(
-		"/mutate-stable-compuzest-com-v1-team",
-		&webhook.Admission{Handler: mutatingwebhook.NewTeamMutatingWebhook(mgr.GetClient(), es, setupLog.WithField("logger", "controllers.TeamMutatingWebhook"))},
-	)
-
 	// +kubebuilder:scaffold:builder
-
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.WithError(err).Panic("error running manager")
 	}
+}
+
+func registerWebhooks(mgr manager.Manager) {
+	environmentValidator := validator.NewEnvironmentValidatorImpl(mgr.GetClient(), file.NewOSFileService(), eventservice.NewService(env.Config.ZLifecycleEventServiceURL))
+	teamValidator := validator.NewTeamValidatorImpl(mgr.GetClient(), file.NewOSFileService(), eventservice.NewService(env.Config.ZLifecycleEventServiceURL))
+
+	hs := mgr.GetWebhookServer()
+	es := eventservice.NewService(env.Config.ZLifecycleEventServiceURL)
+	hs.Register(
+		fmt.Sprintf("/%s/validate-stable-compuzest-com-v1-environment", env.Config.CompanyName),
+		&webhook.Admission{Handler: validating.NewEnvironmentValidatingWebhook(environmentValidator, es, setupLog.WithField("logger", "controllers.EnvironmentValidatingWebhook"))},
+	)
+	hs.Register(
+		fmt.Sprintf("/%s/validate-stable-compuzest-com-v1-team", env.Config.CompanyName),
+		&webhook.Admission{Handler: validating.NewTeamValidatingWebhook(teamValidator, es, setupLog.WithField("logger", "controllers.TeamValidatingWebhook"))},
+	)
+	hs.Register(
+		fmt.Sprintf("/%s/mutate-stable-compuzest-com-v1-environment", env.Config.CompanyName),
+		&webhook.Admission{Handler: mutating.NewEnvironmentMutatingWebhook(mgr.GetClient(), es, setupLog.WithField("logger", "controllers.EnvironmentMutatingWebhook"))},
+	)
+	hs.Register(
+		fmt.Sprintf("/%s/mutate-stable-compuzest-com-v1-team", env.Config.CompanyName),
+		&webhook.Admission{Handler: mutating.NewTeamMutatingWebhook(mgr.GetClient(), es, setupLog.WithField("logger", "controllers.TeamMutatingWebhook"))},
+	)
 }
 
 func getWatchedNamespaces() []string {
