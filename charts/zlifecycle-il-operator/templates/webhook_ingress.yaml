@@ -9,13 +9,14 @@ metadata:
 spec:
   rules:
     {{- $routes := .Values.operator.webhooks.routes }}
+    {{- $company := .Values.company.config.name }}
     {{- range $endpoint := .Values.operator.webhooks.hosts }}
     - host: {{ $endpoint }}
       http:
         paths:
           {{- range $route := $routes }}
-          - path: {{ $route }}
-            pathType: Prefix
+          - path: /{{ $company }}/{{ $route }}
+            pathType: Exact
             backend:
               service:
                 name: webhook-service
@@ -23,3 +24,9 @@ spec:
                   number: 443
           {{- end }}
     {{- end }}
+  tls:
+    - hosts:
+        {{- range .Values.operator.webhooks.hosts }}
+        - {{ . }}
+        {{- end}}
+      secretName: {{ .Values.operator.webhooks.tls.secretName }}

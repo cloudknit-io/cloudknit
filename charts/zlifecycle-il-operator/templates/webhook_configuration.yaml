@@ -10,9 +10,9 @@ webhooks:
       - v1beta1
     clientConfig:
       service:
-        name: {{ .Values.operator.webhooks.service.name }}
-        namespace: {{ .Values.operator.webhooks.service.namespace }}
-        path: /validate-stable-compuzest-com-v1-environment
+        name: ingress-nginx-controller
+        namespace: kube-system
+        path: /{{ .Values.company.config.name }}/validate-stable-compuzest-com-v1-environment
     namespaceSelector:
       matchExpressions:
         - key: "zlifecycle.com/validation"
@@ -36,9 +36,9 @@ webhooks:
       - v1beta1
     clientConfig:
       service:
-        name: {{ .Values.operator.webhooks.service.name }}
-        namespace: {{ .Values.operator.webhooks.service.namespace }}
-        path: /validate-stable-compuzest-com-v1-team
+        name: ingress-nginx-controller
+        namespace: kube-system
+        path: /{{ .Values.company.config.name }}/validate-stable-compuzest-com-v1-team
     namespaceSelector:
       matchExpressions:
         - key: "zlifecycle.com/validation"
@@ -71,9 +71,9 @@ webhooks:
       - v1beta1
     clientConfig:
       service:
-        name: {{ .Values.operator.webhooks.service.name }}
-        namespace: {{ .Values.operator.webhooks.service.namespace }}
-        path: /mutate-stable-compuzest-com-v1-environment
+        name: ingress-nginx-controller
+        namespace: kube-system
+        path: /{{ .Values.company.config.name }}/mutate-stable-compuzest-com-v1-environment
     namespaceSelector:
       matchExpressions:
         - key: "zlifecycle.com/validation"
@@ -97,9 +97,9 @@ webhooks:
       - v1beta1
     clientConfig:
       service:
-        name: {{ .Values.operator.webhooks.service.name }}
-        namespace: {{ .Values.operator.webhooks.service.namespace }}
-        path: /mutate-stable-compuzest-com-v1-team
+        name: ingress-nginx-controller
+        namespace: kube-system
+        path: /{{ .Values.company.config.name }}/mutate-stable-compuzest-com-v1-team
     namespaceSelector:
       matchExpressions:
         - key: "zlifecycle.com/validation"
