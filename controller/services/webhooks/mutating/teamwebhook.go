@@ -1,7 +1,8 @@
-package mutatingwebhook
+package mutating
 
 import (
 	"context"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/webhooks/common"
 	"net/http"
 
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
@@ -15,10 +16,6 @@ import (
 
 	kClient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
-)
-
-const (
-	teamCRDName = "teams.stable.compuzest.com"
 )
 
 // TeamMutatingWebhook implements admission.DecoderInjector.
@@ -36,7 +33,6 @@ func NewTeamMutatingWebhook(kc kClient.Client, es eventservice.API, log *logrus.
 
 func (s *TeamMutatingWebhook) Handle(ctx context.Context, req admission.Request) admission.Response {
 	s.l.Infof("Mutating webhook received an admission request for Team object")
-	s.l.Infof(string(req.Object.Raw))
 
 	company := env.CompanyName()
 	team := gjson.GetBytes(req.Object.Raw, "spec.teamName").String()
@@ -74,7 +70,7 @@ func (s *TeamMutatingWebhook) Handle(ctx context.Context, req admission.Request)
 	}
 
 	s.l.WithField("schema", schema).Info("Fetched JSON schema for Team CRD")
-	result, err := validateJSONSchema(req.Object.Raw, schema)
+	result, err := common.ValidateJSONSchema(req.Object.Raw, schema)
 	if err != nil {
 		s.l.Errorf("error validating Team Custom Resource Definition JSON schema for company [%s] and team [%s]: %v", company, team, err)
 		event.Payload = []string{err.Error()}
@@ -85,12 +81,12 @@ func (s *TeamMutatingWebhook) Handle(ctx context.Context, req admission.Request)
 	}
 
 	if !result.Valid() {
-		logErrors(result.Errors(), s.l)
-		event.Payload = stringifyValidationErrors(result.Errors())
+		common.LogErrors(result.Errors(), s.l)
+		event.Payload = common.StringifyValidationErrors(result.Errors())
 		if err := s.es.Record(ctx, event, s.l); err != nil {
 			s.l.Errorf("error recording [%s] event for company [%s] and team [%s]: %v", event.EventType, company, team, err)
 		}
-		return admission.Errored(http.StatusBadRequest, buildValidationError(result.Errors()))
+		return admission.Errored(http.StatusBadRequest, common.BuildValidationError(result.Errors()))
 	}
 
 	s.l.Infof("Mutating Admission Request passed validation for Team object [%s]", req.Name)
@@ -109,12 +105,12 @@ func (s *TeamMutatingWebhook) getJSONSchema(ctx context.Context) (string, error)
 	}
 
 	for _, crd := range crdList.Items {
-		if crd.Name == teamCRDName {
+		if crd.Name == common.TeamCRDName {
 			return util.ToJSONString(crd.Spec.Versions[0].Schema.OpenAPIV3Schema), nil
 		}
 	}
 
-	return "", errors.Errorf("could not find CRD with name: %s", teamCRDName)
+	return "", errors.Errorf("could not find CRD with name: %s", common.TeamCRDName)
 }
 
 // InjectDecoder injects the decoder.

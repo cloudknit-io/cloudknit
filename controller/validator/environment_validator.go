@@ -3,6 +3,7 @@ package validator
 import (
 	"context"
 	"fmt"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/webhooks/api"
 	"regexp"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/file"
@@ -64,7 +65,7 @@ func (v *EnvironmentValidatorImpl) init(ctx context.Context) error {
 	return nil
 }
 
-var _ v1.EnvironmentValidator = (*EnvironmentValidatorImpl)(nil)
+var _ api.EnvironmentValidator = (*EnvironmentValidatorImpl)(nil)
 
 func (v *EnvironmentValidatorImpl) ValidateEnvironmentCreate(ctx context.Context, e *v1.Environment) error {
 	if err := v.init(ctx); err != nil {
