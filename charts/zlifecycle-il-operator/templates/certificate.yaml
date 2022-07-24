@@ -17,9 +17,12 @@ metadata:
 spec:
   # $(SERVICE_NAME) and $(SERVICE_NAMESPACE) will be substituted by kustomize
   dnsNames:
+    {{- range .Values.operator.webhooks.hosts }}
+    - {{ . }}
+    {{- end}}
     - webhook-service.{{ .Values.company.config.name }}-system.svc
     - webhook-service.{{ .Values.company.config.name }}-system.svc.cluster.local
   issuerRef:
     kind: Issuer
     name: selfsigned-issuer
-  secretName: webhook-server-cert # this secret will not be prefixed, since it's not managed by kustomize
+  secretName: {{ .Values.operator.webhooks.tls.secretName }} # this secret will not be prefixed, since it's not managed by kustomize
