@@ -109,5 +109,5 @@ spec:
         - name: cert
           secret:
             defaultMode: 420
-            secretName: webhook-server-cert
+            secretName: {{ .Values.operator.webhooks.tls.secretName }}
       terminationGracePeriodSeconds: 10
