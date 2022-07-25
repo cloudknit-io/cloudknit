@@ -4,9 +4,9 @@ metadata:
   name: zlifecycle-operator
   namespace: {{ .Values.company.config.name }}-system
   annotations:
-    kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/backend-protocol: HTTPS
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
 spec:
+  ingressClassName: nginx
   rules:
     {{- $routes := .Values.operator.webhooks.routes }}
     {{- $company := .Values.company.config.name }}
