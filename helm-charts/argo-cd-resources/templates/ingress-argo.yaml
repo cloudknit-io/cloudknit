@@ -4,7 +4,6 @@ kind: Ingress
 metadata:
   name: argocd
   annotations:
-    kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/backend-protocol: HTTP
     nginx.ingress.kubernetes.io/enable-cors: "true"
     nginx.ingress.kubernetes.io/cors-allow-methods: "PUT, GET, POST, OPTIONS"
@@ -12,6 +11,7 @@ metadata:
     nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
     nginx.ingress.kubernetes.io/cors-allow-origin: {{ .Values.corsAllowOrigin }}
 spec:
+  ingressClassName: nginx
   rules:
 {{- range $path := .Values.argocd.paths }}
   - host: {{ $.Values.argocd.domain }}
