@@ -3,7 +3,6 @@ kind: Ingress
 metadata:
   name: {{ .Values.alb.environment }}-{{ .Values.alb.instance }}-alb-public-ingress
   annotations:
-    kubernetes.io/ingress.class: "alb"
     external-dns.alpha.kubernetes.io/hostname: {{ .Values.alb.domains }}
     alb.ingress.kubernetes.io/load-balancer-name: {{ .Values.alb.environment }}-{{ .Values.alb.instance }}-public-alb
     alb.ingress.kubernetes.io/scheme: "internet-facing"
@@ -16,20 +15,21 @@ metadata:
     alb.ingress.kubernetes.io/healthcheck-path: "/"
     alb.ingress.kubernetes.io/success-codes: "200,404"
 spec:
-    rules:
-    - http:
-        paths:
-         - path: /*
-           pathType: ImplementationSpecific
-           backend:
-             service:
-               name: ssl-redirect
-               port:
-                 name: use-annotation
-         - path: /*
-           pathType: ImplementationSpecific
-           backend:
-             service:
-               name: ingress-nginx-controller
-               port:
-                 name: http
+  ingressClassName: alb
+  rules:
+  - http:
+      paths:
+       - path: /*
+         pathType: ImplementationSpecific
+         backend:
+           service:
+             name: ssl-redirect
+             port:
+               name: use-annotation
+       - path: /*
+         pathType: ImplementationSpecific
+         backend:
+           service:
+             name: ingress-nginx-controller
+             port:
+               name: http
