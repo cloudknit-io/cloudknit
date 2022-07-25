@@ -52,6 +52,7 @@ operator:
       disabled: false
   webhooks:
     tls:
+      secretNamespace: cert-manager
       secretName: webhook-server-cert
     hosts:
       - ingress-nginx-controller.kube-system.svc.cluster.local

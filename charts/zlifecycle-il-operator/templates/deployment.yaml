@@ -17,8 +17,8 @@ spec:
         {{- include "core.labels" . | indent 8 }}
         control-plane: controller-manager
     spec:
-      hostNetwork: {{ .Values.operator.hostNetwork }}
       {{- if .Values.operator.hostNetwork }}
+      hostNetwork: {{ .Values.operator.hostNetwork }}
       dnsPolicy: ClusterFirstWithHostNet
       {{- end }}
       containers:

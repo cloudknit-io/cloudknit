@@ -4,7 +4,7 @@ metadata:
   name: {{ .Values.company.config.name }}-validating-webhook-configuration
   namespace: {{ .Values.company.config.name }}-system
   annotations:
-    cert-manager.io/inject-ca-from: {{ .Values.company.config.name }}-system/serving-cert
+    cert-manager.io/inject-ca-from: "cert-manager/{{ .Values.operator.webhooks.tls.secretName }}"
 webhooks:
   - admissionReviewVersions:
       - v1beta1
@@ -65,7 +65,7 @@ metadata:
   name: {{ .Values.company.config.name }}-mutating-webhook-configuration
   namespace: {{ .Values.company.config.name }}-system
   annotations:
-    cert-manager.io/inject-ca-from: {{ .Values.company.config.name }}-system/serving-cert
+    cert-manager.io/inject-ca-from: "cert-manager/{{ .Values.operator.webhooks.tls.secretName }}"
 webhooks:
   - admissionReviewVersions:
       - v1beta1
