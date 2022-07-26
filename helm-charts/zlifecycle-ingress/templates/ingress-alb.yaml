@@ -2,6 +2,8 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ .Values.alb.environment }}-{{ .Values.alb.instance }}-alb-public-ingress
+  labels:
+    kubernetes.io/ingress.class: alb
   annotations:
     external-dns.alpha.kubernetes.io/hostname: {{ .Values.alb.domains }}
     alb.ingress.kubernetes.io/load-balancer-name: {{ .Values.alb.environment }}-{{ .Values.alb.instance }}-public-alb
