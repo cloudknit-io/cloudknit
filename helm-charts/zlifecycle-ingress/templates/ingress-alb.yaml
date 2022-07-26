@@ -21,15 +21,15 @@ spec:
   rules:
   - http:
       paths:
-       - path: /
-         pathType: Prefix
+       - path: /*
+         pathType: ImplementationSpecific
          backend:
            service:
              name: ssl-redirect
              port:
                name: use-annotation
-       - path: /
-         pathType: Prefix
+       - path: /*
+         pathType: ImplementationSpecific
          backend:
            service:
              name: ingress-nginx-controller
