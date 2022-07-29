@@ -4,7 +4,7 @@ kind: Ingress
 metadata:
   name: argocd
   labels:
-    kubernetes.io/ingress.class: alb
+    kubernetes.io/ingress.class: nginx
   annotations:
     nginx.ingress.kubernetes.io/backend-protocol: HTTP
     nginx.ingress.kubernetes.io/enable-cors: "true"
