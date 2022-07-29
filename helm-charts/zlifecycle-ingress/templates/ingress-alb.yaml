@@ -25,13 +25,6 @@ spec:
          pathType: ImplementationSpecific
          backend:
            service:
-             name: ssl-redirect
-             port:
-               name: use-annotation
-       - path: /*
-         pathType: ImplementationSpecific
-         backend:
-           service:
              name: ingress-nginx-controller
              port:
                name: http
