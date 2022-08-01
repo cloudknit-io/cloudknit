@@ -21,6 +21,11 @@ ingressPaths:
   - "/error-api"
   - "/events"
 protocol:
+auth0:
+  baseUrl:
+  clientId:
+  issuerBaseUrl:
+  secret:
 argocd:
   openIdClientId:
   openIdClientSecret:
