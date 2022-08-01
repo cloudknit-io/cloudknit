@@ -9,15 +9,17 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-{{- range $path := .Values.ingressPaths }}
-    - host: {{ $.Values.domain }}
-      http:
-        paths:
-          - path: {{ . }}
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: zlifecycle-web-bff
-                port:
-                  number: 80
+{{- range $host := .Values.domains }}
+  {{- range $path := .Values.ingressPaths }}
+      - host: {{ $host }}
+        http:
+          paths:
+            - path: {{ $path }}
+              pathType: ImplementationSpecific
+              backend:
+                service:
+                  name: zlifecycle-web-bff
+                  port:
+                    number: 80
+  {{- end }}
 {{- end }}
