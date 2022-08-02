@@ -4,12 +4,7 @@ image:
   repository:
 # rename zcustomer with the client name
 domain:
-authdomain:
 company: !!!CompanyName!!!
-authIngressPaths:
-  - "/login"
-  - "/callback"
-  - "/logout"
 ingressPaths:
   - "/auth"
   - "/cd"
