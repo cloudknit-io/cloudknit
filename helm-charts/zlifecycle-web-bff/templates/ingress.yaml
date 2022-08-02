@@ -10,7 +10,7 @@ spec:
   ingressClassName: nginx
   rules:
 {{- range $path := .Values.ingressPaths }}
-    - host: {{ .Values.domain }}
+    - host: {{ $.Values.domain }}
       http:
         paths:
           - path: {{ . }}
@@ -22,7 +22,7 @@ spec:
                   number: 80
 {{- end }}
 {{- range $path := .Values.authIngressPaths }}
-    - host: {{ .Values.authdomain }}
+    - host: {{ $.Values.authdomain }}
       http:
         paths:
           - path: {{ . }}
