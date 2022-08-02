@@ -9,7 +9,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-{{- range $host := .Values.domains }}
+{{- range $host := splitList "," .Values.domains }}
   {{- range $path := .Values.ingressPaths }}
       - host: {{ $host }}
         http:
