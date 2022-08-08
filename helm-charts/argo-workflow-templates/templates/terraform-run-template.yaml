@@ -70,6 +70,8 @@ spec:
             '{{ printf "{{inputs.parameters.use_custom_state}}" }}' \
             '{{ printf "{{inputs.parameters.custom_state_bucket}}" }}' \
             '{{ printf "{{inputs.parameters.custom_state_lock_table}}" }}'
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
         env:
           - name: CUSTOMER_AWS_ACCESS_KEY_ID
             valueFrom:

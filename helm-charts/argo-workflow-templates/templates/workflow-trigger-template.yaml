@@ -240,6 +240,8 @@ spec:
               secretKeyRef:
                 name: argocd-creds
                 key: ARGOCD_PASSWORD
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
       volumes:
         - name: tmp
           emptyDir: {}

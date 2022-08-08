@@ -1,3 +1,10 @@
 imageTag: latest
 serviceAccountName: zlifecycle-reconciler
 companyName: !!!CompanyName!!!
+resources:
+  requests:
+    memory: 64Mi
+    cpu: 50m
+  limits:
+    memory: 162Mi
+    cpu: 100m

@@ -36,6 +36,8 @@ spec:
           - sh
         source: |
           ./audit.sh '{{ printf "{{inputs.parameters.team_name}}" }}' '{{ printf "{{inputs.parameters.env_name}}" }}' "0" '{{ printf "{{inputs.parameters.status}}" }}' "0" '{{ printf "{{inputs.parameters.reconcile_id}}" }}' "0" '{{ printf "{{inputs.parameters.is_destroy}}" }}' '{{ printf "{{inputs.parameters.phase}}" }}' "noSkip" '{{ printf "{{inputs.parameters.customer_id}}" }}'
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
         env:
           - name: ARGOCD_PASSWORD
             valueFrom:
