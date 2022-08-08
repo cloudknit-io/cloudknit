@@ -35,7 +35,9 @@ spec:
               value: {{ .Values.environment }}
             - name: __DOCKER_REACT_APP_ENABLED_FEATURE_FLAGS__
               value: {{ .Values.enabledFeatureFlags }}
-          image: {{ .Values.image.repository }}/{{ .Values.image.name }}:{{ .Values.image.tag }}
+          image: "{{ .Values.image.repository }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
           ports:
             - containerPort: 8080
           imagePullPolicy: Always
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

@@ -52,10 +52,12 @@ spec:
           envFrom:
             - secretRef:
                 name: zlifecycle-web-bff-development
-          image: {{ .Values.image.repository }}/{{ .Values.image.name }}:{{ .Values.image.tag }}
+          image: "{{ .Values.image.repository }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
           ports:
             - containerPort: 8080
           command: [ "/bin/sh", "-c" ]
           args:
             - NODE_ENV=development npm run server
           imagePullPolicy: Always
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
