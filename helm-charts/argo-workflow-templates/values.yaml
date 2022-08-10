@@ -4,7 +4,7 @@ companyName: !!!CompanyName!!!
 resources:
   requests:
     memory: 150Mi
-    cpu: 125m
+    cpu: 150m
   limits:
     memory: 400Mi
-    cpu: 300m
+    cpu: 400m
