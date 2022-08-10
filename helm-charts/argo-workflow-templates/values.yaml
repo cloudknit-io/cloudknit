@@ -3,8 +3,8 @@ serviceAccountName: zlifecycle-reconciler
 companyName: !!!CompanyName!!!
 resources:
   requests:
-    memory: 200Mi
-    cpu: 150m
+    memory: 150Mi
+    cpu: 75m
   limits:
     memory: 350Mi
-    cpu: 250m
+    cpu: 200m
