@@ -44,7 +44,7 @@ spec:
           - name: custom_state_lock_table
       serviceAccountName: {{.Values.serviceAccountName}}
       script:
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         image: "413422438110.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-terraform:{{.Values.imageTag}}"
         command:
           - sh
