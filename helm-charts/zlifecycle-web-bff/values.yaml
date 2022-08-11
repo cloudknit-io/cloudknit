@@ -37,8 +37,8 @@ zlifecycleStateManagerUrl: http://zlifecycle-state-manager.zlifecycle-il-operato
 zlifecycleEventApiUrl: http://event-service.zbank-system.svc.cluster.local
 resources:
   limits:
-    cpu: 200m
-    memory: 256Mi
+    cpu: 250m
+    memory: 350Mi
   requests:
     cpu: 100m
-    memory: 128Mi
+    memory: 150Mi
