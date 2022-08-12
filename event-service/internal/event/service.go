@@ -76,8 +76,10 @@ func GetFamilyForType(eventType Type) (Family, error) {
 		[]Type{
 			EnvironmentSpecValidationSuccess,
 			EnvironmentSchemaValidationSuccess,
+			EnvironmentReconcileSuccess,
 			TeamSpecValidationSuccess,
 			TeamSchemaValidationSuccess,
+			TeamReconcileSuccess,
 		},
 	)
 	isValidationError := util.IsInSlice(
@@ -85,8 +87,10 @@ func GetFamilyForType(eventType Type) (Family, error) {
 		[]Type{
 			EnvironmentSpecValidationError,
 			EnvironmentSchemaValidationError,
+			EnvironmentReconcileError,
 			TeamSpecValidationError,
 			TeamSchemaValidationError,
+			TeamReconcileError,
 		},
 	)
 	switch {
@@ -107,10 +111,14 @@ func IsValidationEvent(eventType Type) bool {
 			EnvironmentSpecValidationSuccess,
 			EnvironmentSchemaValidationError,
 			EnvironmentSchemaValidationSuccess,
+			EnvironmentReconcileSuccess,
+			EnvironmentReconcileError,
 			TeamSpecValidationError,
 			TeamSpecValidationSuccess,
 			TeamSchemaValidationError,
 			TeamSchemaValidationSuccess,
+			TeamReconcileSuccess,
+			TeamReconcileError,
 		},
 	)
 }

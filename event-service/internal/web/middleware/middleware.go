@@ -1,6 +1,9 @@
 package middleware
 
 import (
+	"github.com/sirupsen/logrus"
+	"io"
+	"io/ioutil"
 	"mime"
 	"net/http"
 	"strings"
@@ -46,15 +49,42 @@ func TimeoutHandler(h http.Handler) http.Handler {
 func LoggerHandler(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		l := zlog.NewCtxEntry(r.Context())
-		if strings.HasPrefix(r.URL.Path, "/health") {
+
+		if !shouldLog(r.URL.Path) {
 			h.ServeHTTP(w, r)
 			return
 		}
+
+		if r.Method != http.MethodGet && r.Body != nil {
+			logBody(r, l)
+		}
+
 		start := time.Now()
 		l.Debugf("REQUEST START %s %s", r.Method, r.URL.Path)
 		h.ServeHTTP(w, r)
 		l.Debugf("REQUEST END %s %s %v", r.Method, r.URL.Path, time.Since(start))
 	})
+}
+
+func shouldLog(path string) bool {
+	nonLogablePaths := []string{"/health"}
+	for _, p := range nonLogablePaths {
+		if strings.HasPrefix(path, p) {
+			return false
+		}
+	}
+	return true
+}
+
+func logBody(r *http.Request, l *logrus.Entry) {
+	pr, pw := io.Pipe()
+	tee := io.TeeReader(r.Body, pw)
+	r.Body = pr
+	go func() {
+		body, _ := ioutil.ReadAll(tee)
+		defer pw.Close()
+		l.Debugf("REQUEST BODY:\n %s", string(body))
+	}()
 }
 
 func RecoverHandler(next http.Handler) http.Handler {

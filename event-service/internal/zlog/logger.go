@@ -2,7 +2,6 @@ package zlog
 
 import (
 	"context"
-
 	"github.com/compuzest/zlifecycle-event-service/internal/env"
 
 	"github.com/newrelic/go-agent/v3/integrations/logcontext/nrlogrusplugin"
@@ -28,6 +27,7 @@ func initLogger() *log.Logger {
 	if env.Config().DevMode != "true" {
 		l.SetFormatter(nrlogrusplugin.ContextFormatter{})
 	} else {
+		l.Level = log.DebugLevel
 		l.SetFormatter(&log.TextFormatter{FullTimestamp: true})
 	}
 
