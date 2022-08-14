@@ -63,7 +63,7 @@ func validateEventType(eventType string) error {
 		return errors.New("eventType cannot be empty")
 	}
 
-	if !IsValidationEvent(Type(eventType)) {
+	if !isSupportedEvent(Type(eventType)) {
 		return errors.Errorf("unsupported event type: %s", eventType)
 	}
 

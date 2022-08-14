@@ -97,6 +97,7 @@ func initRESTRouter(svcs *services.Services, l *logrus.Entry) (*mux.Router, erro
 		if err != nil {
 			return nil, errors.Wrap(err, "error initializing New Relic APM")
 		}
+		r.HandleFunc(newrelic.WrapHandleFunc(app, "/admin/db", controllers.AdminDatabaseHandler(svcs)))
 		r.HandleFunc(newrelic.WrapHandleFunc(app, "/events", controllers.EventsHandler(svcs)))
 		r.HandleFunc(newrelic.WrapHandleFunc(app, "/status", controllers.StatusHandler(svcs, l)))
 		r.HandleFunc(newrelic.WrapHandleFunc(app, "/health/liveness", controllers.HealthHandler(svcs, false)))
@@ -105,6 +106,7 @@ func initRESTRouter(svcs *services.Services, l *logrus.Entry) (*mux.Router, erro
 		r.Handle(newrelic.WrapHandle(app, "/docs", sh))
 	} else {
 		l.Info("Initializing REST router without APM")
+		r.HandleFunc("/admin/db", controllers.AdminDatabaseHandler(svcs))
 		r.HandleFunc("/events", controllers.EventsHandler(svcs))
 		r.HandleFunc("/status", controllers.StatusHandler(svcs, l))
 		r.HandleFunc("/health/liveness", controllers.HealthHandler(svcs, false))

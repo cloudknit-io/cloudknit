@@ -1,15 +1,18 @@
 package status
 
-import "github.com/compuzest/zlifecycle-event-service/internal/event"
+import (
+	"github.com/compuzest/zlifecycle-event-service/internal/event"
+	"time"
+)
 
 const (
-	StatusOK      Type = "ok"
-	StatusUnknown Type = "unknown"
-	StatusError   Type = "error"
+	StateOK      State = "ok"
+	StateUnknown State = "unknown"
+	StateError   State = "error"
 )
 
 type (
-	Type     string
+	State    string
 	Response struct {
 		TeamsStatus       TeamStatusMap        `json:"teamsStatus"`
 		EnvironmentStatus EnvironmentStatusMap `json:"environmentStatus"`
@@ -24,6 +27,7 @@ type (
 	}
 	EnvironmentStatusMap     map[string]map[string]*EnvironmentStatus
 	GroupedEnvironmentEvents map[string]map[string][]*event.Event
+	GroupedEventsByFamily    map[event.Family][]*event.Event
 	EnvironmentStatus        struct {
 		Object      string        `json:"object"`
 		Company     string        `json:"company"`
@@ -32,10 +36,16 @@ type (
 		Status      *ObjectStatus `json:"status"`
 	}
 	ObjectStatus struct {
-		Events []*event.Event `json:"events"`
-		Object string         `json:"object"`
-		Meta   any            `json:"meta"`
-		Status Type           `json:"status"`
-		Errors []string       `json:"errors,omitempty"`
+		Events []*event.Event           `json:"events"`
+		Object string                   `json:"object"`
+		Meta   any                      `json:"meta"`
+		Status map[event.Family]*Status `json:"status"`
 	}
 )
+
+type Status struct {
+	State     State        `json:"state"`
+	Family    event.Family `json:"family"`
+	Errors    []string     `json:"errors,omitempty"`
+	Timestamp time.Time    `json:"timestamp"`
+}

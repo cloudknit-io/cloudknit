@@ -93,7 +93,7 @@ func (s *Service) getListStmt(scope Scope, filter Filter) (stmt *sqlx.NamedStmt,
 
 func (s *Service) sqlInsertEvent() (*sqlx.NamedStmt, error) {
 	return s.db.PrepareNamed(
-		"INSERT INTO event(id, scope, object, meta, event_type, event_family, created_at, payload, debug) VALUES(:id, :scope, :object, :meta, :event_type, :event_family, :created_at, :payload, :debug)",
+		"INSERT INTO event(id, scope, object, meta, event_type, family, created_at, payload, debug) VALUES(:id, :scope, :object, :meta, :event_type, :family, :created_at, :payload, :debug)",
 	)
 }
 

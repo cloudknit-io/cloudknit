@@ -4,7 +4,7 @@ CREATE TABLE event(
 										object TEXT NOT NULL,
 										meta JSON,
 										event_type TEXT NOT NULL,
-										event_family TEXT NOT NULL,
+										family TEXT NOT NULL,
 										created_at TIMESTAMP NOT NULL,
 										payload JSON,
 										debug JSON

@@ -184,22 +184,60 @@ func extractEventsForScope(events []*event.Event, scope event.Scope) []*event.Ev
 }
 
 func NewObjectStatus(events []*event.Event, entries int) (*ObjectStatus, error) {
-	status := StatusOK
-	latest := events[0]
-	isErrorEvent := latest.EventFamily == event.FamilyValidationError
-	var errorMessages []string
-	if isErrorEvent {
-		status = StatusError
-		if err := util.CycleJSON(latest.Payload, &errorMessages); err != nil {
-			return nil, errors.Wrapf(err, "error unmarshalling event [%s] payload", events[0].ID)
-		}
+	status, err := newGroupedStatusByFamily(events)
+	if err != nil {
+		return nil, err
 	}
+	latest := events[0]
 	return &ObjectStatus{
 		Events: util.Truncate(events, entries),
 		Object: latest.Object,
 		Meta:   latest.Meta,
 		Status: status,
-		Errors: errorMessages,
+	}, nil
+}
+
+func newGroupedStatusByFamily(events []*event.Event) (map[event.Family]*Status, error) {
+	statusMap := make(map[event.Family]*Status)
+	grouped := groupEventsByFamily(events)
+
+	for family, groupedEvents := range grouped {
+		sortEventsByDescTimestamp(groupedEvents)
+		status, err := newStatus(groupedEvents, family)
+		if err != nil {
+			return nil, err
+		}
+		statusMap[family] = status
+	}
+
+	return statusMap, nil
+}
+
+func groupEventsByFamily(events []*event.Event) GroupedEventsByFamily {
+	grouped := make(GroupedEventsByFamily)
+
+	for _, e := range events {
+		grouped[e.Family] = append(grouped[e.Family], e)
+	}
+
+	return grouped
+}
+
+func newStatus(events []*event.Event, family event.Family) (*Status, error) {
+	state := StateOK
+	latest := events[0]
+	var errorMessages []string
+	if event.IsErrorEvent(latest.EventType) {
+		state = StateError
+		if err := util.CycleJSON(latest.Payload, &errorMessages); err != nil {
+			return nil, errors.Wrapf(err, "error unmarshalling event [%s] payload", events[0].ID)
+		}
+	}
+	return &Status{
+		State:     state,
+		Family:    family,
+		Errors:    errorMessages,
+		Timestamp: latest.CreatedAt,
 	}, nil
 }
 

@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"github.com/compuzest/zlifecycle-event-service/internal/admin"
 	"github.com/sirupsen/logrus"
 
 	"github.com/compuzest/zlifecycle-event-service/internal/status"
@@ -15,6 +16,7 @@ import (
 )
 
 type Services struct {
+	AS        admin.API
 	ES        event.API
 	HS        health.API
 	SS        status.API
@@ -30,7 +32,8 @@ func NewServices(l *logrus.Entry) (*Services, error) {
 	es := event.NewService(sqldb)
 	hs := health.NewService(sqldb)
 	ss := status.NewService(es, sqldb)
+	as := admin.NewService(sqldb)
 	sseBroker := stream.NewService(l)
 
-	return &Services{ES: es, HS: hs, SS: ss, SSEBroker: sseBroker}, nil
+	return &Services{AS: as, ES: es, HS: hs, SS: ss, SSEBroker: sseBroker}, nil
 }

@@ -34,20 +34,20 @@ const (
 	TeamSchemaValidationSuccess        Type   = "team_schema_validation_success"
 	TeamReconcileSuccess               Type   = "team_reconcile_success"
 	TeamReconcileError                 Type   = "team_reconcile_error"
-	FamilyValidationError              Family = "validation_error"
-	FamilyValidationSuccess            Family = "validation_success"
+	FamilyValidation                   Family = "validation"
+	FamilyReconcile                    Family = "reconcile"
 )
 
 type Event struct {
-	ID          string          `json:"id" db:"id"`
-	Scope       Scope           `json:"scope" db:"scope"`
-	Object      string          `json:"object" db:"object"`
-	Meta        json.RawMessage `json:"meta" db:"meta"`
-	CreatedAt   time.Time       `json:"createdAt" db:"created_at"`
-	EventType   Type            `json:"eventType" db:"event_type"`
-	EventFamily Family          `json:"eventFamily" db:"event_family"`
-	Payload     json.RawMessage `json:"payload" db:"payload"`
-	Debug       any             `json:"debug" db:"debug"`
+	ID        string          `json:"id" db:"id"`
+	Scope     Scope           `json:"scope" db:"scope"`
+	Object    string          `json:"object" db:"object"`
+	Meta      json.RawMessage `json:"meta" db:"meta"`
+	CreatedAt time.Time       `json:"createdAt" db:"created_at"`
+	EventType Type            `json:"eventType" db:"event_type"`
+	Family    Family          `json:"family" db:"family"`
+	Payload   json.RawMessage `json:"payload" db:"payload"`
+	Debug     any             `json:"debug" db:"debug"`
 }
 
 type Meta struct {
@@ -62,15 +62,15 @@ func NewEvent(scope Scope, object string, meta *Meta, payload any, eventType Typ
 		return nil, errors.Wrap(err, "error decoding event family from event type")
 	}
 	return &Event{
-		ID:          uuid.New().String(),
-		Object:      object,
-		Scope:       scope,
-		Meta:        util.ToJSONBytes(meta, false),
-		CreatedAt:   time.Now(),
-		EventType:   eventType,
-		EventFamily: family,
-		Payload:     util.ToJSONBytes(payload, false),
-		Debug:       debug,
+		ID:        uuid.New().String(),
+		Object:    object,
+		Scope:     scope,
+		Meta:      util.ToJSONBytes(meta, false),
+		CreatedAt: time.Now(),
+		EventType: eventType,
+		Family:    family,
+		Payload:   util.ToJSONBytes(payload, false),
+		Debug:     debug,
 	}, nil
 }
 

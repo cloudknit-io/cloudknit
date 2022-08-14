@@ -71,18 +71,46 @@ func (s *Service) List(ctx context.Context, p *ListPayload, log *logrus.Entry) (
 }
 
 func GetFamilyForType(eventType Type) (Family, error) {
-	isValidationSuccess := util.IsInSlice(
+	switch {
+	case isValidationEvent(eventType):
+		return FamilyValidation, nil
+	case isReconcileEvent(eventType):
+		return FamilyReconcile, nil
+	default:
+		return "", errors.Errorf("invalid event type: %s", eventType)
+	}
+}
+
+func isValidationEvent(eventType Type) bool {
+	return util.IsInSlice(
 		eventType,
 		[]Type{
 			EnvironmentSpecValidationSuccess,
 			EnvironmentSchemaValidationSuccess,
-			EnvironmentReconcileSuccess,
+			EnvironmentSpecValidationError,
+			EnvironmentSchemaValidationError,
 			TeamSpecValidationSuccess,
 			TeamSchemaValidationSuccess,
-			TeamReconcileSuccess,
+			TeamSpecValidationError,
+			TeamSchemaValidationError,
 		},
 	)
-	isValidationError := util.IsInSlice(
+}
+
+func isReconcileEvent(eventType Type) bool {
+	return util.IsInSlice(
+		eventType,
+		[]Type{
+			EnvironmentReconcileSuccess,
+			EnvironmentReconcileError,
+			TeamReconcileSuccess,
+			TeamReconcileError,
+		},
+	)
+}
+
+func IsErrorEvent(eventType Type) bool {
+	return util.IsInSlice(
 		eventType,
 		[]Type{
 			EnvironmentSpecValidationError,
@@ -93,17 +121,9 @@ func GetFamilyForType(eventType Type) (Family, error) {
 			TeamReconcileError,
 		},
 	)
-	switch {
-	case isValidationSuccess:
-		return FamilyValidationSuccess, nil
-	case isValidationError:
-		return FamilyValidationError, nil
-	default:
-		return "", errors.Errorf("invalid event type: %s", eventType)
-	}
 }
 
-func IsValidationEvent(eventType Type) bool {
+func isSupportedEvent(eventType Type) bool {
 	return util.IsInSlice(
 		eventType,
 		[]Type{
