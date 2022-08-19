@@ -17,9 +17,9 @@ ingressPaths:
   - "/terraform-external"
   - "/state"
   - "/company"
-  - "/registration"
   - "/error-api"
   - "/events"
+  - "/users"
 protocol:
 auth0:
   baseUrl:
