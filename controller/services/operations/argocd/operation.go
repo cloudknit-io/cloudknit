@@ -215,8 +215,35 @@ func UpdateDefaultClusterNamespaces(log *logrus.Entry, api argocdapi.API, namesp
 	return nil
 }
 
-func TryCreateProject(ctx context.Context, api argocdapi.API, log *logrus.Entry, name string, group string) (exists bool, err error) {
-	l := log.WithField("project", name)
+func TryCreateBlankProject(ctx context.Context, api argocdapi.API, log *logrus.Entry, project, namespace string) (exists bool, err error) {
+	l := log.WithField("project", project)
+
+	tokenResponse, err := api.GetAuthToken()
+	if err != nil {
+		return false, errors.Wrap(err, "error getting auth token")
+	}
+	bearer := toBearerToken(tokenResponse.Token)
+
+	l.Infof("Checking does AppProject [%s] already exist", project)
+	exists, resp1, err1 := api.DoesProjectExist(project, bearer)
+	if err1 != nil {
+		return false, errors.Wrapf(err1, "error checking does argocd project [%s] exists", project)
+	}
+	defer util.CloseBody(resp1.Body)
+
+	body := argocdapi.CreateProjectBody{Project: toBlankProject(project, namespace)}
+	l.Infof("ArgoCD AppProject does not exist with name [%s], creating new one", project)
+	resp2, err2 := api.CreateProject(&body, bearer)
+	if err2 != nil {
+		return false, errors.Wrapf(err2, "error creating argocd project %s", project)
+	}
+	defer util.CloseBody(resp2.Body)
+
+	return false, nil
+}
+
+func TryCreateProject(ctx context.Context, api argocdapi.API, log *logrus.Entry, project, namespace, group string) (exists bool, err error) {
+	l := log.WithField("project", project)
 
 	tokenResponse, err := api.GetAuthToken()
 	if err != nil {
@@ -225,22 +252,22 @@ func TryCreateProject(ctx context.Context, api argocdapi.API, log *logrus.Entry,
 	bearer := toBearerToken(tokenResponse.Token)
 
 	l.Info("Checking does AppProject already exist")
-	exists, resp1, err1 := api.DoesProjectExist(name, bearer)
+	exists, resp1, err1 := api.DoesProjectExist(project, bearer)
 	if err1 != nil {
-		return false, errors.Wrapf(err1, "error checking does argocd project [%s] exists", name)
+		return false, errors.Wrapf(err1, "error checking does argocd project [%s] exists", project)
 	}
 	defer util.CloseBody(resp1.Body)
 
 	if exists {
-		l.Info("ArgoCD AppProject already exist")
+		l.Infof("ArgoCD AppProject [%s] already exist", project)
 		return true, nil
 	}
 
-	body := argocdapi.CreateProjectBody{Project: toProject(name, group)}
-	l.Info("ArgoCD AppProject does not exist, creating new one")
+	body := argocdapi.CreateProjectBody{Project: toProject(project, namespace, group)}
+	l.Infof("ArgoCD AppProject does not exist with name [%s], creating new one", project)
 	resp2, err2 := api.CreateProject(&body, bearer)
 	if err2 != nil {
-		return false, errors.Wrap(err2, "error creating argocd project")
+		return false, errors.Wrapf(err2, "error creating argocd project %s", project)
 	}
 	defer util.CloseBody(resp2.Body)
 

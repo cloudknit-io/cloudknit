@@ -25,6 +25,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const localCluster = "https://kubernetes.default.svc"
+
+func CompanyProjectName() string {
+	return fmt.Sprintf("project-%s", env.Config.CompanyName)
+}
+
 func newTypeMeta() metav1.TypeMeta {
 	return metav1.TypeMeta{
 		APIVersion: "argoproj.io/v1alpha1",
@@ -76,13 +82,13 @@ func GenerateCompanyApp(company *stablev1.Company) *appv1.Application {
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: "default",
+			Project: CompanyProjectName(),
 			SyncPolicy: &appv1.SyncPolicy{
 				Automated: &appv1.SyncPolicyAutomated{
 					Prune: true,
 				},
 			},
-			Destination: newApplicationDestination("https://kubernetes.default.svc", "default"),
+			Destination: newApplicationDestination(localCluster, "default"),
 			Source:      newApplicationSource(env.Config.ILZLifecycleRepositoryURL, "./"+il.Config.TeamDirectory, false),
 		},
 		Status: newApplicationStatus(env.Config.ILZLifecycleRepositoryURL),
@@ -101,13 +107,13 @@ func GenerateTeamApp(team *stablev1.Team) *appv1.Application {
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: team.Spec.TeamName,
+			Project: CompanyProjectName(),
 			SyncPolicy: &appv1.SyncPolicy{
 				Automated: &appv1.SyncPolicyAutomated{
 					Prune: true,
 				},
 			},
-			Destination: newApplicationDestination("https://kubernetes.default.svc", "default"),
+			Destination: newApplicationDestination(localCluster, "default"),
 			Source:      newApplicationSource(env.Config.ILZLifecycleRepositoryURL, "./"+il.EnvironmentDirectoryPath(team.Spec.TeamName), false),
 		},
 		Status: newApplicationStatus(env.Config.ILZLifecycleRepositoryURL),
@@ -128,14 +134,14 @@ func GenerateEnvironmentApp(environment *stablev1.Environment) *appv1.Applicatio
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: environment.Spec.TeamName,
+			Project: CompanyProjectName(),
 			SyncPolicy: &appv1.SyncPolicy{
 				Automated: &appv1.SyncPolicyAutomated{
 					Prune:    true,
 					SelfHeal: true,
 				},
 			},
-			Destination: newApplicationDestination("https://kubernetes.default.svc", "default"),
+			Destination: newApplicationDestination(localCluster, "default"),
 			Source: newApplicationSource(
 				env.Config.ILZLifecycleRepositoryURL,
 				"./"+il.EnvironmentComponentsDirectoryPath(environment.Spec.TeamName, environment.Spec.EnvName),
@@ -193,13 +199,13 @@ func GenerateEnvironmentComponentApps(e *stablev1.Environment, ec *stablev1.Envi
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: e.Spec.TeamName,
+			Project: CompanyProjectName(),
 			SyncPolicy: &appv1.SyncPolicy{
 				Automated: &appv1.SyncPolicyAutomated{
 					Prune: true,
 				},
 			},
-			Destination: newApplicationDestination("https://kubernetes.default.svc", "default"),
+			Destination: newApplicationDestination(localCluster, "default"),
 			Source:      source,
 		},
 		Status: newApplicationStatus(env.Config.GitHelmChartsRepository),
@@ -245,14 +251,14 @@ func GenerateTeamConfigWatcherApp(team *stablev1.Team) *appv1.Application {
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: team.Spec.TeamName,
+			Project: CompanyProjectName(),
 			SyncPolicy: &appv1.SyncPolicy{
 				Automated: &appv1.SyncPolicyAutomated{
 					Prune: true,
 				},
 				Retry: &appv1.RetryStrategy{Limit: 1},
 			},
-			Destination: newApplicationDestination("https://kubernetes.default.svc", "default"),
+			Destination: newApplicationDestination(localCluster, "default"),
 			Source:      newApplicationSource(team.Spec.ConfigRepo.Source, team.Spec.ConfigRepo.Path, true),
 		},
 		Status: newApplicationStatus(team.Spec.ConfigRepo.Source),
@@ -271,14 +277,14 @@ func GenerateCompanyConfigWatcherApp(customerName string, companyConfigRepo stri
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: "default",
+			Project: CompanyProjectName(),
 			SyncPolicy: &appv1.SyncPolicy{
 				Automated: &appv1.SyncPolicyAutomated{
 					Prune: true,
 				},
 				Retry: &appv1.RetryStrategy{Limit: 1},
 			},
-			Destination: newApplicationDestination("https://kubernetes.default.svc", "default"),
+			Destination: newApplicationDestination(localCluster, "default"),
 			Source:      newApplicationSource(companyConfigRepo, companyConfigRepoPath, true),
 		},
 		Status: newApplicationStatus(companyConfigRepo),
@@ -297,13 +303,13 @@ func GenerateCompanyBootstrapApp() *appv1.Application {
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: "default",
+			Project: CompanyProjectName(),
 			SyncPolicy: &appv1.SyncPolicy{
 				Automated: &appv1.SyncPolicyAutomated{
 					Prune: true,
 				},
 			},
-			Destination: newApplicationDestination("https://kubernetes.default.svc", "default"),
+			Destination: newApplicationDestination(localCluster, "default"),
 			Source:      newApplicationSource(env.Config.ILZLifecycleRepositoryURL, "company", false),
 		},
 	}
@@ -321,13 +327,13 @@ func GenerateConfigWatcherBootstrapApp() *appv1.Application {
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: "default",
+			Project: CompanyProjectName(),
 			SyncPolicy: &appv1.SyncPolicy{
 				Automated: &appv1.SyncPolicyAutomated{
 					Prune: true,
 				},
 			},
-			Destination: newApplicationDestination("https://kubernetes.default.svc", "default"),
+			Destination: newApplicationDestination(localCluster, "default"),
 			Source:      newApplicationSource(env.Config.ILZLifecycleRepositoryURL, "config-watcher", false),
 		},
 	}

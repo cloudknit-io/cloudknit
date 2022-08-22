@@ -5,6 +5,8 @@ import (
 	"os"
 )
 
+const defaultArgocdNamespace = "argocd"
+
 type config struct {
 	App  string
 	Mode string
@@ -199,27 +201,33 @@ func CompanyName() string {
 }
 
 func APINamespace() string {
-	val, exists := os.LookupEnv("COMPANY_NAME")
-	if exists {
+	if val, exists := os.LookupEnv("MULTITENANT_NAMESPACE"); exists {
+		return val
+	}
+	if val, exists := os.LookupEnv("COMPANY_NAME"); exists {
 		return fmt.Sprintf("%s-system", val)
 	}
 	return "zlifecycle-ui"
 }
 
 func StateManagerNamespace() string {
-	val, exists := os.LookupEnv("COMPANY_NAME")
-	if exists {
+	if val, exists := os.LookupEnv("MULTITENANT_NAMESPACE"); exists {
+		return val
+	}
+	if val, exists := os.LookupEnv("COMPANY_NAME"); exists {
 		return fmt.Sprintf("%s-system", val)
 	}
 	return "zlifecycle-il-operator-system"
 }
 
 func ArgocdNamespace() string {
-	val, exists := os.LookupEnv("COMPANY_NAME")
-	if exists {
+	if val, exists := os.LookupEnv("MULTITENANT_NAMESPACE"); exists {
+		return val
+	}
+	if val, exists := os.LookupEnv("COMPANY_NAME"); exists {
 		return fmt.Sprintf("%s-system", val)
 	}
-	return "argocd"
+	return defaultArgocdNamespace
 }
 
 func ArgoWorkflowsNamespace() string {
@@ -227,12 +235,14 @@ func ArgoWorkflowsNamespace() string {
 	if exists {
 		return fmt.Sprintf("%s-executor", val)
 	}
-	return "argocd"
+	return defaultArgocdNamespace
 }
 
 func SystemNamespace() string {
-	val, exists := os.LookupEnv("COMPANY_NAME")
-	if exists {
+	if val, exists := os.LookupEnv("MULTITENANT_NAMESPACE"); exists {
+		return val
+	}
+	if val, exists := os.LookupEnv("COMPANY_NAME"); exists {
 		return fmt.Sprintf("%s-system", val)
 	}
 	return "zlifecycle-il-operator"
@@ -251,7 +261,7 @@ func ExecutorNamespace() string {
 	if exists {
 		return fmt.Sprintf("%s-executor", val)
 	}
-	return "argocd"
+	return defaultArgocdNamespace
 }
 
 func getOr(key string, defaultValue string) string {

@@ -180,7 +180,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
 	}
 
-	if _, err := argocd.TryCreateProject(apmCtx, watcherServices.ArgocdClient, r.LogV2, team.Spec.TeamName, env.Config.GitHubCompanyOrganization); err != nil {
+	if _, err := argocd.TryCreateProject(apmCtx, watcherServices.ArgocdClient, r.LogV2, team.Spec.TeamName, env.ArgocdNamespace(), env.Config.GitHubCompanyOrganization); err != nil {
 		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error trying to create argocd project"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
 	}

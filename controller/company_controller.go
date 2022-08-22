@@ -250,6 +250,10 @@ func (r *CompanyReconciler) initCompany(ctx context.Context, services *watcherse
 		r.LogV2.Fatalf("error updating argocd cluster namespaces: %v", err)
 	}
 
+	if _, err := argocd.TryCreateBlankProject(ctx, services.ArgocdClient, r.LogV2, env.Config.CompanyName, env.ArgocdNamespace()); err != nil {
+		r.LogV2.Fatalf("error creating argocd app project for company %s in namespace %s: %v", env.Config.CompanyName, env.ArgocdNamespace(), err)
+	}
+
 	r.LogV2.Info("Registering helm chart repo")
 	return services.InternalWatcher.Watch(env.Config.GitHelmChartsRepository)
 }

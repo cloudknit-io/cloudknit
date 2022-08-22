@@ -8,7 +8,7 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/aws/awseks"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/secret"
-	argocd2 "github.com/compuzest/zlifecycle-il-operator/controller/services/operations/argocd"
+	argocdapi "github.com/compuzest/zlifecycle-il-operator/controller/services/operations/argocd"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/terraform/tfvar"
 	"github.com/compuzest/zlifecycle-il-operator/controller/services/gitreconciler"
@@ -34,13 +34,13 @@ const (
 // COMPANY
 
 func generateAndSaveCompanyApp(fileAPI file.API, company *stablev1.Company, ilRepoDir string) error {
-	companyApp := argocd2.GenerateCompanyApp(company)
+	companyApp := argocdapi.GenerateCompanyApp(company)
 
 	return fileAPI.SaveYamlFile(*companyApp, il.CompanyDirectoryAbsolutePath(ilRepoDir), company.Spec.CompanyName+".yaml")
 }
 
 func generateAndSaveCompanyConfigWatcher(fileAPI file.API, company *stablev1.Company, ilRepoDir string) error {
-	companyConfigWatcherApp := argocd2.GenerateCompanyConfigWatcherApp(
+	companyConfigWatcherApp := argocdapi.GenerateCompanyConfigWatcherApp(
 		company.Spec.CompanyName,
 		company.Spec.ConfigRepo.Source,
 		company.Spec.ConfigRepo.Path,
@@ -52,18 +52,25 @@ func generateAndSaveCompanyConfigWatcher(fileAPI file.API, company *stablev1.Com
 // TEAM
 
 func generateAndSaveTeamApp(fileAPI file.API, team *stablev1.Team, filename string, ilRepoDir string) error {
-	teamApp := argocd2.GenerateTeamApp(team)
+	teamApp := argocdapi.GenerateTeamApp(team)
 
 	return fileAPI.SaveYamlFile(*teamApp, il.TeamDirectoryAbsolutePath(ilRepoDir), filename)
 }
 
 func generateAndSaveConfigWatchers(fileAPI file.API, team *stablev1.Team, filename string, ilRepoDir string) error {
-	teamConfigWatcherApp := argocd2.GenerateTeamConfigWatcherApp(team)
+	teamConfigWatcherApp := argocdapi.GenerateTeamConfigWatcherApp(team)
 
 	return fileAPI.SaveYamlFile(*teamConfigWatcherApp, il.ConfigWatcherDirectoryAbsolutePath(ilRepoDir), filename)
 }
 
 // ENVIRONMENT
+
+func generateAndSaveEnvironmentApp(fileService file.API, environment *stablev1.Environment, envDirectory string) error {
+	envApp := argocdapi.GenerateEnvironmentApp(environment)
+	envYAML := fmt.Sprintf("%s-environment.yaml", environment.Spec.EnvName)
+
+	return fileService.SaveYamlFile(*envApp, envDirectory, envYAML)
+}
 
 func generateAndSaveWorkflowOfWorkflows(
 	fileAPI file.API,
@@ -80,13 +87,6 @@ func generateAndSaveWorkflowOfWorkflows(
 
 	wrkflw := workflow.GenerateLegacyWorkflowOfWorkflows(environment, tfcfg)
 	return fileAPI.SaveYamlFile(*wrkflw, ilEnvComponentDirectory, "/wofw.yaml")
-}
-
-func generateAndSaveEnvironmentApp(fileService file.API, environment *stablev1.Environment, envDirectory string) error {
-	envApp := argocd2.GenerateEnvironmentApp(environment)
-	envYAML := fmt.Sprintf("%s-environment.yaml", environment.Spec.EnvName)
-
-	return fileService.SaveYamlFile(*envApp, envDirectory, envYAML)
 }
 
 func generateAndSaveEnvironmentComponents(
@@ -108,7 +108,7 @@ func generateAndSaveEnvironmentComponents(
 	}
 
 	for _, ec := range e.Spec.Components {
-		application := argocd2.GenerateEnvironmentComponentApps(e, ec)
+		application := argocdapi.GenerateEnvironmentComponentApps(e, ec)
 		if err := fileService.SaveYamlFile(*application, ecDirectory, fmt.Sprintf("%s.yaml", ec.Name)); err != nil {
 			return zerrors.NewEnvironmentComponentError(ec.Name, errors.Wrap(err, "error saving yaml file"))
 		}
@@ -230,7 +230,7 @@ func generateAppsComponent(
 	key *kClient.ObjectKey,
 	log *logrus.Entry,
 ) error {
-	info, err := argocd2.RegisterNewCluster(ctx, k8sClient, argocdClient, "dev-checkout-staging-eks", log)
+	info, err := argocdapi.RegisterNewCluster(ctx, k8sClient, argocdClient, "dev-checkout-staging-eks", log)
 	if err != nil {
 		return errors.Wrap(err, "error registering cluster %s for environment %s")
 	}
