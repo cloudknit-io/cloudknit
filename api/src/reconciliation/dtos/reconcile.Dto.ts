@@ -21,7 +21,7 @@ export class EvnironmentReconcileDto {
 
 export class ComponentReconcileDto {
   @ApiProperty()
-  id: string;
+  reconcileId: string;
   @ApiProperty()
   name: string
   @ApiProperty()

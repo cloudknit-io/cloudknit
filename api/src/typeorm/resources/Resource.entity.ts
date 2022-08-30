@@ -2,17 +2,18 @@ import {
   Column,
   Entity,
   JoinColumn,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryColumn,
 } from 'typeorm'
-import { Component } from '../costing/entities/Component'
+import { Component } from '../costing/Component'
+import { Organization } from '../Organization.entity';
 
 @Entity({
   name: 'resources',
 })
 export class Resource {
-
   @PrimaryColumn()
   id: string;
 
@@ -23,6 +24,7 @@ export class Resource {
     nullable: true
   })
   hourlyCost?: string
+
   @Column({
     nullable: true
   })
@@ -57,12 +59,19 @@ export class Resource {
   })
   component?: Component
 
-
   @OneToMany(() => CostComponent, (component) => component.resource, {
     cascade: true,
     eager: true,
   })
   costComponents?: CostComponent[]
+
+  @ManyToOne(() => Organization, (org) => org.id, {
+    onDelete: "CASCADE"
+  })
+  @JoinColumn({
+    referencedColumnName: 'id'
+  })
+  organization: Organization
 }
 
 @Entity({
@@ -76,26 +85,32 @@ export class CostComponent {
     nullable: true
   })
   hourlyCost?: string
+
   @Column({
     nullable: true
   })
   hourlyQuantity?: string
+
   @Column({
     nullable: true
   })
   monthlyCost?: string
+
   @Column({
     nullable: true
   })
   monthlyQuantity?: string
+
   @Column({
     nullable: true
   })
   name?: string
+
   @Column({
     nullable: true
   })
   price?: string
+  
   @Column({
     nullable: true
   })
@@ -108,4 +123,12 @@ export class CostComponent {
     referencedColumnName: 'id'
   })
   resource?: Resource
+
+  @ManyToOne(() => Organization, (org) => org.id, {
+    onDelete: "CASCADE"
+  })
+  @JoinColumn({
+    referencedColumnName: 'id'
+  })
+  organization: Organization
 }

@@ -1,11 +1,13 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { AWSError } from "aws-sdk";
 import { GetParametersByPathRequest, Parameter } from "aws-sdk/clients/ssm";
+import { Organization } from "src/typeorm";
 import { AwsSecretDto } from "./dtos/aws-secret.dto";
 import { AWSSSMHandler } from "./utilities/awsSsmHandler";
-
 @Injectable()
 export class SecretsService {
+  private readonly logger = new Logger(SecretsService.name);
+
   awsSecretSeparator = "[compuzest-shared]";
   k8sApi = null;
   ssm: AWSSSMHandler = null;
@@ -17,7 +19,7 @@ export class SecretsService {
     "state_aws_secret_access_key",
     "state_bucket",
     "state_lock_table"
-  ]);
+  ]);  
 
   constructor() {
     const k8s = require("@kubernetes/client-node");
@@ -27,64 +29,33 @@ export class SecretsService {
     this.ssm = AWSSSMHandler.instance();
   }
 
-  private async updateSecret(
-    client: any,
-    secret: any,
-    inputs: any,
-    namespace: string,
-    name: string
-  ) {
-    if (!secret) {
-      return client
-        .createNamespacedSecret(namespace, {
-          metadata: {
-            name,
-            namespace,
-          },
-          type: "Opaque",
-          data: inputs,
-        })
-        .then((x) => x.body);
-    }
-
-    secret.data = inputs;
-
-    return client
-      .replaceNamespacedSecret(name, namespace, secret)
-      .then((x) => x.body);
-  }
-
-  private stringToBase64(value: string) {
-    return Buffer.from(value).toString("base64");
-  }
-
-  private base64ToString(value: string) {
-    return Buffer.from(value, "base64").toString();
-  }
-
   private isConstKey(name: string) {
     const lastToken = name.split("/").slice(-1);
     return this.constKeys.has(lastToken[0]);
   }
 
+  private getPath(org: Organization, path: string) {
+    if (path) {
+      if (path[0] === "/") {
+        path = path.slice(1);
+      }
+
+      return `/${org.name}/${path}`;
+    } else {
+      return `/${org.name}`;
+    }
+  }
+
   private mapToKeyValue(data: Parameter) {
     const { Name, LastModifiedDate } = data;
-    const tokens = Name.split("/");
-    let key = "";
-    switch (tokens.length) {
-      case 3:
-        key = tokens[1];
-        break;
-      case 4:
-        key = `${tokens[1]}:${tokens[2]}`;
-        break;
-      case 5:
-        key = `${tokens[1]}:${tokens[2]}:${tokens[3]}`;
-        break;
-    }
+    
+    let tokens = Name.split("/");
+    tokens = tokens.slice(2); // removes org and preceding empty str
+    const value = tokens.pop();
+
     return {
-      key,
-      value: tokens.slice(-1)[0],
+      key: tokens.join(':'),
+      value,
       lastModifiedDate: LastModifiedDate
     };
   }
@@ -98,110 +69,10 @@ export class SecretsService {
     return null;
   }
 
-  private getCredentialFileInput(
-    credentials: string,
-    accessKeyId: string,
-    secretAccessKey: string
-  ) {
-    const decoded = this.base64ToString(credentials);
-    const splitTokens = decoded.split(this.awsSecretSeparator);
-    const updatedCreds = splitTokens[0].replace(
-      /aws_access_key_id = \S+\naws_secret_access_key = \S+/,
-      `aws_access_key_id = ${this.base64ToString(
-        accessKeyId
-      )}\naws_secret_access_key = ${this.base64ToString(secretAccessKey)}`
-    );
-    splitTokens[0] = updatedCreds;
-    return this.stringToBase64(splitTokens.join(this.awsSecretSeparator));
-  }
-
-  public async createOrUpdateSecret(
-    accessKeyId: string,
-    secretAccessKey: string
-  ) {
-    const credentials = await this.k8sApi
-      .readNamespacedSecret("aws-credentials-file", "argocd")
-      .then((x) => x.body)
-      .catch(() => null);
-
-    const secret2 = await this.k8sApi
-      .readNamespacedSecret("aws-creds", "argocd")
-      .then((x) => x.body)
-      .catch(() => null);
-
-    const updates = [];
-    updates.push(
-      this.updateSecret(
-        this.k8sApi,
-        secret2,
-        {
-          aws_access_key_id: accessKeyId,
-          aws_secret_access_key: secretAccessKey,
-        },
-        "argocd",
-        "aws-creds"
-      )
-    );
-
-    if (credentials) {
-      const encoded = this.getCredentialFileInput(
-        credentials.data.credentials,
-        accessKeyId,
-        secretAccessKey
-      );
-      updates.push(
-        this.updateSecret(
-          this.k8sApi,
-          credentials,
-          { credentials: encoded },
-          "argocd",
-          "aws-credentials-file"
-        )
-      );
-    }
-
-    const res = await Promise.all(updates);
-
-    return res;
-  }
-
-  public async secretExist() {
-    const credentials = await this.k8sApi
-      .readNamespacedSecret("aws-credentials-file", "argocd")
-      .then((x) => x.body)
-      .catch(() => null);
-
-    const secret2 = await this.k8sApi
-      .readNamespacedSecret("aws-creds", "argocd")
-      .then((x) => x.body)
-      .catch(() => null);
-
-    if (credentials && secret2) {
-      return true;
-    }
-    return false;
-  }
-
-  public async ssmSecretExists(pathName: string) {
-    try {
-      const awsRes = await this.ssm.getParameter({
-        Name: pathName,
-      });
-      return true;
-    } catch (err) {
-      const e = err as AWSError;
-      if (e.code === "ParameterNotFound") {
-        return false;
-      } else {
-        throw err;
-      }
-    }
-  }
-
-  public async ssmSecretsExists(pathNames: string[]) {
+  public async ssmSecretsExists(org: Organization, pathNames: string[]) {
     try {
       const awsRes = await this.ssm.getParameters({
-        Names: pathNames,
+        Names: pathNames.map((path) => this.getPath(org, path)),
       });
       const resp = [];
 
@@ -219,6 +90,7 @@ export class SecretsService {
           exists: false,
         }))
       );
+
       return resp;
     } catch (err) {
       const e = err as AWSError;
@@ -230,14 +102,16 @@ export class SecretsService {
     }
   }
 
-  public async getSsmSecretsByPath(path: string) {
+  public async getSsmSecretsByPath(org: Organization, path: string) {    
     try {
       const req: GetParametersByPathRequest = {
-        Path: path,
+        Path: this.getPath(org, path),
         WithDecryption: false,
         Recursive: false,
       };
+
       const awsRes = await this.ssm.getParametersByPath(req);
+
       return awsRes.Parameters.filter((e) => !this.isConstKey(e.Name)).map(
         (e) => this.mapToKeyValue(e)
       );
@@ -252,18 +126,21 @@ export class SecretsService {
   }
 
   public async getEnvironments(
+    org: Organization,
     path: string,
     environments: Map<string, string> = new Map<string, string>(),
     nextToken: string = null
   ) {
     try {
       const req: GetParametersByPathRequest = {
-        Path: path,
+        Path: this.getPath(org, path),
         WithDecryption: false,
         Recursive: true,
         NextToken: nextToken,
       };
+
       const awsRes = await this.ssm.getParametersByPath(req);
+      
       awsRes.Parameters.forEach((e) => {
         const env = this.mapToEnvironments(e);
         if (env) {
@@ -271,12 +148,15 @@ export class SecretsService {
         }
       });
       nextToken = awsRes.NextToken;
+
       if (nextToken) {
-        await this.getEnvironments(path, environments, nextToken);
+        await this.getEnvironments(org, path, environments, nextToken);
       }
+
       return [...environments.entries()];
     } catch (err) {
       const e = err as AWSError;
+      
       if (e.code === "ParameterNotFound") {
         return false;
       } else {
@@ -285,22 +165,25 @@ export class SecretsService {
     }
   }
 
-  public async putSsmSecrets(awsSecrets: AwsSecretDto[]) {
+  public async putSsmSecrets(org: Organization, awsSecrets: AwsSecretDto[]) {
     const awsCalls = awsSecrets.map((secret) =>
-      this.putSsmSecret(secret.path, secret.value, "SecureString")
+      this.putSsmSecret(org, secret.path, secret.value, "SecureString")
     );
+
     const responses = await Promise.all(awsCalls);
+
     return !responses.some((response) => response === false);
   }
 
   public async putSsmSecret(
+    org: Organization,
     pathName: string,
     value: string,
     type: "SecureString" | "StringList" | "String"
   ): Promise<boolean> {
     try {
       const awsRes = await this.ssm.putParameter({
-        Name: pathName,
+        Name: this.getPath(org, pathName),
         Value: value,
         Overwrite: true,
         Type: type,
@@ -316,10 +199,10 @@ export class SecretsService {
     }
   }
 
-  public async deleteSSMSecret(path: string) {
+  public async deleteSSMSecret(org: Organization, path: string) {
     try {
       const dp = await this.ssm.deleteParameter({
-        Name: path,
+        Name: this.getPath(org, path),
       });
       return dp;
     } catch (err) {

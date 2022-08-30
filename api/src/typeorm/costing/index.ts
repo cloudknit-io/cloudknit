@@ -1,3 +1,3 @@
-import { Component } from "./entities/Component";
+import { Component } from "./Component";
 
 export const costingEntities = [Component];

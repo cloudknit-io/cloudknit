@@ -1,0 +1,698 @@
+_type: export
+__export_format: 4
+__export_date: 2022-08-19T15:01:16.457Z
+__export_source: insomnia.desktop.app:v2022.5.0
+resources:
+  - _id: req_a9d3a4eb5bf549d7acd80193dd6e7b29
+    parentId: wrk_c63aa2e780d04feb95821acbc65618ae
+    modified: 1660239034625
+    created: 1660239031085
+    url: ""
+    name: Stream
+    description: ""
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication: {}
+    metaSortKey: -1660239031085
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: wrk_c63aa2e780d04feb95821acbc65618ae
+    parentId: null
+    modified: 1655993380947
+    created: 1655993380947
+    name: New Document
+    description: ""
+    scope: design
+    _type: workspace
+  - _id: req_0971cb1223584a5eb03a80a407a3718f
+    parentId: fld_37318a9f76d440a4839588d71f07d0b8
+    modified: 1657908754870
+    created: 1656878122741
+    url: "{{ _.baseUrl }}/v1/orgs/{{ _.orgId }}/costing/all"
+    name: All Components
+    description: ""
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication: {}
+    metaSortKey: -1656878122741
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: fld_37318a9f76d440a4839588d71f07d0b8
+    parentId: wrk_c63aa2e780d04feb95821acbc65618ae
+    modified: 1656878120183
+    created: 1656878120183
+    name: Costing
+    description: ""
+    environment: {}
+    environmentPropertyOrder: null
+    metaSortKey: -1656878120183
+    _type: request_group
+  - _id: req_39e90f6c13474ff3889f0be1a20dae0b
+    parentId: fld_37318a9f76d440a4839588d71f07d0b8
+    modified: 1658152368553
+    created: 1656879720071
+    url: "{{ _.baseUrl }}/v1/orgs/{{ _.orgId
+      }}/costing/component/equity-staging-platform-ec2"
+    name: Component Cost
+    description: ""
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication: {}
+    metaSortKey: -1656833589787.25
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_50a2144c3eb345c899d558c0a677afe2
+    parentId: fld_37318a9f76d440a4839588d71f07d0b8
+    modified: 1658152186948
+    created: 1656879852248
+    url: "{{ _.baseUrl }}/v1/orgs/{{ _.orgId }}/costing/environment/equity/staging"
+    name: Environment Cost
+    description: ""
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication: {}
+    metaSortKey: -1656811323310.375
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_9d30dbdf805b4c3fa4395b5723d88cb2
+    parentId: fld_37318a9f76d440a4839588d71f07d0b8
+    modified: 1660402104129
+    created: 1656879464429
+    url: ""
+    name: Team
+    description: ""
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication: {}
+    metaSortKey: -1656789056833.5
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_3dd8afc45dd7481797560370c7aac04c
+    parentId: fld_37318a9f76d440a4839588d71f07d0b8
+    modified: 1660583956828
+    created: 1660402108166
+    url: "{{ _.baseUrl }}/v1/orgs/{{ _.orgId }}/costing/saveComponent"
+    name: SaveComponent
+    description: ""
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+          "teamName": "equity",
+          "environmentName": "error-2",
+          "component": { 
+            "componentName": "images",
+            "cost": 100,
+            "resources" : []
+          }
+        }
+    parameters: []
+    headers:
+      - name: Content-Type
+        value: application/json
+        id: pair_91d22bcf2d5a485d998ba54b2869f32b
+    authentication: {}
+    metaSortKey: -1656744523879.75
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_4947a27c820e467897393fa34b263e46
+    parentId: fld_476a2ba8045e41f9ad65e8d51e3b1ed7
+    modified: 1660407400643
+    created: 1660407245517
+    url: "{{ _.baseUrl }}/v1/orgs/{{ _.orgId
+      }}/reconciliation/component/plan/logs/equity/error-2/images/0/true"
+    name: Get Apply Logs
+    description: ""
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication: {}
+    metaSortKey: -1660407245517
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: fld_476a2ba8045e41f9ad65e8d51e3b1ed7
+    parentId: wrk_c63aa2e780d04feb95821acbc65618ae
+    modified: 1656699988980
+    created: 1656699988980
+    name: Reconciliation
+    description: ""
+    environment: {}
+    environmentPropertyOrder: null
+    metaSortKey: -1656699988980
+    _type: request_group
+  - _id: req_a2cee4fd44a04137a590d0c68a10ce3e
+    parentId: fld_476a2ba8045e41f9ad65e8d51e3b1ed7
+    modified: 1660401045939
+    created: 1656699990926
+    url: "{{ _.baseUrl }}/v1/orgs/{{ _.orgId }}/reconciliation/environment/save"
+    name: Env Save
+    description: ""
+    method: POST
+    body:
+      mimeType: application/json
+      text: '{"reconcileId": null, "name" : "equity-error-2", "teamName" : "equity",
+        "status" : "provision_initializing", "startDateTime" : "2022-08-13
+        09:30:32", "endDateTime" : null, "componentReconciles" : []}'
+    parameters: []
+    headers:
+      - name: Content-Type
+        value: application/json
+        id: pair_b37cef6216cd4dbda4be9099c9dd89d8
+    authentication: {}
+    metaSortKey: -1656699990926
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_8ca5f06e470b4db18b124c709302575e
+    parentId: fld_476a2ba8045e41f9ad65e8d51e3b1ed7
+    modified: 1658154017331
+    created: 1656765396257
+    url: "{{ _.baseUrl }}/v1/orgs/{{ _.orgId }}/reconciliation/api/v1/components"
+    name: Comp
+    description: ""
+    method: PUT
+    body:
+      mimeType: application/json
+      text: |-
+        {
+            "environmentName": "insomnia-third-env",
+            "componentName": "equity-third-env-videos",
+            "duration": 1000
+        }
+    parameters: []
+    headers:
+      - name: Content-Type
+        value: application/json
+        id: pair_b37cef6216cd4dbda4be9099c9dd89d8
+    authentication: {}
+    metaSortKey: -1656523338443
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_9b01f64e71724f30b96f66241ca5932f
+    parentId: fld_476a2ba8045e41f9ad65e8d51e3b1ed7
+    modified: 1659735882724
+    created: 1656774350812
+    url: "{{ _.baseUrl }}/v1/orgs/{{ _.orgId
+      }}/reconciliation/components/equity-comp-error-videos"
+    name: Comp
+    description: ""
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication: {}
+    metaSortKey: -1656479175322.25
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_7647eb3c186b471da989e00d31f9698c
+    parentId: fld_476a2ba8045e41f9ad65e8d51e3b1ed7
+    modified: 1658153225778
+    created: 1658153222988
+    url: "{{ _.baseUrl }}/v1/orgs/{{ _.orgId
+      }}/reconciliation/component/equity-comp-new-images"
+    name: Comp Audit List
+    description: ""
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication: {}
+    metaSortKey: -1656457093761.875
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_e0358b35557b44f78099b42b41ddda25
+    parentId: fld_476a2ba8045e41f9ad65e8d51e3b1ed7
+    modified: 1658154000150
+    created: 1656765695760
+    url: "{{ _.baseUrl }}/v1/orgs/{{ _.orgId }}/reconciliation/api/v1/environments"
+    name: Env
+    description: ""
+    method: PUT
+    body:
+      mimeType: application/json
+      text: |-
+        {
+            "name": "insomnia-third-env",
+            "duration": 0
+        }
+    parameters: []
+    headers:
+      - name: Content-Type
+        value: application/json
+        id: pair_b37cef6216cd4dbda4be9099c9dd89d8
+    authentication: {}
+    metaSortKey: -1656435012201.5
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_580a181bae4f4ab18fbe44b09edaca1a
+    parentId: fld_476a2ba8045e41f9ad65e8d51e3b1ed7
+    modified: 1659731822628
+    created: 1656774593034
+    url: "{{ _.baseUrl }}/v1/orgs/{{ _.orgId
+      }}/reconciliation/environments/equity-error-2"
+    name: Env
+    description: ""
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication: {}
+    metaSortKey: -1656390849080.75
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_83d469c56b8c406c979d75ff14ccdd8a
+    parentId: fld_476a2ba8045e41f9ad65e8d51e3b1ed7
+    modified: 1658153068377
+    created: 1658153063239
+    url: "{{ _.baseUrl }}/v1/orgs/{{ _.orgId
+      }}/reconciliation/environment/equity-error-3"
+    name: Env Audit List
+    description: ""
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication: {}
+    metaSortKey: -1656379808300.5625
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_73db1295bb5140bb9882ce74f577b58c
+    parentId: fld_476a2ba8045e41f9ad65e8d51e3b1ed7
+    modified: 1658074239814
+    created: 1656877758648
+    url: "{{ _.baseUrl }}/v1/orgs/{{ _.orgId
+      }}/reconciliation/environment/equity-error-3"
+    name: EnvRecon
+    description: ""
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication: {}
+    metaSortKey: -1656368767520.375
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_bc9b4f4c66274eff9fb30dfa639bcfd0
+    parentId: fld_476a2ba8045e41f9ad65e8d51e3b1ed7
+    modified: 1660400268386
+    created: 1656708907635
+    url: "{{ _.baseUrl }}/v1/orgs/{{ _.orgId }}/reconciliation/component/save"
+    name: Env Save w/ Comps
+    description: ""
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+          "reconcileId": 41,
+          "name": "equity-second-env",
+          "teamName": "equity",
+          "status": "skipped_reconcile",
+          "endDateTime": "2022-06-16 19:41:53",
+          "componentReconciles": [
+        		{
+        			"id": null,
+        			"name": "equity-second-env-images",
+        			"status": "provisioning_in_progress",
+        			"startDateTime": "2022-06-16 19:39:53",
+        			"endDateTime": "2022-06-16 19:41:53"
+        		}
+        	]
+        }
+    parameters: []
+    headers:
+      - name: Content-Type
+        value: application/json
+        id: pair_b37cef6216cd4dbda4be9099c9dd89d8
+    authentication: {}
+    metaSortKey: -1656346685960
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_ea7cd6460c774cb79258037940053a29
+    parentId: fld_ceece3ffed8b4d749cfd9bfee77ceeaf
+    modified: 1660767215046
+    created: 1655993380969
+    url: "{{baseUrl}}/v1/orgs/1/auth/user/shahadarsh"
+    name: Get User
+    description: ""
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication: {}
+    metaSortKey: -1655993380969
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: fld_ceece3ffed8b4d749cfd9bfee77ceeaf
+    parentId: wrk_c63aa2e780d04feb95821acbc65618ae
+    modified: 1656374217183
+    created: 1656374217183
+    name: User
+    description: ""
+    environment: {}
+    environmentPropertyOrder: null
+    metaSortKey: -1656374217183
+    _type: request_group
+  - _id: req_65289047d1374af2a0d748c3a8524ffd
+    parentId: fld_ceece3ffed8b4d749cfd9bfee77ceeaf
+    modified: 1660767207436
+    created: 1658075966779
+    url: "{{baseUrl}}/v1/users"
+    name: Users
+    description: ""
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication: {}
+    metaSortKey: -1655993380962.75
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_df0d070687374a168ca018925d3508b7
+    parentId: fld_ceece3ffed8b4d749cfd9bfee77ceeaf
+    modified: 1660767171846
+    created: 1656422526661
+    url: "{{baseUrl}}/v1/orgs/{{ _.orgId }}/auth/add"
+    name: Create User
+    description: ""
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+        	"username": "shahadarsh",
+        	"email": "shahadarsh@shahadarsh.com",
+        	"role": "Admin",
+        	"termAgreementStatus": true
+        }
+    parameters: []
+    headers:
+      - name: Content-Type
+        value: application/json
+        id: pair_9b00995a04aa4fb7beba677fe8af6f72
+    authentication: {}
+    metaSortKey: -1655993380956.5
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_630a36381d164ba693357b8f2673f29e
+    parentId: fld_6a0317ab64ec4a418edff63a65546e95
+    modified: 1656373485590
+    created: 1656354331086
+    url: "{{baseUrl}}/v1/orgs/"
+    name: Get Orgs
+    description: ""
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication: {}
+    metaSortKey: -1655993380994
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: fld_6a0317ab64ec4a418edff63a65546e95
+    parentId: wrk_c63aa2e780d04feb95821acbc65618ae
+    modified: 1656373474521
+    created: 1656373474521
+    name: Organization
+    description: ""
+    environment: {}
+    environmentPropertyOrder: null
+    metaSortKey: -1656373474521
+    _type: request_group
+  - _id: req_caef27539b7e4741b74dbea6803472f5
+    parentId: fld_6a0317ab64ec4a418edff63a65546e95
+    modified: 1660323922688
+    created: 1658151248844
+    url: "{{baseUrl}}/v1/orgs/zbank"
+    name: Get Org
+    description: ""
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication: {}
+    metaSortKey: -1655993380981.5
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_b5e2b746c47b4dd79a1c1784eb560b25
+    parentId: fld_6a0317ab64ec4a418edff63a65546e95
+    modified: 1660767141598
+    created: 1656354596101
+    url: "{{baseUrl}}/v1/orgs"
+    name: Add Org
+    description: ""
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+        	"name": "zlab"
+        }
+    parameters: []
+    headers:
+      - name: Content-Type
+        value: application/json
+        id: pair_938ed7a308aa49d0b052610ced7e1af8
+    authentication: {}
+    metaSortKey: -1655993380944
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: env_73878836187dcf0db4284a0c84bba46f15ccd49b
+    parentId: wrk_c63aa2e780d04feb95821acbc65618ae
+    modified: 1656373938353
+    created: 1655993380964
+    name: Base Environment
+    data: {}
+    dataPropertyOrder: {}
+    color: null
+    isPrivate: false
+    metaSortKey: 1655993380964
+    _type: environment
+  - _id: jar_73878836187dcf0db4284a0c84bba46f15ccd49b
+    parentId: wrk_c63aa2e780d04feb95821acbc65618ae
+    modified: 1655993380967
+    created: 1655993380967
+    name: Default Jar
+    cookies: []
+    _type: cookie_jar
+  - _id: spc_641de3f6bafc4ec3996b4b2bf93d233a
+    parentId: wrk_c63aa2e780d04feb95821acbc65618ae
+    modified: 1655993403135
+    created: 1655993380960
+    fileName: ZL API - Local
+    contents: ""
+    contentType: yaml
+    _type: api_spec
+  - _id: uts_6e3083fd8a2d4263baa2a7493079819a
+    parentId: wrk_c63aa2e780d04feb95821acbc65618ae
+    modified: 1655993380970
+    created: 1655993380970
+    name: Example Test Suite
+    _type: unit_test_suite
+  - _id: env_3fe079360d3a4670aae8b7c054dd9f87
+    parentId: env_73878836187dcf0db4284a0c84bba46f15ccd49b
+    modified: 1660767060405
+    created: 1656088827615
+    name: zL API - local
+    data:
+      baseUrl: http://localhost:3001
+      orgId: zbank
+    dataPropertyOrder:
+      "&":
+        - baseUrl
+        - orgId
+    color: null
+    isPrivate: false
+    metaSortKey: 1656088827615
+    _type: environment
+  - _id: env_ff5ed0d6004f4c318f29f6d8d734d55d
+    parentId: env_73878836187dcf0db4284a0c84bba46f15ccd49b
+    modified: 1657135987573
+    created: 1657135968781
+    name: zL BFF - local
+    data:
+      baseUrl: http://localhost:8080
+      orgId: 1
+    dataPropertyOrder:
+      "&":
+        - baseUrl
+        - orgId
+    color: null
+    isPrivate: false
+    metaSortKey: 1656088827665
+    _type: environment
+  - _id: env_b61c4f6d10e3494d918dba9961f87e42
+    parentId: env_73878836187dcf0db4284a0c84bba46f15ccd49b
+    modified: 1660767121869
+    created: 1660767065840
+    name: zL API / Dev / Zbank
+    data:
+      baseUrl: http://localhost:3000
+      orgId: zbank
+    dataPropertyOrder:
+      "&":
+        - baseUrl
+        - orgId
+    color: null
+    isPrivate: false
+    metaSortKey: 1660767065840
+    _type: environment
+  - _id: env_da752b93c96748cc9d9ef4a3f4d3c351
+    parentId: env_73878836187dcf0db4284a0c84bba46f15ccd49b
+    modified: 1660767120517
+    created: 1660767100908
+    name: zL Api / Dev/ Zlab
+    data:
+      baseUrl: http://localhost:3000
+      orgId: zlab
+    dataPropertyOrder:
+      "&":
+        - baseUrl
+        - orgId
+    color: null
+    isPrivate: false
+    metaSortKey: 1660767100908
+    _type: environment

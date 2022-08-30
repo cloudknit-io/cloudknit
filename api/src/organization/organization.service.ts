@@ -9,16 +9,16 @@ import {
 } from "@kubernetes/client-node";
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Company } from "src/typeorm/company/Company";
 import { Repository } from "typeorm";
+import { Organization } from "src/typeorm";
 
 @Injectable()
-export class CompanyService {
+export class OrganizationService {
   private k8sApi: CoreV1Api;
   private k8sCRDApi: CustomObjectsApi;
   private debugMode = false;
 
-  constructor(@InjectRepository(Company) private orgRepo: Repository<Company>) {
+  constructor(@InjectRepository(Organization) private orgRepo: Repository<Organization>) {
     const kc = new KubeConfig();
     if (this.debugMode) kc.loadFromDefault();
     else kc.loadFromCluster();
@@ -26,9 +26,17 @@ export class CompanyService {
     this.k8sCRDApi = kc.makeApiClient<CustomObjectsApi>(CustomObjectsApi);
   }
 
-  async saveOAuthCredentials({ company, clientId, clientSecret }) {
+  async getOrganization(id: number) {
+    return this.orgRepo.findOne({
+      where: {
+        id
+      }
+    });
+  }
+
+  async saveOAuthCredentials({ organization, clientId, clientSecret }) {
     const savedData = await this.orgRepo.save({
-      name: company,
+      name: organization,
       clientId,
       clientSecret,
     });
@@ -37,14 +45,14 @@ export class CompanyService {
   }
 
   async saveGitHubCredentials({
-    company,
+    organization,
     githubRepo,
     githubPath,
     githubSource,
   }) {
     const orgData = await this.orgRepo.findOne({
       where: {
-        name: company,
+        name: organization,
       },
     });
     orgData.githubPath = githubPath;
@@ -54,20 +62,24 @@ export class CompanyService {
     return savedData;
   }
 
-  async patchOrganisationData({ company, namespace }) {
+  async patchOrganizationData({ organization, namespace }) {
     const orgData = await this.orgRepo.findOne({
       where: {
-        name: company,
+        name: organization,
       },
     });
+
     if (!orgData) {
-      throw `No data found for ${company}!`;
+      throw `No data found for ${organization}!`;
     }
+
     if (!this.k8sApi) {
       throw "Cannot initialize k8s API!";
     }
+
     await this.patchArgoCdConfig(orgData, namespace);
     await this.patchBffSecret(orgData, namespace);
+    
     return orgData;
   }
 
@@ -111,7 +123,7 @@ export class CompanyService {
     );
   }
 
-  public async patchCRD({ org, company }) {
+  public async patchCRD({ org, organization }) {
     const orgData = await this.orgRepo.findOne({
       where: {
         name: org,
@@ -134,9 +146,9 @@ export class CompanyService {
       .patchNamespacedCustomObject(
         "stable.compuzest.com",
         "v1",
-        `${company}-config`,
+        `${organization}-config`,
         "companies",
-        company,
+        organization,
         patch,
         undefined,
         undefined,

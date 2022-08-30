@@ -1,12 +1,14 @@
-import { Column, Entity, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm'
+import { Organization } from '../Organization.entity'
 import { ComponentReconcile } from './component-reconcile.entity'
+import { Environment } from './environment.entity'
 
 @Entity({
   name: 'environment_reconcile',
 })
 export class EnvironmentReconcile {
   @PrimaryGeneratedColumn()
-  reconcile_id?: number
+  reconcile_id: number
 
   @Column()
   name: string
@@ -32,4 +34,9 @@ export class EnvironmentReconcile {
     cascade: true,
   })
   componentReconciles?: ComponentReconcile[]
+
+  @ManyToOne(() => Environment, (environment) => environment.id, {
+    eager: true
+  })
+  environment: Environment;
 }

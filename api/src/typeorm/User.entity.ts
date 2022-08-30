@@ -3,8 +3,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from "typeorm";
+import { Organization } from "./Organization.entity";
 
 @Entity({ name: "users" })
 export class User {
@@ -12,30 +15,38 @@ export class User {
   id: number;
 
   @ApiProperty()
-  @Column()
+  @Column({
+    unique: true
+  })
   username: string;
 
   @ApiProperty()
-  @Column()
+  @Column({
+    unique: true
+  })
   email: string;
 
-  @Column()
-  company: string;
-
-  @Column()
+  @Column({
+    default: false
+  })
   termAgreementStatus: boolean;
-
-  @Column()
-  agreedByUsername: string;
-
-  @Column()
-  agreedByEmail: string;
 
   @Column({
     default: "User",
   })
   role: string;
 
+  @Column({
+    default: false,
+  })
+  archived: boolean;
+
+  @ManyToMany(() => Organization, (org) => org.users)
+  organizations: Organization[]
+
   @CreateDateColumn()
-  timeStamp: string;
+  created: Date;
+
+  @UpdateDateColumn()
+  updated: Date;
 }

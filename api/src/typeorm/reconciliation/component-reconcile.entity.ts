@@ -1,4 +1,5 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
+import { Organization } from '../Organization.entity'
 import { EnvironmentReconcile } from './environment-reconcile.entity'
 
 @Entity({
@@ -22,16 +23,26 @@ export class ComponentReconcile {
   @Column()
   status: string
 
-  @Column()
+  @Column({
+    nullable: true
+  })
   approved_by?: string;
 
   @Column({
       type: 'datetime'
   })
-  start_date_time: string
+  start_date_time: string;
 
   @Column({
       nullable: true
   })
-  end_date_time?: string
+  end_date_time?: string;
+
+  @ManyToOne(() => Organization, (org) => org.id, {
+    onDelete: "CASCADE"
+  })
+  @JoinColumn({
+    referencedColumnName: 'id'
+  })
+  organization: Organization
 }

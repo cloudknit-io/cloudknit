@@ -7,14 +7,14 @@ import {
   Post,
   Put,
   Req,
+  Request,
   Res,
   Sse,
   UploadedFile,
   UseInterceptors,
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { response } from "express";
-import { from, Observable, Observer } from "rxjs";
+import { from, Observable } from "rxjs";
 import { map } from "rxjs/operators";
 import { Mapper } from "src/costing/utilities/mapper";
 import { ComponentReconcile } from "src/typeorm/reconciliation/component-reconcile.entity";
@@ -24,54 +24,52 @@ import { ComponentAudit } from "./dtos/componentAudit.dto";
 import { EnvironmentDto } from "./dtos/environment.dto";
 import { EnvironmentAudit } from "./dtos/environmentAudit.dto";
 import { EvnironmentReconcileDto } from "./dtos/reconcile.Dto";
-import { ReconciliationService } from "./services/reconciliation.service";
+import { ReconciliationService } from "./reconciliation.service";
 
 @Controller({
-  path: "reconciliation/api/v1",
+  version: '1'
 })
 export class ReconciliationController {
   constructor(private readonly reconciliationService: ReconciliationService) {}
 
   @Put("environments")
-  async putEnvironment(@Body() body: EnvironmentDto) {
-    return await this.reconciliationService.putEnvironment(body);
+  async putEnvironment(@Request() req, @Body() body: EnvironmentDto) {
+    return await this.reconciliationService.putEnvironment(req.org, body);
   }
 
   @Put("components")
-  async putComponent(@Body() body: ComponentDto) {
-    return await this.reconciliationService.putComponent(body);
+  async putComponent(@Request() req, @Body() body: ComponentDto) {
+    return await this.reconciliationService.putComponent(req.org, body);
   }
 
   @Get("environments/:id")
-  async getEnvironment(@Param("id") id: string) {
-    return await this.reconciliationService.getEnvironment(id);
+  async getEnvironment(@Request() req, @Param("id") id: string) {
+    return await this.reconciliationService.getEnvironment(req.org, id);
   }
 
   @Get("components/:id")
-  async getComponent(@Param("id") id: string) {
-    return await this.reconciliationService.getComponent(id);
+  async getComponent(@Request() req, @Param("id") id: string) {
+    return await this.reconciliationService.getComponent(req.org, id);
   }
 
-  @Patch("approved-by/:id") 
+  @Patch("approved-by/:id")
   async patchApprovedBy(@Param("id") id: string, @Req() req) {
-    return await this.reconciliationService.patchApprovedBy(req.headers['x-user-email'] || '', id);
-    
+    return await this.reconciliationService.patchApprovedBy(req.org, req.headers['x-user-email'] || '', id);
   }
 
   @Get("approved-by/:id/:rid") 
-  async getApprovedBy(@Param("id") id: string, @Param("rid") rid: string) {
-    return await this.reconciliationService.getApprovedBy(id, rid);
-    
+  async getApprovedBy(@Request() req, @Param("id") id: string, @Param("rid") rid: string) {
+    return await this.reconciliationService.getApprovedBy(req.org, id, rid);
   }
 
   @Post("environment/save")
-  async saveEnvironment(@Body() runData: EvnironmentReconcileDto) {
-    return await this.reconciliationService.saveOrUpdateEnvironment(runData);
+  async saveEnvironment(@Request() req, @Body() runData: EvnironmentReconcileDto) {
+    return await this.reconciliationService.saveOrUpdateEnvironment(req.org, runData);
   }
 
   @Post("component/save")
-  async saveComponent(@Body() runData: EvnironmentReconcileDto) {
-    return await this.reconciliationService.saveOrUpdateComponent(runData);
+  async saveComponent(@Request() req, @Body() runData: EvnironmentReconcileDto) {
+    return await this.reconciliationService.saveOrUpdateComponent(req.org, runData);
   }
 
   @Post("component/putObject")
@@ -80,6 +78,7 @@ export class ReconciliationController {
     @UploadedFile() file: Express.Multer.File,
     @Body() body: any
   ) {
+    // QUESTION : Is this still in use? It does not exist in BFF
     return {
       message: await this.reconciliationService.putObject(
         body.customerId,
@@ -91,6 +90,7 @@ export class ReconciliationController {
 
   @Post("component/downloadObject")
   async downloadObject(@Res() response, @Body() body: any) {
+    // QUESTION : Is this still in use? It does not exist in BFF
     const stream = await this.reconciliationService.downloadObject(
       body.customerId,
       body.path
@@ -99,30 +99,31 @@ export class ReconciliationController {
   }
 
   @Patch("component/update")
-  async patchComponent(@Body() runData: any) {
-    return await this.reconciliationService.saveOrUpdateComponent(runData);
+  async patchComponent(@Request() req, @Body() runData: any) {
+    // QUESTION : Is this still in use? It does not exist in BFF
+    return await this.reconciliationService.saveOrUpdateComponent(req.org, runData);
   }
 
   @Get("component/:id")
-  async getComponents(@Param("id") id: string): Promise<ComponentAudit[]> {
-    return await this.reconciliationService.getComponentAuditList(id);
+  async getComponents(@Request() req, @Param("id") id: string): Promise<ComponentAudit[]> {
+    return await this.reconciliationService.getComponentAuditList(req.org, id);
   }
 
   @Get("environment/:id")
-  async getEnvironments(@Param("id") id: string): Promise<EnvironmentAudit[]> {
-    return await this.reconciliationService.getEnvironmentAuditList(id);
+  async getEnvironments(@Request() req, @Param("id") id: string): Promise<EnvironmentAudit[]> {
+    return await this.reconciliationService.getEnvironmentAuditList(req.org, id);
   }
 
-  @Get("component/logs/:companyId/:team/:environment/:component/:id")
+  @Get("component/logs/:team/:environment/:component/:id")
   async getLogs(
-    @Param("companyId") companyId: string,
+    @Request() req,
     @Param("team") team: string,
     @Param("environment") environment: string,
     @Param("component") component: string,
     @Param("id") id: number
   ) {
     return await this.reconciliationService.getLogs(
-      companyId,
+      req.org,
       team,
       environment,
       component,
@@ -130,30 +131,30 @@ export class ReconciliationController {
     );
   }
 
-  @Get("component/latestLogs/:companyId/:team/:environment/:component")
+  @Get("component/latestLogs/:team/:environment/:component")
   async getLatestLogs(
-    @Param("companyId") companyId: string,
+    @Request() req,
     @Param("team") team: string,
     @Param("environment") environment: string,
     @Param("component") component: string
   ) {
     return await this.reconciliationService.getLatestLogs(
-      companyId,
+      req.org,
       team,
       environment,
       component
     );
   }
 
-  @Get("component/state-file/:companyId/:team/:environment/:component")
+  @Get("component/state-file/:team/:environment/:component")
   async getStateFile(
-    @Param("companyId") companyId: string,
+    @Request() req,
     @Param("team") team: string,
     @Param("environment") environment: string,
     @Param("component") component: string
   ) {
     return await this.reconciliationService.getStateFile(
-      companyId,
+      req.org,
       team,
       environment,
       component
@@ -161,10 +162,10 @@ export class ReconciliationController {
   }
 
   @Get(
-    "component/plan/logs/:companyId/:team/:environment/:component/:id/:latest"
+    "component/plan/logs/:team/:environment/:component/:id/:latest"
   )
   async getPlanLogs(
-    @Param("companyId") companyId: string,
+    @Request() req,
     @Param("team") team: string,
     @Param("environment") environment: string,
     @Param("component") component: string,
@@ -172,7 +173,7 @@ export class ReconciliationController {
     @Param("latest") latest: string
   ) {
     return await this.reconciliationService.getPlanLogs(
-      companyId,
+      req.org,
       team,
       environment,
       component,
@@ -182,10 +183,10 @@ export class ReconciliationController {
   }
 
   @Get(
-    "component/apply/logs/:companyId/:team/:environment/:component/:id/:latest"
+    "component/apply/logs/:team/:environment/:component/:id/:latest"
   )
   async getApplyLogs(
-    @Param("companyId") companyId: string,
+    @Request() req,
     @Param("team") team: string,
     @Param("environment") environment: string,
     @Param("component") component: string,
@@ -193,7 +194,7 @@ export class ReconciliationController {
     @Param("latest") latest: string
   ) {
     return await this.reconciliationService.getApplyLogs(
-      companyId,
+      req.org,
       team,
       environment,
       component,

@@ -1,4 +1,4 @@
 export interface EnvironmentDto {
-    environmentName: string;
+    name: string;
     duration: number;
 }

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { reconcileEntities } from 'src/typeorm/reconciliation';
 import { ReconciliationController } from './reconciliation.controller';
-import { ReconciliationService } from './services/reconciliation.service';
+import { ReconciliationService } from './reconciliation.service';
 
 
 @Module({

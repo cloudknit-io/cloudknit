@@ -28,8 +28,6 @@ jobs:
 
       - uses: actions/checkout@v2
 
-      - run: env
-
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@e5622373a38e60fb6d795a4421e56882f2d7a681

@@ -1,14 +1,17 @@
-import { Column, Entity, JoinColumn, ManyToOne, UpdateDateColumn } from "typeorm";
+import { Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Environment } from "./environment.entity";
 
 @Entity({
   name: "component",
 })
 export class Component {
+  @PrimaryGeneratedColumn()
+  id: number
+
   @Column({
-    name: "component_name",
-    primary: true
+    name: "component_name"
   })
+  @Index()
   componentName: string;
 
   @UpdateDateColumn({
@@ -19,6 +22,8 @@ export class Component {
   @Column()
   duration: number;
 
-  @ManyToOne((type) => Environment, (environment) => environment.components)
+  @ManyToOne(() => Environment, (environment) => environment.components, {
+    eager: true
+  })
   environment: Environment;
 }

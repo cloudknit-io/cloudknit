@@ -1,7 +1,8 @@
 import { ComponentAudit } from "src/reconciliation/dtos/componentAudit.dto";
 import { EnvironmentAudit } from "src/reconciliation/dtos/environmentAudit.dto";
 import { ComponentReconcileDto } from "src/reconciliation/dtos/reconcile.Dto";
-import { Component } from "src/typeorm/costing/entities/Component";
+import { Organization } from "src/typeorm";
+import { Component } from "src/typeorm/costing/Component";
 import { ComponentReconcile } from "src/typeorm/reconciliation/component-reconcile.entity";
 import { EnvironmentReconcile } from "src/typeorm/reconciliation/environment-reconcile.entity";
 import { CostComponent, Resource } from "src/typeorm/resources/Resource.entity";
@@ -20,8 +21,9 @@ export class Mapper {
     const data = {};
     const teams = [...new Set(mapFrom.map((e) => e.teamName))];
     const environments = [
-      ...new Set(mapFrom.map((e) => `${e.teamName}$$$${e.environmentName}`)),
+      ...new Set(mapFrom.map((e) => `${e.teamName}$$$${e.environment.name}`)),
     ];
+
     data["teams"] = teams.map((t) => ({
       teamId: t,
       teamName: t,
@@ -38,7 +40,7 @@ export class Mapper {
         cost: mapFrom
           .filter(
             (e) =>
-              e.teamName === teamName && e.environmentName === environmentName
+              e.teamName === teamName && e.environment.name === environmentName
           )
           .reduce((p, c, _i) => p + Number(c.cost), 0),
       };
@@ -77,6 +79,7 @@ export class Mapper {
   }
 
   static mapToResourceEntity(
+    org: Organization,
     component: Component,
     resources: any[] = [],
     parentId: string = null
@@ -85,6 +88,7 @@ export class Mapper {
     return resources.map((resource) => {
       const id = `${component.id}-${resource.name}`;
       return {
+        organization: org,
         id: id,
         name: resource.name,
         componentId: component.id,
@@ -93,11 +97,13 @@ export class Mapper {
         parentId: parentId,
         component: component,
         subresources: this.mapToResourceEntity(
+          org,
           component,
           resource.subresources,
           id
         ),
         costComponents: this.mapToCostComponentEntity(
+          org,
           id,
           resource.costComponents
         ),
@@ -106,11 +112,13 @@ export class Mapper {
   }
 
   static mapToCostComponentEntity(
+    org: Organization,
     id: string,
     costComponents: any[] = []
   ): CostComponent[] {
     if (costComponents.length === 0) return [];
     return costComponents.map((cc) => ({
+      organization: org,
       id: `${id}-${cc.name}`,
       name: cc.name,
       hourlyCost: cc.hourlyCost,
@@ -123,16 +131,18 @@ export class Mapper {
   }
 
   static mapToComponentReconcile(
+    org: Organization,
     environmentReconcile: EnvironmentReconcile,
     componentReconciles: ComponentReconcileDto[]
   ): ComponentReconcile[] {
     const mappedData: ComponentReconcile[] = componentReconciles.map((cr) => ({
-      reconcile_id: parseInt(cr.id) || null,
+      reconcile_id: parseInt(cr.reconcileId) || null,
       name: cr.name,
       environmentReconcile: environmentReconcile,
       start_date_time: cr.startDateTime,
       status: cr.status,
       end_date_time: cr.endDateTime,
+      organization: org
     }));
 
     return mappedData;

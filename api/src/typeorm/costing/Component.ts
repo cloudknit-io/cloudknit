@@ -1,8 +1,11 @@
 import { Resource } from 'src/typeorm/resources/Resource.entity';
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import { Organization } from '../Organization.entity';
+import { Environment } from '../reconciliation/environment.entity';
 
 @Entity({ name: 'components' })
 export class Component {
+  // TODO : Get rid of this.
   @Column({
     primary: true,
     name: 'id',
@@ -14,10 +17,10 @@ export class Component {
   })
   teamName: string;
 
-  @Column({
-    name: 'environment_name',
+  @ManyToOne(() => Environment, (environment) => environment.components, {
+    eager: true
   })
-  environmentName: string;
+  environment: Environment;
 
   @Column({
     name: 'component_name',
@@ -38,8 +41,16 @@ export class Component {
   })
   isDeleted?: boolean
 
-  @OneToMany(type => Resource, resource => resource.component, {
+  @OneToMany(() => Resource, resource => resource.component, {
     cascade: true,
   })
   resources: Resource[];
+
+  @ManyToOne(() => Organization, (org) => org.id, {
+    onDelete: "CASCADE"
+  })
+  @JoinColumn({
+    referencedColumnName: 'id'
+  })
+  organization: Organization
 }

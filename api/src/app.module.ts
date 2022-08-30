@@ -1,12 +1,16 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
+import { RouterModule } from "@nestjs/core";
 import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { AuthModule } from "./auth/auth.module";
 import { CostingModule } from "./costing/costing.module";
-import { CompanyModule } from "./company/company.module";
+import { OrganizationModule } from "./organization/organization.module";
+import { OrganizationsModule } from "./organizations/organizations.module";
 import { ReconciliationModule } from "./reconciliation/reconciliation.module";
+import { orgRoutes } from "./routes";
 import { SecretsModule } from "./secrets/secrets.module";
 import { entities } from "./typeorm";
+import { UsersModule } from "./users/users.module";
 
 const typeOrmModuleOptions: TypeOrmModuleOptions = {
   type: "mysql",
@@ -16,6 +20,7 @@ const typeOrmModuleOptions: TypeOrmModuleOptions = {
   password: process.env.TYPEORM_PASSWORD,
   database: process.env.TYPEORM_DATABASE,
   entities: entities,
+  migrations: [],
   synchronize: true,
 };
 
@@ -24,13 +29,15 @@ const typeOrmModuleOptions: TypeOrmModuleOptions = {
     ConfigModule.forRoot({
       envFilePath: ".env.dev",
     }),
-    AuthModule,
+    RouterModule.register(orgRoutes),
     TypeOrmModule.forRoot(typeOrmModuleOptions),
+    UsersModule,
+    OrganizationsModule,
+    OrganizationModule,
     CostingModule,
     ReconciliationModule,
     SecretsModule,
     AuthModule,
-    CompanyModule,
   ],
   controllers: [],
   providers: [],

@@ -1,20 +1,22 @@
-import { Controller, Param, Sse } from '@nestjs/common'
+import { Controller, Param, Request, Sse } from '@nestjs/common'
 import { from, Observable, Observer } from 'rxjs'
 import { filter, map } from 'rxjs/operators'
-import { Component } from 'src/typeorm/costing/entities/Component'
+import { Component } from 'src/typeorm/costing/Component'
 import { ComponentService } from '../services/component.service'
 import { Mapper } from '../utilities/mapper'
 import { MessageEvent } from '@nestjs/common';
 
 @Controller({
-  path: 'costing/stream/api/v1',
+  path: 'stream',
+  version: '1'
 })
 export class CostingStream {
   constructor(private readonly componentService: ComponentService) {}
 
   @Sse('all')
-  componentCost(): Observable<MessageEvent> {
-    this.componentService.getAll()
+  componentCost(@Request() req): Observable<MessageEvent> {
+    this.componentService.getAll(req.org);
+
     return from(this.componentService.stream).pipe(
       map((components: Component[]) => ({
         data: Mapper.getStreamData(components),
@@ -23,8 +25,9 @@ export class CostingStream {
   }
 
   @Sse('team/:teamId')
-  teamCost(@Param('teamId') teamId: string): Observable<MessageEvent> {
-    this.componentService.getTeamCost(teamId)
+  teamCost(@Request() req, @Param('teamId') teamId: string): Observable<MessageEvent> {
+    this.componentService.getTeamCost(req.org, teamId);
+
     return from(this.componentService.stream).pipe(
       map((components: Component[]) => ({
         data: Mapper.getStreamData(components),
@@ -34,10 +37,11 @@ export class CostingStream {
 
   @Sse('environment/:teamId/:environmentId')
   environmentCost(
+    @Request() req,
     @Param('teamId') teamId: string,
     @Param('environmentId') environmentId: string,
   ): Observable<MessageEvent> {
-    this.componentService.getEnvironmentCost(teamId, environmentId)
+    this.componentService.getEnvironmentCost(req.org, teamId, environmentId)
     return from(this.componentService.stream).pipe(
       map((components: Component[]) => ({
         data: Mapper.getStreamData(components),

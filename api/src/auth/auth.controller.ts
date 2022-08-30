@@ -1,8 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Post, Res } from "@nestjs/common";
-import { AuthService } from "src/auth/services/auth/auth.service";
+import { Body, Controller, Delete, Get, Logger, NotFoundException, Param, Post, Request, Res } from "@nestjs/common";
+import { CreateUserDto } from "src/users/User.dto";
+import { AuthService } from "./auth.service";
 
-@Controller("auth")
+@Controller({
+  version: '1'
+})
 export class AuthController {
+  private readonly logger = new Logger(AuthController.name);
+
   constructor(private readonly authService: AuthService) {}
 
   /*
@@ -80,33 +85,39 @@ export class AuthController {
   }
 
   @Post("termAgreementStatus")
-  public async getTermAgreementStatus(@Body() body) {
-    return this.authService.getTermAgreementStatus(body);
+  public async getTermAgreementStatus(@Request() req, @Body() body) {
+    return this.authService.getTermAgreementStatus(req.org, body);
   }
 
   @Post("setTermAgreementStatus")
-  public async setTermAgreementStatus(@Body() body) {
-    return await this.authService.setTermAgreementStatus(body);
+  public async setTermAgreementStatus(@Request() req, @Body() body) {
+    return await this.authService.setTermAgreementStatus(req.org, body);
   }
 
-  @Get("users/:organizationId")
-  public async getUsers(@Param("organizationId") organizationId: string) {
-    return this.authService.getUserList(organizationId);
+  @Get("users")
+  public async getUsers(@Request() req) {
+    return this.authService.getOrgUserList(req.org);
   }
 
-  @Get("user/:username")
-  public async getUser(@Param("username") username: string) {
-    return this.authService.getUser({ username });
+  @Get("users/:username")
+  public async getUser(@Request() req, @Param("username") username: string) {
+    const user = await this.authService.getOrgUser(req.org, username);
+
+    if (!user) {
+      throw new NotFoundException('could not find user');
+    }
+
+    return user
   }
 
-  @Post("add")
-  public async addUser(@Body() body) {
-    return await this.authService.addUser(body);
+  @Post("users")
+  public async createUser(@Request() req, @Body() user: CreateUserDto) {
+    return await this.authService.createOrgUser(req.org, user);
   }
 
-  @Delete("delete/:username")
-  public async deleteUser(@Param('username') username: string) {
-    return await this.authService.deleteUser(username);
+  @Delete("users/:username")
+  public async deleteUser(@Request() req, @Param('username') username: string) {
+    return await this.authService.deleteUser(req.org, username);
   }
 
   private async updateSecret(
