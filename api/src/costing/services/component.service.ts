@@ -200,20 +200,22 @@ export class ComponentService {
   }
 
   async getResourceData(org: Organization, id: string) {
-    const resultSet = await this.resourceRepository.find({
-      where: {
-        componentId: id,
-        organization: org
-      },
-    });
+    const resultSet = await this.resourceRepository
+      .createQueryBuilder()
+      .where('componentId = :compId and organizationId = :orgId', {
+        compId: id,
+        orgId: org.id
+      })
+      .getMany();
 
     const roots = [];
-    const resources = new Map<string, any>(
+    var resources = new Map<string, any>(
       resultSet.map((e) => [e.id, { ...e, subresources: [] }])
     );
 
     for (let i = 0; i < resultSet.length; i++) {
       const resource = resources.get(resultSet[i].id);
+
       if (!resource.parentId) {
         roots.push(resource);
       } else {
