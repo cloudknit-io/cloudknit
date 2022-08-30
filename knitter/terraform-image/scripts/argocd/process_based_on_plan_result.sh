@@ -23,10 +23,27 @@ config_reconcile_id=${11}
 auto_approve=${12}
 customer_id=${13}
 
+echo "PROCESS BASED ON PLAN RESULT"
+echo "   is_sync=${is_sync}"
+echo "   result=${result}"
+echo "   team_env_name=${team_env_name}"
+echo "   team_env_config_name=${team_env_config_name}"
+echo "   workflow_id=${workflow_id}"
+echo "   is_destroy=${is_destroy}"
+echo "   team_name=${team_name}"
+echo "   env_name=${env_name}"
+echo "   config_name=${config_name}"
+echo "   reconcile_id=${reconcile_id}"
+echo "   config_reconcile_id=${config_reconcile_id}"
+echo "   auto_approve=${auto_approve}"
+echo "   customer_id=${customer_id}"
+echo ""
+
 function PatchError() {
     data='{"metadata":{"labels":{"component_status":"plan_failed"}}}'
     argocd app patch $team_env_config_name --patch $data --type merge > null
-    sh ../audit.sh $team_name $env_name $config_name "" "plan_failed" $reconcile_id $config_reconcile_id $is_destroy 0 "noSkip"
+    # TODO : Pass orgId
+    sh ../audit.sh $team_name $env_name $config_name "" "plan_failed" $reconcile_id $config_reconcile_id $is_destroy 0 "noSkip" ${customer_id}
     if [ $is_destroy = true ]
     then
         data='{"metadata":{"labels":{"env_status":"destroy_failed"}}}'

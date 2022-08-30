@@ -29,7 +29,7 @@ ARG GITHUB_TOKEN
 RUN apk add --update --no-cache curl jq bash openssl python3 py3-pip py3-setuptools libc6-compat unzip
 RUN python3 -m pip --no-cache-dir install --upgrade awscli
 
-RUN curl -sL https://github.com/infracost/infracost/releases/download/v0.9.19/infracost-linux-amd64.tar.gz | tar xz -C /tmp && \
+RUN curl -sL https://github.com/infracost/infracost/releases/download/v0.10.10/infracost-linux-amd64.tar.gz | tar xz -C /tmp && \
     mv /tmp/infracost-linux-amd64 /usr/local/bin/infracost && \
     mkdir ~/.config && \
     mkdir ~/.config/infracost/
@@ -63,7 +63,7 @@ RUN curl -fsSL -o /tmp/get_helm.sh https://raw.githubusercontent.com/helm/helm/m
     rm /tmp/get_helm.sh
 
 # get the zlifecycle-internal-cli
-RUN ./helpers/gh_download.sh -v $ZLI_TAG -f zlifecycle-internal-cli_${ZLI_TAG#v}_linux_x86_64.zip -t $GITHUB_TOKEN -r CompuZest/zlifecycle-internal-cli -o /tmp/cli.zip && \
+RUN ./helpers/gh_download.sh -v $ZLI_TAG -f zlifecycle-internal-cli_${ZLI_TAG#v}_linux_x86_64.zip -t $GITHUB_TOKEN -r zlifecycle/zlifecycle-internal-cli -o /tmp/cli.zip && \
     unzip -d /tmp /tmp/cli.zip && \
     install -b -c -v /tmp/zlifecycle-internal-cli /usr/local/bin/ && \
     zlifecycle-internal-cli -h && \

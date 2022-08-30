@@ -1,3 +1,25 @@
+echo "TERRAFORM APPLY PLAN"
+echo "   team_name=${team_name}"
+echo "   env_name=${env_name}"
+echo "   config_name=${config_name}"
+echo "   is_apply=${is_apply}"
+echo "   lock_state=${lock_state}"
+echo "   is_sync=${is_sync}"
+echo "   workflow_id=${workflow_id}"
+echo "   terraform_il_path=${terraform_il_path}"
+echo "   is_destroy=${is_destroy}"
+echo "   config_reconcile_id=${config_reconcile_id}"
+echo "   reconcile_id=${reconcile_id}"
+echo "   customer_id=${customer_id}"
+echo "   auto_approve=${auto_approve}"
+echo "   zl_env=${zl_env}"
+echo "   git_auth_mode=${git_auth_mode}"
+echo "   il_repo=${il_repo}"
+echo "   company_git_org=${company_git_org}"
+echo "   use_custom_state=${use_custom_state}"
+echo "   custom_state_bucket=${custom_state_bucket}"
+echo "   custom_state_lock_table=${custom_state_lock_table}"
+
 echo $show_output_start
 echo "Executing plan..." 2>&1 | appendLogs /tmp/plan_output.txt
 echo $show_output_end;
@@ -9,6 +31,15 @@ echo $show_output_start
 result=$?
 echo -n $result >/tmp/plan_code.txt
 echo $show_output_end
+
+echo "AWS S3 COPY"
+echo "   zl_env=${zl_env}"
+echo "   customer_id=${customer_id}"
+echo "   team_name=${team_name}"
+echo "   env_name=${env_name}"
+echo "   config_name=${config_name}"
+echo "   config_reconcile_id=${config_reconcile_id}"
+
 
 aws s3 cp /tmp/plan_output.txt s3://zlifecycle-$zl_env-tfplan-$customer_id/$team_name/$env_name/$config_name/$config_reconcile_id/plan_output --profile compuzest-shared
 aws s3 cp terraform-plan s3://zlifecycle-$zl_env-tfplan-$customer_id/$team_name/$env_name/$config_name/tfplans/$config_reconcile_id --profile compuzest-shared
@@ -26,6 +57,9 @@ resources=$(cat output.json | jq -r ".projects[0].breakdown.resources")
 # fi
 
 costing_payload='{"teamName": "'$team_name'", "environmentName": "'$env_name'", "component": { "componentName": "'$config_name'", "cost": '$estimated_cost', "resources" : '$resources'  }}'
+echo "Costing Payload : ${costing_payload}"
 echo $costing_payload >temp_costing_payload.json
 
-curl -X 'POST' "http://zlifecycle-api.${customer_id}-system.svc.cluster.local/costing/api/v1/saveComponent" -H 'accept: */*' -H 'Content-Type: application/json' -d @temp_costing_payload.json
+# TODO : add orgId to URL
+# TODO : replace customer_id with generic multi-tenant API url
+curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/costing/saveComponent" -H 'accept: */*' -H 'Content-Type: application/json' -d @temp_costing_payload.json
