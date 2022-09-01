@@ -56,8 +56,6 @@ func TestTerraformTemplates_ExecuteVersions(t *testing.T) {
 
 	expected := `
 terraform {
-	required_version = "1.2.3"
-
 	required_providers {
 		aws = {
 			version = "~> 4.1"
