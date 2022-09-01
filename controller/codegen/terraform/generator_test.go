@@ -139,8 +139,6 @@ func TestGenerateTerraform(t *testing.T) {
 	fourth := mockFileService.EXPECT().SaveFileFromString(expectedSharedProvider, gomock.Any(), "provider_shared.tf").After(third)
 
 	expectedVersions := `terraform {
-	required_version = "1.0.9"
-
 	required_providers {
 		aws = {
 			version = "~> 4.0"
