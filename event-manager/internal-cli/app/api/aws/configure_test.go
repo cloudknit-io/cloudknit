@@ -14,11 +14,12 @@ func TestGenerateAWSCredentialsEntry(t *testing.T) {
 		t.Skip()
 	}
 
-	creds := aws.GenerateAWSCredentialsEntry("client-test", "xxx", "yyy")
+	creds := aws.GenerateAWSCredentialsEntry("client-test", "xxx", "yyy", "us-west-1")
 
 	expected := `[client-test]
 aws_access_key_id = xxx
-aws_secret_access_key = yyy`
+aws_secret_access_key = yyy
+region = us-west-1`
 
 	assert.Equal(t, creds, expected)
 }
