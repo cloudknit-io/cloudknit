@@ -20,6 +20,7 @@ ingressPaths:
   - "/error-api"
   - "/events"
   - "/users"
+  - "/session"
 protocol:
 auth0:
   baseUrl:
