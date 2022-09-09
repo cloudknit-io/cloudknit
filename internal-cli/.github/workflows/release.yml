@@ -7,7 +7,7 @@ permissions:
   contents: write
 jobs:
   test:
-    uses: "CompuZest/zlifecycle-internal-cli/.github/workflows/test.yml@main"
+    uses: "zlifecycle/zlifecycle-internal-cli/.github/workflows/test.yml@main"
   build:
     runs-on: "ubuntu-latest"
     steps:
