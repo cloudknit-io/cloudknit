@@ -63,6 +63,7 @@ export class AuthService {
     const newUser = new User();
     newUser.email = user.email;
     newUser.username = user.username;
+    newUser.role = user.role;
     newUser.organizations = [org];
     
     return this.userRepo.save(newUser);

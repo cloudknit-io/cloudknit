@@ -192,6 +192,7 @@ export class ReconciliationService {
         team_name: runData.teamName,
         status: runData.status,
         end_date_time: runData.endDateTime,
+        organization: org
       };
 
       // QUESTION : This queries all previously unfinished (status == null) EnvironmentReconcile's 
@@ -341,9 +342,9 @@ export class ReconciliationService {
 
     const environments = await this.environmentReconcileRepository
       .createQueryBuilder()
-      .where('name = :name and environmentId = :envId', {
+      .where('name = :name and organizationId = :orgId', {
         name: id,
-        envId: env.id
+        orgId: org.id
       })
       .getMany();
 

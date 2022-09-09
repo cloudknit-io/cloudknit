@@ -172,7 +172,7 @@ export class ComponentService {
         cost: await this.getTeamCost(component.organization, component.teamName),
       },
       environment: {
-        environmentId: `${component.teamName}-${component.environment.name}`,
+        environmentId: component.environment.name,
         cost: await this.getEnvironmentCost(
           component.organization,
           component.teamName,
@@ -200,13 +200,14 @@ export class ComponentService {
   }
 
   async getResourceData(org: Organization, id: string) {
-    const resultSet = await this.resourceRepository
-      .createQueryBuilder()
-      .where('componentId = :compId and organizationId = :orgId', {
-        compId: id,
-        orgId: org.id
-      })
-      .getMany();
+    const resultSet = await this.resourceRepository.find({
+      where: {
+        componentId: id,
+        organization: {
+          id: org.id
+        }
+      },
+  });
 
     const roots = [];
     var resources = new Map<string, any>(
