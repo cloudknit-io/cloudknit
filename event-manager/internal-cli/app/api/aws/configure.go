@@ -95,6 +95,9 @@ func getEnvironmentScopeSecrets(company, team, environment string, keys ...strin
 func checkForAWSCreds(scrts []*secret.Secret) (creds *Credentials, exist bool) {
 	var accessKeyID, secretAccessKey, region string
 
+	// Setting default region to us-east-1
+	region = "us-east-1"
+
 	for _, scrt := range scrts {
 		if strings.HasSuffix(scrt.Key, util.StateAWSAccessKeyID) && scrt.Exists {
 			accessKeyID = *scrt.Value
