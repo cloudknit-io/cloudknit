@@ -103,7 +103,7 @@ func checkForAWSCreds(scrts []*secret.Secret) (creds *Credentials, exist bool) {
 			secretAccessKey = *scrt.Value
 		}
 		if strings.HasSuffix(scrt.Key, util.StateAWSRegion) && scrt.Exists {
-			secretAccessKey = *scrt.Value
+			region = *scrt.Value
 		}
 	}
 
