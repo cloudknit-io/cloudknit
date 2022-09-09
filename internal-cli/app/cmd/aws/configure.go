@@ -62,7 +62,7 @@ func NewConfigureCmd() *cobra.Command {
 				return errors.Wrap(err, "error getting state aws credentials")
 			}
 
-			entry := aws.GenerateAWSCredentialsEntry(env.AWSGeneratedProfile, credentials.AccessKeyID, credentials.SecretAccessKey)
+			entry := aws.GenerateAWSCredentialsEntry(env.AWSGeneratedProfile, credentials.AccessKeyID, credentials.SecretAccessKey, credentials.Region)
 
 			logger.Infof("Adding an entry in AWS config file %s for profile [%s]", env.AWSConfigFile, env.AWSGeneratedProfile)
 

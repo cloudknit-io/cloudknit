@@ -13,14 +13,15 @@ import (
 //nolint
 const credentialsFormat = `[%s]
 aws_access_key_id = %s
-aws_secret_access_key = %s`
+aws_secret_access_key = %s
+region = %s`
 
-func GenerateAWSCredentialsEntry(profile, accessKeyID, secretAccessKey string) string {
-	return fmt.Sprintf(credentialsFormat, profile, accessKeyID, secretAccessKey)
+func GenerateAWSCredentialsEntry(profile, accessKeyID, secretAccessKey string, region string) string {
+	return fmt.Sprintf(credentialsFormat, profile, accessKeyID, secretAccessKey, region)
 }
 
 func GetStateAWSCredentials(client secret.API, meta *secret.Identifier, log *logrus.Entry) (*Credentials, error) {
-	secretsToFetch := []string{util.StateAWSAccessKeyID, util.StateAWSSecretAccessKey}
+	secretsToFetch := []string{util.StateAWSAccessKeyID, util.StateAWSSecretAccessKey, util.StateAWSRegion}
 	log.Info("Checking for AWS creds in environment scope")
 	scrts, err := client.GetSecrets(
 		getEnvironmentScopeSecrets(
@@ -92,7 +93,7 @@ func getEnvironmentScopeSecrets(company, team, environment string, keys ...strin
 }
 
 func checkForAWSCreds(scrts []*secret.Secret) (creds *Credentials, exist bool) {
-	var accessKeyID, secretAccessKey string
+	var accessKeyID, secretAccessKey, region string
 
 	for _, scrt := range scrts {
 		if strings.HasSuffix(scrt.Key, util.StateAWSAccessKeyID) && scrt.Exists {
@@ -101,12 +102,16 @@ func checkForAWSCreds(scrts []*secret.Secret) (creds *Credentials, exist bool) {
 		if strings.HasSuffix(scrt.Key, util.StateAWSSecretAccessKey) && scrt.Exists {
 			secretAccessKey = *scrt.Value
 		}
+		if strings.HasSuffix(scrt.Key, util.StateAWSRegion) && scrt.Exists {
+			secretAccessKey = *scrt.Value
+		}
 	}
 
 	if accessKeyID != "" && secretAccessKey != "" {
 		return &Credentials{
 			AccessKeyID:     accessKeyID,
 			SecretAccessKey: secretAccessKey,
+			Region: region,
 		}, true
 	}
 	return nil, false
