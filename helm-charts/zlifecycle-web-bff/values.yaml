@@ -21,6 +21,7 @@ ingressPaths:
   - "/events"
   - "/users"
   - "/session"
+  - "/registration"
 protocol:
 auth0:
   baseUrl:
