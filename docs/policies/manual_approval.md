@@ -4,7 +4,7 @@ If the `autoApprove` flag is set to `false` or is omitted (defaults to `false`) 
 
 In this sample example we are **provisioning** an environment called **sandbox**.
 
-Once your YAML is pushed, you will see a similar card on **zlifecycle Environments** page.
+Once your YAML is pushed, you will see a similar card on **{{ company_name }} Environments** page.
 
 <br/>
 
@@ -30,7 +30,7 @@ Once clicked, you will see a right panel (which is a **component details view**)
 
 Click [here](../component_details_view.md) to know more about the **component details view**
 
-Once approved, wait for **zlifecycle to provision your environment**. After its completed, you will see a similar view to the image below:
+Once approved, wait for **{{ company_name }} to provision your environment**. After its completed, you will see a similar view to the image below:
 
 <br/>
 

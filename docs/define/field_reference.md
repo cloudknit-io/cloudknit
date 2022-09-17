@@ -85,9 +85,9 @@ Array of environment components.
 |`name`|`string`| Name of the environment component |
 |`type`|`string`| `terraform` is currently the only supported type |
 |`destroy`|`boolean`| Optional field. Flag for destroying a component. Default is `false`. More info [here](../destroy.md) |
-|`destroyProtection`|`boolean`| Optional field. If set to `true`, zLifecycle will not destroy this component (default is `false`) |
+|`destroyProtection`|`boolean`| Optional field. If set to `true`, {{ company_name }} will not destroy this component (default is `false`) |
 |`dependsOn`|`array`| Optional field. Array of environment component names, which this module depends on |
-|[`secrets`](#secrets)|| This section references the secret values which are input through the zLifecycle UI |
+|[`secrets`](#secrets)|| This section references the secret values which are input through the {{ company_name }} UI |
 |[`tags`](#tags)|| Tags are labels attached to components for the purpose of identification. It is an `array` of `string`  |
 |[`variables`](#inline-variables)|| **Inline** variables, these will get injected into the terraform module when TF code is generated. `array` of `name -> value` objects |
 |[`variablesFile`](#variables-from-a-file)|`string`| Variables can also be passed from an output defined in a previous module using `outputs` block, via a tfvars file |
@@ -119,9 +119,9 @@ Array of environment components.
 ### Secrets
 | Field Name | Field Type | Description   |
 |:----------:|:----------:|---------------|
-|`secrets`|| This section references the secret values which are input through the zLifecycle UI |
+|`secrets`|| This section references the secret values which are input through the {{ company_name }} UI |
 |`name`|`string`| Name of the terraform module variable |
-|`key`|`string`| Secret name entered in zLifecycle UI settings page |
+|`key`|`string`| Secret name entered in {{ company_name }} UI settings page |
 |`scope`|`string`| Refers to what scope the secret is valid in. Valid scopes are `org`, `team` and `environment` |
 
 ### Tags

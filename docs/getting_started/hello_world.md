@@ -1,8 +1,6 @@
-# Hello World Environment
+# Hello, World! Environment
 
 Make sure you've completed [configuring AWS Credentials](../settings/aws_credentials.md) and [onboarded a team](./onboard_team.md) before starting this walkthrough.
-
-## Provision your first Environment
 
 1. Clone the team repo (`zl-[team-name]-config`) you created in [onboarding a team](./onboard_team.md)
 1. Create a `hello-world` directory in the cloned repo
@@ -48,7 +46,7 @@ Make sure you've completed [configuring AWS Credentials](../settings/aws_credent
   ```
   </details>
 1. Commit the changes and push to Github
-1. Go to Environments page on **zLifecycle** UI
+1. Go to Environments page on **{{ company_name }}** UI
     * After a few minutes you should see your new environment
     * It will provision the `images` s3 bucket first, then `videos` s3 bucket
 1. Once it starts provisioning, click on the `images` component
@@ -100,4 +98,4 @@ You can read more about `teardown` [here](../policies/teardown.md).
 1. Commit and push changes to Github
     * The teardown will start at the bottom most leaf node
 1. Approve the teardown plan when prompted
-1. Monitor the progress on **zLifecycle** UI
+1. Monitor the progress on **{{ company_name }}** UI

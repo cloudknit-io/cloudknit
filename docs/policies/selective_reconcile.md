@@ -39,5 +39,4 @@ selectiveReconcile:
     tagValues: [app, data]
 ```
 
-In that case zLifecycle compares the above properties and sets up matching components to be skipped.
-
+In that case **{{ company_name }}** compares the above properties and sets up matching components to be skipped.

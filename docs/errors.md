@@ -41,7 +41,7 @@ apiVersion: stable.compuzest.com/v1
 kind: Environment
 metadata:
   name: dev-checkout-sandbox
-  namespace: zlifecycle
+  namespace: {{ company_name }}
 spec:
   teamName: checkout
   envName: sandbox  

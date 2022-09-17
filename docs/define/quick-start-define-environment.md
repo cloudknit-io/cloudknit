@@ -1,6 +1,6 @@
 # Environment YAML
 
-An environment YAML is the starting point when provisioning the environment, it provides zlifecycle the meta information required to **create** and **deploy** the **components**, **modules**, etc.
+An environment YAML is the starting point when provisioning the environment, it provides **{{ company_name }}** the meta information required to **create** and **deploy** the **components**, **modules**, etc.
 
 - [Environment YAML](#environment-yaml)
     - [Metdata](#metdata)
@@ -29,7 +29,7 @@ kind: Environment
   Overview
 </h4>
 
-Metadata propery contains the `name` of your `environment` along with the `namespace` property which for now is always `zlifecycle`
+Metadata propery contains the `name` of your `environment` along with the `namespace` property which for now is always `{{ company_name }}`
 
 <div style="background-color: #ccc; height: 1px"></div>
 
@@ -54,10 +54,10 @@ name: orgtech-client-demo
   Namespace Property
 </h4>
 
-Namespace is always `zlifecycle` for every yaml you create.
+Namespace is always `{{ company_name }}` for every yaml you create.
 
 ```yaml
-namespace: zlifecycle
+namespace: {{ company_name }}
 ```
 
 <div style="background-color: #ccc; height: 1px"></div>
@@ -70,8 +70,8 @@ namespace: zlifecycle
 metadata:
   # Environment CRD k8s object name
   name: orgtech-client-demo
-  # namespace is `zlifecycle` for every yaml you create
-  namespace: zlifecycle
+  # namespace is `{{ company_name }}` for every yaml you create
+  namespace: {{ company_name }}
 ```
 
 ---
@@ -121,9 +121,9 @@ envName: demo
   Auto Approve
 </h4>
 
-When we provision or destroy an environment, by default, zlifecycle UI always asks for approval from the end-user.
+When we provision or destroy an environment, by default, **{{ company_name }}** UI always asks for approval from the end-user.
 
-This property allows zlifecycle to skip the approval process.
+This property allows **{{ company_name }}** to skip the approval process.
 
 **OPTIONAL**: defaulted to false if not provided
 
@@ -137,7 +137,7 @@ autoApprove: true
   Teardown
 </h4>
 
-This property tells zlifecycle to destroy an environment, so if you are **provisioning** an environment **remember to either remove it or set it to false**
+This property tells **{{ company_name }}** to destroy an environment, so if you are **provisioning** an environment **remember to either remove it or set it to false**
 
 **OPTIONAL**: default value is false
 
@@ -153,7 +153,7 @@ teardown: true
   Selective Reconcile (Optional)
 </h4>
 
-This property tells zlifecycle to **skip** certain components based on **tagName** and **tagValues** properties.
+This property tells **{{ company_name }}** to **skip** certain components based on **tagName** and **tagValues** properties.
 
 **OPTIONAL**
 
@@ -389,14 +389,14 @@ variables:
 secrets: []
 ```
 
-References secret values which are added through the zLifecycle UI.
+References secret values which are added through the **{{ company_name }}** UI.
 
 See [Secrets](secrets.md) Section.
 
   <br/>
 
 - **Name**: Name of the terraform module variable.
-- **Key**: Secret name entered in zLifecycle UI settings page.
+- **Key**: Secret name entered in **{{ company_name }}** UI settings page.
 - **Scope**: Scope configures secret scope granularity.
 
   - Org
@@ -559,7 +559,7 @@ dependsOn: [networking]
   kind: Environment
   metadata:
     name: org-tech-client-demo
-    namespace: zlifecycle
+    namespace: {{ company_name }}
   spec:
     teamName: client
     envName: demo

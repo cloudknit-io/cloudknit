@@ -12,11 +12,11 @@ This view provides the following information about the selected component.
 
 ![sample-logs](assets/images/sample-provision-success.png "Sample Logs")
 
-zLifecycle provides the user with two types of logs:
+**{{ company_name }}** provides the user with two types of logs:
 
 * **Concise Logs:** These logs do not show any unnecessary or verbose information to the end-user.
 
-*  **Detailed Logs:** As the name suggests these logs show every bit of information emitted by zlifecycle's logging mechanism and can sometimes be useful for troubleshooting.
+*  **Detailed Logs:** As the name suggests these logs show every bit of information emitted by **{{ company_name }}**'s logging mechanism and can sometimes be useful for troubleshooting.
 
 ### Detailed Cost Breakdown
 
@@ -52,4 +52,4 @@ This view allows the end-user to view the **state file** of the selected **compo
 
 ![state-editor](assets/images/state-editor.png "State Editor")
 
-When you click on the edit button, the state editor view will open and zlifecycle will fetch the **terraform resources**. From here, a user can **delete** the **terraform resources** if required.
+When you click on the edit button, the state editor view will open and **{{ company_name }}** will fetch the **terraform resources**. From here, a user can **delete** the **terraform resources** if required.

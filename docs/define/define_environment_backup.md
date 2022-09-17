@@ -7,7 +7,7 @@
 When you provision or teardown an **environment**, the terraform plan needs to be approved. The approval step can be automated, by setting the flag to `true`. By default, this flag is set to `false`, requiring the user to manually approve.
 
 
-This property allows zlifecycle to skip the approval process.
+This property allows **{{ company_name }}** to skip the approval process.
 
 **OPTIONAL**: defaulted to false if not provided
 
@@ -21,7 +21,7 @@ autoApprove: true
   Teardown
 </h4>
 
-This property tells zlifecycle to destroy an environment, so if you are **provisioning** an environment **remember to either remove it or set it to false**
+This property tells **{{ company_name }}** to destroy an environment, so if you are **provisioning** an environment **remember to either remove it or set it to false**
 
 **OPTIONAL**: default value is false
 
@@ -37,7 +37,7 @@ teardown: true
   Selective Reconcile (Optional)
 </h4>
 
-This property tells zlifecycle to **skip** certain components based on **tagName** and **tagValues** properties.
+This property tells **{{ company_name }}** to **skip** certain components based on **tagName** and **tagValues** properties.
 
 **OPTIONAL**
 
@@ -274,14 +274,14 @@ variables:
 secrets: []
 ```
 
-References secret values which are added through the zLifecycle UI.
+References secret values which are added through the **{{ company_name }}** UI.
 
 See [Secrets](secrets.md) Section.
 
   <br/>
 
 - **Name**: Name of the terraform module variable.
-- **Key**: Secret name entered in zLifecycle UI settings page.
+- **Key**: Secret name entered in **{{ company_name }}** UI settings page.
 - **Scope**: Scope configures secret scope granularity.
 
   - Org
@@ -444,7 +444,7 @@ dependsOn: [networking]
   kind: Environment
   metadata:
     name: org-tech-client-demo
-    namespace: zlifecycle
+    namespace: {{ company_name }}
   spec:
     teamName: client
     envName: demo
@@ -537,4 +537,3 @@ dependsOn: [networking]
   ```
 
   ***
-

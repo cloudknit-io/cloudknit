@@ -1,9 +1,16 @@
+extra:
+  company_name: zLifecycle
+  prod_url: https://zlifecycle.app/
+
 site_name: zLifecycle - Environment Managment Made Easy
 site_url: https://docs.zlifecycle.com/
 theme:
   name: material
   favicon: assets/images/favicon.png
   logo: assets/images/logo.png
+plugins:
+    - search
+    - markdownextradata
 markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
@@ -21,10 +28,10 @@ nav:
   - getting_started/setup.md
   - getting_started/onboard_team.md
   - getting_started/hello_world.md
+  - getting_started/install_github_app.md
 - Settings:
   - settings/aws_credentials.md
   - settings/secrets.md
-  - settings/zlifecycle_app_installation.md
 - Define:
   - define/define_environment.md
   - define/field_reference.md
