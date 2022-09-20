@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Organization, User} from "src/typeorm";
-import { CreateUserDto } from "src/users/User.dto";
+import { CreateUserDto, PatchUserDto } from "src/users/User.dto";
 import { Repository } from "typeorm";
 
 @Injectable()
@@ -12,18 +12,12 @@ export class AuthService {
     @InjectRepository(User) private readonly userRepo: Repository<User>
   ) {}
 
-  public async getTermAgreementStatus(org: Organization, body: any) {
-    return this.getOrgUser(org, body).then(
-      (user: User) => user?.termAgreementStatus || false
-    );
-  }
-
-  public async setTermAgreementStatus(org: Organization, username) {
-    const user = await this.getOrgUser(org, username);
-
-    user.termAgreementStatus = true;
-    return await this.userRepo.save(user);
-  }
+  // public async getUser(username: string) {
+  //   return this.userRepo.createQueryBuilder('user')
+  //     .leftJoinAndSelect('user.organizations', 'organization')
+  //     .where('organization.id = :orgId and user.username = :username', { orgId: org.id, username })
+  //     .getOne();
+  // }
 
   public async getOrgUser(org: Organization, username: string) {
     return this.userRepo.createQueryBuilder('user')
@@ -46,9 +40,7 @@ export class AuthService {
       // adds existing user to org
       for (let userOrg of currentUser.organizations) {
         if (userOrg.id == org.id) {
-          throw new BadRequestException({
-            message: `${currentUser.username} is already a member of ${org.name}`,
-          });
+          throw new BadRequestException(`${currentUser.username} is already a member of ${org.name}`);
         }
       }
 
@@ -62,6 +54,7 @@ export class AuthService {
     // Create user
     const newUser = new User();
     newUser.email = user.email;
+    newUser.name = user.name;
     newUser.username = user.username;
     newUser.role = user.role;
     newUser.organizations = [org];
@@ -69,13 +62,16 @@ export class AuthService {
     return this.userRepo.save(newUser);
   }
 
+  // public async updateUser(userUpdates: PatchUserDto) {
+  //   const user = await this.getUser
+  // }
+
+  // Delete user only removes the User <-> Org associattion
   public async deleteUser(org: Organization, username: string) {
     const user = await this.getOrgUser(org, username);
 
     if (!user) {
-      throw new BadRequestException({
-        message: "user does not exist",
-      });
+      throw new BadRequestException("user does not exist");
     }
 
     const userOrgs = user.organizations;

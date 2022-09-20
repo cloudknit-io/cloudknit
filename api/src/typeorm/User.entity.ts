@@ -26,10 +26,9 @@ export class User {
   })
   email: string;
 
-  @Column({
-    default: false
-  })
-  termAgreementStatus: boolean;
+  @ApiProperty()
+  @Column()
+  name: string;
 
   @Column({
     default: "User",

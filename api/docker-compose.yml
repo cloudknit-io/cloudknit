@@ -6,13 +6,12 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: nestjsrealworld
+      MYSQL_DATABASE: zlifecycle
     ports:
       - "3306:3306"
     volumes: 
       - db-config:/etc/mysql
       - db-data:/var/lib/mysql
-      - ./db/backup/files/:/data_backup/data
 
   # TODO : re-enable this but with HRL
   # api:

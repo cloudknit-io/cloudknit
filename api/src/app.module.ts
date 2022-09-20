@@ -5,7 +5,7 @@ import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { AuthModule } from "./auth/auth.module";
 import { CostingModule } from "./costing/costing.module";
 import { OrganizationModule } from "./organization/organization.module";
-import { OrganizationsModule } from "./organizations/organizations.module";
+import { RootOrganizationsModule } from "./rootOrganization/rootOrganization.module";
 import { ReconciliationModule } from "./reconciliation/reconciliation.module";
 import { orgRoutes } from "./routes";
 import { SecretsModule } from "./secrets/secrets.module";
@@ -32,7 +32,7 @@ const typeOrmModuleOptions: TypeOrmModuleOptions = {
     RouterModule.register(orgRoutes),
     TypeOrmModule.forRoot(typeOrmModuleOptions),
     UsersModule,
-    OrganizationsModule,
+    RootOrganizationsModule,
     OrganizationModule,
     CostingModule,
     ReconciliationModule,

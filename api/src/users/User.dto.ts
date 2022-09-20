@@ -8,12 +8,27 @@ export class CreateUserDto {
   email: string
 
   @ApiProperty({
-    default: false
-  })
-  termAgreementStatus?: boolean
-
-  @ApiProperty({
     default: 'User'
   })
   role: string
+
+  @ApiProperty()
+  name: string
+}
+
+export class PatchUserDto {
+  @ApiProperty({
+    default: null
+  })
+  email: string
+
+  @ApiProperty({
+    default: null
+  })
+  role: string
+
+  @ApiProperty({
+    default: null
+  })
+  name: string
 }

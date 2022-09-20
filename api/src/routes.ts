@@ -2,7 +2,7 @@ import { Routes } from "@nestjs/core";
 import { AuthModule } from "./auth/auth.module";
 import { CostingModule } from "./costing/costing.module";
 import { OrganizationModule } from "./organization/organization.module";
-import { OrganizationsModule } from "./organizations/organizations.module";
+import { RootOrganizationsModule } from "./rootOrganization/rootOrganization.module";
 import { ReconciliationModule } from "./reconciliation/reconciliation.module";
 import { SecretsModule } from "./secrets/secrets.module";
 import { UsersModule } from "./users/users.module";
@@ -14,7 +14,7 @@ export const orgRoutes: Routes = [
   },
   {
     path: '/orgs',
-    module: OrganizationsModule,
+    module: RootOrganizationsModule,
     children: [
       {
         path: '/:orgId',

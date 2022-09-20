@@ -1,7 +1,8 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from 'src/typeorm';
 import { Repository } from "typeorm";
+import { CreateUserDto } from "./User.dto";
 
 @Injectable()
 export class UsersService {
@@ -9,7 +10,7 @@ export class UsersService {
 
   constructor(@InjectRepository(User) private userRepo: Repository<User>) {}
 
-  async getUser(username: string) {
+  async getUser(username: string): Promise<User> {
     return this.userRepo.findOne({ 
       where : { username },
       relations: {
@@ -18,42 +19,36 @@ export class UsersService {
     });
   }
 
-  // MAKE THE FOLLOWING ENDPOINTS IN THE USERS MODULE
-  // - GET /users
-  // - POST /users
-  // - GET /users/:userId
+  async getUserById(userId: number): Promise<User> {
+    return this.userRepo.findOne({ 
+      where : { id: userId },
+      relations: {
+        organizations: true
+      }
+    });
+  }
 
-  // async create(user: CreateUserDto) {
-  //   // User should not exist
-  //   const userExists = await this.getUser({ username });
+  async create(userDto: CreateUserDto) {
+    // User should not exist
+    const userExists = await this.getUser(userDto.username);
     
-  //   if (userExists) {
-  //     throw new BadRequestException({
-  //       message: "User with Github Id already exists",
-  //     });
-  //   }
+    if (userExists) {
+      throw new BadRequestException({
+        message: "User with Github Id already exists",
+      });
+    }
 
-  //   // Org should exist
-  //   const organization = await this.getOrg(organizationId);
+    const newUser = new User();
+    newUser.email = userDto.email;
+    newUser.name = userDto.name;
+    newUser.username = userDto.username;
+    newUser.role = userDto.role;
+    newUser.organizations = [];
+
+    const user = await this.userRepo.save(newUser);
     
-  //   if (!organization) {
-  //     throw new BadRequestException({
-  //       message: "Organization does not exist",
-  //     });
-  //   }
-
-  //   // Create user
-  //   const user = await this.userRepo.save({
-  //     username,
-  //     email,
-  //     role: role || "User",
-  //   });
+    this.logger.log('created user', { user: userDto })
     
-  //   return this.orgUserRepo.save({
-  //     user,
-  //     organization
-  //   })
-
-  //   return this.userRepo.save(user)
-  // }
+    return user;
+  }
 }

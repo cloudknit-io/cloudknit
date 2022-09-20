@@ -3,8 +3,10 @@ import {
   CreateDateColumn,
   Entity,
   Index,
+  JoinColumn,
   JoinTable,
   ManyToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
@@ -13,23 +15,11 @@ import { User } from "./User.entity";
 @Entity({ name: "organization" })
 export class Organization {
   @PrimaryGeneratedColumn()
-  id: number
+  id: number;
 
   @Index({ unique: true })
   @Column()
-  name: string
-
-  @Column({
-    name: "client_id",
-    default: null
-  })
-  clientId: string;
-
-  @Column({
-    name: "client_secret",
-    default: null
-  })
-  clientSecret: string;
+  name: string;
 
   @Column({
     name: "github_repo",
@@ -37,21 +27,15 @@ export class Organization {
   })
   githubRepo: string;
 
+  @OneToOne(() => User, (user) => user.id)
   @Column({
-    name: "github_path",
     default: null
   })
-  githubPath: string;
-
-  @Column({
-    name: "github_source",
-    default: null
-  })
-  githubSource: string;
+  termsAgreedUserId: number;
 
   @ManyToMany(() => User, (user) => user.organizations)
   @JoinTable()
-  users: User[]
+  users: User[];
 
   @UpdateDateColumn()
   updated: Date;

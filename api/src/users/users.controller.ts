@@ -1,6 +1,7 @@
-import { Controller, Get, Logger, NotFoundException, Param } from "@nestjs/common";
+import { Body, Controller, Get, Logger, NotFoundException, Param, Post } from "@nestjs/common";
 import { AuthController } from "src/auth/auth.controller";
 import { User } from "src/typeorm/User.entity";
+import { CreateUserDto } from "./User.dto";
 import { UsersService } from "./users.service";
 
 @Controller({
@@ -20,6 +21,15 @@ export class UsersController {
     if (!user) {
       throw new NotFoundException();
     }
+
+    this.logger.log('found user', {user});
+
+    return user;
+  }
+
+  @Post()
+  public async createUser(@Body() body: CreateUserDto): Promise<User> {
+    const user = await this.userService.create(body);
 
     return user;
   }

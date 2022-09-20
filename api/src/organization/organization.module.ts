@@ -17,7 +17,7 @@ export class OrganizationModule implements NestModule {
       /**
        * This is confusing but I don't know how else to do it.
        * 
-       * The goal is for _all_ routes to have req.org which is handled
+       * The goal is for _all_ `/[ver]/orgs/:id` routes to have req.org which is handled
        * via OrgnizationMiddleware.
        * 
        * Since this path value is used to evaluate the path from root
