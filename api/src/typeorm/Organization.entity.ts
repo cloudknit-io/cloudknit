@@ -37,6 +37,11 @@ export class Organization {
   @JoinTable()
   users: User[];
 
+  @Column({
+    default: false
+  })
+  provisioned: boolean;
+
   @UpdateDateColumn()
   updated: Date;
 
