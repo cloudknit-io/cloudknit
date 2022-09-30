@@ -1,4 +1,5 @@
-imageTag: latest
+terraformImageTag: latest
+provisionOrgImage:
 serviceAccountName: zlifecycle-reconciler
 companyName: !!!CompanyName!!!
 resources:
