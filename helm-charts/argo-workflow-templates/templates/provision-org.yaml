@@ -36,5 +36,5 @@ spec:
   volumes:
     - name: github-ssh-key-mount
       secret:
-        secretName: zlifecycle-provisioner-ssh
+        secretName: org-provisioner-ssh
         defaultMode: 384
