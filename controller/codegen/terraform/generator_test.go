@@ -4,12 +4,6 @@ import (
 	"os"
 	"testing"
 
-	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
-
-	"github.com/compuzest/zlifecycle-il-operator/controller/common/git"
-
-	"github.com/sirupsen/logrus"
-
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/file"
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/terraform"
 	"github.com/compuzest/zlifecycle-il-operator/controller/env"
@@ -18,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGenerateCustomTerraformSingleOutput(t *testing.T) {
+/*func TestGenerateCustomTerraformSingleOutput(t *testing.T) {
 	t.Parallel()
 
 	mockCtrl := gomock.NewController(t)
@@ -51,7 +45,7 @@ func TestGenerateCustomTerraformSingleOutput(t *testing.T) {
 	}
 	err := terraform.GenerateCustomTerraform(mockFileService, mockGitClient, vars, testRepo, testPath, testTFDirectory, nil, nil, log)
 	assert.Nil(t, err)
-}
+}*/
 
 /*func TestGenerateCustomTerraformMultipleOutputs(t *testing.T) {
 	t.Parallel()
