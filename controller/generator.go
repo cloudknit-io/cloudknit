@@ -201,7 +201,7 @@ func generateTerraformComponent(
 
 	vars := terraform.NewTemplateVariablesFromEnvironment(e, ec, generatedTFVars, tfcfg)
 	if ec.Subtype == TerraformSubtypeCustom {
-		if err := terraform.GenerateCustomTerraform(fileService, gitClient, vars, ec.Module.Source, ec.Module.Path, tfDirectory, log); err != nil {
+		if err := terraform.GenerateCustomTerraform(fileService, gitClient, vars, ec.Module.Source, ec.Module.Path, tfDirectory, gitReconciler, key, log); err != nil {
 			return zerrors.NewEnvironmentComponentError(ec.Name, errors.Wrap(err, "error generating custom terraform"))
 		}
 	} else {
