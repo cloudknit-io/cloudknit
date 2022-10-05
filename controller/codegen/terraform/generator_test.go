@@ -49,7 +49,7 @@ func TestGenerateCustomTerraformSingleOutput(t *testing.T) {
 			},
 		},
 	}
-	err := terraform.GenerateCustomTerraform(mockFileService, mockGitClient, vars, testRepo, testPath, testTFDirectory, log)
+	err := terraform.GenerateCustomTerraform(mockFileService, mockGitClient, vars, testRepo, testPath, testTFDirectory, nil, nil, log)
 	assert.Nil(t, err)
 }
 
@@ -91,7 +91,7 @@ output "test_output2" {
 			},
 		},
 	}
-	err := terraform.GenerateCustomTerraform(mockFileService, mockGitClient, vars, testRepo, testPath, testTFDirectory, log)
+	err := terraform.GenerateCustomTerraform(mockFileService, mockGitClient, vars, testRepo, testPath, testTFDirectory, nil, nil, log)
 	assert.Nil(t, err)
 }
 
