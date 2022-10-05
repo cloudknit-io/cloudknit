@@ -36,6 +36,8 @@ func GenerateCustomTerraform(
 	sourceRepoURL string,
 	sourceTFModulePath string,
 	tfDirectory string,
+	gitReconciler gitreconciler.API,
+	key *client.ObjectKey,
 	log *logrus.Entry,
 ) error {
 	tpl, err := tftmpl.NewTerraformTemplates()
@@ -64,6 +66,8 @@ func GenerateCustomTerraform(
 			return errors.Wrap(err, "error saving content to zl_autogen_outputs.tf")
 		}
 	}
+
+	submitToGitReconciler(gitReconciler, key, sourceRepoURL, log)
 
 	return nil
 }
@@ -304,4 +308,16 @@ func generateVersions(tpl *tftmpl.TerraformTemplates, vars *TemplateVariables) (
 	}
 
 	return tpl.Execute(versionsConfig, tftmpl.TmplTFVersions)
+}
+
+func submitToGitReconciler(gitReconciler gitreconciler.API, key *client.ObjectKey, sourceRepoURL string, log *logrus.Entry) {
+	log.WithFields(logrus.Fields{
+		"repository": sourceRepoURL,
+	}).Infof("Subscribing to config repository %s in git reconciler", sourceRepoURL)
+	subscribed := gitReconciler.Subscribe(sourceRepoURL, *key)
+	if subscribed {
+		log.WithFields(logrus.Fields{
+			"repository": sourceRepoURL,
+		}).Info("Already subscribed in git reconciler to repository")
+	}
 }
