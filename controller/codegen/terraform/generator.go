@@ -20,11 +20,13 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/git"
 
 	"github.com/sirupsen/logrus"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/file"
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/il"
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/secret"
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/terraform/tftmpl"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/gitreconciler"
 	"github.com/compuzest/zlifecycle-il-operator/controller/util"
 	"github.com/pkg/errors"
 )
