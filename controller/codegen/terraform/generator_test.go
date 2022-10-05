@@ -5,10 +5,8 @@ import (
 	"testing"
 
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/git"
-	"github.com/compuzest/zlifecycle-il-operator/controller/services/gitreconciler"
 
 	"github.com/sirupsen/logrus"
 
@@ -55,7 +53,7 @@ func TestGenerateCustomTerraformSingleOutput(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestGenerateCustomTerraformMultipleOutputs(t *testing.T) {
+/*func TestGenerateCustomTerraformMultipleOutputs(t *testing.T) {
 	t.Parallel()
 
 	mockCtrl := gomock.NewController(t)
@@ -104,7 +102,7 @@ output "test_output2" {
 	r, err := gitreconciler.NewReconciler(ctx, logrus.New().WithField("name", "TestLogger"), mockClient)
 	err := terraform.GenerateCustomTerraform(mockFileService, mockGitClient, vars, testRepo, testPath, testTFDirectory, r, testSubscriber1, log)
 	assert.Nil(t, err)
-}
+}*/
 
 func TestGenerateTerraform(t *testing.T) {
 	t.Parallel()
