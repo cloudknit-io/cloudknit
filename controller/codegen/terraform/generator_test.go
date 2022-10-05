@@ -5,8 +5,10 @@ import (
 	"testing"
 
 	v1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/git"
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/gitreconciler"
 
 	"github.com/sirupsen/logrus"
 
@@ -91,7 +93,16 @@ output "test_output2" {
 			},
 		},
 	}
-	err := terraform.GenerateCustomTerraform(mockFileService, mockGitClient, vars, testRepo, testPath, testTFDirectory, nil, nil, log)
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockClient := mocks.NewMockClient(mockCtrl)
+
+	testSubscriber1 := client.ObjectKey{Name: "test", Namespace: "test"}
+
+	r, err := gitreconciler.NewReconciler(ctx, logrus.New().WithField("name", "TestLogger"), mockClient)
+	err := terraform.GenerateCustomTerraform(mockFileService, mockGitClient, vars, testRepo, testPath, testTFDirectory, r, testSubscriber1, log)
 	assert.Nil(t, err)
 }
 
