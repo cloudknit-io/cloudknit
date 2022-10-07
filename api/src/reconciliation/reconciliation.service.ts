@@ -10,7 +10,7 @@ import { ComponentReconcile } from "src/typeorm/reconciliation/component-reconci
 import { Component } from "src/typeorm/reconciliation/component.entity";
 import { EnvironmentReconcile } from "src/typeorm/reconciliation/environment-reconcile.entity";
 import { Environment } from "src/typeorm/reconciliation/environment.entity";
-import { Like, Not } from "typeorm";
+import { IsNull, Like, Not } from "typeorm";
 import { Repository } from "typeorm/repository/Repository";
 import { ComponentDto } from "./dtos/component.dto";
 import { ComponentAudit } from "./dtos/componentAudit.dto";
@@ -303,7 +303,7 @@ export class ReconciliationService {
     const entries = await repo.find({
       where: {
         name: name,
-        end_date_time: null,
+        end_date_time: IsNull(),
       },
     });
 
