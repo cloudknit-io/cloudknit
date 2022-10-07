@@ -10,7 +10,6 @@ spec:
       inputs:
         parameters:
           - name: orgName
-          - name: envName
       outputs: {}
       metadata: {}
       serviceAccountName: {{.Values.serviceAccountName}}
@@ -21,7 +20,11 @@ spec:
           - run.sh
         args:
           - '{{ print "{{inputs.parameters.orgName}}"}}'
-          - '{{ print "{{inputs.parameters.envName}}"}}'
+        env:
+          - name: ZL_ENVIRONMENT
+            value: {{.Values.zlEnvironment}}
+          - name: ZL_CONFIG_REPO
+            value: {{.Values.configRepo}}
         resources: {}
         volumeMounts:
           - name: github-ssh-key-mount
