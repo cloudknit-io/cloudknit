@@ -81,6 +81,7 @@ func (f *OSFileService) CopyDirContent(src string, dst string, mkdir bool) error
 			if err := f.CopyDirContent(absoluteSrc, absoluteDst, mkdir); err != nil {
 				return err
 			}
+			continue
 		}
 		if err := f.CopyFile(absoluteSrc, absoluteDst); err != nil {
 			return err
