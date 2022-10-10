@@ -75,11 +75,14 @@ func (f *OSFileService) CopyDirContent(src string, dst string, mkdir bool) error
 
 	for _, file := range files {
 		absoluteSrc := filepath.Join(src, file.Name())
-		// skip subfolders
+		absoluteDst := filepath.Join(dst, file.Name())
+		// copy subfolders
 		if f.IsDir(absoluteSrc) {
+			if err := f.CopyDirContent(absoluteSrc, absoluteDst, mkdir); err != nil {
+				return err
+			}
 			continue
 		}
-		absoluteDst := filepath.Join(dst, file.Name())
 		if err := f.CopyFile(absoluteSrc, absoluteDst); err != nil {
 			return err
 		}
