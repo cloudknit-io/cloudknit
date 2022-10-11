@@ -40,6 +40,7 @@ spec:
           - name: use_custom_state
           - name: custom_state_bucket
           - name: custom_state_lock_table
+          - name: workspace
       steps:
         - - name: init-component
             template: audit-sh
@@ -105,6 +106,8 @@ spec:
                   value: '{{ printf "{{inputs.parameters.custom_state_bucket}}" }}'
                 - name: custom_state_lock_table
                   value: '{{ printf "{{inputs.parameters.custom_state_lock_table}}" }}'
+                - name: workspace
+                  value: '{{ printf "{{inputs.parameters.workspace}}" }}'
             when: >-
               {{ printf "{{steps.init-component.outputs.parameters.errorCode}}" }} != 20 &&
               {{ printf "{{inputs.parameters.skip_component}}" }} == "noSkip" &&
@@ -159,6 +162,7 @@ spec:
           - name: use_custom_state
           - name: custom_state_bucket
           - name: custom_state_lock_table
+          - name: workspace
       resource:
         action: create
         manifest: |
@@ -208,6 +212,8 @@ spec:
                 value: '{{ printf "{{inputs.parameters.custom_state_bucket}}" }}'
               - name: custom_state_lock_table
                 value: '{{ printf "{{inputs.parameters.custom_state_lock_table}}" }}'
+              - name: workspace
+                value: '{{ printf "{{inputs.parameters.workspace}}" }}'
             workflowTemplateRef:
               name: '{{ printf "{{inputs.parameters.workflowtemplate}}" }}'
         successCondition: status.phase == Succeeded

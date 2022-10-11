@@ -49,6 +49,7 @@ spec:
           - name: use_custom_state
           - name: custom_state_bucket
           - name: custom_state_lock_table
+          - name: workspace
       steps:
         - - name: plan
             templateRef:
@@ -92,6 +93,8 @@ spec:
                   value: '{{ printf "{{inputs.parameters.custom_state_bucket}}" }}'
                 - name: custom_state_lock_table
                   value: '{{ printf "{{inputs.parameters.custom_state_lock_table}}" }}'
+                - name: workspace
+                  value: '{{ printf "{{inputs.parameters.workspace}}" }}'
         - - name: approve
             template: approve
             arguments:
@@ -143,6 +146,8 @@ spec:
                   value: '{{ printf "{{inputs.parameters.custom_state_bucket}}" }}'
                 - name: custom_state_lock_table
                   value: '{{ printf "{{inputs.parameters.custom_state_lock_table}}" }}'
+                - name: workspace
+                  value: '{{ printf "{{inputs.parameters.workspace}}" }}'
             when: '{{ printf "{{steps.plan.outputs.parameters.planCode}}" }} == 2'
 
     - name: approve

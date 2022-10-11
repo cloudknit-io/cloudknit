@@ -42,6 +42,7 @@ spec:
           - name: use_custom_state
           - name: custom_state_bucket
           - name: custom_state_lock_table
+          - name: workspace
       serviceAccountName: {{.Values.serviceAccountName}}
       script:
         imagePullPolicy: IfNotPresent
@@ -70,6 +71,7 @@ spec:
             '{{ printf "{{inputs.parameters.use_custom_state}}" }}' \
             '{{ printf "{{inputs.parameters.custom_state_bucket}}" }}' \
             '{{ printf "{{inputs.parameters.custom_state_lock_table}}" }}'
+            '{{ printf "{{inputs.parameters.workspace}}" }}'
         resources:
           {{- toYaml .Values.resources | nindent 10 }}
         env:
