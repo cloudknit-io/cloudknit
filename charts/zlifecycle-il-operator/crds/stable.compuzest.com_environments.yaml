@@ -207,6 +207,8 @@ spec:
                 type: string
               teardown:
                 type: boolean
+              workspace:
+                type: string
               zlocals:
                 items:
                   properties:
