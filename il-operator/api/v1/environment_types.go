@@ -51,6 +51,7 @@ type EnvironmentSpec struct {
 	Description        string                  `json:"description,omitempty"`
 	AutoApprove        bool                    `json:"autoApprove,omitempty"`
 	Teardown           bool                    `json:"teardown,omitempty"`
+	Workspace          string                  `json:"workspace,omitempty"`
 	Components         []*EnvironmentComponent `json:"components"`
 }
 

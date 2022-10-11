@@ -287,6 +287,10 @@ func generateWorkflowParams(
 			Name:  "custom_state_lock_table",
 			Value: AnyStringPointer(customStateLockTable),
 		},
+		{
+			Name:  "workspace",
+			Value: AnyStringPointer(environment.Spec.Workspace),
+		},
 	}
 
 	return params
