@@ -70,7 +70,7 @@ spec:
             '{{ printf "{{inputs.parameters.company_git_org}}" }}' \
             '{{ printf "{{inputs.parameters.use_custom_state}}" }}' \
             '{{ printf "{{inputs.parameters.custom_state_bucket}}" }}' \
-            '{{ printf "{{inputs.parameters.custom_state_lock_table}}" }}'
+            '{{ printf "{{inputs.parameters.custom_state_lock_table}}" }}' \
             '{{ printf "{{inputs.parameters.workspace}}" }}'
         resources:
           {{- toYaml .Values.resources | nindent 10 }}
