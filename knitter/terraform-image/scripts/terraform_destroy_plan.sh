@@ -19,6 +19,7 @@ echo "   company_git_org=${company_git_org}"
 echo "   use_custom_state=${use_custom_state}"
 echo "   custom_state_bucket=${custom_state_bucket}"
 echo "   custom_state_lock_table=${custom_state_lock_table}"
+echo "   workspace=${workspace}"
 
 echo $show_output_start
 echo "Executing plan..." 2>&1 | appendLogs /tmp/plan_output.txt
@@ -27,6 +28,13 @@ data='{"metadata":{"labels":{"component_status":"running_destroy_plan","audit_st
 argocd app patch $team_env_config_name --patch $data --type merge >null
 
 echo $show_output_start
+
+if [ ! -z "$workspace" ];
+then
+    terraform workspace select $workspace || terraform workspace new $workspace
+    echo "Workspace $workspace selected" 2>&1 | appendLogs /tmp/plan_output.txt
+fi
+
 ((((terraform plan -destroy -lock=$lock_state -input=false -no-color -out=terraform-plan -detailed-exitcode; echo $? >&3) 2>&1 | appendLogs "/tmp/plan_output.txt" >&4) 3>&1) | (read xs; exit $xs)) 4>&1
 result=$?
 echo -n $result >/tmp/plan_code.txt

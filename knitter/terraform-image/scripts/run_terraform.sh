@@ -29,6 +29,7 @@ company_git_org=${17}
 use_custom_state=${18}
 custom_state_bucket=${19}
 custom_state_lock_table=${20}
+workspace=${21}
 
 echo "RUN TERRAFORM"
 echo "   team_name=${team_name}"
@@ -51,6 +52,7 @@ echo "   company_git_org=${company_git_org}"
 echo "   use_custom_state=${use_custom_state}"
 echo "   custom_state_bucket=${custom_state_bucket}"
 echo "   custom_state_lock_table=${custom_state_lock_table}"
+echo "   workspace=${workspace}"
 
 #---------- INIT PHASE START ----------#
 
