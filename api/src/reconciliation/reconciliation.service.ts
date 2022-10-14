@@ -452,7 +452,7 @@ export class ReconciliationService {
 
     latestAudit.approved_by = email;
 
-    return await this.componentReconcileRepository.save(latestAudit[0]);
+    return await this.componentReconcileRepository.save(latestAudit);
   }
 
   async getApprovedBy(org: Organization, id: string, rid: string) {
@@ -519,32 +519,35 @@ export class ReconciliationService {
     this.applicationStream.next(apps);
   }
 
-  private async getLatestAudit(org: Organization, componentId) {
+  private async getLatestAudit(org: Organization, componentId): Promise<ComponentReconcile> {
     try {
-      const latestAuditId = this.componentReconcileRepository
-      .createQueryBuilder()
-      .where('name = :name and organizationId = :orgId', {
-        name: componentId,
-        orgId: org.id,
-        status: Not(Like("skipped%")),
-      })
-      .orderBy('start_date_time', 'DESC')
-      .getOne();
+      // const latestAuditId = this.componentReconcileRepository
+      // .createQueryBuilder()
+      // .where('name = :name and organizationId = :orgId', {
+      //   name: componentId,
+      //   orgId: org.id,
+      //   status: Not(Like("skipped%")),
+      // })
+      // .orderBy('start_date_time', 'DESC')
+      // .getOne();
   
-      // const latestAuditId = await this.componentReconcileRepository.find({
-      //   where: {
-      //     name: componentId,
-      //     status: Not(Like("skipped%")),
-      //   },
-      //   order: {
-      //     start_date_time: -1,
-      //   },
-      //   take: 1,
-      // });
+      const latestAuditId = await this.componentReconcileRepository.find({
+        where: {
+          name: componentId,
+          status: Not(Like("skipped%")),
+          organization: {
+            id : org.id
+          }
+        },
+        order: {
+          start_date_time: -1,
+        },
+        take: 1,
+      });
 
       this.logger.debug(`latestAuditId ${JSON.stringify(latestAuditId)} - component: ${componentId}`);
   
-      return latestAuditId;
+      return latestAuditId.length > 0 ? latestAuditId[0] : null;
     } catch (err) {
       this.logger.error('could not get latestAuditId', err);
     }

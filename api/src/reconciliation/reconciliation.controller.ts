@@ -19,6 +19,7 @@ import { map } from "rxjs/operators";
 import { Mapper } from "src/costing/utilities/mapper";
 import { ComponentReconcile } from "src/typeorm/reconciliation/component-reconcile.entity";
 import { EnvironmentReconcile } from "src/typeorm/reconciliation/environment-reconcile.entity";
+import { APIRequest } from "src/types";
 import { ComponentDto } from "./dtos/component.dto";
 import { ComponentAudit } from "./dtos/componentAudit.dto";
 import { EnvironmentDto } from "./dtos/environment.dto";
@@ -52,9 +53,9 @@ export class ReconciliationController {
     return await this.reconciliationService.getComponent(req.org, id);
   }
 
-  @Patch("approved-by/:id")
-  async patchApprovedBy(@Param("id") id: string, @Req() req) {
-    return await this.reconciliationService.patchApprovedBy(req.org, req.headers['x-user-email'] || '', id);
+  @Patch("approved-by/:id/:email")
+  async patchApprovedBy(@Param("id") id: string, @Param("email") email: string, @Req() req: APIRequest) {
+    return await this.reconciliationService.patchApprovedBy(req.org, email || '', id);
   }
 
   @Get("approved-by/:id/:rid") 
