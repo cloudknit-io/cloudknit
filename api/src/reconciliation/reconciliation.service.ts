@@ -1,10 +1,9 @@
 import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { endWith, Subject } from "rxjs";
-import { TeamDto } from "src/costing/dtos/Team.dto";
+import { Subject } from "rxjs";
+import { get } from "src/config";
 import { Mapper } from "src/costing/utilities/mapper";
 import { S3Handler } from "src/costing/utilities/s3Handler";
-import { orgRoutes } from "src/routes";
 import { Organization } from "src/typeorm";
 import { ComponentReconcile } from "src/typeorm/reconciliation/component-reconcile.entity";
 import { Component } from "src/typeorm/reconciliation/component.entity";
@@ -23,7 +22,8 @@ export class ReconciliationService {
   readonly notifyStream: Subject<{}> = new Subject<{}>();
   readonly applicationStream: Subject<any> = new Subject<any>();
   private readonly s3h = S3Handler.instance();
-  private readonly zlEnvironment = process.env.ZL_ENVIRONMENT;
+  private readonly config = get();
+  private readonly ckEnvironment = this.config.environment;
   private readonly logger = new Logger(ReconciliationService.name);
 
   constructor(
@@ -360,7 +360,7 @@ export class ReconciliationService {
   ) {
     try {
       const prefix = `${team}/${environment}/${component}/${id}/`;
-      const bucket = `zlifecycle-${this.zlEnvironment}-tfplan-${org.name}`;
+      const bucket = `zlifecycle-${this.ckEnvironment}-tfplan-${org.name}`;
 
       this.logger.debug(`getLogs prefix ${prefix}`);
       this.logger.debug(`getLogs bucket ${bucket}`);
@@ -479,7 +479,7 @@ export class ReconciliationService {
     contents: Express.Multer.File
   ) {
     return await this.s3h.copyToS3(
-      `zlifecycle-${this.zlEnvironment}-tfplan-${customerId}`,
+      `zlifecycle-${this.ckEnvironment}-tfplan-${customerId}`,
       path,
       contents
     );
@@ -487,7 +487,7 @@ export class ReconciliationService {
 
   async downloadObject(customerId: string, path: string) {
     return await this.s3h.getObjectStream(
-      `zlifecycle-${this.zlEnvironment}-tfplan-${customerId}`,
+      `zlifecycle-${this.ckEnvironment}-tfplan-${customerId}`,
       path
     );
   }
@@ -500,7 +500,7 @@ export class ReconciliationService {
   ) {
     const prefix = `${team}/${environment}/${component}/terraform.tfstate`;
     const resp = await this.s3h.getObject(
-      `zlifecycle-${this.zlEnvironment}-tfstate-${org.name}`,
+      `zlifecycle-${this.ckEnvironment}-tfstate-${org.name}`,
       prefix
     );
 

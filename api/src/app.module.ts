@@ -11,14 +11,17 @@ import { orgRoutes } from "./routes";
 import { SecretsModule } from "./secrets/secrets.module";
 import { entities } from "./typeorm";
 import { UsersModule } from "./users/users.module";
+import { get } from "./config";
+
+const config = get();
 
 const typeOrmModuleOptions: TypeOrmModuleOptions = {
   type: "mysql",
-  host: process.env.TYPEORM_HOST,
-  port: parseInt(process.env.TYPEORM_PORT),
-  username: process.env.TYPEORM_USERNAME,
-  password: process.env.TYPEORM_PASSWORD,
-  database: process.env.TYPEORM_DATABASE,
+  host: config.TypeORM.host,
+  port: config.TypeORM.port,
+  username: config.TypeORM.username,
+  password: config.TypeORM.password,
+  database: config.TypeORM.database,
   entities: entities,
   migrations: [],
   synchronize: true,

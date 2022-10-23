@@ -4,6 +4,7 @@ import { Repository } from "typeorm";
 import { Organization, User } from "src/typeorm";
 import { CreateOrganizationDto } from "./rootOrganization.dto";
 import { UsersService } from "src/users/users.service";
+import { SubmitProvisionOrg } from "src/argowf/api";
 
 @Injectable()
 export class RootOrganizationsService {
@@ -36,11 +37,17 @@ export class RootOrganizationsService {
       termsAgreedUserId: user ? user.id : null
     });
 
-    this.logger.log('created organization', { user, org })
+    this.logger.log({ message: 'created organization', org, user })
 
     if (user) {
       user.organizations = [ ...user.organizations, org ];
       user = await this.userRepo.save(user);
+    }
+
+    try {
+      await SubmitProvisionOrg({ orgName: org.name });
+    } catch (error) {
+      this.logger.error({message: `could not submit provision-org workflow for ${org.name}`, error: error.message });
     }
 
     return org;

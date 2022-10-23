@@ -1,4 +1,5 @@
 import { S3 } from 'aws-sdk'
+import { get } from 'src/config';
 
 export interface FileInfo {
     data?: S3.GetObjectOutput;
@@ -8,12 +9,13 @@ export interface FileInfo {
 
 export class S3Handler {
   private _s3 = null
+  private readonly config = get();
   private static _instance = null
 
   private constructor() {
     this._s3 = new S3({
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      accessKeyId: this.config.AWS.accessKeyId,
+      secretAccessKey: this.config.AWS.secretAccessKey,
       region: 'us-east-1',
     })
   }

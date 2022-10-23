@@ -1,12 +1,15 @@
 import { SSM } from "aws-sdk";
+import { get } from "src/config";
 
 export class AWSSSMHandler {
   private static _instance: AWSSSMHandler = null;
   private ssm: SSM = null;
+  private readonly config = get();
+
   constructor() {
     this.ssm = new SSM({
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      accessKeyId: this.config.AWS.accessKeyId,
+      secretAccessKey: this.config.AWS.secretAccessKey,
       region: "us-east-1",
     });
   }
