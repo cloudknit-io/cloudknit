@@ -27,23 +27,23 @@ spec:
             port:
               name: http
 {{- end }}
-  - host: {{ .Values.argocd.web_domain }}
-    http:
-      paths:
-      - path: /api/dex
-        pathType: Prefix
-        backend:
-          service:
-            name: argocd-{{ .Values.company }}-server
-            port:
-              name: http
   - host: {{ .Values.argocd.domain }}
     http:
       paths:
-      - path: /api/v1/workflows
+      - path: /api/v1/workflows/{{ $.Values.company }}
         pathType: Prefix
         backend:
           service:
             name: argo-workflow-server
             port:
               number: 2746
+  - host: {{ .Values.argocd.domain }}
+    http:
+      paths:
+      - path: /api/webhook/{{ $.Values.company }}
+        pathType: Prefix
+        backend:
+          service:
+            name: argocd-{{ $.Values.company }}-server
+            port:
+              name: http
