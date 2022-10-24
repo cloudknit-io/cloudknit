@@ -21,10 +21,12 @@ spec:
         args:
           - '{{ print "{{inputs.parameters.orgName}}"}}'
         env:
-          - name: ZL_ENVIRONMENT
-            value: {{.Values.zlEnvironment}}
-          - name: ZL_CONFIG_REPO
+          - name: CK_ENVIRONMENT
+            value: {{.Values.ckEnvironment}}
+          - name: CK_CONFIG_REPO
             value: {{.Values.configRepo}}
+          - name: CK_TF_MODULE_VERSION
+            value: {{.Values.tfModuleVersion}}
         resources: {}
         volumeMounts:
           - name: github-ssh-key-mount

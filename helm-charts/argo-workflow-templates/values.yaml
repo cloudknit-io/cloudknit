@@ -1,7 +1,8 @@
-zlEnvironment:
+ckEnvironment:
 configRepo: git@github.com:zl-compuzest-tech/zl-environment-dev-config.git
 terraformImageTag: latest
 provisionOrgImage:
+tfModuleVersion:
 serviceAccountName: zlifecycle-reconciler
 companyName: !!!CompanyName!!!
 resources:
