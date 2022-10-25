@@ -18,6 +18,6 @@ export class OrganizationController {
 
   @Patch()
   public async patchOrganization(@Body() payload: PatchOrganizationDto, @Request() req) {
-    return await this.orgService.patchOrganization(req.org.id, payload);
+    return await this.orgService.patchOrganization(req.org, payload);
   }
 }

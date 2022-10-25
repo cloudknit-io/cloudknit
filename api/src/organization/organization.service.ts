@@ -17,19 +17,10 @@ export class OrganizationService {
     });
   }
 
-  async patchOrganization(id: any, payload: PatchOrganizationDto) {
+  async patchOrganization(org: Organization, payload: PatchOrganizationDto) {
     const { githubRepo } = payload;
     if (!githubRepo) {
-      throw new BadRequestException('payload does noy have github repo');
-    }
-    const org = await this.orgRepo.findOne({
-      where: {
-        id: id
-      }
-    });
-
-    if (!org) {
-      throw `Organization with id ${id} not found`;
+      throw new BadRequestException('payload does not have github repo');
     }
 
     org.githubRepo = githubRepo;
