@@ -1,29 +1,17 @@
-organization=$1
+#!/usr/bin/env bash
+set -e;
 
-if [[ $organization == "zbank" ]] ; # Copy this block in order to use a different organization
-then
-        HOST=$(AWS_PROFILE=zl-dev aws rds describe-db-instances --db-instance-identifier=dev-zbank-db | \
-        jq -r ".DBInstances[0].Endpoint.Address")
-        PORT=3306
-        USERNAME=admin
-        PASSWORD={password}
-        DATABASE=zlifecycle
-elif [[ $organization == "local" ]] ;
-then
-        docker-compose up -d        
-        HOST=localhost
-        PORT=3306
-        USERNAME=root
-        PASSWORD=password
-        DATABASE=nestjsrealworld
-else
-        echo "${organization} was not found"
-        echo "Usage:"
-        echo ""
-        echo "  run.sh [organization|local]"
-        echo "  run.sh zbank - Run and connect to Zbank"
-        echo "  run.sh local - Run and connect to local MySQL"
-        exit 0;
-fi
+docker-compose up -d
 
-TYPEORM_HOST=$HOST TYPEORM_PORT=$PORT TYPEORM_USERNAME=$USERNAME TYPEORM_PASSWORD=$PASSWORD TYPEORM_DATABASE=$DATABASE npm run start:debug
+AWS_ACCESS_KEY_ID=[get from lastpass] \
+AWS_SECRET_ACCESS_KEY=[get from lastpass] \
+CK_ENVIRONMENT=dev \
+CK_ARGO_WF_URL=http://localhost:2746 \
+CK_ARGO_WF_NAMESPACE=default \
+APP_PORT=3001 \
+TYPEORM_HOST=localhost \
+TYPEORM_USERNAME=root \
+TYPEORM_PASSWORD=password \
+TYPEORM_PORT=3306 \
+TYPEORM_DATABASE=zlifecycle \
+npm run start:debug

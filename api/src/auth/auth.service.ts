@@ -34,7 +34,15 @@ export class AuthService {
   }
 
   public async createOrgUser(org: Organization, user: CreateUserDto) {
-    const currentUser = await this.getOrgUser(org, user.username);
+    // This is to get a user irrespective of the org he belongs to
+    // Since, if an admin wants to add an existing user who is not a part of the currect org
+    // will always give empty result and creating a new user would throw an error.
+    const currentUser = await this.userRepo.findOne({
+      where: {
+        email: user.email
+      }
+    });
+    // const currentUser = await this.getOrgUser(org, user.username);
     
     if (currentUser) {
       // adds existing user to org
