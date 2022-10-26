@@ -10,6 +10,7 @@ spec:
       inputs:
         parameters:
           - name: orgName
+          - name: orgId
       outputs: {}
       metadata: {}
       serviceAccountName: {{.Values.serviceAccountName}}
@@ -20,6 +21,7 @@ spec:
           - run.sh
         args:
           - '{{ print "{{inputs.parameters.orgName}}"}}'
+          - '{{ print "{{inputs.parameters.orgId}}"}}'
         env:
           - name: CK_ENVIRONMENT
             value: {{.Values.ckEnvironment}}
