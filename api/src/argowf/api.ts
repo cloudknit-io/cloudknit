@@ -7,7 +7,8 @@ import { WinstonLogger } from 'src/logger';
 const logger = new WinstonLogger();
 
 export type ProvisionOrgWf = {
-  orgName: string
+  orgName: string,
+  orgId: number
 };
 
 /**

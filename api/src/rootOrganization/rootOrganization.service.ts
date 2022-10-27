@@ -45,7 +45,7 @@ export class RootOrganizationsService {
     }
 
     try {
-      await SubmitProvisionOrg({ orgName: org.name });
+      await SubmitProvisionOrg({ orgName: org.name, orgId: org.id });
     } catch (error) {
       this.logger.error({message: `could not submit provision-org workflow for ${org.name}`, error: error.message });
     }
