@@ -14,7 +14,7 @@ import (
 
 const (
 	errInitEnvironmentValidator = "error initializing environment validator"
-	errInitTeamValidator        = "error initializing environment validator"
+	errInitTeamValidator        = "error initializing team validator"
 	// https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#rfc-1035-label-names
 	// starts with alpha
 	// ends with alphanumeric
