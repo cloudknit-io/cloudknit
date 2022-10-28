@@ -7,7 +7,7 @@ permissions:
   contents: write
 jobs:
   test:
-    uses: "zlifecycle/zlifecycle-il-operator/.github/workflows/test.yml@main"
+    uses: "cloudknit-io/zlifecycle-il-operator/.github/workflows/test.yml@main"
   build:
     runs-on: "ubuntu-latest"
     steps:
