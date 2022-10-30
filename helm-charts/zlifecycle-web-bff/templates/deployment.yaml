@@ -21,10 +21,6 @@ spec:
               value: {{ .Values.company }}
             - name: SITE_URL
               value: {{ .Values.protocol | default "https://" }}{{ .Values.domain }}
-            - name: OPENID_ISSUER
-              value: {{ .Values.argocd.openIdIssuerUrl }}
-            - name: OPENID_CALLBACK
-              value: {{ .Values.protocol | default "https://" }}{{ .Values.domain }}/auth/callback
             - name: COOKIE_SAME_SITE
               value: "lax"
             - name: COOKIE_DOMAIN
@@ -49,9 +45,6 @@ spec:
               value: {{ .Values.auth0.issuerBaseUrl }}
             - name: AUTH0_SECRET
               value: {{ .Values.auth0.secret }}
-          envFrom:
-            - secretRef:
-                name: zlifecycle-web-bff-development
           image: "{{ .Values.image.repository }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
           ports:
             - containerPort: 8080

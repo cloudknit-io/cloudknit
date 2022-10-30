@@ -29,10 +29,7 @@ auth0:
   issuerBaseUrl:
   secret:
 argocd:
-  openIdClientId:
-  openIdClientSecret:
   urlWithProtocol: http://argocd-server.argocd.svc.cluster.local
-  openIdIssuerUrl: http://argocd-server.argocd.svc.cluster.local/api/dex
 argoWorkflowApiUrl: http://argo-workflow-server.argocd.svc.cluster.local:2746
 zlifecycleApiUrl: http://zlifecycle-api.zlifecycle-ui.svc.cluster.local
 zlifecycleStateManagerUrl: http://zlifecycle-state-manager.zlifecycle-il-operator-system.svc.cluster.local
