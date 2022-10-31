@@ -141,7 +141,7 @@ This property tells **{{ company_name }}** to destroy an environment, so if you 
 
 **OPTIONAL**: default value is false
 
-You can find more information about teardown [here](teardown.md).
+You can find more information about teardown [here](/policies/teardown).
 
 ```yaml
 teardown: true
@@ -253,7 +253,7 @@ This property is similar to `teardown` property of [spec scope](#spec), the only
 
 **OPTIONAL**: Default value is false.
 
-You can find more information about teardown [here](teardown.md)
+You can find more information about teardown [here](/policies/teardown)
 
 ```yaml
 destroy: false

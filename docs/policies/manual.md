@@ -10,7 +10,7 @@ You will also get a notification in the bottom right corner once reconciliation 
 
 From the Environments page -
 
-![dashboard-reconcile](../assets/images/environment-card-reconcile.png "dashboard-reconcile")
+![dashboard-reconcile](/assets/images/environment-card-reconcile.png "dashboard-reconcile")
 
 There is a green sync icon on the environment card, click that icon to **reconcile** the environment.
 
@@ -18,7 +18,7 @@ There is a green sync icon on the environment card, click that icon to **reconci
 
 From the Environment DAG view.
 
-![dag-reconcile](../assets/images/dag-reconcile.png "dag-reconcile")
+![dag-reconcile](/assets/images/dag-reconcile.png "dag-reconcile")
 
 There is a sync button, at the top right region of the page, click that icon to **reconcile** the environment.
 

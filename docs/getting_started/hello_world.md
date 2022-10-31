@@ -1,9 +1,9 @@
 # Hello, World! Environment
 
-Make sure you've completed [configuring AWS Credentials](../settings/aws_credentials.md) and [onboarded a team](./onboard_team.md) before starting this walkthrough.
 
-1. Clone the team repo (`zl-[team-name]-config`) you created in [onboarding a team](./onboard_team.md)
+Make sure you've completed [configuring AWS Credentials](/settings/aws_credentials) and [onboarded a team](/getting_started/onboard_team) before starting this walkthrough.
 1. Create a `hello-world` directory in the cloned repo
+1. Clone the team repo (`zl-[team-name]-config`) you created in [onboarding a team](/getting_started/onboard_team)
   ```bash
   cd zl-[team-name]-config
   mkdir hello-world
@@ -11,7 +11,7 @@ Make sure you've completed [configuring AWS Credentials](../settings/aws_credent
   ```
 1. Run the below bash script using terminal and enter `Company`, `Team` and `Environment` Names when asked.
   ```bash
-  bash <(curl -s https://docs.zlifecycle.com/scripts/getting_started.sh)
+  bash <(curl -s {{ site_url }}scripts/getting_started.sh)
   ```
 1. It will create the following `hello-world.yaml`:
   <details>
@@ -60,7 +60,7 @@ Make sure you've completed [configuring AWS Credentials](../settings/aws_credent
 
 After you have provisioned your first environment, let's go through the teardown exercise.
 
-You can read more about `teardown` [here](../policies/teardown.md).
+You can read more about `teardown` [here](/policies/teardown).
 
 1. Add `teardown: true` in `hello-world.yaml` at the `spec` level. See example below:
   <details>

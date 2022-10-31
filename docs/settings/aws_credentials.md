@@ -4,11 +4,11 @@ AWS credentials are used by **{{ company_name }}** to provision your environment
 
 These credentials can be **created** & **updated** using **{{ company_name }}** secrets manager, which is accessible by clicking on the **Settings** Navigation button, as highlighted in the below image.
 
-![settings](../assets/images/secrets.png "Settings")
+![settings](/assets/images/secrets.png "Settings")
 
 AWS secrets that need to be set:
 
-![aws-secrets](../assets/images/aws-secrets.png "aws-secrets")
+![aws-secrets](/assets/images/aws-secrets.png "aws-secrets")
 
 * `Access Key Id`
 * `Secret Access Key`

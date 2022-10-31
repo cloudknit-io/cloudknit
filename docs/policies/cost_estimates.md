@@ -4,7 +4,7 @@ Costs are **monthly estimates** calculated at the time of last reconciliation. E
 
 **Example**
 
-![detailed-cost-breakdown](../assets/images/detailed-cost-breakdown.png "Detailed Cost Breakdown")
+![detailed-cost-breakdown](/assets/images/detailed-cost-breakdown.png "Detailed Cost Breakdown")
 
 **{{ company_name }}** uses **infracost** to calculate the component cost. You can find list of supported resources by Infracost [here](https://www.infracost.io/docs/supported_resources/aws/).
 

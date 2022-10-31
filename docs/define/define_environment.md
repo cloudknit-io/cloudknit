@@ -4,4 +4,4 @@ As the name says the `Define` step of the Environment Lifecycle allows you to de
 
 Environment definition uses a Kubernetes [Custom Resource](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) which is in YAML format and provides a declarative way of defining an environment.
 
-Check the [Field Reference](./field_reference.md) page for information about all the fields.
+Check the [Field Reference](/define/field_reference) page for information about all the fields.

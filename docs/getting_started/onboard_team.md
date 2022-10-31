@@ -1,7 +1,7 @@
 # Onboard a New Team
 
 1. Copy the SSH url to your `zl-config` repo
-    ![SSH URL](../assets/images/team-onboard-clone-url.png)
+    ![SSH URL](/assets/images/team-onboard-clone-url.png)
 1. **In your `zl-config` repo** create a `teams` directory
 1. In the `teams` directory create the following yaml file. Name it `[[team-name]].yaml`:
     ```yaml

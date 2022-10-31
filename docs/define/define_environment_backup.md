@@ -25,7 +25,7 @@ This property tells **{{ company_name }}** to destroy an environment, so if you 
 
 **OPTIONAL**: default value is false
 
-You can find more information about teardown [here](teardown.md).
+You can find more information about teardown [here](/policies/teardown).
 
 ```yaml
 teardown: true
@@ -41,7 +41,7 @@ This property tells **{{ company_name }}** to **skip** certain components based 
 
 **OPTIONAL**
 
-You can find more information about **Selective Reconcile** [here](selective-reconcile.md).
+You can find more information about **Selective Reconcile** [here](/policies/selective-reconcile).
 
 **NOTE:** Works in conjunction with [**tags**](#component-tags) property of component.
 
@@ -138,7 +138,7 @@ This property is used to override the `teardown` property of [spec](#spec), whic
 
 **OPTIONAL**: Default value is false.
 
-You can find more information about teardown [here](teardown.md)
+You can find more information about teardown [here](/policies/teardown)
 
 ```yaml
 destroy: false
@@ -276,7 +276,7 @@ secrets: []
 
 References secret values which are added through the **{{ company_name }}** UI.
 
-See [Secrets](secrets.md) Section.
+See [Secrets](/policies/secrets) Section.
 
   <br/>
 

@@ -1,12 +1,12 @@
 # Errors
 
-Almost all errors are logged in the **concise logs** section of the [component details view](component-details-view.md). You can backtrack and get to the root cause of the error that happened during reconciliation.
+Almost all errors are logged in the **concise logs** section of the [component details view](/component_details_view). You can backtrack and get to the root cause of the error that happened during reconciliation.
 
 Usually the errors that might occur are related to:-
 
-- **AWS Secrets**: When secrets are not set and one is trying to provision an environment. See [secrets section](secrets.md) to set secrets. Another reason could be while deploying a particular resource for example:-
+- **AWS Secrets**: When secrets are not set and one is trying to provision an environment. See [secrets section](/settings/secrets) to set secrets. Another reason could be while deploying a particular resource for example:-
 
-![AWS Error](../assets/images/aws-resource-error.png)
+![AWS Error](/assets/images/aws-resource-error.png)
   
 - **Terraform configuration**: Errors related to terraform usually occur because of **an error in the tfvars file** supplied by the user configured with an Environment yaml.
 
@@ -62,6 +62,6 @@ spec:
         - name: vpc_cidr_block
 ```
 
-![yaml-notification](../assets/images/yaml-error.png "yaml notification")
+![yaml-notification](/assets/images/yaml-error.png "yaml notification")
 
 In the above screenshot we can see that an unknown field **component2** is used in the **environment.spec** section of the yaml, which we can see in the **example**.

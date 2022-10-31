@@ -6,7 +6,7 @@ Similar to AWS secrets, there are 3 scopes to which these secrets can be added, 
 
 To add a secret, go to the appropriate scope and click on the Add button.
 
-![environment-secrets](../assets/images/environment-secrets.png "environment-secrets")
+![environment-secrets](/assets/images/environment-secrets.png "environment-secrets")
 
 Once added these secrets can be used in the secrets property of the environment YAML as below.
 

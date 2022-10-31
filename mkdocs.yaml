@@ -1,9 +1,10 @@
 extra:
-  company_name: zLifecycle
+  company_name: CloudKnit
   prod_url: https://zlifecycle.app/
+  site_url: https://docs.cloudknit.io/
 
-site_name: zLifecycle - Environment Managment Made Easy
-site_url: https://docs.zlifecycle.com/
+site_name: CloudKnit - Environment Managment Made Easy
+site_url: https://docs.cloudknit.io/
 theme:
   name: material
   favicon: assets/images/favicon.png

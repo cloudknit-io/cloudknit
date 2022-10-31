@@ -56,9 +56,9 @@ Spec contains details of the environment to be provisioned.
 |:----------:|:----------:|---------------|
 |`teamName`|`string`| Name of the team to which this environment belongs |
 |`envName`|`string`| Name of the environment |
-|`autoApprove`|`boolean`| To skip the manual approval step of applying the changes to a workflow, set this flag to `true`. Default value is `false`. More info [here](https://docs.zlifecycle.com/define/approval/) |
-|`teardown`|`boolean`| To teardown an environment, set this flag to `true`. Default value is `false`. More info [here](https://docs.zlifecycle.com/teardown/) |
-|[`selectiveReconcile`](#selective-reconcile)| `array` | More info [here](https://docs.zlifecycle.com/define/selective_reconcile/) |
+|`autoApprove`|`boolean`| To skip the manual approval step of applying the changes to a workflow, set this flag to `true`. Default value is `false`. More info [here](/policies/approval) |
+|`teardown`|`boolean`| To teardown an environment, set this flag to `true`. Default value is `false`. More info [here](/policies/teardown) |
+|[`selectiveReconcile`](#selective-reconcile)| `array` | More info [here](/define/selective_reconcile) |
 |`components`|`array`| Array of environment components |
 
 ---
