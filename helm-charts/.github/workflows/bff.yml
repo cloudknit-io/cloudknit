@@ -1,4 +1,4 @@
-name: zLifecycle bff Release
+name: BFF Release
 
 on:
   push:

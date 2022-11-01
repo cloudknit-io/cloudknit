@@ -1,4 +1,4 @@
-name: api Release
+name: API Release
 
 on:
   push:

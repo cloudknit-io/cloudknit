@@ -1,4 +1,4 @@
-name: zLifecycle web Release
+name: Web Release
 
 on:
   push:
