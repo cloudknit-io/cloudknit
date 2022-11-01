@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Organization } from "src/typeorm";
@@ -7,6 +7,7 @@ import { PatchOrganizationDto } from "./organization.dto";
 @Injectable()
 export class OrganizationService {
 
+  private readonly logger = new Logger(OrganizationService.name);
   constructor(@InjectRepository(Organization) private orgRepo: Repository<Organization>) { }
 
   async getOrganization(id: number) {
@@ -18,15 +19,32 @@ export class OrganizationService {
   }
 
   async patchOrganization(org: Organization, payload: PatchOrganizationDto) {
-    const { githubRepo } = payload;
-    if (!githubRepo) {
-      throw new BadRequestException('payload does not have github repo');
+    const reconcileProps = ['githubRepo', 'provisioned'];
+    let changed = false;
+    let updates = {};
+
+    for (const prop of reconcileProps) {
+      if (payload.hasOwnProperty(prop)) {
+        changed = true;
+        this.logger.log(`patching org ${prop} with value ${payload[prop]}`);
+        updates[prop] = payload[prop];
+      }
     }
 
-    org.githubRepo = githubRepo;
+    if (!changed) {
+      throw new BadRequestException('organization was not updated');
+    }
 
-    return await this.orgRepo.save({
-      ...org
+    await this.orgRepo.createQueryBuilder()
+      .update(Organization)
+      .set(updates)
+      .where("id = :id", { id: org.id })
+      .execute();
+
+    this.logger.log({message: 'updated org', org, updates });
+
+    return await this.orgRepo.findOneBy({
+      id: org.id
     });
   }
 }

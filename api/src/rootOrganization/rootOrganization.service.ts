@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Organization, User } from "src/typeorm";
+import { get } from "src/config";
 import { CreateOrganizationDto } from "./rootOrganization.dto";
 import { UsersService } from "src/users/users.service";
 import { SubmitProvisionOrg } from "src/argowf/api";
@@ -42,6 +43,11 @@ export class RootOrganizationsService {
     if (user) {
       user.organizations = [ ...user.organizations, org ];
       user = await this.userRepo.save(user);
+    }
+
+    if (get().argo.wf.skipProvision) {
+      this.logger.log('Skipping provision workflow');
+      return org;
     }
 
     try {

@@ -8,6 +8,7 @@ AWS_SECRET_ACCESS_KEY=[get from lastpass] \
 CK_ENVIRONMENT=dev \
 CK_ARGO_WF_URL=http://localhost:2746 \
 CK_ARGO_WF_NAMESPACE=default \
+CK_ARGO_WF_SKIP_PROVISION=true \
 APP_PORT=3001 \
 TYPEORM_HOST=localhost \
 TYPEORM_USERNAME=root \

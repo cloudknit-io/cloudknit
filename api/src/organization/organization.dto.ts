@@ -2,5 +2,8 @@ import { ApiProperty } from "@nestjs/swagger"
 
 export class PatchOrganizationDto {
     @ApiProperty()
-    githubRepo: string
+    githubRepo?: string
+
+    @ApiProperty()
+    provisioned?: boolean
 }

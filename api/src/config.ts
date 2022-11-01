@@ -16,6 +16,7 @@ export type ApiConfig = {
   environment: string,
   argo: {
     wf: {
+      skipProvision: boolean,
       url: string,
       namespace: string
     }
@@ -32,6 +33,15 @@ function getEnvVarOrFail(varName: string): string {
   }
 
   return v;
+}
+
+function getEnvVarOrDefault(varName: string, dfault: any) {
+  try {
+    const val = getEnvVarOrFail(varName);
+    return val;
+  } catch {
+    return dfault;
+  }
 }
 
 export function init() {
@@ -52,6 +62,7 @@ export function init() {
     },
     argo: {
       wf: {
+        skipProvision: getEnvVarOrDefault('CK_ARGO_WF_SKIP_PROVISION', 'true') === 'true',
         url: getEnvVarOrFail('CK_ARGO_WF_URL'),
         namespace: getEnvVarOrFail('CK_ARGO_WF_NAMESPACE'),
       }
