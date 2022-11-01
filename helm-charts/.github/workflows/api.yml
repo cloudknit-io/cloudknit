@@ -5,11 +5,11 @@ on:
     branches:
       - main
     paths:
-      - 'zlifecycle-api/**'
-      - .github/workflows/zlifecycle-api.yml
+      - 'api/**'
+      - .github/workflows/api.yml
 
 env:
-  chart_dir: zlifecycle-api
+  chart_dir: api
 
 jobs:
   build:

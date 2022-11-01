@@ -1,15 +1,15 @@
-name: zLifecycle bff Release
+name: zLifecycle web Release
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'zlifecycle-web-bff/**'
-      - .github/workflows/zlifecycle-web-bff.yml
+      - 'web/**'
+      - .github/workflows/web.yml
 
 env:
-  chart_dir: zlifecycle-web-bff
+  chart_dir: web
 
 jobs:
   build:
