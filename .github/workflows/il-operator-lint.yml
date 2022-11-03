@@ -1,4 +1,4 @@
-name: lint
+name: il-operator - lint
 on:
   push:
     tags:

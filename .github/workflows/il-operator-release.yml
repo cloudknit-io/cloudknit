@@ -1,4 +1,4 @@
-name: release
+name: il-operator - release
 on:
   push:
     tags:
@@ -7,7 +7,7 @@ permissions:
   contents: write
 jobs:
   test:
-    uses: "cloudknit-io/zlifecycle-il-operator/.github/workflows/test.yml@main"
+    uses: "cloudknit-io/cloudknit-test-2/.github/workflows/il-operator-test.yml@main"
   build:
     runs-on: "ubuntu-latest"
     steps:
@@ -38,7 +38,7 @@ jobs:
         with:
           distribution: "goreleaser"
           version: "latest"
-          args: "-f ./.goreleaser.yml release --rm-dist"
+          args: "-f ./operator/.goreleaser.yml release --rm-dist"
         env:
           SLACK_WEBHOOK: "${{ secrets.RELEASE_SLACK_INCOMING_WEBHOOK }}"
           ECR_REPO: "${{ secrets.ECR_REPO }}"
