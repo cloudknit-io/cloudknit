@@ -1,8 +1,11 @@
-name: doc-gen
+name: docs-gen
 on:
   push:
     branches:
       - main
+    paths:
+      - 'docs/**'
+      - .github/workflows/docs-gen.yaml
 jobs:
   deploy:
     runs-on: ubuntu-latest

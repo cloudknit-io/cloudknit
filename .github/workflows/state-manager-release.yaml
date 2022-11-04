@@ -1,4 +1,4 @@
-name: release
+name: state-manager - release build
 on:
   push:
     tags:

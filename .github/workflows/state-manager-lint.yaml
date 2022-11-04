@@ -1,4 +1,4 @@
-name: lint
+name: state-manager - lint
 on:
   push:
     tags:
