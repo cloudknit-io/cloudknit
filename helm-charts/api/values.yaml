@@ -16,6 +16,7 @@ argowf:
   url:
   namespace: 
 ckEnvironment:
+namespace: zlifecycle-system
 resources:
   limits:
     cpu: 200m
