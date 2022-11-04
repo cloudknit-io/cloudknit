@@ -1,4 +1,4 @@
-name: api - build & push image
+name: bff - build & push image
 
 on:
   pull_request:
