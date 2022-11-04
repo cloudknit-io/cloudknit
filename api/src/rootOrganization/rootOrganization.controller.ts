@@ -21,7 +21,7 @@ export class RootOrganizationsController {
 
   @Post()
   public async create(@Body() body: CreateOrganizationDto) {
-    if (!this.OrganizationNameRegex.test(body.name)) {
+    if (!this.OrganizationNameRegex.test(body.name) || body.name.length > 63) {
       throw new BadRequestException("Organization name is invalid");
     }
 

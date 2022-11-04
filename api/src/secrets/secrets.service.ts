@@ -9,7 +9,6 @@ export class SecretsService {
   private readonly logger = new Logger(SecretsService.name);
 
   awsSecretSeparator = "[compuzest-shared]";
-  k8sApi = null;
   ssm: AWSSSMHandler = null;
   constKeys = new Set([
     "aws_access_key_id",
@@ -22,10 +21,6 @@ export class SecretsService {
   ]);  
 
   constructor() {
-    const k8s = require("@kubernetes/client-node");
-    const kc = new k8s.KubeConfig();
-    kc.loadFromCluster();
-    this.k8sApi = kc.makeApiClient(k8s.CoreV1Api);
     this.ssm = AWSSSMHandler.instance();
   }
 

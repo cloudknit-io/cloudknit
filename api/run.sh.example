@@ -3,6 +3,7 @@ set -e;
 
 docker-compose up -d
 
+IS_LOCAL=true \
 AWS_ACCESS_KEY_ID=[get from lastpass] \
 AWS_SECRET_ACCESS_KEY=[get from lastpass] \
 CK_ENVIRONMENT=dev \

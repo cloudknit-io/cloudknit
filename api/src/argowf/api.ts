@@ -1,5 +1,4 @@
 import * as https from 'https';
-import http from 'http';
 import axios from 'axios';
 import { get } from 'src/config';
 import { WinstonLogger } from 'src/logger';

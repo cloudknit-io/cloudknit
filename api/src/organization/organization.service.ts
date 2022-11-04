@@ -3,11 +3,12 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Organization } from "src/typeorm";
 import { PatchOrganizationDto } from "./organization.dto";
+import { patchCompany } from "src/k8s/patch-company";
 
 @Injectable()
 export class OrganizationService {
-
   private readonly logger = new Logger(OrganizationService.name);
+
   constructor(@InjectRepository(Organization) private orgRepo: Repository<Organization>) { }
 
   async getOrganization(id: number) {
@@ -40,6 +41,10 @@ export class OrganizationService {
       .set(updates)
       .where("id = :id", { id: org.id })
       .execute();
+
+    if (payload.githubRepo) {
+      await patchCompany(org, payload.githubRepo);
+    }
 
     this.logger.log({message: 'updated org', org, updates });
 

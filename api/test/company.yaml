@@ -1,0 +1,19 @@
+# can use to test with: kubectl apply -f company.yaml
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mytestorg-config
+
+---
+
+apiVersion: stable.compuzest.com/v1
+kind: Company
+metadata:
+  name: mytestorg
+  namespace: mytestorg-config
+spec:
+  companyName: mytestorg
+  configRepo:
+    source: somerepo
+    path: .

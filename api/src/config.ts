@@ -14,6 +14,7 @@ export type ApiConfig = {
     secretAccessKey: string
   },
   environment: string,
+  isLocal: boolean,
   argo: {
     wf: {
       skipProvision: boolean,
@@ -68,6 +69,7 @@ export function init() {
       }
     },
     environment: getEnvVarOrFail('CK_ENVIRONMENT'),
+    isLocal: getEnvVarOrDefault('IS_LOCAL', 'false') === 'true',
   };
   
   logger.log('successfully configured');
