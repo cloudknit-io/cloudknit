@@ -1,0 +1,51 @@
+extra:
+  company_name: CloudKnit
+  prod_url: https://zlifecycle.app/
+  site_url: https://docs.cloudknit.io/
+
+site_name: CloudKnit - Environment Managment Made Easy
+site_url: https://docs.cloudknit.io/
+theme:
+  name: material
+  favicon: assets/images/favicon.png
+  logo: assets/images/logo.png
+plugins:
+    - search
+    - markdownextradata
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - codehilite
+  - admonition
+  - toc:
+      permalink: true
+nav:
+- Overview: index.md
+- concepts/concepts.md
+- Getting Started:
+  - getting_started/setup.md
+  - getting_started/onboard_team.md
+  - getting_started/hello_world.md
+  - getting_started/install_github_app.md
+- Settings:
+  - settings/aws_credentials.md
+  - settings/secrets.md
+- Define:
+  - define/define_environment.md
+  - define/field_reference.md
+  - define/examples.md
+- Policies:
+  - policies/approval.md
+  - policies/manual_approval.md
+  - policies/destroy.md
+  - policies/selective_reconcile.md
+  - policies/manual.md
+  - policies/auto.md
+  - policies/teardown.md
+  - policies/cost_estimates.md
+- component_details_view.md
+- errors.md
+- support/supported_platforms.md

@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "zlifecycle-state-manager.fullname" . }}
+  labels:
+    {{- include "zlifecycle-state-manager.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "zlifecycle-state-manager.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "zlifecycle-state-manager.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "zlifecycle-state-manager.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          volumeMounts:
+            - name: zlifecycle-state-manager-aws-creds
+              mountPath: /root/.aws/credentials
+              subPath: credentials
+              readOnly: true
+            - name: zlifecycle-state-manager-ssh
+              mountPath: /root/.ssh/id_rsa
+              subPath: id_rsa
+              readOnly: true
+          env:
+            - name: GIT_TOKEN
+              value: {{ .Values.env.GIT_TOKEN }}
+            - name: ENABLE_NEW_RELIC
+              value: {{ quote .Values.env.ENABLE_NEW_RELIC }}
+            - name: NEW_RELIC_API_KEY
+              value: {{ .Values.env.NEW_RELIC_API_KEY }}
+            - name: ENVIRONMENT
+              value: {{ .Values.env.ENVIRONMENT }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: zlifecycle-state-manager-aws-creds
+          secret:
+            secretName: zlifecycle-state-manager-aws-creds
+        - name: zlifecycle-state-manager-ssh
+          secret:
+            defaultMode: 256
+            secretName: zlifecycle-state-manager-ssh
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -1,0 +1,54 @@
+name: release
+on:
+  push:
+    tags:
+      - 'v*'
+permissions:
+  contents: write
+jobs:
+  test:
+    uses: "CompuZest/zlifecycle-state-manager/.github/workflows/test.yaml@main"
+  build:
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Slack"
+        uses: ravsamhq/notify-slack-action@v1
+        if: always()
+        with:
+          status: ${{ job.status }}
+          notify_when: 'failure'
+        env:
+          SLACK_WEBHOOK_URL: "${{ secrets.SLACK_WEBHOOK_URL }}"
+      - name: "Checkout"
+        uses: "actions/checkout@v2"
+        with:
+          fetch-depth: 0
+      - name: "Golang"
+        uses: "actions/setup-go@v2"
+        with:
+          go-version: "1.18"
+      - name: "Login"
+        uses: "docker/login-action@v1"
+        with:
+          registry: "${{ secrets.ECR_REPO }}"
+          username: "${{ secrets.AWS_ACCESS_KEY_ID }}"
+          password: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+      - name: "Cache"
+        uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: "Modules"
+        run: "go mod tidy"
+      - name: "Release"
+        uses: "goreleaser/goreleaser-action@v2"
+        with:
+          distribution: "goreleaser"
+          version: "latest"
+          args: "-f ./.goreleaser.yml release --rm-dist"
+        env:
+          SLACK_WEBHOOK: "${{ secrets.RELEASE_SLACK_INCOMING_WEBHOOK }}"
+          ECR_REPO: "${{ secrets.ECR_REPO }}"
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
