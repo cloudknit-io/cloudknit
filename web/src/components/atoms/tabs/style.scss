@@ -1,0 +1,15 @@
+@import "../../../assets/styles/colors";
+
+.nav-link {
+  padding: 16px 24px;
+  color: $ui-color-gray-500;
+  cursor: pointer;
+  p {
+    margin-bottom: 0;
+  }
+
+  &--active {
+    color: $brand-color-dark-gray;
+    border-bottom: 2px solid $brand-color-dark-gray;
+  }
+}

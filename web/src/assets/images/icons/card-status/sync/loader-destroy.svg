@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+	<g>
+		<path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM19 4H15.5L14.5 3H9.5L8.5 4H5V6H19V4Z" fill="#aaa" style="&#10;    transform: scale(0.7);&#10;    transform-origin: center;&#10;"/><circle xmlns="http://www.w3.org/2000/svg" cx="12" cy="12" fill="none" stroke="#252625" r="11" strokeLinecap="round" stroke-width="2" stroke-dasharray="50">
+			<animateTransform attributeName="transform" type="rotate" repeatCount="indefinite" dur="1s" values="0 12 12;360 12 12" keyTimes="0;1"/>
+		</circle>
+	</g>
+</svg>

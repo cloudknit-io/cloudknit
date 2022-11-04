@@ -1,0 +1,39 @@
+@import '../../../assets/styles/colors';
+@import '../../../assets/styles/config';
+
+@mixin error-table-content {
+	display: flex;
+	align-items: center;
+	justify-content: left;
+}
+
+.zlifecycle-error-table {
+	height: 100%;
+	&-column {
+		display: grid;
+		grid-template: 50px / 100px 100px auto 200px;
+		font-weight: bold;
+		column-gap: 10px;
+		span {
+			@include error-table-content()
+		}
+	}
+	&-rows {
+		overflow: auto;
+		height: calc(100% - 60px);
+	}
+	&-row {
+		padding: 10px 5px;
+		background-image: linear-gradient(to right, transparent, $label-color-pink);
+		border: 3px solid $label-color-pink;
+		border-radius: 10px;
+		display: grid;
+		grid-template: auto / 100px 100px auto 200px;
+		column-gap: 10px;
+		span {
+			max-height: 200px;
+			overflow: auto;
+			@include error-table-content()
+		}
+	}
+}

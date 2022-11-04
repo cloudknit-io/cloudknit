@@ -1,0 +1,23 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+*.tgz
+
+# dependencies
+/node_modules
+/build
+/dist
+# misc
+.idea
+.DS_Store
+module.iml
+
+/argocd
+/argowf
+/deployment
+
+.env*
+src/.env*
+
+npm-debug.log*
+
+*.swp

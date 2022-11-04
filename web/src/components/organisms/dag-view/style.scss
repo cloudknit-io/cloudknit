@@ -1,0 +1,62 @@
+@import "../../../assets/styles/colors";
+@import "../../../assets/styles/config";
+
+.rd3t-container {
+  height: 100%;
+  width: 100%;
+}
+
+.rd3t-node {
+  & > * {
+    cursor: pointer;
+  }
+  &__pod {
+    cursor: pointer;
+
+    &--successful {
+      fill: $label-color-light-green;
+    }
+
+    &--failed {
+      fill: $label-color-pink;
+    }
+
+    &--initializing {
+      color: $argo-waiting-color;
+    }
+
+    &--pending {
+      fill: $label-color-orange;
+    }
+    &--unknown {
+      fill: $ui-color-gray-500;
+    }
+  }
+
+  &__outline {
+    &--successful {
+      stroke: $label-color-light-green;
+    }
+
+    &--failed {
+      stroke: $label-color-pink;
+    }
+
+    &--pending {
+      stroke: $label-color-orange;
+    }
+
+    &--unknown {
+      stroke: $ui-color-gray-500;
+    }
+  }
+
+  &__label {
+    &__title {
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 18px;
+      color: $ui-color-gray-800;
+    }
+  }
+}

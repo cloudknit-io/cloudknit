@@ -1,0 +1,131 @@
+@import '../../../assets/styles/colors';
+@import '../../../assets/styles/config';
+
+.zlifecycle-audit-table {
+	&-row {
+		cursor: pointer;
+		&-success {
+			background-image: linear-gradient(to right, transparent, $label-color-light-green);
+			border: 3px solid $label-color-light-green;
+			border-radius: 10px;
+		}
+		&-failed {
+			background-image: linear-gradient(to right, transparent, $label-color-pink);
+			border: 3px solid $label-color-pink;
+			border-radius: 10px;
+		}
+	
+		&-initializing {
+			background-image: linear-gradient(to right, transparent, $label-color-orange);
+			border: 3px solid $label-color-orange;
+			border-radius: 10px;
+		}
+	} 
+	
+}
+
+.zlifecycle-event-table {
+	&-row {
+		cursor: pointer;
+		// height: fit-content !important;
+		word-wrap: break-word;
+		font-family: 'DM Sans' !important;
+		&-success {
+			background-image: linear-gradient(to right, transparent, $label-color-light-green);
+			border: 3px solid $label-color-light-green;
+			border-radius: 10px;
+		}
+		&-failed {
+			background-image: linear-gradient(to right, transparent, $label-color-pink);
+			border: 3px solid $label-color-pink;
+			border-radius: 10px;
+		}
+	
+		&-initializing {
+			background-image: linear-gradient(to right, transparent, $label-color-orange);
+			border: 3px solid $label-color-orange;
+			border-radius: 10px;
+		}
+	} 
+	
+}
+
+.zlifecycle-audit-logs {
+	display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    height: 100%;
+	.hide-logs {
+		display: inline-flex;
+		justify-content: center;
+		align-items: center;
+		margin: 5px 0 5px 15px;
+		cursor: pointer;
+		align-self: flex-start;
+		svg {
+			transform: rotate(180deg);
+			margin-right: 5px;
+		}
+	}
+	.zaccordion-header {
+		display: flex;
+		align-items: center;
+		font-family: 'DM Sans';
+		transition: all 0.3s;
+
+		> div {
+			padding: 2px;
+			flex: 1;
+			border-radius: 10px;
+		}
+
+		.zlifecycle-audit-logs-InProcess {
+			background-image: linear-gradient(to right, transparent, $label-color-orange);
+			border: 3px solid $label-color-orange;
+			display: flex;
+			align-items: center;
+			
+		}
+	
+		.zlifecycle-audit-logs-Succeeded  {
+			background-image: linear-gradient(to right, transparent, $label-color-light-green);
+			border: 3px solid $label-color-light-green;
+			display: flex;
+			align-items: center;
+		}
+	
+		.zlifecycle-audit-logs-Failed  {
+			background-image: linear-gradient(to right, transparent, $label-color-pink);
+			border: 3px solid $label-color-pink;
+			display: flex;
+			align-items: center;
+		}
+
+		.zlifecycle-audit-logs-Mutated  {
+			background-image: linear-gradient(to right, transparent, $zlifecycle-yellow);
+			border: 3px solid $zlifecycle-yellow;
+			display: flex;
+			align-items: center;
+		}
+		
+	}
+
+	.zlifecycle-diagram-node {
+		flex-direction: row;
+		margin-right: 10px;
+		align-content: center;
+		p {
+			margin: 0px 0 0 5px;
+			font-size: 1em;
+			color: black;
+		}
+		&__node {
+			height: 24px;
+			width: 24px;
+			svg {
+				height: 8px;
+				width: 12px;
+			}
+		}
+	}
+}

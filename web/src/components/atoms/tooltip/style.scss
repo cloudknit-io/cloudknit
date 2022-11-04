@@ -1,0 +1,11 @@
+@import "../../../assets/styles/colors";
+
+.zlifecycle-tooltip {
+  padding: 8px 16px;
+  font-size: 14px;
+  line-height: 18px;
+  color: white;
+  background: $brand-color-dark-gray;
+  box-shadow: $tooltip-shadow;
+  border-radius: 10px;
+}

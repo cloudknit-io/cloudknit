@@ -1,0 +1,53 @@
+// Brand
+$brand-color-white: #FFFFFF;
+$brand-color-light-gray: #D8D9D8;
+$brand-color-dark-gray: #252625;
+$brand-color-pink: #EF247F;
+$brand-color-orange: #FC9C66;
+$brand-color-orange-6: #FC9C6666;
+$brand-color-light-green: #47C9A7;
+$brand-color-blue: #1A70BC;
+$brand-color-violet: #451C85;
+
+// UI
+$ui-color-gray-200: #FCFCFC;
+$ui-color-gray-400: #D8D9D8;
+$ui-color-gray-500: #BBBBBB;
+$ui-color-gray-600: #8D8D8D;
+$ui-color-gray-800: #252625;
+$ui-color-error: #FE0000;
+$ui-buttons-links: #252625;
+
+$white-color: #FFFFFF;
+// Labels
+$label-color-orange: #FFF5F0;
+$label-color-light-green: #EDFAF6;
+$label-color-pink: #FDE9F2;
+$label-color-blue: #E8F1F8;
+$label-color-violet: #ECE8F3;
+
+// Shadows
+$notifications-shadow: -4px 4px 70px rgba(37, 38, 37, 0.1);
+$tooltip-shadow: 0px 2px 4px rgba(33, 36, 41, 0.05);
+
+$zlifecycle-yellow: #FDDD52;
+$zlifecycle-navy: #252625;
+$zlifecycle-light-green: #26C485;
+$zlifecycle-blue:white;
+$z-lighter-blue: #0E0D2C;
+$background-main: $zlifecycle-blue;
+
+// Dag Nodes
+$dag-in-progress: linear-gradient(
+    to right,
+    rgba(226, 194, 185, 0.5),
+    rgba(226, 194, 185, 1),
+    rgb(190, 148, 137)
+);
+$dag-initializing: rgba(226, 194, 185, 1);
+$dag-waiting-for-parent: rgba(226, 194, 185, 0.5);
+$dag-waiting: #FFC85C;
+$dag-running: rgb(190, 148, 137);
+$dag-reconciling: rgba(190, 148, 137, 0.5);
+$dag-successful: #D3E4CD;
+$dag-failed: #FDE9F2

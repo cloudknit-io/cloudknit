@@ -1,0 +1,31 @@
+.zaccordion {
+	&.collapsed {
+		.zaccordion-content {
+			height: 0px;
+			opacity: 0;
+		}
+		.zaccordion-header {
+			.chevron {
+				transform: rotate(0deg);
+			}
+		}
+	}
+	.zaccordion-content {
+		transition: all 0.3s;
+		height: 100%;
+		word-wrap: break-word;
+		transform-origin: top center;
+		opacity: 1;
+	}
+	.zaccordion-header {
+		cursor: pointer;
+		position: relative;
+		.chevron {
+			transform: rotate(90deg);
+			transition: transform 0.3s;
+			position: absolute;
+			right: 10px;
+			top: calc(50% - 12px);
+		}
+	}
+}

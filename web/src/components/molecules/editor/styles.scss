@@ -1,0 +1,35 @@
+@import '../../../assets/styles/colors';
+
+.zlifecycle-editor {
+	.overflow-guard {
+		border-radius: 4px;
+		border: 0.3px solid $ui-color-gray-400;
+	}
+}
+
+.zeditor-options {
+	position: absolute;
+	z-index: 2;
+	right: 30px;
+	bottom: 10px;
+    display: flex;
+	.download-button {
+		transition: all 0.3s;
+        margin-right: 10px;
+		background: teal;
+		box-shadow: 0 0 10px #ccc;
+		height: 40px;
+		width: 40px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		border-radius: 50%;
+		cursor: pointer;
+		&:hover {
+			box-shadow: 0 0 10px #888;
+		}
+		path {
+			fill: #fff;
+		}
+	}
+}

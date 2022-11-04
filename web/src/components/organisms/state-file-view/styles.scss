@@ -1,0 +1,62 @@
+.state-list-header {
+	padding: 10px;
+	> span {
+		margin-right: 20px;
+	}
+	.header-text {
+		font-size: 1.2em;
+	}
+	border-bottom: 1px solid grey;
+	button {
+		transition: all 0.3s;
+		border-radius: 4px;
+		padding: 5px 10px;
+		background-color: red;
+		color: white;
+		cursor: pointer;
+		&:hover {
+			box-shadow: 0 0 5px #ccc;
+		}
+		&:active {
+			box-shadow: 0 0 20px red;
+		}
+		&:disabled {
+			background-color: gray;
+			cursor: not-allowed;
+		}
+	}
+}
+.state-list-components {
+	height: 500px;
+	overflow-y: auto;
+	margin: 0px;
+	list-style-type: none;
+	font-family: 'DM Sans';
+	li {
+		cursor: pointer;
+		transition: all 0.3s;
+		display: flex;
+		align-items: center;
+		padding: 10px;
+		span {
+			margin-right: 20px;
+			display: inline-flex;
+			align-items: center;
+		}
+	}
+
+	&__row {
+		&.selected {
+			background: #eee;
+		}
+	}
+}
+
+.hide-editor {
+	padding: 10px;
+	cursor: pointer;
+	svg {
+		transform: rotate(180deg);
+		margin-right: 5px;
+	}
+}

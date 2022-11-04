@@ -1,0 +1,89 @@
+@import '../../../assets/styles/colors';
+
+.zlifecycle-workflow-diagram {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	height: 100%;
+
+	.workflow-accordion-header {
+		display: flex;
+		align-items: center;
+		border-radius: 10px;
+		padding: 5px;
+		font-family: 'DM Sans';
+		transition: all 0.3s;
+		text-transform: capitalize;
+
+		.zlifecycle-diagram-node {
+			flex-direction: row;
+			margin-right: 10px;
+			&__node {
+				height: 24px;
+				width: 24px;
+				svg {
+					height: 8px;
+					width: 12px;
+				}
+			}
+		}
+
+		&_phase {
+			&--Disregarded {
+				background-image: linear-gradient(to right, transparent, $ui-color-gray-400);
+				border: 3px solid $ui-color-gray-400;
+			}
+			&--Failed {
+				background-image: linear-gradient(to right, transparent, $label-color-pink);
+				border: 3px solid $label-color-pink;
+			}
+			&--Pending {
+				background-image: linear-gradient(to right, transparent, $label-color-blue);
+				border: 3px solid $label-color-blue;
+			}
+			&--Succeeded {
+				background-image: linear-gradient(to right, transparent, $label-color-light-green);
+				border: 3px solid $label-color-light-green;
+			}
+			&--InProcess {
+				background-image: linear-gradient(to right, transparent, $label-color-orange);
+				border: 3px solid $label-color-orange;
+			}
+			&--Mutated {
+				background-image: linear-gradient(to right, transparent, $zlifecycle-yellow);
+				border: 3px solid $zlifecycle-yellow;
+			}
+			&--destroy {
+				filter: grayscale(1);
+			}
+		}
+	}
+
+	.collapsed {
+		.workflow-accordion-content {
+			max-height: 0px;
+		}
+	}
+
+	.workflow-accordion-content {
+		transition: all 0.3s;
+		border-radius: 20px;
+		max-height: 64vh;
+		overflow-y: auto;
+		overflow-x: hidden;
+		word-break: break-all;
+		text-align: center;
+		&.zscrollbar {
+			&::-webkit-scrollbar {
+				width: 0.5em;
+			}
+			&::-webkit-scrollbar-track {
+				// background-color: #eee;
+			}
+			&::-webkit-scrollbar-thumb {
+				background-color: darkgrey;
+				border-radius: 10px;
+			}
+		}
+	}
+}

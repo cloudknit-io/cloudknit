@@ -1,0 +1,31 @@
+@import "../../../assets/styles/colors";
+
+.zlifecycle-grid-display-list {
+  display: grid;
+  grid-template-columns: 100px auto;
+
+  &__label {
+    color: $ui-color-gray-600;
+    margin-bottom: 8px;
+  }
+
+  &__value {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+    max-width: 80%;
+    font-size: 0.9em;
+    font-family: 'DM Sans';
+
+    p, span {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 0;
+    }
+
+    &--muted {
+      color: $ui-color-gray-600;
+    }
+  }
+}

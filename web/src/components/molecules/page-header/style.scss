@@ -1,0 +1,224 @@
+@import 'src/assets/styles/colors';
+@import 'src/assets/styles/config.scss';
+
+.zlifecycle-page-header {
+	width: 100%;
+
+	&__search-filter {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	&__tabs-container {
+		display: flex;
+		height: $basic-control-height;
+
+		&__title {
+			color: $ui-color-gray-600;
+		}
+
+		&__tab {
+			padding: 0 15px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			border-radius: 5px;
+			p {
+				margin: unset;
+			}
+
+			&--active {
+				background: $ui-color-gray-800;
+				color: white;
+			}
+
+			&:hover {
+				cursor: pointer;
+			}
+		}
+	}
+	&__left {
+		flex: 1 0 auto;
+
+		&__filters {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			flex: 1 0 auto;
+			p {
+				font-family: 'DM Sans';
+			}
+		}
+
+		&__breadcrumbs {
+			display: flex;
+			align-items: center;
+			color: $zlifecycle-navy;
+
+			&--active {
+				color: $brand-color-pink;
+				text-decoration: underline;
+			}
+		}
+
+		&__search {
+			position: relative;
+			display: flex;
+			align-items: flex-end;
+			flex: 0 0 300px;
+			margin-right: 25px;
+
+			&__input {
+				height: $basic-control-height;
+				width: 100%;
+				padding-left: 40px;
+				position: relative;
+				transition: box-shadow 0.3s;
+
+				&::placeholder {
+					color: #aaa;
+				}
+			}
+
+			&__icon {
+				position: absolute;
+				color: $zlifecycle-blue;
+				left: 10px;
+				top: (($basic-control-height - 24px) / 2);
+				z-index: 1;
+			}
+
+			&__clear {
+				position: absolute;
+				right: 10px;
+				top: (($basic-control-height - 24px) / 2);
+			}
+		}
+	}
+
+	&__right {
+		&__options {
+			display: flex;
+			align-items: center;
+			flex-direction: row-reverse;
+
+			&:hover {
+				cursor: pointer;
+			}
+
+			button {
+				height: 1.6em;
+				width: 1.6em;
+				font-family: 'DM Sans';
+				font-weight: bold;
+				font-size: 1em;
+        cursor: pointer;
+        &.inactive {
+          filter: grayscale(1);
+          opacity: 0.4;
+        }
+				> span:first-child {
+          color: blue;
+				}
+        > span:last-child {
+          color: green;
+				}
+			}
+
+			> * {
+				margin-left: 24px;
+			}
+		}
+	}
+}
+
+.op-container {
+	flex: 1 0 auto;
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+}
+
+.diff-checker {
+	box-shadow: 0 0 10px #ddd;
+	padding: 12px;
+	display: flex;
+	align-items: center;
+	margin-right: 10px;
+	justify-content: space-between;
+	cursor: pointer;
+	&:active {
+		box-shadow: 0 0 10px #ddd inset;
+	}
+}
+
+.checkbox-filter {
+	font-family: 'DM Sans';
+	display: inline-flex;
+	justify-content: flex-end;
+	position: relative;
+	padding: 10px;
+	overflow: hidden;
+	button {
+		height: 50px;
+		box-shadow: 0 0 10px #ddd;
+		padding: 0 10px;
+		width: 80px;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		cursor: pointer;
+		border-bottom: 2px solid transparent;
+		.dropdown-icon {
+			transform: rotate(90deg);
+		}
+	}
+
+	&.visible {
+		overflow: visible;
+		button {
+			border-bottom: 2px solid $argo-color-teal-7;
+		}
+	}
+
+	.checkbox-filter__container {
+		opacity: 0;
+		box-shadow: 0 0 10px #ddd;
+		background: white;
+		border-radius: 5px;
+		padding: 5px;
+		position: absolute;
+		z-index: 5;
+		transition: all 0.3s;
+		transform: translate(calc(50% - 25px), 50px);
+
+		&-visible {
+			opacity: 1;
+			transform: translate(calc(50% - 25px), 60px);
+		}
+	}
+
+	.checkbox-filter__inline-flex {
+		display: inline-flex;
+		flex-direction: column;
+		margin: 0 5px;
+		box-shadow: none;
+		> label {
+			color: $argo-color-teal-7;
+			border-bottom: 1px solid $argo-color-teal-7;
+		}
+		.zlifecycle-dropdown-menu__list__item {
+			padding: 3px 5px;
+			display: flex;
+			align-items: center;
+
+			span.argo-checkbox {
+				transform: scale(0.6);
+			}
+			label {
+				cursor: pointer;
+			}
+		}
+	}
+}

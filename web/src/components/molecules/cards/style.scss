@@ -1,0 +1,294 @@
+@import 'src/assets/styles/grid-mixin';
+@import 'src/assets/styles/colors';
+@import 'src/assets/styles/config';
+
+.display-flex {
+	display: flex;
+	> *:not(:first-child) {
+		margin-left: 25px;
+	}
+}
+
+.border.com-cards {
+	.com-card {
+		border: 1px solid $brand-color-dark-gray;
+	}
+}
+
+.com-cards {
+	@include grid-items(16px, 16px, 3, 2, 2);
+	margin-bottom: 16px;
+
+	p,
+	h4 {
+		font-family: 'DM Sans';
+	}
+
+	&.team .com-card {
+		padding: 0px;
+		overflow: visible;
+		.environment-status {
+			position: relative;
+			width: 100%;
+			&__preview {
+				display: flex;
+				flex-direction: column;
+				> div {
+					display: flex;
+					align-items: center;
+					> b {
+						width: 80px;
+						overflow: hidden;
+						text-overflow: ellipsis;
+					}
+				}
+			}
+			&__tooltip {
+				padding: 5px;
+				top: 0px;
+				flex-direction: column;
+				position: absolute;
+				transform: scale(0);
+				border-radius: 10px;
+				background: white;
+				box-shadow: 0 0 10px #ccc;
+				width: calc(100% + 20px);
+				background: #fff;
+				z-index: 2;
+				opacity: 0;
+				transition: all 0.3s;
+				> div {
+					display: flex;
+					align-items: center;
+					> b {
+						width: 80px;
+						overflow: hidden;
+						text-overflow: ellipsis;
+					}
+				}
+			}
+			&:hover {
+				.environment-status__tooltip {
+					display: flex;
+					opacity: 1;
+					transform: scale(1);
+				}
+			}
+		}
+
+		.com-card__header {
+			padding: 8px 20px;
+			background: $brand-color-dark-gray;
+			border-radius: 20px 20px 0 0;
+			p {
+				margin: 0px;
+				color: white;
+			}
+		}
+	}
+
+	.com-card {
+		padding: 16px;
+		border-radius: 20px;
+		background: $ui-color-gray-200;
+		box-shadow: 0 0 20px #ddd;
+		transition: box-shadow 0.3s;
+		cursor: pointer;
+		overflow: hidden;
+		position: relative;
+
+		&.component-card {
+			overflow: visible;
+		}
+
+		&.environment-card {
+			position: relative;
+			transition: all 0.6s;
+			border: 6px solid transparent;
+			&--destroyed {
+				filter: grayscale(1);
+				.environment-card__header {
+					background: gray;
+				}
+			}
+			&.compare-selected {
+				transform: scale(0.9);
+				border: 6px solid teal;
+			}
+			.select-compare {
+				zoom: 130%;
+				filter: hue-rotate(310deg);
+				transition: all 0.3s;
+				&:not(:checked) {
+					opacity: 0.7;
+					cursor: pointer;
+				}
+			}
+		}
+
+		.zlifecycle-status-display {
+			display: inline-flex;
+			position: relative;
+			&_tooltip {
+				font-family: 'DM Sans';
+				font-size: 0.8em;
+				white-space: nowrap;
+				display: none;
+				position: absolute;
+				z-index: 1;
+				// max-width: 100px;
+				overflow-y: auto;
+				transform: translateY(-65%);
+				background: #fff;
+				box-shadow: 0 0 10px #aaa;
+				padding: 5px;
+				border-radius: 5px;
+				&.show {
+					display: block;
+				}
+			}
+		}
+
+		&__labels {
+			display: grid;
+			grid-template-columns: repeat(3, 33%);
+			column-gap: 5px;
+			row-gap: 5px;
+			.com-card-label {
+				margin: 0px;
+			}
+		}
+
+		&.destroyed {
+			filter: grayscale(1);
+		}
+
+		&:hover {
+			box-shadow: 0 0 30px #aaa;
+			.com-card__hover-film {
+				transform: scale(1);
+				opacity: 1;
+			}
+		}
+
+		&--with-header {
+			padding: 0px;
+
+			.large-health-icon-container {
+				display: flex;
+				align-items: center;
+				transform: scale(1.5);
+				&__sync-button {
+					&--in-progress {
+						animation: sync-rotate 2s linear infinite;
+					}
+					transition: transform 0.3s;
+					transform: scale(0.8);
+					cursor: pointer;
+					&:hover {
+						transform: scale(0.8) rotate(180deg);
+					}
+					&--in-sync {
+						path {
+							fill: $brand-color-light-green;
+						}
+					}
+					&--out-of-sync {
+						path {
+							fill: lightgray;
+						}
+					}
+					&--unknown {
+						path {
+							fill: red;
+						}
+					}
+				}
+			}
+			.com-card__cloud {
+				display: flex;
+				align-items: center;
+				p {
+					margin: unset;
+					margin-right: 10px;
+				}
+			}
+			.com-card__header {
+				padding: 8px 20px;
+				background: $zlifecycle-navy;
+				color: white;
+			}
+			.com-card__body {
+				margin-top: unset;
+				padding: 10px 24px;
+			}
+		}
+
+		&__component-descriptors {
+			display: flex;
+			margin: 5px 0;
+			align-items: center;
+			flex-wrap: wrap;
+			> * {
+				flex: 1;
+				padding: 0 5px;
+			}
+			h5 {
+				font-size: 1em;
+			}
+		}
+
+		&__more-options {
+			display: flex;
+
+			&__svg {
+				margin-left: 10px;
+			}
+		}
+
+		&__header {
+			display: flex;
+			justify-content: space-between;
+
+			&__title {
+				display: flex;
+				align-items: center;
+				max-width: 90%;
+
+				p {
+					margin-bottom: 0;
+					white-space: nowrap;
+					overflow: hidden;
+					text-overflow: ellipsis;
+				}
+				h4 {
+					margin: 0;
+				}
+			}
+		}
+	}
+}
+
+.zlifecycle-status-display {
+	display: flex;
+	align-items: center;
+	margin-right: 8px;
+
+	p {
+		margin-left: 4px;
+		margin-bottom: 0;
+	}
+
+	&--time {
+		color: $ui-color-gray-600;
+	}
+}
+
+@keyframes sync-rotate {
+	from {
+		transform: scale(0.8) rotate(0deg);
+	}
+	to {
+		transform: scale(0.8) rotate(-360deg);
+	}
+}

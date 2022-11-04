@@ -1,0 +1,11 @@
+@import '../../../assets/styles/colors';
+
+.zlifecycle-btn {
+	background: $zlifecycle-navy;
+	color: $zlifecycle-blue;
+
+	.spinner-border-sm {
+		margin-left: 10px;
+		display: inline-flex;
+	}
+}

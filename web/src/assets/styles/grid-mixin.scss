@@ -1,0 +1,38 @@
+@mixin grid-items($gap-col, $gap-row, $column-size, $column-size-md, $column-size-sm: 2) {
+	display: flex;
+	> * {
+		float: left;
+		width: calc(100% / #{$column-size});
+		margin: $gap-col $gap-row;
+		@media (max-width: 1024px) {
+			width: calc(100% / #{$column-size-md});
+		}
+		@media (max-width: 768px) {
+			width: calc(100% / #{$column-size-sm});
+		}
+		@media (max-width: 425px) {
+			width: calc(100% / #{$column-size-sm});
+		}
+	}
+	@supports (grid-area: auto) {
+		display: grid;
+		grid-template-columns: repeat($column-size, 1fr);
+		grid-template-rows: auto;
+		grid-column-gap: $gap-col;
+		grid-row-gap: $gap-row;
+		> * {
+			float: none;
+			width: 100%;
+			margin: unset;
+		}
+		@media (max-width: 1024px) {
+			grid-template-columns: repeat($column-size-md, 1fr);
+		}
+		@media (max-width: 768px) {
+			grid-template-columns: repeat($column-size-sm, 1fr);
+		}
+		@media (max-width: 425px) {
+			grid-template-columns: repeat($column-size-sm, 1fr);
+		}
+	}
+}

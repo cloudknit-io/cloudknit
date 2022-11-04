@@ -1,0 +1,12 @@
+*/.git/
+.gitignore
+Dockerfile
+.dockerignore
+README.md
+secret.txt
+
+node_modules
+helm
+build
+coverage
+runbook

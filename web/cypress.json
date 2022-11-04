@@ -1,0 +1,9 @@
+{
+  "baseUrl": "http://localhost:3001",
+  "chromeWebSecurity": false,
+  "watchForFileChanges": false,
+  "requestTimeout": 40000,
+  "defaultCommandTimeout": 40000,
+  "pageLoadTimeout": 80000,
+  "video": false
+}

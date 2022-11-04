@@ -1,0 +1,9 @@
+/build
+/src/serviceWorker.ts
+/src/setupTests.ts
+/src/components/argo-cd-ui/**/*
+/src/components/argo-core/**/*
+/src/models/argo.models.ts
+/src/models/kuberneties.models.ts
+/src/react-app-env-d.ts
+/src/**/__tests__/*

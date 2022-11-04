@@ -1,0 +1,98 @@
+.top-bar__validator {
+	display: flex;
+	align-items: center;
+	.yml-icon {
+		font-family: 'DM Sans';
+		font-size: 0.6em;
+		font-weight: bold;
+		height: 25px;
+		width: 30px;
+		display: flex;
+		background: #333;
+		color: white;
+		justify-content: center;
+		align-items: center;
+		border-radius: 50%;
+		margin-right: 3px;
+		cursor: pointer;
+	}
+}
+
+.yamlvalidator-container {
+	height: 100vh;
+	position: absolute;
+	width: 100vw;
+	top: 0px;
+	left: 0px;
+	background: rgba(255, 255, 255, 0.6);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 1;
+	.modal {
+		overflow-y: auto;
+		box-shadow: 0 0 40px #ccc;
+		height: 80vh;
+		width: 80vw;
+		display: flex;
+		padding: 30px;
+		background: white;
+		flex-direction: column;
+
+		.editor-container {
+			border: 2px solid transparent;
+			padding: 2px;
+			border-radius: 5px;
+			height: 100%;
+			&.invalid {
+				border-color: red;
+			}
+			&.valid {
+				border-color: green;
+			}
+		}
+
+		h4 {
+			font-family: 'DM Sans';
+		}
+		.btn {
+			margin-top: 5px;
+			font-family: 'DM Sans';
+			height: 30px;
+			width: 100px;
+			border-radius: 5px;
+			box-shadow: 0 0 10px #ccc;
+			cursor: pointer;
+			margin-right: 20px;
+			transition: all 0.3s;
+			&:hover {
+				box-shadow: 0 0 20px #aaa;
+			}
+			&:active {
+				box-shadow: 0 0 50px #888;
+			}
+
+			&.disabled {
+				pointer-events: none;
+				cursor: not-allowed;
+				filter: grayscale(1);
+			}
+
+			&.green {
+				color: green;
+				&:hover {
+					color: white;
+					background: green;
+				}
+			}
+
+			&.red {
+				color: red;
+				&:hover {
+					color: white;
+					background: red;
+				}
+			}
+		}
+	}
+}

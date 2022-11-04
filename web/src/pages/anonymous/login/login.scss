@@ -1,0 +1,95 @@
+@import "../../../assets/styles/colors";
+@import "../../../assets/styles/config";
+
+
+.login-panel {
+    background: #4f4f4f;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-form-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+.login-form {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 50%;
+    > * {
+        margin-top: 10px;
+    }
+
+    form {
+        width: 100%;
+        .login-form-group {
+            > * {
+                margin-top: 10px;
+            }
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            input {
+                flex: 0 0 $basic-control-height;
+                padding-left: 20px;
+                &.invalid {
+                    box-shadow: 0 0 10px lightpink;
+                }
+            }
+        }
+    }
+
+    &--title-img {
+        width: 75%;
+        margin-bottom: 24px;
+    }
+
+    &--button.zlifecycle-btn {
+        cursor: pointer;
+        flex: 0 0 $basic-control-height;
+        color: $ui-color-gray-800;
+        font-size: 18px;
+        background: rgba(125, 201, 111, 0.2);
+        box-shadow: 0 0 20px #ddd;
+        display: block;
+        text-transform: unset;
+        width: 100%;
+
+        &:not(.disabled):hover {
+            color: $ui-color-gray-800;
+            background: rgba(125, 201, 111, 0.5);
+        }
+    }
+
+    &--button-icon {
+        margin-right: 8px;
+    }
+
+    &--button-github.zlifecycle-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 20px #ddd;
+        color: white;
+        background: #333333;
+        &:not(.disabled):hover {
+            color: white;
+            background: black;
+        }
+    }
+}
+
+.login-layout {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr;
+}

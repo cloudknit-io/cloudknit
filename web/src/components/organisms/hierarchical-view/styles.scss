@@ -1,0 +1,57 @@
+@import '../../../assets/styles/colors';
+
+.hierarchy-container {
+	.total-cost {
+		text-align: right;
+		box-sizing: border-box;
+		padding: 5px 5px 20px 20px;
+		border-top: 2px solid lightgray;
+	}
+}
+
+.node-hierarchy-l {
+	display: inline-block;
+	height: 1.2em;
+	border-bottom: 2px solid lightgray;
+	border-left: 2px solid lightgray;
+	width: 1.2em;
+}
+
+.hierarchy-container {
+	width: 100%;
+	font-family: 'DM Sans';
+	margin-top: 10px;
+	font-size: 0.8em;
+	&_columns {
+		font-weight: bold;
+		border-bottom: 1px solid #ddd;
+	}
+	&_footer {
+		border-top: 1px solid #ddd;
+		span {
+			font-weight: bold;
+		}
+	}
+	ul {
+		width: 100%;
+		margin: 0px;
+		display: grid;
+		// box-shadow: 0 0 3px #eee;
+		grid-template-columns: auto 110px 110px 110px;
+		background-image: linear-gradient(to left, transparent, $label-color-light-green);
+		li:not(:first-child) {
+			text-align: right;
+		}
+		li {
+			list-style-type: none;
+			display: flex;
+			flex-direction: column;
+			border-right: 0px;
+			margin-left: 10px;
+			span {
+				margin: 2px;
+				padding: 2px;
+			}
+		}
+	}
+}

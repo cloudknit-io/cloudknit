@@ -1,0 +1,22 @@
+# run zlife + cypress in headless
+#
+#   ZLIFECYCLE_WEB_PROJECT_DIR=/Projects/ZLifeCycle/zlifecycle-web ZLIFECYCLE_BFF_PROJECT_DIR=/Projects/ZLifeCycle/zlifecycle-web-bff docker-compose -f docker-compose.yml -f ./cypress/docker-compose.cypress.yml run --rm tests
+#
+version: '3.8'
+
+services:
+  zlifecycle-web:
+    environment:
+      DANGEROUSLY_DISABLE_HOST_CHECK: "true"
+  tests:
+    image: "cypress/included:8.6.0"
+    depends_on:
+      - zlifecycle-web
+    volumes:
+      - "./cypress.json:/cypress.json"
+      - "./cypress:/cypress"
+    environment:
+      CYPRESS_baseUrl: http://zlifecycle-web:3001
+    working_dir: /
+    entrypoint: ''
+    command: /bin/bash -c 'npx wait-on -t 60000 http-get://zlifecycle-web:3001 && cypress run --config-file "/cypress.json" --spec "cypress/integration/**"'

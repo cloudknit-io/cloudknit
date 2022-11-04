@@ -1,0 +1,115 @@
+@import "../../../assets/styles/config";
+@import "../../../assets/styles/colors";
+
+.layout {
+	background: $background-main;
+	width: 100vw;
+	height: 100vh;
+	overflow: hidden;
+	display: grid;
+
+	grid-template-areas:
+		"header header"
+		"main main";
+	grid-template-columns: 1fr;
+	grid-template-rows: $header-offset 1fr;
+
+	.zlifecycle-header {
+		background: white;
+		grid-area: header;
+		z-index: 4;
+	}
+
+	.zlifecycle-main-content {
+		grid-area: main;
+		overflow-y: scroll;
+
+		.dark-overlay {
+			position: fixed;
+			height: 100vh;
+			width: 100vw;
+			top: $header-offset;
+			background: rgba(0, 0, 0, 0.5);
+			z-index: 998;
+			transition: all 0.3s;
+			transform: translateX(0px);
+		}
+
+		.dark-overlay.collapsed {
+			transform: translateX(-100vw);
+		}
+
+		.zlifecycle-nav {
+			box-sizing: border-box;
+			height: 100vh;
+			z-index: 999;
+			top: $header-offset;
+			left: 0px;
+			position: fixed;
+			transition: all 0.5s;
+			flex: none;
+			width: 250px;
+			padding: 80px 0;
+			background: $brand-color-dark-gray;
+			box-shadow: 1px 0px 20px #000;
+
+			.toggle-side-bar {
+				position: absolute;
+				right: -20px;
+				top: 20px;
+				height: 40px;
+				width: 40px;
+				border-radius: 50%;
+				background: $brand-color-light-green;
+				box-shadow: 0px 0px 20px #111;
+				cursor: pointer;
+
+				.chevron-right {
+					transform: rotateY(180deg);
+					transition: all 1s;
+				}
+			}
+		}
+
+		.zlifecycle-nav.collapsed {
+			transform: translateX(-250px);
+			box-shadow: 0px 0px 0px #000;
+
+			.chevron-right {
+				transform: rotateY(0deg) translateX(8px);
+				transition: all 1s;
+			}
+		}
+
+		.zlifecycle-main {
+			max-width: 85vw;
+			padding: 10px 0 20px 0;
+			margin: 0 auto;
+			display: flex;
+			flex-direction: column;
+			> *:not(:first-child) {
+				margin-top: 15px;
+			}
+		}
+	}
+
+	&__loader {
+		background-color: rgba($argo-color-gray-7, 0.4);
+		position: fixed;
+		left: 0;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 999999;
+
+		.loader-inner {
+			left: 50%;
+			position: absolute;
+			bottom: 50%;
+			transform: translateX(-50%) translateY(-50%);
+			& > div {
+				background: #f07a51;
+			}
+		}
+	}
+}

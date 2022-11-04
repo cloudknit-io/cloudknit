@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "resolveJsonModule": true,
+    "outDir": "dist",
+    "sourceMap": true,
+    "lib": [
+      "es2021",
+      "esnext.asynciterable"
+    ],
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "typeRoots": [
+      "./node_modules/@types"
+    ]
+  },
+  "include": [
+    "./src/**/*.ts",
+    "./src/**/*.json"
+  ],
+  "exclude": [
+    "./node_modules",
+    "./src/tests",
+    "./server"
+  ]
+}

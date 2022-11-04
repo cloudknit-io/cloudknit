@@ -1,0 +1,24 @@
+@import 'src/assets/styles/config';
+
+.zlifecycle-spinner-cover {
+	width: 100%;
+	height: 100%;
+
+	&__loader {
+		position: absolute;
+		top: $header-offset;
+		left: 0;
+		width: 100%;
+		height: calc(100% - #{$header-offset});
+		z-index: 1000;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		backdrop-filter: blur(10px);
+	}
+
+	&__full-screen {
+		width: 100vw;
+		height: 100vh;
+	}
+}

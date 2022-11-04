@@ -1,0 +1,80 @@
+@import 'src/assets/styles/colors';
+@import 'src/assets/styles/config';
+
+.breadcrumbs-container {
+	display: inline-flex;
+	align-self: flex-start;
+	align-items: center;
+}
+	
+	
+
+.breadcrumb-ddmenu {
+	min-width: 100%;
+	top: 30px;
+	position: absolute;
+	z-index: 5;
+	right: 0px;
+	box-shadow: 0 4px 5px #aaa;
+	overflow: hidden;
+	opacity: 0;
+	transition: all 0.3s;
+	transform: translateY(-10px);
+	transition-delay: 0.1s;
+	li {
+		white-space: nowrap;
+		padding: 5px 10px;
+		font-size: 0.9em;
+		text-align: left;
+		font-family: 'DM Sans';
+		&:hover {
+			background: $argo-color-teal-7;
+			color: #fff;
+		}
+	}
+}
+
+button.breadcrumb {
+	display: inline-flex;
+	position: relative;
+	height: 30px;
+	display: inline-flex;
+	align-items: center;
+	padding: 0 5px;
+	cursor: pointer;
+	overflow: hidden;
+	border-radius: 5px;
+	box-shadow: 0 0 10px #ddd;
+	.breadcrumb-dd-caret {
+		transform: rotate(180deg) translateY(-1px);
+		> path {
+			fill: #222;
+		}
+	}
+
+	&-active {
+		background: $argo-color-teal-7;
+		p {
+			color: white;
+		}
+		.breadcrumb-dd-caret > path {
+			fill: white;
+		}
+	}
+
+	p {
+		margin: 0px;
+		font-family: 'DM Sans';
+	}
+}
+
+button.breadcrumb:hover {
+	box-shadow: 0 0 10px #aaa;
+	overflow: visible;
+	border-radius:5px 5px 0px 0px;
+	> .breadcrumb-ddmenu {
+		border-radius: 0px 0px 5px 5px;
+		opacity: 1;
+		transform: translateY(0px);
+	}
+}

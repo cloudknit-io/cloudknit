@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  zlifecycle-web:
+    image: zlifecycle-web
+    build:
+      context: ${ZLIFECYCLE_WEB_PROJECT_DIR}
+      dockerfile: Dockerfile
+      target: base
+    env_file:
+      - ${ZLIFECYCLE_WEB_PROJECT_DIR}/.env.development.docker
+    volumes:
+      - ./src:/var/www/src
+      - ./public:/var/www/public
+      - ./tsconfig.json:/var/www/tsconfig.json
+    working_dir: /var/www
+    depends_on:
+      - zlifecycle-bff
+    stdin_open: true  # see: https://github.com/facebook/create-react-app/issues/8688
+    ports:
+      - "3001:3001"
+    command: ["npm", "run", "start"]
+  zlifecycle-bff:
+    image: zlifecycle-bff
+    build:
+      context: ${ZLIFECYCLE_BFF_PROJECT_DIR}
+      dockerfile: Dockerfile
+      target: base
+    env_file:
+      - ${ZLIFECYCLE_BFF_PROJECT_DIR}/.env.development.docker
+    volumes:
+      - ${ZLIFECYCLE_BFF_PROJECT_DIR}:/var/www
+    working_dir: /var/www
+    ports:
+      - "8088:8088"
+    command: ["npm", "run", "start"]

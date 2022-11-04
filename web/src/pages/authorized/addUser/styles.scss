@@ -1,0 +1,67 @@
+.add-user {
+	&__form {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		&-pair {
+			margin: 10px 0 10px 0;
+			display: flex;
+			flex-direction: row;
+			label {
+				width: 100px;
+			}
+			input,
+			select {
+				width: 200px;
+				border: 2px solid gray;
+				border-radius: 4px;
+				transition: all 0.3s;
+				&:focus {
+					border: 2px solid teal;
+				}
+			}
+		}
+		button {
+			background-color: teal;
+			padding: 10px 20px;
+			color: white;
+			border-radius: 5px;
+			box-shadow: 2px 2px 4px #aaa;
+			&:active {
+				box-shadow: none;
+			}
+		}
+	}
+	&__list {
+		&--columns {
+			display: grid;
+			grid-template: auto / 250px 250px 60px 230px 60px;
+			color: teal;
+			padding: 5px;
+			font-weight: bold;
+			border-bottom: 2px solid teal;
+		}
+		&--row {
+			display: grid;
+			grid-template: auto / 250px 250px 60px 230px 60px;
+			margin-top: 10px;
+			padding: 5px;
+			&:nth-child(2n) {
+				background-color: #00808022;
+				&.disabled {
+					background-color: #bbb;
+				}
+			}
+			> span:last-child {
+				display: inline-flex;
+				justify-content: center;
+				svg {
+					cursor: pointer;
+					path {
+						fill: red;
+					}
+				}
+			}
+		}
+	}
+}

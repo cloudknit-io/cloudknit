@@ -1,0 +1,93 @@
+@import "src/assets/styles/colors";
+@import "src/assets/styles/config";
+
+.side-nav-item-container {
+  display: flex;
+  flex-direction: column;
+  align-self: center;
+  flex: 1 0 auto;
+  overflow: hidden;
+
+  > .side-nav-item {
+    padding: 15px 20px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s;
+    border-radius: 10px;
+    margin: 5px 10px;
+    display: flex;
+    align-content: center;
+    color: #fff;
+    justify-content: space-between;
+
+    span {
+      display: flex;
+    }
+
+    svg.nav-icon {
+      margin-right: 5px;
+      transform: scale(0.9) translateY(1px);
+      > path {
+        fill: #fff;
+        transition: fill 0.3s;
+      }
+    }
+
+    svg.nav-drop-down {
+      transform: scale(1.2);
+    }
+
+    &:hover {
+      background: $brand-color-light-green;
+      color: $brand-color-dark-gray;
+      svg > path {
+        fill: $brand-color-dark-gray;
+      }
+    }
+
+    svg.nav-drop-down {
+      transition: transform 0.3s;
+      transform: scale(1.2);
+    }
+
+    svg.nav-drop-down.collapsed {
+      transform: scale(1.2) rotate(180deg);
+    }
+  }
+
+  > .active {
+    background: $brand-color-light-green;
+    color: $brand-color-dark-gray;
+
+    svg.nav-icon > path,
+    svg.nav-drop-down > path {
+      fill: $brand-color-dark-gray;
+    }
+  }
+}
+
+.sub-menu {
+  margin: 0px 10px 0 20px;
+  > .side-nav-item {
+    border-radius: 0px;
+    color: white;
+    border-left: 5px solid #999;
+
+    &:hover {
+      background: transparent;
+      color: $brand-color-light-green;
+      border-left: 5px solid $brand-color-light-green;
+    }
+  }
+  .active {
+    background: transparent;
+    color: $brand-color-light-green;
+    border-left: 5px solid $brand-color-light-green;
+  }
+}
+
+div.collapsed {
+  .sub-menu {
+    display: none;
+  }
+}

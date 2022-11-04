@@ -1,0 +1,511 @@
+.flex-direction-column {
+	flex-direction: column;
+}
+
+.flex-direction-row {
+	flex-direction: column;
+}
+
+.j-flex-end {
+	justify-content: flex-end;
+}
+
+.a-flex-end {
+	align-items: flex-end;
+}
+
+.a-flex-start {
+	align-items: flex-start;
+}
+
+.dag-editor-container {
+	height: 100vh;
+	width: 100%;
+	display: flex;
+	position: relative;
+
+	.connector-line {
+		stroke: #333;
+		stroke-width: 2px;
+		fill: none;
+		cursor: pointer;
+	}
+
+	.svg-container {
+		flex: 2;
+		transition: all 0.3s;
+		.roundedCorners {
+			cursor: move;
+			.node-overlay {
+				transition: all 0.2s;
+				opacity: 0;
+				.rect-container {
+					fill: #fff8;
+				}
+			}
+			.connector-dot {
+				cursor: crosshair;
+				fill: transparent;
+				stroke: #000;
+				stroke-width: 3px;
+				filter: drop-shadow(0px 0px 7px #aaa);
+			}
+			.delete-node,
+			.edit-node {
+				cursor: pointer;
+				filter: drop-shadow(0px 0px 7px #aaa);
+			}
+			.delete-node {
+				&__text {
+					font-size: 0.9em;
+					font-family: Arial, Helvetica, sans-serif;
+					fill: white;
+				}
+			}
+			&.visible {
+				> rect {
+					fill-opacity: 0.3;
+				}
+				.node-overlay {
+					opacity: 1;
+				}
+			}
+		}
+
+		g.edgePath {
+			path {
+				stroke: #333;
+				stroke-width: 2px;
+				fill: none;
+				cursor: pointer;
+			}
+			.delete-edge {
+				display: none;
+				cursor: pointer;
+				path {
+					fill: red;
+					stroke: red;
+				}
+			}
+			&.selected {
+				path {
+					stroke: red;
+					fill: red;
+				}
+				.delete-edge {
+					path {
+					}
+					display: inherit;
+				}
+			}
+		}
+	}
+	.generated-yaml {
+		flex: 1;
+	}
+
+	.generated-yaml {
+		&.collapsed {
+			display: none;
+		}
+	}
+}
+
+.round-btn-icon {
+	height: 23px;
+	width: 23px;
+	border-radius: 50%;
+	border: 1px solid black;
+	background: #fff;
+	justify-content: center;
+	display: inline-flex;
+	align-items: center;
+	cursor: pointer;
+	align-self: center;
+}
+
+.controls {
+	display: flex;
+	justify-content: space-between;
+	&-btn {
+		padding: 7px;
+		align-items: center;
+		display: inline-flex;
+		background: #fff;
+		color: black;
+		cursor: pointer;
+		position: relative;
+		overflow: visible;
+		box-shadow: 0 0 15px #bbb;
+		border-radius: 10px;
+		margin-left: 10px;
+		&:active {
+			box-shadow: 0 0 5px inset #ccc;
+		}
+	}
+}
+
+@keyframes animate-tooltip {
+	1% {
+		opacity: 1;
+		transform: translateX(-40%) translateY(-150%) scale(1.1);
+	}
+	9% {
+		transform: translateX(-40%) translateY(-150%) scale(1);
+	}
+	100% {
+		opacity: 0;
+		transform: translateX(-40%) translateY(-150%) scale(0.8);
+	}
+}
+
+.context-menu {
+	font-family: 'DM Sans';
+	position: absolute;
+	transform: translateX(5%);
+	display: none;
+	top: 0px;
+	left: 0px;
+	background: #fff;
+	width: 90%;
+	height: calc(100% - 250px);
+	align-items: center;
+	flex-direction: column;
+	padding: 10px;
+	overflow-y: auto;
+	box-shadow: 0 0 20px #ddd;
+	border-radius: 10px;
+
+	.diff-editor-header {
+		width: 100%;
+		display: flex;
+		justify-content: space-between;
+		button {
+			font-weight: bold;
+			border-radius: 50%;
+			height: 30px;
+			width: 30px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			font-size: 1.2em;
+			cursor: pointer;
+		}
+	}
+
+	.component-node-form-header {
+		h4 {
+			font-family: inherit;
+		}
+		display: flex;
+		width: 100%;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.environment-builder-form {
+		display: flex;
+		flex-direction: column;
+		width: 90%;
+		* {
+			font-weight: lighter;
+			font-size: 0.98em;
+		}
+
+		&__group {
+			align-self: center;
+			margin-top: 10px;
+			width: 100%;
+			display: flex;
+			box-shadow: 0 0 20px #ddd;
+			padding: 10px;
+
+			&.left-align {
+				justify-content: flex-start;
+
+				> div {
+					flex-basis: 100%;
+				}
+			}
+
+			> h5 {
+				width: 100%;
+				font-weight: bold;
+				margin: 0px;
+				padding: 10px 0;
+				border-bottom: 1px solid #ddd;
+			}
+
+			.overflow-container {
+				width: 100%;
+				display: flex;
+				&.scroll {
+					max-height: 300px;
+					overflow-y: auto;
+				}
+
+				> .environment-builder-form__group {
+					box-shadow: none;
+					flex: 1;
+				}
+			}
+
+			> div.flex-basis-3 {
+				flex: 1;
+
+				&__row {
+					display: inline-flex;
+					align-items: center;
+				}
+				&__col {
+					display: inline-flex;
+					flex-direction: column;
+				}
+				> label {
+					margin-right: 20px;
+				}
+				&:not(:first-child) {
+					margin-left: 20px;
+				}
+			}
+		}
+		padding: 10px 40px;
+		border-radius: 5px;
+		display: flex;
+		&__controls {
+			margin-top: 10px;
+			display: flex;
+			justify-content: center;
+			&--icon {
+				@extend .round-btn-icon;
+				margin-right: 10px;
+				path {
+					transform: scale(0.8);
+					transform-origin: center center;
+					transition: all 0.3s;
+					stroke: #000;
+				}
+
+				&:hover {
+					box-shadow: 0 0 20px #ccc;
+					&.submit path {
+						stroke: yellowgreen;
+					}
+					&.close path {
+						fill: red;
+						stroke: red;
+					}
+					&.delete path {
+						fill: red;
+						stroke: red;
+					}
+				}
+			}
+		}
+		&__secret {
+			&--outputs {
+				max-height: 100px;
+				overflow-y: scroll;
+				flex-wrap: wrap;
+				display: flex;
+				&-tuple {
+					margin-left: 0px;
+					width: 100%;
+					display: flex;
+					align-content: center;
+					justify-content: center;
+					margin-top: 5px;
+					> strong {
+						font-weight: bold;
+						flex-basis: 100px;
+						overflow: hidden;
+						text-overflow: ellipsis;
+						white-space: nowrap;
+					}
+					> * {
+						align-items: center;
+						margin-left: 5px;
+					}
+				}
+				> div {
+					margin-left: 5px;
+				}
+			}
+		}
+		&__input,
+		&__secret-tuple-input {
+			width: 100%;
+			height: 30px;
+			padding: 0 5px;
+			border-radius: 5px;
+		}
+
+		&__checkbox {
+			height: 30px;
+			width: 30px;
+		}
+
+		&__secret-tuple {
+			&.background {
+				background: #fff;
+				padding: 4px;
+			}
+			border-radius: 5px;
+			margin-top: 5px;
+			align-items: center;
+			display: flex;
+			justify-content: space-between;
+			&-input,
+			select {
+				flex: 1;
+				margin-right: 5px;
+			}
+			&-remove {
+				@extend .round-btn-icon;
+				margin-left: 10px;
+				path {
+					transform: scale(0.8);
+					transform-origin: center center;
+					transition: all 0.2s;
+					stroke: #000;
+					fill: transparent;
+				}
+				&:hover path {
+					fill: red;
+					stroke: red;
+				}
+			}
+		}
+	}
+}
+
+.terraform-module, .templates {
+	overflow-y: visible;
+	overflow-x: visible;
+	padding: 10px;
+
+	input {
+		padding: 5px;
+		height: 40px;
+		border-radius: 10px;
+	}
+	ul {
+		height: 400px;
+		padding: 0 10px 10px 10px;
+		overflow-y: scroll;
+		margin: 0px;
+		list-style-type: none;
+		li {
+			display: flex;
+			flex-direction: column;
+			margin-top: 10px;
+			box-shadow: 0 0 10px #ccc;
+			width: 100%;
+			box-sizing: border-box;
+			padding: 10px;
+			border-radius: 10px;
+			cursor: move;
+			* {
+				cursor: inherit;
+			}
+		}
+	}
+
+	&__name {
+		font-size: 0.9em;
+		&--bold {
+			font-weight: bold;
+		}
+	}
+
+	&__fullname {
+		font-size: 0.8em;
+		&--sub {
+			color: gray;
+			font-weight: lighter;
+		}
+	}
+}
+
+.drop-container {
+	box-shadow: inset 0 0 10px gray;
+}
+
+.component-builder-drop-down {
+	position: relative;
+	.drop-down-icon {
+		position: absolute;
+		bottom: 9px;
+		right: 10px;
+		transform: rotate(90deg);
+		cursor: pointer;
+	}
+	input {
+		padding-right: 25px;
+	}
+	ul {
+		&.show {
+			display: block;
+			z-index: 5;
+		}
+		width: 100%;
+		display: none;
+		border-radius: 5px;
+		position: absolute;
+		margin: 0px;
+		max-height: 200px;
+		overflow-y: scroll;
+		background: #fff;
+		box-shadow: 0 0 10px #ccc;
+		li {
+			padding: 5px;
+			cursor: pointer;
+			&:hover {
+				background: #eee;
+			}
+			&.selected {
+				background: green;
+				color: white;
+			}
+		}
+	}
+}
+.toggler {
+	display: flex;
+	button {
+		height: 30px;
+		width: 30px;
+		background: white;
+		cursor: pointer;
+		box-sizing: border-box;
+		border-radius: 50%;
+		margin-right: 5px;
+		transition: all 0.2s;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		&.selected,
+		&:hover {
+			box-shadow: 0 0 10px #ccc;
+			color: white;
+		}
+	}
+	&__false {
+		&.selected,
+		&:hover {
+			background: red;
+		}
+	}
+	&__true {
+		&.selected,
+		&:hover {
+			background: green;
+		}
+	}
+	&__none {
+		&.selected,
+		&:hover {
+			background: gray;
+		}
+	}
+}

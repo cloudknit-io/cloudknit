@@ -1,0 +1,73 @@
+.top-bar {
+	&__notifications {
+		margin-right: 5px;
+		position: relative;
+		display: flex;
+		align-items: center;
+
+		&--unseen-bubble {
+			height: 20px;
+			width: 20px;
+			display: flex;
+			border-radius: 50%;
+			justify-content: center;
+			align-items: center;
+			background: red;
+			color: white;
+			box-shadow: 0 0 5px #000;
+			font-size: 0.7em;
+			position: absolute;
+			top: 5px;
+			left: 0px;
+		}
+
+		> svg {
+			width: 30px;
+			height: 30px;
+			cursor: pointer;
+		}
+
+		&__dropdown {
+			position: absolute;
+			width: 300px;
+			right: 0;
+			top: 50px;
+			box-shadow: 0 0 10px #ccc;
+			overflow: hidden;
+			max-height: calc(100vh - 300px);
+			overflow-y: auto;
+			&--item {
+				transition: all 0.3s;
+				padding: 10px 5px;
+				width: 100%;
+				border-left: 5px solid transparent;
+				&.message-type-0 {
+					border-left-color: rgb(0, 128, 0);
+				}
+				&.message-type-1 {
+					border-left-color: rgb(223, 219, 15);
+				}
+				&.message-type-2 {
+					border-left-color: #e74c3c;
+				}
+				&:hover {
+					background: #eee;
+				}
+				display: flex;
+				flex-direction: column;
+				.timestamp {
+					align-self: flex-end;
+					font-size: 0.8em;
+					color: #888;
+				}
+			}
+			.zlifecycle-dropdown-menu__list__item {
+				text-align: left;
+				font-family: 'DM Sans';
+				border-bottom: 1px solid white;
+				padding: 0px;
+				display: flex;
+			}
+		}
+	}
+}

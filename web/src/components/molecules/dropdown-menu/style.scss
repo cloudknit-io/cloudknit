@@ -1,0 +1,29 @@
+@import '../../../assets/styles/colors';
+
+.zlifecycle-dropdown-menu {
+  display: none;
+  background: $brand-color-white;
+  box-shadow: $notifications-shadow;
+  border-radius: 5px;
+  z-index: 21;
+  box-shadow: 0 0 5px #ccc;
+
+  &__list {
+    list-style: none;
+    margin: 0;
+
+    &__item {
+      padding: 3px 10px;
+      cursor: pointer;
+      min-width: 150px;
+      text-align: center;
+    }
+    &__item--selected {
+				background-color: rgb(170, 192, 192);
+    }
+  }
+
+  &--active {
+    display: block;
+  }
+}

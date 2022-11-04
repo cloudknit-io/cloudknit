@@ -1,0 +1,90 @@
+.headline {
+  font-family: "DM Sans", sans-serif;
+}
+// SIZE
+.size-12 {
+  font-size: 12px;
+}
+.size-14 {
+  font-size: 14px;
+}
+.size-16 {
+  font-size: 16px;
+}
+.size-18 {
+  font-size: 18px;
+}
+.size-20 {
+  font-size: 20px;
+}
+.size-24 {
+  font-size: 24px;
+}
+.size-28 {
+  font-size: 28px;
+}
+.size-36 {
+  font-size: 36px;
+}
+
+.color-unset {
+  color: unset;
+}
+// FAMILY
+.family-dm {
+  font-family: "DM Sans", sans-serif;
+}
+// WEIGHT
+.weight-extra-thin {
+  font-weight: 400;
+}
+.weight-thin {
+  font-weight: 500;
+}
+.weight-regular {
+  font-weight: normal;
+}
+.weight-bold {
+  font-weight: bold;
+}
+.weight-extra-bold {
+  font-weight: 900;
+}
+
+// SPACING
+.spacing-0 {
+  letter-spacing: normal;
+}
+.spacing-2 {
+  letter-spacing: 2px;
+}
+
+.spacing-4 {
+  letter-spacing: 4px;
+}
+
+// LINE HEIGHT
+.leading-16 {
+  line-height: 16px;
+}
+.leading-18 {
+  line-height: 18px;
+}
+.leading-24 {
+  line-height: 24px;
+}
+.leading-26 {
+  line-height: 26px;
+}
+.leading-32 {
+  line-height: 32px;
+}
+.leading-36 {
+  line-height: 36px;
+}
+.leading-46 {
+  line-height: 46px;
+}
+text-uppercase {
+  text-transform: uppercase;
+}

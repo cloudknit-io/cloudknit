@@ -1,0 +1,174 @@
+@import '../../../../assets/styles/colors';
+@import '../../../../assets/styles/config';
+
+.zlifecycle-config-workflow-view {
+	display: flex;
+	flex-wrap: nowrap;
+	height: 100%;
+
+	&.zscrollbar {
+		&::-webkit-scrollbar {
+			width: 0.5em;
+		}
+		&::-webkit-scrollbar-track {
+			// background-color: #eee;
+		}
+		&::-webkit-scrollbar-thumb {
+			background-color: darkgrey;
+			border-radius: 10px;
+		}
+	}
+
+	.nav-tab {
+		overflow-x: auto;
+		ul {
+			margin: 0 0 5px 0;
+			list-style-type: none;
+			display: flex;
+		}
+
+		&_item {
+			color: black;
+			border-bottom: 3px solid #ddd;
+			a {
+				white-space: nowrap;
+				font-size: 1em;
+				padding: 0 10px 5px 10px;
+				text-decoration: none;
+				color: inherit;
+			}
+			&--active {
+				border-bottom: 3px solid $argo-success-color-dark;
+				color: $argo-success-color-dark;
+			}
+		}
+	}
+
+	&__header {
+		p {
+			font-family: 'DM Sans';
+		}
+		&--status {
+			transform-origin: left center;
+			transform: scale(1.3);
+		}
+		.heading {
+			font-size: 1em;
+			font-weight: bold;
+			border-bottom: 3px solid lightgray;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			margin: 0px;
+		}
+	}
+
+	&__last-build {
+		&--action-required {
+			font-weight: bold;
+			color: $brand-color-pink;
+		}
+		&--success {
+			font-weight: bold;
+			color: $argo-success-color-dark;
+		}
+	}
+
+	&__diagram {
+		padding: 0 15px;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		overflow-y: auto;
+
+		&--detailed-cost-breakdown {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+	}
+
+	&__tab-control {
+		display: flex;
+		flex: 1 0 auto;
+		justify-content: center;
+		border-left: 1px solid $ui-color-gray-500;
+
+		&__tabs {
+			width: 95%;
+		}
+	}
+
+	&__config-info {
+		flex-basis: 200px;
+		overflow-y: auto;
+		.labels {
+			display: flex;
+			flex-direction: column;
+			font-family: 'DM Sans';
+			> div {
+				&:not(:last-child) {
+					border-bottom: 3px solid lightgray;
+				}
+				margin-top: 10px;
+				padding-bottom: 10px;
+				.workflow-log-view-toggle {
+					margin-top: 10px;
+					color: $brand-color-dark-gray;
+					text-decoration: underline;
+					font-weight: bold;
+					font-size: 0.9rem;
+				}
+			}
+			.config-info {
+				> div {
+					padding: 5px 0;
+					align-items: center;
+					font-size: 0.9em;
+					.zlifecycle-status-display {
+						display: inline-flex;
+					}
+					> span:first-child {
+						font-weight: bold;
+						font-family: 0.7em;
+						margin-right: 2px;
+					}
+				}
+			}
+		}
+	}
+}
+
+.zlifecycle-feedback-modal {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	border: 3px solid lightgray;
+	padding: 10px 0;
+	border-radius: 10px;
+
+	&__content {
+		flex: 1;
+		text-align: center;
+		font-family: 'DM Sans';
+	}
+
+	&__actions {
+		display: flex;
+		width: 100%;
+		justify-content: center;
+		text-align: center;
+		button {
+			padding: 10px;
+			border-radius: 5px;
+			cursor: pointer;
+			&:nth-child(n + 2) {
+				margin-left: 10px;
+			}
+		}
+	}
+}
+
+.capitalize-text {
+	text-transform: capitalize;
+}

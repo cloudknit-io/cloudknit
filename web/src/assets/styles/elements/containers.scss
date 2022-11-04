@@ -1,0 +1,115 @@
+.argo-container {
+	position: relative;
+	width: $basePageWidth + 160;
+	max-width: 100%;
+	margin: 0 auto;
+	padding: 0 80px;
+
+	&--additional-padding {
+		padding: 0 30px;
+	}
+
+	&--full-width {
+		width: 100%;
+	}
+}
+
+.stream {
+	position: relative;
+	padding-bottom: 20px;
+
+	&::before {
+		position: absolute;
+		top: -120px;
+		bottom: 0;
+		left: 7px;
+		width: 1px;
+		min-height: 100vh;
+		background-color: $argo-color-gray-4;
+		z-index: -1;
+		content: '';
+	}
+}
+
+.white-box {
+	position: relative;
+	padding: 30px;
+	font-size: 0.8125rem;
+	color: $argo-color-gray-6;
+	background-color: #fff;
+	border-radius: 4px;
+	box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.1);
+
+	&:not(:last-child) {
+		margin-bottom: 30px;
+	}
+
+	&--with-ico {
+		overflow: hidden;
+	}
+
+	&__ico {
+		position: absolute;
+		top: -80px;
+		right: 2px;
+		font-size: 240px;
+		opacity: 0.1;
+	}
+
+	&--no-padding {
+		padding: 0;
+	}
+
+	&--additional-top-space {
+		margin-top: 40px;
+	}
+
+	h6 {
+		padding: 0 0 20px;
+		font-size: 16px;
+		text-transform: uppercase;
+		color: $zlifecycle-blue;
+	}
+
+	p {
+		font-size: 15px;
+
+		&:last-child {
+			margin: 0;
+		}
+	}
+
+	&__details {
+		padding: 0 15px;
+
+		&-group-title {
+			font-weight: bold;
+		}
+
+		&-row {
+			color: $zlifecycle-blue;
+
+			.columns {
+				border-bottom: 1px solid $argo-color-gray-3;
+				padding: 0;
+				vertical-align: middle;
+				line-height: 50px;
+				overflow-wrap: break-word;
+
+				&--narrower-height {
+					line-height: 20px;
+					padding: 14px 0;
+				}
+			}
+
+			&:last-child .columns {
+				border: 0;
+			}
+		}
+
+		&-label {
+			font-weight: 500;
+			color: $zlifecycle-blue;
+		}
+	}
+}

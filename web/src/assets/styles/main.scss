@@ -1,0 +1,72 @@
+@import "./config";
+@import "./colors";
+@import "node_modules/foundation-sites/scss/foundation";
+@import url("https://fonts.googleapis.com/css?family=Josefin+Sans");
+
+@font-face {
+	font-family: "DM Sans";
+	src: url("../fonts/DMSans-Regular.ttf");
+}
+@font-face {
+	font-family: "Futura";
+	src: url("../fonts/Futura Condensed Extra Bold.otf");
+}
+
+@include foundation-global-styles;
+@include foundation-flex-classes;
+@include foundation-flex-grid;
+@include foundation-dropdown;
+@include foundation-typography;
+@include foundation-visibility-classes;
+.color-gray {
+	color: $ui-color-gray-600;
+}
+body {
+	margin: 0;
+	font-family: $body-font-family;
+
+	button,
+	a,
+	span,
+	input {
+		outline: none !important;
+	}
+}
+
+.Toastify__toast-container {
+	max-width: 600px;
+	min-width: 320px;
+	width: auto !important;
+	font-size: 0.9em;
+}
+
+.shadowy-input {
+	box-sizing: border-box;
+	box-shadow: 0 0 10px #ddd;
+	border: 0px;
+	transition: box-shadow 0.3s;
+
+	&:focus {
+		box-shadow: 0 0 20px #aaa;
+	}
+}
+
+a {
+	color: $argo-color-gray-4;
+	&:hover {
+		color: $argo-color-gray-5;
+	}
+}
+.color-white {
+	color: white;
+}
+
+@import "./colors";
+@import "./typography";
+@import "./mixin";
+@import "./elements/buttons";
+@import "./elements/containers";
+@import "./elements/table-list";
+@import "./elements/form-controls";
+@import "./elements/utils";
+@import "./elements/toast";

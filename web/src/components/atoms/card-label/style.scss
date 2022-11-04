@@ -1,0 +1,43 @@
+@import "src/assets/styles/colors";
+
+.com-card-label {
+  padding: 3.5px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  line-height: 16px;
+  max-width: 180px;
+  height: max-content;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  & + & {
+    margin-top: 8px;
+  }
+
+  &--orange {
+    background-color: $label-color-orange;
+    color: $brand-color-orange;
+    border: 1px solid $brand-color-orange;
+  }
+  &--light-green {
+    background-color: $label-color-light-green;
+    color: $brand-color-light-green;
+    border: 1px solid $brand-color-light-green;
+  }
+  &--pink {
+    background-color: $label-color-pink;
+    color: $brand-color-pink;
+    border: 1px solid $brand-color-pink;
+  }
+  &--blue {
+    background-color: $label-color-blue;
+    color: $brand-color-blue;
+    border: 1px solid $brand-color-blue;
+  }
+  &--violet {
+    background-color: $label-color-violet;
+    color: $brand-color-violet;
+    border: 1px solid $brand-color-violet;
+  }
+}

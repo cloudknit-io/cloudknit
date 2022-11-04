@@ -1,0 +1,152 @@
+{
+  "name": "zlifecycle",
+  "version": "0.1.0",
+  "private": true,
+  "proxy": "http://app.zlifecycle.com",
+  "scripts": {
+    "docker:cp": "cp package.json .env.production Dockerfile env.sh ./build",
+    "docker:build": "npm run build; npm run docker:cp; docker build -t zlifecycle-web ./build",
+    "docker:start": "./env.sh; serve -s . -p 8080",
+    "start": "react-scripts start",
+    "start:local": "DANGEROUSLY_DISABLE_HOST_CHECK=true env-cmd -f .env.development.local npm run start",
+    "start:dev": "env-cmd -f .env.development npm run start",
+    "start:production": "env-cmd -f .env.production npm run start",
+    "server": "./env.sh; serve -s build -p 8080",
+    "build": "react-scripts build",
+    "build:dev": "env-cmd -f .env.development react-scripts build",
+    "build:production": "env-cmd -f .env.production react-scripts build",
+    "test": "react-scripts test",
+    "test:coverage": "react-scripts test --coverage --watchAll=false",
+    "test:watch": "react-scripts test --watch",
+    "eject": "react-scripts eject",
+    "lint": "eslint --ignore-path .eslintignore './src/**/*.{ts,tsx}'",
+    "lint:fix": "npm run lint -- --fix",
+    "cypress:open": "cypress open"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "src/**/*.{js,jsx,ts,tsx,json,md}": [
+      "prettier --write",
+      "npm run lint"
+    ]
+  },
+  "jest": {
+    "collectCoverageFrom": [
+      "**/*.{ts,tsx}",
+      "!**/node_modules/**",
+      "!src/serviceWorker.js"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 2,
+        "functions": 2,
+        "lines": 2,
+        "statements": 2
+      }
+    }
+  },
+  "dependencies": {
+    "@date-io/moment": "1.0.3",
+    "@monaco-editor/react": "^4.0.9",
+    "@sentry/react": "^6.11.0",
+    "@sentry/tracing": "^6.11.0",
+    "@tippy.js/react": "^3.1.1",
+    "@types/d3": "^6.3.0",
+    "@types/dagre-d3": "^0.6.2",
+    "@types/git-url-parse": "^9.0.0",
+    "@types/js-yaml": "^3.11.2",
+    "@types/lodash": "^4.14.161",
+    "@types/react-autocomplete": "^1.8.5",
+    "@types/react-form": "^2.16.1",
+    "@types/react-helmet": "^6.1.0",
+    "@types/react-paginate": "^6.2.0",
+    "@types/react-virtualized": "^9.21.11",
+    "axios": "0.19.2",
+    "classnames": "^2.2.6",
+    "codemirror": "^5.59.1",
+    "d3": "^6.6.2",
+    "dagre-d3": "^0.6.4",
+    "formik": "2.1.5",
+    "foundation-sites": "^6.4.3",
+    "git-url-parse": "^11.1.2",
+    "install": "^0.13.0",
+    "js-yaml": "^3.13.1",
+    "json-merge-patch": "^0.2.3",
+    "jwt-decode": "2.2.0",
+    "lodash": "^4.17.20",
+    "moment": "^2.26.0",
+    "npm": "^7.5.4",
+    "react": "^16.13.1",
+    "react-autocomplete": "^1.8.1",
+    "react-codemirror2": "^7.2.1",
+    "react-dom": "^16.13.1",
+    "react-form": "^2.16.0",
+    "react-helmet": "^6.1.0",
+    "react-paginate": "^6.2.1",
+    "react-router-dom": "5.1.2",
+    "react-scripts": "3.4.1",
+    "react-toastify": "^5.0.1",
+    "react-virtualized": "^9.22.3",
+    "reflect-metadata": "^0.1.13",
+    "typescript": "~3.9.2",
+    "xterm": "2.4.0",
+    "yaml": "2.0.0-7",
+    "yup": "0.28.5"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.3.2",
+    "@testing-library/react-hooks": "^3.2.1",
+    "@testing-library/user-event": "^7.1.2",
+    "@types/classnames": "^2.2.9",
+    "@types/enzyme": "^3.10.5",
+    "@types/enzyme-adapter-react-16": "^1.0.6",
+    "@types/jest": "^24.0.0",
+    "@types/jwt-decode": "2.2.1",
+    "@types/node": "^12.0.0",
+    "@types/react": "^16.9.0",
+    "@types/react-dom": "^16.9.0",
+    "@types/react-router-dom": "^5.1.5",
+    "@types/yup": "0.28.0",
+    "@typescript-eslint/eslint-plugin": "^2.28.0",
+    "@typescript-eslint/parser": "^2.28.0",
+    "cypress": "^8.3.1",
+    "env-cmd": "^10.1.0",
+    "enzyme": "^3.11.0",
+    "enzyme-adapter-react-16": "^1.15.2",
+    "eslint-config-prettier": "^6.10.1",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-prettier": "^3.1.3",
+    "eslint-plugin-react": "^7.19.0",
+    "eslint-plugin-react-hooks": "^4.0.3",
+    "eslint-plugin-simple-import-sort": "^5.0.3",
+    "husky": "^4.2.5",
+    "lint-staged": "^10.1.3",
+    "prettier": "^2.0.4",
+    "sass": "^1.51.0",
+    "stylelint": "^13.3.2",
+    "stylelint-config-prettier": "^8.0.1",
+    "stylelint-config-standard": "^20.0.0",
+    "stylelint-prettier": "^1.1.2",
+    "stylelint-scss": "^3.17.0"
+  }
+}

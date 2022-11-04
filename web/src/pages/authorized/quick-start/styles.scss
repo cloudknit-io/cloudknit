@@ -1,0 +1,249 @@
+.quick-start-guide {
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6 {
+		font-family: 'DM Sans';
+	}
+	/*TODO: remove this once this view if finalized */
+	margin-top: 0px !important;
+	top: 0px;
+	left: 0px;
+	width: 100vw;
+	height: 100vh;
+	/*****/
+
+	line-height: initial;
+	display: flex;
+	justify-content: center;
+	flex-direction: column;
+	position: fixed;
+	z-index: 99;
+	background-color: white;
+
+	&_heading-main {
+		align-self: center;
+		display: block;
+		font-family: 'DM Sans';
+		&_z {
+			color: teal;
+			font-weight: bolder;
+		}
+	}
+	&_container {
+		font-family: 'DM Sans';
+		border-radius: 10px;
+		overflow: hidden;
+		box-shadow: 0 0 20px #ccc;
+		display: flex;
+		align-self: center;
+		width: 80vw;
+		height: 80vh;
+		flex-direction: row;
+		flex-wrap: wrap;
+
+		&_left-container {
+			flex-basis: 200px;
+			flex-shrink: 0;
+			background-color: #323232;
+			box-shadow: 0 10px 10px #323232;
+
+			&_index {
+				&_step-container {
+					padding: 10px;
+					&_button {
+						border-radius: 10px;
+						transition: all 0.2s ease-in;
+						width: 100%;
+						padding: 15px;
+						cursor: pointer;
+						color: white;
+						&:hover {
+							box-shadow: 0 0 30px #000;
+						}
+					}
+					&_button-active {
+						background-color: teal;
+						color: white;
+						font-weight: bolder;
+						box-shadow: 0 0 30px #000;
+					}
+				}
+			}
+		}
+
+		&_right-container {
+			padding: 15px;
+			flex-grow: 1;
+			display: flex;
+			flex-direction: column;
+			height: 100%;
+
+			&_progress-bar {
+				display: flex;
+				justify-content: flex-end;
+				margin-bottom: 10px;
+				margin-right: 20px;
+				> span {
+					width: 100%;
+					height: 8px;
+					background-color: #ccc;
+					border-radius: 5px;
+					overflow: hidden;
+					display: flex;
+					.progress {
+						background-color: teal;
+						height: 8px;
+						transition: all 0.3s;
+					}
+				}
+			}
+
+			&_footer {
+				flex: 0 0 50px;
+				align-self: flex-end;
+				button {
+					height: 30px;
+					width: 150px;
+					box-shadow: 0 0 4px #ccc;
+					margin-right: 20px;
+					border-radius: 5px;
+					transition: all 0.1s;
+					cursor: pointer;
+					color: #323232;
+					background-color: rgba(0, 128, 128, 0.3);
+					&:disabled {
+						opacity: 0.2;
+						cursor: not-allowed;
+					}
+					&:not(:disabled):hover {
+						box-shadow: 0 0 7px #ccc;
+						background-color: teal;
+						color: white;
+					}
+					&:not(:disabled):active {
+						box-shadow: 0 0 100px #ccc;
+						background-color: teal;
+						color: white;
+					}
+				}
+			}
+
+			&_section-guide {
+				flex-grow: 1;
+				opacity: 0;
+				transition: all 0.3s ease-in;
+				transform: scale(0.98);
+				transform-origin: center center;
+				height: calc(100% - 50px);
+				&.visible {
+					opacity: 1;
+					transform: scale(1);
+				}
+				&_heading {
+					padding-bottom: 10px;
+					border-bottom: 1px solid grey;
+					display: block;
+				}
+				&_content {
+					padding-top: 10px;
+					height: calc(100% - 60px);
+					overflow: auto;
+				}
+
+				&_form-group {
+					display: flex;
+					padding: 10px;
+					flex-direction: column;
+					margin-bottom: 10px;
+					label {
+						margin-bottom: 10px;
+						// font-weight: bold;
+						font-family: Helvetica;
+						letter-spacing: 0.5px;
+						font-size: 0.9em;
+						// text-transform: uppercase;
+						&.required::before {
+							content: '*';
+							color: red;
+						}
+					}
+
+					input.input {
+						height: 30px;
+						border: 2px solid rgba(0, 0, 0, 0.1);
+						border-radius: 5px;
+						padding: 5px 0 5px 10px;
+						box-sizing: border-box;
+						width: 500px;
+						transition: all 0.3s;
+						&:focus {
+							border-color: teal;
+							box-shadow: 0 0 10px #ccc;
+						}
+					}
+					input.input + .error-msg {
+						display: none;
+						font-size: 0.9em;
+						text-transform: none;
+						font-weight: lighter;
+						font-style: italic;
+						color: red;
+						&::after {
+							content: '*';
+						}
+					}
+
+					a {
+						color: teal;
+					}
+				}
+
+				&_form {
+					&.invalid {
+						input.input:invalid {
+							border-color: red;
+						}
+
+						input.input + .error-msg {
+							display: block;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+.mt-5 {
+	margin-top: 5px;
+}
+
+.btn {
+	transition: all 0.3s;
+	min-width: 100px;
+	padding: 8px;
+	cursor: pointer;
+	border-radius: 5px;
+	&:active {
+		box-shadow: 0 0 100px #888;
+	}
+
+	&__update,
+	&__save,
+	&__cancel {
+		color: green;
+		&:hover {
+			background: green;
+			color: white;
+		}
+		margin-right: 10px;
+		margin-bottom: 10px;
+		&:disabled {
+			cursor: not-allowed;
+			filter: grayscale(1);
+		}
+	}
+}

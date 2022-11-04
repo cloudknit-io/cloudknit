@@ -1,0 +1,65 @@
+@import 'src/assets/styles/colors';
+@import 'src/assets/styles/config';
+
+$side-panel-width: 80vw;
+
+.zlifecycle-side-panel {
+  background-color: $brand-color-white;
+  transition: ease-in-out 0.3s;
+  width: $side-panel-width;
+  height: calc(100vh - #{$header-offset});
+  position: fixed;
+  top: $header-offset;
+  right: -$side-panel-width;
+  z-index: 3;
+  border-radius: 16px 0 0 16px;
+  padding: 20px;
+  visibility: hidden;
+
+  &__content {
+    height: 100%;
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    flex-basis: 70px;
+
+    &__close {
+      cursor: pointer;
+    }
+  }
+
+  &__subtitle {
+    margin-left: 5px;
+  }
+
+  &__title-container p {
+      display: inline;
+  }
+
+  &--active {
+    right: 0;
+    visibility: visible;
+
+  }
+
+  &__shade {
+    position: fixed;
+    z-index: 1;
+    top: $header-offset;
+    left: 0px;
+    width: calc(100vw - #{$side-panel-width});
+    height: 100vh;
+    transition: ease 0.3s;
+    background: transparent;
+    display: none;
+    opacity: 0.5;
+
+    &--active {
+      background: rgba(0, 0, 0, 0.2);
+      display: block;
+      opacity: 1;
+    }
+  }
+}

@@ -1,0 +1,57 @@
+@import 'src/assets/styles/colors';
+
+.zlifecycle-table {
+    padding: 0 48px;
+
+    &__no-data {
+        min-height: 300px;
+    }
+}
+
+.ReactVirtualized__Table {
+    font-size: 14px;
+}
+
+.ReactVirtualized__Table__Grid {
+    &:active,
+    &:focus {
+        outline: none;
+    }
+}
+
+.ReactVirtualized__Table__headerColumn {
+    margin: 0 5px;
+    text-transform: none;
+    color: $zlifecycle-navy;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.ReactVirtualized__Table__row {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &:active,
+    &:focus {
+        outline: none;
+    }
+
+    &.destroyed {
+        filter: grayscale(1);
+        background: #eee;
+    }
+}
+
+.ReactVirtualized__Table__rowColumn {
+    margin: 0 5px;
+
+    &:first-child {
+        border-top-left-radius: 4px;
+        border-bottom-left-radius: 4px;
+    }
+    &:last-child {
+        border-top-right-radius: 4px;
+        border-bottom-right-radius: 4px;
+    }
+}

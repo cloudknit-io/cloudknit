@@ -1,0 +1,64 @@
+@import '../../../assets/styles/config';
+@import 'node_modules/foundation-sites/scss/util/util';
+@import '../../../assets/styles/colors';
+
+.top-bar {
+	z-index: 100;
+	box-shadow: 0px 0px 10px #999;
+	transition: right 0.5s;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 20px;
+	height: $header-offset;
+
+	&__logo-container {
+		display: flex;
+		align-items: center;
+	}
+
+	&__logo {
+		.color_1 {
+			fill: #EED947;
+		}
+		.color_2 {
+			fill: #76C56C;
+		}
+	}
+
+	&__Ztop-nav {
+		align-self: flex-end;
+		transform: translateX(calc((85vw - 100vw)/2 + 50px));
+	}
+
+
+	&__dashboard, &__settings {
+		margin-right: 10px;
+	}
+
+	&__flex {
+		display: flex;
+		height: 100%;
+	}
+
+	&__title {
+		margin: 0;
+	}
+
+	&__avatar {
+		position: relative;
+		display: flex;
+		align-items: center;
+
+		> svg {
+			width: 26px;
+			height: 26px;
+		}
+
+		&__dropdown {
+			position: absolute;
+			right: -10px;
+			top: 40px;
+		}
+	}
+}
