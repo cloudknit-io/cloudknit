@@ -12,6 +12,7 @@ spec:
      labels:
         app: zlifecycle-api
     spec:
+      serviceAccount: internal-api
       containers:
         - name: zlifecycle-api
           env:
