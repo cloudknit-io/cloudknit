@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.alb.environment }}-public-ingress
+  labels:
+    kubernetes.io/ingress.class: alb
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: {{ .Values.alb.domains }}
+    alb.ingress.kubernetes.io/load-balancer-name: {{ .Values.alb.environment }}-{{ .Values.alb.instance }}-public-alb
+    alb.ingress.kubernetes.io/scheme: "internet-facing"
+    alb.ingress.kubernetes.io/subnets: "{{ .Values.alb.subnets }}"
+    alb.ingress.kubernetes.io/target-type: "ip"
+    alb.ingress.kubernetes.io/backend-protocol: HTTP
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80,"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/certificate-arn:  {{ .Values.alb.certificate.arn }}
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/healthcheck-path: "/"
+    alb.ingress.kubernetes.io/success-codes: "200,404"
+spec:
+  ingressClassName: alb
+  rules:
+  - http:
+      paths:
+       - path: /*
+         pathType: ImplementationSpecific
+         backend:
+           service:
+             name: ingress-nginx-controller
+             port:
+               name: http

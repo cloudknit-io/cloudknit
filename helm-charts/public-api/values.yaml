@@ -1,0 +1,17 @@
+image:
+  name: public-api
+  tag:
+  repository:
+ingressPaths:
+  - "/organization-exists"
+  - "/register-organization"
+alb:
+  instance: public-api
+  domain: !!!DOMAIN!!!
+  certificate:
+    arn: !!!CERTIFICATE ARN!!!
+database:
+  host:
+  username:
+  password:
+  name:

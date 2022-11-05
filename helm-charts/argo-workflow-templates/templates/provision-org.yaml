@@ -1,0 +1,47 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: provision-org
+spec:
+  podGC:
+    strategy: OnPodCompletion
+  templates:
+    - name: provision-org
+      inputs:
+        parameters:
+          - name: orgName
+          - name: orgId
+      outputs: {}
+      metadata: {}
+      serviceAccountName: {{.Values.serviceAccountName}}
+      container:
+        imagePullPolicy: IfNotPresent
+        image: "{{.Values.provisionOrgImage}}"
+        command:
+          - run.sh
+        args:
+          - '{{ print "{{inputs.parameters.orgName}}"}}'
+          - '{{ print "{{inputs.parameters.orgId}}"}}'
+        env:
+          - name: CK_ENVIRONMENT
+            value: {{.Values.ckEnvironment}}
+          - name: CK_CONFIG_REPO
+            value: {{.Values.configRepo}}
+          - name: CK_TF_MODULE_VERSION
+            value: {{.Values.tfModuleVersion}}
+        resources: {}
+        volumeMounts:
+          - name: github-ssh-key-mount
+            mountPath: /root/git_ssh
+          - name: tmp
+            mountPath: /tmp
+        imagePullPolicy: Always
+      volumes:
+        - name: tmp
+          emptyDir: {}
+  arguments: {}
+  volumes:
+    - name: github-ssh-key-mount
+      secret:
+        secretName: org-provisioner-ssh
+        defaultMode: 384

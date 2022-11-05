@@ -1,0 +1,33 @@
+name: Terraform Config Release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'terraform-config/**'
+      - .github/workflows/terraform-config.yml
+
+env:
+  chart_dir: terraform-config
+
+jobs:
+  build:
+    name: Chart release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+          
+      - name: Helm release
+        uses: shellbear/helm-release-action@v0.1
+        with:
+          repo: s3://zlifecycle-helm-charts/charts/
+          chart: ./${{ env.chart_dir }}

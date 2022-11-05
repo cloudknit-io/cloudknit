@@ -1,0 +1,26 @@
+image: 
+  name: zlifecycle-api
+  tag: latest
+  repository:
+database:
+  host:
+  username:
+  password:
+  name:
+  port:
+awsCredentials:
+  accessKeyId:
+  secretAccessKey:
+  region:
+argowf:
+  url:
+  namespace: 
+ckEnvironment:
+namespace: zlifecycle-system
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi

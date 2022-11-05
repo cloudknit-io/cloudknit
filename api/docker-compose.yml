@@ -1,0 +1,18 @@
+version: '3.8'
+
+services: 
+  mysqldb:
+    image: mysql:oracle
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: zlifecycle
+    ports:
+      - "3306:3306"
+    volumes: 
+      - db-config:/etc/mysql
+      - db-data:/var/lib/mysql
+
+volumes: 
+  db-config:
+  db-data:

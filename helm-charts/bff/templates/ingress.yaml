@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: zlifecycle-bff
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: HTTP
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "PUT, GET, POST, OPTIONS"
+spec:
+  ingressClassName: nginx
+  rules:
+{{- range $path := .Values.ingressPaths }}
+    - host: {{ $.Values.domain }}
+      http:
+        paths:
+          - path: {{ . }}
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: zlifecycle-web-bff
+                port:
+                  number: 80
+{{- end }}

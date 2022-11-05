@@ -1,0 +1,5 @@
+corsAllowOrigin:
+company: !!!CompanyName!!!
+argocd:
+  domain:
+  paths:

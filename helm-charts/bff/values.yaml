@@ -1,0 +1,43 @@
+image:
+  name: zlifecycle-web-bff
+  tag: latest
+  repository:
+# rename zcustomer with the client name
+domain:
+company: !!!CompanyName!!!
+ingressPaths:
+  - "/auth"
+  - "/cd"
+  - "/wf"
+  - "/authorize"
+  - "/costing"
+  - "/reconciliation"
+  - "/secrets"
+  - "/terraform"
+  - "/terraform-external"
+  - "/state"
+  - "/company"
+  - "/error-api"
+  - "/events"
+  - "/users"
+  - "/session"
+  - "/registration"
+protocol:
+auth0:
+  baseUrl:
+  clientId:
+  issuerBaseUrl:
+  secret:
+argocd:
+  urlWithProtocol: http://argocd-server.argocd.svc.cluster.local
+argoWorkflowApiUrl: http://argo-workflow-server.argocd.svc.cluster.local:2746
+zlifecycleApiUrl: http://zlifecycle-api.zlifecycle-ui.svc.cluster.local
+zlifecycleStateManagerUrl: http://zlifecycle-state-manager.zlifecycle-il-operator-system.svc.cluster.local
+zlifecycleEventApiUrl: http://event-service.:org-system.svc.cluster.local
+resources:
+  limits:
+    cpu: 300m
+    memory: 450Mi
+  requests:
+    cpu: 100m
+    memory: 150Mi

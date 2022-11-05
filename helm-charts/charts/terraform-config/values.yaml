@@ -1,0 +1,17 @@
+namespace: argocd
+team_name:
+env_name:
+config_name: terraform-config
+cron_schedule: "0 0 1 * *"
+
+module:
+  source:
+  path: ""
+
+variables_file:
+  source:
+  path:
+
+variables:
+
+outputs:

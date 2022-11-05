@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -e;
+
+docker-compose up -d
+
+IS_LOCAL=true \
+AWS_ACCESS_KEY_ID=[get from lastpass] \
+AWS_SECRET_ACCESS_KEY=[get from lastpass] \
+CK_ENVIRONMENT=dev \
+CK_ARGO_WF_URL=http://localhost:2746 \
+CK_ARGO_WF_NAMESPACE=default \
+CK_ARGO_WF_SKIP_PROVISION=true \
+APP_PORT=3001 \
+TYPEORM_HOST=localhost \
+TYPEORM_USERNAME=root \
+TYPEORM_PASSWORD=password \
+TYPEORM_PORT=3306 \
+TYPEORM_DATABASE=zlifecycle \
+npm run start:debug

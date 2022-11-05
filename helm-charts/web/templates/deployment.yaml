@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zlifecycle-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zlifecycle-web
+  template:
+    metadata:
+     labels:
+        app: zlifecycle-web
+    spec:
+      containers:
+        - name: zlifecycle-web
+          env:
+            - name: __DOCKER_REACT_APP_CUSTOMER_NAME__
+              value: {{ .Values.customerName }}
+            - name: PORT
+              value: "3000"
+            - name: HOST
+              value: {{ .Values.domain }}
+            - name: REACT_APP_STREAM_URL
+              value: {{ .Values.bff.urlWithProtocol }}
+            - name: REACT_APP_BASE_URL
+              value: {{ .Values.bff.urlWithProtocol }}
+            - name: REACT_APP_AUTHORIZE_URL
+              value:  {{ .Values.bff.urlWithProtocol }}{{ .Values.bff.authPath }}
+            - name: __DOCKER_REACT_APP_BASE_URL__
+              value: {{ .Values.bff.urlWithProtocol }}
+            - name: __DOCKER_REACT_APP_AUTHORIZE_URL__
+              value:  {{ .Values.bff.urlWithProtocol }}{{ .Values.bff.authPath }}
+            - name: __DOCKER_REACT_APP_SENTRY_ENVIRONMENT__
+              value: {{ .Values.environment }}
+            - name: __DOCKER_REACT_APP_ENABLED_FEATURE_FLAGS__
+              value: {{ .Values.enabledFeatureFlags }}
+          image: "{{ .Values.image.repository }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: 8080
+          imagePullPolicy: Always
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

@@ -1,0 +1,5 @@
+*.tgz
+node_modules
+dist
+run.sh
+.vscode/

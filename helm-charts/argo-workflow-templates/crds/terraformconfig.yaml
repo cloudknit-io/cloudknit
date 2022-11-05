@@ -1,0 +1,87 @@
+# Copyright (C) 2020 CompuZest, Inc. - All Rights Reserved
+#
+# Unauthorized copying of this file, via any medium, is strictly prohibited
+# Proprietary and confidential
+#
+# NOTICE: All information contained herein is, and remains the property of
+# CompuZest, Inc. The intellectual and technical concepts contained herein are
+# proprietary to CompuZest, Inc. and are protected by trade secret or copyright
+# law. Dissemination of this information or reproduction of this material is
+# strictly forbidden unless prior written permission is obtained from CompuZest, Inc.
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.3.0
+  creationTimestamp: null
+  name: terraformconfigs.stable.compuzest.com
+spec:
+  group: stable.compuzest.com
+  names:
+    kind: TerraformConfig
+    listKind: TerraformConfigList
+    plural: terraformconfigs
+    singular: terraformconfig
+  scope: Namespaced
+  versions:
+  - name: v1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        description: TerraformConfig is the Schema for the terraformconfigs API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: TerraformConfigSpec defines the desired state of TerraformConfig
+            properties:
+              applyWorkflowStarted:
+                type: boolean
+              isInSync:
+                type: boolean
+              module:
+                properties:
+                  source:
+                    type: string
+                required:
+                  - source
+                type: object
+              variables:
+                items:
+                  properties:
+                    name:
+                      type: string
+                    value:
+                      type: string
+                  required:
+                    - name
+                    - value
+                  type: object
+                type: array
+            required:
+              - applyWorkflowStarted
+              - isInSync
+              - module
+            type: object
+          status:
+            description: TerraformConfigStatus defines the observed state of TerraformConfig
+            type: object
+        type: object
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

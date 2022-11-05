@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: public-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: public-api
+  template:
+    metadata:
+     labels:
+        app: public-api
+    spec:
+      containers:
+        - name: public-api
+          env:
+            - name: APP_PORT
+              value: "3000"
+            - name: TYPEORM_HOST
+              value: {{ .Values.database.host }}
+            - name: TYPEORM_USERNAME
+              value: {{ .Values.database.username }}
+            - name: TYPEORM_PASSWORD
+              value: {{ .Values.database.password }}
+            - name: TYPEORM_DATABASE
+              value: {{ .Values.database.name }}
+          envFrom:
+            - secretRef:
+                name: public-api-development
+          image: {{ .Values.image.repository }}/{{ .Values.image.name }}:{{ .Values.image.tag }}
+          ports:
+            - containerPort: 3000
+          command: [ "/bin/sh", "-c" ]
+          args:
+            - NODE_ENV=production npm run start:prod
+          imagePullPolicy: Always

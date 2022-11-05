@@ -1,0 +1,20 @@
+image:
+  name: zlifecycle-web
+  tag: latest
+  repository:
+# replace zcustomer with the customer name
+customerName: zcustomer
+domain: zcustomer.zlifecycle.com
+environment:
+enabledFeatureFlags:
+adminDomain: zcustomer-admin.zlifecycle.com
+bff:
+  urlWithProtocol:
+  authPath:
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi

@@ -1,0 +1,269 @@
+# Copyright (C) 2020 CompuZest, Inc. - All Rights Reserved
+#
+# Unauthorized copying of this file, via any medium, is strictly prohibited
+# Proprietary and confidential
+#
+# NOTICE: All information contained herein is, and remains the property of
+# CompuZest, Inc. The intellectual and technical concepts contained herein are
+# proprietary to CompuZest, Inc. and are protected by trade secret or copyright
+# law. Dissemination of this information or reproduction of this material is
+# strictly forbidden unless prior written permission is obtained from CompuZest, Inc.
+---
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: workflow-trigger-template
+spec:
+  entrypoint: run
+  podGC:
+    strategy: OnPodCompletion
+  templates:
+    - name: run
+      serviceAccountName: {{.Values.serviceAccountName}}
+      inputs:
+        parameters:
+          - name: customer_id
+          - name: team_name
+          - name: env_name
+          - name: config_name
+          - name: workflowtemplate
+          - name: il_repo
+          - name: status
+          - name: terraform_il_path
+          - name: is_destroy
+          - name: auto_approve
+          - name: reconcile_id
+          - name: skip_component
+          - name: zl_environment
+          - name: git_auth_mode
+          - name: company_git_org
+          - name: use_custom_state
+          - name: custom_state_bucket
+          - name: custom_state_lock_table
+          - name: workspace
+      steps:
+        - - name: init-component
+            template: audit-sh
+            arguments:
+              parameters:
+                - name: customer_id
+                  value: '{{ printf "{{inputs.parameters.customer_id}}" }}'
+                - name: team_name
+                  value: '{{ printf "{{inputs.parameters.team_name}}" }}'
+                - name: env_name
+                  value: '{{ printf "{{inputs.parameters.env_name}}" }}'
+                - name: config_name
+                  value: '{{ printf "{{inputs.parameters.config_name}}" }}'
+                - name: status
+                  value: '{{ printf "{{inputs.parameters.status}}" }}'
+                - name: config_status
+                  value: "Initialising..."
+                - name: reconcile_id
+                  value: '{{ printf "{{inputs.parameters.reconcile_id}}" }}'
+                - name: config_reconcile_id
+                  value: 0
+                - name: is_destroy
+                  value: '{{ printf "{{inputs.parameters.is_destroy}}" }}'
+                - name: skip_component
+                  value: '{{ printf "{{inputs.parameters.skip_component}}" }}'
+        - - name: run
+            template: run-env-component
+            arguments:
+              parameters:
+                - name: team_name
+                  value: '{{ printf "{{inputs.parameters.team_name}}" }}'
+                - name: env_name
+                  value: '{{ printf "{{inputs.parameters.env_name}}" }}'
+                - name: config_name
+                  value: '{{ printf "{{inputs.parameters.config_name}}" }}'
+                - name: workflowtemplate
+                  value: '{{ printf "{{inputs.parameters.workflowtemplate}}" }}'
+                - name: il_repo
+                  value: '{{ printf "{{inputs.parameters.il_repo}}" }}'
+                - name: terraform_il_path
+                  value: '{{ printf "{{inputs.parameters.terraform_il_path}}" }}'
+                - name: is_destroy
+                  value: '{{ printf "{{inputs.parameters.is_destroy}}" }}'
+                - name: auto_approve
+                  value: '{{ printf "{{inputs.parameters.auto_approve}}" }}'
+                - name: config_reconcile_id
+                  value: '{{ printf "{{steps.init-component.outputs.parameters.reconcile_id}}" }}'
+                - name: reconcile_id
+                  value: '{{ printf "{{inputs.parameters.reconcile_id}}" }}'
+                - name: customer_id
+                  value: '{{ printf "{{inputs.parameters.customer_id}}" }}'
+                - name: skip_component
+                  value: '{{ printf "{{inputs.parameters.skip_component}}" }}'
+                - name: zl_environment
+                  value: '{{ printf "{{inputs.parameters.zl_environment}}" }}'
+                - name: git_auth_mode
+                  value: '{{ printf "{{inputs.parameters.git_auth_mode}}" }}'
+                - name: company_git_org
+                  value: '{{ printf "{{inputs.parameters.company_git_org}}" }}'
+                - name: use_custom_state
+                  value: '{{ printf "{{inputs.parameters.use_custom_state}}" }}'
+                - name: custom_state_bucket
+                  value: '{{ printf "{{inputs.parameters.custom_state_bucket}}" }}'
+                - name: custom_state_lock_table
+                  value: '{{ printf "{{inputs.parameters.custom_state_lock_table}}" }}'
+                - name: workspace
+                  value: '{{ printf "{{inputs.parameters.workspace}}" }}'
+            when: >-
+              {{ printf "{{steps.init-component.outputs.parameters.errorCode}}" }} != 20 &&
+              {{ printf "{{inputs.parameters.skip_component}}" }} == "noSkip" &&
+              ( {{ printf "{{steps.init-component.outputs.parameters.component_status}}" }} != 6 ||
+                {{ printf "{{steps.init-component.outputs.parameters.component_status}}" }} == 6 &&
+                {{ printf "{{inputs.parameters.is_destroy}}" }}  == false
+              )
+        - - name: end-component-audit
+            template: audit-sh
+            arguments:
+              parameters:
+                - name: customer_id
+                  value: '{{ printf "{{inputs.parameters.customer_id}}" }}'
+                - name: team_name
+                  value: '{{ printf "{{inputs.parameters.team_name}}" }}'
+                - name: env_name
+                  value: '{{ printf "{{inputs.parameters.env_name}}" }}'
+                - name: config_name
+                  value: '{{ printf "{{inputs.parameters.config_name}}" }}'
+                - name: status
+                  value: '{{ printf "{{inputs.parameters.status}}" }}'
+                - name: config_status
+                  value: "Success"
+                - name: reconcile_id
+                  value: '{{ printf "{{inputs.parameters.reconcile_id}}" }}'
+                - name: config_reconcile_id
+                  value: '{{ printf "{{steps.init-component.outputs.parameters.reconcile_id}}" }}'
+                - name: is_destroy
+                  value: '{{ printf "{{inputs.parameters.is_destroy}}" }}'
+                - name: skip_component
+                  value: '{{ printf "{{inputs.parameters.skip_component}}" }}'
+
+    - name: run-env-component
+      serviceAccountName: {{.Values.serviceAccountName}}
+      inputs:
+        parameters:
+          - name: team_name
+          - name: env_name
+          - name: config_name
+          - name: workflowtemplate
+          - name: il_repo
+          - name: terraform_il_path
+          - name: is_destroy
+          - name: auto_approve
+          - name: config_reconcile_id
+          - name: reconcile_id
+          - name: customer_id
+          - name: skip_component
+          - name: zl_environment
+          - name: git_auth_mode
+          - name: company_git_org
+          - name: use_custom_state
+          - name: custom_state_bucket
+          - name: custom_state_lock_table
+          - name: workspace
+      resource:
+        action: create
+        manifest: |
+          apiVersion: argoproj.io/v1alpha1
+          kind: Workflow
+          metadata:
+            generateName: '{{ printf "{{inputs.parameters.team_name}}" }}-{{ printf "{{inputs.parameters.env_name}}" }}-{{ printf "{{inputs.parameters.config_name}}" }}-'
+            namespace: {{.Values.companyName}}-executor
+            labels:
+              terraform/sync: 'true'
+          spec:
+            podGC:
+              strategy: OnPodCompletion
+            arguments:
+              parameters:
+              - name: team_name
+                value: '{{ printf "{{inputs.parameters.team_name}}" }}'
+              - name: env_name
+                value: '{{ printf "{{inputs.parameters.env_name}}" }}'
+              - name: config_name
+                value: '{{ printf "{{inputs.parameters.config_name}}" }}'
+              - name: il_repo
+                value: '{{ printf "{{inputs.parameters.il_repo}}" }}'
+              - name: terraform_il_path
+                value: '{{ printf "{{inputs.parameters.terraform_il_path}}" }}'
+              - name: is_destroy
+                value: '{{ printf "{{inputs.parameters.is_destroy}}" }}'
+              - name: auto_approve
+                value: '{{ printf "{{inputs.parameters.auto_approve}}" }}'
+              - name: reconcile_id
+                value: '{{ printf "{{inputs.parameters.reconcile_id}}" }}'
+              - name: config_reconcile_id
+                value: '{{ printf "{{inputs.parameters.config_reconcile_id}}" }}'
+              - name: customer_id
+                value: '{{ printf "{{inputs.parameters.customer_id}}" }}'
+              - name: skip_component
+                value: '{{ printf "{{inputs.parameters.skip_component}}" }}'
+              - name: zl_environment
+                value: '{{ printf "{{inputs.parameters.zl_environment}}" }}'
+              - name: git_auth_mode
+                value: '{{ printf "{{inputs.parameters.git_auth_mode}}" }}'
+              - name: company_git_org
+                value: '{{ printf "{{inputs.parameters.company_git_org}}" }}'
+              - name: use_custom_state
+                value: '{{ printf "{{inputs.parameters.use_custom_state}}" }}'
+              - name: custom_state_bucket
+                value: '{{ printf "{{inputs.parameters.custom_state_bucket}}" }}'
+              - name: custom_state_lock_table
+                value: '{{ printf "{{inputs.parameters.custom_state_lock_table}}" }}'
+              - name: workspace
+                value: '{{ printf "{{inputs.parameters.workspace}}" }}'
+            workflowTemplateRef:
+              name: '{{ printf "{{inputs.parameters.workflowtemplate}}" }}'
+        successCondition: status.phase == Succeeded
+        failureCondition: status.phase in (Failed, Error)
+
+    - name: audit-sh
+      serviceAccountName: {{.Values.serviceAccountName}}
+      inputs:
+        parameters:
+          - name: customer_id
+          - name: team_name
+          - name: env_name
+          - name: config_name
+          - name: status
+          - name: config_status
+          - name: reconcile_id
+          - name: config_reconcile_id
+          - name: is_destroy
+          - name: skip_component
+      script:
+        imagePullPolicy: IfNotPresent
+        image: "413422438110.dkr.ecr.us-east-1.amazonaws.com/zlifecycle-terraform:{{.Values.terraformImageTag}}"
+        command:
+          - sh
+        source: |
+          ./audit.sh '{{ printf "{{inputs.parameters.team_name}}" }}' '{{ printf "{{inputs.parameters.env_name}}" }}' '{{ printf "{{inputs.parameters.config_name}}" }}' '{{ printf "{{inputs.parameters.status}}" }}' '{{ printf "{{inputs.parameters.config_status}}" }}' '{{ printf "{{inputs.parameters.reconcile_id}}" }}' '{{ printf "{{inputs.parameters.config_reconcile_id}}" }}' '{{ printf "{{inputs.parameters.is_destroy}}" }}' "0" '{{ printf "{{inputs.parameters.skip_component}}" }}' '{{ printf "{{inputs.parameters.customer_id}}" }}'
+        env:
+          - name: ARGOCD_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: argocd-creds
+                key: ARGOCD_PASSWORD
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      outputs:
+        parameters:
+          - name: reconcile_id
+            valueFrom:
+              path: /tmp/reconcile_id.txt
+              default: 0
+            globalName: reconcile_id
+          - name: errorCode
+            valueFrom:
+              path: /tmp/error_code.txt
+            globalName: error-code
+          - name: component_status
+            valueFrom:
+              path: /tmp/component_status.txt
+              default: -1
+            globalName: component_status

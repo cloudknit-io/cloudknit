@@ -1,0 +1,36 @@
+name: Manual Docker Build
+on: 
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Docker image tag
+        required: true
+      zli_tag:
+        description: zLifecycle Internal CLI tag
+        required: true
+jobs:
+  build-image:
+    name: Build docker image for terraform provisioner
+    runs-on: ubuntu-20.04
+    defaults:
+      run:
+        working-directory: ./terraform-image
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - uses: actions/checkout@v2
+      - run: docker build -t ${{ env.ECR_REPO }}/zlifecycle-terraform:${{ github.event.inputs.image_tag }} --build-arg ZLI_TAG=${{ github.event.inputs.zli_tag }} --build-arg GITHUB_TOKEN=${{ secrets.ZLIFECYCLE_CI_GITHUB_PAT }} --build-arg INFRACOST_API_KEY=${{ secrets.INFRACOST_API_KEY }} .
+        env:
+          ECR_REPO: ${{ steps.login-ecr.outputs.registry }}
+      - run: docker push ${{ env.ECR_REPO }}/zlifecycle-terraform:${{ github.event.inputs.image_tag }}
+        env:
+          ECR_REPO: ${{ steps.login-ecr.outputs.registry }}

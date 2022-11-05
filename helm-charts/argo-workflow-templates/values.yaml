@@ -1,0 +1,14 @@
+ckEnvironment:
+configRepo: git@github.com:zl-compuzest-tech/zl-environment-dev-config.git
+terraformImageTag: latest
+provisionOrgImage:
+tfModuleVersion:
+serviceAccountName: zlifecycle-reconciler
+companyName: !!!CompanyName!!!
+resources:
+  requests:
+    memory: 175Mi
+    cpu: 150m
+  limits:
+    memory: 600Mi
+    cpu: 650m
