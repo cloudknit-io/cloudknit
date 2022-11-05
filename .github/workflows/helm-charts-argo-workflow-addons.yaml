@@ -1,15 +1,15 @@
-name: Argo Events Addons Release
+name: helm-charts - workflow-addons
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'argo-events-addons/**'
-      - .github/workflows/argo-events-addons.yml
+      - 'helm-charts/argo-workflow-addons/**'
+      - .github/workflows/helm-charts-argo-workflow-addons.yaml
 
 env:
-  chart_dir: argo-events-addons
+  chart_dir: helm-charts/argo-workflow-addons
 
 jobs:
   build:

@@ -1,15 +1,15 @@
-name: Event Service Release
+name: helm-charts - web
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'event-service/**'
-      - .github/workflows/event-service.yml
+      - 'helm-charts/web/**'
+      - .github/workflows/helm-charts-web.yml
 
 env:
-  chart_dir: event-service
+  chart_dir: helm-charts/web
 
 jobs:
   build:

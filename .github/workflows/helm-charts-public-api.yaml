@@ -1,15 +1,15 @@
-name: Argo Workflow Templates Release
+name: helm-charts - public-api
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'argo-workflow-templates/**'
-      - .github/workflows/argo-workflow-templates.yml
+      - 'helm-charts/public-api/**'
+      - .github/workflows/helm-charts-public-api.yaml
 
 env:
-  chart_dir: argo-workflow-templates
+  chart_dir: helm-charts/public-api
 
 jobs:
   build:

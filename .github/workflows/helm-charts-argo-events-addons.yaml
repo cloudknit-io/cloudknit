@@ -1,15 +1,15 @@
-name: Argo CD Notification Release
+name: helm-charts - argo-event-addons
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'argo-cd-notification/**'
-      - .github/workflows/argo-cd-notification.yml
+      - 'helm-charts/argo-events-addons/**'
+      - .github/workflows/helm-charts-argo-events-addons.yml
 
 env:
-  chart_dir: argo-cd-notification
+  chart_dir: helm-charts/argo-events-addons
 
 jobs:
   build:

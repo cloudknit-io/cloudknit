@@ -1,15 +1,15 @@
-name: Terraform Config Release
+name: helm-charts - bff
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'terraform-config/**'
-      - .github/workflows/terraform-config.yml
+      - 'helm-charts/bff/**'
+      - .github/workflows/helm-charts-bff.yaml
 
 env:
-  chart_dir: terraform-config
+  chart_dir: helm-charts/bff
 
 jobs:
   build:

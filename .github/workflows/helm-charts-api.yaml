@@ -1,15 +1,15 @@
-name: API Release
+name: helm-charts - api
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'api/**'
-      - .github/workflows/api.yml
+      - 'helm-charts/api/**'
+      - .github/workflows/helm-charts-api.yaml
 
 env:
-  chart_dir: api
+  chart_dir: helm-charts/api
 
 jobs:
   build:

@@ -1,15 +1,15 @@
-name: Public Api Release
+name: helm-charts - terraform-config
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'public-api/**'
-      - .github/workflows/public-api.yml
+      - 'helm-charts/terraform-config/**'
+      - .github/workflows/helm-charts-terraform-config.yaml
 
 env:
-  chart_dir: public-api
+  chart_dir: helm-charts/terraform-config
 
 jobs:
   build:

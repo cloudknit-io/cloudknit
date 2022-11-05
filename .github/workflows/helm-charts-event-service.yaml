@@ -1,15 +1,15 @@
-name: BFF Release
+name: helm-charts - event-service
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'bff/**'
-      - .github/workflows/bff.yml
+      - 'helm-charts/event-service/**'
+      - .github/workflows/helm-charts-event-service.yaml
 
 env:
-  chart_dir: bff
+  chart_dir: helm-charts/event-service
 
 jobs:
   build:

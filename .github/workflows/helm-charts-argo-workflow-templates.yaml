@@ -1,15 +1,15 @@
-name: Web Release
+name: helm-charts - argo-workflow-templates
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'web/**'
-      - .github/workflows/web.yml
+      - 'helm-charts/argo-workflow-templates/**'
+      - .github/workflows/helm-charts-argo-workflow-templates.yml
 
 env:
-  chart_dir: web
+  chart_dir: helm-charts/argo-workflow-templates
 
 jobs:
   build:

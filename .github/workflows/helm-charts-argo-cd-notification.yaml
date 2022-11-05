@@ -1,15 +1,15 @@
-name: Argo CD Resources Release
+name: helm-charts - argocd-notification
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'argo-cd-resources/**'
-      - .github/workflows/argo-cd-resources.yml
+      - 'helm-charts/argo-cd-notification/**'
+      - .github/workflows/helm-charts-argo-cd-notification.yaml
 
 env:
-  chart_dir: argo-cd-resources
+  chart_dir: helm-charts/argo-cd-notification
 
 jobs:
   build:

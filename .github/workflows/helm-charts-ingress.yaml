@@ -1,15 +1,15 @@
-name: Argo Workflow Addons Release
+name: helm-charts - ingress
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'argo-workflow-addons/**'
-      - .github/workflows/argo-workflow-addons.yml
+      - 'helm-charts/ingress/**'
+      - .github/workflows/helm-charts-ingress.yaml
 
 env:
-  chart_dir: argo-workflow-addons
+  chart_dir: helm-charts/ingress
 
 jobs:
   build:
