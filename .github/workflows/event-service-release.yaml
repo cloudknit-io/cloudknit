@@ -1,4 +1,4 @@
-name: release
+name: event-service - release
 on:
   push:
     tags:

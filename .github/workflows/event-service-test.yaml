@@ -1,4 +1,4 @@
-name: test
+name: event-service - test
 on:
   workflow_call:
   push:
