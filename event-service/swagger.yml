@@ -1,0 +1,12 @@
+consumes:
+- application/json
+info:
+  description: Service for collecting and reporting zLifecycle events
+  title: Event Service
+  version: 1.0.0
+paths: {}
+produces:
+- application/json
+schemes:
+- http
+swagger: "2.0"
