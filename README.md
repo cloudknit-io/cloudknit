@@ -1,6 +1,6 @@
 # CloudKnit: An Open Source Cloud Environment Manager
 
-[CloudKnit](https://github.com/cloudknit-io/cloudknit) is an open-source "progressive delivery platform" for managing cloud environments. It enables organizations to ***Define** entire environments in a declarative way, **Provision** them, **Detect** and **Reconcile** Drift, and **Teardown** environments when no longer needed. It also comes with dashboards to help visualize environments and observe them.
+[CloudKnit](https://github.com/cloudknit-io/cloudknit) is an open-source "progressive delivery platform" for managing cloud environments. It enables organizations to **Define** entire environments in a declarative way, **Provision** them, **Detect** and **Reconcile** Drift, and **Teardown** environments when no longer needed. It also comes with dashboards to help visualize environments and observe them.
 
 CloudKnit is based on a concept called [Environment as Code](https://www.zlifecycle.com/blog/from-infrastructure-as-code-to-environment-as-code). Some people have started calling it Declarative Pipelines.
 
@@ -15,17 +15,17 @@ Environment as Code (EaC) is an abstraction over Cloud-native tools that provide
 
 There are tools today that allow us to manage cloud environments but as the environments become more complex and teams look for advanced use cases like visualizing environments, replicating environments, promoting changes across environments, blue/green deployments, etc., existing tools fall short. 
 
-This causes some teams to build and maintain in-house solutions. We want to make it easy for devops teams to manage complex environments, get to advanced cases, and to gain a competitive advantage.
+This causes some teams to build and maintain in-house solutions. We want to make it easy for DevOps and Platform Engineering teams to manage complex environments, get to advanced cases, and to gain a competitive advantage.
 
-Existing cloud-native tools like Terraform, Pulumi, Helm, ArgoCD, etc. are great at automating simple environments, but if you want an environment like the one below (Diagram 2) with infrastructure resources and cloud-native applications, your options are:
+Existing cloud-native tools like Terraform, Pulumi, Helm, ArgoCD, etc. on their own are great at managing individual components within an environment or automating simple environments, but if you want an environment like the one below (Diagram 2) with Infrastructure resources and cloud-native applications, your options are:
 
 ### Option 1: Monolith Infrastructure as Code & Application Deployment
 
-Monolith IaC & Application deployments work well when environments are simple, but as things get complex, it becomes a nightmare to maintain.
+Monolith IaC & Application deployments work well when environments are simple, but as things get complex, it becomes a nightmare to maintain. It creates tight coupling and causes issues like slow provisioning.
 
-### Option 2: Use loosely coupled Infrastructure as Code & Application Deployment & hand-roll pipelines to run them
+### Option 2: Use loosely coupled IaC & Application Deployment & hand-roll pipelines to run them
 
-Creating loosely-coupled components like networking, eks, rds, k8s-apps, etc. makes the individual components easier to manage, but the pipelines that run those components become complex. Pipeline code needs to manage the logic to run the various components in the correct order and handle various scenarios like failures and tearing down an entire environment for ephemeral environments.
+Creating loosely-coupled components like networking, eks, rds, backend-apps, frontend-apps, etc. makes the individual components easier to manage, but the pipelines that run those components become complex. Pipeline code needs to manage the logic to run the various components in the correct order and handle various scenarios like failures and tearing down an entire environment when not needed.
 
 Pipeline code is imperative, and users have to write logic on “HOW” to get an entire environment. This causes a maintenance nightmare. We have seen teams write hundreds of lines of pipeline code to specify the “HOW” to run various components to get an entire environment and it becomes unmanageable at one point.
 
@@ -34,13 +34,12 @@ Pipeline code is imperative, and users have to write logic on “HOW” to get a
 
 ## Other Challenges
 
-### Environment Replication is a pain
+There are other challenges that teams face as their environments become more complex.
 
-### Not easy to Visualize/Understand Environments 
-
-### Drift Detection for the entire environment is difficult
-
-### Not straightforward to Promote changes across environments
+* Environment Replication is a pain
+* Not easy to Visualize/Understand Environments
+* Drift Detection for the entire environment is difficult
+* Not straightforward to Promote changes across environments
 
 ## How does CloudKnit work?
 
@@ -51,27 +50,67 @@ Environment management with CloudKnit is divided into 4 stages:
 
 ### Define
 
-This stage allows you to define an entire environment. See example below: 
+This stage allows you to define an entire environment. We currently support easy to use YAML format for the environment definition.
+
+See example below: 
 
 <details>
   <summary>Environment Definition</summary>
 
-```
-
+```yaml
+apiVersion: stable.cloudknit.com/v1
+kind: Environment
+metadata:
+  name: zmart-payment-prod-blue
+  namespace: zmart-config
+spec:
+  teamName: payment
+  envName: prod-blue
+  components:
+    - name: networking
+      type: terraform
+      autoApprove: true
+      module:
+        source: git@github.com:terraform-aws-modules/terraform-aws-vpc.git
+      variablesFile:
+        path: "prod-blue/vars/networking.tfvars"
+      outputs:
+        - name: vpc_id
+    - name: platform-eks
+      type: terraform
+      dependsOn: [networking]
+      module:
+        source: git@github.com:terraform-aws-modules/terraform-aws-eks.git
+      variables:
+        - name: vpc_id
+          valueFrom: networking.vpc_id
+      variablesFile:
+        path: "prod-blue/vars/platform-eks.tfvars"
+    - name: website
+      type: helm #Native support for helm chart coming soon
+      dependsOn: [platform-eks]
+      source:
+        repo: git@github.com:helm/examples.git
+        path: charts/hello-world
+      variables:
+        - name: environment
+          value: prod-blue
 ```
 </details>
 
 ### Provision
 
-Control Plane in Kubernetes using the Definition generates argo workflow YAMLs that then is used to run Terraform/Helm etc. in the right order. It also provides Visibility & Workflow.
+CloudKnit Control Plane running in Kubernetes uses the Environment definition & runs various Components(Terraform, Helm Charts, etc.) in the right order. It also provides Visibility & Workflow while Provisioning the environment.
 
 ### Detect Drift + Reconciliation
 
-Like Kubernetes does drift detection for k8s apps & reconciles them to match the desired state in source control, EaC does drift detection for the entire environment (infra + apps) & reconciles them ((Preferably with Approval step for infra that shows the plan). 
+Like Kubernetes does drift detection for k8s apps & reconciles them to match the desired state in source control, CloudKnit does drift detection for the entire environment (infra + apps) & reconciles them. 
+
+Note: In case of Infrastructure as Code CloudKnit provides an ability to see the plan & get manual approval before running the IaC to make sure it doesn't destroy any resources you don't want to, especially in Production environments.
 
 ### Teardown
 
-Environment Teardown is pretty straightforward and can be done easily by setting the `teardown` flag to true. The Control plane generates the Argo workflow that runs destroy on various components in the correct order.
+You might want to teardown environments when they are not used to save costs. CloudKnit provides a single line change using flag `teardown` in the Environment YAML. Once `teardown` flag is set to true and definition is pushed to Source Control, CloudKnit picks up the change and tears the environment down by destroying individual components in the correct order.
 
 ## Conclusion
 
