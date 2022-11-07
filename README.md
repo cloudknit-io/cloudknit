@@ -1,4 +1,4 @@
-# CloudKnit: An Open Source Solution to Manage Cloud Environments
+# CloudKnit: An Open Source Cloud Environment Manager
 
 [CloudKnit](https://github.com/cloudknit-io/cloudknit) is an open-source "progressive delivery platform" for managing cloud environments. It enables organizations to ***Define** entire environments in a declarative way, **Provision** them, **Detect** and **Reconcile** Drift, and **Teardown** environments when no longer needed. It also comes with dashboards to help visualize environments and observe them.
 
@@ -13,9 +13,11 @@ Environment as Code (EaC) is an abstraction over Cloud-native tools that provide
 
 ## Why we built CloudKnit
 
-There are tools today that allow us to manage cloud environments but as the environments become more complex and teams look for advanced use cases like visualizing environments, replicating environments, promoting changes across environments, blue/green deployments, etc., existing tools fall short. This causes some teams to build and maintain in-house solutions. We want to make it easy for devops teams to manage complex environments and get to advanced cases to gain a Competitive advantage.
+There are tools today that allow us to manage cloud environments but as the environments become more complex and teams look for advanced use cases like visualizing environments, replicating environments, promoting changes across environments, blue/green deployments, etc., existing tools fall short. 
 
-Existing cloud-native tools like Terraform, Pulumi, Helm, ArgoCD, etc. are great at automating simple environments, but if you want an environment like the one below (Diagram 2) with Infrastructure resources and cloud-native applications, your options are:
+This causes some teams to build and maintain in-house solutions. We want to make it easy for devops teams to manage complex environments, get to advanced cases, and to gain a competitive advantage.
+
+Existing cloud-native tools like Terraform, Pulumi, Helm, ArgoCD, etc. are great at automating simple environments, but if you want an environment like the one below (Diagram 2) with infrastructure resources and cloud-native applications, your options are:
 
 ### Option 1: Monolith Infrastructure as Code & Application Deployment
 
