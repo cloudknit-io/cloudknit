@@ -6,12 +6,18 @@ on:
     branches-ignore:
       - master
       - main
+    paths:
+      - 'il-operator/**'
+      - .github/workflows/il-operator-lint.yaml
 permissions:
   contents: read
 jobs:
   golangci:
     name: lint
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./il-operator
     steps:
       - name: "Golang"
         uses: "actions/setup-go@v2"

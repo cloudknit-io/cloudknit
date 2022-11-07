@@ -6,12 +6,18 @@ on:
     branches-ignore:
       - master
       - main
+    paths:
+      - 'state-manager/**'
+      - .github/workflows/state-manager-lint.yaml
 permissions:
   contents: read
 jobs:
   golangci:
     name: lint
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./state-manager
     steps:
       - name: "Golang"
         uses: "actions/setup-go@v2"
