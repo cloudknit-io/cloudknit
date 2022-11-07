@@ -23,7 +23,7 @@ export class ConfiguringZlifecycle extends BaseGuide implements IGuide {
 		const cls = (className: string) => `${baseClassName}_section-guide${className}`;
 		const formRef = React.useRef<HTMLFormElement>(null);
 		const [settingUp, SettingUpProgress] = useState<boolean>(false);
-		const [repoUrl, setRepoUrl] = useState<string>(ctx.githubRepo || AuthStore.getOrganization()?.githubRepo || '');
+		const [repoUrl, setRepoUrl] = useState<string>(ctx?.githubRepo || AuthStore.getOrganization()?.githubRepo || '');
 
 		this.saveGithubCredentials = async (): Promise<any> => {
 			if (!formRef.current) return false;
