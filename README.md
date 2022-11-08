@@ -6,18 +6,17 @@ CloudKnit is based on a concept called [Environment as Code](https://www.zlifecy
 
 > *Note: We are not a big fan of using Pipeline and Declarative together as Pipeline to us means a sequence of steps which is conflicts with what Declarative means.*
 
-Environment as Code (EaC) is an abstraction over Cloud-native tools that provides a declarative way of defining an entire Environment. It has a Control Plane that manages the state of the environment, including relationships between various resources, and Detects Drift, and does Reconciliation.
+Environment as Code (EaC) is an abstraction over Cloud-native tools that provides a declarative way of defining an entire Environment. It has a Control Plane that manages the state of the environment, including resource dependencies, and drift detection and reconciliation.
 
 ![Where CloudKnit connects with existing tools](/assets/images/existing-tools.png)
 *<center>Diagram 1: Where does CloudKnit fit in with existing tools</center>*
 
 ## Why we built CloudKnit
 
-There are tools today that allow us to manage cloud environments but as the environments become more complex and teams look for advanced use cases like visualizing environments, replicating environments, promoting changes across environments, blue/green deployments, etc., existing tools fall short. 
+There are tools today that allow us to manage cloud environments but as the environments become more complex and teams look for advanced use cases, existing tools can fall short. This causes some teams to build and maintain in-house solutions. 
 
-This causes some teams to build and maintain in-house solutions. We want to make it easy for DevOps and Platform Engineering teams to manage complex environments, get to advanced cases, and to gain a competitive advantage.
-
-Existing cloud-native tools like Terraform, Pulumi, Helm, ArgoCD, etc. on their own are great at managing individual components within an environment or automating simple environments, but if you want an environment like the one below (Diagram 2) with Infrastructure resources and cloud-native applications, your options are:
+We want to make it easy for DevOps and Platform Engineering teams to manage complex environments.  Existing cloud-native tools like Terraform, Pulumi, Helm, ArgoCD, etc. on their own can be great at managing individual components within an environment or automating simple environments.
+However an environment like the one below (Diagram 2) with Infrastructure resources and cloud-native applications requires a different solution. Currently you have two main approaches:
 
 ### Option 1: Monolith Infrastructure as Code & Application Deployment
 
@@ -25,9 +24,10 @@ Monolith IaC & Application deployments work well when environments are simple, b
 
 ### Option 2: Use loosely coupled IaC & Application Deployment & hand-roll pipelines to run them
 
-Creating loosely-coupled components like networking, eks, rds, backend-apps, frontend-apps, etc. makes the individual components easier to manage, but the pipelines that run those components become complex. Pipeline code needs to manage the logic to run the various components in the correct order and handle various scenarios like failures and tearing down an entire environment when not needed.
+Creating loosely-coupled components like networking, eks, rds, backend-apps, frontend-apps, etc. makes the individual components easier to manage, but the pipelines that run those components become complex.
+Pipeline code needs to manage the logic to run the various components in the correct order, handle failures and tear down unused resources.
 
-Pipeline code is imperative, and users have to write logic on “HOW” to get an entire environment. This causes a maintenance nightmare. We have seen teams write hundreds of lines of pipeline code to specify the “HOW” to run various components to get an entire environment and it becomes unmanageable at one point.
+Pipeline code is imperative, and users have to write logic on “HOW” to get an entire environment. This causes a maintenance nightmare. We have seen teams write hundreds of lines of unmaintainable pipeline code.
 
 ![Where does CloudKnit fit in with existing tools](/assets/images/environment.jpeg)
 *<center>Diagram 2: Example Environment</center>*
@@ -48,7 +48,7 @@ There are other challenges that teams face as their environments become more com
 
 Environment management with CloudKnit is divided into 4 stages:
 
-### Define
+### 1. Define
 
 This stage allows you to define an entire environment. We currently support easy to use YAML format for the environment definition.
 
@@ -98,17 +98,17 @@ spec:
 ```
 </details>
 
-### Provision
+### 2. Provision
 
-CloudKnit Control Plane running in Kubernetes uses the Environment definition & runs various Components(Terraform, Helm Charts, etc.) in the right order. It also provides Visibility & Workflow while Provisioning the environment.
+CloudKnit Control Plane running in Kubernetes uses the Environment definition & runs various Components (Terraform, Helm Charts, etc.) in the right order. It also provides Visibility & Workflow while Provisioning the environment.
 
-### Detect Drift + Reconciliation
+### 3. Detect Drift + Reconciliation
 
 Like Kubernetes does drift detection for k8s apps & reconciles them to match the desired state in source control, CloudKnit does drift detection for the entire environment (infra + apps) & reconciles them. 
 
 Note: In case of Infrastructure as Code CloudKnit provides an ability to see the plan & get manual approval before running the IaC to make sure it doesn't destroy any resources you don't want to, especially in Production environments.
 
-### Teardown
+### 4. Teardown
 
 You might want to teardown environments when they are not used to save costs. CloudKnit provides a single line change using flag `teardown` in the Environment YAML. Once `teardown` flag is set to true and definition is pushed to Source Control, CloudKnit picks up the change and tears the environment down by destroying individual components in the correct order.
 
