@@ -11,7 +11,7 @@ export const TermsAndConditions: React.FC = () => {
 	const [retryCount, setRetryCount] = useState(60);
 
 	useEffect(() => {
-		if (user?.selectedOrg?.provisioned !== true) {
+		if (user?.selectedOrg && user?.selectedOrg?.provisioned !== true) {
 			const interval = setInterval(() => {
 				setRetryCount(prev => {
 					if (prev === 1) {
@@ -74,6 +74,7 @@ export const TermsAndConditions: React.FC = () => {
 					content: `Your organization ${org?.name} was successfully created.`,
 					type: NotificationType.Success,
 				});
+				await AuthStore.selectOrganization(org?.name);
 				return;
 			}
 		} catch (err) {
