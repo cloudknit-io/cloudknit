@@ -1,6 +1,6 @@
 #/bin/bash
 
-echo "Enter your company name used by zLifecycle (E.g. Enter "zmart" if your zL url is https://zmart.app.zlifecycle.com):"
+echo "Enter your company name used by CloudKnit (E.g. Enter "zmart" if your zL url is https://zmart.app.zlifecycle.com):"
 
 read company
 

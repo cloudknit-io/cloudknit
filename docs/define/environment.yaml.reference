@@ -11,12 +11,12 @@ spec:
   teamName: cloud-assembly
   # name of the environment (see difference from `metadata.name`)
   envName: demo
-  # skip approval process on zLifecycle UI
+  # skip approval process on CloudKnit UI
   autoApprove: true
   # OPTIONAL: use this flag for destroying an environment
   # when creating a new environment, it must be omitted or set to `false`
   # environment teardown is composed as a 2-step process
-  #   first step is to update the `teardown` flag to `true` and wait for the environment to get destroyed (monitor progress on zLifecycle UI)
+  #   first step is to update the `teardown` flag to `true` and wait for the environment to get destroyed (monitor progress on CloudKnit UI)
   #   second step is to delete the Environment yaml from github for permanent deletion of an environment
   #     NOTE: without the second step, you could use `teardown` to provision and restore temporary environments by toggling its value
   teardown: false
@@ -72,11 +72,11 @@ spec:
         - name: acl
           # reference an output defined in a previous module using `outputs` block
           valueFrom: data.terraform_remote_state.s3-common.outputs.bucket_acl
-      # OPTIONAL: reference secret values which are added through the zLifecycle UI
+      # OPTIONAL: reference secret values which are added through the CloudKnit UI
       secrets:
           # name of the terraform module variable
         - name: bucket
-          # secret name entered in zLifecycle UI settings page
+          # secret name entered in CloudKnit UI settings page
           key: s3-name
           # scope configures secret scope granularity
           # valid scopes are org, team, environment and component

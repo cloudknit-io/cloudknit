@@ -27,7 +27,7 @@ metadata:
 spec:
 	teamName: ${teamName}
 	configRepo:
-	source: ${ctx.githubRepo || user?.selectedOrg.githubRepo}
+	source: ${ctx?.githubRepo || user?.selectedOrg.githubRepo}
 	path: environments
 `;
 
