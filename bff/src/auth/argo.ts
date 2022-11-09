@@ -28,9 +28,26 @@ function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function createSession(orgName: string) {
+async function getArgoCDPassword(org: string): Promise<string> {
+  try {
+    const url = `${process.env.ZLIFECYCLE_API_URL}/v1/orgs/${org}/secrets/get/ssm-secrets`;
+    const resp = await axios.post(url, {
+      path: "/argocd/zlapi/password"
+    });
+
+    console.log('getArgoCDPassword', resp.data)
+  
+    const { token } = resp.data;
+  
+    return token;
+  } catch (err) {
+    logger.error('could not login to argocd', { org, error: err.message });
+  }
+}
+
+async function createSession(orgName: string) {  
   const session = { 
-    token: await argoCdLogin(orgName, 'zlapi', 'zl123456789'), 
+    token: await argoCdLogin(orgName, 'zlapi', await getArgoCDPassword(orgName)), 
     ttl: Date.now() + 10800000 // 3 hours
   };
 
