@@ -13,8 +13,6 @@ import { PageHeaderTabs } from 'models/projects.models';
 import React, { ChangeEvent, FC, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { ReactComponent as Compare } from 'assets/images/icons/compare.svg';
-import { Context } from 'context/argo/ArgoUi';
-import { NotificationsApi, NotificationType } from 'components/argo-core';
 import { BradAdarshFeatureVisible, FeatureKeys, featureToggled } from 'pages/authorized/feature_toggle';
 import { ZSidePanel } from '../side-panel/SidePanel';
 import { ErrorView } from 'components/organisms/error-view/ErrorView';
