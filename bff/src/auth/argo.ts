@@ -30,12 +30,10 @@ function wait(ms) {
 
 async function getArgoCDPassword(org: string): Promise<string> {
   try {
-    const url = `${process.env.ZLIFECYCLE_API_URL}/v1/orgs/${org}/secrets/get/ssm-secrets`;
+    const url = `${process.env.ZLIFECYCLE_API_URL}/v1/orgs/${org}/secrets/get/ssm-secret`;
     const resp = await axios.post(url, {
       path: "/argocd/zlapi/password"
     });
-
-    console.log('getArgoCDPassword', resp.data)
   
     const { token } = resp.data;
   
