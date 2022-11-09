@@ -3,7 +3,6 @@ import { ReactComponent as ComputeIcon } from 'assets/images/icons/DAG-View/conf
 import { ReactComponent as LongArrow } from 'assets/images/icons/DAG/long-arrow-down.svg';
 import { ReactComponent as LayersIcon } from 'assets/images/icons/DAG-View/environment-icon.svg';
 import { ReactComponent as AppIcon } from 'assets/images/icons/DAG-View/Layers.svg';
-import { NotificationsApi, Select } from 'components/argo-core';
 import { getHealthStatusIcon, getSyncStatusIcon } from 'components/molecules/cards/renderFunctions';
 import { useApi } from 'hooks/use-api/useApi';
 import { EnvironmentComponentItem, EnvironmentItem } from 'models/projects.models';
