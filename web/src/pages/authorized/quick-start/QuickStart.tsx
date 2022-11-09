@@ -30,8 +30,7 @@ export const QuickStart: React.FC = () => {
 	return (
 		<div className="quick-start-guide">
 			<h1 className="quick-start-guide_heading-main">
-				<span className="quick-start-guide_heading-main_z">z</span>Lifecycle Setup Wi
-				<span className="quick-start-guide_heading-main_z">z</span>ard
+				<span className="quick-start-guide_heading-main_z">Cloud</span>Knit Setup Wizard
 			</h1>
 			<div className="quick-start-guide_container">
 				<div className="quick-start-guide_container_left-container">

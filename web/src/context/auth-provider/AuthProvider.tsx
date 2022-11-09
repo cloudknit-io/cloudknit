@@ -57,7 +57,7 @@ export const AuthProvider: React.FC = ({ children }) => {
 				return <OrganizationSelection />
 			}
 
-			if (authState.selectedOrg && LocalStorage.getItem<QuickStartContext>(LocalStorageKey.QUICK_START_STEP)?.step !== -1) {
+			if (authState.selectedOrg && !authState.selectedOrg.githubRepo) {
 				return <QuickStart />;
 			}
 
