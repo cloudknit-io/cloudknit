@@ -21,6 +21,14 @@ export class SecretsController {
     return await this.secretsService.ssmSecretsExists(req.org, pathNames);
   }
 
+  @Post("get/ssm-secret")
+  public async getSSMSecret(@Request() req, @Body() body: any) {
+    const { path } = body;
+    const value = await this.secretsService.getSsmSecret(req.org, path);
+
+    return { data: value };
+  }
+
   @Post("get/ssm-secrets")
   public async getSSMSecrets(@Request() req, @Body() body: any) {
     const { path } = body;

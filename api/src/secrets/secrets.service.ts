@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { AWSError } from "aws-sdk";
-import { GetParametersByPathRequest, Parameter } from "aws-sdk/clients/ssm";
+import { GetParameterRequest, GetParametersByPathRequest, Parameter } from "aws-sdk/clients/ssm";
 import { Organization } from "src/typeorm";
 import { AwsSecretDto } from "./dtos/aws-secret.dto";
 import { AWSSSMHandler } from "./utilities/awsSsmHandler";
@@ -97,7 +97,27 @@ export class SecretsService {
     }
   }
 
-  public async getSsmSecretsByPath(org: Organization, path: string) {    
+  public async getSsmSecret(org: Organization, path: string) : Promise<string> {
+    try {
+      const req: GetParameterRequest = {
+        Name: this.getPath(org, path),
+        WithDecryption: true,
+      };
+
+      const awsRes = await this.ssm.getParameter(req);
+
+      return awsRes.Parameter.Value;
+    } catch (err) {
+      const e = err as AWSError;
+      if (e.code === "ParameterNotFound") {
+        return null;
+      } else {
+        throw err;
+      }
+    }
+  }
+
+  public async getSsmSecretsByPath(org: Organization, path: string) {
     try {
       const req: GetParametersByPathRequest = {
         Path: this.getPath(org, path),
