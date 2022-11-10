@@ -35,11 +35,10 @@ async function getArgoCDPassword(org: string): Promise<string> {
       path: "/argocd/zlapi/password"
     });
   
-    const { token } = resp.data;
-  
-    return token;
+    return resp.data;
   } catch (err) {
-    logger.error('could not login to argocd', { org, error: err.message });
+    logger.error('could not retrieve argocd password from api', { org, error: err.message });
+    throw err;
   }
 }
 
@@ -68,14 +67,20 @@ async function getArgoToken (orgName: string): Promise<string> {
 
   lock = true;
 
-  if (isExpired(orgName)) {
-    logger.info('Refreshed ArgoCD Token', {org: orgName});
-    await createSession(orgName);
+  try {
+    if (isExpired(orgName)) {
+      await createSession(orgName);
+      logger.info('Refreshed ArgoCD Token', {org: orgName});
+    }
+    
+    return sessions[orgName].token;
+  } catch (err) {
+    logger.error('failed to create ArgoCD session', {org: orgName, err: err.message});
+  } finally {
+    lock = false;
   }
 
-  lock = false;
-
-  return sessions[orgName].token;
+  return null;
 }
 
 export async function getArgoCDAuthHeader (orgName: string): Promise<any> {
