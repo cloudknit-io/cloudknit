@@ -26,7 +26,7 @@ export class SecretsController {
     const { path } = body;
     const value = await this.secretsService.getSsmSecret(req.org, path);
 
-    return { data: value };
+    return { value };
   }
 
   @Post("get/ssm-secrets")

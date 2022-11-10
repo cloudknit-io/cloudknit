@@ -35,9 +35,13 @@ async function getArgoCDPassword(org: string): Promise<string> {
       path: "/argocd/zlapi/password"
     });
 
-    console.log('resp', resp);
+    if (!resp.data || !resp.data.value) {
+      throw new Error('password was not return from api');
+    }
+    
+    const { value } = resp.data;
   
-    return resp.data;
+    return value;
   } catch (err) {
     logger.error('could not retrieve argocd password from api', { org, error: err.message });
     throw err;
