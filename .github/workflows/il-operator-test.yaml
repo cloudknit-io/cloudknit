@@ -15,7 +15,7 @@ jobs:
     runs-on: "ubuntu-latest"
     defaults:
       run:
-        working-directory: ./il-operator
+        working-directory: il-operator
     steps:
       - id: go-cache-paths
         run: |
