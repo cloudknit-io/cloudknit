@@ -34,6 +34,8 @@ async function getArgoCDPassword(org: string): Promise<string> {
     const resp = await axios.post(url, {
       path: "/argocd/zlapi/password"
     });
+
+    console.log('resp', resp);
   
     return resp.data;
   } catch (err) {
