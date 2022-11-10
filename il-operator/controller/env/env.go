@@ -36,14 +36,15 @@ type config struct {
 	TerraformDefaultSharedAWSAlias     string
 
 	// git
-	GitHelmChartsRepository string
-	GitCoreRepositoryOwner  string
-	GitILRepositoryOwner    string
-	GitSSHSecretName        string
-	GitServiceAccountName   string
-	GitServiceAccountEmail  string
-	GitToken                string
-	GitRepositoryBranch     string
+	GitHelmChartsRepository         string
+	GitHelmChartTerraformConfigPath string
+	GitCoreRepositoryOwner          string
+	GitILRepositoryOwner            string
+	GitSSHSecretName                string
+	GitServiceAccountName           string
+	GitServiceAccountEmail          string
+	GitToken                        string
+	GitRepositoryBranch             string
 
 	// github
 	GitHubWebhookSecret              string
@@ -140,14 +141,15 @@ var Config = config{
 	NewRelicAPIKey: os.Getenv("NEW_RELIC_API_KEY"),
 
 	// git
-	GitHelmChartsRepository: os.Getenv("GIT_HELM_CHARTS_REPOSITORY"),
-	GitCoreRepositoryOwner:  getOr("GIT_CORE_REPOSITORY_OWNER", "cloudknit-io"),
-	GitILRepositoryOwner:    getOr("GIT_IL_REPOSITORY_OWNER", "zlifecycle-il"),
-	GitSSHSecretName:        getOr("GIT_SSH_SECRET_NAME", "zlifecycle-operator-ssh"),
-	GitServiceAccountName:   getOr("GIT_SERVICE_ACCOUNT_NAME", "zLifecycle"),
-	GitServiceAccountEmail:  getOr("GIT_SERVICE_ACCOUNT_EMAIL", "zLifecycle@compuzest.com"),
-	GitToken:                os.Getenv("GIT_TOKEN"),
-	GitRepositoryBranch:     getOr("GIT_REPOSITORY_BRANCH", "main"),
+	GitHelmChartsRepository:         os.Getenv("GIT_HELM_CHARTS_REPOSITORY"),
+	GitHelmChartTerraformConfigPath: os.Getenv("GIT_HELM_CHART_TERRAFORM_CONFIG_PATH"),
+	GitCoreRepositoryOwner:          getOr("GIT_CORE_REPOSITORY_OWNER", "cloudknit-io"),
+	GitILRepositoryOwner:            getOr("GIT_IL_REPOSITORY_OWNER", "zlifecycle-il"),
+	GitSSHSecretName:                getOr("GIT_SSH_SECRET_NAME", "zlifecycle-operator-ssh"),
+	GitServiceAccountName:           getOr("GIT_SERVICE_ACCOUNT_NAME", "zLifecycle"),
+	GitServiceAccountEmail:          getOr("GIT_SERVICE_ACCOUNT_EMAIL", "zLifecycle@compuzest.com"),
+	GitToken:                        os.Getenv("GIT_TOKEN"),
+	GitRepositoryBranch:             getOr("GIT_REPOSITORY_BRANCH", "main"),
 
 	// github
 	GitHubWebhookSecret:              os.Getenv("GITHUB_WEBHOOK_SECRET"),
