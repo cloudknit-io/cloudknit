@@ -26,5 +26,5 @@ jobs:
         uses: golangci/golangci-lint-action@v3
         with:
           working-directory: il-operator
-          version: v3.3.0
+          version: v1.50.1
           args: "-c il-operator/.golangci.yml --timeout=10m --issues-exit-code=0 --max-issues-per-linter=0 --sort-results"
