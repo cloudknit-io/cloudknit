@@ -5,11 +5,11 @@ on:
     branches:
       - main
     paths:
-      - 'helm-charts/charts/terraform-config/**'
+      - 'helm-charts/terraform-config/**'
       - .github/workflows/helm-charts-terraform-config.yaml
 
 env:
-  chart_dir: helm-charts/charts/terraform-config
+  chart_dir: helm-charts/terraform-config
 
 jobs:
   build:
