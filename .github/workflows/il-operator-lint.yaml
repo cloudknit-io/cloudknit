@@ -26,4 +26,4 @@ jobs:
         uses: golangci/golangci-lint-action@v3
         with:
           version: "latest"
-          args: "-c il-operator/.golangci.yml --timeout=10m --issues-exit-code=0 --max-issues-per-linter=0 --sort-results il-operator/..."
+          args: "-c il-operator/.golangci.yml --timeout=10m --issues-exit-code=0 --max-issues-per-linter=0 --sort-results"
