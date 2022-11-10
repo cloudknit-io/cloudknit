@@ -156,7 +156,7 @@ func GenerateEnvironmentComponentApps(e *stablev1.Environment, ec *stablev1.Envi
 
 	source := appv1.ApplicationSource{
 		RepoURL:        util.RewriteGitHubURLToHTTPS(env.Config.GitHelmChartsRepository, false),
-		Path:           "charts/terraform-config",
+		Path:           env.Config.GitHelmChartTerraformConfigPath,
 		TargetRevision: "HEAD",
 		Helm: &appv1.ApplicationSourceHelm{
 			Values: helmValues,
