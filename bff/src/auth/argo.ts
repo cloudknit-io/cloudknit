@@ -28,9 +28,29 @@ function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function createSession(orgName: string) {
+async function getArgoCDPassword(org: string): Promise<string> {
+  try {
+    const url = `${process.env.ZLIFECYCLE_API_URL}/v1/orgs/${org}/secrets/get/ssm-secret`;
+    const resp = await axios.post(url, {
+      path: "/argocd/zlapi/password"
+    });
+
+    if (!resp.data || !resp.data.value) {
+      throw new Error('password was not return from api');
+    }
+    
+    const { value } = resp.data;
+  
+    return value;
+  } catch (err) {
+    logger.error('could not retrieve argocd password from api', { org, error: err.message });
+    throw err;
+  }
+}
+
+async function createSession(orgName: string) {  
   const session = { 
-    token: await argoCdLogin(orgName, 'zlapi', 'zl123456789'), 
+    token: await argoCdLogin(orgName, 'zlapi', await getArgoCDPassword(orgName)), 
     ttl: Date.now() + 10800000 // 3 hours
   };
 
@@ -53,14 +73,20 @@ async function getArgoToken (orgName: string): Promise<string> {
 
   lock = true;
 
-  if (isExpired(orgName)) {
-    logger.info('Refreshed ArgoCD Token', {org: orgName});
-    await createSession(orgName);
+  try {
+    if (isExpired(orgName)) {
+      await createSession(orgName);
+      logger.info('Refreshed ArgoCD Token', {org: orgName});
+    }
+    
+    return sessions[orgName].token;
+  } catch (err) {
+    logger.error('failed to create ArgoCD session', {org: orgName, err: err.message});
+  } finally {
+    lock = false;
   }
 
-  lock = false;
-
-  return sessions[orgName].token;
+  return null;
 }
 
 export async function getArgoCDAuthHeader (orgName: string): Promise<any> {
