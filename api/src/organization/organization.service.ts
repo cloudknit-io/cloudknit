@@ -43,7 +43,11 @@ export class OrganizationService {
       .execute();
 
     if (payload.githubRepo) {
-      await patchCompany(org, payload.githubRepo);
+      try {
+        await patchCompany(org, payload.githubRepo);
+      } catch (error) {
+        this.logger.log('Company CR was not updated', { org })
+      }
     }
 
     this.logger.log({message: 'updated org', org, updates });
