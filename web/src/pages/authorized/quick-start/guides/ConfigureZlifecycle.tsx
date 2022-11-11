@@ -74,7 +74,7 @@ export class ConfiguringZlifecycle extends BaseGuide implements IGuide {
 									)}
 									<input
 										type="text"
-										pattern="https://.*.git"
+										pattern="git@.*.git|https://.*.git"
 										required
 										name="githubRepo"
 										className="input"
@@ -114,7 +114,7 @@ export class ConfiguringZlifecycle extends BaseGuide implements IGuide {
 
 	static getInstance() {
 		if (!ConfiguringZlifecycle.instance) {
-			ConfiguringZlifecycle.instance = new ConfiguringZlifecycle('Configure zLifecycle');
+			ConfiguringZlifecycle.instance = new ConfiguringZlifecycle('Configure CloudKnit');
 		}
 		return ConfiguringZlifecycle.instance;
 	}

@@ -97,11 +97,11 @@ export const TermsAndConditions: React.FC = () => {
 					<section className="conditions-page__condition">
 						<em>
 							Please review the{' '}
-							<a href="https://compuzest.com/terms-of-service/" target="_blank">
+							<a href="https://cloudknit.io/policy" target="_blank">
 								Terms of Service
 							</a>{' '}
 							and{' '}
-							<a href="https://compuzest.com/privacy-policy/" target="_blank">
+							<a href="https://cloudknit.io/policy#privacy" target="_blank">
 								Privacy Policy.
 							</a>
 						</em>

@@ -1,3 +1,4 @@
+import { NotificationsManager, NotificationType } from 'components/argo-core';
 import { uniqueId } from 'lodash';
 import React from 'react';
 import { IGuide } from './IGuide';
@@ -6,9 +7,9 @@ export class BaseGuide implements IGuide {
 	stepId: string = uniqueId('step');
 	stepName: string = uniqueId('step');
 
-    private UI: React.FC<{}> = () => {
-        return <></>;
-    };
+	private UI: React.FC<{}> = () => {
+		return <></>;
+	};
 
 	constructor(stepName: string) {
 		this.stepName = stepName;
@@ -20,12 +21,23 @@ export class BaseGuide implements IGuide {
 	}
 
 	render(baseClassName = '', ctx: any) {
-        return <this.UI />;
+		return <this.UI />;
 	}
 
 	show(selector: string) {
 		setImmediate(() => {
 			document.querySelector(selector)?.classList.add('visible');
+		});
+	}
+
+	copyToClipboard(content: string, nm?: NotificationsManager) {
+		navigator.clipboard.writeText(content);
+		nm?.show({
+			content: 'Copied',
+			type: NotificationType.Success,
+			toastOptions: {
+				autoClose: 1000,
+			},
 		});
 	}
 }

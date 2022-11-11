@@ -3,20 +3,22 @@ import React, { useEffect, useState } from 'react';
 import { IGuide } from './IGuide';
 import AuthStore from 'auth/AuthStore';
 import { ZEditor } from 'components/molecules/editor/Editor';
+import { ReactComponent as Copy } from 'assets/images/icons/copy.svg';
+import { NotificationsManager } from 'components/argo-core';
 
 type Props = {
 	baseClassName: string;
 	ctx: any;
+	nm?: NotificationsManager;
 };
-
 
 export class SetupTeamYaml extends BaseGuide implements IGuide {
 	private static instance: SetupTeamYaml | null = null;
 	private team_name = 'default';
 
-	private SetupTeamYamlUI: React.FC<Props> = ({ baseClassName, ctx }) => {
+	private SetupTeamYamlUI: React.FC<Props> = ({ baseClassName, ctx, nm }) => {
 		const cls = (className: string) => `${baseClassName}_section-guide${className}`;
-		const [teamName, setTeamName] = useState<string>(ctx.teamName || this.team_name);
+		const [teamName, setTeamName] = useState<string>(ctx?.teamName || this.team_name);
 		const user = AuthStore.getUser();
 		const formRef = React.useRef<HTMLFormElement>(null);
 		const teamYaml = `apiVersion: stable.compuzest.com/v1
@@ -27,8 +29,8 @@ metadata:
 spec:
 	teamName: ${teamName}
 	configRepo:
-	source: ${ctx?.githubRepo || user?.selectedOrg.githubRepo}
-	path: environments
+		source: ${ctx?.githubRepo || user?.selectedOrg.githubRepo}
+		path: environments
 `;
 
 		return (
@@ -54,19 +56,28 @@ spec:
 									} else {
 										formRef.current?.classList.add('invalid');
 									}
-									
 								}}
 							/>
-							<em className='error-msg'>Team name must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character</em>
+							<em className="error-msg">
+								Team name must consist of lower case alphanumeric characters, '-' or '.', and must start
+								and end with an alphanumeric character
+							</em>
 						</section>
 						<section className={`${cls('_form-group')}`}>
-							<label>Copy below yaml and push it to zlifecycle-config repo under teams</label>
+							<label>
+								Copy below yaml and push it to zlifecycle-config repo under teams{' '}
+								<button
+									type="button"
+									title="Copy YML"
+									className="copy-to-clipboard"
+									onClick={() => {
+										this.copyToClipboard(teamYaml, nm);
+									}}>
+									<Copy />
+								</button>
+							</label>
 							<div>
-								<ZEditor
-									data={teamYaml}
-									readOnly={true}
-									language={'yaml'}
-								/>
+								<ZEditor data={teamYaml} readOnly={true} language={'yaml'} />
 							</div>
 						</section>
 					</form>
@@ -88,8 +99,8 @@ spec:
 		});
 	}
 
-	render(baseClassName: string, ctx: any) {
+	render(baseClassName: string, ctx: any, nm?: NotificationsManager) {
 		super.show(`.${baseClassName}_section-guide`);
-		return <this.SetupTeamYamlUI baseClassName={baseClassName} ctx={ctx} />;
+		return <this.SetupTeamYamlUI baseClassName={baseClassName} ctx={ctx} nm={nm} />;
 	}
 }

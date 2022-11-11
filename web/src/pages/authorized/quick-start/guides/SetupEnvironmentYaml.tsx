@@ -6,17 +6,20 @@ import { ZEditor } from 'components/molecules/editor/Editor';
 import { LocalStorage } from 'utils/localStorage/localStorage';
 import { LocalStorageKey } from 'models/localStorage';
 import { QuickStartContext } from '../QuickStart';
+import { NotificationsManager } from 'components/argo-core';
+import { ReactComponent as Copy } from 'assets/images/icons/copy.svg';
 
 type Props = {
 	baseClassName: string;
 	ctx: any;
+	nm?: NotificationsManager;
 };
 
 export class SetupEnvironmentYaml extends BaseGuide implements IGuide {
 	private static instance: SetupEnvironmentYaml | null = null;
 	private team_name = 'default';
 
-	private SetupEnvironmentYamlUI: React.FC<Props> = ({ baseClassName, ctx }) => {
+	private SetupEnvironmentYamlUI: React.FC<Props> = ({ baseClassName, ctx, nm }) => {
 		const cls = (className: string) => `${baseClassName}_section-guide${className}`;
 		const [envName, setEnvName] = useState<string>(this.team_name);
 		const user = AuthStore.getUser();
@@ -27,7 +30,7 @@ metadata:
 	name: ${user?.organizations[0].name}-hello-world
 	namespace: ${user?.organizations[0].name}-config
 spec:
-	teamName: ${ctx.teamName}
+	teamName: ${ctx?.teamName}
 	envName: ${envName}
 	components:
 	- name: images
@@ -37,7 +40,7 @@ spec:
 			name: s3-bucket
 		variables:
 			- name: bucket
-			value: "${user?.organizations[0].name}-${envName}-images"
+			  value: "${user?.organizations[0].name}-${envName}-images"
 	- name: videos
 		type: terraform
 		dependsOn: [images]
@@ -45,15 +48,15 @@ spec:
 			source: aws
 			name: s3-bucket
 		variables:
-		- name: bucket
-			value: "${user?.organizations[0].name}-${envName}-videos"
+			- name: bucket
+			  value: "${user?.organizations[0].name}-${envName}-videos"
 			`;
 
 		return (
 			<section className={cls('')}>
 				<h4 className={`${cls('_heading')}`}>Lets setup an Environment</h4>
 				<div className={`${cls('_content')}`}>
-					<form ref={formRef}  className={`${cls('_form')}`}>
+					<form ref={formRef} className={`${cls('_form')}`}>
 						<section className={`${cls('_form-group')}`}>
 							<label className="required">Environment Name</label>
 							<input
@@ -76,7 +79,16 @@ spec:
 						</section>
 						<section className={`${cls('_form-group')}`}>
 							<label>
-								Copy below yaml and push it to zlifecycle-config repo under environments folder
+								Copy below yaml and push it to zlifecycle-config repo under environments folder{' '}
+								<button
+									type="button"
+									title="Copy YML"
+									className="copy-to-clipboard"
+									onClick={() => {
+										this.copyToClipboard(envYaml, nm);
+									}}>
+									<Copy />
+								</button>
 							</label>
 							<div>
 								<ZEditor data={envYaml} language={'yaml'} readOnly={true} />
@@ -100,13 +112,13 @@ spec:
 	}
 
 	onFinish(): Promise<any> {
-		LocalStorage.setItem<QuickStartContext>(LocalStorageKey.QUICK_START_STEP, {ctx : {}, step: -1});
+		LocalStorage.setItem<QuickStartContext>(LocalStorageKey.QUICK_START_STEP, { ctx: {}, step: -1 });
 		window.location.href = `${process.env.REACT_APP_BASE_URL}`;
 		return Promise.resolve({});
 	}
 
-	render(baseClassName: string, ctx: any) {
+	render(baseClassName: string, ctx: any, nm?: NotificationsManager) {
 		super.show(`.${baseClassName}_section-guide`);
-		return <this.SetupEnvironmentYamlUI baseClassName={baseClassName} ctx={ctx} />;
+		return <this.SetupEnvironmentYamlUI baseClassName={baseClassName} ctx={ctx} nm={nm} />;
 	}
 }
