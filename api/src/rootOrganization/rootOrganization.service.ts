@@ -33,7 +33,7 @@ export class RootOrganizationsService {
     }
 
     const org = await this.orgRepo.save({
-      name: newOrg.name,
+      name: newOrg.name.toLowerCase(),
       githubRepo: newOrg.githubRepo,
       termsAgreedUserId: user ? user.id : null
     });
