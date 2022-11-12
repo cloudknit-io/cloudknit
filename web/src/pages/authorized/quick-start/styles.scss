@@ -9,18 +9,13 @@
 	}
 	/*TODO: remove this once this view if finalized */
 	margin-top: 0px !important;
-	top: 0px;
-	left: 0px;
-	width: 100vw;
-	height: 100vh;
+	height: 80vh;
 	/*****/
 
 	line-height: initial;
 	display: flex;
 	justify-content: center;
 	flex-direction: column;
-	position: fixed;
-	z-index: 99;
 	background-color: white;
 
 	&_heading-main {
@@ -54,6 +49,8 @@
 				&_step-container {
 					padding: 10px;
 					&_button {
+						font-size: 0.9em;
+						text-align: left;
 						border-radius: 10px;
 						transition: all 0.2s ease-in;
 						width: 100%;

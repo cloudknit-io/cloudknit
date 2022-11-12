@@ -23,7 +23,9 @@ export class ConfiguringZlifecycle extends BaseGuide implements IGuide {
 		const cls = (className: string) => `${baseClassName}_section-guide${className}`;
 		const formRef = React.useRef<HTMLFormElement>(null);
 		const [settingUp, SettingUpProgress] = useState<boolean>(false);
-		const [repoUrl, setRepoUrl] = useState<string>(ctx?.githubRepo || AuthStore.getOrganization()?.githubRepo || '');
+		const [repoUrl, setRepoUrl] = useState<string>(
+			ctx?.githubRepo || AuthStore.getOrganization()?.githubRepo || ''
+		);
 
 		this.saveGithubCredentials = async (): Promise<any> => {
 			if (!formRef.current) return false;
@@ -60,17 +62,16 @@ export class ConfiguringZlifecycle extends BaseGuide implements IGuide {
 							<form ref={formRef} className={`${cls('_form')}`}>
 								<h6 className={`${cls('_heading')}`}>Step 1.</h6>
 								<section className={`${cls('_form-group')}`}>
-									<em>
-										Create a github repo for eg.
-										https://github.com/zl-zbank-tech/zlifecycle-config.git
-									</em>
+									<em>Create a new public or private repo in your github org.</em>
 								</section>
 								<h6 className={`${cls('_heading')}`}>Step 2.</h6>
 								<section className={`${cls('_form-group')}`}>
 									{repoUrl ? (
 										<span>Github Repo is set to {repoUrl} you can update the URL here.</span>
 									) : (
-										<label className="required">Paste the repo web url here</label>
+										<label className="required">
+											Paste the url for the github repo created in step 1.
+										</label>
 									)}
 									<input
 										type="text"
@@ -92,17 +93,16 @@ export class ConfiguringZlifecycle extends BaseGuide implements IGuide {
 										</button>
 									</div>
 								</section>
-								<h6 className={`${cls('_heading')}`}>Step 3.</h6>
+								<h6 className={`${cls('_heading')}`}>Step 3. (Only required for private repo)</h6>
 								<section className={`${cls('_form-group')}`}>
 									<em>
-										Install flow using{' '}
-										<a href="https://github.com/apps/zlifecycle">
-											https://github.com/apps/zlifecycle
-										</a>
+										Provide CloudKnit access to the github repo by following steps provided <a href="https://docs.cloudknit.io/getting_started/install_github_app/">here</a>
 									</em>
 									<label></label>
 									<label>OR</label>
-									<em>Contact us for other alternative.</em>
+									<em>
+										<a href="mailto:contact.cloudknit.io">Contact us</a> for other alternative.
+									</em>
 								</section>
 							</form>
 						</div>
@@ -114,7 +114,7 @@ export class ConfiguringZlifecycle extends BaseGuide implements IGuide {
 
 	static getInstance() {
 		if (!ConfiguringZlifecycle.instance) {
-			ConfiguringZlifecycle.instance = new ConfiguringZlifecycle('Configure CloudKnit');
+			ConfiguringZlifecycle.instance = new ConfiguringZlifecycle('Configure Github');
 		}
 		return ConfiguringZlifecycle.instance;
 	}

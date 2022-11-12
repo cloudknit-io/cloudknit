@@ -12,7 +12,7 @@ export const QuickStartIndex: React.FC<Props> = ({ changeHandler, activeStepInde
 
 	const cls = (className: string) => `quick-start-guide_container_left-container${className}`;
 
-	const indexDOM = (step: IGuide) => {
+	const indexDOM = (step: IGuide, index: number) => {
 		return (
 			<div key={step.stepId} className={`${cls('_index_step-container')}`}>
 				<button
@@ -22,11 +22,12 @@ export const QuickStartIndex: React.FC<Props> = ({ changeHandler, activeStepInde
 					onClick={e => {
 						changeHandler(guideKeys.indexOf(step.stepId));
 					}}>
+					<span>{index + 1}. </span>
 					{step.stepName}
 				</button>
 			</div>
 		);
 	};
 
-	return <div className={cls('_index')}>{guideValues.map(step => indexDOM(step))}</div>;
+	return <div className={cls('_index')}>{guideValues.map((step, _i) => indexDOM(step, _i))}</div>;
 };

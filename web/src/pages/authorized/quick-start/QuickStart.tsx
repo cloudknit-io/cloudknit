@@ -3,6 +3,7 @@ import { Context } from 'context/argo/ArgoUi';
 import { LocalStorageKey } from 'models/localStorage';
 import React, { useContext, useEffect, useState } from 'react';
 import { LocalStorage } from 'utils/localStorage/localStorage';
+import { usePageHeader } from '../contexts/EnvironmentHeaderContext';
 import { guideIndex, guideKeys } from './guides';
 import { QuickStartContent } from './QuickStartContent';
 import { QuickStartIndex } from './QuickStartIndex';
@@ -23,6 +24,25 @@ export const QuickStart: React.FC = () => {
 	);
 	const nm: NotificationsManager = new NotificationsManager();
 
+	const { pageHeaderObservable, breadcrumbObservable } = usePageHeader();
+
+	useEffect(() => {
+		pageHeaderObservable.next({
+			breadcrumbs: [],
+			headerTabs: [],
+			pageName: null,
+			filterTitle: '',
+			onSearch: () => {},
+			buttonText: '',
+			onViewChange: () => {},
+		});
+	});
+
+	useEffect(() => {
+		breadcrumbObservable.next(false);
+	}, [breadcrumbObservable]);
+
+
 	useEffect(() => {
 		LocalStorage.setItem<QuickStartContext>(LocalStorageKey.QUICK_START_STEP, { ctx, step: activeStepIndex });
 	}, [activeStepIndex]);
@@ -37,7 +57,7 @@ export const QuickStart: React.FC = () => {
 					<QuickStartIndex
 						activeStepIndex={activeStepIndex}
 						changeHandler={(index: number) => {
-							// updateActiveStepIndex(index);
+							updateActiveStepIndex(index);
 						}}
 					/>
 				</div>

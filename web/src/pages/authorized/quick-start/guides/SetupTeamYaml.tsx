@@ -5,6 +5,9 @@ import AuthStore from 'auth/AuthStore';
 import { ZEditor } from 'components/molecules/editor/Editor';
 import { ReactComponent as Copy } from 'assets/images/icons/copy.svg';
 import { NotificationsManager } from 'components/argo-core';
+import { LocalStorage } from 'utils/localStorage/localStorage';
+import { QuickStartContext } from '../QuickStart';
+import { LocalStorageKey } from 'models/localStorage';
 
 type Props = {
 	baseClassName: string;
@@ -19,23 +22,53 @@ export class SetupTeamYaml extends BaseGuide implements IGuide {
 	private SetupTeamYamlUI: React.FC<Props> = ({ baseClassName, ctx, nm }) => {
 		const cls = (className: string) => `${baseClassName}_section-guide${className}`;
 		const [teamName, setTeamName] = useState<string>(ctx?.teamName || this.team_name);
+		const [envName, setEnvName] = useState<string>(ctx?.envName || this.team_name);
 		const user = AuthStore.getUser();
 		const formRef = React.useRef<HTMLFormElement>(null);
 		const teamYaml = `apiVersion: stable.compuzest.com/v1
 kind: Team
 metadata:
-	name: ${teamName}
-	namespace: ${user?.selectedOrg.name}-config
+  name: ${teamName}
+  namespace: ${user?.selectedOrg.name}-config
 spec:
-	teamName: ${teamName}
-	configRepo:
-		source: ${ctx?.githubRepo || user?.selectedOrg.githubRepo}
-		path: environments
+  teamName: ${teamName}
+  configRepo:
+    source: ${ctx?.githubRepo || user?.selectedOrg.githubRepo}
+    path: .
+
+---
+
+apiVersion: stable.compuzest.com/v1
+kind: Environment
+metadata:
+  name: ${user?.organizations[0].name}-hello-world
+  namespace: ${user?.organizations[0].name}-config
+spec:
+  teamName: ${teamName}
+  envName: ${envName}
+  components:
+    - name: images
+      type: terraform
+      module:
+        source: aws
+        name: s3-bucket
+      variables:
+        - name: bucket
+          value: "${user?.selectedOrg.githubRepo}-${envName}-images"
+    - name: videos
+      type: terraform
+      dependsOn: [images]
+      module:
+        source: aws
+        name: s3-bucket
+      variables:
+        - name: bucket
+          value: "${user?.selectedOrg.githubRepo}-${envName}-images"
 `;
 
 		return (
 			<section className={cls('')}>
-				<h4 className={`${cls('_heading')}`}>Lets setup a team</h4>
+				<h4 className={`${cls('_heading')}`}>Provision First Environment</h4>
 				<div className={`${cls('_content')}`}>
 					<form ref={formRef} className={`${cls('_form')}`}>
 						<section className={`${cls('_form-group')}`}>
@@ -64,6 +97,30 @@ spec:
 							</em>
 						</section>
 						<section className={`${cls('_form-group')}`}>
+							<label className="required">Environment Name</label>
+							<input
+								type="text"
+								required
+								name="envName"
+								className="input"
+								placeholder="enter an env name"
+								defaultValue={envName}
+								onChange={e => {
+									const val = e.target.value;
+									if (super.rfcSubdomainValidation(val)) {
+										setEnvName(val);
+										formRef.current?.classList.remove('invalid');
+									} else {
+										formRef.current?.classList.add('invalid');
+									}
+								}}
+							/>
+							<em className="error-msg">
+								Env name must consist of lower case alphanumeric characters, '-' or '.', and must start
+								and end with an alphanumeric character
+							</em>
+						</section>
+						<section className={`${cls('_form-group')}`}>
 							<label>
 								Copy below yaml and push it to zlifecycle-config repo under teams{' '}
 								<button
@@ -88,7 +145,7 @@ spec:
 
 	static getInstance() {
 		if (!SetupTeamYaml.instance) {
-			SetupTeamYaml.instance = new SetupTeamYaml('Team Setup');
+			SetupTeamYaml.instance = new SetupTeamYaml('Environment Setup');
 		}
 		return SetupTeamYaml.instance;
 	}
@@ -97,6 +154,12 @@ spec:
 		return Promise.resolve({
 			teamName: this.team_name,
 		});
+	}
+
+	onFinish(): Promise<any> {
+		LocalStorage.setItem<QuickStartContext>(LocalStorageKey.QUICK_START_STEP, { ctx: {}, step: -1 });
+		window.location.href = `${process.env.REACT_APP_BASE_URL}`;
+		return Promise.resolve({});
 	}
 
 	render(baseClassName: string, ctx: any, nm?: NotificationsManager) {

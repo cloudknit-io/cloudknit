@@ -59,6 +59,7 @@ const navItems: NavItem[] = [
 	{ title: 'Dashboard', path: '/demo-dashboard', visible: () => BradAdarshFeatureVisible() },
 	{ title: 'Builder', path: '/builder', visible: () => BradAdarshFeatureVisible() },
 	{ title: 'Settings', path: '/settings', visible: () => AuthStore.getUser()?.role === 'Admin' },
+	{ title: 'Quick Start', path: '/quick-start'},
 ];
 
 export const TopBar = ({ title }: TopBarProps) => {

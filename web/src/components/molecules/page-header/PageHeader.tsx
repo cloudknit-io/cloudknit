@@ -58,7 +58,7 @@ export const ZPageHeader: FC<Props> = ({
 	const [errors, setErrors] = useState<EventMessage[]>([]);
 	const [showErrors, toggleShowErrors] = useState<boolean>(false);
 	const { projectId } = useParams() as any;
-	const noViewType = ['Environment Builder', 'Settings', 'Resource View'];
+	const noViewType = ['Environment Builder', 'Settings', 'Resource View', null];
 	const handleOnViewChange = (type: string) => {
 		setViewType(type);
 		onViewChange && onViewChange(type);

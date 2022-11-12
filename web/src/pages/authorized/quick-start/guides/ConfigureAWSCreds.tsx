@@ -17,10 +17,11 @@ export class ConfigureAWSCreds extends BaseGuide implements IGuide {
 		const cls = (className: string) => `${baseClassName}_section-guide${className}`;
 		return (
 			<section className={cls('')}>
-				<h4 className={`${cls('_heading')}`}>Set up your AWS credentials</h4>
+				<h4 className={`${cls('_heading')}`}>Provide AWS Credentials</h4>
 				<div className={`${cls('_content')}`}>
 					<form>
 						<section className={`${cls('_form-group')}`}>
+							<label>Note: Your environment will be provisioned on this AWS account.</label>
 							<div className="secrets-container">
 								<div className={`secret-info secret-info-ssm`}>
 									<div className="secret-container">
