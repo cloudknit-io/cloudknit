@@ -34,7 +34,7 @@ export class RootOrganizationsController {
 
       this.logger.error({ message: 'error creating organization', body }, error.stack);
 
-      throw new InternalServerErrorException();
+      throw error;
     }
   }
 }

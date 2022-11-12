@@ -45,4 +45,4 @@ class ApiKubeConfig
   }
 }
 
-export default ApiKubeConfig.Instance;
+export const Instance = ApiKubeConfig.Instance;

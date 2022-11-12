@@ -1,9 +1,9 @@
 import * as k8s from "@kubernetes/client-node";
 import { Organization } from "src/typeorm";
-import kc from "src/k8s/kc";
-
+import { Instance as KubeConfig } from "src/k8s/kc";
 
 export async function patchCompany(org: Organization, githubRepo: string) {
+  const kc = KubeConfig;
   const options = { "headers": { "Content-type": k8s.PatchUtils.PATCH_FORMAT_JSON_PATCH}};
   const group = 'stable.compuzest.com';
   const version = 'v1';

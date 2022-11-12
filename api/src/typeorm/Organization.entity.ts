@@ -26,6 +26,12 @@ export class Organization {
   })
   githubRepo: string;
 
+  @Column({
+    name: "github_org_name",
+    default: null
+  })
+  githubOrgName: string;
+
   @OneToOne(() => User, (user) => user.id)
   @Column({
     default: null
