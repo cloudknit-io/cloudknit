@@ -1,7 +1,6 @@
 import { getGithubOrgFromRepoUrl } from "./utilities";
 
 describe('Organization Service', () => {
-  const badRepoException = 'GitHub repo url is not formatted properly';
   const orgName = 'some-random-org';
 
   beforeEach(async () => { });
@@ -15,22 +14,16 @@ describe('Organization Service', () => {
       expect(org1).toStrictEqual(orgName);
     });
 
-    it('should throw exception', async () => {
-      expect(getGithubOrgFromRepoUrl).toThrow();
+    it('should be null', async () => {
+      expect(getGithubOrgFromRepoUrl(null)).toBeNull()
     });
 
-    it('should throw exception', async () => {
-      expect(() => {
-        getGithubOrgFromRepoUrl('git@github.comsome-random-org/hello-world.git');
-      }
-      ).toThrow(badRepoException);
+    it('should be null', async () => {
+      expect(getGithubOrgFromRepoUrl('git@github.comsome-random-org/hello-world.git')).toBeNull();
     });
 
-    it('should throw exception', async () => {
-      expect(() => {
-        getGithubOrgFromRepoUrl('git@github.com:some-random-org/hello-world');
-      }
-      ).toThrow(badRepoException);
+    it('should be null', async () => {
+      expect(getGithubOrgFromRepoUrl('git@github.com:some-random-org/hello-world')).toBeNull();
     });
   });
 
@@ -43,11 +36,8 @@ describe('Organization Service', () => {
       expect(org1).toStrictEqual(orgName);
     });
 
-    it('should throw exception', async () => {
-      expect(() => {
-        getGithubOrgFromRepoUrl('https://github.com/some-random-orghello-world.git');
-      }
-      ).toThrow(badRepoException);
+    it('should be null', async () => {
+      expect(getGithubOrgFromRepoUrl('https://github.com/some-random-orghello-world.git')).toBeNull();
     });
   });
 });
