@@ -6,6 +6,7 @@ import { get } from "src/config";
 import { CreateOrganizationDto } from "./rootOrganization.dto";
 import { UsersService } from "src/users/users.service";
 import { SubmitProvisionOrg } from "src/argowf/api";
+import { getGithubOrgFromRepoUrl } from "src/organization/utilities";
 
 @Injectable()
 export class RootOrganizationsService {
@@ -32,9 +33,20 @@ export class RootOrganizationsService {
       }
     }
 
+    if (newOrg.githubRepo) {
+      const orgName = getGithubOrgFromRepoUrl(newOrg.githubRepo);
+      
+      if (!orgName) {
+        throw new BadRequestException('bad github repo url');
+      }
+
+      newOrg.githubOrgName = orgName;
+    }
+
     const org = await this.orgRepo.save({
       name: newOrg.name.toLowerCase(),
       githubRepo: newOrg.githubRepo,
+      githubOrgName: newOrg.githubOrgName,
       termsAgreedUserId: user ? user.id : null
     });
 

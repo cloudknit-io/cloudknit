@@ -9,4 +9,6 @@ export class CreateOrganizationDto {
 
   @ApiProperty()
   termsAgreedUserId?: number
+
+  githubOrgName?: string
 }

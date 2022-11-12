@@ -4,6 +4,7 @@ import { Repository } from "typeorm";
 import { Organization } from "src/typeorm";
 import { PatchOrganizationDto } from "./organization.dto";
 import { patchCompany } from "src/k8s/patch-company";
+import { getGithubOrgFromRepoUrl } from "./utilities";
 
 @Injectable()
 export class OrganizationService {
@@ -22,7 +23,7 @@ export class OrganizationService {
   async patchOrganization(org: Organization, payload: PatchOrganizationDto) {
     const reconcileProps = ['githubRepo', 'provisioned'];
     let changed = false;
-    let updates = {};
+    let updates = new Organization();
 
     for (const prop of reconcileProps) {
       if (payload.hasOwnProperty(prop)) {
@@ -33,7 +34,17 @@ export class OrganizationService {
     }
 
     if (!changed) {
-      throw new BadRequestException('organization was not updated');
+      throw new BadRequestException('no values to update');
+    }
+
+    if (payload.githubRepo) {
+      const orgName = getGithubOrgFromRepoUrl(payload.githubRepo);
+      
+      if (!orgName) {
+        throw new BadRequestException('bad github repo url');
+      }
+
+      updates.githubOrgName = orgName;
     }
 
     await this.orgRepo.createQueryBuilder()
