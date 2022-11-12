@@ -9,9 +9,6 @@
 	}
 	/*TODO: remove this once this view if finalized */
 	margin-top: 0px !important;
-	// top: 0px;
-	// left: 0px;
-	// width: 100vw;
 	height: 80vh;
 	/*****/
 
@@ -19,8 +16,6 @@
 	display: flex;
 	justify-content: center;
 	flex-direction: column;
-	// position: fixed;
-	// z-index: 99;
 	background-color: white;
 
 	&_heading-main {
