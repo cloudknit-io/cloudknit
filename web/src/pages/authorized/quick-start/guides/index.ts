@@ -13,7 +13,7 @@ export const guideIndex = new Map<string, IGuide>([
 	// [ClientAccessGuide.getInstance().stepId, ClientAccessGuide.getInstance()],
     [ConfigureAWSCreds.getInstance().stepId, ConfigureAWSCreds.getInstance()],
     [SetupTeamYaml.getInstance().stepId, SetupTeamYaml.getInstance()],
-    [SetupEnvironmentYaml.getInstance().stepId, SetupEnvironmentYaml.getInstance()],
+    // [SetupEnvironmentYaml.getInstance().stepId, SetupEnvironmentYaml.getInstance()],
 ]);
 export const guideKeys = [...guideIndex.keys()];
 export const guideValues = [...guideIndex.values()];

@@ -28,6 +28,9 @@ const PrivateRoute: FC<PrivateRouteProps> = ({ component: Component, ...rest }: 
 					if (user.role !== 'Admin' && rest.location?.pathname?.includes('settings')) {
 						return <NotFound />
 					}
+					if (user.selectedOrg && !user.selectedOrg.githubRepo) {
+						return <QuickStart/>;
+					}
 					return <Component {...props} />;
 				}
 

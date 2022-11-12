@@ -58,7 +58,7 @@ export const AuthProvider: React.FC = ({ children }) => {
 			}
 
 			if (authState.selectedOrg && !authState.selectedOrg.githubRepo) {
-				return <QuickStart />;
+				return Children.only(children);
 			}
 
 			if (authState?.organizations.length === 0 || authState.selectedOrg?.provisioned !== true) {
