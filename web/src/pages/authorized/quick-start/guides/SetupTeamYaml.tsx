@@ -157,7 +157,7 @@ spec:
 	}
 
 	onFinish(): Promise<any> {
-		LocalStorage.setItem<QuickStartContext>(LocalStorageKey.QUICK_START_STEP, { ctx: {}, step: -1 });
+		LocalStorage.setItem<QuickStartContext>(LocalStorageKey.QUICK_START_STEP, { ctx: {}, step: 0 });
 		window.location.href = `${process.env.REACT_APP_BASE_URL}`;
 		return Promise.resolve({});
 	}
