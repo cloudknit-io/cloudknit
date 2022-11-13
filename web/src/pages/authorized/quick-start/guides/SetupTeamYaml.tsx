@@ -122,7 +122,7 @@ spec:
 						</section>
 						<section className={`${cls('_form-group')}`}>
 							<label>
-								Copy below Hello World yaml and push it to {user?.selectedOrg.githubRepo} repo under teams{' '}
+							Create a hello-world.yaml file with following content & push it to {ctx?.githubRepo} repo.
 								<button
 									type="button"
 									title="Copy YML"
