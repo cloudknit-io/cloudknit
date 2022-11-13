@@ -6,7 +6,6 @@ import { EnvironmentComponentCards } from 'components/molecules/cards/Environmen
 import { ZSidePanel } from 'components/molecules/side-panel/SidePanel';
 import { AuditView } from 'components/organisms/audit_view/AuditView';
 import { TreeComponent } from 'components/organisms/tree-view/TreeComponent';
-import { Visualization } from 'components/organisms/visualization/visualization';
 import { Context } from 'context/argo/ArgoUi';
 import { streamMapper, streamMapperWF } from 'helpers/streamMapper';
 import { useApi } from 'hooks/use-api/useApi';
@@ -91,7 +90,6 @@ export const EnvironmentComponents: React.FC = () => {
 	const [workflowId, setWorkflowId] = useState<string>('');
 	const [viewType, setViewType] = useState<string>(showAll ? '' : 'DAG');
 	const [isEnvironmentNodeSelected, setEnvironmentNodeSelected] = useState<boolean>(false);
-	const [visualizationUrl, setVisualizationUrl] = useState<string>('');
 	const componentArrayRef = useRef<EnvironmentComponentItem[]>([]);
 	const [envErrors, setEnvErrors] = useState<any[]>();
 	const ctx = useContext(Context);
@@ -206,7 +204,6 @@ export const EnvironmentComponents: React.FC = () => {
 					});
 					if (response?.data?.includes('</svg>')) {
 						toast.done(toastId);
-						setVisualizationUrl(response.data);
 						return;
 					}
 					throw 'No visualization found';
@@ -514,9 +511,6 @@ export const EnvironmentComponents: React.FC = () => {
 					</ZSidePanel>
 				</section>
 			</ZLoaderCover>
-			{visualizationUrl && (
-				<Visualization visualizationUrl={visualizationUrl} setVisualizationUrl={setVisualizationUrl} />
-			)}
 		</div>
 	);
 };
