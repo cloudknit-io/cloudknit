@@ -93,7 +93,7 @@ export class ConfiguringZlifecycle extends BaseGuide implements IGuide {
 										</button>
 									</div>
 								</section>
-								<h6 className={`${cls('_heading')}`}>Step 3. (Only required for private repo)</h6>
+								<h6 className={`${cls('_heading')}`}>Step 3.</h6>
 								<section className={`${cls('_form-group')}`}>
 									<span>
 										Provide CloudKnit access to the github repo by following steps provided <a href="https://docs.cloudknit.io/getting_started/install_github_app/" target='_blank'>here</a>
