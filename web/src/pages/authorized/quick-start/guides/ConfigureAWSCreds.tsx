@@ -22,6 +22,9 @@ export class ConfigureAWSCreds extends BaseGuide implements IGuide {
 					<form>
 						<section className={`${cls('_form-group')}`}>
 							<label>Note: Your environment will be provisioned on this AWS account.</label>
+							<div>
+							 Check <a href="https://docs.aws.amazon.com/powershell/latest/userguide/pstools-appendix-sign-up.html" target='_blank'>this</a> article to find out how to get following keys.
+							</div>
 							<div className="secrets-container">
 								<div className={`secret-info secret-info-ssm`}>
 									<div className="secret-container">
