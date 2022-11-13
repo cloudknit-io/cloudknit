@@ -62,7 +62,7 @@ export class ConfiguringZlifecycle extends BaseGuide implements IGuide {
 							<form ref={formRef} className={`${cls('_form')}`}>
 								<h6 className={`${cls('_heading')}`}>Step 1.</h6>
 								<section className={`${cls('_form-group')}`}>
-									<em>Create a new public or private repo in your github org.</em>
+									<span>Create a new public or private repo with name <q>cloudknit-info</q> in your github org.</span>
 								</section>
 								<h6 className={`${cls('_heading')}`}>Step 2.</h6>
 								<section className={`${cls('_form-group')}`}>
@@ -80,7 +80,7 @@ export class ConfiguringZlifecycle extends BaseGuide implements IGuide {
 										name="githubRepo"
 										className="input"
 										placeholder={
-											repoUrl || 'https://github.com/zl-zbank-tech/zlifecycle-config.git'
+											repoUrl || 'https://github.com/zl-zbank-tech/cloudknit-config.git'
 										}
 									/>
 									<label className="error-msg">Please enter a valid repo URL</label>
@@ -93,16 +93,16 @@ export class ConfiguringZlifecycle extends BaseGuide implements IGuide {
 										</button>
 									</div>
 								</section>
-								<h6 className={`${cls('_heading')}`}>Step 3. (Only required for private repo)</h6>
+								<h6 className={`${cls('_heading')}`}>Step 3.</h6>
 								<section className={`${cls('_form-group')}`}>
-									<em>
-										Provide CloudKnit access to the github repo by following steps provided <a href="https://docs.cloudknit.io/getting_started/install_github_app/">here</a>
-									</em>
+									<span>
+										Provide CloudKnit access to the github repo by following steps provided <a href="https://docs.cloudknit.io/getting_started/install_github_app/" target='_blank'>here</a>
+									</span>
 									<label></label>
 									<label>OR</label>
-									<em>
-										<a href="mailto:contact.cloudknit.io">Contact us</a> for other alternative.
-									</em>
+									<span>
+										<a href="mailto:contact@cloudknit.io">Contact us</a> for other alternative.
+									</span>
 								</section>
 							</form>
 						</div>

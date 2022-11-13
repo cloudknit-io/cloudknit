@@ -15,9 +15,7 @@ export interface QuickStartContext {
 }
 
 export const QuickStart: React.FC = () => {
-	const [activeStepIndex, updateActiveStepIndex] = useState<number>(
-		LocalStorage.getItem<QuickStartContext>(LocalStorageKey.QUICK_START_STEP)?.step || 0
-	);
+	const [activeStepIndex, updateActiveStepIndex] = useState<number>(0);
 	const [next, nextInProgress] = useState<boolean>(false);
 	const [ctx, updateCtx] = useState<any>(
 		LocalStorage.getItem<QuickStartContext>(LocalStorageKey.QUICK_START_STEP)?.ctx
