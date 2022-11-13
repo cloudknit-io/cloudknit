@@ -54,7 +54,7 @@ spec:
         name: s3-bucket
       variables:
         - name: bucket
-          value: "${user?.selectedOrg.githubRepo}-${envName}-images"
+          value: "${user?.selectedOrg.name}-${envName}-images"
     - name: videos
       type: terraform
       dependsOn: [images]
@@ -63,7 +63,7 @@ spec:
         name: s3-bucket
       variables:
         - name: bucket
-          value: "${user?.selectedOrg.githubRepo}-${envName}-images"
+          value: "${user?.selectedOrg.name}-${envName}-images"
 `;
 
 		return (
@@ -122,7 +122,7 @@ spec:
 						</section>
 						<section className={`${cls('_form-group')}`}>
 							<label>
-								Copy below yaml and push it to zlifecycle-config repo under teams{' '}
+								Copy below Hello World yaml and push it to {user?.selectedOrg.githubRepo} repo under teams{' '}
 								<button
 									type="button"
 									title="Copy YML"
