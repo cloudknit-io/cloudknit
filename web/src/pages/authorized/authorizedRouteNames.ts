@@ -1,5 +1,4 @@
 import React from 'react';
-import { Applications } from './applications/Applications';
 import { Dashboard } from './dashboard/Dashboard';
 import { EnvironmentBuilder } from './environment-builder/EnvironmentBuilder';
 import { EnvironmentComponents } from './environment-components/EnvironmentComponents';
@@ -75,6 +74,5 @@ export const privateRouteMap: { [key: string]: React.FC } = {
 	PROJECTS_URL: Environments,
 	ENVIRONMENTS_URL: Environments,
 	INFRA_URL: EnvironmentComponents,
-	APPS_URL: Applications,
 	RESOURCE_VIEW_URL: ComponentResourceTree,
 };

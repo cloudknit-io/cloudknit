@@ -1,7 +1,4 @@
-import { ReactComponent as ChevronRight } from 'assets/images/icons/chevron-right.svg';
 import { Layout, TopBar } from 'components/argo-core';
-import { SideNav } from 'components/molecules/side-nav/SideNav';
-import { NavItem } from 'models/nav-item.models';
 import React, { ReactElement, useState } from 'react';
 import { useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
@@ -32,12 +29,6 @@ const Authorized: React.FC = ({ children }) => {
 					className={`dark-overlay ${sideNavCollapsed ? 'collapsed' : ''}`}
 					onClick={() => sideNavToggleCollapse()}
 				/>
-				{/* <div className={`zlifecycle-nav family-dm ${sideNavCollapsed ? 'collapsed' : ''}`}>
-					<button className="toggle-side-bar" onClick={() => sideNavToggleCollapse()}>
-						<ChevronRight className="chevron-right" />
-					</button>
-					<SideNav items={navItems} history={history} isSubMenu={false} collapseNav={sideNavToggleCollapse} />
-				</div> */}
 				<div className="page zlifecycle-main">
 					<EnvironmentPageHeaderCtx.Provider
 						value={{
