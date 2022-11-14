@@ -1,5 +1,6 @@
 import axios from 'axios';
 import config from '../config';
+import helper from '../utils/helper';
 import logger from '../utils/logger';
 
 let sessions = {};
@@ -28,29 +29,16 @@ function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function getArgoCDPassword(org: string): Promise<string> {
-  try {
-    const url = `${process.env.ZLIFECYCLE_API_URL}/v1/orgs/${org}/secrets/get/ssm-secret`;
-    const resp = await axios.post(url, {
-      path: "/argocd/zlapi/password"
-    });
-
-    if (!resp.data || !resp.data.value) {
-      throw new Error('password was not return from api');
-    }
-    
-    const { value } = resp.data;
-  
-    return value;
-  } catch (err) {
-    logger.error('could not retrieve argocd password from api', { org, error: err.message });
-    throw err;
-  }
-}
-
 async function createSession(orgName: string) {  
+  const argoCdPassword = await helper.getSSMSecret(orgName, '/argocd/zlapi/password');
+
+  if (!argoCdPassword) {
+    logger.error('could not retrieve argocd password from api', { org: orgName });
+    return null;
+  }
+
   const session = { 
-    token: await argoCdLogin(orgName, 'zlapi', await getArgoCDPassword(orgName)), 
+    token: await argoCdLogin(orgName, 'zlapi', argoCdPassword), 
     ttl: Date.now() + 10800000 // 3 hours
   };
 

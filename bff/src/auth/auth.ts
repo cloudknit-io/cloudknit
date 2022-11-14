@@ -55,7 +55,7 @@ async function createUser(username: string, email: string, role: string, name: s
 export const organizationMW = (req: BFFRequest, res, next) => {
   if (!helper.orgFromReq(req)) {
     logger.error('no org selected')
-    res.status(401).send({error: 'no organization has been selected'});
+    helper.handleNoOrg(res);
     return;
   }
 
