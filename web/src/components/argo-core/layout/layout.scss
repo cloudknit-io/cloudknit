@@ -15,7 +15,7 @@
 	grid-template-rows: $header-offset 1fr;
 
 	.zlifecycle-header {
-		background: white;
+		background: #000;
 		grid-area: header;
 		z-index: 4;
 	}
