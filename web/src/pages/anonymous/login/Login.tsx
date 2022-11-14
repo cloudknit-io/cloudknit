@@ -1,7 +1,7 @@
 import './login.scss';
 
 import github from 'assets/images/github.png';
-import logoWithCycle from 'assets/images/logo-with-cycle.png';
+import { ReactComponent as Logo } from 'assets/images/ck-logo.svg';
 import AuthStore from 'auth/AuthStore';
 import { Button } from 'components/atoms/button/Button';
 import React, { useEffect, useState } from 'react';
@@ -40,7 +40,7 @@ export const Login: React.FC = () => {
 		<div className="login-layout">
 			<div className="login-panel">
 				<div className="login-panel--content">
-					<img src={logoWithCycle} alt="" width="500px" />
+					<Logo style={{ width: '400px' }} className="top-bar__logo" />
 				</div>
 			</div>
 			<div className="login-form-container">

@@ -11,7 +11,7 @@
 	&.sub-nav {
 		flex-direction: column;
 		position: absolute;
-		background: #fff;
+		background: #000;
 		box-shadow: 0 5px 10px #eee;
 		z-index: -3;
 		opacity: 0;
@@ -33,16 +33,16 @@
         padding: 0 10px;
 		a {
 			padding: 10px 0;
-			color: $brand-color-dark-gray;
+			color: #fff;
 			font-family: 'DM Sans';
             display: inline-flex;
             align-items: baseline;
 			font-size: 0.9em;
 			&:hover {
-				color: $argo-color-teal-7;
+				color: $ck-green;
                 .arrow {
                     path {
-                        fill: $argo-color-teal-7;
+                        fill: $ck-green;
                     }
                 }
 			}
@@ -51,7 +51,7 @@
             transform: scale(1.1) translateY(1px);
 			margin-left: 10px;
 			path {
-				fill: $brand-color-dark-gray;
+				fill: #fff;
 			}
 		}
 
@@ -71,15 +71,15 @@
 
 		&--active {
 			> a {
-				color: $argo-color-teal-7;
+				color: $ck-green;
 				.arrow {
 					margin-left: 10px;
 					path {
-						fill: $argo-color-teal-7;
+						fill: $ck-green;
 					}
 				}
 			}
-			border-bottom-color: $argo-color-teal-7;
+			border-bottom-color: $ck-green;
 		}
 
         &--icon-container {

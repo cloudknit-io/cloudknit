@@ -70,10 +70,7 @@ export const TopBar = ({ title }: TopBarProps) => {
 		<div className="top-bar" key="top-bar">
 			<div className="top-bar__flex">
 				<div className="top-bar__logo-container">
-					<Logo style={{ width: '40px', marginRight: '30px' }} className="top-bar__logo" />
-					<ZText.Headline className="top-bar__title" spacing="4" weight="thin">
-						{title}
-					</ZText.Headline>
+					<Logo style={{ width: '80px', marginRight: '30px' }} className="top-bar__logo" />
 				</div>
 			</div>
 			<div className="top-bar__flex">
