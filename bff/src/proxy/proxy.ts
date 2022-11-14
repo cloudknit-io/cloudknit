@@ -113,7 +113,7 @@ const createProxy = function() {
 
 export function handlePublicRoutes(router: express.Router) : express.Router {
   // GitHub webhook proxy
-  router.post('/webhook/:orgName/argocd', async (req: express.Request, res: express.Response, next) => {
+  router.post('/webhook/:orgName/argocd', express.json(), async (req: express.Request, res: express.Response, next) => {
     const orgName = req.params.orgName;
     const org = await helper.getOrg(orgName);
 
@@ -122,17 +122,17 @@ export function handlePublicRoutes(router: express.Router) : express.Router {
       return;
     }
 
-    logger.log('Webhook request headers', {headers: req.headers});
-    logger.log('Webhook request body', {body: req.body});
-
     const argoCdUrl = `${config.argoCDUrl(org.name)}/api/webhook`;
+    const data = { ...req.body };
+
+    logger.info('Webhook request headers', {headers: req.headers});
+    logger.info('Webhook request body', {body: req.body});
+    logger.info('ArgoCD request body', {...data});
 
     try {
-      await axios.post(argoCdUrl, {
-        ...req.body
-      }, {
+      await axios.post(argoCdUrl, data, {
         headers: {
-          "X-GitHub-Event": req.header('X-GitHub-Event'),
+          'X-GitHub-Event': req.header('X-GitHub-Event'),
           'X-GitHub-Delivery': req.header('X-GitHub-Delivery'),
           'X-Hub-Signature-256': req.header('X-Hub-Signature-256'),
         }
@@ -140,7 +140,8 @@ export function handlePublicRoutes(router: express.Router) : express.Router {
 
       res.status(200).send();
     } catch (error) {
-      logger.error('GitHub webhook error', { org, error });
+      const { data, status, headers } = error.response
+      logger.error('GitHub webhook error', { org, error: { data, status, headers } });
       res.status(500).send();
       return;
     }

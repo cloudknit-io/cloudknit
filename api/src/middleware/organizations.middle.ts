@@ -40,7 +40,7 @@ export class OrganizationMiddleware implements NestMiddleware {
     }
 
     if (!org) {
-      this.logger.error(`Bad orgId: ${id}`);
+      this.logger.error(`Bad orgId: ${orgId}`);
       throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
     }
 
