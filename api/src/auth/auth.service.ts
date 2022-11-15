@@ -39,10 +39,12 @@ export class AuthService {
     // will always give empty result and creating a new user would throw an error.
     const currentUser = await this.userRepo.findOne({
       where: {
-        email: user.email
+        username: user.username
+      },
+      relations: {
+        organizations: true
       }
     });
-    // const currentUser = await this.getOrgUser(org, user.username);
     
     if (currentUser) {
       // adds existing user to org
@@ -70,13 +72,16 @@ export class AuthService {
     return this.userRepo.save(newUser);
   }
 
-  // public async updateUser(userUpdates: PatchUserDto) {
-  //   const user = await this.getUser
-  // }
-
   // Delete user only removes the User <-> Org associattion
   public async deleteUser(org: Organization, username: string) {
-    const user = await this.getOrgUser(org, username);
+    const user = await this.userRepo.findOne({
+      where: {
+        username: username
+      },
+      relations: {
+        organizations: true
+      }
+    });
 
     if (!user) {
       throw new BadRequestException("user does not exist");
