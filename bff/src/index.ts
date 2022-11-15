@@ -33,7 +33,7 @@ app.get('/', (req: any, res) => {
   res.redirect(zlConfig.WEB_URL);
 });
 
-app.use('/external', handlePublicRoutes(publicRouter));
+app.use('/public', handlePublicRoutes(publicRouter));
 
 // auth0 router attaches /auth/login, /logout, and /callback routes to the baseURL
 app.use(auth(getAuth0Config()));
