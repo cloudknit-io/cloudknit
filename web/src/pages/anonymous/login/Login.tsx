@@ -40,7 +40,7 @@ export const Login: React.FC = () => {
 		<div className="login-layout">
 			<div className="login-panel">
 				<div className="login-panel--content">
-					<Logo style={{ width: '400px' }} className="top-bar__logo" />
+					<Logo style={{ maxWidth: '400px', width: '100%' }} className="top-bar__logo" />
 				</div>
 			</div>
 			<div className="login-form-container">
