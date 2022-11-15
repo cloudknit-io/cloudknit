@@ -8,13 +8,14 @@ import { AuthRequestLogger, ErrorLogger } from './utils/logger';
 import logger from './utils/logger';
 import { getUser } from './auth/auth';
 import zlConfig from './config';
-import {orgRoutes, noOrgRoutes} from './proxy/proxy';
+import {orgRoutes, noOrgRoutes, handlePublicRoutes} from './proxy/proxy';
 import { auth, requiresAuth } from 'express-openid-connect';
 import AuthRoutes from './controllers/auth.controller';
 import { getAuth0Config, organizationMW } from './auth/auth';
 import helper from './utils/helper';
 
 const app = express();
+const publicRouter = express.Router();
 const authRouter = express.Router();
 
 app.use(cors({
@@ -31,6 +32,8 @@ app.use(cookieParser());
 app.get('/', (req: any, res) => {
   res.redirect(zlConfig.WEB_URL);
 });
+
+app.use('/public', handlePublicRoutes(publicRouter));
 
 // auth0 router attaches /auth/login, /logout, and /callback routes to the baseURL
 app.use(auth(getAuth0Config()));

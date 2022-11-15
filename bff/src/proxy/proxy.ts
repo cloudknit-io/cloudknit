@@ -66,7 +66,7 @@ var enableCors = function (proxyRes, req) {
 };
 
 const createProxy = function() {  
-  return (org: Organization, path: string, context?: any, user?: User) => {
+  return (org: Organization, path: string, context?: any) => {
     const orgPath = `${org.id}-${path}`;
     const organization = { name: org.name, id: org.id };
 
@@ -110,6 +110,42 @@ const createProxy = function() {
     return proxies.get(orgPath);
   }
 }();
+
+export function handlePublicRoutes(router: express.Router) : express.Router {
+  // GitHub webhook proxy
+  router.post('/webhook/:orgName/argocd', express.json(), async (req: express.Request, res: express.Response, next) => {
+    const orgName = req.params.orgName;
+    const org = await helper.getOrg(orgName);
+
+    if (!org || !orgName) {
+      helper.handleNoOrg(res);
+      return;
+    }
+
+    const argoCdUrl = `${config.argoCDUrl(org.name)}/api/webhook`;
+    const data = { ...req.body };
+
+    try {
+      await axios.post(argoCdUrl, data, {
+        headers: {
+          'X-GitHub-Event': req.header('X-GitHub-Event'),
+          'X-GitHub-Delivery': req.header('X-GitHub-Delivery'),
+          'X-Hub-Signature': req.header('X-Hub-Signature'),
+          'X-Hub-Signature-256': req.header('X-Hub-Signature-256'),
+        }
+      });
+
+      res.status(200).send();
+    } catch (error) {
+      const { data, status, headers } = error.response
+      logger.error('GitHub webhook error', { org, error: { data, status, headers } });
+      res.status(500).send();
+      return;
+    }
+  });
+
+  return router;
+}
 
 export function noOrgRoutes(router: express.Router) {
   // adds new organization

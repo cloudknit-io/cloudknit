@@ -23,6 +23,7 @@ ingressPaths:
   - "/session"
   - "/registration"
   - "/orgs"
+  - "/public"
 protocol:
 auth0:
   baseUrl:
