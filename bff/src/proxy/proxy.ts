@@ -125,10 +125,6 @@ export function handlePublicRoutes(router: express.Router) : express.Router {
     const argoCdUrl = `${config.argoCDUrl(org.name)}/api/webhook`;
     const data = { ...req.body };
 
-    logger.info('Webhook request headers', {headers: req.headers});
-    logger.info('Webhook request body', {body: req.body});
-    logger.info('ArgoCD request body', {...data});
-
     try {
       await axios.post(argoCdUrl, data, {
         headers: {
