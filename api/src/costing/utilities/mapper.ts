@@ -8,15 +8,6 @@ import { EnvironmentReconcile } from "src/typeorm/reconciliation/environment-rec
 import { CostComponent, Resource } from "src/typeorm/resources/Resource.entity";
 
 export class Mapper {
-  static Map<T1, T2>(mapFrom: T1, mapTo: T2): T2 {
-    for (let key of Object.keys(mapFrom)) {
-      if (key in mapTo) {
-        mapTo[key] = mapFrom[key];
-      }
-    }
-    return mapTo;
-  }
-
   static getStreamData(mapFrom: Component[]): {} {
     const data = {};
     const teams = [...new Set(mapFrom.map((e) => e.teamName))];
