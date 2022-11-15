@@ -134,6 +134,7 @@ export function handlePublicRoutes(router: express.Router) : express.Router {
         headers: {
           'X-GitHub-Event': req.header('X-GitHub-Event'),
           'X-GitHub-Delivery': req.header('X-GitHub-Delivery'),
+          'X-Hub-Signature': req.header('X-Hub-Signature'),
           'X-Hub-Signature-256': req.header('X-Hub-Signature-256'),
         }
       });
