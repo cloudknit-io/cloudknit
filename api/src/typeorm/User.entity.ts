@@ -27,7 +27,9 @@ export class User {
   email: string;
 
   @ApiProperty()
-  @Column()
+  @Column({
+    default: null
+  })
   name: string;
 
   @Column({
