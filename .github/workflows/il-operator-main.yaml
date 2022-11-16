@@ -21,6 +21,11 @@ jobs:
     name: Build, test, and push
     runs-on: ubuntu-20.04
     steps:
+      - uses: actions/setup-go@v1
+        with:
+          go-version: '^1.18'  # should match Dockerfile and go.mod
+      - run: go version
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
