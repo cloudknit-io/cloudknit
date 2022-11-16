@@ -56,7 +56,7 @@ func (r *EnvironmentReconciler) initServices(ctx context.Context, environment *v
 	organizationResponse, err := cloudKnitServiceClient.Get(ctx, env.Config.CompanyName, r.LogV2)
 
 	if err != nil {
-		return nil, errors.Wrapf(err, "error getting Organization Response: [%s]", organizationResponse)
+		return nil, errors.Wrap(err, "error getting Organization Response")
 	}
 
 	env.Config.GitHubCompanyOrganization = organizationResponse.Organization.GitHubOrgName
