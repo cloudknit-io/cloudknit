@@ -79,7 +79,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           status: ${{ job.status }}
-          notification_title: "New *WEB* image"
+          notification_title: "New *IL-OPERATOR* image"
           message_format: "${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}"
           notify_when: 'success' # default is 'success,failure,warnings'
           footer: "Linked Repo <{repo_url}|{repo}> | <{workflow_url}|View Workflow>"
