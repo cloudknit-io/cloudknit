@@ -1,70 +1,86 @@
-name: il-operator - main build
+name: il-operator - build & push image
+
 on:
-  push:
-    branches:
-      - main
+  pull_request:
+    types: [opened, synchronize]
     paths:
       - 'il-operator/**'
       - .github/workflows/il-operator-main.yaml
-  pull_request:
+  push:
     branches:
-      - main
+      - 'main'
     paths:
       - 'il-operator/**'
       - .github/workflows/il-operator-main.yaml
 
 env:
-  module_name: github.com/CompuZest/zlifecycle-il-operator  # from go.mod
+  image_name: zlifecycle-il-operator
+
 jobs:
   build-test-push:
     name: Build, test, and push
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/setup-go@v1
-        with:
-          go-version: '^1.18'  # should match Dockerfile and go.mod
-
-      - run: go version
-      - run: echo "GOPATH=${GITHUB_WORKSPACE}/go" >> $GITHUB_ENV
-      - run: echo "${{ env.GOPATH }}/bin" >> $GITHUB_PATH
-      - run: go env
-
-      - uses: actions/checkout@v2
-        with:
-          path: ${{ env.GOPATH }}/src/${{ env.module_name }}
-
-      - name: Set variables
-        run: |
-          VER=$(cat .version)
-          echo "VERSION=$VER" >> $GITHUB_ENV
-        working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}/il-operator
-
-      # Login to ECR
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
+          
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
+
+      - uses: actions/checkout@v2
+
+      - run: env
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@e5622373a38e60fb6d795a4421e56882f2d7a681
+        with:
+          images: ${{ steps.login-ecr.outputs.registry }}/${{ env.image_name }}
+          # applies the following image tags (does not apply or use git tags):
+          # PR's: 175-pr-3 [build number]-pr-[pr-number]
+          # push to main applies 2 tags: 176 & 176-abc1234 [build-numner] & [build-number]-sha
+          tags: |
+            type=ref,prefix=${{ github.run_number }}-pr-,event=pr
+            type=sha,prefix=${{ github.run_number }}-,event=branch,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
+            type=raw,value=${{ github.run_number }},event=branch,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
+
       - run: go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.7.0
-      - run: go install github.com/golang/mock/mockgen@v1.6.0
       - run: make deps
-        working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}/il-operator
+        working-directory: ./il-operator
       - run: go mod tidy
-        working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}/il-operator
-        #- run: make check
-        #working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}/il-operator
-      - run: make docker-build DOCKER_TAG=${{ env.VERSION }}
-        if: github.ref == 'refs/heads/main'
-        working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}/il-operator
-      - run: make docker-push DOCKER_TAG=${{ env.VERSION }}
-        if: github.ref == 'refs/heads/main'
-        working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}/il-operator
+        working-directory: ./il-operator
+      - run: go generate ./..
+        working-directory: ./il-operator
+
+      - name: Build and Push ${{ env.image_name }}
+        uses: docker/build-push-action@7f9d37fa544684fb73bfe4835ed7214c255ce02b
+        id: build-push
+        with:
+          context: ./il-operator
+          file: ./il-operator/Dockerfile
+          # only push to ECR on PR and commits to main branch
+          push: ${{ github.event_name == 'pull_request' || github.ref_name == 'main' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Slack Release Notfication
+        uses: ravsamhq/notify-slack-action@master
+        if: always()
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          status: ${{ job.status }}
+          notification_title: "New *WEB* image"
+          message_format: "${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}"
+          notify_when: 'success' # default is 'success,failure,warnings'
+          footer: "Linked Repo <{repo_url}|{repo}> | <{workflow_url}|View Workflow>"
         env:
-          ECR_REPO: ${{ steps.login-ecr.outputs.registry }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_RELEASE_WEBHOOK_URL }} # required
+
       - name: Send Slack Notfication
         uses: ravsamhq/notify-slack-action@master
         if: always()
