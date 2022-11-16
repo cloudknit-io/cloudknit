@@ -1,4 +1,4 @@
-# CloudKnit: An Open Source Solution to Manage Cloud Environments
+# CloudKnit: An Open Source Solution for Managing Cloud Environments
 
 CloudKnit is an open-source `progressive delivery platform` for managing cloud environments. It enables organizations to **Define** entire environments in a declarative way, **Provision** them, **Detect** and **Reconcile** Drift, and **Teardown** environments when no longer needed. It also comes with dashboards to help visualize environments and observe them.
 
