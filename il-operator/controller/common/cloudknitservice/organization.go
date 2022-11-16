@@ -35,7 +35,7 @@ func (s *Service) Get(ctx context.Context, organizationName string, log *logrus.
 
 	log.
 		Infof(
-			"Fetching Organization via CloudKnitService",
+			"Fetching Organization via CloudKnitService for Org: %s",
 			organizationName,
 		)
 
@@ -71,7 +71,7 @@ func (s *Service) Get(ctx context.Context, organizationName string, log *logrus.
 
 	log.
 		Infof(
-			"Successful response from CloudKnitService for getting organiozation",
+			"Successful response from CloudKnitService for getting organiozation for OrgName: %s",
 			organizationName,
 		)
 
