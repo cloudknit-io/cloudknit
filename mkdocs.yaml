@@ -25,6 +25,7 @@ markdown_extensions:
 nav:
 - Overview: index.md
 - concepts/concepts.md
+- concepts/architectural_overview.md
 - Getting Started:
   - getting_started/setup.md
   - getting_started/onboard_team.md
