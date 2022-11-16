@@ -63,7 +63,7 @@ spec:
         name: s3-bucket
       variables:
         - name: bucket
-          value: "${user?.selectedOrg.name}-${envName}-images"
+          value: "${user?.selectedOrg.name}-${envName}-videos"
 `;
 
 		return (
