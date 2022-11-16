@@ -49,6 +49,7 @@ type config struct {
 	// github
 	GitHubWebhookSecret              string
 	GitHubCompanyOrganization        string
+	GitHubRepoURL                    string
 	GitHubAppIDCompany               string
 	GitHubAppSecretNameCompany       string
 	GitHubAppSecretNamespaceCompany  string

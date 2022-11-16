@@ -56,6 +56,7 @@ func (r *EnvironmentReconciler) initServices(ctx context.Context, environment *v
 	organizationResponse, err := cloudKnitServiceClient.Get(ctx, env.Config.CompanyName, r.LogV2)
 
 	env.Config.GitHubCompanyOrganization = organizationResponse.Organization.GitHubOrgName
+	env.Config.GitHubRepoURL = organizationResponse.Organization.GitHubRepo
 
 	watcherServices, err := watcherservices.NewGitHubServices(ctx, r.Client, env.Config.GitHubCompanyOrganization, r.LogV2)
 	if err != nil {

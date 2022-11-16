@@ -15,7 +15,7 @@ type GetOrganizationResponse struct {
 type Organization struct {
 	ID            int       `json:"id"`
 	Name          string    `json:"name"`
-	GithubRepo    string    `json:"githubRepo"`
+	GitHubRepo    string    `json:"githubRepo"`
 	GitHubOrgName string    `json:"githubOrgName"`
 	CreatedAt     time.Time `json:"createdAt"`
 	UpdatedAt     time.Time `json:"updatedAt"`
