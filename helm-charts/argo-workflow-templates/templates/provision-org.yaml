@@ -30,7 +30,7 @@ spec:
           - name: CK_TF_MODULE_VERSION
             value: {{.Values.tfModuleVersion}}
           - name: CK_OPERATOR_TAG
-            value: {{ .Values.operatorTag }}
+            value: "{{ .Values.operatorTag }}"
           - name: CK_STATE_MANAGER_TAG
             value: {{ .Values.stateMgrTag }}
           - name: CK_EVENT_SVC_TAG
