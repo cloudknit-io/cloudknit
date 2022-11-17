@@ -24,6 +24,7 @@ ingressPaths:
   - "/registration"
   - "/orgs"
   - "/public"
+  - "/ops"
 protocol:
 auth0:
   baseUrl:
