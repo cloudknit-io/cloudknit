@@ -103,7 +103,7 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	cloudKnitServiceClient := cloudknitservice.NewService(env.Config.ZLifecycleAPIURL)
-	organizationResponse, err := cloudKnitServiceClient.Get(ctx, env.Config.CompanyName, r.LogV2)
+	organization, err := cloudKnitServiceClient.Get(ctx, env.Config.CompanyName, r.LogV2)
 
 	if err != nil {
 		companyErr := zerrors.NewCompanyError(
@@ -113,8 +113,8 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
 	}
 
-	env.Config.GitHubCompanyOrganization = organizationResponse.Organization.GitHubOrgName
-	env.Config.GitHubRepoURL = organizationResponse.Organization.GitHubRepo
+	env.Config.GitHubCompanyOrganization = organization.GitHubOrgName
+	env.Config.GitHubRepoURL = organization.GitHubRepo
 
 	// vars
 	company.Spec.ConfigRepo.Source = env.Config.GitHubRepoURL

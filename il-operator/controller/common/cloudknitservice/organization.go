@@ -26,7 +26,7 @@ func NewService(host string) *Service {
 	}
 }
 
-func (s *Service) Get(ctx context.Context, organizationName string, log *logrus.Entry) (*GetOrganizationResponse, error) {
+func (s *Service) Get(ctx context.Context, organizationName string, log *logrus.Entry) (*Organization, error) {
 	endpoint := fmt.Sprintf("%s/%s/%s", s.host, "v1/orgs", organizationName)
 
 	log.
@@ -70,7 +70,7 @@ func (s *Service) Get(ctx context.Context, organizationName string, log *logrus.
 		return nil, errors.Wrap(err, "error reading GET organization response body")
 	}
 
-	var r GetOrganizationResponse
+	var r Organization
 	if err := util.FromJSON(&r, respBody); err != nil {
 		return nil, errors.Wrap(err, "error unmarshaling GET organization response body")
 	}
