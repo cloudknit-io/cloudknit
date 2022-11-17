@@ -22,6 +22,10 @@ class AuthStore {
 		window.location.href = this.logoutUrl();
 	}
 
+	redirectToHome() {
+		window.location.href = `${process.env.REACT_APP_BASE_URL}`;
+	}
+
 	async refresh(): Promise<User> {
 		const { data } = await AuthService.me();
 
@@ -50,7 +54,7 @@ class AuthStore {
 		await AuthService.selectOrganization(orgName);
 		this.patchOrgToUser(orgName);
 		if (refresh) {
-			window.location.href = `${process.env.REACT_APP_BASE_URL}`;
+			this.redirectToHome();
 		}
 	}
 
@@ -60,6 +64,11 @@ class AuthStore {
 			return selectedOrg;
 		}
 		return null;
+	}
+
+	async fetchOrganizationStatus() {
+		const { data } = await AuthService.fetchOrganizationStatus();
+		return data;
 	}
 
 	async addOrganization(orgName: string) {
