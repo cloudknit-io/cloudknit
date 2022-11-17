@@ -29,6 +29,18 @@ spec:
             value: {{.Values.configRepo}}
           - name: CK_TF_MODULE_VERSION
             value: {{.Values.tfModuleVersion}}
+          - name: CK_OPERATOR_TAG
+            value: {{ .Values.operatorTag }}
+          - name: CK_STATE_MANAGER_TAG
+            value: {{ .Values.stateMgrTag }}
+          - name: CK_EVENT_SVC_TAG
+            value: {{ .Values.eventSvcTag }}
+          - name: CK_STATE_MANAGER_CHART_VERSION
+            value: {{ .Values.stateMgrChartVersion }}
+          - name: CK_OPERATOR_CHART_VERSION
+            value: {{ .Values.operatorChartVersion }}
+          - name: CK_EVENT_SVC_CHART_VERSION
+            value: {{ .Values.eventSvcChartVersion }}
         resources: {}
         volumeMounts:
           - name: github-ssh-key-mount

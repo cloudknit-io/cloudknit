@@ -3,6 +3,12 @@ configRepo: git@github.com:zl-compuzest-tech/zl-environment-dev-config.git
 terraformImageTag: latest
 provisionOrgImage:
 tfModuleVersion:
+operatorTag:
+stateMgrTag:
+eventSvcTag:
+stateMgrChartVersion:
+operatorChartVersion:
+eventSvcChartVersion:
 serviceAccountName: zlifecycle-reconciler
 companyName: !!!CompanyName!!!
 resources:
