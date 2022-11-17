@@ -246,7 +246,7 @@ export const EnvironmentCard: FC<PropsEnvironmentItem> = ({
 							}}
 						/>
 					}
-					{featureToggled(FeatureKeys.DIFF_CHECKER) && (
+					{featureToggled(FeatureKeys.DIFF_CHECKER, true) && (
 						<input
 							type="checkbox"
 							className="select-compare"
