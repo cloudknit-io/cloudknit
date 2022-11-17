@@ -358,7 +358,7 @@ const EVENT_API = [
 const OPERATION_PATH_MAPPING = [
   {
     path: "/ops/is-provisioned",
-    newPath: (params: any) => `/v1/orgs/${params.orgId}/ops/is-privisioned`,
+    newPath: (params: any) => `/v1/orgs/${params.orgId}/ops/is-provisioned`,
   },
 ];
 
