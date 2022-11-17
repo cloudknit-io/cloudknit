@@ -50,7 +50,7 @@ func (s *Service) Get(ctx context.Context, organizationName string, log *logrus.
 		return nil, errors.Wrap(err, "error marshaling get organization body")
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewBuffer(jsonBody))
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return nil, errors.Wrap(err, "error creating GET organization request")
 	}
