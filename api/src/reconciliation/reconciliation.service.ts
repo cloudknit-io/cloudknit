@@ -3,7 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Subject } from "rxjs";
 import { get } from "src/config";
 import { Mapper } from "src/costing/utilities/mapper";
-import { S3Handler } from "src/costing/utilities/s3Handler";
+import { S3Handler } from "src/utilities/s3Handler";
 import { Organization } from "src/typeorm";
 import { ComponentReconcile } from "src/typeorm/reconciliation/component-reconcile.entity";
 import { Component } from "src/typeorm/reconciliation/component.entity";

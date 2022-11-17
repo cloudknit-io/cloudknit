@@ -78,7 +78,7 @@ export class S3Handler {
     }
   }
 
-  private async getObjectList(
+  async getObjectList(
     bucket: string,
     prefix: string,
   ): Promise<S3.ObjectList> {

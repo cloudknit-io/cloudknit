@@ -9,6 +9,7 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/aws/awscfg"
 	awseks2 "github.com/compuzest/zlifecycle-il-operator/controller/common/aws/awseks"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/aws/awsssm"
+	"github.com/compuzest/zlifecycle-il-operator/controller/common/cloudknitservice"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/secret"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/statemanager"
@@ -28,16 +29,17 @@ import (
 )
 
 type EnvironmentServices struct {
-	StateManagerClient statemanager.API
-	EventService       eventservice.API
-	ArgocdClient       argocd.API
-	ArgoWorkflowClient argoworkflow2.API
-	WatcherServices    *watcherservices.WatcherServices
-	SecretsClient      secret.API
-	K8sClient          awseks2.API
-	ILService          *il.Service
-	CompanyGitClient   git.API
-	FileService        file.API
+	CloudKnitServiceClient cloudknitservice.API
+	StateManagerClient     statemanager.API
+	EventService           eventservice.API
+	ArgocdClient           argocd.API
+	ArgoWorkflowClient     argoworkflow2.API
+	WatcherServices        *watcherservices.WatcherServices
+	SecretsClient          secret.API
+	K8sClient              awseks2.API
+	ILService              *il.Service
+	CompanyGitClient       git.API
+	FileService            file.API
 }
 
 type Tokens struct {
@@ -46,9 +48,24 @@ type Tokens struct {
 
 func (r *EnvironmentReconciler) initServices(ctx context.Context, environment *v1.Environment) (*EnvironmentServices, error) {
 	stateManagerClient := statemanager.NewService(env.Config.ZLifecycleStateManagerURL)
+	cloudKnitServiceClient := cloudknitservice.NewService(env.Config.ZLifecycleAPIURL)
 	eventServiceClient := eventservice.NewService(env.Config.ZLifecycleEventServiceURL)
 	argocdClient := argocd.NewHTTPClient(ctx, r.LogV2, env.Config.ArgocdServerURL)
 	argoworkflowClient := argoworkflow2.NewHTTPClient(ctx, env.Config.ArgoWorkflowsServerURL)
+
+	organization, err := cloudKnitServiceClient.Get(ctx, env.Config.CompanyName, r.LogV2)
+
+	if err != nil {
+		return nil, errors.Wrap(err, "error getting Organization Response")
+	}
+
+	if len(organization.GitHubOrgName) != 0 {
+		env.Config.GitHubCompanyOrganization = organization.GitHubOrgName
+	}
+	if len(organization.GitHubRepo) != 0 {
+		env.Config.GitHubRepoURL = organization.GitHubRepo
+	}
+
 	watcherServices, err := watcherservices.NewGitHubServices(ctx, r.Client, env.Config.GitHubCompanyOrganization, r.LogV2)
 	if err != nil {
 		return nil, errors.Wrap(err, "error instantiating watcher services")
@@ -91,15 +108,16 @@ func (r *EnvironmentReconciler) initServices(ctx context.Context, environment *v
 	fs := file.NewOSFileService()
 
 	return &EnvironmentServices{
-		StateManagerClient: stateManagerClient,
-		EventService:       eventServiceClient,
-		ArgocdClient:       argocdClient,
-		ArgoWorkflowClient: argoworkflowClient,
-		WatcherServices:    watcherServices,
-		SecretsClient:      secretsClient,
-		K8sClient:          k8sClient,
-		ILService:          ilService,
-		CompanyGitClient:   companyGitClient,
-		FileService:        fs,
+		StateManagerClient:     stateManagerClient,
+		CloudKnitServiceClient: cloudKnitServiceClient,
+		EventService:           eventServiceClient,
+		ArgocdClient:           argocdClient,
+		ArgoWorkflowClient:     argoworkflowClient,
+		WatcherServices:        watcherServices,
+		SecretsClient:          secretsClient,
+		K8sClient:              k8sClient,
+		ILService:              ilService,
+		CompanyGitClient:       companyGitClient,
+		FileService:            fs,
 	}, nil
 }

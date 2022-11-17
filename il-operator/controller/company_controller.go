@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/apm"
+	"github.com/compuzest/zlifecycle-il-operator/controller/common/cloudknitservice"
 	git2 "github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/git/gogit"
 	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/argocd"
@@ -101,8 +102,28 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		defer tx.End()
 	}
 
+	cloudKnitServiceClient := cloudknitservice.NewService(env.Config.ZLifecycleAPIURL)
+	organization, err := cloudKnitServiceClient.Get(ctx, env.Config.CompanyName, r.LogV2)
+
+	if err != nil {
+		companyErr := zerrors.NewCompanyError(
+			company.Spec.CompanyName,
+			perrors.Wrap(err, "error instantiating cloudKnit service"),
+		)
+		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
+	}
+
+	if len(organization.GitHubOrgName) != 0 {
+		env.Config.GitHubCompanyOrganization = organization.GitHubOrgName
+	}
+	if len(organization.GitHubRepo) != 0 {
+		env.Config.GitHubRepoURL = organization.GitHubRepo
+	} else {
+		env.Config.GitHubRepoURL = company.Spec.ConfigRepo.Source
+	}
+
 	// vars
-	companyRepoURL := company.Spec.ConfigRepo.Source
+	companyRepoURL := env.Config.GitHubRepoURL
 	ilZLRepoURL := env.Config.ILZLifecycleRepositoryURL
 
 	// services init

@@ -12,6 +12,7 @@ import { SecretsModule } from "./secrets/secrets.module";
 import { entities } from "./typeorm";
 import { UsersModule } from "./users/users.module";
 import { get } from "./config";
+import { OperationsModule } from './operations/operations.module';
 
 const config = get();
 
@@ -41,6 +42,7 @@ const typeOrmModuleOptions: TypeOrmModuleOptions = {
     ReconciliationModule,
     SecretsModule,
     AuthModule,
+    OperationsModule,
   ],
   controllers: [],
   providers: [],

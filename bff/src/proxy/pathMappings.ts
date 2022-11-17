@@ -322,19 +322,6 @@ const TERRAFORM_PATH_MAPPINGS = [
   },
 ];
 
-const REGISTRATION_PATH_MAPPINGS = [
-  {
-    path: "/registration/orgs",
-    newPath: () =>
-      `/v1/orgs`,
-  },
-  {
-    path: "/registration/users",
-    newPath: () =>
-      `/v1/users`,
-  }
-];
-
 const ORGANIZATION_PATH_MAPPINGS = [
   {
     path: "/orgs/:orgId",
@@ -368,6 +355,13 @@ const EVENT_API = [
   },
 ];
 
+const OPERATION_PATH_MAPPING = [
+  {
+    path: "/ops/is-provisioned",
+    newPath: (params: any) => `/v1/orgs/${params.orgId}/ops/is-provisioned`,
+  },
+];
+
 // eslint-disable-next-line no-unused-vars
 function mapToRegex(mapping: {
   path: string;
@@ -390,6 +384,6 @@ export const AUDIT_MAPPINGS: PathMapping[] = AUDIT_PATH_MAPPINGS.map(mapToRegex)
 export const SECRET_MAPPINGS: PathMapping[] = SECRET_PATH_MAPPINGS.map(mapToRegex);
 export const TERRAFORM_MAPPINGS: PathMapping[] = TERRAFORM_PATH_MAPPINGS.map(mapToRegex);
 export const STATE_MAPPINGS: PathMapping[] = STATE_PATH_MAPPINGS.map(mapToRegex);
-export const REGISTRATION_MAPPINGS: PathMapping[] = REGISTRATION_PATH_MAPPINGS.map(mapToRegex);
 export const ORGANIZATION_MAPPINGS: PathMapping[] = ORGANIZATION_PATH_MAPPINGS.map(mapToRegex);
 export const EVENT_MAPPINGS: PathMapping[] = EVENT_API.map(mapToRegex);
+export const OPERATION_MAPPINGS: PathMapping[] = OPERATION_PATH_MAPPING.map(mapToRegex);

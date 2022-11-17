@@ -33,13 +33,13 @@ export const TermsAndConditions: React.FC = () => {
 
 	const checkOrganizationStatus = async () => {
 		try {
-			const resp = await AuthStore.fetchOrganization(AuthStore.getOrganization()?.id);
-			if (resp?.provisioned) {
-				await AuthStore.selectOrganization(resp.name);
+			const org = await AuthStore.fetchOrganizationStatus();
+			if (org.provisioned) {
+				AuthStore.redirectToHome();
 			} else {
 				setRetryCount(60);
 				nm.show({
-					content: resp?.name + ' is still being provisioned.',
+					content: AuthStore.getOrganization()?.name + ' is still being provisioned.',
 					type: NotificationType.Warning,
 				});
 			}
