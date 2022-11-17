@@ -114,7 +114,7 @@ You might want to teardown environments when they are not used to save costs. Cl
 
 ## Conclusion
 
-We hope that by open-sourcing CloseKnit early, we can form a close-knit open-source community around it to make managing complex cloud environments easy.
+We hope that by open-sourcing CloudKnit early, we can form a close-knit open-source community around it to make managing cloud environments easy.
 
 For a deeper dive into CloudKnit, see the [architectural overview](https://docs.cloudknit.io/concepts/architectural_overview), our [documentation](https://docs.cloudknit.io), and the [GitHub repo](https://github.com/cloudknit-io/cloudknit).
 
