@@ -29,6 +29,12 @@ func NewService(host string) *Service {
 func (s *Service) Get(ctx context.Context, organizationName string, log *logrus.Entry) (*GetOrganizationResponse, error) {
 	endpoint := fmt.Sprintf("%s/%s/%s", s.host, "v1/orgs/", organizationName)
 
+	log.
+		Infof(
+			"CloudKnitService Endpoint: %s",
+			endpoint,
+		)
+
 	body := GetOrganizationBody{
 		OrganizationName: organizationName,
 	}
