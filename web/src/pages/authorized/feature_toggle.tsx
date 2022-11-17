@@ -44,7 +44,10 @@ export const FeatureKeys = {
 	QUICK_START: 'QUICK_START',
 };
 
-export const featureToggled = (featureKey: string) => {
+export const featureToggled = (featureKey: string, userBased: boolean = false) => {
+	if (userBased) {
+		return BradAdarshFeatureVisible() && VisibleFeatures[featureKey];
+	}
 	return VisibleFeatures[featureKey];
 }
 
