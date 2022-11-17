@@ -13,11 +13,12 @@ type GetOrganizationResponse struct {
 }
 
 type Organization struct {
-	ID            int       `json:"id"`
-	Name          string    `json:"name"`
-	GitHubRepo    string    `json:"githubRepo"`
-	GitHubOrgName string    `json:"githubOrgName"`
-	CreatedAt     time.Time `json:"createdAt"`
-	UpdatedAt     time.Time `json:"updatedAt"`
-	Provisioned   bool      `json:"provisioned"`
+	ID                int       `json:"id"`
+	Name              string    `json:"name"`
+	GitHubRepo        string    `json:"githubRepo"`
+	GitHubOrgName     string    `json:"githubOrgName"`
+	TermsAgreedUserId int       `json:"termsAgreedUserId"`
+	Provisioned       bool      `json:"provisioned"`
+	Created           time.Time `json:"created"`
+	Updated           time.Time `json:"updated"`
 }

@@ -77,8 +77,8 @@ func (s *Service) Get(ctx context.Context, organizationName string, log *logrus.
 
 	log.
 		Infof(
-			"Successful response from CloudKnitService for getting organiozation for OrgName: %s",
-			organizationName,
+			"Successful response from CloudKnitService for getting organization for OrgName: %s. GithubRepo: %s, GitHubOrgName: %s",
+			organizationName, r.Organization.GitHubRepo, r.Organization.GitHubOrgName,
 		)
 
 	return &r, nil
