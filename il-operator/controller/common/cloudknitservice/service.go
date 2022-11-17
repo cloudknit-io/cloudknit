@@ -7,5 +7,5 @@ import (
 )
 
 type API interface {
-	Get(ctx context.Context, organizationName string, log *logrus.Entry) (*GetOrganizationResponse, error)
+	Get(ctx context.Context, organizationName string, log *logrus.Entry) (*Organization, error)
 }

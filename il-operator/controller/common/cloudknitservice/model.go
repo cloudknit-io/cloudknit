@@ -4,10 +4,6 @@ type GetOrganizationBody struct {
 	OrganizationName string `json:"organizationName"`
 }
 
-type GetOrganizationResponse struct {
-	Organization *Organization `json:"organization"`
-}
-
 type Organization struct {
 	ID            int    `json:"id"`
 	Name          string `json:"name"`
