@@ -49,6 +49,7 @@ type config struct {
 	// github
 	GitHubWebhookSecret              string
 	GitHubCompanyOrganization        string
+	GitHubRepoURL                    string
 	GitHubAppIDCompany               string
 	GitHubAppSecretNameCompany       string
 	GitHubAppSecretNamespaceCompany  string
@@ -184,7 +185,7 @@ var Config = config{
 	),
 	ZLifecycleAPIURL: getOr("ZLIFECYCLE_API_URL", fmt.Sprintf(
 		"http://zlifecycle-api.%s.svc.cluster.local",
-		APINamespace(),
+		CloudKnitSystemNamespace(),
 	)),
 	ZLifecycleEventServiceURL: getOr("ZLIFECYCLE_EVENT_SERVICE_URL", fmt.Sprintf(
 		"http://event-service.%s.svc.cluster.local:8081",
@@ -198,6 +199,10 @@ var Config = config{
 
 func CompanyName() string {
 	return os.Getenv("COMPANY_NAME")
+}
+
+func CloudKnitSystemNamespace() string {
+	return "zlifecycle-system"
 }
 
 func APINamespace() string {
