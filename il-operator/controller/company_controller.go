@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/apm"
+	"github.com/compuzest/zlifecycle-il-operator/controller/common/cloudknitservice"
 	git2 "github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/git/gogit"
 	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/argocd"
@@ -100,6 +101,20 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		r.LogV2.WithField("name", txName).Infof("Creating APM transaction for company %s", company.Spec.CompanyName)
 		defer tx.End()
 	}
+
+	cloudKnitServiceClient := cloudknitservice.NewService(env.Config.ZLifecycleAPIURL)
+	organizationResponse, err := cloudKnitServiceClient.Get(ctx, env.Config.CompanyName, r.LogV2)
+
+	if err != nil {
+		companyErr := zerrors.NewCompanyError(
+			company.Spec.CompanyName,
+			perrors.Wrap(err, "error instantiating cloudKnit service"),
+		)
+		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
+	}
+
+	env.Config.GitHubCompanyOrganization = organizationResponse.Organization.GitHubOrgName
+	env.Config.GitHubRepoURL = organizationResponse.Organization.GitHubRepo
 
 	// vars
 	company.Spec.ConfigRepo.Source = env.Config.GitHubRepoURL
