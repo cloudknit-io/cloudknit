@@ -20,6 +20,7 @@ import {
   ORGANIZATION_MAPPINGS,
   EVENT_MAPPINGS,
   USERS_MAPPINGS,
+  OPERATION_MAPPINGS,
 } from "./pathMappings";
 import { getUser } from '../auth/auth';
 
@@ -443,6 +444,26 @@ export function orgRoutes(router: express.Router) {
         cookieDomainRewrite: "",
         onProxyRes: enableCors,
         pathRewrite: pathRewrite("/", EVENT_MAPPINGS, { orgName: org.name }),
+      }) as any
+    )(req, res, next);
+  });
+
+  router.use("/ops", async (req: BFFRequest, res, next) => {
+    const org = await helper.orgFromReq(req);
+
+    if (!org) {
+      helper.handleNoOrg(res);
+      return;
+    }
+
+    return (
+      createProxy(org, "ops", {
+        target: process.env.ZLIFECYCLE_API_URL,
+        changeOrigin: true,
+        secure: true,
+        cookieDomainRewrite: "",
+        onProxyRes: enableCors,
+        pathRewrite: pathRewrite("/", OPERATION_MAPPINGS, { orgId: org.id }),
       }) as any
     )(req, res, next);
   });
