@@ -42,4 +42,8 @@ export class AuthService {
 	static fetchOrganization(orgId: number) {
 		return ApiClient.get<Organization>(`/orgs/${orgId}`);
 	}
+
+	static fetchOrganizationStatus() {
+		return ApiClient.get<Organization>('/ops/is-provisioned');
+	}
 }
