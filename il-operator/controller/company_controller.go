@@ -113,8 +113,14 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
 	}
 
-	env.Config.GitHubCompanyOrganization = organization.GitHubOrgName
-	env.Config.GitHubRepoURL = organization.GitHubRepo
+	if len(organization.GitHubOrgName) != 0 {
+		env.Config.GitHubCompanyOrganization = organization.GitHubOrgName
+	}
+	if len(organization.GitHubRepo) != 0 {
+		env.Config.GitHubRepoURL = organization.GitHubRepo
+	} else {
+		env.Config.GitHubRepoURL = company.Spec.ConfigRepo.Source
+	}
 
 	// vars
 	companyRepoURL := env.Config.GitHubRepoURL

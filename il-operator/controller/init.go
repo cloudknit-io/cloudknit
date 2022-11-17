@@ -59,8 +59,12 @@ func (r *EnvironmentReconciler) initServices(ctx context.Context, environment *v
 		return nil, errors.Wrap(err, "error getting Organization Response")
 	}
 
-	env.Config.GitHubCompanyOrganization = organization.GitHubOrgName
-	env.Config.GitHubRepoURL = organization.GitHubRepo
+	if len(organization.GitHubOrgName) != 0 {
+		env.Config.GitHubCompanyOrganization = organization.GitHubOrgName
+	}
+	if len(organization.GitHubRepo) != 0 {
+		env.Config.GitHubRepoURL = organization.GitHubRepo
+	}
 
 	watcherServices, err := watcherservices.NewGitHubServices(ctx, r.Client, env.Config.GitHubCompanyOrganization, r.LogV2)
 	if err != nil {
