@@ -117,8 +117,7 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	env.Config.GitHubRepoURL = organization.GitHubRepo
 
 	// vars
-	company.Spec.ConfigRepo.Source = env.Config.GitHubRepoURL
-	companyRepoURL := company.Spec.ConfigRepo.Source
+	companyRepoURL := env.Config.GitHubRepoURL
 	ilZLRepoURL := env.Config.ILZLifecycleRepositoryURL
 
 	// services init
