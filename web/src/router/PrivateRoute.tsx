@@ -3,7 +3,6 @@ import { cleanDagNodeCache } from 'components/organisms/tree-view/node-figure-he
 import { LOGIN_URL } from 'pages/anonymous/anonymousRouteNames';
 import { NotFound } from 'pages/anonymous/not-found/NotFound';
 import { QuickStart } from 'pages/authorized/quick-start/QuickStart';
-import { TermsAndConditions } from 'pages/authorized/terms-and-conditions/TermsAndConditons';
 import React, { ElementType, FC, ReactNode, useEffect } from 'react';
 import { Redirect, Route, RouteComponentProps, RouteProps } from 'react-router-dom';
 
@@ -29,15 +28,9 @@ const PrivateRoute: FC<PrivateRouteProps> = ({ component: Component, ...rest }: 
 					if (user.role !== 'Admin' && rest.location?.pathname?.includes('settings')) {
 						return <NotFound />
 					}
-
-					if (user.organizations.length === 0 || user.selectedOrg?.provisioned !== true) {
-						return <TermsAndConditions />;
-					}
-
 					if (user.selectedOrg && !user.selectedOrg.githubRepo) {
 						return <QuickStart/>;
 					}
-					
 					return <Component {...props} />;
 				}
 

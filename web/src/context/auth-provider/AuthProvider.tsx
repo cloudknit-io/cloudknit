@@ -56,6 +56,14 @@ export const AuthProvider: React.FC = ({ children }) => {
 			if (Number(authState?.organizations?.length) > 1 && !authState.selectedOrg) {
 				return <OrganizationSelection />
 			}
+
+			if (authState.selectedOrg && !authState.selectedOrg.githubRepo) {
+				return Children.only(children);
+			}
+
+			if (authState?.organizations.length === 0 || authState.selectedOrg?.provisioned !== true) {
+				return <TermsAndConditions />;
+			}
 		}
 
 		return Children.only(children);
