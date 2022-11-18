@@ -8,6 +8,7 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/aws/awseks"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/secret"
+	"github.com/compuzest/zlifecycle-il-operator/controller/env"
 	argocd2 "github.com/compuzest/zlifecycle-il-operator/controller/services/operations/argocd"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/terraform/tfvar"
@@ -42,7 +43,7 @@ func generateAndSaveCompanyApp(fileAPI file.API, company *stablev1.Company, ilRe
 func generateAndSaveCompanyConfigWatcher(fileAPI file.API, company *stablev1.Company, ilRepoDir string) error {
 	companyConfigWatcherApp := argocd2.GenerateCompanyConfigWatcherApp(
 		company.Spec.CompanyName,
-		company.Spec.ConfigRepo.Source,
+		env.Config.GitHubRepoURL,
 		company.Spec.ConfigRepo.Path,
 	)
 
