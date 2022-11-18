@@ -45,6 +45,6 @@ If release name contains chart name it will be used as a full name.
 helm.sh/charts: {{ template "core.chart" . }}
 app.kubernetes.io/name: {{ template "core.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
-app.kubernetes.io/version: {{ .Values.image.tag }}
+app.kubernetes.io/version: '{{ .Values.image.tag }}'
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
