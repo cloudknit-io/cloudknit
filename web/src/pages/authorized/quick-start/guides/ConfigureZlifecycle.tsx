@@ -63,6 +63,8 @@ export class ConfiguringZlifecycle extends BaseGuide implements IGuide {
 								<h6 className={`${cls('_heading')}`}>Step 1.</h6>
 								<section className={`${cls('_form-group')}`}>
 									<span>Create a new public or private repo in your GitHub org. The name doesn't matter but we suggest <q>cloudknit-config</q>.</span>
+									<br/>
+									<em>Note: Please add README while creating the repo so it&lsquo;s not empty.</em>
 								</section>
 								<h6 className={`${cls('_heading')}`}>Step 2.</h6>
 								<section className={`${cls('_form-group')}`}>
@@ -73,7 +75,6 @@ export class ConfiguringZlifecycle extends BaseGuide implements IGuide {
 											Paste the <strong>https</strong> url for the github repo created in step 1.
 										</label>
 									)}
-									<span>Note: Please add README while creating the repo so it&lsquo;s not empty.</span>
 									<br/>
 									<input
 										type="text"
