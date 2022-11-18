@@ -2,6 +2,7 @@ import AuthStore from 'auth/AuthStore';
 import { Notifications, NotificationsManager, NotificationType } from 'components/argo-core';
 import React, { useEffect, useState } from 'react';
 import { ErrorResponse } from 'utils/apiClient/ApiClient';
+import { breadcrumbObservable, pageHeaderObservable } from '../contexts/EnvironmentHeaderContext';
 import './styles.scss';
 
 export const TermsAndConditions: React.FC = () => {
@@ -9,6 +10,22 @@ export const TermsAndConditions: React.FC = () => {
 	const nm = new NotificationsManager();
 	const user = AuthStore.getUser();
 	const [retryCount, setRetryCount] = useState(60);
+
+	useEffect(() => {
+		pageHeaderObservable.next({
+			breadcrumbs: [],
+			headerTabs: [],
+			pageName: null,
+			filterTitle: '',
+			onSearch: () => {},
+			buttonText: '',
+			onViewChange: () => {},
+		});
+	});
+
+	useEffect(() => {
+		breadcrumbObservable.next(false);
+	}, [breadcrumbObservable]);
 
 	useEffect(() => {
 		if (user?.selectedOrg && user?.selectedOrg?.provisioned !== true) {
@@ -93,7 +110,7 @@ export const TermsAndConditions: React.FC = () => {
 	return (
 		<>
 			{!AuthStore.getOrganization() ? (
-				<div className="conditions-page">
+				<div className="conditions-page fullscreen">
 					<form ref={formRef} noValidate onSubmit={e => e.preventDefault()} className="conditions-page__form">
 						<section className="conditions-page__form__condition-form">
 							<label>Name</label>
