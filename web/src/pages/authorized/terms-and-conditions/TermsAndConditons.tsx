@@ -94,18 +94,6 @@ export const TermsAndConditions: React.FC = () => {
 		<>
 			{!AuthStore.getOrganization() ? (
 				<div className="conditions-page">
-					<section className="conditions-page__condition">
-						<em>
-							Please review the{' '}
-							<a href="https://cloudknit.io/policy" target="_blank">
-								Terms of Service
-							</a>{' '}
-							and{' '}
-							<a href="https://cloudknit.io/policy#privacy" target="_blank">
-								Privacy Policy.
-							</a>
-						</em>
-					</section>
 					<form ref={formRef} noValidate onSubmit={e => e.preventDefault()} className="conditions-page__form">
 						<section className="conditions-page__form__condition-form">
 							<label>Name</label>
@@ -132,7 +120,7 @@ export const TermsAndConditions: React.FC = () => {
 							<label className="error-msg">Organization name can only contain alphanumeric characters, '-', and should start and end with alphanumeric with at most 63 characters.</label>
 						</section>
 						<section className="conditions-page__form__condition-form">
-							<label>Email</label>
+							<label>Work Email</label>
 							<input
 								name="email"
 								required
@@ -154,6 +142,18 @@ export const TermsAndConditions: React.FC = () => {
 								<input name="policy" required type="checkbox" /> I acknowledge the Privacy Policy.
 								<label className="error-msg">Please agree to Privacy Policy</label>
 							</label>
+						</section>
+						<section className="conditions-page__condition">
+							<em>
+								Please review the{' '}
+								<a href="https://cloudknit.io/policy" target="_blank">
+									Terms of Service
+								</a>{' '}
+								and{' '}
+								<a href="https://cloudknit.io/policy#privacy" target="_blank">
+									Privacy Policy.
+								</a>
+							</em>
 						</section>
 						<button onClick={async () => await submitOrganizationForm()}>Submit</button>
 					</form>
