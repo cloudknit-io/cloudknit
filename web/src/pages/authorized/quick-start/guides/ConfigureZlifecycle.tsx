@@ -73,8 +73,6 @@ export class ConfiguringZlifecycle extends BaseGuide implements IGuide {
 											Paste the <strong>https</strong> url for the github repo created in step 1.
 										</label>
 									)}
-									<span>Note: Please add README while creating the repo so it&lsquo;s not empty.</span>
-									<br/>
 									<input
 										type="text"
 										pattern="git@.*.git|https://.*.git"
