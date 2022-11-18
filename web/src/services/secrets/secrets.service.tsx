@@ -59,7 +59,7 @@ export class SecretsService {
 	}
 
 	deleteSsmSecret(path: string) {
-		const url = this.constructUri(SecretsUriType.deleteSSMSecrets(encodeURIComponent(path)));
+		const url = this.constructUri(SecretsUriType.deleteSSMSecrets(this.sanitizeScope(path)));
 		return ApiClient.delete(url);
 	}
 }

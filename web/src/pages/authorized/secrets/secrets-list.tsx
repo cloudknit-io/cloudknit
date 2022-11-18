@@ -27,6 +27,7 @@ export const SecretList: React.FC<Props> = ({ heading, secretKey, newSecret, ref
 	);
 	const [updateSecretList, setUpdateSecretList] = useState<boolean>(true);
 	const [isLoading, setLoading] = useState<boolean>(false);
+	const sanitizeScope = (scope: string) => scope.split(':').slice(1).join(':');
 
 	useEffect(() => {
 		if (!updateSecretList || !secretKey) {
@@ -41,7 +42,6 @@ export const SecretList: React.FC<Props> = ({ heading, secretKey, newSecret, ref
 
 	const updateSecretsList = () => {
 		let path;
-		
 		if (secretKey.indexOf(':') > 0) {
 			// secretKey = teamName:envName
 			// we only care about envName
@@ -106,7 +106,7 @@ export const SecretList: React.FC<Props> = ({ heading, secretKey, newSecret, ref
 								New <Add style={{ marginLeft: '5px' }} />
 							</span>
 						</li>
-						{(existingSecrets.get(secretKey) || []).map(e => (
+						{(existingSecrets.get(sanitizeScope(secretKey)) || []).map(e => (
 							<li
 								key={`${secretKey}-${e.value}`}
 								className="secrets-list__item d-flex"
