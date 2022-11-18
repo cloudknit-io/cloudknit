@@ -172,6 +172,7 @@ export const TermsAndConditions: React.FC = () => {
 								</a>
 							</em>
 						</section>
+						<br/>
 						<button onClick={async () => await submitOrganizationForm()}>Submit</button>
 					</form>
 					<Notifications notifications={nm.notifications} />
