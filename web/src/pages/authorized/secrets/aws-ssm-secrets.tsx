@@ -48,7 +48,7 @@ export const AWSSSMSecret: React.FC<Props> = ({
 		if (secretId && secretValue) {
 			setUpdating(true);
 			secretService
-				.putSsmSecret(`/${scope}/${secretId}`, secretValue)
+				.putSsmSecret(`${scope}/${secretId}`, secretValue)
 				.then(({ data }) => {
 					if (data === false) {
 						throw 'Not Updated';
@@ -76,7 +76,7 @@ export const AWSSSMSecret: React.FC<Props> = ({
 
 	const deleteSecret = () => {
 		if (secretKey) {
-			secretService.deleteSsmSecret(`/${scope}/${secretKey}`).then(({ data }) => {
+			secretService.deleteSsmSecret(`${scope}/${secretKey}`).then(({ data }) => {
 				setUpdating(false);
 				if (data === false) {
 					nm.show({
