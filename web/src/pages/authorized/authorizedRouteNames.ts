@@ -8,6 +8,7 @@ import { Teams } from './teams/Teams';
 import { FeatureKeys, FeatureRoutes } from './feature_toggle';
 import { ComponentResourceTree } from 'components/organisms/tree-view/ComponentResourceTree';
 import { QuickStart } from 'pages/authorized/quick-start/QuickStart';
+import { Overview } from './overview/Overview';
 
 export const PROJECTS_URL = '/dashboard';
 const DASHBOARD_URL = '/demo-dashboard';
@@ -16,11 +17,12 @@ const TEAMS_URL = '/teams';
 const ENVIRONMENT_BUILDER_URL = '/builder';
 const ENVIRONMENTS_URL = '/:projectId';
 const INFRA_URL = '/:projectId/:environmentId/infra';
-const APPS_URL = '/:projectId/:environmentId/apps';
 const RESOURCE_VIEW_URL = '/applications/:componentId/resource-view';
 const QUICK_START_URL = '/quick-start';
+const OVERVIEW_URL = '/overview';
 
 const urls = [
+	{ key: 'OVERVIEW_URL', value: OVERVIEW_URL},
 	{ key: 'QUICK_START_URL', value: QUICK_START_URL },
 	{ key: 'ENVIRONMENT_BUILDER_URL', value: ENVIRONMENT_BUILDER_URL },
 	{ key: 'TEAMS_URL', value: TEAMS_URL },
@@ -29,37 +31,19 @@ const urls = [
 	{ key: 'PROJECTS_URL', value: PROJECTS_URL },
 	{ key: 'ENVIRONMENTS_URL', value: ENVIRONMENTS_URL },
 	{ key: 'INFRA_URL', value: INFRA_URL },
-	{ key: 'APPS_URL', value: APPS_URL },
 	{ key: 'RESOURCE_VIEW_URL', value: RESOURCE_VIEW_URL },
 ];
 
 Reflect.ownKeys(FeatureRoutes).forEach(key => {
 	if (Reflect.get(FeatureRoutes, key) === false) {
 		switch (key) {
-			// case FeatureKeys.DASHBOARD:
+			// Add a case and splice that route if feature flagged.
+			// case FeatureKeys.QUICK_START:
 			// 	{
-			// 		const i = urls.findIndex(e => e.key === 'DASHBOARD_URL');
-			// 		urls.splice(i, 1);
+			// 		const i = urls.findIndex(e => e.key === 'QUICK_START_URL');
+			// 		urls.splice(i, 1s);
 			// 	}
 			// 	break;
-			// case FeatureKeys.BUILDER:
-			// 	{
-			// 		const i = urls.findIndex(e => e.key === 'ENVIRONMENT_BUILDER_URL');
-			// 		urls.splice(i, 1);
-			// 	}
-			// 	break;
-			case FeatureKeys.APPLICATIONS:
-				{
-					const i = urls.findIndex(e => e.key === 'APPS_URL');
-					urls.splice(i, 1);
-				}
-				break;
-			case FeatureKeys.QUICK_START:
-				{
-					const i = urls.findIndex(e => e.key === 'QUICK_START_URL');
-					urls.splice(i, 1);
-				}
-				break;
 		}
 	}
 });
@@ -75,4 +59,5 @@ export const privateRouteMap: { [key: string]: React.FC } = {
 	ENVIRONMENTS_URL: Environments,
 	INFRA_URL: EnvironmentComponents,
 	RESOURCE_VIEW_URL: ComponentResourceTree,
+	OVERVIEW_URL: Overview
 };
