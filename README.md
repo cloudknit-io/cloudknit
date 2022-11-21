@@ -114,7 +114,7 @@ You might want to teardown environments when they are not used to save costs. Cl
 
 ## Environment Visibility & Workflow
 
-CloudKnit also provides visibility into your environments and an optimal GitOps workflow with useful information on the UI like estimated costs/status etc. Check diagram 4 below for an example environment. 
+CloudKnit also provides visibility into your environments and an optimal GitOps workflow with useful information on the UI like estimated costs/status etc. Check diagram 4 below for an example environment in CloudKnit UI.
 
 ![Environment Visibility](/assets/images/env.png)
 *<center>Diagram 4: Environment Visibility</center>*
