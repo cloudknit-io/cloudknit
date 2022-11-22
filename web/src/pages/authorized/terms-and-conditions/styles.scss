@@ -1,21 +1,17 @@
 .conditions-page {
+	position: absolute;
+	z-index: 99;
+	top: 0px;
+	left: 0px;
+	height: 100vh;
+	width: 100vw;
 	background-color: white;
 	margin: 0px !important;
 	font-family: 'DM Sans';
 	display: flex;
-	height: calc(100vh - 100px);
 	justify-content: center;
 	align-items: center;
 	flex-direction: column;
-
-	&.fullscreen {
-		position: absolute;
-		z-index: 99;
-		top: 0px;
-		left: 0px;
-		height: 100vh;
-		width: 100vw;
-	}
 
 	&__form {
         margin-top: 10px;
