@@ -133,7 +133,7 @@ export const HierachicalLeftView: React.FC<Props> = ({ hierarchyChanged, refresh
 					const team = getHierarchy(`${org.name || ''}:${e}`, [], e, true, () => {});
 					team.children = [
 						getHierarchy(
-							`${org.name || ''}:${e}`,
+							`${org.name || ''}:${e}:`,
 							[],
 							<span className="d-flex align-center">
 								New <Add style={{ marginLeft: '5px' }} />

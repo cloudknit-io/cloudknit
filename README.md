@@ -112,6 +112,13 @@ Note: In case of Infrastructure as Code CloudKnit provides an ability to see the
 
 You might want to teardown environments when they are not used to save costs. CloudKnit provides a single line change using flag `teardown` in the Environment YAML. Once `teardown` flag is set to true and definition is pushed to Source Control, CloudKnit picks up the change and tears the environment down by destroying individual components in the correct order.
 
+## Environment Visibility & Workflow
+
+CloudKnit also provides visibility into your environments and an optimal GitOps workflow with useful information on the UI like estimated costs/status etc. Check diagram 4 below for an example environment in CloudKnit UI.
+
+![Environment Visibility](/assets/images/env.png)
+*<center>Diagram 4: Environment Visibility</center>*
+
 ## Conclusion
 
 We hope that by open-sourcing CloudKnit early, we can form a close-knit open-source community around it to make managing cloud environments easy.
