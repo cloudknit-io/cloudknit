@@ -26,8 +26,11 @@ const App: React.FC = () => {
 	const { fetch } = useApi(ArgoTeamsService.getProjects);
 
 	useEffect(() => {
-		const $subscription = from(AuthStore.refresh()).subscribe(() => {
+		const $subscription = from(AuthStore.refresh()).subscribe(profile => {
 			setLoading(false);
+			if (!profile.selectedOrg) {
+				return;
+			}
 			fetch().then(({ data }) => {
 				if (data) {
 					setTeams(data);
