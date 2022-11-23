@@ -64,6 +64,6 @@ export const privateRouteMap: { [key: string]: React.FC } = {
 	ENVIRONMENTS_URL: Environments,
 	INFRA_URL: EnvironmentComponents,
 	RESOURCE_VIEW_URL: ComponentResourceTree,
-	OVERVIEW_URL: Overview
+	OVERVIEW_URL: Overview,
 	ORG_REGISTRATION: TermsAndConditions,
 };
