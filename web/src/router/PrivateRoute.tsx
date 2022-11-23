@@ -30,12 +30,12 @@ const PrivateRoute: FC<PrivateRouteProps> = ({ component: Component, ...rest }: 
 						return <NotFound />
 					}
 
-					if (user.organizations.length === 0 || user.selectedOrg?.provisioned !== true) {
-						return <TermsAndConditions />;
-					}
-
 					if (user.selectedOrg && !user.selectedOrg.githubRepo) {
 						return <QuickStart/>;
+					}
+
+					if (user.organizations.length === 0 || user.selectedOrg?.provisioned !== true) {
+						return <TermsAndConditions />;
 					}
 					
 					return <Component {...props} />;
