@@ -79,13 +79,16 @@ export const CircularClusterPacking: FC<any> = (props: Cluster) => {
 			.on('click', (e, data: any) => {
 				document.querySelectorAll('circle').forEach(n => n.classList.remove('selected'));
 				e.target.classList.add('selected');
-				const cardData = {
+				const teamCardData = {
 					classNames: 'com-cards tooltip-d3 team',
+				};
+				const cardData = {
+					classNames: 'com-cards tooltip-d3 teams',
 				};
 				if (data?.data?.labels?.type === 'project') {
 					setCardData({
 						card: <TeamCard team={data.data} />,
-						...cardData,
+						...teamCardData,
 					});
 				} else if (data?.data?.labels?.type === 'environment') {
 					setCardData({
