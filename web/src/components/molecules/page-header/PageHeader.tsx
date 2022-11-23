@@ -18,6 +18,7 @@ import { ZSidePanel } from '../side-panel/SidePanel';
 import { ErrorView } from 'components/organisms/error-view/ErrorView';
 import { ErrorStateService } from 'services/error/error-state.service';
 import { eventErrorColumns, EventMessage } from 'models/error.model';
+import AuthStore from 'auth/AuthStore';
 
 type Props = {
 	breadcrumbs: {
@@ -78,6 +79,9 @@ export const ZPageHeader: FC<Props> = ({
 	const [query, setQuery] = useState<string>('');
 
 	useEffect(() => {
+		if (!AuthStore.getOrganization()) {
+			return;
+		}
 		const sub = ErrorStateService.getInstance().updates.subscribe(() => {
 			const errors = ErrorStateService.getInstance().Errors;
 			if (projectId) {

@@ -1,3 +1,4 @@
+import AuthStore from 'auth/AuthStore';
 import { Layout, TopBar } from 'components/argo-core';
 import React, { ReactElement, useState } from 'react';
 import { useEffect } from 'react';
@@ -16,6 +17,9 @@ const Authorized: React.FC = ({ children }) => {
 	const [sideNavCollapsed, setSideNavCollapseState] = useState(true);
 	const sideNavToggleCollapse = () => setSideNavCollapseState(!sideNavCollapsed);
 	useEffect(() => {
+		if (!AuthStore.getOrganization()) {
+			return;
+		}
 		CostingService.getInstance().streamNotification();
 	}, []);
 

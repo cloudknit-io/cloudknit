@@ -4,7 +4,7 @@ Setting up the **{{ company_name }}** Github App is required for adding a new Te
 
 Sign In to you GitHub account on your browser.
 ---
-1. Navigate to [https://github.com/apps/cloudknit-io](https://github.com/apps/zlifecycle) and click on Configure button.
+1. Navigate to [https://github.com/apps/cloudknit-app](https://github.com/apps/cloudknit-app) and click on Configure button.
 ![Step 1](/assets/images/github-app-step1.png)
 ---
 2. Select the organization **{{ company_name }}** needs to access by clicking "Configure"
