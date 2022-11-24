@@ -1,8 +1,9 @@
 import { BaseGuide } from './BaseGuide';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { IGuide } from './IGuide';
 import { AWSSecret } from 'pages/authorized/secrets/aws-secrets';
 import AuthStore from 'auth/AuthStore';
+import { Subject } from 'rxjs';
 import '../../profile/styles.scss';
 
 type Props = {
@@ -12,9 +13,24 @@ type Props = {
 export class ConfigureAWSCreds extends BaseGuide implements IGuide {
 	private static instance: ConfigureAWSCreds | null = null;
 	private awsSecretUpdated = false;
+	private triggerSave = new Subject<void>();
+	private promiseResolver: any = null;
+	private saveSecret = async () => {
+		const promise = new Promise<boolean>((r, e) => {
+			this.promiseResolver = r;
+		});
+		this.triggerSave.next();
+		return promise;
+	}
+	private saveCallback = (success: boolean) => {
+		if (this.promiseResolver) {
+			this.promiseResolver(success);
+		}
+	}
 
 	private ConfigureAWSCredsUI: React.FC<Props> = ({ baseClassName }) => {
 		const cls = (className: string) => `${baseClassName}_section-guide${className}`;
+
 		return (
 			<section className={cls('')}>
 				<h4 className={`${cls('_heading')}`}>Provide AWS Credentials</h4>
@@ -32,10 +48,9 @@ export class ConfigureAWSCreds extends BaseGuide implements IGuide {
 											existCallback={(exists) => {
 												this.awsSecretUpdated = exists;
 											}}
-											closeCallback={() => {
-												this.awsSecretUpdated = true;
-											}}
+											closeCallback={this.saveCallback}
 											secretScope={AuthStore.getUser()?.selectedOrg.name || ''}
+											externalSaveTrigger={this.triggerSave}
 										/>
 									</div>
 								</div>
@@ -56,7 +71,10 @@ export class ConfigureAWSCreds extends BaseGuide implements IGuide {
 
 	async onNext(): Promise<any> {
 		if (!this.awsSecretUpdated) {
-			throw 'Please update aws secrets before proceeding';
+			this.awsSecretUpdated = await this.saveSecret();
+		}
+		if (!this.awsSecretUpdated) {
+			return null;
 		}
 		return {};
 	}

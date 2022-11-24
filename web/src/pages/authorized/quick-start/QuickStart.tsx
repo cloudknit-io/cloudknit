@@ -1,4 +1,5 @@
 import { Notifications, NotificationsManager, NotificationType } from 'components/argo-core';
+import { Loader } from 'components/atoms/loader/Loader';
 import { Context } from 'context/argo/ArgoUi';
 import { LocalStorageKey } from 'models/localStorage';
 import React, { useContext, useEffect, useState } from 'react';
@@ -40,7 +41,6 @@ export const QuickStart: React.FC = () => {
 		breadcrumbObservable.next(false);
 	}, [breadcrumbObservable]);
 
-
 	useEffect(() => {
 		LocalStorage.setItem<QuickStartContext>(LocalStorageKey.QUICK_START_STEP, { ctx, step: activeStepIndex });
 	}, [activeStepIndex]);
@@ -77,7 +77,11 @@ export const QuickStart: React.FC = () => {
 							Previous
 						</button>
 						<button
+							disabled={next}
 							onClick={async () => {
+								if (next) {
+									return;
+								}
 								const guide = guideIndex.get(guideKeys[activeStepIndex]);
 								if (!guide) return;
 								if (!guide.onNext) {
@@ -102,15 +106,15 @@ export const QuickStart: React.FC = () => {
 											updateActiveStepIndex(activeStepIndex + 1);
 										}
 									}
-									nextInProgress(false);
 								} catch (err) {
 									nm?.show({
 										content: err,
 										type: NotificationType.Error,
 									});
 								}
+								nextInProgress(false);
 							}}>
-							{activeStepIndex === guideKeys.length - 1 ? 'Finish' : 'Next'}
+							{next ? <Loader height={16} /> : activeStepIndex === guideKeys.length - 1 ? 'Finish' : 'Next'}
 						</button>
 					</div>
 				</div>
