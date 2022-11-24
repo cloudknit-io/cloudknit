@@ -7,12 +7,14 @@ import { useState } from 'react';
 import { SecretsService } from 'services/secrets/secrets.service';
 import { ReactComponent as Copy } from 'assets/images/icons/copy.svg';
 import { getTime } from '../environment-components/helpers';
+import { Subject } from 'rxjs';
 
 interface Props {
 	secretScope: string;
 	closeCallback: (id?: any) => void;
 	newEnvironmentField?: boolean;
-	existCallback?: (exists: boolean) => void
+	existCallback?: (exists: boolean) => void;
+	externalSaveTrigger?: Subject<void>;
 }
 
 type AWSSecretType = {
@@ -21,7 +23,7 @@ type AWSSecretType = {
 	lastModifiedDate?: Date;
 };
 
-export const AWSSecret: React.FC<Props> = ({ secretScope, newEnvironmentField, closeCallback, existCallback }: Props) => {
+export const AWSSecret: React.FC<Props> = ({ secretScope, newEnvironmentField, closeCallback, existCallback, externalSaveTrigger }: Props) => {
 	const [secretMap, setSecretMap] = useState<Map<string, AWSSecretType>>(new Map<string, AWSSecretType>());
 	const [showForm, setShowForm] = useState<boolean>(false);
 	const [updating, setUpdating] = useState<boolean>(false);
@@ -29,6 +31,7 @@ export const AWSSecret: React.FC<Props> = ({ secretScope, newEnvironmentField, c
 	const [localScope, setLocalScope] = useState<string>(secretScope);
 	const nm = React.useContext(Context)?.notifications as NotificationsApi;
 	const secretService = SecretsService.getInstance();
+	const btnRef = React.useRef<HTMLButtonElement>(null);
 	const getFormPair = ({ awsKey, label }: any, required: boolean) => {
 		return (
 			<>
@@ -86,6 +89,11 @@ export const AWSSecret: React.FC<Props> = ({ secretScope, newEnvironmentField, c
 	];
 
 	useEffect(() => {
+
+		const sub = externalSaveTrigger?.subscribe(() => {
+			btnRef?.current?.click();
+		});
+
 		setExisting(null);
 		if (!secretScope) {
 			return;
@@ -124,6 +132,10 @@ export const AWSSecret: React.FC<Props> = ({ secretScope, newEnvironmentField, c
 					content: 'Could not verify existing secrets',
 				});
 			});
+
+			return () => {
+				sub?.unsubscribe();
+			}
 	}, [secretScope]);
 
 	const updateSecret = (e: FormEvent) => {
@@ -268,13 +280,19 @@ export const AWSSecret: React.FC<Props> = ({ secretScope, newEnvironmentField, c
 			) : (
 				<div>
 					{showForm || existing === false ? (
-						<form className="secret-pair form" onSubmit={e => updateSecret(e)}>
+						<form className="secret-pair form" onSubmit={e => updateSecret(e)} onInvalid={() => {
+							if (externalSaveTrigger) {
+								closeCallback(false);
+							}
+						}}>
 							<h5 className="secrets-container__heading">
 								{newEnvironmentField ? getInputFieldForEnvironmentName() : localScope}
 							</h5>
 							{secretKeys.map(e => e.getFormPair())}
 							<div>
 								<button
+									hidden={externalSaveTrigger != null}
+									ref={btnRef}
 									type="submit"
 									disabled={updating ? true : false}
 									className="secret-pair__button secret-pair__save shadowy-input">
@@ -321,7 +339,7 @@ export const AWSSecret: React.FC<Props> = ({ secretScope, newEnvironmentField, c
 														.filter(e => secretMap.get(e.awsKey)?.exists)
 														.map(e =>
 															secretService.deleteSsmSecret(
-																`/${secretScope.toLowerCase()}/${e.awsKey}`
+																`${secretScope.toLowerCase()}/${e.awsKey}`
 															)
 														),
 												])
@@ -336,6 +354,7 @@ export const AWSSecret: React.FC<Props> = ({ secretScope, newEnvironmentField, c
 															type: NotificationType.Success,
 														});
 														setExisting(false);
+														existCallback?.call(null, false);
 													})
 													.catch(() => {
 														setUpdating(false);
@@ -355,7 +374,7 @@ export const AWSSecret: React.FC<Props> = ({ secretScope, newEnvironmentField, c
 											onClick={() => {
 												setUpdating(true);
 												secretService
-													.deleteSsmSecret(`/${secretScope.toLowerCase()}/aws_session_token`)
+													.deleteSsmSecret(`${secretScope.toLowerCase()}/aws_session_token`)
 													.then(() => {
 														setUpdating(false);
 														secretMap.set('aws_session_token', {

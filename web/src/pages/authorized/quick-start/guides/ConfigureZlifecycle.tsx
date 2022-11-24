@@ -62,8 +62,11 @@ export class ConfiguringZlifecycle extends BaseGuide implements IGuide {
 							<form ref={formRef} className={`${cls('_form')}`}>
 								<h6 className={`${cls('_heading')}`}>Step 1.</h6>
 								<section className={`${cls('_form-group')}`}>
-									<span>Create a new public or private repo in your GitHub org. The name doesn't matter but we suggest <q>cloudknit-config</q>.</span>
-									<br/>
+									<span>
+										Create a new public or private repo in your GitHub org. The name doesn't matter
+										but we suggest <q>cloudknit-config</q>.
+									</span>
+									<br />
 									<em>Note: Please add README while creating the repo so it&lsquo;s not empty.</em>
 								</section>
 								<h6 className={`${cls('_heading')}`}>Step 2.</h6>
@@ -75,31 +78,35 @@ export class ConfiguringZlifecycle extends BaseGuide implements IGuide {
 											Paste the <strong>https</strong> url for the github repo created in step 1.
 										</label>
 									)}
-									<br/>
-									<input
-										type="text"
-										pattern="git@.*.git|https://.*.git"
-										required
-										name="githubRepo"
-										className="input"
-										placeholder={
-											repoUrl || 'https://github.com/zl-zbank-tech/cloudknit-config.git'
-										}
-									/>
-									<label className="error-msg">Please enter a valid repo URL</label>
-									<div className="mt-5">
+									<div className="mt-5 compound-input">
+										<input
+											type="text"
+											pattern="git@.*.git|https://.*.git"
+											required
+											name="githubRepo"
+											className="input"
+											placeholder={
+												repoUrl || 'https://github.com/zl-zbank-tech/cloudknit-config.git'
+											}
+										/>
 										<button
 											type="button"
-											className="shadowy-input btn btn__update"
+											className="btn btn__update ml-5"
 											onClick={async () => await this.saveGithubCredentials()}>
 											Update
 										</button>
+										<label className="error-msg">Please enter a valid repo URL</label>
 									</div>
 								</section>
 								<h6 className={`${cls('_heading')}`}>Step 3.</h6>
 								<section className={`${cls('_form-group')}`}>
 									<span>
-										Provide CloudKnit access to the github repo by following steps provided <a href="https://docs.cloudknit.io/getting_started/install_github_app/" target='_blank'>here</a>
+										Provide CloudKnit access to the github repo by following steps provided{' '}
+										<a
+											href="https://docs.cloudknit.io/getting_started/install_github_app/"
+											target="_blank">
+											here
+										</a>
 									</span>
 									<label></label>
 									<label>OR</label>

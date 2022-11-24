@@ -1,3 +1,5 @@
+@import '../../../assets/styles/colors.scss';
+
 .quick-start-guide {
 	h1,
 	h2,
@@ -37,7 +39,6 @@
 		width: 80vw;
 		height: 80vh;
 		flex-direction: row;
-		flex-wrap: wrap;
 
 		&_left-container {
 			flex-basis: 200px;
@@ -181,7 +182,7 @@
 							box-shadow: 0 0 10px #ccc;
 						}
 					}
-					input.input + .error-msg {
+					.error-msg {
 						display: none;
 						font-size: 0.9em;
 						text-transform: none;
@@ -204,7 +205,7 @@
 							border-color: red;
 						}
 
-						input.input + .error-msg {
+						input.input ~ .error-msg {
 							display: block;
 						}
 					}
@@ -218,12 +219,25 @@
 	margin-top: 5px;
 }
 
+.mt-10 {
+	margin-top: 10px;
+}
+
+.mb-5 {
+	margin-bottom: 5px;
+}
+
+.ml-5 {
+	margin-left: 5px;
+}
+
 .btn {
 	transition: all 0.3s;
 	min-width: 100px;
-	padding: 8px;
+	padding: 6px 8px;
 	cursor: pointer;
 	border-radius: 5px;
+	border: 2px solid rgba(0, 0, 0, 0.1);
 	&:active {
 		box-shadow: 0 0 100px #888;
 	}
@@ -258,4 +272,16 @@
 		height: 20px;
 		width: 20px;
 	}
+}
+
+
+.break {
+	word-wrap: break-word;
+}
+
+pre {
+	display: inline;
+	font-weight: bold;
+	font-family: Helvetica;
+	padding: 1px 2px;
 }
