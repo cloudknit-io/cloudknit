@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
 
 env:
-  module_name: github.com/CompuZest/zlifecycle-event-service
+  module_name: github.com/cloudknit-io/cloudknit/event-service
 jobs:
   build-test-push:
     name: Build, test, and push

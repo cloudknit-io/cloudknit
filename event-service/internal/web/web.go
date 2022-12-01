@@ -4,19 +4,19 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/compuzest/zlifecycle-event-service/internal/web/middleware"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/web/middleware"
 	"github.com/justinas/alice"
 	"github.com/sirupsen/logrus"
 
-	"github.com/compuzest/zlifecycle-event-service/internal/services"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/services"
 
 	"github.com/pkg/errors"
 
 	swaggermiddleware "github.com/go-openapi/runtime/middleware"
 
-	"github.com/compuzest/zlifecycle-event-service/internal/apm"
-	"github.com/compuzest/zlifecycle-event-service/internal/env"
-	"github.com/compuzest/zlifecycle-event-service/internal/web/controllers"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/apm"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/env"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/web/controllers"
 	"github.com/gorilla/mux"
 	"github.com/newrelic/go-agent/v3/newrelic"
 )

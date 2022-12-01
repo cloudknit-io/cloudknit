@@ -38,11 +38,11 @@ release:
   draft: false
   header: |
     ## {{ .Version }} ({{ .Date }})
-    See https://github.com/CompuZest/zlifecycle-event-service for download links and documentation
+    See https://github.com/cloudknit-io/cloudknit/event-service for download links and documentation
     ## Main downloads
-    - [Linux Intel 64 bit](https://github.com/CompuZest/zlifecycle-event-service/releases/download/{{ .Tag }}/{{ .ProjectName }}_{{ .Version }}_linux_x86_64.zip)
-    - [MacOS Universal](https://github.com/CompuZest/zlifecycle-event-service/releases/download/{{ .Tag }}/{{ .ProjectName }}_{{ .Version }}_macos_all.zip)
-    - [Windows Intel 64 bit](https://github.com/CompuZest/zlifecycle-event-service/releases/download/{{ .Tag }}/{{ .ProjectName }}_{{ .Version }}_windows_x86_64.zip)
+    - [Linux Intel 64 bit](https://github.com/cloudknit-io/cloudknit/event-service/releases/download/{{ .Tag }}/{{ .ProjectName }}_{{ .Version }}_linux_x86_64.zip)
+    - [MacOS Universal](https://github.com/cloudknit-io/cloudknit/event-service/releases/download/{{ .Tag }}/{{ .ProjectName }}_{{ .Version }}_macos_all.zip)
+    - [Windows Intel 64 bit](https://github.com/cloudknit-io/cloudknit/event-service/releases/download/{{ .Tag }}/{{ .ProjectName }}_{{ .Version }}_windows_x86_64.zip)
     ## Docker images
     - `docker pull {{ .Env.ECR_REPO }}/{{ .ProjectName }}:{{ .Major }}`
     - `docker pull {{ .Env.ECR_REPO }}/{{ .ProjectName }}:{{ .Major }}.{{ .Minor }}`
@@ -92,4 +92,4 @@ builds:
 announce:
   slack:
     enabled: true
-    message_template: "*zLifecycle Event Service* `{{ .Tag }}` has been released from the `{{ .Branch }}` branch at commit `{{ .ShortCommit }}` ({{ .CommitDate }})\nhttps://github.com/CompuZest/zlifecycle-event-service/releases/tag/{{ .Tag }}\n\n{{ .ReleaseNotes }}"
+    message_template: "*zLifecycle Event Service* `{{ .Tag }}` has been released from the `{{ .Branch }}` branch at commit `{{ .ShortCommit }}` ({{ .CommitDate }})\nhttps://github.com/cloudknit-io/cloudknit/event-service/releases/tag/{{ .Tag }}\n\n{{ .ReleaseNotes }}"

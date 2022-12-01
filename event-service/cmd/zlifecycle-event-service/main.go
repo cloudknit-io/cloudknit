@@ -9,10 +9,10 @@ import (
 
 	_ "embed"
 
-	"github.com/compuzest/zlifecycle-event-service/internal/db"
-	"github.com/compuzest/zlifecycle-event-service/internal/services"
-	"github.com/compuzest/zlifecycle-event-service/internal/web"
-	"github.com/compuzest/zlifecycle-event-service/internal/zlog"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/db"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/services"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/web"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/zlog"
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/golang-migrate/migrate/v4/database/mysql"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
