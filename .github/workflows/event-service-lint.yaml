@@ -23,9 +23,6 @@ jobs:
       - name: checkout
         uses: actions/checkout@v2
       
-      - name: "Modules"
-        run: "go mod download"
-      
       - name: "Lint"
         uses: golangci/golangci-lint-action@v2
         with:
