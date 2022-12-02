@@ -6,7 +6,7 @@ CloudKnit is based on a concept called [Environment as Code](https://www.cloudkn
 
 > *Note: We are not a big fan of using Pipeline and Declarative together as Pipeline to us means a sequence of steps which conflicts with what Declarative means.*
 
-Environment as Code (EaC) is an abstraction over Cloud-native tools that provides a declarative way of defining an entire Environment. It has a Control Plane that manages the state of the environment, including resource dependencies, and drift detection and reconciliation.
+Environment as Code (EaC) is an abstraction over cloud-native tools that provides a declarative way of defining an entire environments. It has a Control Plane that manages the state of the environment, including resource dependencies, and drift detection and reconciliation.
 
 ![Where CloudKnit connects with existing tools](/assets/images/existing-tools.png)
 *<center>Diagram 1: Where does CloudKnit fit in with existing tools</center>*
@@ -58,7 +58,7 @@ See example below:
   <summary>Environment Definition</summary>
 
 ```yaml
-apiVersion: stable.cloudknit.com/v1
+apiVersion: stable.cloudknit.io/v1
 kind: Environment
 metadata:
   name: zmart-payment-prod-blue
