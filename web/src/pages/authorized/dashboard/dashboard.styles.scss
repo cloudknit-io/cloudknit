@@ -83,18 +83,18 @@
 #sunburst, #cluster {
 	.wedge {
 		&--successful {
-			fill: $dag-successful;
+			fill: rgb(135, 230, 135); //$dag-successful;
 		}
 
 		&--failed {
-			fill: $dag-failed;
+			fill: rgb(249, 212, 218); // $dag-failed;
 		}
 
 		&--pending {
 			fill: $dag-waiting;
 		}
 		&--unknown {
-			fill: $dag-waiting-for-parent;
+			fill: rgb(194, 148, 135);//$dag-waiting-for-parent;
 		}
 		&--waiting {
 			fill: $dag-reconciling;
@@ -103,7 +103,7 @@
 			fill: $dag-running;
 		}
 		&--destroyed {
-			fill: #ddd;
+			fill: rgb(182, 182, 182);
 		}
 	}
 }
@@ -137,17 +137,17 @@ div.graph-container {
 	}
 	> .pack-container {
 		display: flex;
-		justify-content: space-between;
+		justify-content: center;
 		// align-items: center;
-		.tooltip-d3 {
+		~.tooltip-d3.com-cards {
 			transition: all 0.3s;
 			max-height: 300px;
 			overflow-y: auto;
-			height: 70vh;
 			display: flex;
 			align-items: center;
-			padding: 0 30px;
+			padding: 5px;
 			justify-content: center;
+			margin: 0px;
 			&.hide {
 				transform: scale(0);
 			}
@@ -157,7 +157,7 @@ div.graph-container {
 			}
 		}
 		> svg {
-			width: calc(100% - 560px);
+			height: 95vh;
 			circle {
 				transition: all 0.3s;
 				&:hover {

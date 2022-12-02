@@ -79,11 +79,18 @@ export const CircularClusterPacking: FC<any> = (props: Cluster) => {
 			.on('click', (e, data: any) => {
 				document.querySelectorAll('circle').forEach(n => n.classList.remove('selected'));
 				e.target.classList.add('selected');
+				const tooltipData = {
+					top: e.clientY + 20,
+					left: e.clientX - (packContainer.current as any).getBoundingClientRect().x + 100,
+					// classNames: 'tooltip',
+				};
 				const teamCardData = {
-					classNames: 'com-cards tooltip-d3 team',
+					classNames: 'com-cards tooltip-d3 team tooltip',
+					...tooltipData
 				};
 				const cardData = {
-					classNames: 'com-cards tooltip-d3 teams',
+					classNames: 'com-cards tooltip-d3 teams tooltip',
+					...tooltipData
 				};
 				if (data?.data?.labels?.type === 'project') {
 					setCardData({
@@ -164,6 +171,16 @@ export const CircularClusterPacking: FC<any> = (props: Cluster) => {
 	};
 
 	useEffect(() => {
+		const listener = (e: KeyboardEvent) => {
+			if (e.key == 'Escape') {
+				(packContainer.current?.parentElement?.style as any).zIndex = 0;
+				setCardData({
+					...cardData,
+					classNames: 'tooltip hide',
+				});
+			}
+		}		
+		window.addEventListener('keydown', listener);
 		const pack = initializeD3CirclePack({
 			name: 'root',
 			children: data,
@@ -173,6 +190,9 @@ export const CircularClusterPacking: FC<any> = (props: Cluster) => {
 			const svg = container.querySelector('svg');
 			svg && container.removeChild(svg);
 			container.appendChild(pack);
+		}
+		return () => {
+			window.removeEventListener('keydown', listener);
 		}
 	}, [data]);
 
@@ -187,9 +207,28 @@ export const CircularClusterPacking: FC<any> = (props: Cluster) => {
 						...tooltipData,
 						classNames: 'tooltip hide',
 					});
-				}}>
-				<TooltipD3 data={cardData} />
+
+				}}
+				onClick={(e)=>{
+					if (e.target !== packContainer.current && (e.target as HTMLElement).tagName !== 'svg') return;
+					(packContainer.current?.parentElement?.style as any).zIndex = 0;
+					setCardData({
+						...cardData,
+						classNames: 'tooltip hide',
+					});
+				}}
+				onKeyPress={(e)=>{
+					if (e.key == 'Escape') {
+						(packContainer.current?.parentElement?.style as any).zIndex = 0;
+						setCardData({
+							...cardData,
+							classNames: 'tooltip hide',
+						});
+					}
+				}}
+				>
 			</div>
+			<TooltipD3 data={cardData} />
 			<TooltipD3 data={tooltipData} />
 		</>
 	);
