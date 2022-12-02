@@ -30,11 +30,11 @@ jobs:
         with:
           path: ${{ env.GOPATH }}/src/${{ env.module_name }}
 
-      - run: docker build -t ${{ env.ECR_REPO }}/zlifecycle-event-service:app .
+      - run: docker build -t ${{ env.ECR_REPO }}/event-service:app .
         working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}/event-service
         env:
           ECR_REPO: ${{ steps.login-ecr.outputs.registry }}
-      - run: docker push ${{ env.ECR_REPO }}/zlifecycle-event-service:app
+      - run: docker push ${{ env.ECR_REPO }}/event-service:app
         working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}/event-service
         env:
           ECR_REPO: ${{ steps.login-ecr.outputs.registry }}

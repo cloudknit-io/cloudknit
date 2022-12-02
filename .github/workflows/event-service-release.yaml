@@ -7,7 +7,7 @@ permissions:
   contents: write
 jobs:
   test:
-    uses: "zlifecycle/zlifecycle-event-service/.github/workflows/test.yaml@master"
+    uses: "zlifecycle/event-service/.github/workflows/test.yaml@master"
   build:
     runs-on: "ubuntu-latest"
     steps:

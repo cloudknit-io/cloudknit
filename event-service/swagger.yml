@@ -1,12 +1,325 @@
-consumes:
-- application/json
+openapi: 3.0.0
 info:
-  description: Service for collecting and reporting zLifecycle events
-  title: Event Service
-  version: 1.0.0
-paths: {}
-produces:
-- application/json
-schemes:
-- http
-swagger: "2.0"
+  version: 0.1.0
+  title: CloseKnit
+components:
+  schemas:
+    UserError:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int64
+        message:
+          type: string
+      required: [message, code]
+
+    InternalError:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int64
+        message:
+          type: string
+      required: [message, code]
+    
+    Component:
+      type: object
+      properties:
+        name:
+          type: string
+        status:
+          type: string
+        critical:
+          type: boolean
+    
+    CreateEvent:
+      type: object
+      properties:
+        scope:
+          type: string
+        object:
+          type: string
+        meta:
+          type: string
+        eventType:
+          type: string
+        payload:
+          type: string        
+
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
+        scope:
+          $ref: "#/components/schemas/Scope"
+        object:
+          type: string
+        meta:
+          $ref: "#/components/schemas/Meta"
+        createdAt:
+          format: date-time
+          type: string
+        eventType:
+          type: string
+        family:
+          type: string
+        payload:
+          type: string
+
+    Healthcheck:
+      type: object
+      properties:
+        status:
+          type: string
+        code:
+          type: integer
+          format: int64
+        timestamp:
+          format: date-time
+          type: string
+        components:
+          type: array
+          items:
+            $ref: "#/components/schemas/Component"
+    
+    Meta:
+      type: object
+      properties:
+        organization:
+          type: string
+        team:
+          type: string
+        environment:
+          type: string
+    
+    ObjectStatus:
+      type: object
+      properties:
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/Event"
+        object:
+          type: string
+        meta:
+          type: string
+        status:
+          $ref: "#/components/schemas/Status"
+
+    Scope:
+      type: string
+      enum:
+        - organization
+        - team
+        - environment
+    
+    Status:
+      type: object
+      properties:
+        status:
+          type: object
+          properties:
+            state:
+              type: string
+              enum:
+                - ok
+                - unknown
+                - error
+            family:
+              type: string
+              enum:
+                - validation
+                - reconcile
+            errors:
+              type: array
+              items:
+                type: string
+            timestamp:
+              type: string
+              format: date-time
+
+    TeamStatus:
+      type: object
+      properties:
+        object:
+          type: string
+        organization:
+          type: string
+        team:
+          type: string
+        status:
+          $ref: "#/components/schemas/ObjectStatus"
+    
+    EnvironmentStatus:
+      type: object
+      properties:
+        object:
+          type: string
+        organization:
+          type: string
+        team:
+          type: string
+        environment:
+          type: string
+        status:
+          $ref: "#/components/schemas/ObjectStatus"
+
+  responses:
+    NotFound:
+      description: Entity not found.
+    IllegalInput:
+      description: Illegal input for operation.
+    UserError:
+      description: User Error 4xx
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UserError" 
+    InternalError:
+      description: Internal Error 5xx
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/InternalError" 
+    GetHealth:
+      description: Healthcheck response
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Healthcheck"
+    GetStatus:
+      description: Status response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: object
+                properties:
+                  teamStatus:
+                    type: object
+                    additionalProperties:
+                      $ref: "#/components/schemas/TeamStatus"              
+                  environmentStatus:
+                    type: object
+                    additionalProperties:
+                      $ref: "#/components/schemas/EnvironmentStatus"
+    Events:
+      description: List of events
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/Event"
+    CreateEvent:
+      description: Create event response
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Event"
+
+paths: 
+  /status:
+    get:
+      operationId: getStatus
+      summary: Get user tailored feed
+      responses:
+        "200":
+          $ref: "#/components/responses/GetStatus"
+        "400":
+          $ref: "#/components/responses/UserError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      parameters:
+        - name: organization
+          in: query
+          description: Filter by organization
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: history
+          in: query
+          description: Post order
+          required: false
+          schema:
+            type: integer
+            format: int64
+
+  /events:
+    get:
+      operationId: getEvents
+      summary: Get organization events
+      responses:
+        "200":
+          $ref: "#/components/responses/Events"
+        "400":
+          $ref: "#/components/responses/UserError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      parameters:
+        - name: organization
+          in: query
+          description: Filter by organization
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: filter
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - all
+              - latest
+        - name: scope
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/Scope"
+        - name: team
+          in: query
+          required: false
+          schema:
+            type: string
+    post:
+      operationId: createEvent
+      summary: Create events
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/CreateEvent'
+      responses:
+        "200":
+          $ref: "#/components/responses/CreateEvent"
+        "400":
+          $ref: "#/components/responses/UserError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /health/liveness:
+    get:
+      operationId: healthLiveness
+      summary: Get liveness
+      responses:
+        "200":
+          $ref: "#/components/responses/GetHealth"
+        "500":
+          $ref: "#/components/responses/InternalError"
+  
+  /health/readiness:
+    get:
+      operationId: healthReadiness
+      summary: Get readiness
+      responses:
+        "200":
+          $ref: "#/components/responses/GetHealth"
+        "500":
+          $ref: "#/components/responses/InternalError"

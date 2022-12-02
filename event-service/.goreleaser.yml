@@ -1,5 +1,5 @@
 # http://goreleaser.com
-project_name: zlifecycle-event-service
+project_name: event-service
 
 archives:
   - format: zip
@@ -64,7 +64,7 @@ universal_binaries:
 
 builds:
   - id: "darwin"
-    main: "./cmd/zlifecycle-event-service"
+    main: "./cmd/event-service"
     goos:
       - darwin
     goarch:
@@ -73,7 +73,7 @@ builds:
     mod_timestamp: "{{ .CommitTimestamp }}"
 
   - id: "linux"
-    main: "./cmd/zlifecycle-event-service"
+    main: "./cmd/event-service"
     goos:
       - linux
     goarch:
@@ -82,7 +82,7 @@ builds:
     mod_timestamp: "{{ .CommitTimestamp }}"
 
   - id: "windows"
-    main: "./cmd/zlifecycle-event-service"
+    main: "./cmd/event-service"
     goos:
       - windows
     goarch:

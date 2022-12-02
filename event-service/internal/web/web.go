@@ -37,7 +37,7 @@ func NewStreamingServer(svcs *services.Services, l *logrus.Entry) (*http.Server,
 		Handler: r,
 	}
 
-	l.WithFields(logrus.Fields{"port": streamingPort}).Infof("Starting zlifecycle-event-service streaming server on port %d", streamingPort)
+	l.WithFields(logrus.Fields{"port": streamingPort}).Infof("Starting event-service streaming server on port %d", streamingPort)
 	return s, nil
 }
 
@@ -78,7 +78,7 @@ func NewServer(svcs *services.Services, l *logrus.Entry) (*http.Server, error) {
 		Handler: errorChain.Then(r),
 	}
 
-	l.WithFields(logrus.Fields{"port": apiPort}).Infof("Starting zlifecycle-event-service REST server on port %d", apiPort)
+	l.WithFields(logrus.Fields{"port": apiPort}).Infof("Starting event-service REST server on port %d", apiPort)
 	return s, nil
 }
 

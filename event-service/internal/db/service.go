@@ -48,7 +48,7 @@ func newConfig() *config {
 	}
 	c.Password = os.Getenv("DB_PASSWORD")
 	if c.Password == "" {
-		c.Password = "zlifecycle"
+		c.Password = "password"
 	}
 	c.Database = os.Getenv("DB_NAME")
 	if c.Database == "" {

@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "zlifecycle-event-service.fullname" . }}
+  name: {{ include "event-service.fullname" . }}
   labels:
-    {{- include "zlifecycle-event-service.labels" . | nindent 4 }}
+    {{- include "event-service.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -16,4 +16,4 @@ spec:
       protocol: TCP
       name: http2
   selector:
-    {{- include "zlifecycle-event-service.selectorLabels" . | nindent 4 }}
+    {{- include "event-service.selectorLabels" . | nindent 4 }}

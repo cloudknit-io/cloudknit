@@ -43,7 +43,7 @@ func main() {
 	errWg, errCtx := errgroup.WithContext(ctx)
 	l := baseLogger.WithContext(ctx)
 
-	l.Info("Initializing zlifecycle-event-service...")
+	l.Info("Initializing event-service...")
 	svcs, err := services.NewServices(l)
 	if err != nil {
 		l.Fatalf("error instantiating services: %v", err)
