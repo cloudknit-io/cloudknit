@@ -22,4 +22,4 @@ If dev environment is not setup already with required environment variables.
 -   Or add the above given variables prepended with export command and add them to a shell file and execute that file to start the project.
 -   if not automatically, visit [localhost:3000](http://localhost:3000)
 -   if you want to try localhost with https: `HTTPS=true npm run start:local`
--   To Login you first have to clone, setup and run [zlifecycle-web-bff](https://github.com/CompuZest/zlifecycle-web-bff/blob/main/README.md) first.
+-   To Login you first have to clone, setup and run [zlifecycle-web-bff](https://github.com/cloudknit-io/cloudknit/tree/main/bff/README.md) first.
