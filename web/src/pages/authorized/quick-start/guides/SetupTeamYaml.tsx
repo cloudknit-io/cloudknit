@@ -18,11 +18,12 @@ type Props = {
 export class SetupTeamYaml extends BaseGuide implements IGuide {
 	private static instance: SetupTeamYaml | null = null;
 	private team_name = 'default';
+	private env_name = 'default';
 
 	private SetupTeamYamlUI: React.FC<Props> = ({ baseClassName, ctx, nm }) => {
 		const cls = (className: string) => `${baseClassName}_section-guide${className}`;
 		const [teamName, setTeamName] = useState<string>(ctx?.teamName || this.team_name);
-		const [envName, setEnvName] = useState<string>(ctx?.envName || this.team_name);
+		const [envName, setEnvName] = useState<string>(ctx?.envName || this.env_name);
 		const user = AuthStore.getUser();
 		const formRef = React.useRef<HTMLFormElement>(null);
 		const teamYaml = `apiVersion: stable.compuzest.com/v1
@@ -109,6 +110,7 @@ spec:
 									const val = e.target.value;
 									if (super.rfcSubdomainValidation(val)) {
 										setEnvName(val);
+										this.env_name = val;
 										formRef.current?.classList.remove('invalid');
 									} else {
 										formRef.current?.classList.add('invalid');
@@ -122,7 +124,12 @@ spec:
 						</section>
 						<section className={`${cls('_form-group')}`}>
 							<label>
-							Create a hello-world.yaml file with following content & push it to {ctx?.githubRepo} repo.
+								<span className="break">
+									Add a hello-world.yaml file with following content in the root directory of{' '}
+									<pre>{ctx?.githubRepo}</pre> repo
+								</span>
+							</label>
+							<label className="mt-5">
 								<button
 									type="button"
 									title="Copy YML"
@@ -133,7 +140,8 @@ spec:
 									<Copy />
 								</button>
 							</label>
-							<div>
+
+							<div className="mt-10">
 								<ZEditor data={teamYaml} readOnly={true} language={'yaml'} />
 							</div>
 						</section>
@@ -151,9 +159,7 @@ spec:
 	}
 
 	onNext(): Promise<any> {
-		return Promise.resolve({
-			teamName: this.team_name,
-		});
+		return Promise.resolve({});
 	}
 
 	onFinish(): Promise<any> {
