@@ -1,10 +1,10 @@
 # zLifecycle
 
 # Prerequisites
-- [Boostrap AWS & K8s](https://github.com/CompuZest/zlifecycle-web/blob/main/runbook/bootstrap/set-up-aws-k8s.md)
+- [Boostrap AWS & K8s](https://github.com/cloudknit-io/cloudknit/tree/main/web/runbook/bootstrap/set-up-aws-k8s.md)
 
 ## Starting project
-- [Setting up Web](https://github.com/CompuZest/zlifecycle-web/blob/main/runbook/bootstrap/web-setup.md)
+- [Setting up Web](https://github.com/cloudknit-io/cloudknit/tree/main/web/runbook/bootstrap/web-setup.md)
 
 ## ZLifecycle Local environment
 - Port forward ArgoCD at port `8081`, start the `zlifecycle-web-bff` application at port `8080` which is its default and run `cp .env.development .env.development.local`
