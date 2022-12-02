@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   version: 0.1.0
-  title: CloseKnit
+  title: CloudKnit - Event Service
 components:
   schemas:
     UserError:
