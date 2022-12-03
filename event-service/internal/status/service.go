@@ -2,12 +2,13 @@ package status
 
 import (
 	"context"
-	"github.com/tidwall/gjson"
 	"sort"
 
+	"github.com/tidwall/gjson"
+
 	fpgo "github.com/TeaEntityLab/fpGo/v2"
-	"github.com/compuzest/zlifecycle-event-service/internal/event"
-	"github.com/compuzest/zlifecycle-event-service/internal/util"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/event"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/util"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"

@@ -3,7 +3,7 @@ package controllers
 import (
 	"net/http"
 
-	http2 "github.com/compuzest/zlifecycle-event-service/internal/web/http"
+	http2 "github.com/cloudknit-io/cloudknit/event-service/internal/web/http"
 )
 
 func NotFoundHandler(w http.ResponseWriter, r *http.Request) {

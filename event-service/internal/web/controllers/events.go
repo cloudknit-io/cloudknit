@@ -5,18 +5,18 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/compuzest/zlifecycle-event-service/internal/status"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/status"
 
-	"github.com/compuzest/zlifecycle-event-service/internal/util"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/util"
 
-	"github.com/compuzest/zlifecycle-event-service/internal/apm"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/apm"
 	"github.com/sirupsen/logrus"
 
-	"github.com/compuzest/zlifecycle-event-service/internal/event"
-	"github.com/compuzest/zlifecycle-event-service/internal/services"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/event"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/services"
 
-	http2 "github.com/compuzest/zlifecycle-event-service/internal/web/http"
-	"github.com/compuzest/zlifecycle-event-service/internal/zlog"
+	http2 "github.com/cloudknit-io/cloudknit/event-service/internal/web/http"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/zlog"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/pkg/errors"
 )

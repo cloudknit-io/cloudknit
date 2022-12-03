@@ -4,19 +4,19 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/compuzest/zlifecycle-event-service/internal/web/middleware"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/web/middleware"
 	"github.com/justinas/alice"
 	"github.com/sirupsen/logrus"
 
-	"github.com/compuzest/zlifecycle-event-service/internal/services"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/services"
 
 	"github.com/pkg/errors"
 
 	swaggermiddleware "github.com/go-openapi/runtime/middleware"
 
-	"github.com/compuzest/zlifecycle-event-service/internal/apm"
-	"github.com/compuzest/zlifecycle-event-service/internal/env"
-	"github.com/compuzest/zlifecycle-event-service/internal/web/controllers"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/apm"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/env"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/web/controllers"
 	"github.com/gorilla/mux"
 	"github.com/newrelic/go-agent/v3/newrelic"
 )
@@ -37,7 +37,7 @@ func NewStreamingServer(svcs *services.Services, l *logrus.Entry) (*http.Server,
 		Handler: r,
 	}
 
-	l.WithFields(logrus.Fields{"port": streamingPort}).Infof("Starting zlifecycle-event-service streaming server on port %d", streamingPort)
+	l.WithFields(logrus.Fields{"port": streamingPort}).Infof("Starting event-service streaming server on port %d", streamingPort)
 	return s, nil
 }
 
@@ -78,7 +78,7 @@ func NewServer(svcs *services.Services, l *logrus.Entry) (*http.Server, error) {
 		Handler: errorChain.Then(r),
 	}
 
-	l.WithFields(logrus.Fields{"port": apiPort}).Infof("Starting zlifecycle-event-service REST server on port %d", apiPort)
+	l.WithFields(logrus.Fields{"port": apiPort}).Infof("Starting event-service REST server on port %d", apiPort)
 	return s, nil
 }
 

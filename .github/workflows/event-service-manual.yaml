@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
 
 env:
-  module_name: github.com/CompuZest/zlifecycle-event-service
+  module_name: github.com/cloudknit-io/cloudknit/event-service
 jobs:
   build-test-push:
     name: Build, test, and push
@@ -30,11 +30,11 @@ jobs:
         with:
           path: ${{ env.GOPATH }}/src/${{ env.module_name }}
 
-      - run: docker build -t ${{ env.ECR_REPO }}/zlifecycle-event-service:app .
+      - run: docker build -t ${{ env.ECR_REPO }}/event-service:app .
         working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}/event-service
         env:
           ECR_REPO: ${{ steps.login-ecr.outputs.registry }}
-      - run: docker push ${{ env.ECR_REPO }}/zlifecycle-event-service:app
+      - run: docker push ${{ env.ECR_REPO }}/event-service:app
         working-directory: ${{ env.GOPATH }}/src/${{ env.module_name }}/event-service
         env:
           ECR_REPO: ${{ steps.login-ecr.outputs.registry }}

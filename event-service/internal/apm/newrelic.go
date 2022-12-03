@@ -1,8 +1,8 @@
 package apm
 
 import (
-	"github.com/compuzest/zlifecycle-event-service/internal/env"
-	"github.com/compuzest/zlifecycle-event-service/internal/web/http"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/env"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/web/http"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/pkg/errors"
 )

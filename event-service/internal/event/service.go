@@ -3,7 +3,7 @@ package event
 import (
 	"context"
 
-	"github.com/compuzest/zlifecycle-event-service/internal/util"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/util"
 
 	"github.com/sirupsen/logrus"
 

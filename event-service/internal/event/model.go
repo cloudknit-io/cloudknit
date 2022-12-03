@@ -6,7 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/compuzest/zlifecycle-event-service/internal/util"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/util"
 
 	"github.com/google/uuid"
 )

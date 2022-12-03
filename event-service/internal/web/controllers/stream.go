@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/compuzest/zlifecycle-event-service/internal/services"
-	"github.com/compuzest/zlifecycle-event-service/internal/stream"
-	"github.com/compuzest/zlifecycle-event-service/internal/zlog"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/services"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/stream"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/zlog"
 	"github.com/pkg/errors"
 )
 
