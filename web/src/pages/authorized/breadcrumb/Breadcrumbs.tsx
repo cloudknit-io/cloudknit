@@ -75,7 +75,7 @@ export const Breadcrumbs: FC = () => {
 		} else {
 			const tokens = pathname.split('/');
 			setBreadcrumbInfo(
-				tokens.map(
+				tokens.filter((_e, i) => i < 3).map(
 					(t, _i): BreadcrumbInfo => {
 						if (_i === 0) {
 							return {
