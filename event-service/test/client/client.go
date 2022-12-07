@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/compuzest/zlifecycle-event-service/internal/zlog"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/zlog"
 	"github.com/r3labs/sse/v2"
 )
 

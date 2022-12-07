@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
 	"mime"
@@ -9,8 +8,10 @@ import (
 	"strings"
 	"time"
 
-	http2 "github.com/compuzest/zlifecycle-event-service/internal/web/http"
-	"github.com/compuzest/zlifecycle-event-service/internal/zlog"
+	"github.com/sirupsen/logrus"
+
+	http2 "github.com/cloudknit-io/cloudknit/event-service/internal/web/http"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/zlog"
 )
 
 func EnforceJSONHandler(next http.Handler) http.Handler {

@@ -2,16 +2,17 @@ package services
 
 import (
 	"context"
-	"github.com/compuzest/zlifecycle-event-service/internal/admin"
+
+	"github.com/cloudknit-io/cloudknit/event-service/internal/admin"
 	"github.com/sirupsen/logrus"
 
-	"github.com/compuzest/zlifecycle-event-service/internal/status"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/status"
 
-	"github.com/compuzest/zlifecycle-event-service/internal/stream"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/stream"
 
-	"github.com/compuzest/zlifecycle-event-service/internal/db"
-	"github.com/compuzest/zlifecycle-event-service/internal/event"
-	"github.com/compuzest/zlifecycle-event-service/internal/health"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/db"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/event"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/health"
 	"github.com/pkg/errors"
 )
 

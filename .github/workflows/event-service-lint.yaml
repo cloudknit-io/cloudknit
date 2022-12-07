@@ -15,9 +15,6 @@ jobs:
   golangci:
     name: lint
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./event-service
     steps:
       - name: "Golang"
         uses: "actions/setup-go@v2"
@@ -25,12 +22,12 @@ jobs:
           go-version: "1.18"
       - name: checkout
         uses: actions/checkout@v2
-      - name: "Modules"
-        run: "go mod download"
+      
       - name: "Lint"
         uses: golangci/golangci-lint-action@v2
         with:
-          version: "latest"
+          working-directory: event-service
+          version: v1.50.1
           skip-go-installation: true
           skip-pkg-cache: true
           skip-build-cache: true

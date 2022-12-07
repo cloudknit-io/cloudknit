@@ -1,8 +1,9 @@
 package status
 
 import (
-	"github.com/compuzest/zlifecycle-event-service/internal/event"
 	"time"
+
+	"github.com/cloudknit-io/cloudknit/event-service/internal/event"
 )
 
 const (

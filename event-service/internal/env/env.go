@@ -14,7 +14,7 @@ type Cfg struct {
 
 func Config() *Cfg {
 	return &Cfg{
-		App:            "zlifecycle-event-service",
+		App:            "event-service",
 		DevMode:        getOr("DEV_MODE", "false"),
 		EnableNewRelic: getOr("ENABLE_NEW_RELIC", "false"),
 		NewRelicAPIKey: os.Getenv("NEW_RELIC_API_KEY"),
