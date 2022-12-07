@@ -169,7 +169,7 @@ export const EnvironmentCard: FC<PropsEnvironmentItem> = ({
 		if (state && 'type' in state) {
 			return `/${environmentTeam(environment)}/${environment.id}/${state.type}`;
 		}
-		return `/${environmentTeam(environment)}/${environment.id}/infra`;
+		return `/${environmentTeam(environment)}/${environment.id}`;
 	};
 
 	const getSyncIconClass = (environment: EnvironmentItem) => {
