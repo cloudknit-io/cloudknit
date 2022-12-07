@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/compuzest/zlifecycle-event-service/internal/env"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/env"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
@@ -48,7 +48,7 @@ func newConfig() *config {
 	}
 	c.Password = os.Getenv("DB_PASSWORD")
 	if c.Password == "" {
-		c.Password = "zlifecycle"
+		c.Password = "password"
 	}
 	c.Database = os.Getenv("DB_NAME")
 	if c.Database == "" {

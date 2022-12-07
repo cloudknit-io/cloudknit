@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "zlifecycle-event-service.fullname" . }}
+  name: {{ include "event-service.fullname" . }}
   labels:
-    {{- include "zlifecycle-event-service.labels" . | nindent 4 }}
+    {{- include "event-service.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "zlifecycle-event-service.selectorLabels" . | nindent 6 }}
+      {{- include "event-service.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -18,17 +18,17 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "zlifecycle-event-service.selectorLabels" . | nindent 8 }}
+        {{- include "event-service.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "zlifecycle-event-service.serviceAccountName" . }}
+      serviceAccountName: {{ include "event-service.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       initContainers:
-        - name: zlifecycle-event-service-db-migration
+        - name: event-service-db-migration
           image: "{{ .Values.image.repository }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args: ["--migrate", "up"]

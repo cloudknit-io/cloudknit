@@ -2,7 +2,8 @@ package zlog
 
 import (
 	"context"
-	"github.com/compuzest/zlifecycle-event-service/internal/env"
+
+	"github.com/cloudknit-io/cloudknit/event-service/internal/env"
 
 	"github.com/newrelic/go-agent/v3/integrations/logcontext/nrlogrusplugin"
 	log "github.com/sirupsen/logrus"

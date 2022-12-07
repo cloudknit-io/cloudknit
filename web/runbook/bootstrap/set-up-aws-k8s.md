@@ -14,7 +14,7 @@ If your machine doesnt have aws and k8s cli installed and configured
     `[default]`\
     `aws_access_key_id = {creds-provided-via-last-pass}`\
     `aws_secret_access_key = {creds-provided-via-last-pass}`\
-    `[compuzest-shared]`\
+    `[cloudknit-shared]`\
     `aws_access_key_id = {creds-provided-via-last-pass}`\
     `aws_secret_access_key = {creds-provided-via-last-pass}`
     

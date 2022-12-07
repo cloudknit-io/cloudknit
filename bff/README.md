@@ -2,10 +2,10 @@
 
 ### How to start
 
--   Follow the prerequisites given in [zlifecycle-web](https://github.com/CompuZest/zlifecycle-web/blob/main/README.md) repo if not already done.
+-   Follow the prerequisites given in [zlifecycle-web](https://github.com/cloudknit-io/cloudknit/tree/main/web/README.md) repo if not already done.
 
 #### Set up
-[Setting up locally](https://github.com/CompuZest/zlifecycle-web-bff/blob/main/runbook/setting-up-bff.md)
+[Setting up locally](https://github.com/cloudknit-io/cloudknit/tree/main/bff/runbook/setting-up-bff.md)
 #### Install
 
     npm install

@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/compuzest/zlifecycle-event-service/internal/status"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/status"
 
-	"github.com/compuzest/zlifecycle-event-service/internal/apm"
-	"github.com/compuzest/zlifecycle-event-service/internal/services"
-	http2 "github.com/compuzest/zlifecycle-event-service/internal/web/http"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/apm"
+	"github.com/cloudknit-io/cloudknit/event-service/internal/services"
+	http2 "github.com/cloudknit-io/cloudknit/event-service/internal/web/http"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
