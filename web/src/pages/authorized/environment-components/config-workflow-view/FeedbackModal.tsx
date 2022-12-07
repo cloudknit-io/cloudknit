@@ -12,12 +12,11 @@ type Props = {
 };
 
 export const ZFeedbackModal: FC<Props> = ({ onApprove, onDecline }: Props) => {
-	const [mode, setMode] = useState<string>('');
 	const [showLoader, setShowLoader] = useState<boolean>(false);
 
 	return (
 		<div className="zlifecycle-feedback-modal">
-			{mode === '' && (
+			{showLoader ? <Loader /> : (
 				<>
 					<div className="zlifecycle-feedback-modal__content">
 						<ZText.Body size="14" lineHeight="18">
@@ -25,66 +24,14 @@ export const ZFeedbackModal: FC<Props> = ({ onApprove, onDecline }: Props) => {
 						</ZText.Body>
 					</div>
 					<div className="zlifecycle-feedback-modal__actions">
-						<Button color="primary" onClick={() => setMode('approve')}>
+						<Button
+							color="primary"
+							onClick={() => {
+								setShowLoader(true);
+								onApprove();
+							}}>
 							Approve
 						</Button>
-						{/* <Button color="secondary" onClick={() => setMode('decline')}>
-							Decline
-						</Button> */}
-					</div>
-				</>
-			)}
-			{mode === 'approve' && (
-				<>
-					<div className="zlifecycle-feedback-modal__content">
-						<ZText.Body size="16" lineHeight="18">
-							In order to continue, please accept the changes.
-						</ZText.Body>
-					</div>
-					<div className="zlifecycle-feedback-modal__actions">
-						{!showLoader && (
-							<>
-								<Button
-									color="primary"
-									onClick={() => {
-										setShowLoader(true);
-										onApprove();
-									}}>
-									Confirm
-								</Button>
-								{/* <Button color="secondary" onClick={() => setMode('')}>
-									Cancel
-								</Button> */}
-							</>
-						)}
-						{showLoader && <Loader />}
-					</div>
-				</>
-			)}
-			{mode === 'decline' && (
-				<>
-					<div className="zlifecycle-feedback-modal__content">
-						<ZText.Body weight="bold" size="14" lineHeight="18">
-							Changes Declined
-						</ZText.Body>
-					</div>
-					<div className="zlifecycle-feedback-modal__actions">
-						{!showLoader && (
-							<>
-								<Button
-									color="primary"
-									onClick={() => {
-										setShowLoader(true);
-										onDecline();
-									}}>
-									Confirm
-								</Button>
-								<Button color="secondary" onClick={() => setMode('')}>
-									Cancel
-								</Button>
-							</>
-						)}
-						{showLoader && <Loader />}
 					</div>
 				</>
 			)}
