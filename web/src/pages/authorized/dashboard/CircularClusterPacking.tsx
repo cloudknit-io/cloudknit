@@ -1,11 +1,11 @@
-import { ZModelCard } from 'components/molecules/cards/Card';
-import { EnvironmentCard, EnvironmentCards } from 'components/molecules/cards/EnvironmentCards';
+import { EnvironmentCard } from 'components/molecules/cards/EnvironmentCards';
 import { ConfigCard } from 'components/molecules/cards/EnvironmentComponentCards';
 import { TeamCard } from 'components/molecules/cards/TeamCards';
+import { getClassName } from 'components/organisms/tree-view/node-figure-helper';
 import * as d3 from 'd3';
+import { ZSyncStatus } from 'models/argo.models';
 import React, { FC, useEffect, useRef, useState } from 'react';
 
-import { getClassName } from './helpers';
 import { TooltipD3 } from './TooltipD3';
 
 export interface Cluster {
@@ -14,6 +14,7 @@ export interface Cluster {
 
 export const CircularClusterPacking: FC<any> = (props: Cluster) => {
 	const packContainer = useRef<HTMLDivElement>(null);
+	const [cardData, setCardData] = useState<any>(null);
 	const [tooltipData, setTooltipData] = useState<any>(null);
 	const { data } = props;
 	const { height, width } = { height: 800, width: 800 };
@@ -49,40 +50,66 @@ export const CircularClusterPacking: FC<any> = (props: Cluster) => {
 			.style('margin', '0 -14px')
 			.style('background', 'transparent')
 			.style('cursor', 'pointer')
-			.on('click', event => zoom(event, root));
+			.on('dblclick', event => zoom(event, root));
 
 		const node = svg
 			.append('g')
 			.selectAll('circle')
 			.data(root.descendants().slice(1))
 			.join('circle')
-			.attr('class', (d: any): any => 'wedge' + getClassName(d.data.componentStatus || d.data.syncStatus))
+			.attr(
+				'class',
+				(d: any): any =>
+					'wedge' +
+					getClassName(d.data.componentStatus || d.data.syncStatus) +
+					(d.data.componentStatus === ZSyncStatus.NotProvisioned ? ' striped' : '')
+			)
 			.attr('stroke', '#888')
-			.on('mousemove', function (e: any, data: any) {
+			.on('mouseenter', (e, d: any) => {
 				const tooltipData = {
-					top: e.layerY,
-					left: e.clientX - (packContainer.current as any).getBoundingClientRect().x + 60,
-					classNames: 'com-cards tooltip-d3 teams',
+					top: e.clientY + 20,
+					left: e.clientX - (packContainer.current as any).getBoundingClientRect().x + 100,
+					classNames: 'tooltip',
+				};
+				setTooltipData({
+					card: <span className='tooltip-text'>{d?.data?.displayValue || ''}</span>,
+						...tooltipData,
+				})
+			})
+			.on('click', (e, data: any) => {
+				document.querySelectorAll('circle').forEach(n => n.classList.remove('selected'));
+				e.target.classList.add('selected');
+				const tooltipData = {
+					top: e.clientY + 20,
+					left: e.clientX - (packContainer.current as any).getBoundingClientRect().x + 100,
+					// classNames: 'tooltip',
+				};
+				const teamCardData = {
+					classNames: 'com-cards tooltip-d3 team tooltip',
+					...tooltipData
+				};
+				const cardData = {
+					classNames: 'com-cards tooltip-d3 teams tooltip',
+					...tooltipData
 				};
 				if (data?.data?.labels?.type === 'project') {
-					setTooltipData({
+					setCardData({
 						card: <TeamCard team={data.data} />,
-						...tooltipData,
+						...teamCardData,
 					});
 				} else if (data?.data?.labels?.type === 'environment') {
-					setTooltipData({
+					setCardData({
 						card: <EnvironmentCard environment={data.data} />,
-						...tooltipData,
+						...cardData,
 					});
 				} else if (data?.data?.labels?.type === 'config') {
-					setTooltipData({
+					setCardData({
 						card: <ConfigCard showAll={false} config={data.data} onClick={() => {}} />,
-						...tooltipData,
+						...cardData,
 					});
 				}
-				(packContainer.current?.parentElement?.style as any).zIndex = 99;
 			})
-			.on('click', (event, d) => focus !== d && d.children && (zoom(event, d), event.stopPropagation()));
+			.on('dblclick', (event, d) => focus !== d && d.children && (zoom(event, d), event.stopPropagation()));
 
 		const label = svg
 			.append('g')
@@ -144,6 +171,16 @@ export const CircularClusterPacking: FC<any> = (props: Cluster) => {
 	};
 
 	useEffect(() => {
+		const listener = (e: KeyboardEvent) => {
+			if (e.key == 'Escape') {
+				(packContainer.current?.parentElement?.style as any).zIndex = 0;
+				setCardData({
+					...cardData,
+					classNames: 'tooltip hide',
+				});
+			}
+		}		
+		window.addEventListener('keydown', listener);
 		const pack = initializeD3CirclePack({
 			name: 'root',
 			children: data,
@@ -154,19 +191,45 @@ export const CircularClusterPacking: FC<any> = (props: Cluster) => {
 			svg && container.removeChild(svg);
 			container.appendChild(pack);
 		}
+		return () => {
+			window.removeEventListener('keydown', listener);
+		}
 	}, [data]);
 
 	return (
-		<div
-			ref={packContainer}
-			onMouseLeave={() => {
-				(packContainer.current?.parentElement?.style as any).zIndex = 0;
-				setTooltipData({
-					...tooltipData,
-					classNames: 'com-cards tooltip-d3 teams hide',
-				});
-			}}>
+		<>
+			<div
+				className='pack-container'
+				ref={packContainer}
+				onMouseLeave={() => {
+					(packContainer.current?.parentElement?.style as any).zIndex = 0;
+					setTooltipData({
+						...tooltipData,
+						classNames: 'tooltip hide',
+					});
+
+				}}
+				onClick={(e)=>{
+					if (e.target !== packContainer.current && (e.target as HTMLElement).tagName !== 'svg') return;
+					(packContainer.current?.parentElement?.style as any).zIndex = 0;
+					setCardData({
+						...cardData,
+						classNames: 'tooltip hide',
+					});
+				}}
+				onKeyPress={(e)=>{
+					if (e.key == 'Escape') {
+						(packContainer.current?.parentElement?.style as any).zIndex = 0;
+						setCardData({
+							...cardData,
+							classNames: 'tooltip hide',
+						});
+					}
+				}}
+				>
+			</div>
+			<TooltipD3 data={cardData} />
 			<TooltipD3 data={tooltipData} />
-		</div>
+		</>
 	);
 };
