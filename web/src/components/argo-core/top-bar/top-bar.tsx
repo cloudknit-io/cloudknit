@@ -56,7 +56,7 @@ const navItems: NavItem[] = [
 			},
 		],
 	},
-	{ title: 'Infra Components', path: '/all/all/infra' },
+	{ title: 'Infra Components', path: '/all/all' },
 	{ title: 'Dashboard', path: '/demo-dashboard', visible: () => BradAdarshFeatureVisible() },
 	{ title: 'Builder', path: '/builder', visible: () => BradAdarshFeatureVisible() },
 	{ title: 'Settings', path: '/settings', visible: () => AuthStore.getUser()?.role === 'Admin' },
