@@ -117,6 +117,9 @@ export const ZWorkflowDiagram: FC<Props> = ({ nodes, approvedBy }: Props) => {
 						return data;
 					})}
 					Component={ZEditor}
+					componentProps={{
+						readOnly: true
+					}}
 					defaultValue={'Loading info...'}
 				/>
 			);

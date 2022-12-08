@@ -142,7 +142,7 @@ spec:
 							</label>
 
 							<div className="mt-10">
-								<ZEditor data={teamYaml} readOnly={true} language={'yaml'} />
+								<ZEditor height='30vh' data={teamYaml} readOnly={true} language={'yaml'} />
 							</div>
 						</section>
 					</form>

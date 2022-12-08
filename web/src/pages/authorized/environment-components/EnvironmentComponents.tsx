@@ -226,17 +226,17 @@ export const EnvironmentComponents: React.FC = () => {
 			}
 		}
 		if (configName === 'root') {
-			const rootEnv = environments.find(e => e.id === environmentId);
-			const failedEnv = ErrorStateService.getInstance().errorsInEnvironment(
-				rootEnv?.labels?.env_name || ''
-			);
+			// const rootEnv = environments.find(e => e.id === environmentId);
+			// const failedEnv = ErrorStateService.getInstance().errorsInEnvironment(
+			// 	rootEnv?.labels?.env_name || ''
+			// );
 
-			if (failedEnv?.length > 0) {
-				setEnvErrors(failedEnv);
-			}
+			// if (failedEnv?.length > 0) {
+			// 	setEnvErrors(failedEnv);
+			// }
 
-			setEnvironmentNodeSelected(true);
-			setShowSidePanel(true);
+			// setEnvironmentNodeSelected(true);
+			// setShowSidePanel(true);
 			return;
 		}
 		setEnvironmentNodeSelected(false);
