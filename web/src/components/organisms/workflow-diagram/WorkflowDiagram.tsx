@@ -79,6 +79,7 @@ export const ZWorkflowDiagram: FC<Props> = ({ nodes, approvedBy }: Props) => {
 				}`}>
 				<ZDiagramNode text="" icon={getNodeIcon(node)} status={getNodeStatus(node)} />
 				{name} <SmallText data={node.displayName === 'approve' ? approvedBy : summary.get(node.displayName)} />
+				{node.displayName === 'approve' && node.getZFeedbackModal()}
 			</div>
 		);
 	};
@@ -190,7 +191,7 @@ export const ZWorkflowDiagram: FC<Props> = ({ nodes, approvedBy }: Props) => {
 							nodeData: node,
 							accordionHeader: accordionHeader(node, node.displayName),
 							accordionContent: accordionContent(
-								node.displayName === 'approve' ? node.getZFeedbackModal() : getContent(node)
+								node.displayName === 'approve' ? null : getContent(node)
 							),
 							collapsed: index < nodes.length - 1
 						};
