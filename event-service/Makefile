@@ -3,6 +3,9 @@
 build:
 	go build -gcflags="all=-N -l" -o dist/event-service main.go
 
+migrate:
+	go run ./main.go --migrate up
+
 docker-build:
 	docker build -t event-service:local .
 

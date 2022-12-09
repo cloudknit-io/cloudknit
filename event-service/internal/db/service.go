@@ -52,7 +52,7 @@ func newConfig() *config {
 	}
 	c.Database = os.Getenv("DB_NAME")
 	if c.Database == "" {
-		c.Database = "event"
+		c.Database = "zlifecycle"
 	}
 	c.Driver = os.Getenv("DB_DRIVER")
 	if c.Driver == "" {
