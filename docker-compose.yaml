@@ -1,0 +1,94 @@
+version: '3.8'
+
+services: 
+  mysqldb:
+    image: mysql:oracle
+    restart: on-failure
+    healthcheck:
+      test: mysql zlifecycle --user=root --password='password' --silent --execute "SELECT 1;"
+      interval: 5s
+      timeout: 3s
+      retries: 2
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: zlifecycle
+    ports:
+      - "3306:3306"
+    volumes: 
+      - cloudknit-db-config:/etc/mysql
+      - cloudknit-db-data:/var/lib/mysql
+
+  event-service:
+    build:
+      context: ./event-service
+      dockerfile: ./Dockerfile.local
+    restart: on-failure
+    environment:
+      - DB_HOST=mysqldb
+    ports:
+      - "8081:8081"
+      - "8082:8082"
+    volumes:
+      - type: bind
+        source: ./event-service
+        target: /app
+    depends_on:
+      - mysqldb
+  
+  api:
+    build:
+      context: ./api
+      dockerfile: ./Dockerfile.local
+    restart: on-failure
+    command: ['npm', 'run', 'start:debug']
+    env_file: .env.secrets.local
+    environment:
+      - IS_LOCAL=true
+      - CK_ENVIRONMENT=dev
+      - APP_PORT=3001
+      - TYPEORM_HOST=mysqldb
+      - TYPEORM_USERNAME=root
+      - TYPEORM_PASSWORD=password
+      - TYPEORM_PORT=3306
+      - TYPEORM_DATABASE=zlifecycle
+      - CK_ARGO_WF_URL=http://localhost:2746
+      - CK_ARGO_WF_NAMESPACE=zlifecycle-executor
+    ports:
+      - "3001:3001"
+    volumes:
+      - type: bind
+        source: ./api
+        target: /app
+    depends_on:
+      - mysqldb
+  
+  bff:
+    build:
+      context: ./bff
+      dockerfile: ./Dockerfile.local
+    restart: on-failure
+    env_file: .env.secrets.local
+    environment:
+      - PORT=8080
+      - NODE_ENV=development
+      - LOG_LEVEL=debug
+      - SITE_URL=http://localhost:3000
+      - ARGO_WORKFLOW_API_URL=http://argo-workflow-server.:org-executor.svc.cluster.local:2746
+      - ARGO_CD_API_URL=http://argocd-:org-server.:org-system.svc.cluster.local
+      - ZLIFECYCLE_API_URL=http://api:3001
+      - ZLIFECYCLE_STATE_MANAGER_URL=http://zlifecycle-state-manager.:org-system.svc.cluster.local:8080
+      - ZLIFECYCLE_EVENT_API_URL=http://event-service.:org-system.svc.cluster.local
+      - AUTH0_BASE_URL=http://localhost:8080
+      - AUTH0_ISSUER_BASE_URL=https://dev-04d2288z.us.auth0.com
+    ports:
+      - "8080:8080"
+    volumes:
+      - type: bind
+        source: ./bff
+        target: /app
+    depends_on:
+      - api
+
+volumes: 
+  cloudknit-db-config:
+  cloudknit-db-data:

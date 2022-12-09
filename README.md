@@ -11,6 +11,36 @@ Environment as Code (EaC) is an abstraction over cloud-native tools that provide
 ![Where CloudKnit connects with existing tools](/assets/images/existing-tools.png)
 *<center>Diagram 1: Where does CloudKnit fit in with existing tools</center>*
 
+## Table of Contents
+
+* [Getting Started](#getting-started)
+* [Why we built CloudKnit](#why-we-built-cloudknit)
+* [Other Challenges](#other-challenges)
+* [How does CloudKnit work?](#how-does-cloudknit-work)
+* [Environment Visibility & Workflow](#environment-visibility--workflow)
+* [Conclusion](#conclusion)
+
+## Getting Started
+
+> NOTE: This section is a work in progress and currently _very_ slim. 😬
+
+### Requirements
+
+* [Golang >=1.18](https://golang.google.cn/learn/)
+* [Node >=16](https://nodejs.org/en/)
+* [Docker](https://www.docker.com/)
+* [Docker Compose](https://docs.docker.com/compose/)
+* [AWS Account](https://aws.amazon.com/)
+* [Auth0 Tenant](https://auth0.com/docs/get-started/auth0-overview/create-tenants)
+
+### Running Locally
+
+1. `cp .env.secrets.example .env.secrets.local` - All keys in this file should be set
+1. `docker-compose up` - Starts MySQL, event-service, bff, and api
+1. `cd web && npm run start:local`
+
+All projects will hot-reload so no need to restart processes manually.
+
 ## Why we built CloudKnit
 
 There are tools today that allow us to manage cloud environments but as the environments become more complex and teams look for advanced use cases, existing tools can fall short. This causes some teams to build and maintain in-house solutions. 
