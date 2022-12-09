@@ -190,6 +190,7 @@ export const ZWorkflowDiagram: FC<Props> = ({ nodes, approvedBy }: Props) => {
 							accordionContent: accordionContent(
 								node.displayName === 'approve' ? node.getZFeedbackModal() : getContent(node)
 							),
+							collapsed: node.phase === 'Succeeded'
 						};
 					})
 			);
