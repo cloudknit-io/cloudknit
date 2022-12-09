@@ -124,7 +124,9 @@ export const ZWorkflowDiagram: FC<Props> = ({ nodes, approvedBy }: Props) => {
 				/>
 			);
 		} else {
-			return <ZStreamRenderer key={node.name} subject={node.getNodeLogs().listen()} Component={ZEditor} />;
+			return <ZStreamRenderer key={node.name} subject={node.getNodeLogs().listen()} Component={ZEditor} componentProps={{
+				readOnly: true
+			}} />;
 		}
 	};
 
@@ -190,7 +192,7 @@ export const ZWorkflowDiagram: FC<Props> = ({ nodes, approvedBy }: Props) => {
 							accordionContent: accordionContent(
 								node.displayName === 'approve' ? node.getZFeedbackModal() : getContent(node)
 							),
-							collapsed: node.phase === 'Succeeded'
+							collapsed: index < nodes.length - 1
 						};
 					})
 			);
