@@ -13,7 +13,7 @@ Environment as Code (EaC) is an abstraction over cloud-native tools that provide
 
 ## Table of Contents
 
-* [Getting Started]()
+* [Getting Started](#getting-started)
 * [Why we built CloudKnit](#why-we-built-cloudknit)
 * [Other Challenges](#other-challenges)
 * [How does CloudKnit work?](#how-does-cloudknit-work)
