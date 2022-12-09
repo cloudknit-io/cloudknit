@@ -473,25 +473,6 @@ export class ReconciliationService {
     });
   }
 
-  async putObject(
-    customerId: string,
-    path: string,
-    contents: Express.Multer.File
-  ) {
-    return await this.s3h.copyToS3(
-      `zlifecycle-${this.ckEnvironment}-tfplan-${customerId}`,
-      path,
-      contents
-    );
-  }
-
-  async downloadObject(customerId: string, path: string) {
-    return await this.s3h.getObjectStream(
-      `zlifecycle-${this.ckEnvironment}-tfplan-${customerId}`,
-      path
-    );
-  }
-
   async getStateFile(
     org: Organization,
     team: string,

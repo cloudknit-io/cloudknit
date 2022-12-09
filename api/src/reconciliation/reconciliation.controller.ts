@@ -73,38 +73,6 @@ export class ReconciliationController {
     return await this.reconciliationService.saveOrUpdateComponent(req.org, runData);
   }
 
-  @Post("component/putObject")
-  @UseInterceptors(FileInterceptor("file"))
-  async putObject(
-    @UploadedFile() file: Express.Multer.File,
-    @Body() body: any
-  ) {
-    // QUESTION : Is this still in use? It does not exist in BFF
-    return {
-      message: await this.reconciliationService.putObject(
-        body.customerId,
-        body.path,
-        file
-      ),
-    };
-  }
-
-  @Post("component/downloadObject")
-  async downloadObject(@Res() response, @Body() body: any) {
-    // QUESTION : Is this still in use? It does not exist in BFF
-    const stream = await this.reconciliationService.downloadObject(
-      body.customerId,
-      body.path
-    );
-    stream.pipe(response);
-  }
-
-  @Patch("component/update")
-  async patchComponent(@Request() req, @Body() runData: any) {
-    // QUESTION : Is this still in use? It does not exist in BFF
-    return await this.reconciliationService.saveOrUpdateComponent(req.org, runData);
-  }
-
   @Get("component/:id")
   async getComponents(@Request() req, @Param("id") id: string): Promise<ComponentAudit[]> {
     return await this.reconciliationService.getComponentAuditList(req.org, id);
@@ -129,21 +97,6 @@ export class ReconciliationController {
       environment,
       component,
       id
-    );
-  }
-
-  @Get("component/latestLogs/:team/:environment/:component")
-  async getLatestLogs(
-    @Request() req,
-    @Param("team") team: string,
-    @Param("environment") environment: string,
-    @Param("component") component: string
-  ) {
-    return await this.reconciliationService.getLatestLogs(
-      req.org,
-      team,
-      environment,
-      component
     );
   }
 
