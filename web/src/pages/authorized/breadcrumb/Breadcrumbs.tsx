@@ -32,22 +32,6 @@ export const Breadcrumbs: FC = () => {
 				break;
 			case FilterRegion.ENVIRONMENT:
 				filter = LocalStorage.getItem<[]>(LocalStorageKey.ENVIRONMENTS) || [];
-				type = history.location.pathname.split('/').slice(-1)[0];
-				break;
-			case FilterRegion.COMPONENTS:
-				const subPath = '/' + tokens.slice(1, FilterRegion.COMPONENTS).join('/');
-				filter = [
-					{
-						name: 'Infra',
-						path: subPath + '/infra',
-					},
-				];
-				if (FeatureRoutes[FeatureKeys.APPLICATIONS]) {
-					filter.push({
-						name: 'Apps',
-						path: subPath + '/apps',
-					});
-				}
 				break;
 			default:
 				filter = [];
@@ -75,7 +59,7 @@ export const Breadcrumbs: FC = () => {
 		} else {
 			const tokens = pathname.split('/');
 			setBreadcrumbInfo(
-				tokens.map(
+				tokens.filter((_e, i) => i < 3).map(
 					(t, _i): BreadcrumbInfo => {
 						if (_i === 0) {
 							return {

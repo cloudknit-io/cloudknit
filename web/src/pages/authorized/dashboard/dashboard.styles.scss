@@ -1,4 +1,4 @@
-@import '../../../assets/styles/colors';
+@import '../../../assets/styles/colors.scss';
 @import '../../../assets/styles/config.scss';
 .d3-container {
 	background: #eee;
@@ -83,24 +83,96 @@
 #sunburst, #cluster {
 	.wedge {
 		&--successful {
-			fill: $argo-success-color-light;
+			fill: rgb(135, 230, 135); //$dag-successful;
 		}
 
 		&--failed {
-			fill: $label-color-pink;
+			fill: rgb(249, 212, 218); // $dag-failed;
 		}
 
 		&--pending {
-			fill: $label-color-orange;
+			fill: $dag-waiting;
 		}
 		&--unknown {
-			fill: $brand-color-orange;
+			fill: rgb(194, 148, 135);//$dag-waiting-for-parent;
 		}
 		&--waiting {
-			fill: $zlifecycle-yellow;
+			fill: $dag-reconciling;
 		}
 		&--running {
-			fill: $argo-color-green;
+			fill: $dag-running;
+		}
+		&--destroyed {
+			fill: rgb(182, 182, 182);
+		}
+	}
+}
+
+div.graph-container {
+	box-shadow: 0 0 10px #eee;
+	background: #fff;
+	border-radius: 10px;
+	display: flex;
+	flex-direction: column;
+	transition: all 0.8s;
+	button {
+		cursor: pointer;
+	}
+	label,
+	button {
+		font-size: 1.4em;
+		font-family: 'DM Sans';
+		font-weight: bold;
+	}
+	.tooltip {
+		position: absolute;
+		transition: all 0.3s;
+		&-text {
+			padding: 5px 10px;
+			background-color: black;
+			color: $ck-green;
+			border-radius: 5px;
+			box-shadow: 0 0 10px #333;
+		}
+	}
+	> .pack-container {
+		display: flex;
+		justify-content: center;
+		// align-items: center;
+		~.tooltip-d3.com-cards {
+			transition: all 0.3s;
+			max-height: 300px;
+			overflow-y: auto;
+			display: flex;
+			align-items: center;
+			padding: 5px;
+			justify-content: center;
+			margin: 0px;
+			&.hide {
+				transform: scale(0);
+			}
+			> .com-card {
+				width: 500px;
+				// display: flex;
+			}
+		}
+		> svg {
+			height: 95vh;
+			circle {
+				transition: all 0.3s;
+				&:hover {
+					filter: drop-shadow( 0px 0px 20px #bbb);
+					stroke-width: 5px;
+					stroke: black;
+				}
+			}
+			.selected {
+				stroke-width: 5px;
+				stroke: black;
+			}
+			.striped {
+				stroke-dasharray: 2px 2px 2px;
+			}
 		}
 	}
 }

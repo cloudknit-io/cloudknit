@@ -6,6 +6,7 @@ import { ZDropdownMenuJSX } from 'components/molecules/dropdown-menu/DropdownMen
 import { NavItem } from 'models/nav-item.models';
 import { TopNav } from 'components/organisms/top-nav/TopNav';
 import { BradAdarshFeatureVisible, FeatureKeys, FeatureRoutes } from 'pages/authorized/feature_toggle';
+import { useHistory } from 'react-router-dom';
 
 require('./top-bar.scss');
 
@@ -55,7 +56,8 @@ const navItems: NavItem[] = [
 			},
 		],
 	},
-	{ title: 'Infra Components', path: '/all/all/infra' },
+	{ title: 'Infra Components', path: '/all/all' },
+	{ title: 'Overview', path: '/overview', visible: () => BradAdarshFeatureVisible()},
 	{ title: 'Dashboard', path: '/demo-dashboard', visible: () => BradAdarshFeatureVisible() },
 	{ title: 'Builder', path: '/builder', visible: () => BradAdarshFeatureVisible() },
 	{ title: 'Settings', path: '/settings', visible: () => AuthStore.getUser()?.role === 'Admin' },
@@ -65,12 +67,15 @@ const navItems: NavItem[] = [
 export const TopBar = ({ title }: TopBarProps) => {
 	const [showDropdown, setShowDropDown] = useState<boolean>(false);
 	const currentUser = AuthStore.getUser();
+	const history = useHistory();
 
 	return (
 		<div className="top-bar" key="top-bar">
 			<div className="top-bar__flex">
 				<div className="top-bar__logo-container">
-					<Logo style={{ width: '80px', marginRight: '30px' }} className="top-bar__logo" />
+					<Logo onClick={() => {
+						history.push('/');
+					}} style={{ width: '80px', marginRight: '30px', cursor: 'pointer' }} className="top-bar__logo" />
 				</div>
 			</div>
 			<div className="top-bar__flex">

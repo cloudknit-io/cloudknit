@@ -416,7 +416,7 @@ export function orgRoutes(router: express.Router) {
 
     return (
       createProxy(org, "/error-api", {
-        target: `${config.eventApiUrl(org.name)}:8081`,
+        target: `${process.env.ZLIFECYCLE_EVENT_API_URL}:8081`,
         changeOrigin: true,
         secure: false,
         cookieDomainRewrite: "",
@@ -438,7 +438,7 @@ export function orgRoutes(router: express.Router) {
 
     return (
       createProxy(org, "/events", {
-        target: `${config.eventApiUrl(org.name)}:8082`,
+        target: `${process.env.ZLIFECYCLE_EVENT_API_URL}:8082`,
         changeOrigin: true,
         secure: false,
         cookieDomainRewrite: "",
