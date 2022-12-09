@@ -162,10 +162,15 @@ spec:
 		return Promise.resolve({});
 	}
 
-	onFinish(): Promise<any> {
+	async onFinish(): Promise<any> {
 		LocalStorage.setItem<QuickStartContext>(LocalStorageKey.QUICK_START_STEP, { ctx: {}, step: 0 });
-		window.location.href = `${process.env.REACT_APP_BASE_URL}`;
-		return Promise.resolve({});
+		const org = await AuthStore.fetchOrganizationStatus();
+		if (org.provisioned) {
+			AuthStore.redirectToHome();
+		} else {
+			window.location.href = `${process.env.REACT_APP_BASE_URL}`;
+			return Promise.resolve({});
+		}
 	}
 
 	render(baseClassName: string, ctx: any, nm?: NotificationsManager) {
