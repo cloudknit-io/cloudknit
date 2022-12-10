@@ -25,6 +25,9 @@ export const ZEditor: FC<Props> = (props: Props) => {
 				value={data}
 				options={{
 					readOnly: readOnly,
+					scrollbar: {
+						alwaysConsumeMouseWheel: false
+					},
 					...options,
 				}}
 				onChange={onChange}
