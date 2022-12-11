@@ -63,7 +63,7 @@ func GenerateCompanyApp(company *stablev1.Company) *appv1.Application {
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: "default",
+			Project: env.Config.CompanyName,
 			SyncPolicy: &appv1.SyncPolicy{
 				Automated: &appv1.SyncPolicyAutomated{
 					Prune: true,
@@ -88,7 +88,7 @@ func GenerateTeamApp(team *stablev1.Team) *appv1.Application {
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: team.Spec.TeamName,
+			Project: env.Config.CompanyName,
 			SyncPolicy: &appv1.SyncPolicy{
 				Automated: &appv1.SyncPolicyAutomated{
 					Prune: true,
@@ -115,7 +115,7 @@ func GenerateEnvironmentApp(environment *stablev1.Environment) *appv1.Applicatio
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: environment.Spec.TeamName,
+			Project: env.Config.CompanyName,
 			SyncPolicy: &appv1.SyncPolicy{
 				Automated: &appv1.SyncPolicyAutomated{
 					Prune:    true,
@@ -180,7 +180,7 @@ func GenerateEnvironmentComponentApps(e *stablev1.Environment, ec *stablev1.Envi
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: e.Spec.TeamName,
+			Project: env.Config.CompanyName,
 			SyncPolicy: &appv1.SyncPolicy{
 				Automated: &appv1.SyncPolicyAutomated{
 					Prune: true,
@@ -232,7 +232,7 @@ func GenerateTeamConfigWatcherApp(team *stablev1.Team) *appv1.Application {
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: team.Spec.TeamName,
+			Project: env.Config.CompanyName,
 			SyncPolicy: &appv1.SyncPolicy{
 				Automated: &appv1.SyncPolicyAutomated{
 					Prune: true,
@@ -258,7 +258,7 @@ func GenerateCompanyConfigWatcherApp(customerName string, companyConfigRepo stri
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: "default",
+			Project: env.Config.CompanyName,
 			SyncPolicy: &appv1.SyncPolicy{
 				Automated: &appv1.SyncPolicyAutomated{
 					Prune: true,
@@ -308,7 +308,7 @@ func GenerateConfigWatcherBootstrapApp() *appv1.Application {
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: "default",
+			Project: env.Config.CompanyName,
 			SyncPolicy: &appv1.SyncPolicy{
 				Automated: &appv1.SyncPolicyAutomated{
 					Prune: true,
