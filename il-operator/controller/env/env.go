@@ -222,11 +222,7 @@ func StateManagerNamespace() string {
 }
 
 func ArgocdNamespace() string {
-	val, exists := os.LookupEnv("COMPANY_NAME")
-	if exists {
-		return fmt.Sprintf("%s-system", val)
-	}
-	return "argocd"
+	return CloudKnitSystemNamespace()
 }
 
 func ArgoWorkflowsNamespace() string {
