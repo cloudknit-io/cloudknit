@@ -255,7 +255,7 @@ export function orgRoutes(router: express.Router) {
 
     return (
       createProxy(org, "/cd", {
-        target: config.argoCDUrl(org.name),
+        target: config.argoCDUrl("zlifecycle"),
         changeOrigin: true,
         secure: true,
         cookieDomainRewrite: "",
