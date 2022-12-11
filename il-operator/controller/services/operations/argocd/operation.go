@@ -7,6 +7,7 @@ import (
 
 	argocdapi "github.com/compuzest/zlifecycle-il-operator/controller/common/argocd"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/aws/awseks"
+	"github.com/compuzest/zlifecycle-il-operator/controller/env"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/util"
 
@@ -106,13 +107,18 @@ func RegisterRepo(log *logrus.Entry, api argocdapi.API, repoOpts *argocdapi.Repo
 		body = argocdapi.CreateRepoViaGitHubAppBody{
 			Repo:                    util.RewriteGitHubURLToHTTPS(repoOpts.RepoURL, false),
 			Name:                    repoName,
+			Project:                 env.Config.CompanyName,
 			GitHubAppPrivateKey:     string(repoOpts.GitHubAppPrivateKey),
 			GitHubAppInstallationID: repoOpts.GitHubAppInstallationID,
 			GitHubAppID:             repoOpts.GitHubAppID,
 		}
 	} else {
 		l.Infof("Registering git repo %s in ArgoCD using SSH mode", repoOpts.RepoURL)
-		body = argocdapi.CreateRepoViaSSHBody{Repo: repoOpts.RepoURL, Name: repoName, SSHPrivateKey: repoOpts.SSHPrivateKey}
+		body = argocdapi.CreateRepoViaSSHBody{
+			Repo:          repoOpts.RepoURL,
+			Name:          repoName,
+			Project:       env.Config.CompanyName,
+			SSHPrivateKey: repoOpts.SSHPrivateKey}
 	}
 	resp2, err := api.CreateRepository(body, bearer)
 	if err != nil {
