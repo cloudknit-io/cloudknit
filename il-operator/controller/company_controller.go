@@ -208,6 +208,11 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		r.LogV2.Infof("No git changes to commit for company %s, no-op reconciliation.", company.Spec.CompanyName)
 	}
 
+	if _, err := argocd.TryCreateProject(apmCtx, watcherServices.ArgocdClient, r.LogV2, company.Spec.CompanyName, env.Config.GitHubCompanyOrganization); err != nil {
+		companyErr := zerrors.NewTeamError(company.Spec.CompanyName, perrors.Wrap(err, "error trying to create argocd project"))
+		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
+	}
+
 	if err := argocd.TryCreateBootstrapApps(apmCtx, watcherServices.ArgocdClient, r.Log); err != nil {
 		companyErr := zerrors.NewCompanyError(company.Spec.CompanyName, perrors.Wrap(err, "error creating company bootstrap argocd app"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)

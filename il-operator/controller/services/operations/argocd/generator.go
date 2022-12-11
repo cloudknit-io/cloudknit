@@ -5,10 +5,9 @@ import (
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/util"
 
-	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/il"
-
 	appv1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
+	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/il"
 	"github.com/compuzest/zlifecycle-il-operator/controller/env"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -285,7 +284,7 @@ func GenerateCompanyBootstrapApp() *appv1.Application {
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: "default",
+			Project: env.Config.Company,
 			SyncPolicy: &appv1.SyncPolicy{
 				Automated: &appv1.SyncPolicyAutomated{
 					Prune: true,
