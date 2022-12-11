@@ -10,7 +10,7 @@ import (
 
 func toProject(name string, group string) *appv1.AppProject {
 	typeMeta := metav1.TypeMeta{APIVersion: "argoproj.io/v1alpha1", Kind: "AppProject"}
-	objectMeta := metav1.ObjectMeta{Name: name, Namespace: env.ArgocdNamespace()}
+	objectMeta := metav1.ObjectMeta{Name: name, Namespace: env.CloudKnitSystemNamespace()}
 	spec := appv1.AppProjectSpec{
 		SourceRepos:              []string{"*"},
 		Destinations:             []appv1.ApplicationDestination{{Server: "*", Namespace: "*"}},

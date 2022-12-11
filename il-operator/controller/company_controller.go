@@ -209,7 +209,7 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	if _, err := argocd.TryCreateProject(apmCtx, watcherServices.ArgocdClient, r.LogV2, company.Spec.CompanyName, env.Config.GitHubCompanyOrganization); err != nil {
-		companyErr := zerrors.NewTeamError(company.Spec.CompanyName, perrors.Wrap(err, "error trying to create argocd project"))
+		companyErr := zerrors.NewCompanyError(company.Spec.CompanyName, perrors.Wrap(err, "error trying to create argocd project"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, companyErr)
 	}
 
