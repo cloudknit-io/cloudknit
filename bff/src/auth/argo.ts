@@ -79,6 +79,6 @@ async function getArgoToken (orgName: string): Promise<string> {
 
 export async function getArgoCDAuthHeader (orgName: string): Promise<any> {
   return {
-    authorization: `Bearer ${await getArgoToken("zlifecycle")}`,
+    authorization: `Bearer ${await getArgoToken(orgName)}`,
   };
 }
