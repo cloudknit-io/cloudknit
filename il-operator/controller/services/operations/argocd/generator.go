@@ -284,7 +284,7 @@ func GenerateCompanyBootstrapApp() *appv1.Application {
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: env.Config.Company,
+			Project: env.Config.CompanyName,
 			SyncPolicy: &appv1.SyncPolicy{
 				Automated: &appv1.SyncPolicyAutomated{
 					Prune: true,
