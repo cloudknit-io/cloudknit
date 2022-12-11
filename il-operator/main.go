@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"flag"
 	"fmt"
+
 	"github.com/compuzest/zlifecycle-il-operator/controller/services/webhooks/mutating"
 	"github.com/compuzest/zlifecycle-il-operator/controller/services/webhooks/validating"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -203,6 +204,9 @@ func getWatchedNamespaces() []string {
 	}
 	if systemNamespace != executorNamespace {
 		namespaces = append(namespaces, executorNamespace)
+	}
+	if systemNamespace != env.ArgocdNamespace() {
+		namespaces = append(namespaces, env.ArgocdNamespace())
 	}
 	return namespaces
 }
