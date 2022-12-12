@@ -18,7 +18,7 @@ type Props = {
 export class SetupTeamYaml extends BaseGuide implements IGuide {
 	private static instance: SetupTeamYaml | null = null;
 	private team_name = 'default';
-	private env_name = 'default';
+	private env_name = 'dev';
 
 	private SetupTeamYamlUI: React.FC<Props> = ({ baseClassName, ctx, nm }) => {
 		const cls = (className: string) => `${baseClassName}_section-guide${className}`;
