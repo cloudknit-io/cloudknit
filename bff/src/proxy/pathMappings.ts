@@ -76,7 +76,7 @@ const CD_PATH_MAPPINGS = [
   {
     path: "/cd/api/v1/projects/:environmentId/delete",
     newPath: (params: any) =>
-      `/api/v1/applications/${params.environmentId}/resource?name=${params.environmentId}&namespace=zlifecycle-executor&resourceName=${params.environmentId}&version=v1alpha1&kind=Workflow&group=argoproj.io&force=true&orphan=false`,
+      `/api/v1/applications/${params.environmentId}/resource?name=${params.environmentId}&namespace=${params.orgName}-executor&resourceName=${params.environmentId}&version=v1alpha1&kind=Workflow&group=argoproj.io&force=true&orphan=false`,
   },
   {
     path: "/cd/api/v1/projects/watcher/:projectId/sync",
