@@ -37,13 +37,12 @@ async function createSession(orgName: string) {
     return null;
   }
 
-  const argoCdOrgName = "zlifecycle"
   const session = { 
-    token: await argoCdLogin(argoCdOrgName, 'zlapi', argoCdPassword), 
+    token: await argoCdLogin("zlifecycle", 'zlapi', argoCdPassword),
     ttl: Date.now() + 10800000 // 3 hours
   };
 
-  sessions[argoCdOrgName] = session;
+  sessions[orgName] = session;
 
   return session;
 }
