@@ -88,6 +88,12 @@ export class ConfiguringZlifecycle extends BaseGuide implements IGuide {
 											placeholder={
 												repoUrl || 'https://github.com/zl-zbank-tech/cloudknit-config.git'
 											}
+											onBlur={(e) => {
+												const val = e.target.value;
+												if (val.startsWith('https') && !val.endsWith('.git')) {
+													e.target.value = val + '.git';
+												}
+											}}
 										/>
 										<button
 											type="button"
