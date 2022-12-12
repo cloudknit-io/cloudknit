@@ -72,7 +72,7 @@ spec:
 				<h4 className={`${cls('_heading')}`}>Provision First Environment</h4>
 				<div className={`${cls('_content')}`}>
 					<form ref={formRef} className={`${cls('_form')}`}>
-						<section className={`${cls('_form-group')}`}>
+						<section className={`${cls('_form-group')} ${cls('_form-group-inline')}`}>
 							<label className="required">Team Name</label>
 							<input
 								type="text"
@@ -97,7 +97,7 @@ spec:
 								and end with an alphanumeric character
 							</em>
 						</section>
-						<section className={`${cls('_form-group')}`}>
+						<section className={`${cls('_form-group')} ${cls('_form-group-inline')}`}>
 							<label className="required">Environment Name</label>
 							<input
 								type="text"
@@ -122,7 +122,7 @@ spec:
 								and end with an alphanumeric character
 							</em>
 						</section>
-						<section className={`${cls('_form-group')}`}>
+						<section className={`${cls('_form-group')} ${cls('_form-group-flex')}`}>
 							<label>
 								<span className="break">
 									Add a hello-world.yaml file with following content in the root directory of{' '}
