@@ -36,7 +36,7 @@ export class ConfigureAWSCreds extends BaseGuide implements IGuide {
 				<h4 className={`${cls('_heading')}`}>Provide AWS Credentials</h4>
 				<div className={`${cls('_content')}`}>
 					<form>
-						<section className={`${cls('_form-group')}`}>
+						<section className={`${cls('_form-group')} ${cls('_form-group-flex')}`}>
 							<label>Note: Your environment will be provisioned on this AWS account.</label>
 							<div>
 							 Check <a href="https://docs.aws.amazon.com/powershell/latest/userguide/pstools-appendix-sign-up.html" target='_blank'>this</a> article to find out how to get following keys.

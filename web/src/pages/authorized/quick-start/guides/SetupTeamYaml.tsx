@@ -18,7 +18,7 @@ type Props = {
 export class SetupTeamYaml extends BaseGuide implements IGuide {
 	private static instance: SetupTeamYaml | null = null;
 	private team_name = 'default';
-	private env_name = 'default';
+	private env_name = 'dev';
 
 	private SetupTeamYamlUI: React.FC<Props> = ({ baseClassName, ctx, nm }) => {
 		const cls = (className: string) => `${baseClassName}_section-guide${className}`;
@@ -72,7 +72,7 @@ spec:
 				<h4 className={`${cls('_heading')}`}>Provision First Environment</h4>
 				<div className={`${cls('_content')}`}>
 					<form ref={formRef} className={`${cls('_form')}`}>
-						<section className={`${cls('_form-group')}`}>
+						<section className={`${cls('_form-group')} ${cls('_form-group-inline')}`}>
 							<label className="required">Team Name</label>
 							<input
 								type="text"
@@ -97,7 +97,7 @@ spec:
 								and end with an alphanumeric character
 							</em>
 						</section>
-						<section className={`${cls('_form-group')}`}>
+						<section className={`${cls('_form-group')} ${cls('_form-group-inline')}`}>
 							<label className="required">Environment Name</label>
 							<input
 								type="text"
@@ -122,7 +122,7 @@ spec:
 								and end with an alphanumeric character
 							</em>
 						</section>
-						<section className={`${cls('_form-group')}`}>
+						<section className={`${cls('_form-group')} ${cls('_form-group-flex')}`}>
 							<label>
 								<span className="break">
 									Add a hello-world.yaml file with following content in the root directory of{' '}
