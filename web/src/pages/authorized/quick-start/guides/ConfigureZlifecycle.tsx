@@ -61,7 +61,7 @@ export class ConfiguringZlifecycle extends BaseGuide implements IGuide {
 						<div className={`${cls('_content')}`}>
 							<form ref={formRef} className={`${cls('_form')}`}>
 								<h6 className={`${cls('_heading')}`}>Step 1.</h6>
-								<section className={`${cls('_form-group')}`}>
+								<section className={`${cls('_form-group')} ${cls('_form-group-flex')}`}>
 									<span>
 										Create a new public or private repo in your GitHub org. The name doesn't matter
 										but we suggest <q>cloudknit-config</q>.
@@ -70,7 +70,7 @@ export class ConfiguringZlifecycle extends BaseGuide implements IGuide {
 									<em>Note: Please add README while creating the repo so it&lsquo;s not empty.</em>
 								</section>
 								<h6 className={`${cls('_heading')}`}>Step 2.</h6>
-								<section className={`${cls('_form-group')}`}>
+								<section className={`${cls('_form-group')} ${cls('_form-group-flex')}`}>
 									{repoUrl ? (
 										<span>Github Repo is set to {repoUrl} you can update the URL here.</span>
 									) : (
@@ -88,6 +88,12 @@ export class ConfiguringZlifecycle extends BaseGuide implements IGuide {
 											placeholder={
 												repoUrl || 'https://github.com/zl-zbank-tech/cloudknit-config.git'
 											}
+											onBlur={(e) => {
+												const val = e.target.value;
+												if (val.startsWith('https') && !val.endsWith('.git')) {
+													e.target.value = val + '.git';
+												}
+											}}
 										/>
 										<button
 											type="button"
@@ -99,7 +105,7 @@ export class ConfiguringZlifecycle extends BaseGuide implements IGuide {
 									</div>
 								</section>
 								<h6 className={`${cls('_heading')}`}>Step 3.</h6>
-								<section className={`${cls('_form-group')}`}>
+								<section className={`${cls('_form-group')} ${cls('_form-group-flex')}`}>
 									<span>
 										Provide CloudKnit access to the github repo by following steps provided{' '}
 										<a
