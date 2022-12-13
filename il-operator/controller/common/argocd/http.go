@@ -119,7 +119,7 @@ func (c *HTTPClient) CreateRepository(body interface{}, bearerToken string) (*ht
 }
 
 func (c *HTTPClient) DoesApplicationExist(name string, bearerToken string) (bool, error) {
-	url := fmt.Sprintf("%s/api/v1/applications/%s?project=%s", c.serverURL, name, env.Config.CompanyName)
+	url := fmt.Sprintf("%s/api/v1/applications/%s?projects=%s", c.serverURL, name, env.Config.CompanyName)
 	req, err := http.NewRequestWithContext(c.ctx, http.MethodGet, url, http.NoBody)
 	if err != nil {
 		return false, errors.Wrap(err, "error creating GET request")
