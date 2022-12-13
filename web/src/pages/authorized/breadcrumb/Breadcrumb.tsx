@@ -24,7 +24,7 @@ export const Breadcrumb: FC<BreadcrumbProps> = ({ title, path, filters }: Breadc
 
 	return (
 		<button
-			onClick={() => path === '/dashboard' && pushRoute(path)}
+			onClick={() => path !== '/all' && pushRoute(path)}
 			className={`breadcrumb ${history.location.pathname === path ? 'breadcrumb-active' : ''}`}>
 			<ZText.Body size="14" lineHeight="18">
 				{title}

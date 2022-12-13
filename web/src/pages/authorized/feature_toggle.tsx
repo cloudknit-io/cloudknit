@@ -55,5 +55,5 @@ export function BradAdarshFeatureVisible() : boolean {
 	const user = AuthStore.getUser();
 
 	// sometimes life hands you lemons...
-	return ['shahadarsh', 'bradj'].includes(user?.username || '');
+	return ['shahadarsh', 'bradj', 'shashank-cloudknit-io'].includes(user?.username || '');
 }

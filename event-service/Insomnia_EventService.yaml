@@ -1,0 +1,150 @@
+_type: export
+__export_format: 4
+__export_date: 2022-12-07T23:08:12.822Z
+__export_source: insomnia.desktop.app:v2022.6.0
+resources:
+  - _id: req_822131f20ec641f6a33ce895d1f7e609
+    parentId: wrk_13b9b55c7ec343f0b0d92f968c2b3bab
+    modified: 1670449182369
+    created: 1670447838036
+    url: "{{ _.url }}/status?company={{ _.company }}"
+    name: Status
+    description: ""
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication: {}
+    metaSortKey: -1670447838036
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: wrk_13b9b55c7ec343f0b0d92f968c2b3bab
+    parentId: null
+    modified: 1670447803893
+    created: 1670447803893
+    name: CK - EventService
+    description: ""
+    scope: collection
+    _type: workspace
+  - _id: req_d0d6ffe2d0004bbf80e2b62256d426a2
+    parentId: wrk_13b9b55c7ec343f0b0d92f968c2b3bab
+    modified: 1670450024708
+    created: 1670449714818
+    url: "{{ _.url }}/events"
+    name: Create Env Success Event
+    description: ""
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+        	"scope": "environment",
+        	"object": "env1",
+        	"meta": {
+        		"company": "zbank",
+        		"team": "payment",
+        		"environment": "env1"
+        	},
+        	"eventType": "environment_reconcile_success"
+        }
+    parameters: []
+    headers:
+      - name: Content-Type
+        value: application/json
+    authentication: {}
+    metaSortKey: -1669540995909
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_ea540558360d4e59a48df4eaf28f3971
+    parentId: wrk_13b9b55c7ec343f0b0d92f968c2b3bab
+    modified: 1670450859314
+    created: 1670450030609
+    url: "{{ _.url }}/events"
+    name: Create Env Error Event
+    description: ""
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+        	"scope": "environment",
+        	"object": "comp-error",
+        	"meta": {
+        		"company": "zbank1",
+        		"team": "equity",
+        		"environment": "comp-error"
+        	},
+        	"eventType": "environment_reconcile_error",
+        	"payload": [
+        		"some test error happened",
+        		"another error happened"
+        	]
+        }
+    parameters: []
+    headers:
+      - name: Content-Type
+        value: application/json
+    authentication: {}
+    metaSortKey: -1669087574845.5
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: env_bc90292cb3f0625e5c8e319462211dfe017cde11
+    parentId: wrk_13b9b55c7ec343f0b0d92f968c2b3bab
+    modified: 1670447807597
+    created: 1670447803897
+    name: Base Environment
+    data: {}
+    dataPropertyOrder: {}
+    color: null
+    isPrivate: false
+    metaSortKey: 1670447803897
+    _type: environment
+  - _id: jar_bc90292cb3f0625e5c8e319462211dfe017cde11
+    parentId: wrk_13b9b55c7ec343f0b0d92f968c2b3bab
+    modified: 1670447803898
+    created: 1670447803898
+    name: Default Jar
+    cookies: []
+    _type: cookie_jar
+  - _id: spc_024b0e5306374d72ab1d44a03268b5e0
+    parentId: wrk_13b9b55c7ec343f0b0d92f968c2b3bab
+    modified: 1670447803894
+    created: 1670447803894
+    fileName: CK - EventService
+    contents: ""
+    contentType: yaml
+    _type: api_spec
+  - _id: env_028eeae216c74f5ca9d99dcc875cd32e
+    parentId: env_bc90292cb3f0625e5c8e319462211dfe017cde11
+    modified: 1670450328965
+    created: 1670447811847
+    name: Local
+    data:
+      url: http://localhost:8081
+      company: zbank
+    dataPropertyOrder:
+      "&":
+        - url
+        - company
+    color: null
+    isPrivate: false
+    metaSortKey: 1670447811847
+    _type: environment

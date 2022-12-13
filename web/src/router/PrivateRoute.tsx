@@ -2,6 +2,7 @@ import AuthStore from 'auth/AuthStore';
 import { cleanDagNodeCache } from 'components/organisms/tree-view/node-figure-helper';
 import { LOGIN_URL } from 'pages/anonymous/anonymousRouteNames';
 import { NotFound } from 'pages/anonymous/not-found/NotFound';
+import { QUICK_START_URL } from 'pages/authorized/authorizedRouteNames';
 import { QuickStart } from 'pages/authorized/quick-start/QuickStart';
 import { TermsAndConditions } from 'pages/authorized/terms-and-conditions/TermsAndConditons';
 import React, { ElementType, FC, ReactNode, useEffect } from 'react';
@@ -30,7 +31,7 @@ const PrivateRoute: FC<PrivateRouteProps> = ({ component: Component, ...rest }: 
 						return <NotFound />
 					}
 
-					if (user.selectedOrg && !user.selectedOrg.githubRepo) {
+					if ((user.selectedOrg && !user.selectedOrg.githubRepo) || rest.location?.pathname === QUICK_START_URL) {
 						return <QuickStart/>;
 					}
 

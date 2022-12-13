@@ -8,6 +8,7 @@ import { Teams } from './teams/Teams';
 import { FeatureRoutes } from './feature_toggle';
 import { ComponentResourceTree } from 'components/organisms/tree-view/ComponentResourceTree';
 import { QuickStart } from 'pages/authorized/quick-start/QuickStart';
+import { Overview } from './overview/Overview';
 import { TermsAndConditions } from './terms-and-conditions/TermsAndConditons';
 
 export const PROJECTS_URL = '/dashboard';
@@ -16,13 +17,15 @@ const PROFILE_URL = '/settings';
 const TEAMS_URL = '/teams';
 const ENVIRONMENT_BUILDER_URL = '/builder';
 const ENVIRONMENTS_URL = '/:projectId';
-const INFRA_URL = '/:projectId/:environmentId/infra';
+const INFRA_URL = '/:projectId/:environmentId';
 const RESOURCE_VIEW_URL = '/applications/:componentId/resource-view';
-const QUICK_START_URL = '/quick-start';
+export const QUICK_START_URL = '/quick-start';
+const OVERVIEW_URL = '/overview';
 export const ORG_REGISTRATION = '/org-registration';
 
 const urls = [
 	{ key: 'ORG_REGISTRATION', value: ORG_REGISTRATION},
+  { key: 'OVERVIEW_URL', value: OVERVIEW_URL},
 	{ key: 'QUICK_START_URL', value: QUICK_START_URL },
 	{ key: 'ENVIRONMENT_BUILDER_URL', value: ENVIRONMENT_BUILDER_URL },
 	{ key: 'TEAMS_URL', value: TEAMS_URL },
@@ -36,15 +39,19 @@ const urls = [
 
 Reflect.ownKeys(FeatureRoutes).forEach(key => {
 	if (Reflect.get(FeatureRoutes, key) === false) {
+		switch (key) {
+			// Add a case and splice that route if feature flagged.
+			// case FeatureKeys.QUICK_START:
 		// switch (key) {
 			// case FeatureKeys.DASHBOARD:
 			// 	{
-			// 		const i = urls.findIndex(e => e.key === 'DASHBOARD_URL');
-			// 		urls.splice(i, 1);
+			// 		const i = urls.findIndex(e => e.key === 'QUICK_START_URL');
+			// 		urls.splice(i, 1s);
 			// 	}
 			// 	break;
-	// }
-}});
+		}
+	}
+});
 
 export const routes = urls;
 export const privateRouteMap: { [key: string]: React.FC } = {
@@ -57,5 +64,6 @@ export const privateRouteMap: { [key: string]: React.FC } = {
 	ENVIRONMENTS_URL: Environments,
 	INFRA_URL: EnvironmentComponents,
 	RESOURCE_VIEW_URL: ComponentResourceTree,
+	OVERVIEW_URL: Overview,
 	ORG_REGISTRATION: TermsAndConditions,
 };
