@@ -55,6 +55,8 @@ sh /argocd/login.sh $customer_id
 
 . /initialize-functions.sh
 
+sh /argocd/login.sh $customer_id
+
 sh /client/setup_github.sh || SaveAndExit "Cannot setup github ssh key"
 
 sh /client/setup_aws.sh || SaveAndExit "Cannot setup aws credentials"
