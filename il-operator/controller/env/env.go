@@ -189,7 +189,7 @@ var Config = config{
 	)),
 	ZLifecycleEventServiceURL: getOr("ZLIFECYCLE_EVENT_SERVICE_URL", fmt.Sprintf(
 		"http://event-service.%s.svc.cluster.local:8081",
-		APINamespace(),
+		CloudKnitSystemNamespace(),
 	)),
 
 	// test
