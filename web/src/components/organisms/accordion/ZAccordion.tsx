@@ -29,14 +29,26 @@ export const ZAccordion: FC<ZAccordionProps> = ({ items }: ZAccordionProps) => {
 
 export const ZAccordionPair: FC<ZAccordionPairProps> = ({ item }: ZAccordionPairProps) => {
 	const [isCollapsed, setCollapsed] = useState<boolean>(false);
+	const [localCollapse, setLocalCollapse] = useState<any>(null);
 	useEffect(() => {
+		if (localCollapse !== null) {
+			return;
+		}
 		if ([true, false].includes(item.collapsed)) {
 			setCollapsed(item.collapsed);
 		}
 	}, [item]);
+
+	const collapsed = () => {
+		if (localCollapse === null) {
+			return isCollapsed;
+		}
+		return localCollapse;
+	}
+
 	return (
-		<section className={`zaccordion ${isCollapsed ? 'collapsed' : ''}`}>
-			<div className="zaccordion-header" onClick={() => setCollapsed(!isCollapsed)}>
+		<section className={`zaccordion ${collapsed() ? 'collapsed' : ''}`}>
+			<div className="zaccordion-header" onClick={() => setLocalCollapse(localCollapse == null ? false : !localCollapse)}>
 				{item.accordionHeader}
 				<div className="chevron">
 					<Chevron />

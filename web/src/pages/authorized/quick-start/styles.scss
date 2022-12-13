@@ -151,8 +151,15 @@
 					overflow: auto;
 				}
 
-				&_form-group {
+				&_form-group-inline {
+					display: inline-flex;
+				}
+
+				&_form-group-flex {
 					display: flex;
+				}
+
+				&_form-group {	
 					padding: 10px;
 					flex-direction: column;
 					margin-bottom: 10px;
@@ -175,7 +182,7 @@
 						border-radius: 5px;
 						padding: 5px 0 5px 10px;
 						box-sizing: border-box;
-						width: 500px;
+						width: 400px;
 						transition: all 0.3s;
 						&:focus {
 							border-color: teal;
@@ -207,6 +214,7 @@
 
 						input.input ~ .error-msg {
 							display: block;
+							width: 400px;
 						}
 					}
 				}

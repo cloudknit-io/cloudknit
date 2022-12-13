@@ -1,0 +1,18 @@
+# Build the manager binary
+FROM golang:1.18 as builder
+
+WORKDIR /app
+RUN go install github.com/cosmtrek/air@latest
+
+# Copy the Go Modules manifests
+COPY go.mod go.mod
+COPY go.sum go.sum
+RUN go mod download
+COPY main.go main.go
+COPY db/ db/
+COPY .air.conf .air.conf
+COPY .version .version
+COPY internal/ internal/
+
+EXPOSE 8081 8082
+CMD [ "air" ]
