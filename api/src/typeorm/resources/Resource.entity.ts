@@ -7,7 +7,7 @@ import {
   OneToMany,
   PrimaryColumn,
 } from 'typeorm'
-import { Component } from '../costing/Component'
+import { Component } from '../component.entity'
 import { Organization } from '../Organization.entity';
 
 @Entity({

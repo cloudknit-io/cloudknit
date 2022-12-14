@@ -6,7 +6,7 @@ import { Mapper } from "src/costing/utilities/mapper";
 import { S3Handler } from "src/utilities/s3Handler";
 import { Organization } from "src/typeorm";
 import { ComponentReconcile } from "src/typeorm/reconciliation/component-reconcile.entity";
-import { Component } from "src/typeorm/reconciliation/component.entity";
+import { Component } from "src/typeorm/component.entity";
 import { EnvironmentReconcile } from "src/typeorm/reconciliation/environment-reconcile.entity";
 import { Environment } from "src/typeorm/reconciliation/environment.entity";
 import { IsNull, Like, Not } from "typeorm";
@@ -239,6 +239,10 @@ export class ReconciliationService {
 
     const env = await this.getEnvironment(org, runData.name);
 
+    if (!env) {
+      throw new BadRequestException(`could not find environment ${runData.name}`);
+    }
+
     this.logger.log(`reconcileId ${reconcileId}, component: ${runData.name} found environment ${JSON.stringify(env)} ${org.name}`);
 
     const envRecEntry = await this.environmentReconcileRepository
@@ -250,6 +254,10 @@ export class ReconciliationService {
         }
       )
       .getOne();
+
+    if (!envRecEntry) {
+      throw new BadRequestException(`could not find environmentReconcileEntry for environment ${runData.name}`);
+    }
 
     this.logger.log(`reconcileId ${reconcileId}, envRecEntry: ${JSON.stringify(envRecEntry)} for org ${org.name}`);
 
