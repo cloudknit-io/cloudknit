@@ -29,8 +29,7 @@ echo "   customer_id=${customer_id}"
 echo ""
 
 function PatchError() {
-    data='{"metadata":{"labels":{"component_status":"plan_failed"}}}'
-    argocd app patch $team_env_config_name --patch $data --type merge > null
+    UpdateComponentStatus $env_name $team_name $config_name "plan_failed"
     # TODO : Pass orgId
     sh ../audit.sh $team_name $env_name $config_name "" "plan_failed" $reconcile_id $config_reconcile_id $is_destroy 0 "noSkip" ${customer_id}
     if [ $is_destroy = true ]
@@ -60,11 +59,11 @@ if [ $result -eq 0 ]
 then
     if [ $is_destroy = true ]
     then
-        data='{"metadata":{"labels":{"component_status":"destroyed"}}}'
+        data="destroyed"
     else
-        data='{"metadata":{"labels":{"component_status":"provisioned"}}}'
+        data="provisioned"
     fi
-    argocd app patch $team_env_config_name --patch $data --type merge > null
+    UpdateComponentStatus $env_name $team_name $config_name ${data}
 
     if [ $config_sync_status == "OutOfSync" ]
     then
@@ -76,8 +75,7 @@ then
     then
         if [ $config_sync_status != "OutOfSync" ]
         then
-            data='{"metadata":{"labels":{"component_status":"out_of_sync"}}}'
-            argocd app patch $team_env_config_name --patch $data --type merge > null
+            UpdateComponentStatus $env_name $team_name $config_name "out_of_sync"
 
             if [ $env_sync_status != "OutOfSync" ]
             then
@@ -96,8 +94,8 @@ then
               --status waiting_for_approval \
               -u http://zlifecycle-state-manager."${customer_id}"-system.svc.cluster.local:8080 \
               -v
-            data='{"metadata":{"labels":{"component_status":"waiting_for_approval","audit_status":"waiting_for_approval"}}}'
-            argocd app patch $team_env_config_name --patch $data --type merge > null
+
+            UpdateComponentStatus $env_name $team_name $config_name "waiting_for_approval"
         fi
     fi
 fi

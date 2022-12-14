@@ -1,5 +1,4 @@
-data='{"metadata":{"labels":{"component_status":"destroying","audit_status":"destroying"}}}'
-argocd app patch $team_env_config_name --patch $data --type merge >null
+UpdateComponentStatus $env_name $team_name $config_name "destroying"
 
 echo $show_output_start
 echo "Executing terraform destroy..." 2>&1 | appendLogs "/tmp/apply_output.txt"
@@ -37,8 +36,7 @@ echo $show_output_end
 aws s3 cp /tmp/apply_output.txt s3://zlifecycle-$zl_env-tfplan-$customer_id/$team_name/$env_name/$config_name/$config_reconcile_id/apply_output --profile compuzest-shared
 
 if [ $result -eq 0 ]; then
-    data='{"metadata":{"labels":{"component_status":"destroyed"}}}'
-    argocd app patch $team_env_config_name --patch $data --type merge >null
+    UpdateComponentStatus $env_name $team_name $config_name "destroyed"
 else
     SaveAndExit "There is an issue with destroying"
 fi
