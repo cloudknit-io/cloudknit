@@ -152,7 +152,7 @@ func TryCreateBootstrapApps(ctx context.Context, api argocdapi.API, log logr.Log
 	}
 	if exists {
 		log.Info("Application already registered on ArgoCD",
-			"application", env.Config.companyBootstrapAppName,
+			"application", env.Config.CompanyBootstrapAppName,
 		)
 	} else {
 		companyResp, companyErr := api.CreateApplication(GenerateCompanyBootstrapApp(), bearer)
