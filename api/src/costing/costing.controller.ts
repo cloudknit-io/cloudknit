@@ -41,7 +41,7 @@ export class CostingController {
 
   @Post('saveComponent')
   async saveComponent(@Request() req, @Body() costing: CostingDto): Promise<boolean> {
-    return await this.componentService.saveComponents(req.org, costing)
+    return await this.componentService.saveOrUpdate(req.org, costing)
   }
 
   @Get('resources/:id')

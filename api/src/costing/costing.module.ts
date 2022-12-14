@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { costingEntities } from 'src/typeorm/costing';
+import { Component } from 'src/typeorm/component.entity';
 import { Environment } from 'src/typeorm/reconciliation/environment.entity';
 import { resourceEntities } from 'src/typeorm/resources';
 import { CostingController } from './costing.controller';
@@ -11,7 +11,7 @@ import { CostingStream } from './streams/costing.stream';
 @Module({
   imports: [
     TypeOrmModule.forFeature([
-      ...costingEntities,
+      Component,
       ...resourceEntities,
       Environment
     ])

@@ -1,7 +1,7 @@
 import { Resource } from 'src/typeorm/resources/Resource.entity';
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
-import { Organization } from '../Organization.entity';
-import { Environment } from '../reconciliation/environment.entity';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, UpdateDateColumn } from 'typeorm';
+import { Organization } from './Organization.entity';
+import { Environment } from './reconciliation/environment.entity';
 
 @Entity({ name: 'components' })
 export class Component {
@@ -28,6 +28,11 @@ export class Component {
   componentName: string;
 
   @Column({
+    name: 'status'
+  })
+  status: string;
+
+  @Column({
     name: 'cost',
     type: 'decimal',
     precision: 10,
@@ -35,11 +40,21 @@ export class Component {
   })
   cost: number = 0;
 
+  @UpdateDateColumn({
+    name: 'last_reconcile_datetime'
+  })
+  lastReconcileDatetime: string;
+
+  @Column({
+    default: -1
+  })
+  duration: number;
+
   @Column({
     default: false,
     type: 'boolean'
   })
-  isDeleted?: boolean
+  isDestroyed?: boolean
 
   @OneToMany(() => Resource, resource => resource.component, {
     cascade: true,

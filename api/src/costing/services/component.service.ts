@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Subject } from "rxjs";
-import { Component } from "src/typeorm/costing/Component";
+import { Component } from "src/typeorm/component.entity";
 import { Resource } from "src/typeorm/resources/Resource.entity";
 import { Repository } from "typeorm";
 import { CostingDto } from "../dtos/Costing.dto";
@@ -33,7 +33,7 @@ export class ComponentService {
   async getAll(org: Organization): Promise<Component[]> {
     const components = await this.componentRepository
       .createQueryBuilder()
-      .where('organizationId = :orgId and isDeleted = 0', {
+      .where('organizationId = :orgId and isDestroyed = 0', {
         orgId: org.id
       })
       .getMany();
@@ -67,7 +67,7 @@ export class ComponentService {
         `components.cost != -1 and 
         components.teamName = '${teamName}' and 
         components.environmentId = '${env.id}' and 
-        components.isDeleted = 0 and 
+        components.isDestroyed = 0 and 
         components.organizationId = ${org.id}`
       )
       .getRawOne();
@@ -80,7 +80,7 @@ export class ComponentService {
       .select("SUM(components.cost) as cost")
       .where(
         `components.id = '${componentId}' and 
-        components.isDeleted = 0 and
+        components.isDestroyed = 0 and
         components.organizationId = ${org.id}`)
       .getRawOne();
 
@@ -98,7 +98,7 @@ export class ComponentService {
       .select("SUM(components.cost) as cost")
       .where(
         `components.teamName = '${name}' and 
-        components.isDeleted = 0 and 
+        components.isDestroyed = 0 and 
         components.cost != -1 and
         components.organizationId = ${org.id}`
       )
@@ -112,21 +112,39 @@ export class ComponentService {
     return Number(raw.cost || 0);
   }
 
-  async saveComponents(org: Organization, costing: CostingDto): Promise<boolean> {
+  async saveOrUpdate(org: Organization, costing: CostingDto): Promise<boolean> {
     const id = `${costing.teamName}-${costing.environmentName}-${costing.component.componentName}`;
 
-    let savedComponent = (await this.componentRepository.findOne({ 
-      where: { 
-        id,
-        organization: org
-      },
-      relations: {
-        environment: true
-      } })) || null;
+    let savedComponent = (await this.componentRepository
+      .createQueryBuilder('component')
+      .leftJoinAndSelect('component.environment', 'environment')
+      .leftJoinAndSelect('component.organization', 'organization')
+      .where('component.organizationId = :orgId and component.id = :name', {
+        orgId: org.id,
+        name: id
+      })
+      .getOne()) || null;
     
-    if (costing.component.isDeleted && savedComponent) {
+    if (costing.component.isDestroyed && savedComponent) {
       savedComponent = await this.softDelete(savedComponent);
+    }
+    else if (savedComponent) {
+      // Update existing component
+      if (savedComponent.status !== costing.component.status) {
+        savedComponent.status = costing.component.status;
+      }
+  
+      if (savedComponent.cost !== costing.component.cost) {
+        savedComponent.cost = costing.component.cost;
+      }
+
+      if (savedComponent.duration !== costing.component.duration) {
+        savedComponent.duration = costing.component.duration;
+      }
+
+      savedComponent = await this.componentRepository.save(savedComponent);
     } else {
+      // Create new component
       const env = await this.envRepo
       .createQueryBuilder()
       .where('name = :envName and organizationId = :orgId', {
@@ -140,41 +158,36 @@ export class ComponentService {
       component.teamName = costing.teamName;
       component.environment = env;
       component.id = id;
+      component.status = costing.component.status;
       component.componentName = costing.component.componentName;
       component.cost = costing.component.cost;
-      component.isDeleted = costing.component.isDeleted;
-
-      await this.componentRepository.delete({
-        id: id,
-        organization: org
-      });
+      component.isDestroyed = costing.component.isDestroyed;
 
       savedComponent = await this.componentRepository.save(component);
       savedComponent.environment = env;
-
-      const resources = await this.resourceRepository.save(
-        Mapper.mapToResourceEntity(org, component, costing.component.resources)
-      );
-
-      savedComponent.resources = resources;
     }
 
-    const data = await this.getCostingStreamDto(savedComponent);
+    const resources = await this.resourceRepository.save(
+      Mapper.mapToResourceEntity(org, savedComponent, costing.component.resources)
+    );
+    savedComponent.resources = resources;
+
+    const data = await this.getCostingStreamDto(org, savedComponent);
     this.notifyStream.next({ data });
 
     return true;
   }
 
-  async getCostingStreamDto(component: Component): Promise<CostingStreamDto> {
+  async getCostingStreamDto(org: Organization, component: Component): Promise<CostingStreamDto> {
     const data: CostingStreamDto = {
       team: {
         teamId: component.teamName,
-        cost: await this.getTeamCost(component.organization, component.teamName),
+        cost: await this.getTeamCost(org, component.teamName),
       },
       environment: {
         environmentId: component.environment.name,
         cost: await this.getEnvironmentCost(
-          component.organization,
+          org,
           component.teamName,
           component.environment.name,
           // TECH DEBT: this contains the full `teamName-envName` environment name.
@@ -187,7 +200,7 @@ export class ComponentService {
       },
       component: {
         componentId: component.id,
-        cost: component.isDeleted ? 0 : component.cost,
+        cost: component.isDestroyed ? 0 : component.cost,
       },
     };
     
@@ -195,7 +208,7 @@ export class ComponentService {
   }
 
   async softDelete(component: Component): Promise<Component> {
-    component.isDeleted = true;
+    component.isDestroyed = true;
     return await this.componentRepository.save(component);
   }
 
@@ -207,7 +220,7 @@ export class ComponentService {
           id: org.id
         }
       },
-  });
+    });
 
     const roots = [];
     var resources = new Map<string, any>(
