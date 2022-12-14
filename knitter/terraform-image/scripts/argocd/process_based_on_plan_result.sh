@@ -29,7 +29,7 @@ echo "   customer_id=${customer_id}"
 echo ""
 
 function PatchError() {
-    UpdateComponentStatus $env_name $team_name $config_name "plan_failed"
+    UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "plan_failed"
     # TODO : Pass orgId
     sh ../audit.sh $team_name $env_name $config_name "" "plan_failed" $reconcile_id $config_reconcile_id $is_destroy 0 "noSkip" ${customer_id}
     if [ $is_destroy = true ]
@@ -59,11 +59,11 @@ if [ $result -eq 0 ]
 then
     if [ $is_destroy = true ]
     then
-        data="destroyed"
+        compStatus="destroyed"
     else
-        data="provisioned"
+        compStatus="provisioned"
     fi
-    UpdateComponentStatus $env_name $team_name $config_name ${data}
+    UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "${compStatus}"
 
     if [ $config_sync_status == "OutOfSync" ]
     then
@@ -75,7 +75,7 @@ then
     then
         if [ $config_sync_status != "OutOfSync" ]
         then
-            UpdateComponentStatus $env_name $team_name $config_name "out_of_sync"
+            UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "out_of_sync"
 
             if [ $env_sync_status != "OutOfSync" ]
             then
@@ -95,7 +95,7 @@ then
               -u http://zlifecycle-state-manager."${customer_id}"-system.svc.cluster.local:8080 \
               -v
 
-            UpdateComponentStatus $env_name $team_name $config_name "waiting_for_approval"
+            UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "waiting_for_approval"
         fi
     fi
 fi

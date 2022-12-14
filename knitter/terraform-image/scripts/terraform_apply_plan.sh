@@ -24,9 +24,7 @@ echo "   workspace=${workspace}"
 echo $show_output_start
 echo "Executing plan..." 2>&1 | appendLogs /tmp/plan_output.txt
 echo $show_output_end;
-# data='{"metadata":{"labels":{"component_status":"running_plan","audit_status":"running_plan"}}}'
-# argocd app patch $team_env_config_name --patch $data --type merge >null
-UpdateComponentStatus $env_name $team_name $config_name "running_plan"
+UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "running_plan"
 
 echo $show_output_start
 
@@ -53,9 +51,7 @@ echo "   config_reconcile_id=${config_reconcile_id}"
 aws s3 cp /tmp/plan_output.txt s3://zlifecycle-$zl_env-tfplan-$customer_id/$team_name/$env_name/$config_name/$config_reconcile_id/plan_output --profile compuzest-shared
 aws s3 cp terraform-plan s3://zlifecycle-$zl_env-tfplan-$customer_id/$team_name/$env_name/$config_name/tfplans/$config_reconcile_id --profile compuzest-shared
 
-# data='{"metadata":{"labels":{"component_status":"calculating_cost","audit_status":"calculating_cost"}}}'
-# argocd app patch $team_env_config_name --patch $data --type merge >null
-UpdateComponentStatus $env_name $team_name $config_name "calculating_cost"
+UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "calculating_cost"
 
 infracost breakdown --path terraform-plan --format json --log-level=warn >>output.json
 estimated_cost=$(cat output.json | jq -r ".projects[0].breakdown.totalMonthlyCost")
