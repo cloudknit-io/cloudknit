@@ -82,18 +82,19 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	delayTeamReconcileOnInitialRun(r.LogV2, 15)
 	start := time.Now()
 
-	// init logic
-	/*var initError error
-	initArgocdAdminRbacLock.Do(func() {
-		initError = r.initArgocdAdminRbac(ctx)
-	})
-	if initError != nil {
-		if strings.Contains(initError.Error(), registry.OptimisticLockErrorMsg) {
-			// do manual retry without error
-			return reconcile.Result{RequeueAfter: time.Second * 1}, nil
-		}
-		return ctrl.Result{}, initError
-	}*/
+	/*
+		// init logic
+		var initError error
+		initArgocdAdminRbacLock.Do(func() {
+			initError = r.initArgocdAdminRbac(ctx)
+		})
+		if initError != nil {
+			if strings.Contains(initError.Error(), registry.OptimisticLockErrorMsg) {
+				// do manual retry without error
+				return reconcile.Result{RequeueAfter: time.Second * 1}, nil
+			}
+			return ctrl.Result{}, initError
+		}*/
 
 	// fetch Team resource from k8s cache
 	team := &stablev1.Team{}
