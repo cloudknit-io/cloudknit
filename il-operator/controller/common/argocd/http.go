@@ -10,7 +10,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/compuzest/zlifecycle-il-operator/controller/env"
 	"github.com/compuzest/zlifecycle-il-operator/controller/util"
 
 	"github.com/pkg/errors"
@@ -119,7 +118,7 @@ func (c *HTTPClient) CreateRepository(body interface{}, bearerToken string) (*ht
 }
 
 func (c *HTTPClient) DoesApplicationExist(name string, bearerToken string) (bool, error) {
-	url := fmt.Sprintf("%s/api/v1/applications?name=%s&projects=%s", c.serverURL, name, env.Config.CompanyName)
+	url := fmt.Sprintf("%s/api/v1/applications/%s", c.serverURL, name)
 	req, err := http.NewRequestWithContext(c.ctx, http.MethodGet, url, http.NoBody)
 	if err != nil {
 		return false, errors.Wrap(err, "error creating GET request")
