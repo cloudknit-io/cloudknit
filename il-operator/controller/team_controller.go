@@ -3,7 +3,6 @@ package controller
 import (
 	"context"
 	"fmt"
-	"strings"
 	"sync"
 	"time"
 
@@ -26,10 +25,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	perrors "github.com/pkg/errors"
-
-	"k8s.io/apiserver/pkg/registry/generic/registry"
-
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	"github.com/go-logr/logr"
 	"go.uber.org/atomic"
@@ -88,7 +83,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	start := time.Now()
 
 	// init logic
-	var initError error
+	/*var initError error
 	initArgocdAdminRbacLock.Do(func() {
 		initError = r.initArgocdAdminRbac(ctx)
 	})
@@ -98,7 +93,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 			return reconcile.Result{RequeueAfter: time.Second * 1}, nil
 		}
 		return ctrl.Result{}, initError
-	}
+	}*/
 
 	// fetch Team resource from k8s cache
 	team := &stablev1.Team{}
@@ -159,14 +154,14 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	}
 	defer cleanup()
 
-	if err := r.updateArgocdRbac(apmCtx, team); err != nil {
+	/*if err := r.updateArgocdRbac(apmCtx, team); err != nil {
 		if strings.Contains(err.Error(), registry.OptimisticLockErrorMsg) {
 			// do manual retry without error
 			return reconcile.Result{RequeueAfter: time.Second * 1}, nil
 		}
 		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error updating argocd rbac"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
-	}
+	}*/
 
 	if err := fileAPI.CreateEmptyDirectory(il.EnvironmentDirectoryPath(team.Spec.TeamName)); err != nil {
 		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error creating team dir"))

@@ -276,7 +276,7 @@ func GenerateCompanyBootstrapApp() *appv1.Application {
 	return &appv1.Application{
 		TypeMeta: newTypeMeta(),
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "company-bootstrap",
+			Name:      env.Config.CompanyBootstrapAppName,
 			Namespace: env.ArgocdNamespace(),
 			Labels: map[string]string{
 				"zlifecycle.com/model":                   "bootstrap",
@@ -300,7 +300,7 @@ func GenerateConfigWatcherBootstrapApp() *appv1.Application {
 	return &appv1.Application{
 		TypeMeta: newTypeMeta(),
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "config-watcher-bootstrap",
+			Name:      env.Config.ConfigWatcherBootstrapAppName,
 			Namespace: env.ArgocdNamespace(),
 			Labels: map[string]string{
 				"zlifecycle.com/model":                   "bootstrap",

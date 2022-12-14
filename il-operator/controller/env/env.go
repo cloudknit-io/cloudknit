@@ -91,6 +91,9 @@ type config struct {
 	// test
 	ReconcileMode string
 	SkipReconcile string
+
+	CompanyBootstrapAppName       string
+	ConfigWatcherBootstrapAppName string
 }
 
 // Config exposes vars used throughout the operator.
@@ -195,6 +198,9 @@ var Config = config{
 	// test
 	ReconcileMode: getOr("RECONCILE_MODE", "normal"),
 	SkipReconcile: getOr("SKIP_RECONCILE", ""),
+
+	CompanyBootstrapAppName:       fmt.Sprintf("%s-company-bootstrap", CompanyName()),
+	ConfigWatcherBootstrapAppName: fmt.Sprintf("%s-config-watcher-bootstrap", CompanyName()),
 }
 
 func CompanyName() string {

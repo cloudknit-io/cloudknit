@@ -146,14 +146,13 @@ func TryCreateBootstrapApps(ctx context.Context, api argocdapi.API, log logr.Log
 	}
 	bearer := toBearerToken(tokenResponse.Token)
 
-	companyBootstrapApp := "company-bootstrap"
-	exists, err := api.DoesApplicationExist(companyBootstrapApp, bearer)
+	exists, err := api.DoesApplicationExist(env.Config.CompanyBootstrapAppName, bearer)
 	if err != nil {
-		return errors.Wrapf(err, "error checking does application [%s] exists", companyBootstrapApp)
+		return errors.Wrapf(err, "error checking does application [%s] exists", env.Config.CompanyBootstrapAppName)
 	}
 	if exists {
 		log.Info("Application already registered on ArgoCD",
-			"application", companyBootstrapApp,
+			"application", env.Config.companyBootstrapAppName,
 		)
 	} else {
 		companyResp, companyErr := api.CreateApplication(GenerateCompanyBootstrapApp(), bearer)
@@ -162,18 +161,17 @@ func TryCreateBootstrapApps(ctx context.Context, api argocdapi.API, log logr.Log
 		}
 		defer util.CloseBody(companyResp.Body)
 		log.Info("Successfully registered application on ArgoCD",
-			"application", "company-bootstrap",
+			"application", env.Config.CompanyBootstrapAppName,
 		)
 	}
 
-	configWatcherBootstrapApp := "config-watcher-bootstrap"
-	exists2, err2 := api.DoesApplicationExist(configWatcherBootstrapApp, bearer)
+	exists2, err2 := api.DoesApplicationExist(env.Config.ConfigWatcherBootstrapAppName, bearer)
 	if err2 != nil {
-		return errors.Wrapf(err2, "error checking does application [%s] exist", configWatcherBootstrapApp)
+		return errors.Wrapf(err2, "error checking does application [%s] exist", env.Config.ConfigWatcherBootstrapAppName)
 	}
 	if exists2 {
 		log.Info("Application already registered on ArgoCD",
-			"application", configWatcherBootstrapApp,
+			"application", env.Config.ConfigWatcherBootstrapAppName,
 		)
 	} else {
 		companyResp2, companyErr2 := api.CreateApplication(GenerateConfigWatcherBootstrapApp(), bearer)
@@ -182,7 +180,7 @@ func TryCreateBootstrapApps(ctx context.Context, api argocdapi.API, log logr.Log
 		}
 		defer util.CloseBody(companyResp2.Body)
 		log.Info("Successfully registered application on ArgoCD",
-			"application", "config-watcher-bootstrap",
+			"application", env.Config.ConfigWatcherBootstrapAppName,
 		)
 	}
 
