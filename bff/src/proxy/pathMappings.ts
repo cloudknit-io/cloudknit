@@ -8,22 +8,18 @@ export interface PathMapping {
 
 const CD_PATH_MAPPINGS = [
   {
-    path: "/cd/api/v1/workspace",
-    newPath: (params: any) => `/api/v1/projects/${params.team}`,
-  },
-  {
     path: "/cd/api/v1/projects",
-    newPath: (params: any) => `/api/v1/applications?selector=type=project`,
+    newPath: (params: any) => `/api/v1/applications?selector=type=project&projects=${params.orgName}`,
   },
   {
     path: "/cd/api/v1/stream/projects/:resourceVersion",
     newPath: (params: any) =>
-      `/api/v1/stream/applications?resourceVersion=${params.resourceVersion}`,
+      `/api/v1/stream/applications?resourceVersion=${params.resourceVersion}&projects=${params.orgName}`,
   },
   {
     path: "/cd/api/v1/projects/:projectId",
     newPath: (params: any) =>
-      `/api/v1/applications/${params.projectId}?selector=type=project&project=${params.projectId}`,
+      `/api/v1/applications/${params.projectId}?selector=type=project&projects=${params.orgName}`,
   },
   {
     path: "/cd/api/v1/environments",
@@ -32,41 +28,41 @@ const CD_PATH_MAPPINGS = [
   {
     path: "/cd/api/v1/stream/environments/:environmentId",
     newPath: (params: any) =>
-      `/api/v1/stream/applications?name=${params.environmentId}`,
+      `/api/v1/stream/applications?name=${params.environmentId}&projects=${params.orgName}`,
   },
   {
     path: "/cd/api/v1/projects/:projectId/environments",
     newPath: (params: any) =>
-      `/api/v1/applications?selector=type=environment,project_id=${params.projectId}&project=${params.projectId}`,
+      `/api/v1/applications?selector=type=environment,project_id=${params.projectId}&projects=${params.orgName}`,
   },
   {
     path: "/cd/api/v1/stream/projects/:projectId/environments/:resourceVersion",
     newPath: (params: any) =>
-      `/api/v1/stream/applications?resourceVersion=${params.resourceVersion}&selector=type=environment,project_id=${params.projectId}&project=${params.projectId}`,
+      `/api/v1/stream/applications?resourceVersion=${params.resourceVersion}&selector=type=environment,project_id=${params.projectId}&projects=${params.orgName}`,
   },
   {
     path: "/cd/api/v1/projects/:projectId/environments/:environmentId",
     newPath: (params: any) =>
-      `/api/v1/applications/${params.environmentId}?selector=type=config,project_id=${params.projectId}&project=${params.projectId}`,
+      `/api/v1/applications/${params.environmentId}?selector=type=config,project_id=${params.projectId}&projects=${params.orgName}`,
   },
   {
     path: "/cd/api/v1/projects/:projectId/environments/:environmentId/config",
     newPath: (params: any) =>
-      `/api/v1/applications?selector=type=config,project_id=${params.projectId},environment_id=${params.environmentId}&project=${params.projectId}`,
+      `/api/v1/applications?selector=type=config,project_id=${params.projectId},environment_id=${params.environmentId}&projects=${params.orgName}`,
   },
   {
     path: "/cd/api/v1/config",
-    newPath: (params: any) => `/api/v1/applications?selector=type=config`,
+    newPath: (params: any) => `/api/v1/applications?selector=type=config&projects=${params.orgName}`,
   },
   {
     path: "/cd/api/v1/stream/projects/:projectId/environments/:environmentId/config/:resourceVersion",
     newPath: (params: any) =>
-      `/api/v1/stream/applications?resourceVersion=${params.resourceVersion}&selector=type=config,project_id=${params.projectId},environment_id=${params.environmentId}&project=${params.projectId}`,
+      `/api/v1/stream/applications?resourceVersion=${params.resourceVersion}&selector=type=config,project_id=${params.projectId},environment_id=${params.environmentId}&projects=${params.orgName}`,
   },
   {
     path: "/cd/api/v1/stream/watcher/projects/:projectId",
     newPath: (params: any) =>
-      `/api/v1/stream/applications?name=${params.projectId}-team-watcher`,
+      `/api/v1/stream/applications?name=${params.projectId}-team-watcher&projects=${params.orgName}`,
   },
   {
     path: "/cd/api/v1/projects/:environmentId/sync",
@@ -85,7 +81,7 @@ const CD_PATH_MAPPINGS = [
   },
   {
     path: "/cd/api/v1/component/:componentName",
-    newPath: (params: any) => `api/v1/applications/${params.componentName}`,
+    newPath: (params: any) => `api/v1/applications/${params.componentName}?projects=${params.orgName}`,
   },
   {
     path: "/cd/api/v1/applications/:config/resource-tree",
@@ -95,7 +91,7 @@ const CD_PATH_MAPPINGS = [
   {
     path: "/cd/api/v1/stream/applications/:config/resource-tree",
     newPath: (params: any) =>
-      `api/v1/stream/applications?name=${params.config}`,
+      `api/v1/stream/applications?name=${params.config}&projects=${params.orgName}`,
   },
   {
     path: "/cd/api/v1/applications/:config/events",
