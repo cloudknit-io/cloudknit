@@ -105,12 +105,14 @@ function setAWSCreds() {
 #     $2 - team name
 #     $3 - component name
 #     $4 - component status
+#     $5 - component isDestroyed
 function UpdateComponentStatus() {
   local envName="${1}"
   local teamName="${2}"
   local compName="${3}"
   local compStatus="${4}"
-  local payload='{"teamName": "'${teamName}'", "environmentName": "'${envName}'", "component": { "componentName": "'${compName}'", "status" : "'${compStatus}'" }}'
+  local isDestroyed=${5}
+  local payload='{"teamName": "'${teamName}'", "environmentName": "'${envName}'", "component": { "componentName": "'${compName}'", "status" : "'${compStatus}'", "isDestroyed" : '${isDestroyed}' }}'
   
   echo "Running UpdateComponentStatus ${compStatus} : ${payload}"
   echo $payload >temp_payload.json

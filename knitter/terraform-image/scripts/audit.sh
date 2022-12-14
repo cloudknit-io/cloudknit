@@ -86,10 +86,11 @@ if [[ $config_name != 0 && $config_reconcile_id = null ]]; then
             data='{"metadata":{"labels":{"is_skipped":"'$is_skipped'"}}}'
         fi
     else
-        data='{"metadata":{"labels":{"is_skipped":"'$is_skipped'","component_status":"initializing","is_destroy":"'$is_destroy'","audit_status":"initializing","last_workflow_run_id":"initializing"}}}'
+        data='{"metadata":{"labels":{"is_skipped":"'$is_skipped'","audit_status":"initializing","last_workflow_run_id":"initializing"}}}'
     fi
     echo "patch argocd resource $team_env_config_name with data $data"
-    argocd app patch $team_env_config_name --patch $data --type merge > null
+    argocd app patch $team_env_config_name --patch $data --type merge > null 
+    UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "initializing" ${is_destroy}
 else
     echo "write 0 to /tmp/error_code.txt"
     echo -n '0' >/tmp/error_code.txt
