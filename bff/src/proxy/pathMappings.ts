@@ -27,7 +27,7 @@ const CD_PATH_MAPPINGS = [
   },
   {
     path: "/cd/api/v1/environments",
-    newPath: () => `/api/v1/applications?selector=type=environment`,
+    newPath: (params: any) => `/api/v1/applications?selector=type=environment,project_id=${params.orgName}&project=${params.orgName}`,
   },
   {
     path: "/cd/api/v1/stream/environments/:environmentId",
