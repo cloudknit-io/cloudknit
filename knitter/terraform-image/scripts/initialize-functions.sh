@@ -75,30 +75,47 @@ function returnErrorCode() {
 
 # This Function is used to set AWS credentials to environment variables.
 function setAWSCreds() {
-  aws_region=$(aws ssm get-parameter --profile compuzest-shared --region us-east-1 --name "/$1/aws_region" --with-decryption --query "Parameter.Value" | jq -r ".")
-  if [ -z $aws_region ];
+  aws_region=$(aws ssm get-parameter --profile compuzest-shared --region us-east-1 --name "/$1/aws_region" --with-decryption --query "Parameter.Value" 2>&1)
+  status=$?
+  if [ $status -ne 0 ];
   then
     return 0;
   fi
 
+  aws_region=$(echo $aws_region | jq -r ".")
   export AWS_REGION=$aws_region
-  aws_access_key_id=$(aws ssm get-parameter --profile compuzest-shared --region us-east-1 --name "/$1/aws_access_key_id" --with-decryption --query "Parameter.Value" | jq -r ".")
-  aws_secret_access_key=$(aws ssm get-parameter --profile compuzest-shared --region us-east-1 --name "/$1/aws_secret_access_key" --with-decryption --query "Parameter.Value" | jq -r ".")
 
-  if [ -z $aws_access_key_id -o -z $aws_secret_access_key ];
+  aws_access_key_id=$(aws ssm get-parameter --profile compuzest-shared --region us-east-1 --name "/$1/aws_access_key_id" --with-decryption --query "Parameter.Value" 2>&1)
+  status=$?
+  if [ $status -ne 0 ];
   then
     return 0;
   fi
 
+  
+  aws_secret_access_key=$(aws ssm get-parameter --profile compuzest-shared --region us-east-1 --name "/$1/aws_secret_access_key" --with-decryption --query "Parameter.Value" 2>&1)
+  status=$?
+  if [ $status -ne 0 ];
+  then
+    return 0;
+  fi
+
+  aws_access_key_id=$(echo $aws_access_key_id | jq -r ".")
   aws configure set aws_access_key_id $aws_access_key_id 
+
+  aws_secret_access_key=$(echo $aws_secret_access_key | jq -r ".")
   aws configure set aws_secret_access_key $aws_secret_access_key
 
-  aws_session_token=$(aws ssm get-parameter --profile compuzest-shared --region us-east-1 --name "/$1/aws_session_token" --with-decryption --query "Parameter.Value" | jq -r ".")
+  aws_session_token=$(aws ssm get-parameter --profile compuzest-shared --region us-east-1 --name "/$1/aws_session_token" --with-decryption --query "Parameter.Value" 2>&1)
 
-  if [ ! -z $aws_session_token ];
+  status=$?
+  if [ $status -ne 0 ];
   then
-    aws configure set aws_session_token $aws_session_token
+    return 1;
   fi
+
+  aws_session_token=$(echo $aws_session_token | jq -r ".")
+  aws configure set aws_session_token $aws_session_token
   
   return 1
 }
