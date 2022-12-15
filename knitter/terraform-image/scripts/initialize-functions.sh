@@ -112,6 +112,14 @@ function UpdateComponentStatus() {
   local compName="${3}"
   local compStatus="${4}"
   local isDestroyed=${5}
+
+  if [ ${isDestroyed} = true ]
+  then
+      isDestroyed=true
+  else
+      isDestroyed=false
+  fi
+
   local payload='{"teamName": "'${teamName}'", "environmentName": "'${envName}'", "component": { "componentName": "'${compName}'", "status" : "'${compStatus}'", "isDestroyed" : '${isDestroyed}' }}'
   
   echo "Running UpdateComponentStatus ${compStatus} : ${payload}"
