@@ -266,9 +266,10 @@ func (r *CompanyReconciler) initCompany(ctx context.Context, services *watcherse
 	} */
 
 	r.LogV2.Info("Registering argocd cluster")
-	info, err := argocd2.RegisterInCluster(ctx,
+	err := argocd2.RegisterInCluster(ctx,
 		services.ArgocdClient,
 		env.Config.CompanyName,
+		[]string{env.ArgocdNamespace(), env.ConfigNamespace(), env.ExecutorNamespace()},
 		r.LogV2)
 	if err != nil {
 		r.LogV2.Fatalf("error registering cluster: %v", err)

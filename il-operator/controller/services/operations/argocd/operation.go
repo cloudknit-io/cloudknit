@@ -295,7 +295,6 @@ func RegisterNewCluster(ctx context.Context, k8sClient awseks.API, argocdClient 
 func RegisterInCluster(ctx context.Context,
 	argocdClient argocdapi.API,
 	cluster string,
-	clusterName string,
 	namespaces []string,
 	log *logrus.Entry) error {
 
@@ -324,7 +323,7 @@ func RegisterInCluster(ctx context.Context,
 
 	config, err := rest.InClusterConfig()
 	body := argocdapi.RegisterClusterBody{
-		Name: clusterName,
+		Name: cluster,
 		Config: &argocdapi.ClusterConfig{
 			BearerToken: config.BearerToken,
 			TLSClientConfig: &argocdapi.TLSClientConfig{
