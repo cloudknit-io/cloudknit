@@ -7,10 +7,11 @@ import { CostingModule } from "./costing/costing.module";
 import { OrganizationModule } from "./organization/organization.module";
 import { RootOrganizationsModule } from "./rootOrganization/rootOrganization.module";
 import { ReconciliationModule } from "./reconciliation/reconciliation.module";
-import { orgRoutes } from "./routes";
+import { appRoutes } from "./routes";
 import { SecretsModule } from "./secrets/secrets.module";
 import { entities } from "./typeorm";
 import { UsersModule } from "./users/users.module";
+import { SystemModule } from "./system/system.module";
 import { get } from "./config";
 import { OperationsModule } from './operations/operations.module';
 
@@ -33,9 +34,10 @@ const typeOrmModuleOptions: TypeOrmModuleOptions = {
     ConfigModule.forRoot({
       envFilePath: ".env.dev",
     }),
-    RouterModule.register(orgRoutes),
+    RouterModule.register(appRoutes),
     TypeOrmModule.forRoot(typeOrmModuleOptions),
     UsersModule,
+    SystemModule,
     RootOrganizationsModule,
     OrganizationModule,
     CostingModule,
