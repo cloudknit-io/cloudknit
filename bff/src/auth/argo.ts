@@ -29,8 +29,9 @@ function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function createSession(orgName: string) {  
-  const argoCdPassword = await helper.getSSMSecret(orgName, '/argocd/zlapi/password');
+async function createSession(orgName: string) {
+  const secretPath = '/argocd/zlapi/password';
+  const argoCdPassword = await helper.getSystemSSMSecret(orgName, secretPath);
 
   if (!argoCdPassword) {
     logger.error('could not retrieve argocd password from api', { org: orgName });
@@ -38,7 +39,7 @@ async function createSession(orgName: string) {
   }
 
   const session = { 
-    token: await argoCdLogin("zlifecycle", 'zlapi', argoCdPassword),
+    token: await argoCdLogin('zlifecycle', 'zlapi', argoCdPassword),
     ttl: Date.now() + 10800000 // 3 hours
   };
 

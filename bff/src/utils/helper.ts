@@ -44,6 +44,24 @@ const handleNoOrg = (res: express.Response) => {
   res.status(401).send({error: 'no organization has been selected'});
 }
 
+const getSystemSSMSecret = async (orgName: string, secretPath: string) : Promise<string> => {
+  try {
+    const url = `${process.env.ZLIFECYCLE_API_URL}/v1/system/ssmsecret`;
+    const resp = await axios.get(url, {
+      params: {
+        path: secretPath
+      }
+    });
+    
+    const { value } = resp.data;
+  
+    return value;
+  } catch (err) {
+    logger.error('could not retrieve SSM value from api', { org: orgName, error: err.message });
+    return null;
+  }
+};
+
 const getSSMSecret = async (orgName: string, secretPath: string) : Promise<string> => {
   try {
     const url = `${process.env.ZLIFECYCLE_API_URL}/v1/orgs/${orgName}/secrets/get/ssm-secret`;
@@ -76,6 +94,7 @@ export default {
   orgFromReq,
   userFromReq,
   handleNoOrg,
+  getSystemSSMSecret,
   getSSMSecret,
   getOrg
 }
