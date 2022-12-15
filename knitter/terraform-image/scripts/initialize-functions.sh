@@ -76,27 +76,29 @@ function returnErrorCode() {
 # This Function is used to set AWS credentials to environment variables.
 function setAWSCreds() {
   aws_region=$(aws ssm get-parameter --profile compuzest-shared --region us-east-1 --name "/$1/aws_region" --with-decryption --query "Parameter.Value" | jq -r ".")
-  if [ ! -z $aws_region ];
+  if [ -z $aws_region ];
   then
-    export AWS_REGION=$aws_region
+    return 0;
   fi
 
+  export AWS_REGION=$aws_region
   aws_access_key_id=$(aws ssm get-parameter --profile compuzest-shared --region us-east-1 --name "/$1/aws_access_key_id" --with-decryption --query "Parameter.Value" | jq -r ".")
   aws_secret_access_key=$(aws ssm get-parameter --profile compuzest-shared --region us-east-1 --name "/$1/aws_secret_access_key" --with-decryption --query "Parameter.Value" | jq -r ".")
 
-  if [ ! -z $aws_access_key_id -a ! -z $aws_secret_access_key ];
+  if [ -z $aws_access_key_id -o -z $aws_secret_access_key ];
   then
-    aws configure set aws_access_key_id $aws_access_key_id 
-    aws configure set aws_secret_access_key $aws_secret_access_key
-
-    aws_session_token=$(aws ssm get-parameter --profile compuzest-shared --region us-east-1 --name "/$1/aws_session_token" --with-decryption --query "Parameter.Value" | jq -r ".")
-
-    if [ ! -z $aws_session_token ];
-    then
-      aws configure set aws_session_token $aws_session_token
-    fi
-
-    return 1
+    return 0;
   fi
-  return 0
+
+  aws configure set aws_access_key_id $aws_access_key_id 
+  aws configure set aws_secret_access_key $aws_secret_access_key
+
+  aws_session_token=$(aws ssm get-parameter --profile compuzest-shared --region us-east-1 --name "/$1/aws_session_token" --with-decryption --query "Parameter.Value" | jq -r ".")
+
+  if [ ! -z $aws_session_token ];
+  then
+    aws configure set aws_session_token $aws_session_token
+  fi
+  
+  return 1
 }
