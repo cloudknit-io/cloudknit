@@ -8,6 +8,7 @@ import (
 	argocdapi "github.com/compuzest/zlifecycle-il-operator/controller/common/argocd"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/aws/awseks"
 	"github.com/compuzest/zlifecycle-il-operator/controller/env"
+	"k8s.io/client-go/rest"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/util"
 
@@ -292,24 +293,17 @@ func RegisterNewCluster(ctx context.Context, k8sClient awseks.API, argocdClient 
 }
 
 func RegisterInCluster(ctx context.Context,
-	k8sClient awseks.API,
 	argocdClient argocdapi.API,
 	cluster string,
 	clusterName string,
 	namespaces []string,
-	log *logrus.Entry) (*awseks.ClusterInfo, error) {
+	log *logrus.Entry) error {
 
 	tokenResponse, err := argocdClient.GetAuthToken()
 	if err != nil {
 		return nil, errors.Wrap(err, "error getting auth token")
 	}
 	bearer := toBearerToken(tokenResponse.Token)
-
-	log.Infof("Describing cluster %s", cluster)
-	info, err := k8sClient.DescribeCluster(ctx, cluster)
-	if err != nil {
-		return nil, errors.Wrapf(err, "error describing cluster %s", cluster)
-	}
 
 	log.Infof("Checking does k8s cluster %s exist", cluster)
 	clusters, err := argocdClient.ListClusters(&cluster, bearer)
@@ -327,25 +321,21 @@ func RegisterInCluster(ctx context.Context,
 	log.Infof("K8s cluster %s exist and needs to be registered", cluster)
 
 	log.Infof("Registering k8s cluster %s in ArgoCD", cluster)
-	server := strings.ToLower(strings.TrimPrefix(info.Endpoint, "https://"))
+
+	config, err := rest.InClusterConfig()
 	body := argocdapi.RegisterClusterBody{
-		Name: clusterName,
-		Config: &argocdapi.ClusterConfig{
-			BearerToken: info.BearerToken,
-			TLSClientConfig: &argocdapi.TLSClientConfig{
-				CAData:     info.CertificateAuthority,
-				ServerName: server,
-			},
-		},
+		Name:          clusterName,
+		Config:        config,
 		Namespaces:    namespaces,
-		Server:        info.Endpoint,
-		ServerVersion: info.Version,
+		Server:        "https://kubernetes.default.svc",
+		ServerVersion: "1.22+",
 	}
+
 	resp, err := argocdClient.RegisterCluster(&body, bearer)
 	if err != nil {
-		return nil, errors.Wrapf(err, "error registering cluster %s in argocd", cluster)
+		return errors.Wrapf(err, "error registering cluster %s in argocd", cluster)
 	}
 	defer util.CloseBody(resp.Body)
 
-	return info, nil
+	return nil
 }
