@@ -101,11 +101,11 @@ function setAWSCreds() {
 
 # Saves or updates a component
 #   Args:
-#     $1 - env name
-#     $2 - team name
-#     $3 - component name
-#     $4 - component status
-#     $5 - component isDestroyed
+#     $1 - env name (required)
+#     $2 - team name (required)
+#     $3 - component name (required)
+#     $4 - component status (required)
+#     $5 - component isDestroyed (default: false)
 function UpdateComponentStatus() {
   local envName="${1}"
   local teamName="${2}"
