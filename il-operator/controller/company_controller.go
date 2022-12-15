@@ -11,7 +11,6 @@ import (
 	git2 "github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/git/gogit"
 	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/argocd"
-	argocd2 "github.com/compuzest/zlifecycle-il-operator/controller/services/operations/argocd"
 	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/git"
 	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/github"
 
@@ -265,7 +264,7 @@ func (r *CompanyReconciler) initCompany(ctx context.Context, services *watcherse
 		r.LogV2.Fatalf("error updating argocd cluster namespaces: %v", err)
 	} */
 
-	r.LogV2.Info("Registering argocd cluster")
+	/*r.LogV2.Info("Registering argocd cluster")
 	err := argocd2.RegisterInCluster(ctx,
 		services.ArgocdClient,
 		env.Config.CompanyName,
@@ -273,7 +272,7 @@ func (r *CompanyReconciler) initCompany(ctx context.Context, services *watcherse
 		r.LogV2)
 	if err != nil {
 		r.LogV2.Fatalf("error registering cluster: %v", err)
-	}
+	}*/
 
 	r.LogV2.Info("Registering helm chart repo")
 	return services.InternalWatcher.Watch(env.Config.GitHelmChartsRepository)
