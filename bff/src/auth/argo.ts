@@ -7,7 +7,7 @@ let sessions = {};
 let lock = false;
 
 async function argoCdLogin(org: string, username: string, password: string) {
-  const url = `${config.argoCDUrl(org)}/api/v1/session`;
+  const url = `${config.ARGOCD_URL}/api/v1/session`;
 
   try {
     const resp = await axios.post(url, {
