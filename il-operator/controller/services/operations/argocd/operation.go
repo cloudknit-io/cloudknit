@@ -325,7 +325,12 @@ func RegisterInCluster(ctx context.Context,
 	config, err := rest.InClusterConfig()
 	body := argocdapi.RegisterClusterBody{
 		Name:          clusterName,
-		Config:        config,
+		Config:        &argocdapi.ClusterConfig{
+			BearerToken: config.BearerToken,
+			TLSClientConfig: &argocdapi.TLSClientConfig{
+				CAData:     string(config.TLSClientConfig.CAData),
+				ServerName: config.Host,
+			},
 		Namespaces:    namespaces,
 		Server:        "https://kubernetes.default.svc",
 		ServerVersion: "1.22+",
