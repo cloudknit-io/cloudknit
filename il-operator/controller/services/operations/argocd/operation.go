@@ -290,3 +290,62 @@ func RegisterNewCluster(ctx context.Context, k8sClient awseks.API, argocdClient 
 
 	return info, nil
 }
+
+func RegisterInCluster(ctx context.Context,
+	k8sClient awseks.API,
+	argocdClient argocdapi.API,
+	cluster string,
+	clusterName string,
+	namespaces []string,
+	log *logrus.Entry) (*awseks.ClusterInfo, error) {
+
+	tokenResponse, err := argocdClient.GetAuthToken()
+	if err != nil {
+		return nil, errors.Wrap(err, "error getting auth token")
+	}
+	bearer := toBearerToken(tokenResponse.Token)
+
+	log.Infof("Describing cluster %s", cluster)
+	info, err := k8sClient.DescribeCluster(ctx, cluster)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error describing cluster %s", cluster)
+	}
+
+	log.Infof("Checking does k8s cluster %s exist", cluster)
+	clusters, err := argocdClient.ListClusters(&cluster, bearer)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error listing clusters")
+	}
+
+	for _, item := range clusters.Items {
+		if item.Name == cluster {
+			log.Infof("K8s cluster %s exist and will not register it", cluster)
+			return info, nil
+		}
+	}
+
+	log.Infof("K8s cluster %s exist and needs to be registered", cluster)
+
+	log.Infof("Registering k8s cluster %s in ArgoCD", cluster)
+	server := strings.ToLower(strings.TrimPrefix(info.Endpoint, "https://"))
+	body := argocdapi.RegisterClusterBody{
+		Name: clusterName,
+		Config: &argocdapi.ClusterConfig{
+			BearerToken: info.BearerToken,
+			TLSClientConfig: &argocdapi.TLSClientConfig{
+				CAData:     info.CertificateAuthority,
+				ServerName: server,
+			},
+		},
+		Namespaces:    namespaces,
+		Server:        info.Endpoint,
+		ServerVersion: info.Version,
+	}
+	resp, err := argocdClient.RegisterCluster(&body, bearer)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error registering cluster %s in argocd", cluster)
+	}
+	defer util.CloseBody(resp.Body)
+
+	return info, nil
+}

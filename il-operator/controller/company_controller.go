@@ -7,10 +7,12 @@ import (
 	"time"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/apm"
+	awseks2 "github.com/compuzest/zlifecycle-il-operator/controller/common/aws/awseks"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/cloudknitservice"
 	git2 "github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/git/gogit"
 	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/argocd"
+	argocd2 "github.com/compuzest/zlifecycle-il-operator/controller/services/operations/argocd"
 	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/git"
 	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/github"
 
@@ -255,13 +257,25 @@ func (r *CompanyReconciler) initCompany(ctx context.Context, services *watcherse
 		r.LogV2.WithError(err).WithField("repo", env.Config.ILTerraformRepositoryURL).Error("error creating Company IL TF webhook")
 	}
 
-	r.LogV2.Info("Updating default argocd cluster namespaces")
+	/* r.LogV2.Info("Updating default argocd cluster namespaces")
 	if err := argocd.UpdateDefaultClusterNamespaces(
 		r.LogV2,
 		services.ArgocdClient,
 		[]string{env.ArgocdNamespace(), env.ConfigNamespace(), env.ExecutorNamespace()},
 	); err != nil {
 		r.LogV2.Fatalf("error updating argocd cluster namespaces: %v", err)
+	} */
+
+	k8sClient := awseks2.LazyLoadEKS(ctx, cl, r.LogV2)
+
+	r.LogV2.Info("Registering argocd cluster")
+	info, err := argocd2.RegisterInCluster(ctx,
+		k8sClient,
+		services.ArgocdClient,
+		env.Config.CompanyName,
+		log)
+	if err != nil {
+		return errors.Wrap(err, "error registering cluster %s for environment %s")
 	}
 
 	r.LogV2.Info("Registering helm chart repo")
