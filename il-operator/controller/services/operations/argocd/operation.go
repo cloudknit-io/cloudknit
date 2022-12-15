@@ -301,20 +301,20 @@ func RegisterInCluster(ctx context.Context,
 
 	tokenResponse, err := argocdClient.GetAuthToken()
 	if err != nil {
-		return nil, errors.Wrap(err, "error getting auth token")
+		return errors.Wrap(err, "error getting auth token")
 	}
 	bearer := toBearerToken(tokenResponse.Token)
 
 	log.Infof("Checking does k8s cluster %s exist", cluster)
 	clusters, err := argocdClient.ListClusters(&cluster, bearer)
 	if err != nil {
-		return nil, errors.Wrapf(err, "error listing clusters")
+		return errors.Wrapf(err, "error listing clusters")
 	}
 
 	for _, item := range clusters.Items {
 		if item.Name == cluster {
 			log.Infof("K8s cluster %s exist and will not register it", cluster)
-			return info, nil
+			return nil
 		}
 	}
 
