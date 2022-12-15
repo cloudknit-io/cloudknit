@@ -15,6 +15,7 @@ func toProject(name string, group string) *appv1.AppProject {
 		SourceRepos: []string{"*"},
 		Destinations: []appv1.ApplicationDestination{
 			{Server: "https://kubernetes.default.svc", Name: "in-cluster", Namespace: env.ConfigNamespace()},
+			{Server: "https://kubernetes.default.svc", Name: "in-cluster", Namespace: env.CloudKnitSystemNamespace()},
 			{Server: "https://kubernetes.default.svc", Name: "in-cluster", Namespace: "default"},
 		},
 		ClusterResourceWhitelist: []metav1.GroupKind{{Group: "*", Kind: "*"}},
