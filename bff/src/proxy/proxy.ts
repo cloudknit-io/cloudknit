@@ -114,16 +114,9 @@ const createProxy = function() {
 
 export function handlePublicRoutes(router: express.Router) : express.Router {
   // GitHub webhook proxy
-  router.post('/webhook/:orgName/argocd', express.json(), async (req: express.Request, res: express.Response, next) => {
-    const orgName = req.params.orgName;
-    const org = await helper.getOrg(orgName);
-
-    if (!org || !orgName) {
-      helper.handleNoOrg(res);
-      return;
-    }
-
-    const argoCdUrl = `${config.argoCDUrl(org.name)}/api/webhook`;
+  router.post('/webhook/argocd', express.json(), async (req: BFFRequest, res: express.Response, next) => {
+    const org = helper.orgFromReq(req);
+    const argoCdUrl = `${config.ARGOCD_URL}/api/webhook`;
     const data = { ...req.body };
 
     try {
@@ -255,7 +248,7 @@ export function orgRoutes(router: express.Router) {
 
     return (
       createProxy(org, "/cd", {
-        target: config.argoCDUrl(org.name),
+        target: config.ARGOCD_URL,
         changeOrigin: true,
         secure: true,
         cookieDomainRewrite: "",

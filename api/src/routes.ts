@@ -6,12 +6,17 @@ import { RootOrganizationsModule } from "./rootOrganization/rootOrganization.mod
 import { ReconciliationModule } from "./reconciliation/reconciliation.module";
 import { SecretsModule } from "./secrets/secrets.module";
 import { UsersModule } from "./users/users.module";
+import { SystemModule } from "./system/system.module";
 import { OperationsModule } from "./operations/operations.module";
 
-export const orgRoutes: Routes = [
+export const appRoutes: Routes = [
   {
     path: '/users',
     module: UsersModule,
+  },
+  {
+    path: '/system',
+    module: SystemModule,
   },
   {
     path: '/orgs',

@@ -19,7 +19,7 @@ export default function createRoutes(router: express.Router) : express.Router {
 
     try {
       const org = user.organizations[0].name;
-      const { data } = await axios.get(`${config.argoCDUrl(org)}/api/v1/projects`, {
+      const { data } = await axios.get(`${config.ARGOCD_URL}/api/v1/projects`, {
         headers: { ...await getArgoCDAuthHeader(org) },
       });
 
