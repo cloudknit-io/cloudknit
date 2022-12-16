@@ -87,6 +87,7 @@ export class ReconciliationService {
         duration: component.duration,
         teamName: teamName,
         environment: env,
+        status: component.status,
         organization: org
       });
       this.notifyApplications(component.environmentName);
@@ -317,6 +318,7 @@ export class ReconciliationService {
       duration,
       teamName: comp.teamName,
       environmentName: envRecEntry.name,
+      status: comp.status,
     }, env, envReconcile.teamName);
 
     const entry = await this.componentReconcileRepository.save(componentEntry);
