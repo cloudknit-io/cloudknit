@@ -249,7 +249,7 @@ export class ReconciliationService {
       throw new BadRequestException("reconcileId is mandatory to save or update component")
     }
 
-    this.logger.log(`reconcileId: ${reconcileId}, component: ${envReconcile.name} save or update ${org.name}`);
+    this.logger.log({message: 'save or update component', reconcileId, envReconcile});
 
     const env = await this.getEnvironment(org, envReconcile.name);
 
@@ -257,7 +257,7 @@ export class ReconciliationService {
       throw new BadRequestException(`could not find environment ${envReconcile.name}`);
     }
 
-    this.logger.log(`reconcileId ${reconcileId}, component: ${envReconcile.name} found environment ${JSON.stringify(env)} ${org.name}`);
+    this.logger.log({message: 'found environment', reconcileId, env});
 
     const envRecEntry = await this.environmentReconcileRepository
       .createQueryBuilder()
@@ -273,7 +273,7 @@ export class ReconciliationService {
       throw new BadRequestException(`could not find environmentReconcileEntry for environment ${envReconcile.name}`);
     }
 
-    this.logger.log(`reconcileId ${reconcileId}, envRecEntry: ${JSON.stringify(envRecEntry)} for org ${org.name}`);
+    this.logger.log({message: 'found environment reconcile entry', reconcileId, envRecEntry});
 
     let componentEntry: ComponentReconcile = Mapper.mapToComponentReconcile(
       org,
@@ -281,7 +281,7 @@ export class ReconciliationService {
       envReconcile.componentReconciles
     )[0];
 
-    this.logger.log(`reconcileId ${reconcileId}, componentEntry ${JSON.stringify(componentEntry)} for org ${org.name}`);
+    this.logger.log({message: 'created component entry', reconcileId, env, componentEntry});
 
     if (!componentEntry.reconcile_id) {
       await this.updateSkippedWorkflows<ComponentReconcile>(
@@ -324,7 +324,7 @@ export class ReconciliationService {
     const entry = await this.componentReconcileRepository.save(componentEntry);
     this.notifyStream.next(entry);
 
-    this.logger.log(`reconcileId ${reconcileId}, entry: ${JSON.stringify(entry)}`);
+    this.logger.log({message: 'created component reconcile entry', reconcileId, env, compReconcileEntry: entry});
 
     return entry.reconcile_id;
   }
