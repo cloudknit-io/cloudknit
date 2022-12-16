@@ -12,4 +12,26 @@ export class ComponentDto {
     name: 'Cost'
   })
   cost: number = -1;
+
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  environment?: EnvironmentDto;
+
+  @ApiProperty()
+  status: string;
+
+  @ApiProperty()
+  lastReconcileDatetime: string;
+
+  @ApiProperty()
+  duration: number;
+
+  @ApiProperty()
+  isDestroyed?: boolean
+
+  // TODO : Make ResourceDto
+  @ApiProperty()
+  resources?: object[];
 }

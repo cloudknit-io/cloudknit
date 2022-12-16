@@ -5,11 +5,12 @@ import { Component } from "src/typeorm/component.entity";
 import { Resource } from "src/typeorm/resources/Resource.entity";
 import { Repository } from "typeorm";
 import { CostingDto } from "../dtos/Costing.dto";
-import { CostingStreamDto } from "../streams/costing.stream";
+import { StreamDto as StreamDto } from "../streams/costing.stream";
 import { Mapper } from "../utilities/mapper";
 import { MessageEvent } from "@nestjs/common";
 import { Organization } from "src/typeorm";
 import { Environment } from "src/typeorm/reconciliation/environment.entity";
+import { EnvironmentDto } from "../dtos/Environment.dto";
 
 @Injectable()
 export class ComponentService {
@@ -115,6 +116,18 @@ export class ComponentService {
   async saveOrUpdate(org: Organization, costing: CostingDto): Promise<boolean> {
     const id = `${costing.teamName}-${costing.environmentName}-${costing.component.componentName}`;
 
+    const env = await this.envRepo
+      .createQueryBuilder()
+      .where('name = :envName and organizationId = :orgId', {
+        envName: `${costing.teamName}-${costing.environmentName}`,
+        orgId: org.id
+      })
+      .getOne();
+
+    if (!env) {
+      throw new BadRequestException(`could not find environment associated with this component ${id}`);
+    }
+
     let savedComponent = (await this.componentRepository
       .createQueryBuilder('component')
       .leftJoinAndSelect('component.environment', 'environment')
@@ -145,14 +158,6 @@ export class ComponentService {
       savedComponent = await this.componentRepository.save(savedComponent);
     } else {
       // Create new component
-      const env = await this.envRepo
-      .createQueryBuilder()
-      .where('name = :envName and organizationId = :orgId', {
-        envName: `${costing.teamName}-${costing.environmentName}`,
-        orgId: org.id
-      })
-      .getOne();
-
       const component = new Component();
       component.organization = org;
       component.teamName = costing.teamName;
@@ -164,22 +169,23 @@ export class ComponentService {
       component.isDestroyed = costing.component.isDestroyed;
 
       savedComponent = await this.componentRepository.save(component);
-      savedComponent.environment = env;
     }
 
     const resources = await this.resourceRepository.save(
       Mapper.mapToResourceEntity(org, savedComponent, costing.component.resources)
     );
+
+    savedComponent.environment = env;
     savedComponent.resources = resources;
 
-    const data = await this.getCostingStreamDto(org, savedComponent);
+    const data = await this.getComponentSteamDto(org, savedComponent);
     this.notifyStream.next({ data });
 
     return true;
   }
 
-  async getCostingStreamDto(org: Organization, component: Component): Promise<CostingStreamDto> {
-    const data: CostingStreamDto = {
+  async getComponentSteamDto(org: Organization, component: Component): Promise<StreamDto> {
+    const data: StreamDto = {
       team: {
         teamId: component.teamName,
         cost: await this.getTeamCost(org, component.teamName),
@@ -199,8 +205,13 @@ export class ComponentService {
         ),
       },
       component: {
-        componentId: component.id,
+        id: component.id,
         cost: component.isDestroyed ? 0 : component.cost,
+        status: component.status,
+        duration: component.duration,
+        componentName: component.componentName,
+        lastReconcileDatetime: component.lastReconcileDatetime,
+        resources: component.resources,
       },
     };
     
