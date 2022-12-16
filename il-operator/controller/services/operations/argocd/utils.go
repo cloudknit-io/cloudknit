@@ -10,10 +10,15 @@ import (
 
 func toProject(name string, group string) *appv1.AppProject {
 	typeMeta := metav1.TypeMeta{APIVersion: "argoproj.io/v1alpha1", Kind: "AppProject"}
-	objectMeta := metav1.ObjectMeta{Name: name, Namespace: env.ArgocdNamespace()}
+	objectMeta := metav1.ObjectMeta{Name: name, Namespace: env.CloudKnitSystemNamespace()}
 	spec := appv1.AppProjectSpec{
-		SourceRepos:              []string{"*"},
-		Destinations:             []appv1.ApplicationDestination{{Server: "*", Namespace: "*"}},
+		SourceRepos: []string{"*"},
+		Destinations: []appv1.ApplicationDestination{
+			{Server: "https://kubernetes.default.svc", Name: "in-cluster", Namespace: env.ConfigNamespace()},
+			{Server: "https://kubernetes.default.svc", Name: "in-cluster", Namespace: env.ExecutorNamespace()},
+			{Server: "https://kubernetes.default.svc", Name: "in-cluster", Namespace: env.CloudKnitSystemNamespace()},
+			{Server: "https://kubernetes.default.svc", Name: "in-cluster", Namespace: "default"},
+		},
 		ClusterResourceWhitelist: []metav1.GroupKind{{Group: "*", Kind: "*"}},
 		Roles: []appv1.ProjectRole{
 			{

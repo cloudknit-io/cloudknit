@@ -5,10 +5,9 @@ import (
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/util"
 
-	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/il"
-
 	appv1 "github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
+	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/il"
 	"github.com/compuzest/zlifecycle-il-operator/controller/env"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -64,7 +63,7 @@ func GenerateCompanyApp(company *stablev1.Company) *appv1.Application {
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: "default",
+			Project: env.Config.CompanyName,
 			SyncPolicy: &appv1.SyncPolicy{
 				Automated: &appv1.SyncPolicyAutomated{
 					Prune: true,
@@ -89,7 +88,7 @@ func GenerateTeamApp(team *stablev1.Team) *appv1.Application {
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: team.Spec.TeamName,
+			Project: env.Config.CompanyName,
 			SyncPolicy: &appv1.SyncPolicy{
 				Automated: &appv1.SyncPolicyAutomated{
 					Prune: true,
@@ -116,7 +115,7 @@ func GenerateEnvironmentApp(environment *stablev1.Environment) *appv1.Applicatio
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: environment.Spec.TeamName,
+			Project: env.Config.CompanyName,
 			SyncPolicy: &appv1.SyncPolicy{
 				Automated: &appv1.SyncPolicyAutomated{
 					Prune:    true,
@@ -181,7 +180,7 @@ func GenerateEnvironmentComponentApps(e *stablev1.Environment, ec *stablev1.Envi
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: e.Spec.TeamName,
+			Project: env.Config.CompanyName,
 			SyncPolicy: &appv1.SyncPolicy{
 				Automated: &appv1.SyncPolicyAutomated{
 					Prune: true,
@@ -233,7 +232,7 @@ func GenerateTeamConfigWatcherApp(team *stablev1.Team) *appv1.Application {
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: team.Spec.TeamName,
+			Project: env.Config.CompanyName,
 			SyncPolicy: &appv1.SyncPolicy{
 				Automated: &appv1.SyncPolicyAutomated{
 					Prune: true,
@@ -259,7 +258,7 @@ func GenerateCompanyConfigWatcherApp(customerName string, companyConfigRepo stri
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: "default",
+			Project: env.Config.CompanyName,
 			SyncPolicy: &appv1.SyncPolicy{
 				Automated: &appv1.SyncPolicyAutomated{
 					Prune: true,
@@ -277,7 +276,7 @@ func GenerateCompanyBootstrapApp() *appv1.Application {
 	return &appv1.Application{
 		TypeMeta: newTypeMeta(),
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "company-bootstrap",
+			Name:      env.Config.CompanyBootstrapAppName,
 			Namespace: env.ArgocdNamespace(),
 			Labels: map[string]string{
 				"zlifecycle.com/model":                   "bootstrap",
@@ -285,7 +284,7 @@ func GenerateCompanyBootstrapApp() *appv1.Application {
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: "default",
+			Project: env.Config.CompanyName,
 			SyncPolicy: &appv1.SyncPolicy{
 				Automated: &appv1.SyncPolicyAutomated{
 					Prune: true,
@@ -301,7 +300,7 @@ func GenerateConfigWatcherBootstrapApp() *appv1.Application {
 	return &appv1.Application{
 		TypeMeta: newTypeMeta(),
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "config-watcher-bootstrap",
+			Name:      env.Config.ConfigWatcherBootstrapAppName,
 			Namespace: env.ArgocdNamespace(),
 			Labels: map[string]string{
 				"zlifecycle.com/model":                   "bootstrap",
@@ -309,7 +308,7 @@ func GenerateConfigWatcherBootstrapApp() *appv1.Application {
 			},
 		},
 		Spec: appv1.ApplicationSpec{
-			Project: "default",
+			Project: env.Config.CompanyName,
 			SyncPolicy: &appv1.SyncPolicy{
 				Automated: &appv1.SyncPolicyAutomated{
 					Prune: true,

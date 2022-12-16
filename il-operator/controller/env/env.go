@@ -91,6 +91,9 @@ type config struct {
 	// test
 	ReconcileMode string
 	SkipReconcile string
+
+	CompanyBootstrapAppName       string
+	ConfigWatcherBootstrapAppName string
 }
 
 // Config exposes vars used throughout the operator.
@@ -189,12 +192,15 @@ var Config = config{
 	)),
 	ZLifecycleEventServiceURL: getOr("ZLIFECYCLE_EVENT_SERVICE_URL", fmt.Sprintf(
 		"http://event-service.%s.svc.cluster.local:8081",
-		APINamespace(),
+		CloudKnitSystemNamespace(),
 	)),
 
 	// test
 	ReconcileMode: getOr("RECONCILE_MODE", "normal"),
 	SkipReconcile: getOr("SKIP_RECONCILE", ""),
+
+	CompanyBootstrapAppName:       fmt.Sprintf("%s-company-bootstrap", CompanyName()),
+	ConfigWatcherBootstrapAppName: fmt.Sprintf("%s-config-watcher-bootstrap", CompanyName()),
 }
 
 func CompanyName() string {
@@ -222,11 +228,7 @@ func StateManagerNamespace() string {
 }
 
 func ArgocdNamespace() string {
-	val, exists := os.LookupEnv("COMPANY_NAME")
-	if exists {
-		return fmt.Sprintf("%s-system", val)
-	}
-	return "argocd"
+	return CloudKnitSystemNamespace()
 }
 
 func ArgoWorkflowsNamespace() string {

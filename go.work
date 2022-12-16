@@ -1,8 +1,0 @@
-go 1.19
-
-use (
-	./event-service
-	./il-operator
-	./internal-cli
-	./state-manager
-)
