@@ -300,7 +300,7 @@ func RegisterInCluster(ctx context.Context,
 
 	tokenResponse, err := argocdClient.GetAuthToken()
 	if err != nil {
-		return errors.Wrap(err, "error getting auth token")
+		return errors.Wrap(err, "error getting ArgoCD auth token")
 	}
 	bearer := toBearerToken(tokenResponse.Token)
 
@@ -316,8 +316,6 @@ func RegisterInCluster(ctx context.Context,
 			return nil
 		}
 	}
-
-	log.Infof("K8s cluster %s exist and needs to be registered", cluster)
 
 	log.Infof("Registering k8s cluster %s in ArgoCD", cluster)
 

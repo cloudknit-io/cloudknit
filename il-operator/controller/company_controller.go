@@ -255,25 +255,6 @@ func (r *CompanyReconciler) initCompany(ctx context.Context, services *watcherse
 		r.LogV2.WithError(err).WithField("repo", env.Config.ILTerraformRepositoryURL).Error("error creating Company IL TF webhook")
 	}
 
-	/* r.LogV2.Info("Updating default argocd cluster namespaces")
-	if err := argocd.UpdateDefaultClusterNamespaces(
-		r.LogV2,
-		services.ArgocdClient,
-		[]string{env.ArgocdNamespace(), env.ConfigNamespace(), env.ExecutorNamespace()},
-	); err != nil {
-		r.LogV2.Fatalf("error updating argocd cluster namespaces: %v", err)
-	} */
-
-	/*r.LogV2.Info("Registering argocd cluster")
-	err := argocd2.RegisterInCluster(ctx,
-		services.ArgocdClient,
-		env.Config.CompanyName,
-		[]string{env.ArgocdNamespace(), env.ConfigNamespace(), env.ExecutorNamespace()},
-		r.LogV2)
-	if err != nil {
-		r.LogV2.Fatalf("error registering cluster: %v", err)
-	}*/
-
 	r.LogV2.Info("Registering helm chart repo")
 	return services.InternalWatcher.Watch(env.Config.GitHelmChartsRepository)
 }

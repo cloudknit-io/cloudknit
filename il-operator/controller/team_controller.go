@@ -155,15 +155,6 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	}
 	defer cleanup()
 
-	/*if err := r.updateArgocdRbac(apmCtx, team); err != nil {
-		if strings.Contains(err.Error(), registry.OptimisticLockErrorMsg) {
-			// do manual retry without error
-			return reconcile.Result{RequeueAfter: time.Second * 1}, nil
-		}
-		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error updating argocd rbac"))
-		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
-	}*/
-
 	if err := fileAPI.CreateEmptyDirectory(il.EnvironmentDirectoryPath(team.Spec.TeamName)); err != nil {
 		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error creating team dir"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
