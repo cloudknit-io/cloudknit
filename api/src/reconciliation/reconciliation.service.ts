@@ -62,23 +62,30 @@ export class ReconciliationService {
     return entry;
   }
 
-  async putComponent(org: Organization, component: ComponentDto, env?: Environment) {
+  async putComponent(org: Organization, component: ComponentDto, env: Environment, teamName: string) {
     if (typeof env === 'undefined') {
       env = await this.getEnvironment(org, component.environmentName);
     }
 
+    const id = `${teamName}-${env.name}-${component.componentName}`;
+
     const existing = await this.componentRepository
       .createQueryBuilder()
-      .where('component_name = :name and environmentId = :envId', {
+      .where('id = :id and component_name = :name and environmentId = :envId', {
+        id,
         name: component.componentName,
         envId: env.id
       })
       .getOne();
 
+    this.logger.log({ message: "PutComponent", existing, teamName});
+
     if (!existing) {
       const entry = await this.componentRepository.save({
+        id,
         componentName: component.componentName,
         duration: component.duration,
+        teamName: teamName,
         environment: env
       });
       this.notifyApplications(component.environmentName);
@@ -165,8 +172,13 @@ export class ReconciliationService {
           }
         )
         .getOne();
+
+      if (!existingEntry) {
+        this.logger.error({message: `could not find environment reconcile entry`, reconcileId, environment: env})
+        throw new BadRequestException(`could not find environment reconcile entry`);
+      }
       
-      existingEntry.end_date_time = runData.endDateTime;
+      existingEntry.end_date_time = runData.endDateTime ? runData.endDateTime : "";
       existingEntry.status = runData.status;
         
       this.logger.log(`updating existing environment reconcile entry ${JSON.stringify(existingEntry)}`);
@@ -297,7 +309,7 @@ export class ReconciliationService {
       componentName: componentEntry.name,
       duration,
       environmentName: envRecEntry.name,
-    }, env);
+    }, env, runData.teamName);
 
     const entry = await this.componentReconcileRepository.save(componentEntry);
     this.notifyStream.next(entry);
