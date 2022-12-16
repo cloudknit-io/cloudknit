@@ -51,6 +51,8 @@ function Error() {
     exit 1;
 }
 
+. /initialize-functions.sh
+
 env_sync_status=$(argocd app get $team_env_name -o json | jq -r '.status.sync.status') || Error "Failed getting env_sync_status"
 
 config_sync_status=$(argocd app get $team_env_config_name -o json | jq -r '.status.sync.status') || Error "Failed getting config_sync_status"
