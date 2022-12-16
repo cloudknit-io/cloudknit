@@ -96,7 +96,7 @@ else
     echo -n '0' >/tmp/error_code.txt
 fi
 
-component_payload='[{"reconcileId" : '$config_reconcile_id', "name" : "'$team_env_config_name'", "status" : "'$config_status'", "startDateTime" : "'$start_date'", "endDateTime" : '$end_date'}]'
+component_payload='[{"reconcileId" : '$config_reconcile_id', "teamName" : "'${team_name}'", "environmentName" : "'${env_name}'", "name" : "'$config_name'", "status" : "'$config_status'", "startDateTime" : "'$start_date'", "endDateTime" : '$end_date'}]'
 
 end_date='"'$(date '+%Y-%m-%d %H:%M:%S')'"'
 if [ $reconcile_id -eq 0 ]; then

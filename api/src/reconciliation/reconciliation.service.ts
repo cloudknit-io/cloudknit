@@ -67,7 +67,7 @@ export class ReconciliationService {
       env = await this.getEnvironment(org, component.environmentName);
     }
 
-    const id = `${component.teamName}-${component.environmentName}-${component.name}`;
+    const id = `${teamName}-${component.environmentName}-${component.name}`;
 
     const existing = await this.componentRepository
       .createQueryBuilder()
