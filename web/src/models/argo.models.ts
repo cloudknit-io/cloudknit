@@ -474,6 +474,7 @@ export interface ApplicationStatus {
 	health: HealthStatus;
 	operationState?: OperationState;
 	summary?: ApplicationSummary;
+	reconciledAt?: models.Time;
 }
 
 export interface JwtTokens {

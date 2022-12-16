@@ -17,7 +17,7 @@ const genericMapper = (item: Application): ArgoItemGeneric => ({
 	labels: item.metadata.labels || {},
 	healthStatus: item.status.health.status,
 	syncStatus: item.status.sync.status,
-	syncFinishedAt: item.status.operationState?.finishedAt,
+	syncFinishedAt: item.status.operationState?.finishedAt || item.status.reconciledAt,
 	resourceVersion: item.metadata.resourceVersion,
 	runningStatus: item.metadata?.annotations?.status || '0',
 	operationPhase: item.status.operationState?.phase,
