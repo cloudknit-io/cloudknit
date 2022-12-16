@@ -3,4 +3,5 @@ export interface ComponentDto {
     name: string;
     teamName: string;
     duration: number;
+    status: string;
 }
