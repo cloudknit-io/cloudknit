@@ -28,7 +28,7 @@ echo "   auto_approve=${auto_approve}"
 echo "   customer_id=${customer_id}"
 echo ""
 
-function PatchError() {
+function PatchProcessPlanError() {
     UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "plan_failed"
     # TODO : Pass orgId
     sh ../audit.sh $team_name $env_name $config_name "" "plan_failed" $reconcile_id $config_reconcile_id $is_destroy 0 "noSkip" ${customer_id}
@@ -41,11 +41,11 @@ function PatchError() {
     argocd app patch $team_env_name --patch $data --type merge > null
 }
 
-function Error() {
+function ProcessPlanError() {
   if [ -n "$1" ];
   then
-    echo "Error: "$1
-    PatchError
+    echo "ProcessPlanError: "$1
+    PatchProcessPlanError
   fi
 
     exit 1;
@@ -53,9 +53,9 @@ function Error() {
 
 . /initialize-functions.sh
 
-env_sync_status=$(argocd app get $team_env_name -o json | jq -r '.status.sync.status') || Error "Failed getting env_sync_status"
+env_sync_status=$(argocd app get $team_env_name -o json | jq -r '.status.sync.status') || ProcessPlanError "Failed getting env_sync_status"
 
-config_sync_status=$(argocd app get $team_env_config_name -o json | jq -r '.status.sync.status') || Error "Failed getting config_sync_status"
+config_sync_status=$(argocd app get $team_env_config_name -o json | jq -r '.status.sync.status') || ProcessPlanError "Failed getting config_sync_status"
 
 if [ $result -eq 0 ]
 then
