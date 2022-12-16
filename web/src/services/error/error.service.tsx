@@ -78,7 +78,7 @@ export class ErrorService {
 					this.errorModelStream?.next({
 						company: env.company,
 						environment: env.environment,
-						errors: env.status.errors,
+						errors: env.status.status.validation?.errors,
 						events: envEvents,
 						status: env.status.status,
 						team: env.team,

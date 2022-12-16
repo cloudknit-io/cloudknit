@@ -7,7 +7,7 @@ let sessions = {};
 let lock = false;
 
 async function argoCdLogin(org: string, username: string, password: string) {
-  const url = `${config.argoCDUrl(org)}/api/v1/session`;
+  const url = `${config.ARGOCD_URL}/api/v1/session`;
 
   try {
     const resp = await axios.post(url, {
@@ -29,8 +29,9 @@ function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function createSession(orgName: string) {  
-  const argoCdPassword = await helper.getSSMSecret(orgName, '/argocd/zlapi/password');
+async function createSession(orgName: string) {
+  const secretPath = '/argocd/zlapi/password';
+  const argoCdPassword = await helper.getSystemSSMSecret(orgName, secretPath);
 
   if (!argoCdPassword) {
     logger.error('could not retrieve argocd password from api', { org: orgName });
@@ -38,7 +39,7 @@ async function createSession(orgName: string) {
   }
 
   const session = { 
-    token: await argoCdLogin(orgName, 'zlapi', argoCdPassword), 
+    token: await argoCdLogin('zlifecycle', 'zlapi', argoCdPassword),
     ttl: Date.now() + 10800000 // 3 hours
   };
 

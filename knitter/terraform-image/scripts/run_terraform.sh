@@ -49,9 +49,19 @@ echo "   workspace=${workspace}"
 
 echo "Initializing..." 2>&1 | tee /tmp/$s3FileName.txt
 
+sh /argocd/login.sh $customer_id
+
 . /initialize-component-variables.sh
 
 . /initialize-functions.sh
+
+# add last argo workflow run id to config application so it can fetch workflow details on UI
+data='{"metadata":{"labels":{"last_workflow_run_id":"'$workflow_id'"}}}'
+argocd app patch $team_env_config_name --patch $data --type merge >null
+
+# add last argo workflow run id to config application so it can fetch workflow details on UI
+data='{"metadata":{"labels":{"last_workflow_run_id":"'$workflow_id'"}}}'
+argocd app patch $team_env_config_name --patch $data --type merge >null
 
 sh /client/setup_github.sh || SaveAndExit "Cannot setup github ssh key"
 
@@ -85,12 +95,6 @@ if [ $use_custom_state == "true" ]; then
     --environment $env_name             \
     --verbose
 fi
-
-sh /argocd/login.sh $customer_id
-
-# add last argo workflow run id to config application so it can fetch workflow details on UI
-data='{"metadata":{"labels":{"last_workflow_run_id":"'$workflow_id'"}}}'
-argocd app patch $team_env_config_name --patch $data --type merge >null
 
 . /initialize-terraform.sh
 

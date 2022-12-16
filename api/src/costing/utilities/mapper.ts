@@ -2,7 +2,7 @@ import { ComponentAudit } from "src/reconciliation/dtos/componentAudit.dto";
 import { EnvironmentAudit } from "src/reconciliation/dtos/environmentAudit.dto";
 import { ComponentReconcileDto } from "src/reconciliation/dtos/reconcile.Dto";
 import { Organization } from "src/typeorm";
-import { Component } from "src/typeorm/costing/Component";
+import { Component } from "src/typeorm/component.entity";
 import { ComponentReconcile } from "src/typeorm/reconciliation/component-reconcile.entity";
 import { EnvironmentReconcile } from "src/typeorm/reconciliation/environment-reconcile.entity";
 import { CostComponent, Resource } from "src/typeorm/resources/Resource.entity";

@@ -9,7 +9,11 @@ export class ComponentType {
   @ApiProperty()
   resources: Resource[]
   @ApiProperty()
-  isDeleted: boolean
+  isDestroyed: boolean
+  @ApiProperty()
+  status: string;
+  @ApiProperty()
+  duration: number;
 }
 
 export class CostingDto {
@@ -22,6 +26,3 @@ export class CostingDto {
   })
   component: ComponentType
 }
-
-
-

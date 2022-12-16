@@ -33,16 +33,6 @@ import { ReconciliationService } from "./reconciliation.service";
 export class ReconciliationController {
   constructor(private readonly reconciliationService: ReconciliationService) {}
 
-  @Put("environments")
-  async putEnvironment(@Request() req, @Body() body: EnvironmentDto) {
-    return await this.reconciliationService.putEnvironment(req.org, body);
-  }
-
-  @Put("components")
-  async putComponent(@Request() req, @Body() body: ComponentDto) {
-    return await this.reconciliationService.putComponent(req.org, body);
-  }
-
   @Get("environments/:id")
   async getEnvironment(@Request() req, @Param("id") id: string) {
     return await this.reconciliationService.getEnvironment(req.org, id);

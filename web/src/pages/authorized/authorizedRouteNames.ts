@@ -19,7 +19,7 @@ const ENVIRONMENT_BUILDER_URL = '/builder';
 const ENVIRONMENTS_URL = '/:projectId';
 const INFRA_URL = '/:projectId/:environmentId';
 const RESOURCE_VIEW_URL = '/applications/:componentId/resource-view';
-const QUICK_START_URL = '/quick-start';
+export const QUICK_START_URL = '/quick-start';
 const OVERVIEW_URL = '/overview';
 export const ORG_REGISTRATION = '/org-registration';
 

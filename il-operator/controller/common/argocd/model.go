@@ -39,6 +39,7 @@ type RepoOpts struct {
 type CreateRepoViaGitHubAppBody struct {
 	Repo                    string `json:"repo"`
 	Name                    string `json:"name"`
+	Project                 string `json:"project"`
 	GitHubAppPrivateKey     string `json:"githubAppPrivateKey"`
 	GitHubAppInstallationID int64  `json:"githubAppInstallationID"`
 	GitHubAppID             int64  `json:"githubAppID"`
@@ -47,6 +48,7 @@ type CreateRepoViaGitHubAppBody struct {
 type CreateRepoViaSSHBody struct {
 	Repo          string `json:"repo"`
 	Name          string `json:"name"`
+	Project       string `json:"project"`
 	SSHPrivateKey string `json:"sshPrivateKey"`
 }
 

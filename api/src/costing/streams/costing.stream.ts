@@ -1,7 +1,7 @@
 import { Controller, Param, Request, Sse } from '@nestjs/common'
 import { from, Observable, Observer } from 'rxjs'
-import { filter, map } from 'rxjs/operators'
-import { Component } from 'src/typeorm/costing/Component'
+import { map } from 'rxjs/operators'
+import { Component } from 'src/typeorm/component.entity'
 import { ComponentService } from '../services/component.service'
 import { Mapper } from '../utilities/mapper'
 import { MessageEvent } from '@nestjs/common';

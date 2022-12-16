@@ -7,6 +7,8 @@ import (
 
 	argocdapi "github.com/compuzest/zlifecycle-il-operator/controller/common/argocd"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/aws/awseks"
+	"github.com/compuzest/zlifecycle-il-operator/controller/env"
+	"k8s.io/client-go/rest"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/util"
 
@@ -106,13 +108,18 @@ func RegisterRepo(log *logrus.Entry, api argocdapi.API, repoOpts *argocdapi.Repo
 		body = argocdapi.CreateRepoViaGitHubAppBody{
 			Repo:                    util.RewriteGitHubURLToHTTPS(repoOpts.RepoURL, false),
 			Name:                    repoName,
+			Project:                 env.Config.CompanyName,
 			GitHubAppPrivateKey:     string(repoOpts.GitHubAppPrivateKey),
 			GitHubAppInstallationID: repoOpts.GitHubAppInstallationID,
 			GitHubAppID:             repoOpts.GitHubAppID,
 		}
 	} else {
 		l.Infof("Registering git repo %s in ArgoCD using SSH mode", repoOpts.RepoURL)
-		body = argocdapi.CreateRepoViaSSHBody{Repo: repoOpts.RepoURL, Name: repoName, SSHPrivateKey: repoOpts.SSHPrivateKey}
+		body = argocdapi.CreateRepoViaSSHBody{
+			Repo:          repoOpts.RepoURL,
+			Name:          repoName,
+			Project:       env.Config.CompanyName,
+			SSHPrivateKey: repoOpts.SSHPrivateKey}
 	}
 	resp2, err := api.CreateRepository(body, bearer)
 	if err != nil {
@@ -140,14 +147,13 @@ func TryCreateBootstrapApps(ctx context.Context, api argocdapi.API, log logr.Log
 	}
 	bearer := toBearerToken(tokenResponse.Token)
 
-	companyBootstrapApp := "company-bootstrap"
-	exists, err := api.DoesApplicationExist(companyBootstrapApp, bearer)
+	exists, err := api.DoesApplicationExist(env.Config.CompanyBootstrapAppName, bearer)
 	if err != nil {
-		return errors.Wrapf(err, "error checking does application [%s] exists", companyBootstrapApp)
+		return errors.Wrapf(err, "error checking does application [%s] exists", env.Config.CompanyBootstrapAppName)
 	}
 	if exists {
 		log.Info("Application already registered on ArgoCD",
-			"application", companyBootstrapApp,
+			"application", env.Config.CompanyBootstrapAppName,
 		)
 	} else {
 		companyResp, companyErr := api.CreateApplication(GenerateCompanyBootstrapApp(), bearer)
@@ -156,18 +162,17 @@ func TryCreateBootstrapApps(ctx context.Context, api argocdapi.API, log logr.Log
 		}
 		defer util.CloseBody(companyResp.Body)
 		log.Info("Successfully registered application on ArgoCD",
-			"application", "company-bootstrap",
+			"application", env.Config.CompanyBootstrapAppName,
 		)
 	}
 
-	configWatcherBootstrapApp := "config-watcher-bootstrap"
-	exists2, err2 := api.DoesApplicationExist(configWatcherBootstrapApp, bearer)
+	exists2, err2 := api.DoesApplicationExist(env.Config.ConfigWatcherBootstrapAppName, bearer)
 	if err2 != nil {
-		return errors.Wrapf(err2, "error checking does application [%s] exist", configWatcherBootstrapApp)
+		return errors.Wrapf(err2, "error checking does application [%s] exist", env.Config.ConfigWatcherBootstrapAppName)
 	}
 	if exists2 {
 		log.Info("Application already registered on ArgoCD",
-			"application", configWatcherBootstrapApp,
+			"application", env.Config.ConfigWatcherBootstrapAppName,
 		)
 	} else {
 		companyResp2, companyErr2 := api.CreateApplication(GenerateConfigWatcherBootstrapApp(), bearer)
@@ -176,7 +181,7 @@ func TryCreateBootstrapApps(ctx context.Context, api argocdapi.API, log logr.Log
 		}
 		defer util.CloseBody(companyResp2.Body)
 		log.Info("Successfully registered application on ArgoCD",
-			"application", "config-watcher-bootstrap",
+			"application", env.Config.ConfigWatcherBootstrapAppName,
 		)
 	}
 
@@ -285,4 +290,55 @@ func RegisterNewCluster(ctx context.Context, k8sClient awseks.API, argocdClient 
 	defer util.CloseBody(resp.Body)
 
 	return info, nil
+}
+
+func RegisterInCluster(ctx context.Context,
+	argocdClient argocdapi.API,
+	cluster string,
+	namespaces []string,
+	log *logrus.Entry) error {
+
+	tokenResponse, err := argocdClient.GetAuthToken()
+	if err != nil {
+		return errors.Wrap(err, "error getting ArgoCD auth token")
+	}
+	bearer := toBearerToken(tokenResponse.Token)
+
+	log.Infof("Checking does k8s cluster %s exist", cluster)
+	clusters, err := argocdClient.ListClusters(&cluster, bearer)
+	if err != nil {
+		return errors.Wrapf(err, "error listing clusters")
+	}
+
+	for _, item := range clusters.Items {
+		if item.Name == cluster {
+			log.Infof("K8s cluster %s exist and will not register it", cluster)
+			return nil
+		}
+	}
+
+	log.Infof("Registering k8s cluster %s in ArgoCD", cluster)
+
+	config, err := rest.InClusterConfig()
+	body := argocdapi.RegisterClusterBody{
+		Name: cluster,
+		Config: &argocdapi.ClusterConfig{
+			BearerToken: config.BearerToken,
+			TLSClientConfig: &argocdapi.TLSClientConfig{
+				CAData:     string(config.TLSClientConfig.CAData),
+				ServerName: config.Host,
+			},
+		},
+		Namespaces:    namespaces,
+		Server:        "https://kubernetes.default.svc",
+		ServerVersion: "1.22+",
+	}
+
+	resp, err := argocdClient.RegisterCluster(&body, bearer)
+	if err != nil {
+		return errors.Wrapf(err, "error registering cluster %s in argocd", cluster)
+	}
+	defer util.CloseBody(resp.Body)
+
+	return nil
 }
