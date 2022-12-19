@@ -3,8 +3,9 @@ package validator
 import (
 	"context"
 	"fmt"
-	"github.com/compuzest/zlifecycle-il-operator/controller/services/webhooks/api"
 	"regexp"
+
+	"github.com/compuzest/zlifecycle-il-operator/controller/services/webhooks/api"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/file"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/eventservice"
@@ -407,14 +408,6 @@ func (v *EnvironmentValidatorImpl) checkTfvarsExist(tfvars *v1.VariablesFile, ec
 
 func (v *EnvironmentValidatorImpl) checkEnvironmentFields(e *v1.Environment, isCreate bool) field.ErrorList {
 	var allErrs field.ErrorList
-
-	if isCreate {
-		if e.Spec.Teardown {
-			fld := field.NewPath("spec").Child("teardown")
-			fe := field.Invalid(fld, e.Spec.Teardown, "environment cannot be created with teardown equal to true")
-			allErrs = append(allErrs, fe)
-		}
-	}
 
 	if e.Spec.TeamName == "" {
 		fld := field.NewPath("spec").Child("teamName")
