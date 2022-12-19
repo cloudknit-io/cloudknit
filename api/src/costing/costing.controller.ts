@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Param, Post, Request } from '@nestjs/common'
+import { ComponentDto } from './dtos/Component.dto';
 import { CostingDto } from './dtos/Costing.dto'
 import { ComponentService } from './services/component.service'
 
@@ -35,7 +36,7 @@ export class CostingController {
   async getComponentCost(
     @Request() req,
     @Param('componentId') componentId: string,
-  ): Promise<number> {
+  ): Promise<ComponentDto> {
     return await this.componentService.getComponentCost(req.org, componentId);
   }
 
