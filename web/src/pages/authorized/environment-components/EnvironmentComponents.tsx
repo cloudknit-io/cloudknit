@@ -189,7 +189,7 @@ export const EnvironmentComponents: React.FC = () => {
 				environmentId,
 			}
 		);
-		const sub: any[] = setUpComponentStreams(newComponents);
+		// const sub: any[] = setUpComponentStreams(newComponents);
 		setComponents(newComponents);
 		componentArrayRef.current = newComponents;
 		const selectedConf = newComponents.find((itm: any) => itm.id === selectedConfig?.id);
@@ -201,7 +201,7 @@ export const EnvironmentComponents: React.FC = () => {
 		}
 
 		return () => {
-			sub.forEach(s => s.unsubscribe());
+			// sub.forEach(s => s.unsubscribe());
 		};
 	}, [streamData]);
 
@@ -248,7 +248,7 @@ export const EnvironmentComponents: React.FC = () => {
 			if (data) {
 				componentArrayRef.current = data;
 				setComponents(data);
-				subs = setUpComponentStreams(data);
+				// subs = setUpComponentStreams(data);
 			}
 			setLoading(false);
 		});
