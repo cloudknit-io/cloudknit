@@ -51,6 +51,8 @@ export const streamMapper = <T>(
 			if (index !== -1 && data.type === 'MODIFIED') {
 				newItems = items.map(x => {
 					if (x.id === item.id) {
+						item.componentCost = x.componentCost;
+						item.componentStatus = x.componentStatus;
 						return item;
 					}
 					return x;

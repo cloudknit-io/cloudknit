@@ -90,8 +90,8 @@ export class ArgoMapper {
 			isSkipped: labels.is_skipped === 'true',
 			dependsOn: ArgoMapper.parseDependsOn(item.metadata.labels),
 			componentName: labels.component_name || '',
-			componentStatus: (labels.component_status as ZSyncStatus) || ZSyncStatus.Unknown,
-			componentCost: labels.component_cost || '0',
+			componentStatus: ZSyncStatus.Unknown,
+			componentCost: '0',
 		};
 	}
 }
