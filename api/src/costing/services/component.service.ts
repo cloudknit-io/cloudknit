@@ -140,6 +140,8 @@ export class ComponentService {
       throw new BadRequestException(`could not find environment associated with this component ${id}`);
     }
 
+    let resources: any[] = [];
+
     let savedComponent = (await this.componentRepository
       .createQueryBuilder('component')
       .leftJoinAndSelect('component.environment', 'environment')
@@ -167,6 +169,12 @@ export class ComponentService {
         savedComponent.duration = costing.component.duration;
       }
 
+      if (costing.component.resources.length > 0) {
+        resources = await this.resourceRepository.save(
+          Mapper.mapToResourceEntity(org, savedComponent, costing.component.resources)
+        );
+      }
+
       savedComponent = await this.componentRepository.save(savedComponent);
     } else {
       // Create new component
@@ -182,10 +190,6 @@ export class ComponentService {
 
       savedComponent = await this.componentRepository.save(component);
     }
-
-    const resources = await this.resourceRepository.save(
-      Mapper.mapToResourceEntity(org, savedComponent, costing.component.resources)
-    );
 
     savedComponent.environment = env;
     savedComponent.resources = resources;
