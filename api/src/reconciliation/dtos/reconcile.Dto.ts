@@ -25,6 +25,10 @@ export class ComponentReconcileDto {
   @ApiProperty()
   name: string
   @ApiProperty()
+  teamName: string
+  @ApiProperty()
+  environmentName: string
+  @ApiProperty()
   status: string
   @ApiProperty()
   startDateTime: string

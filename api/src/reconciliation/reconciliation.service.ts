@@ -62,24 +62,33 @@ export class ReconciliationService {
     return entry;
   }
 
-  async putComponent(org: Organization, component: ComponentDto, env?: Environment) {
+  async putComponent(org: Organization, component: ComponentDto, env: Environment, teamName: string) {
     if (typeof env === 'undefined') {
       env = await this.getEnvironment(org, component.environmentName);
     }
 
+    const id = `${teamName}-${component.environmentName}-${component.name}`;
+
     const existing = await this.componentRepository
       .createQueryBuilder()
-      .where('component_name = :name and environmentId = :envId', {
-        name: component.componentName,
+      .where('id = :id and component_name = :name and environmentId = :envId', {
+        id,
+        name: component.name,
         envId: env.id
       })
       .getOne();
 
+    this.logger.log({ message: "PutComponent", existing, id, teamName, component, env});
+
     if (!existing) {
       const entry = await this.componentRepository.save({
-        componentName: component.componentName,
+        id,
+        componentName: component.name,
         duration: component.duration,
-        environment: env
+        teamName: teamName,
+        environment: env,
+        status: component.status,
+        organization: org
       });
       this.notifyApplications(component.environmentName);
       return entry;
@@ -165,8 +174,13 @@ export class ReconciliationService {
           }
         )
         .getOne();
+
+      if (!existingEntry) {
+        this.logger.error({message: `could not find environment reconcile entry`, reconcileId, environment: env})
+        throw new BadRequestException(`could not find environment reconcile entry`);
+      }
       
-      existingEntry.end_date_time = runData.endDateTime;
+      existingEntry.end_date_time = runData.endDateTime ? runData.endDateTime : "";
       existingEntry.status = runData.status;
         
       this.logger.log(`updating existing environment reconcile entry ${JSON.stringify(existingEntry)}`);
@@ -225,25 +239,25 @@ export class ReconciliationService {
     return savedEntry.reconcile_id;
   }
 
-  async saveOrUpdateComponent(org: Organization, runData: EvnironmentReconcileDto) {
-    const reconcileId = Number.isNaN(parseInt(runData.reconcileId))
+  async saveOrUpdateComponent(org: Organization, envReconcile: EvnironmentReconcileDto) {
+    const reconcileId = Number.isNaN(parseInt(envReconcile.reconcileId))
       ? null
-      : parseInt(runData.reconcileId);
+      : parseInt(envReconcile.reconcileId);
 
     if (!reconcileId) {
-      this.logger.error(`No reconcileId found when trying to save or update a component. org [${org.id} / ${org.name}] env [${runData.name}]`);
+      this.logger.error(`No reconcileId found when trying to save or update a component. org [${org.id} / ${org.name}] env [${envReconcile.name}]`);
       throw new BadRequestException("reconcileId is mandatory to save or update component")
     }
 
-    this.logger.log(`reconcileId: ${reconcileId}, component: ${runData.name} save or update ${org.name}`);
+    this.logger.log({message: 'save or update component', reconcileId, envReconcile});
 
-    const env = await this.getEnvironment(org, runData.name);
+    const env = await this.getEnvironment(org, envReconcile.name);
 
     if (!env) {
-      throw new BadRequestException(`could not find environment ${runData.name}`);
+      throw new BadRequestException(`could not find environment ${envReconcile.name}`);
     }
 
-    this.logger.log(`reconcileId ${reconcileId}, component: ${runData.name} found environment ${JSON.stringify(env)} ${org.name}`);
+    this.logger.log({message: 'found environment', reconcileId, env});
 
     const envRecEntry = await this.environmentReconcileRepository
       .createQueryBuilder()
@@ -256,18 +270,18 @@ export class ReconciliationService {
       .getOne();
 
     if (!envRecEntry) {
-      throw new BadRequestException(`could not find environmentReconcileEntry for environment ${runData.name}`);
+      throw new BadRequestException(`could not find environmentReconcileEntry for environment ${envReconcile.name}`);
     }
 
-    this.logger.log(`reconcileId ${reconcileId}, envRecEntry: ${JSON.stringify(envRecEntry)} for org ${org.name}`);
+    this.logger.log({message: 'found environment reconcile entry', reconcileId, envRecEntry});
 
     let componentEntry: ComponentReconcile = Mapper.mapToComponentReconcile(
       org,
       envRecEntry,
-      runData.componentReconciles
+      envReconcile.componentReconciles
     )[0];
 
-    this.logger.log(`reconcileId ${reconcileId}, componentEntry ${JSON.stringify(componentEntry)} for org ${org.name}`);
+    this.logger.log({message: 'created component entry', reconcileId, env, componentEntry});
 
     if (!componentEntry.reconcile_id) {
       await this.updateSkippedWorkflows<ComponentReconcile>(
@@ -293,16 +307,24 @@ export class ReconciliationService {
       duration = ed - sd;
     }
 
+    if (envReconcile.componentReconciles.length == 0) {
+      throw new BadRequestException("no component reconciles");
+    }
+
+    const comp = envReconcile.componentReconciles[0];
+
     await this.putComponent(org, {
-      componentName: componentEntry.name,
+      name: comp.name,
       duration,
+      teamName: comp.teamName,
       environmentName: envRecEntry.name,
-    }, env);
+      status: comp.status,
+    }, env, envReconcile.teamName);
 
     const entry = await this.componentReconcileRepository.save(componentEntry);
     this.notifyStream.next(entry);
 
-    this.logger.log(`reconcileId ${reconcileId}, entry: ${JSON.stringify(entry)}`);
+    this.logger.log({message: 'created component reconcile entry', reconcileId, env, compReconcileEntry: entry});
 
     return entry.reconcile_id;
   }

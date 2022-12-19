@@ -1,10 +1,11 @@
 import { Controller, Param, Request, Sse } from '@nestjs/common'
-import { from, Observable, Observer } from 'rxjs'
+import { from, Observable } from 'rxjs'
 import { map } from 'rxjs/operators'
 import { Component } from 'src/typeorm/component.entity'
 import { ComponentService } from '../services/component.service'
 import { Mapper } from '../utilities/mapper'
 import { MessageEvent } from '@nestjs/common';
+import { ComponentDto } from '../dtos/Component.dto'
 
 @Controller({
   path: 'stream',
@@ -55,7 +56,7 @@ export class CostingStream {
   }
 }
 
-export interface CostingStreamDto {
+export interface StreamDto {
   team: {
     teamId: string
     cost: number
@@ -64,8 +65,5 @@ export interface CostingStreamDto {
     environmentId: string
     cost: number
   }
-  component: {
-    componentId: string
-    cost: number
-  }
+  component: ComponentDto
 }
