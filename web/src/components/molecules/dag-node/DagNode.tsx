@@ -73,18 +73,18 @@ export const ZDagNode: FC<DagNodeProps> = ({
 					.getComponentCostStream(displayValue)
 					.subscribe(data => {
 						updateCost(Number(data?.cost || 0));
-						// const s_st = operation === 'Destroy' && data.status === ZSyncStatus.Unknown
-						// ? ZSyncStatus.Initializing
-						// : data.status;
-						// setStatus(data.status);
-						// setSyncStatus(s_st);
+						const s_st = operation === 'Destroy' && data.status === ZSyncStatus.Unknown
+						? ZSyncStatus.Initializing
+						: data.status;
+						setStatus(data.status);
+						setSyncStatus(s_st);
 					})
 			);
 		}
 		$subscription.push(
 			updater.pipe(debounceTime(1000)).subscribe(async (data: DagNodeProps) => {
-				setStatus(data.componentStatus);
-				setSyncStatus(data.SyncStatus);
+				// setStatus(data.componentStatus);
+				// setSyncStatus(data.SyncStatus);
 				setSkippedStatus(data.isSkipped);
 				setOperationType(data.operation);
 				if (id === 'root') {
