@@ -181,7 +181,6 @@ export class ComponentService {
     savedComponent.environment = env;
 
     const data = await this.getComponentSteamDto(org, savedComponent);
-    console.log(costing, '------>', data);
     this.notifyStream.next({ data });
 
     return true;
