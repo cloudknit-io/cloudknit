@@ -46,8 +46,8 @@ export const ZDagNode: FC<DagNodeProps> = ({
 		CostingService.getInstance().getCachedValue(id === 'root' ? name : displayValue)
 	);
 	const [syncTime, setSyncTime] = useState<any>(syncFinishedAt);
-	const [status, setStatus] = useState<ZSyncStatus>(componentStatus);
-	const [syncStatus, setSyncStatus] = useState<ZSyncStatus>(SyncStatus);
+	const [status, setStatus] = useState<ZSyncStatus>(ZSyncStatus.Unknown);
+	const [syncStatus, setSyncStatus] = useState<ZSyncStatus>(ZSyncStatus.Unknown);
 	const [skippedStatus, setSkippedStatus] = useState<boolean>(isSkipped);
 	const [operationType, setOperationType] = useState<"Provision" | "Destroy">(operation);
 	let width = getTextWidth(name);
@@ -72,15 +72,17 @@ export const ZDagNode: FC<DagNodeProps> = ({
 				CostingService.getInstance()
 					.getComponentCostStream(displayValue)
 					.subscribe(data => {
-						updateCost(data.cost);
-						setSyncStatus(data.status);
+						updateCost(Number(data?.cost || 0));
+						const s_st = operation === 'Destroy' && data.status === ZSyncStatus.Unknown
+						? ZSyncStatus.Initializing
+						: data.status;
+						setStatus(data.status);
+						setSyncStatus(s_st);
 					})
 			);
 		}
 		$subscription.push(
 			updater.pipe(debounceTime(1000)).subscribe(async (data: DagNodeProps) => {
-				setStatus(data.componentStatus);
-				// setSyncStatus(data.SyncStatus);
 				setSkippedStatus(data.isSkipped);
 				setOperationType(data.operation);
 				if (id === 'root') {

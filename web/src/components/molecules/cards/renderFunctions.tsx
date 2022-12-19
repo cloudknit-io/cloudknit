@@ -62,7 +62,8 @@ moment.locale('en', {
 export const currency = (cost: number) => Number(cost).toFixed(2);
 
 export const CostRenderer: FC<any> = ({ data }: any) => {
-	return <>{isNumber(data.cost || 0) ? `${data.cost == -1 ? 'N/A' : '$' + currency(data.cost)}` : 'calculating cost...'}</>;
+	const cost = Number(data?.cost || 0);
+	return <>{isNumber(cost) ? `${cost == -1 ? 'N/A' : '$' + currency(cost)}` : 'calculating cost...'}</>;
 };
 
 export const renderLabels = (labels: { [name: string]: string }): ReactNode[] => {
