@@ -11,6 +11,7 @@ import { MessageEvent } from "@nestjs/common";
 import { Organization } from "src/typeorm";
 import { Environment } from "src/typeorm/reconciliation/environment.entity";
 import { EnvironmentDto } from "../dtos/Environment.dto";
+import { ComponentDto } from "../dtos/Component.dto";
 
 @Injectable()
 export class ComponentService {
@@ -75,22 +76,33 @@ export class ComponentService {
     return Number(raw.cost || 0);
   }
 
-  async getComponentCost(org: Organization, componentId: string): Promise<number> {
-    const raw = await this.componentRepository
-      .createQueryBuilder("components")
-      .select("SUM(components.cost) as cost")
-      .where(
-        `components.id = '${componentId}' and 
-        components.isDestroyed = 0 and
-        components.organizationId = ${org.id}`)
-      .getRawOne();
+  async getComponentCost(org: Organization, id: string): Promise<ComponentDto> {
+    let component = (await this.componentRepository
+      .createQueryBuilder('component')
+      .where('component.organizationId = :orgId and component.id = :name', {
+        orgId: org.id,
+        name: id
+      })
+      .getOne()) || null;
 
-    if (!raw) {
-      this.logger.error(`could not find cost for component ${componentId} for org ${org.name}`)
+    if (!component) {
+      this.logger.error(`could not find component ${id} for org ${org.name}`)
       throw new NotFoundException();
     }
 
-    return Number(raw.cost || 0);
+    const resources = await this.resourceRepository.save(
+      Mapper.mapToResourceEntity(org, component, component.resources)
+    );
+
+    return {
+      id: component.id,
+      cost: component.isDestroyed ? 0 : component.cost,
+      status: component.status,
+      duration: component.duration,
+      componentName: component.componentName,
+      lastReconcileDatetime: component.lastReconcileDatetime,
+      resources: resources,
+    };
   }
 
   async getTeamCost(org: Organization, name: string): Promise<number> {
