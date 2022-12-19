@@ -72,14 +72,15 @@ export const ZDagNode: FC<DagNodeProps> = ({
 				CostingService.getInstance()
 					.getComponentCostStream(displayValue)
 					.subscribe(data => {
-						updateCost(data);
+						updateCost(data.cost);
+						setSyncStatus(data.status);
 					})
 			);
 		}
 		$subscription.push(
 			updater.pipe(debounceTime(1000)).subscribe(async (data: DagNodeProps) => {
 				setStatus(data.componentStatus);
-				setSyncStatus(data.SyncStatus);
+				// setSyncStatus(data.SyncStatus);
 				setSkippedStatus(data.isSkipped);
 				setOperationType(data.operation);
 				if (id === 'root') {

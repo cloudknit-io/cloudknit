@@ -47,8 +47,6 @@ export class CostingService extends BaseService {
 		const key = `${componentId}-resources`;
 		const url = this.constructUri(CostingtUriType.resources(componentId));
 
-		console.log('getResourceDataStream', componentId, key, url);
-
 		return this.getStream<any>(key, url);
 	}
 
@@ -84,7 +82,7 @@ export class CostingService extends BaseService {
 		};
 		notifier(team.teamId, team.cost);
 		notifier(environment.environmentId, environment.cost);
-		notifier(component.componentId, component.cost);
+		notifier(component.id, component);
 		notifier(`${component.componentId}-resources`, {
 			componentId: component.componentId,
 			resources: component.resources,
