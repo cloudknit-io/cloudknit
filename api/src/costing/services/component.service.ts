@@ -155,15 +155,15 @@ export class ComponentService {
     }
     else if (savedComponent) {
       // Update existing component
-      if (savedComponent.status !== costing.component.status) {
+      if (costing.component.status && savedComponent.status !== costing.component.status) {
         savedComponent.status = costing.component.status;
       }
   
-      if (savedComponent.cost !== costing.component.cost) {
+      if (costing.component.cost !== undefined && savedComponent.cost !== costing.component.cost) {
         savedComponent.cost = costing.component.cost;
       }
 
-      if (savedComponent.duration !== costing.component.duration) {
+      if (costing.component.duration && savedComponent.duration !== costing.component.duration) {
         savedComponent.duration = costing.component.duration;
       }
 
@@ -175,7 +175,7 @@ export class ComponentService {
       component.teamName = costing.teamName;
       component.environment = env;
       component.id = id;
-      component.status = costing.component.status;
+      component.status = costing.component.status || ;
       component.componentName = costing.component.componentName;
       component.cost = costing.component.cost;
       component.isDestroyed = costing.component.isDestroyed;
