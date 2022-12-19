@@ -2,15 +2,12 @@ import { BadRequestException, Injectable, Logger, NotFoundException } from "@nes
 import { InjectRepository } from "@nestjs/typeorm";
 import { Subject } from "rxjs";
 import { Component } from "src/typeorm/component.entity";
-import { Resource } from "src/typeorm/resources/Resource.entity";
 import { Repository } from "typeorm";
 import { CostingDto } from "../dtos/Costing.dto";
 import { StreamDto as StreamDto } from "../streams/costing.stream";
-import { Mapper } from "../utilities/mapper";
 import { MessageEvent } from "@nestjs/common";
 import { Organization } from "src/typeorm";
 import { Environment } from "src/typeorm/reconciliation/environment.entity";
-import { EnvironmentDto } from "../dtos/Environment.dto";
 import { ComponentDto } from "../dtos/Component.dto";
 
 @Injectable()
@@ -24,8 +21,6 @@ export class ComponentService {
     private componentRepository: Repository<Component>,
     @InjectRepository(Environment)
     private envRepo: Repository<Environment>,
-    @InjectRepository(Resource)
-    private resourceRepository: Repository<Resource>
   ) {
     setInterval(() => {
       this.notifyStream.next({ data: {} });
@@ -90,18 +85,14 @@ export class ComponentService {
       throw new NotFoundException();
     }
 
-    const resources = await this.resourceRepository.save(
-      Mapper.mapToResourceEntity(org, component, component.resources)
-    );
-
     return {
       id: component.id,
-      cost: component.isDestroyed ? 0 : component.cost,
+      estimatedCost: component.isDestroyed ? 0 : component.estimatedCost,
       status: component.status,
       duration: component.duration,
       componentName: component.componentName,
       lastReconcileDatetime: component.lastReconcileDatetime,
-      resources: resources,
+      costResources: component.costResources,
     };
   }
 
@@ -161,19 +152,15 @@ export class ComponentService {
         savedComponent.status = costing.component.status;
       }
   
-      if (costing.component.cost !== undefined && savedComponent.cost !== costing.component.cost) {
-        savedComponent.cost = costing.component.cost;
+      if (savedComponent.estimatedCost !== costing.component.cost) {
+        savedComponent.estimatedCost = costing.component.cost;
       }
 
       if (costing.component.duration && savedComponent.duration !== costing.component.duration) {
         savedComponent.duration = costing.component.duration;
       }
 
-      if (costing.component.resources.length > 0) {
-        resources = await this.resourceRepository.save(
-          Mapper.mapToResourceEntity(org, savedComponent, costing.component.resources)
-        );
-      }
+      savedComponent.costResources = costing.component.resources;
 
       savedComponent = await this.componentRepository.save(savedComponent);
     } else {
@@ -185,14 +172,13 @@ export class ComponentService {
       component.id = id;
       component.status = costing.component.status;
       component.componentName = costing.component.componentName;
-      component.cost = costing.component.cost;
+      component.estimatedCost = costing.component.cost;
       component.isDestroyed = costing.component.isDestroyed;
 
       savedComponent = await this.componentRepository.save(component);
     }
 
     savedComponent.environment = env;
-    savedComponent.resources = resources;
 
     const data = await this.getComponentSteamDto(org, savedComponent);
     console.log(costing, '------>', data);
@@ -223,12 +209,12 @@ export class ComponentService {
       },
       component: {
         id: component.id,
-        cost: component.isDestroyed ? 0 : component.cost,
+        estimatedCost: component.isDestroyed ? 0 : component.estimatedCost,
         status: component.status,
         duration: component.duration,
         componentName: component.componentName,
         lastReconcileDatetime: component.lastReconcileDatetime,
-        resources: component.resources,
+        costResources: component.costResources,
       },
     };
     
@@ -238,36 +224,5 @@ export class ComponentService {
   async softDelete(component: Component): Promise<Component> {
     component.isDestroyed = true;
     return await this.componentRepository.save(component);
-  }
-
-  async getResourceData(org: Organization, id: string) {
-    const resultSet = await this.resourceRepository.find({
-      where: {
-        componentId: id,
-        organization: {
-          id: org.id
-        }
-      },
-    });
-
-    const roots = [];
-    var resources = new Map<string, any>(
-      resultSet.map((e) => [e.id, { ...e, subresources: [] }])
-    );
-
-    for (let i = 0; i < resultSet.length; i++) {
-      const resource = resources.get(resultSet[i].id);
-
-      if (!resource.parentId) {
-        roots.push(resource);
-      } else {
-        resources.get(resource.parentId).subresources.push(resource);
-      }
-    }
-
-    return {
-      componentId: id,
-      resources: roots,
-    };
   }
 }

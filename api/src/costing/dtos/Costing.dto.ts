@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { Resource } from 'src/typeorm/resources/Resource.entity';
+import { CostResource } from './Resource.dto';
 
 export class ComponentType {
   @ApiProperty()
@@ -7,7 +7,7 @@ export class ComponentType {
   @ApiProperty()
   cost: number;
   @ApiProperty()
-  resources: Resource[]
+  resources: CostResource[]
   @ApiProperty()
   isDestroyed: boolean
   @ApiProperty()

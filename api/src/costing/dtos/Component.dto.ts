@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { EnvironmentDto } from './Environment.dto';
+import { CostResource } from './Resource.dto';
 
 export class ComponentDto {
 
@@ -11,7 +12,7 @@ export class ComponentDto {
   @ApiProperty({
     name: 'Cost'
   })
-  cost: number = -1;
+  estimatedCost: number = -1;
 
   @ApiProperty()
   id: string;
@@ -31,7 +32,6 @@ export class ComponentDto {
   @ApiProperty()
   isDestroyed?: boolean
 
-  // TODO : Make ResourceDto
   @ApiProperty()
-  resources?: object[];
+  costResources?: CostResource[];
 }
