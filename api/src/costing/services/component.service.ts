@@ -59,9 +59,9 @@ export class ComponentService {
 
     const raw = await this.componentRepository
       .createQueryBuilder("components")
-      .select("SUM(components.cost) as cost")
+      .select("SUM(components.estimated_cost) as cost")
       .where(
-        `components.cost != -1 and 
+        `components.estimated_cost != -1 and 
         components.teamName = '${teamName}' and 
         components.environmentId = '${env.id}' and 
         components.isDestroyed = 0 and 
@@ -99,11 +99,11 @@ export class ComponentService {
   async getTeamCost(org: Organization, name: string): Promise<number> {
     const raw = await this.componentRepository
       .createQueryBuilder("components")
-      .select("SUM(components.cost) as cost")
+      .select("SUM(components.estimated_cost) as cost")
       .where(
         `components.teamName = '${name}' and 
         components.isDestroyed = 0 and 
-        components.cost != -1 and
+        components.estimated_cost != -1 and
         components.organizationId = ${org.id}`
       )
       .getRawOne();
@@ -152,15 +152,14 @@ export class ComponentService {
         savedComponent.status = costing.component.status;
       }
   
-      if (savedComponent.estimatedCost !== costing.component.cost) {
+      if (costing.component.cost !== undefined && savedComponent.estimatedCost !== costing.component.cost) {
         savedComponent.estimatedCost = costing.component.cost;
+        savedComponent.costResources = costing.component.resources;
       }
 
-      if (costing.component.duration && savedComponent.duration !== costing.component.duration) {
+      if (costing.component.duration != undefined && savedComponent.duration !== costing.component.duration) {
         savedComponent.duration = costing.component.duration;
       }
-
-      savedComponent.costResources = costing.component.resources;
 
       savedComponent = await this.componentRepository.save(savedComponent);
     } else {
@@ -181,6 +180,7 @@ export class ComponentService {
     savedComponent.environment = env;
 
     const data = await this.getComponentSteamDto(org, savedComponent);
+    this.logger.debug({message: 'notifying cost stream', data})
     this.notifyStream.next({ data });
 
     return true;
