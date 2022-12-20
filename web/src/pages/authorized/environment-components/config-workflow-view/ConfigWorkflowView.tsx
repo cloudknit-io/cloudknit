@@ -18,7 +18,7 @@ import { ArgoWorkflowsService } from 'services/argo/ArgoWorkflows.service';
 import { AuditService } from 'services/audit/audit.service';
 import { CostingService } from 'services/costing/costing.service';
 
-import { auditColumns, getSeparatedConfigId, renderCost, ViewType, ViewTypeTabName } from '../helpers';
+import { auditColumns, getSeparatedConfigId, ViewType, ViewTypeTabName } from '../helpers';
 import { EventClientLogs } from 'utils/apiClient/EventClient';
 import { StateFileView } from 'components/organisms/state-file-view/StateFileView';
 import { ArgoComponentsService } from 'services/argo/ArgoComponents.service';
@@ -222,15 +222,7 @@ export const ConfigWorkflowView: FC<Props> = (props: Props) => {
 				return (
 					<div className="zlifecycle-config-workflow-view__diagram--detailed-cost-breakdown">
 						{config.id && (
-							<ZStreamRenderer
-								key={config.id}
-								subject={CostingService.getInstance().getResourceDataStream(config.id)}
-								Component={HierarchicalView}
-								defaultValue={CostingService.getInstance().getCachedValue(`${config.id}-resources`)}
-								componentProps={{
-									componentId: config.id,
-								}}
-							/>
+							<HierarchicalView data={config} componentId={config.id} />
 						)}
 					</div>
 				);

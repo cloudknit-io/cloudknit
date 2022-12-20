@@ -23,6 +23,7 @@ export type DagNodeProps = {
 	projectId: string;
 	SyncStatus: ZSyncStatus;
 	Icon: JSX.Element;
+	estimatedCost: string;
 	operation: 'Provision' | 'Destroy';
 	onNodeClick: (...params: any) => any;
 	updater: Subject<DagNodeProps>;
@@ -39,12 +40,13 @@ export const ZDagNode: FC<DagNodeProps> = ({
 	Icon,
 	projectId,
 	operation,
+	estimatedCost,
 	onNodeClick,
 	updater,
 }: DagNodeProps) => {
 	const [cost, updateCost] = useState<number | null>(
-		CostingService.getInstance().getCachedValue(id === 'root' ? name : displayValue)
-	);
+		id === 'root' ?
+		CostingService.getInstance().getCachedValue(name) : Number(estimatedCost || 0));
 	const [syncTime, setSyncTime] = useState<any>(syncFinishedAt);
 	const [status, setStatus] = useState<ZSyncStatus>(componentStatus);
 	const [syncStatus, setSyncStatus] = useState<ZSyncStatus>(SyncStatus);
@@ -68,23 +70,14 @@ export const ZDagNode: FC<DagNodeProps> = ({
 			);
 		} else {
 			getLastReconcileTime(displayValue, syncFinishedAt, 'COMPONENT').then(r => setSyncTime(r));
-			$subscription.push(
-				CostingService.getInstance()
-					.getComponentCostStream(displayValue)
-					.subscribe(data => {
-						updateCost(Number(data?.cost || 0));
-						const s_st = operation === 'Destroy' && data.status === ZSyncStatus.Unknown
-						? ZSyncStatus.Initializing
-						: data.status;
-						setStatus(data.status);
-						setSyncStatus(s_st);
-					})
-			);
 		}
 		$subscription.push(
 			updater.pipe(debounceTime(1000)).subscribe(async (data: DagNodeProps) => {
-				// setStatus(data.componentStatus);
-				// setSyncStatus(data.SyncStatus);
+				if (data.estimatedCost) {
+					updateCost(Number(data.estimatedCost || 0))
+				}
+				setStatus(data.componentStatus);
+				setSyncStatus(data.SyncStatus);
 				setSkippedStatus(data.isSkipped);
 				setOperationType(data.operation);
 				if (id === 'root') {

@@ -62,6 +62,7 @@ export interface EnvironmentComponentItem extends ArgoItemGeneric {
 	componentCost: string;
 	isDestroy: boolean;
 	isSkipped: boolean;
+	costResources: [];
 }
 
 export type EnvironmentComponentsList = EnvironmentComponentItem[];

@@ -62,7 +62,7 @@ moment.locale('en', {
 export const currency = (cost: number) => Number(cost).toFixed(2);
 
 export const CostRenderer: FC<any> = ({ data }: any) => {
-	const cost = Number(data?.cost || 0);
+	const cost = Number(data?.cost || data || 0);
 	return <>{isNumber(cost) ? `${cost == -1 ? 'N/A' : '$' + currency(cost)}` : 'calculating cost...'}</>;
 };
 

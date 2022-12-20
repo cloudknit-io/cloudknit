@@ -1,9 +1,8 @@
 import { filterLabels } from 'components/molecules/cards/EnvironmentComponentCards';
-import { renderLabels, renderSyncedStatus } from 'components/molecules/cards/renderFunctions';
+import { CostRenderer, renderLabels, renderSyncedStatus } from 'components/molecules/cards/renderFunctions';
 import { ZSyncStatus } from 'models/argo.models';
 import { EnvironmentComponentItem } from 'models/projects.models';
 import React, { ReactNode, useEffect, useState } from 'react';
-import { renderCost } from '../helpers';
 
 export type Props = {
     configLabels?: any;
@@ -21,7 +20,7 @@ export const ConfigWorkflowLeftView: React.FC<Props> = ({ configLabels, config }
 		if (!config || !configLabels) return;
 		setTeamName(configLabels.project_id || '');
 		setEnvName(configLabels.environment_id?.replace(configLabels.project_id + '-', ''));
-		setCost(renderCost(config.id));
+		setCost(<CostRenderer data={config.componentCost}/>);
 		setSyncStatus(renderSyncedStatus(configLabels.component_status as ZSyncStatus, '', '', '', config));
 		setOperation(configLabels.is_destroy === 'true' ? 'destroy' : 'provision');
 		setLabels(renderLabels(filterLabels(config)));

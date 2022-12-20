@@ -29,7 +29,7 @@ type Resource = {
 export const HierarchicalView: FC<any> = ({ data, componentId }: any) => {
 	return (
 		<>
-			{data?.resources?.length > 0 ? (
+			{data?.costResources?.length > 0 ? (
 				<div className="hierarchy-container">
 					<ul className="hierarchy-container_columns">
 						<li>
@@ -45,7 +45,7 @@ export const HierarchicalView: FC<any> = ({ data, componentId }: any) => {
 							<span>Monthly Cost</span>
 						</li>
 					</ul>
-					<Hierarchy resources={data.resources} depth={0} />
+					<Hierarchy resources={data.costResources} depth={0} />
 					<ul className="hierarchy-container_footer">
 						<li>
 							<span></span>
@@ -58,11 +58,7 @@ export const HierarchicalView: FC<any> = ({ data, componentId }: any) => {
 						</li>
 						<li>
 							<span>
-								<ZStreamRenderer
-									subject={CostingService.getInstance().getComponentCostStream(componentId)}
-									defaultValue={CostingService.getInstance().getCachedValue(componentId)}
-									Component={CostRenderer}
-								/>
+								<CostRenderer data={data.componentCost} />
 							</span>
 						</li>
 					</ul>

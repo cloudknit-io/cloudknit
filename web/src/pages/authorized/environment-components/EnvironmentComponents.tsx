@@ -189,7 +189,6 @@ export const EnvironmentComponents: React.FC = () => {
 				environmentId,
 			}
 		);
-		// const sub: any[] = setUpComponentStreams(newComponents);
 		setComponents(newComponents);
 		componentArrayRef.current = newComponents;
 		const selectedConf = newComponents.find((itm: any) => itm.id === selectedConfig?.id);
@@ -199,10 +198,6 @@ export const EnvironmentComponents: React.FC = () => {
 				setWorkflowId(selectedConf.labels?.last_workflow_run_id || '');
 			}
 		}
-
-		return () => {
-			// sub.forEach(s => s.unsubscribe());
-		};
 	}, [streamData]);
 
 	useEffect(() => {
@@ -248,7 +243,7 @@ export const EnvironmentComponents: React.FC = () => {
 			if (data) {
 				componentArrayRef.current = data;
 				setComponents(data);
-				// subs = setUpComponentStreams(data);
+				subs = setUpComponentStreams(data);
 			}
 			setLoading(false);
 		});
@@ -276,8 +271,9 @@ export const EnvironmentComponents: React.FC = () => {
 					setComponents(
 						[...componentArrayRef.current.map(nc => {
 							if (nc.displayValue === d.id) {
-								nc.componentCost = d.cost;
+								nc.componentCost = d.estimatedCost;
 								nc.componentStatus = d.status;
+								nc.costResources = d.costResources;
 							}
 							return nc;
 						})]

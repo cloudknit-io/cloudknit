@@ -165,6 +165,7 @@ export const TreeComponent: FC<Props> = ({ environmentId, nodes, onNodeClick, en
 						<ComputeIcon />
 					),
 				isSkipped: item.labels?.is_skipped === 'true',
+				estimatedCost: item.componentCost,
 				syncStatus:
 					item.isDestroy && item.componentStatus === ZSyncStatus.Unknown
 						? ZSyncStatus.Initializing

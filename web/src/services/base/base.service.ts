@@ -57,7 +57,7 @@ export class BaseService {
 		if (!this.streamMap.has(key)) {
 			this.setStreamHandler<T>(url, key);
 		}
-		this.requestMap.get(key)();
+		Promise.resolve(this.requestMap.get(key)());
 		return this.streamMap.get(key) as Subject<any>;
 	}
 
