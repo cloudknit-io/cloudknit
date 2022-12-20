@@ -22,8 +22,6 @@ export class UsersController {
       throw new NotFoundException();
     }
 
-    this.logger.log('found user', {user});
-
     return user;
   }
 
