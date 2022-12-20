@@ -237,6 +237,9 @@ func GenerateTeamConfigWatcherApp(team *stablev1.Team) *appv1.Application {
 				Automated: &appv1.SyncPolicyAutomated{
 					Prune: true,
 				},
+				SyncOptions: []string{
+					"ServerSideApply=true",
+				},
 				Retry: &appv1.RetryStrategy{Limit: 1},
 			},
 			Destination: newApplicationDestination("https://kubernetes.default.svc", "default"),
@@ -262,6 +265,9 @@ func GenerateCompanyConfigWatcherApp(customerName string, companyConfigRepo stri
 			SyncPolicy: &appv1.SyncPolicy{
 				Automated: &appv1.SyncPolicyAutomated{
 					Prune: true,
+				},
+				SyncOptions: []string{
+					"ServerSideApply=true",
 				},
 				Retry: &appv1.RetryStrategy{Limit: 1},
 			},
