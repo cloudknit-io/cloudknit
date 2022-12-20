@@ -21,7 +21,7 @@ export const ConfigWorkflowLeftView: React.FC<Props> = ({ configLabels, config }
 		setTeamName(configLabels.project_id || '');
 		setEnvName(configLabels.environment_id?.replace(configLabels.project_id + '-', ''));
 		setCost(<CostRenderer data={config.componentCost}/>);
-		setSyncStatus(renderSyncedStatus(configLabels.component_status as ZSyncStatus, '', '', '', config));
+		setSyncStatus(renderSyncedStatus(config.componentStatus, '', '', '', config));
 		setOperation(configLabels.is_destroy === 'true' ? 'destroy' : 'provision');
 		setLabels(renderLabels(filterLabels(config)));
 	}, [configLabels, config]);
