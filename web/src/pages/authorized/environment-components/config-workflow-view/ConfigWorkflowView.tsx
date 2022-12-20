@@ -110,7 +110,7 @@ export const ConfigWorkflowView: FC<Props> = (props: Props) => {
 					};
 
 					const clientLogUrl = `/wf/api/v1/stream/projects/${projectId}/environments/${environmentId}/config/${config.id}/${config.labels?.last_workflow_run_id}/log/${podName}`;
-					
+
 					if (
 						!clientLogMap.has(clientLogUrl) &&
 						node.phase !== 'Succeeded' &&
@@ -119,7 +119,7 @@ export const ConfigWorkflowView: FC<Props> = (props: Props) => {
 					) {
 						clientLogMap.set(clientLogUrl, new EventClientLogs(clientLogUrl));
 					}
-					
+
 					return {
 						...node,
 						configStatus: config.componentStatus,
@@ -179,12 +179,15 @@ export const ConfigWorkflowView: FC<Props> = (props: Props) => {
 							namespace: 'argocd',
 						},
 					}).then(resp => {
-						console.log(resp.data);
 						Promise.resolve(
-							ArgoComponentsService.patchComponentStatus(
-								config.displayValue,
-								ZSyncStatus.InitializingApply
-							)
+							CostingService.getInstance().setComponentStatus({
+								teamName: separatedConfigId?.team,
+								environmentName: separatedConfigId?.environment,
+								component: {
+									componentName: separatedConfigId?.component,
+									status: ZSyncStatus.InitializingApply,
+								},
+							})
 						);
 						Promise.resolve(AuditService.getInstance().patchApprovedBy(config.name));
 					});
@@ -221,9 +224,7 @@ export const ConfigWorkflowView: FC<Props> = (props: Props) => {
 			case ViewType.Detailed_Cost_Breakdown:
 				return (
 					<div className="zlifecycle-config-workflow-view__diagram--detailed-cost-breakdown">
-						{config.id && (
-							<HierarchicalView data={config} componentId={config.id} />
-						)}
+						{config.id && <HierarchicalView data={config} componentId={config.id} />}
 					</div>
 				);
 			case ViewType.Audit_View:

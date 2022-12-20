@@ -1,5 +1,6 @@
 import { Subject } from 'rxjs';
 import { BaseService } from 'services/base/base.service';
+import ApiClient from 'utils/apiClient';
 import { EventClientCost, subscriberCost } from 'utils/apiClient/EventClient';
 
 export class CostingService extends BaseService {
@@ -67,6 +68,10 @@ export class CostingService extends BaseService {
 
 	streamAll(): void {
 		new EventClientCost(`/costing/stream/api/v1/all`).listen();
+	}
+
+	setComponentStatus(data: any) {
+		return ApiClient.post('/costing/api/v1/saveComponent', data);
 	}
 
 	private notify(data: any = null) {

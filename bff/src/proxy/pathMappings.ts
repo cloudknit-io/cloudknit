@@ -166,6 +166,10 @@ const COSTING_PATH_MAPPINGS = [
     newPath: (params: any) => `/v1/orgs/${params.orgId}/costing/component/${params.componentId}`,
   },
   {
+    path: "/costing/api/v1/saveComponent",
+    newPath: (params: any) => `/v1/orgs/${params.orgId}/costing/saveComponent`,
+  },
+  {
     path: "/costing/api/v1/resources/:componentId",
     newPath: (params: any) => `/v1/orgs/${params.orgId}/costing/resources/${params.componentId}`,
   },
