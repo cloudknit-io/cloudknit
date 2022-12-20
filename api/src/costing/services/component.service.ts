@@ -131,8 +131,6 @@ export class ComponentService {
       throw new BadRequestException(`could not find environment associated with this component ${id}`);
     }
 
-    let resources: any[] = [];
-
     let savedComponent = (await this.componentRepository
       .createQueryBuilder('component')
       .leftJoinAndSelect('component.environment', 'environment')
