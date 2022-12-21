@@ -5,24 +5,18 @@ import {
   Param,
   Patch,
   Post,
-  Put,
+  Query,
   Req,
   Request,
-  Res,
   Sse,
-  UploadedFile,
-  UseInterceptors,
 } from "@nestjs/common";
-import { FileInterceptor } from "@nestjs/platform-express";
 import { from, Observable } from "rxjs";
 import { map } from "rxjs/operators";
 import { Mapper } from "src/costing/utilities/mapper";
 import { ComponentReconcile } from "src/typeorm/reconciliation/component-reconcile.entity";
 import { EnvironmentReconcile } from "src/typeorm/reconciliation/environment-reconcile.entity";
 import { APIRequest } from "src/types";
-import { ComponentDto } from "./dtos/component.dto";
 import { ComponentAudit } from "./dtos/componentAudit.dto";
-import { EnvironmentDto } from "./dtos/environment.dto";
 import { EnvironmentAudit } from "./dtos/environmentAudit.dto";
 import { EvnironmentReconcileDto } from "./dtos/reconcile.Dto";
 import { ReconciliationService } from "./reconciliation.service";
@@ -33,9 +27,9 @@ import { ReconciliationService } from "./reconciliation.service";
 export class ReconciliationController {
   constructor(private readonly reconciliationService: ReconciliationService) {}
 
-  @Get("environments/:id")
-  async getEnvironment(@Request() req, @Param("id") id: string) {
-    return await this.reconciliationService.getEnvironment(req.org, id);
+  @Get("environments")
+  async getEnvironment(@Request() req, @Query("envName") envName: string, @Query("teamName") teamName: string) {
+    return await this.reconciliationService.getEnvironment(req.org, envName, teamName);
   }
 
   @Get("components/:id")
@@ -48,7 +42,7 @@ export class ReconciliationController {
     return await this.reconciliationService.patchApprovedBy(req.org, email || '', id);
   }
 
-  @Get("approved-by/:id/:rid") 
+  @Get("approved-by/:id/:rid")
   async getApprovedBy(@Request() req, @Param("id") id: string, @Param("rid") rid: string) {
     return await this.reconciliationService.getApprovedBy(req.org, id, rid);
   }
@@ -63,14 +57,14 @@ export class ReconciliationController {
     return await this.reconciliationService.saveOrUpdateComponent(req.org, runData);
   }
 
-  @Get("component/:id")
-  async getComponents(@Request() req, @Param("id") id: string): Promise<ComponentAudit[]> {
-    return await this.reconciliationService.getComponentAuditList(req.org, id);
+  @Get("audit/components")
+  async getComponents(@Request() req, @Query("compName") compName: string): Promise<ComponentAudit[]> {
+    return await this.reconciliationService.getComponentAuditList(req.org, compName);
   }
 
-  @Get("environment/:id")
-  async getEnvironments(@Request() req, @Param("id") id: string): Promise<EnvironmentAudit[]> {
-    return await this.reconciliationService.getEnvironmentAuditList(req.org, id);
+  @Get("audit/environments")
+  async getEnvironments(@Request() req, @Query("envName") envName: string, @Query("teamName") teamName: string): Promise<EnvironmentAudit[]> {
+    return await this.reconciliationService.getEnvironmentAuditList(req.org, envName, teamName);
   }
 
   @Get("component/logs/:team/:environment/:component/:id")

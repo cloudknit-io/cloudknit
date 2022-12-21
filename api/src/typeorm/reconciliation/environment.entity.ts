@@ -13,6 +13,11 @@ export class Environment {
   @Index()
   name: string;
 
+  @Column({
+    name: 'team_name',
+  })
+  teamName: string;
+
   @UpdateDateColumn({
     name: "last_reconcile_datetime",
   })

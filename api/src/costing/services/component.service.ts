@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Subject } from "rxjs";
 import { Component } from "src/typeorm/component.entity";
@@ -7,6 +7,7 @@ import { CostingDto } from "../dtos/Costing.dto";
 import { StreamDto as StreamDto } from "../streams/costing.stream";
 import { MessageEvent } from "@nestjs/common";
 import { Organization } from "src/typeorm";
+import { SqlErrorCodes } from "src/types";
 import { Environment } from "src/typeorm/reconciliation/environment.entity";
 import { ComponentDto } from "../dtos/Component.dto";
 
@@ -121,8 +122,9 @@ export class ComponentService {
 
     const env = await this.envRepo
       .createQueryBuilder()
-      .where('name = :envName and organizationId = :orgId', {
-        envName: `${costing.teamName}-${costing.environmentName}`,
+      .where('name = :envName and team_name = :teamName and organizationId = :orgId', {
+        envName: costing.environmentName,
+        teamName: costing.teamName,
         orgId: org.id
       })
       .getOne();
@@ -172,7 +174,16 @@ export class ComponentService {
       component.estimatedCost = costing.component.cost;
       component.isDestroyed = costing.component.isDestroyed;
 
-      savedComponent = await this.componentRepository.save(component);
+      try {
+        savedComponent = await this.componentRepository.save(component);
+      } catch (err) {
+        if (err.code === SqlErrorCodes.NO_DEFAULT) {
+          throw new BadRequestException(err.sqlMessage);
+        }
+
+        this.logger.error({ message: 'error saving new component', component, error: err.message });
+        throw new InternalServerErrorException();
+      }
     }
 
     savedComponent.environment = env;
