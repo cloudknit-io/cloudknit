@@ -137,7 +137,7 @@ export class ReconciliationService {
   async getEnvironment(org: Organization, envName: string, teamName: string) {
     return await this.environmentRepository
       .createQueryBuilder()
-      .where('organizationId = :orgId and name = :name', {
+      .where('organizationId = :orgId and name = :name and team_name = :teamName', {
         orgId: org.id,
         name: envName,
         teamName
@@ -395,9 +395,6 @@ export class ReconciliationService {
     try {
       const prefix = `${team}/${environment}/${component}/${id}/`;
       const bucket = `zlifecycle-${this.ckEnvironment}-tfplan-${org.name}`;
-
-      this.logger.debug(`getLogs prefix ${prefix}`);
-      this.logger.debug(`getLogs bucket ${bucket}`);
 
       const objects = await this.s3h.getObjects(
         bucket,

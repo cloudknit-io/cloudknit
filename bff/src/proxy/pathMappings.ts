@@ -195,9 +195,9 @@ const COSTING_PATH_MAPPINGS = [
 // /reconciliation/api/v1/environments/equity-error-2
 const AUDIT_PATH_MAPPINGS = [
   {
-    path: "/reconciliation/api/v1/environments/:id",
+    path: "/reconciliation/api/v1/environments",
     newPath: (params: any) =>
-      `/v1/orgs/${params.orgId}/reconciliation/environments/${params.id}`,
+      `/v1/orgs/${params.orgId}/reconciliation/environments`,
   },
   {
     path: "/reconciliation/api/v1/components/:id",
@@ -215,7 +215,7 @@ const AUDIT_PATH_MAPPINGS = [
       `/v1/orgs/${params.orgId}/reconciliation/component/${params.id}`,
   },
   {
-    path: "/reconciliation/api/v1​/notification/save",
+    path: "/reconciliation/api/v1/notification/save",
     newPath: (params: any) => `/v1/orgs/${params.orgId}/reconciliation/notification/save`,
   },
   {

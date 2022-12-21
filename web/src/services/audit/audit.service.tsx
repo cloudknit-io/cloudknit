@@ -37,8 +37,8 @@ export class AuditService extends BaseService {
 		});
 	}
 
-	async getComponentInfo(id: string) {
-		const resp = await ApiClient.get<any>(this.constructUri(AuditUriType.componentInfo(id)), {});
+	async getComponentInfo(compName: string) {
+		const resp = await ApiClient.get<any>(this.constructUri(AuditUriType.componentInfo(compName)), {});
 		if (resp.data) {
 			return resp.data;
 		}
@@ -61,11 +61,13 @@ export class AuditService extends BaseService {
 		return null;
 	}
 
-	async getEnvironmentInfo(id: string) {
-		const resp = await ApiClient.get<any>(this.constructUri(AuditUriType.environmentInfo(id)), {});
+	async getEnvironmentInfo(envName: string, teamName: string) {
+		const resp = await ApiClient.get<any>(this.constructUri(AuditUriType.environmentInfo(envName, teamName)), {});
+
 		if (resp.data) {
 			return resp.data;
 		}
+
 		return null;
 	}
 
@@ -212,8 +214,8 @@ export class AuditService extends BaseService {
 
 class AuditUriType {
 	static customerName = ENVIRONMENT_VARIABLES.REACT_APP_CUSTOMER_NAME;
-	static environmentInfo = (componentId: string) => `environments/${componentId}`;
-	static componentInfo = (componentId: string) => `components/${componentId}`;
+	static environmentInfo = (envName: string, teamName: string) => `environments?envName=${envName}&teamName=${teamName}`;
+	static componentInfo = (compName: string) => `components/${compName}`;
 	static component = (componentId: string) => `component/${componentId}`;
 	static patchApprovedBy = (componentId: string) => `approved-by/${componentId}`;
 	static getApprovedBy = (componentId: string, reconcileId: string) => `approved-by/${componentId}/${reconcileId}`;

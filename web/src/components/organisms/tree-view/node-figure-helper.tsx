@@ -56,9 +56,13 @@ export const getTextWidth = (name: string): number => {
 	return width;
 };
 
-export const getLastReconcileTime = async (id: string, defaultValue: string, type: 'ENVIRONMENT' | 'COMPONENT') => {
+export const getEnvironment = async (envName: string, teamName: string) => {
+	return await AuditService.getInstance().getEnvironmentInfo(envName, teamName);
+};
+
+export const getLastReconcileTime = async (id: string, defaultValue: string) => {
 	try {
-		const info = await AuditService.getInstance()[type === 'COMPONENT' ? 'getComponentInfo' : 'getEnvironmentInfo'](
+		const info = await AuditService.getInstance().getComponentInfo(
 			id
 		);
 		if (!info) {
