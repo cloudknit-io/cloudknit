@@ -5,10 +5,8 @@ provisionOrgImage:
 tfModuleVersion:
 operatorTag:
 stateMgrTag:
-eventSvcTag:
 stateMgrChartVersion:
 operatorChartVersion:
-eventSvcChartVersion:
 serviceAccountName: zlifecycle-reconciler
 companyName: !!!CompanyName!!!
 resources:
