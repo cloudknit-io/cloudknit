@@ -79,7 +79,7 @@ export class ReconciliationService {
   async getComponent(org: Organization, compName: string, envName: string, teamName: string) {
     const comp = await this.componentRepository.findOne({
       where: {
-        id: compName,
+        componentName: compName,
         organization: {
           id: org.id
         },

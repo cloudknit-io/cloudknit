@@ -87,7 +87,7 @@ export const ZDagNode: FC<DagNodeProps> = ({
 				setSkippedStatus(data.isSkipped);
 				setOperationType(data.operation);
 				if (id === 'root') {
-					getEnvironment(name, projectId)
+					getEnvironment(envName(name, projectId), projectId)
 						.then(env => setSyncTime(env['lastReconcileDatetime']))
 						.catch(e => setSyncTime(syncFinishedAt));
 				} else {
