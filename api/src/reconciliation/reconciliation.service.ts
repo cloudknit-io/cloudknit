@@ -282,6 +282,7 @@ export class ReconciliationService {
     entry.environmentReconcile = new EnvironmentReconcile();
     entry.environmentReconcile.name = envReconcile.name;
     entry.environmentReconcile.team_name = envReconcile.teamName;
+    entry.status = componentEntry.status;
     this.sseSvc.sendComponentReconcile(entry);
 
     this.logger.log({message: 'created component reconcile entry', reconcileId, compReconcileEntry: entry});
