@@ -279,6 +279,7 @@ export class ReconciliationService {
 
     const entry = await this.componentReconcileRepository.save(componentEntry);
     entry.organization = org;
+    entry.environmentReconcile = new EnvironmentReconcile();
     entry.environmentReconcile.name = envReconcile.name;
     entry.environmentReconcile.team_name = envReconcile.teamName;
     this.sseSvc.sendComponentReconcile(entry);
