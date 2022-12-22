@@ -119,7 +119,7 @@ export const ZDagNode: FC<DagNodeProps> = ({
 			<text x="65" y="22" fill="#323232" fontFamily="DM Sans" fontWeight={'light'} fontSize="15px">
 				{name}
 			</text>
-			{syncFinishedAt && (
+			{(syncFinishedAt || syncTime) && (
 				<text x="85" y="61" fill="#323232" fontFamily="DM Sans" fontWeight={'light'} fontSize="14px">
 					{' | ' + getTime(syncTime)}
 				</text>

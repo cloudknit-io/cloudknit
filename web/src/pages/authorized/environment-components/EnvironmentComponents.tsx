@@ -276,6 +276,7 @@ export const EnvironmentComponents: React.FC = () => {
 								nc.componentCost = d.estimatedCost;
 								nc.componentStatus = d.status;
 								nc.costResources = d.costResources;
+								nc.syncFinishedAt = d.lastReconcileDatetime
 							}
 							return nc;
 						}),
