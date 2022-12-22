@@ -9,7 +9,7 @@ import { ComponentReconcile } from "src/typeorm/reconciliation/component-reconci
 import { Component } from "src/typeorm/component.entity";
 import { EnvironmentReconcile } from "src/typeorm/reconciliation/environment-reconcile.entity";
 import { Environment } from "src/typeorm/reconciliation/environment.entity";
-import { IsNull, Like, Not } from "typeorm";
+import { In, IsNull, Like, Not } from "typeorm";
 import { Repository } from "typeorm/repository/Repository";
 import { ComponentDto } from "./dtos/component.dto";
 import { ApprovedByDto, ComponentAudit } from "./dtos/componentAudit.dto";
@@ -318,13 +318,20 @@ export class ReconciliationService {
     }
   }
 
-  async getComponentAuditList(org: Organization, id: string): Promise<ComponentAudit[]> {
-    const components = await this.componentReconcileRepository
-      .createQueryBuilder()
-      .where('name = :name and organizationId = :orgId', {
+  async getComponentAuditList(org: Organization, id: string, envName: string, teamName: string): Promise<ComponentAudit[]> {
+    const envAuditList = await this.getEnvironmentAuditList(org, envName, teamName);
+    const reconcileIds = envAuditList.map(e => e.reconcileId);
+    const components = await this.componentReconcileRepository.find({
+      where: {
         name: id,
-        orgId: org.id
-      }).getMany();
+        organization: {
+          id: org.id
+        },
+        environmentReconcile: {
+          reconcile_id: In(reconcileIds)
+        }
+      }
+    });
 
     return Mapper.getComponentAuditList(components);
   }

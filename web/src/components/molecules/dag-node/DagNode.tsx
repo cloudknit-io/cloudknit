@@ -28,6 +28,7 @@ export type DagNodeProps = {
 	operation: 'Provision' | 'Destroy';
 	onNodeClick: (...params: any) => any;
 	updater: Subject<DagNodeProps>;
+	labels?: any;
 };
 
 export const ZDagNode: FC<DagNodeProps> = ({
@@ -44,6 +45,7 @@ export const ZDagNode: FC<DagNodeProps> = ({
 	estimatedCost,
 	onNodeClick,
 	updater,
+	labels,
 }: DagNodeProps) => {
 	const [cost, updateCost] = useState<number | null>(
 		id === 'root' ?
@@ -57,6 +59,7 @@ export const ZDagNode: FC<DagNodeProps> = ({
 	const timeWidth = 40 + getTextWidth(getTime(syncTime));
 	width = timeWidth > width ? timeWidth : width;
 	const rectWidth = width + 100 > 160 ? width + 100 : 160;
+	const envName = (id: string, teamName: string) => id.replace(teamName + '-', '');
 
 	useEffect(() => {
 		let $subscription: Subscription[] = [];
@@ -66,13 +69,13 @@ export const ZDagNode: FC<DagNodeProps> = ({
 				.catch(e => setSyncTime(syncFinishedAt));
 			$subscription.push(
 				CostingService.getInstance()
-					.getEnvironmentCostStream(projectId, name.replace(projectId + '-', ''))
+					.getEnvironmentCostStream(projectId, envName(name, projectId))
 					.subscribe(data => {
 						updateCost(data);
 					})
 			);
 		} else {
-			getLastReconcileTime(displayValue, syncFinishedAt).then(r => setSyncTime(r));
+			getLastReconcileTime(name, envName(labels.environment_id, labels.project_id), labels.project_id,  syncFinishedAt).then(r => setSyncTime(r));
 		}
 		$subscription.push(
 			updater.pipe(debounceTime(1000)).subscribe(async (data: DagNodeProps) => {
@@ -88,7 +91,7 @@ export const ZDagNode: FC<DagNodeProps> = ({
 						.then(env => setSyncTime(env['lastReconcileDatetime']))
 						.catch(e => setSyncTime(syncFinishedAt));
 				} else {
-					const time = await getLastReconcileTime(displayValue, syncFinishedAt);
+					const time = await getLastReconcileTime(name, envName(labels.environment_id, labels.project_id), labels.project_id, syncFinishedAt);
 					setSyncTime(time);
 				}
 			})

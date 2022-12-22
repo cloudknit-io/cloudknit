@@ -83,8 +83,8 @@ export class ReconciliationController {
   }
 
   @Get("audit/components")
-  async getComponents(@Request() req, @Query("compName") compName: string): Promise<ComponentAudit[]> {
-    return await this.reconciliationService.getComponentAuditList(req.org, compName);
+  async getComponents(@Request() req, @Query("compName") compName: string, @Query("envName") envName: string, @Query("teamName") teamName: string): Promise<ComponentAudit[]> {
+    return await this.reconciliationService.getComponentAuditList(req.org, compName, envName, teamName);
   }
 
   @Get("audit/environments")

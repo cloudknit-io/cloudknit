@@ -29,7 +29,7 @@ export interface AuditData {
 
 type Props = {
 	auditId: string;
-	fetch: (id: string) => Subject<any> | undefined;
+	fetch: () => Subject<any> | undefined;
 	auditColumns: any[];
 	fetchLogs?: (auditId: number) => Promise<any>;
 	config?: EnvironmentComponentItem;
@@ -73,7 +73,7 @@ export const AuditView: FC<Props> = ({ auditId, fetch, auditColumns, fetchLogs, 
 
 	useEffect(() => {
 		setSelectedLog(null);
-		const $auditNotification = fetch.call(auditServiceInstance, auditId)?.subscribe(data => {
+		const $auditNotification = fetch.call(auditServiceInstance)?.subscribe(data => {
 			if (data.type !== 'update') {
 				auditDataMap.clear();
 			}

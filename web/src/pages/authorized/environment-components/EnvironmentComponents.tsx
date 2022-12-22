@@ -348,17 +348,17 @@ export const EnvironmentComponents: React.FC = () => {
 			}
 		}
 		if (configName === 'root') {
-			// const rootEnv = environments.find(e => e.id === environmentId);
-			// const failedEnv = ErrorStateService.getInstance().errorsInEnvironment(
-			// 	rootEnv?.labels?.env_name || ''
-			// );
+			const rootEnv = environments.find(e => e.id === environmentId);
+			const failedEnv = ErrorStateService.getInstance().errorsInEnvironment(
+				rootEnv?.labels?.env_name || ''
+			);
 
-			// if (failedEnv?.length > 0) {
-			// 	setEnvErrors(failedEnv);
-			// }
+			if (failedEnv?.length > 0) {
+				setEnvErrors(failedEnv);
+			}
 
-			// setEnvironmentNodeSelected(true);
-			// setShowSidePanel(true);
+			setEnvironmentNodeSelected(true);
+			setShowSidePanel(true);
 			return;
 		}
 		setEnvironmentNodeSelected(false);
@@ -496,7 +496,7 @@ export const EnvironmentComponents: React.FC = () => {
 										</div>
 										<div id="Audit">
 											<AuditView
-												fetch={AuditService.getInstance().getEnvironment}
+												fetch={AuditService.getInstance().getEnvironment.bind(null, environmentId.replace(projectId + '-', ''), projectId)}
 												auditColumns={auditColumns}
 												auditId={environmentId}
 											/>

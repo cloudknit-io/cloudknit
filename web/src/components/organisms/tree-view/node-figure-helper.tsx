@@ -60,10 +60,12 @@ export const getEnvironment = async (envName: string, teamName: string) => {
 	return await AuditService.getInstance().getEnvironmentInfo(envName, teamName);
 };
 
-export const getLastReconcileTime = async (id: string, defaultValue: string) => {
+export const getLastReconcileTime = async (id: string, envName: string, teamName: string, defaultValue: string) => {
 	try {
 		const info = await AuditService.getInstance().getComponentInfo(
-			id
+			id,
+			envName,
+			teamName
 		);
 		if (!info) {
 			return defaultValue;
