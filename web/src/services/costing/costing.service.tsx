@@ -34,21 +34,10 @@ export class CostingService extends BaseService {
 		return this.getStream<number>(key, url);
 	}
 
-	getComponentCostStream(componentId = ''): Subject<any> {
-		const key = componentId;
-		const url = this.constructUri(CostingtUriType.component(componentId));
+	getComponentCostStream(teamName: string, envName: string, compName: string): Subject<any> {
+		const key = `${teamName}-${envName}-${compName}`;
+		const url = this.constructUri(CostingtUriType.component(teamName, envName, compName));
 		return this.getStream<number>(key, url);
-	}
-
-	getResourceDataStream(componentId = ''): Subject<any> {
-		if (!componentId) {
-			throw 'Component Id cannot be empty';
-		}
-
-		const key = `${componentId}-resources`;
-		const url = this.constructUri(CostingtUriType.resources(componentId));
-
-		return this.getStream<any>(key, url);
 	}
 
 	streamTeamCost(teamId: string): any {
@@ -56,7 +45,7 @@ export class CostingService extends BaseService {
 	}
 
 	streamEnvironmentCost(teamId: string, environmentName: string): void {
-		new EventClientCost(`/costing/stream/api/v1/environment/${teamId}/${environmentName}`).listen();
+		new EventClientCost(`/costing/stream/api/v1/environment?teamName=${teamId}&envName=${environmentName}`).listen();
 	}
 
 	streamNotification(): void {
@@ -96,8 +85,7 @@ export class CostingService extends BaseService {
 }
 
 class CostingtUriType {
-	static environment = (teamId: string, environmentId: string) => `environment/${teamId}/${environmentId}`;
-	static component = (componentId: string) => `component/${componentId}`;
+	static environment = (teamId: string, environmentId: string) => `environment?teamName=${teamId}&envName=${environmentId}`;
+	static component = (teamName: string, envName: string, compName: string) => `component?teamName=${teamName}&envName=${envName}&compName=${compName}`;
 	static team = (teamId: string) => `team/${teamId}`;
-	static resources = (componentId: string) => `resources/${componentId}`;
 }

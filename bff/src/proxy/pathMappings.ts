@@ -157,13 +157,13 @@ const COSTING_PATH_MAPPINGS = [
     newPath: (params: any) => `/v1/orgs/${params.orgId}/costing/team/${params.name}`,
   },
   {
-    path: "/costing/api/v1/environment/:teamName/:environmentName",
+    path: "/costing/api/v1/environment",
     newPath: (params: any) =>
-      `/v1/orgs/${params.orgId}/costing/environment/${params.teamName}/${params.environmentName}`,
+      `/v1/orgs/${params.orgId}/costing/environment`,
   },
   {
-    path: "/costing/api/v1/component/:componentId",
-    newPath: (params: any) => `/v1/orgs/${params.orgId}/costing/component/${params.componentId}`,
+    path: "/costing/api/v1/component",
+    newPath: (params: any) => `/v1/orgs/${params.orgId}/costing/component`,
   },
   {
     path: "/costing/api/v1/saveComponent",
@@ -186,9 +186,9 @@ const COSTING_PATH_MAPPINGS = [
     newPath: (params: any) => `/v1/orgs/${params.orgId}/costing/stream/team/${params.name}`,
   },
   {
-    path: "/costing/stream/api/v1/environment/:teamName/:environmentName",
+    path: "/costing/stream/api/v1/environment",
     newPath: (params: any) =>
-      `/v1/orgs/${params.orgId}/costing/stream/environment/${params.teamName}/${params.environmentName}`,
+      `/v1/orgs/${params.orgId}/costing/stream/environment`,
   },
 ];
 // /v1/orgs/1/reconciliation/environments/equity-error-2

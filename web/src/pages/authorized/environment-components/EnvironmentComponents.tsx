@@ -22,6 +22,7 @@ import {
 	auditColumns,
 	ConfigParamsSet,
 	configTableColumns,
+	getSeparatedConfigId,
 	getWorkflowLogs,
 } from 'pages/authorized/environment-components/helpers';
 import React, { useContext, useEffect, useRef, useState } from 'react';
@@ -249,7 +250,7 @@ export const EnvironmentComponents: React.FC = () => {
 		});
 		return () => {
 			subs.forEach(s => s.unsubscribe());
-		}
+		};
 	}, ['projectId', environmentId]);
 
 	useEffect(() => {
@@ -264,23 +265,24 @@ export const EnvironmentComponents: React.FC = () => {
 	}, [showSidePanel]);
 
 	const setUpComponentStreams = (newComponents: EnvironmentComponentsList) => {
-		return newComponents.map(e =>
-			CostingService.getInstance()
-				.getComponentCostStream(e.displayValue)
+		return newComponents.map(e => {
+			const { team, component, environment } = getSeparatedConfigId(e);
+			return CostingService.getInstance()
+				.getComponentCostStream(team, environment, component)
 				.subscribe(d => {
-					setComponents(
-						[...componentArrayRef.current.map(nc => {
+					setComponents([
+						...componentArrayRef.current.map(nc => {
 							if (nc.displayValue === d.id) {
 								nc.componentCost = d.estimatedCost;
 								nc.componentStatus = d.status;
 								nc.costResources = d.costResources;
 							}
 							return nc;
-						})]
-					);
-				})
-		);
-	}
+						}),
+					]);
+				});
+		});
+	};
 
 	const syncStatusMatch = (item: EnvironmentComponentItem): boolean => {
 		return syncStatusFilter.has(item.componentStatus);
@@ -349,9 +351,7 @@ export const EnvironmentComponents: React.FC = () => {
 		}
 		if (configName === 'root') {
 			const rootEnv = environments.find(e => e.id === environmentId);
-			const failedEnv = ErrorStateService.getInstance().errorsInEnvironment(
-				rootEnv?.labels?.env_name || ''
-			);
+			const failedEnv = ErrorStateService.getInstance().errorsInEnvironment(rootEnv?.labels?.env_name || '');
 
 			if (failedEnv?.length > 0) {
 				setEnvErrors(failedEnv);
@@ -496,7 +496,11 @@ export const EnvironmentComponents: React.FC = () => {
 										</div>
 										<div id="Audit">
 											<AuditView
-												fetch={AuditService.getInstance().getEnvironment.bind(AuditService.getInstance(), environmentId.replace(projectId + '-', ''), projectId)}
+												fetch={AuditService.getInstance().getEnvironment.bind(
+													AuditService.getInstance(),
+													environmentId.replace(projectId + '-', ''),
+													projectId
+												)}
 												auditColumns={auditColumns}
 												auditId={environmentId}
 											/>
