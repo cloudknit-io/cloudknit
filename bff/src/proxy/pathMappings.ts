@@ -264,15 +264,10 @@ const AUDIT_PATH_MAPPINGS = [
       `/v1/orgs/${params.orgId}/reconciliation/environments/notify/${params.id}`,
   },
   {
-    path: "/reconciliation/api/v1/approved-by/:id",
+    path: "/reconciliation/api/v1/approved-by/",
     newPath: (params: any) =>
-      `/v1/orgs/${params.orgId}/reconciliation/approved-by/${params.id}/${params.email}`,
-  },
-  {
-    path: "/reconciliation/api/v1/approved-by/:id/:rid",
-    newPath: (params: any) =>
-      `/v1/orgs/${params.orgId}/reconciliation/approved-by/${params.id}/${params.rid}`,
-  },
+      `/v1/orgs/${params.orgId}/reconciliation/approved-by/`,
+  }
 ];
 
 const SECRET_PATH_MAPPINGS = [

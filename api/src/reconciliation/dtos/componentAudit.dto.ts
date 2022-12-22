@@ -5,3 +5,11 @@ export interface ComponentAudit {
     startDateTime: string;
     approvedBy?: string;
 }
+
+export interface ApprovedByDto {
+    email?: string;
+    compName: string;
+    envName: string;
+    teamName: string;
+    rid: number;
+}

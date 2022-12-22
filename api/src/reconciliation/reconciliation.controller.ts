@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -16,35 +17,59 @@ import { Mapper } from "src/costing/utilities/mapper";
 import { ComponentReconcile } from "src/typeorm/reconciliation/component-reconcile.entity";
 import { EnvironmentReconcile } from "src/typeorm/reconciliation/environment-reconcile.entity";
 import { APIRequest } from "src/types";
-import { ComponentAudit } from "./dtos/componentAudit.dto";
+import { ApprovedByDto, ComponentAudit } from "./dtos/componentAudit.dto";
 import { EnvironmentAudit } from "./dtos/environmentAudit.dto";
 import { EvnironmentReconcileDto } from "./dtos/reconcile.Dto";
+import { EnvironmentService } from "./environment.service";
 import { ReconciliationService } from "./reconciliation.service";
+import { SSEService } from "./sse.service";
 
 @Controller({
   version: '1'
 })
 export class ReconciliationController {
-  constructor(private readonly reconciliationService: ReconciliationService) {}
+  constructor(
+    private readonly reconciliationService: ReconciliationService,
+    private readonly envSvc: EnvironmentService,
+    private readonly sseSvc: SSEService
+    ) {}
 
   @Get("environments")
   async getEnvironment(@Request() req, @Query("envName") envName: string, @Query("teamName") teamName: string) {
-    return await this.reconciliationService.getEnvironment(req.org, envName, teamName);
+    const env = await this.envSvc.getEnvironment(req.org, envName, teamName);
+
+    if (!env) {
+      throw new BadRequestException('could not find environment');
+    }
+
+    return env;
   }
 
   @Get("components/:id")
   async getComponent(@Request() req, @Param("id") id: string) {
-    return await this.reconciliationService.getComponent(req.org, id);
+    const comp = await this.reconciliationService.getComponent(req.org, id);
+
+    if (!comp) {
+      throw new BadRequestException('could not find component');
+    }
+
+    return comp;
   }
 
-  @Patch("approved-by/:id/:email")
-  async patchApprovedBy(@Param("id") id: string, @Param("email") email: string, @Req() req: APIRequest) {
-    return await this.reconciliationService.patchApprovedBy(req.org, email || '', id);
+  @Patch("approved-by")
+  async patchApprovedBy(@Req() req: APIRequest, @Body() body: ApprovedByDto) {
+    return await this.reconciliationService.patchApprovedBy(req.org, body);
   }
 
-  @Get("approved-by/:id/:rid")
-  async getApprovedBy(@Request() req, @Param("id") id: string, @Param("rid") rid: string) {
-    return await this.reconciliationService.getApprovedBy(req.org, id, rid);
+  @Get("approved-by")
+  async getApprovedBy(@Request() req, @Query("compName") compName: string, @Query("envName") envName: string, @Query("teamName") teamName: string, @Query("rid") rid: number) {
+    const body: ApprovedByDto = {
+      compName,
+      envName,
+      teamName,
+      rid,
+    }
+    return await this.reconciliationService.getApprovedBy(req.org, body);
   }
 
   @Post("environment/save")
@@ -143,7 +168,7 @@ export class ReconciliationController {
 
   @Sse("components/notify/:id")
   notifyComponents(@Param("id") id: string): Observable<MessageEvent> {
-    return from(this.reconciliationService.notifyStream).pipe(
+    return from(this.sseSvc.notifyStream).pipe(
       map((component: ComponentReconcile) => {
         if (component.name !== id) {
           return { data: [] };
@@ -158,7 +183,7 @@ export class ReconciliationController {
 
   @Sse("environments/notify/:id")
   notifyEnvironments(@Param("id") id: string): Observable<MessageEvent> {
-    return from(this.reconciliationService.notifyStream).pipe(
+    return from(this.sseSvc.notifyStream).pipe(
       map((environment: EnvironmentReconcile) => {
         if (environment.name !== id) {
           return { data: [] };
@@ -173,7 +198,7 @@ export class ReconciliationController {
 
   @Sse("applications/:id")
   notifyApplications(@Param("id") id: string): Observable<MessageEvent> {
-    return from(this.reconciliationService.applicationStream).pipe(
+    return from(this.sseSvc.applicationStream).pipe(
       map((application: any) => ({ data: application }))
     );
   }
