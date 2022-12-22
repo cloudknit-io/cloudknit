@@ -176,12 +176,12 @@ export class AuditService extends BaseService {
 	}
 
 	getComponent(id: string, envName: string, teamName: string): Subject<any> | undefined {
-		this.startStream(id, this.constructUri(AuditUriType.componentStream(id)));
+		this.startStream(id, this.constructUri(AuditUriType.componentStream(id, envName, teamName)));
 		return this.getStream(id, this.constructUri(AuditUriType.component(id, envName, teamName)));
 	}
 
 	getEnvironment(envName: string, teamName: string): Subject<any> | undefined {
-		this.startStream(envName, this.constructUri(AuditUriType.environmentStream(envName)));
+		this.startStream(envName, this.constructUri(AuditUriType.environmentStream(envName, teamName)));
 		return this.getStream(envName, this.constructUri(AuditUriType.environment(envName, teamName)));
 	}
 
@@ -232,7 +232,7 @@ class AuditUriType {
 	static seenNotification = (id: string) => `notification/seen/${id}`;
 	static getVisualization = () => `visualization/get`;
 	static getVisualizationSVG = () => `get/object`;
-	static componentStream = (componentId: string) => `components/notify/${componentId}`;
-	static environmentStream = (environmentId: string) => `environments/notify/${environmentId}`;
+	static componentStream = (componentId: string, envName: string, teamName: string) => `components/notify?compName=${componentId}&envName=${envName}&teamName=${teamName}`;
+	static environmentStream = (envName: string, teamName: string) => `environments/notify?envName=${envName}&teamName=${teamName}`;
 	static notificationStream = (teamName: string) => `notifications/${teamName}`;
 }

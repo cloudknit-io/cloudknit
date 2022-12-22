@@ -34,7 +34,7 @@ export class EnvironmentService {
 
     existing.duration = environment.duration;
     const entry = await this.environmentRepository.save(existing);
-    
+    entry.organization = org;
     this.sseSvc.sendEnvironment(entry);
 
     return entry;

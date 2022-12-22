@@ -45,9 +45,9 @@ export class ReconciliationController {
     return env;
   }
 
-  @Get("components/:id")
-  async getComponent(@Request() req, @Param("id") id: string) {
-    const comp = await this.reconciliationService.getComponent(req.org, id);
+  @Get("components")
+  async getComponent(@Request() req, @Query("compName") compName: string, @Query("envName") envName: string, @Query("teamName") teamName: string) {
+    const comp = await this.reconciliationService.getComponent(req.org, compName, envName, teamName);
 
     if (!comp) {
       throw new BadRequestException('could not find component');
@@ -166,11 +166,11 @@ export class ReconciliationController {
     );
   }
 
-  @Sse("components/notify/:id")
-  notifyComponents(@Param("id") id: string): Observable<MessageEvent> {
+  @Sse("components/notify")
+  notifyComponents(@Request() req, @Query("compName") compName: string, @Query("envName") envName: string, @Query("teamName") teamName: string): Observable<MessageEvent> {
     return from(this.sseSvc.notifyStream).pipe(
       map((component: ComponentReconcile) => {
-        if (component.name !== id) {
+        if (component.name !== compName || envName !== component.environmentReconcile.name || teamName !== component.environmentReconcile.team_name || component.organization.id !== req.org.id) {
           return { data: [] };
         }
         const data: ComponentAudit[] = Mapper.getComponentAuditList([
@@ -181,11 +181,11 @@ export class ReconciliationController {
     );
   }
 
-  @Sse("environments/notify/:id")
-  notifyEnvironments(@Param("id") id: string): Observable<MessageEvent> {
+  @Sse("environments/notify")
+  notifyEnvironments(@Request() req, @Query("envName") envName: string, @Query("teamName") teamName: string): Observable<MessageEvent> {
     return from(this.sseSvc.notifyStream).pipe(
       map((environment: EnvironmentReconcile) => {
-        if (environment.name !== id) {
+        if (environment.name !== envName || teamName != environment.team_name || req.org.id !== environment.organization.id) {
           return { data: [] };
         }
         const data: EnvironmentAudit[] = Mapper.getEnvironmentAuditList([
@@ -193,13 +193,6 @@ export class ReconciliationController {
         ]);
         return { data };
       })
-    );
-  }
-
-  @Sse("applications/:id")
-  notifyApplications(@Param("id") id: string): Observable<MessageEvent> {
-    return from(this.sseSvc.applicationStream).pipe(
-      map((application: any) => ({ data: application }))
     );
   }
 }

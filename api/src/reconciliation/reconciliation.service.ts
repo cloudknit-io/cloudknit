@@ -67,47 +67,34 @@ export class ReconciliationService {
         status: component.status,
         organization: org
       });
-      this.notifyApplications(org, component.environmentName, teamName);
       return entry;
     }
 
     existing.duration = component.duration;
     const entry = await this.componentRepository.save(existing);
-    this.notifyApplications(org, component.environmentName, teamName);
     
     return entry;
   }
 
-  async getComponent(org: Organization, id: string) {
+  async getComponent(org: Organization, compName: string, envName: string, teamName: string) {
     const comp = await this.componentRepository.findOne({
       where: {
-        id: id,
-      },
-      relations: {
-        environment: true
+        id: compName,
+        organization: {
+          id: org.id
+        },
+        environment: {
+          name : envName,
+          teamName: teamName
+        }
       }
     });
 
     if (!comp) {
-      this.logger.error(`Bad component query [${id}] for org [${org.id} / ${org.name}]`);
+      this.logger.error(`Bad component query [${compName}] for org [${org.id} / ${org.name}]`);
       throw new NotFoundException('could not find component');
     }
-
-    const env = await this.environmentRepository.findOne({
-      where: {
-        id: comp.environment.id
-      },
-      relations: {
-        organization: true
-      }
-    });
-
-    if (env.organization.id === org.id) {
-      return comp;
-    }
-
-    this.logger.error({ message: 'could not find component', id });
-    throw new NotFoundException('could not find component');
+    return comp;
   }
 
   async saveOrUpdateEnvironment(org: Organization, runData: EvnironmentReconcileDto) {
@@ -202,7 +189,7 @@ export class ReconciliationService {
         duration: -1,
       });
     }
-
+    savedEntry.organization = org;
     this.sseSvc.sendEnvironmentReconcile(savedEntry);
 
     return savedEntry.reconcile_id;
@@ -291,6 +278,9 @@ export class ReconciliationService {
     }, env, envReconcile.teamName);
 
     const entry = await this.componentReconcileRepository.save(componentEntry);
+    entry.organization = org;
+    entry.environmentReconcile.name = envReconcile.name;
+    entry.environmentReconcile.team_name = envReconcile.teamName;
     this.sseSvc.sendComponentReconcile(entry);
 
     this.logger.log({message: 'created component reconcile entry', reconcileId, compReconcileEntry: entry});
@@ -488,12 +478,6 @@ export class ReconciliationService {
       ...resp,
       data: (resp.data?.Body || "").toString() || "",
     };
-  }
-
-  public async notifyApplications(org: Organization, envName: string, teamName: string) {
-    const env = await this.envSvc.getEnvironment(org, envName, teamName)
-
-    this.sseSvc.sendEnvironment(env);
   }
 
   private async getLatestCompReconcile(org: Organization, compName: string, envName: string, teamName: string): Promise<ComponentReconcile> {
