@@ -64,7 +64,7 @@ export const ZDagNode: FC<DagNodeProps> = ({
 	useEffect(() => {
 		let $subscription: Subscription[] = [];
 		if (id === 'root') {
-			getEnvironment(name, projectId)
+			getEnvironment(envName(name, projectId), projectId)
 				.then(env => setSyncTime(env['lastReconcileDatetime']))
 				.catch(e => setSyncTime(syncFinishedAt));
 			$subscription.push(
