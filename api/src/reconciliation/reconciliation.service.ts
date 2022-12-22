@@ -353,10 +353,10 @@ export class ReconciliationService {
     component: string,
     id: number
   ) {
+    const prefix = `${team}/${environment}/${component}/${id}/`;
+    const bucket = `zlifecycle-${this.ckEnvironment}-tfplan-${org.name}`;
+    
     try {
-      const prefix = `${team}/${environment}/${component}/${id}/`;
-      const bucket = `zlifecycle-${this.ckEnvironment}-tfplan-${org.name}`;
-
       const objects = await this.s3h.getObjects(
         bucket,
         prefix
@@ -367,7 +367,7 @@ export class ReconciliationService {
         body: o.data.Body.toString(),
       }));
     } catch (err) {
-      this.logger.error('error getting S3 plan/apply logs', err);
+      this.logger.error({ message: 'error getting S3 terraform logs', prefix, bucket }, err);
       return err;
     }
   }
@@ -421,6 +421,7 @@ export class ReconciliationService {
     const latestAudit = await this.getLatestCompReconcile(org, component, environment, team);
 
     if (!latestAudit) {
+      this.logger.error({ message: 'could not find latestAuditId to get latest logs', component, environment, team });
       throw new NotFoundException(`could not find audit logs for ${team}-${environment}-${component}`);
     }
 
