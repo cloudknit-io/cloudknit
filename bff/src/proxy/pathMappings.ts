@@ -207,12 +207,12 @@ const AUDIT_PATH_MAPPINGS = [
   {
     path: "/reconciliation/api/v1/component/:id",
     newPath: (params: any) =>
-      `/v1/orgs/${params.orgId}/reconciliation/component/${params.id}`,
+      `/v1/orgs/${params.orgId}/reconciliation/audit/components?compName=${params.id}`,
   },
   {
-    path: "/reconciliation/api/v1/environment/:id",
+    path: "/reconciliation/api/v1/environment/:id/:teamName",
     newPath: (params: any) =>
-      `/v1/orgs/${params.orgId}/reconciliation/component/${params.id}`,
+      `/v1/orgs/${params.orgId}/reconciliation/audit/environments?envName=${params.id}&teamName=${params.teamName}`,
   },
   {
     path: "/reconciliation/api/v1/notification/save",
