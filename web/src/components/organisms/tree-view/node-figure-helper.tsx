@@ -203,6 +203,7 @@ function createNodeFigure({
 				projectId={projectId}
 				onNodeClick={onNodeClick}
 				estimatedCost={estimatedCost}
+				labels={labels}
 				operation={labels.env_status === 'destroying' || labels.is_destroy === 'true' ? 'Destroy' : 'Provision'}
 				updater={updater}
 			/>
