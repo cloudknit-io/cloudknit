@@ -80,7 +80,7 @@ func GenerateTeamApp(team *stablev1.Team) *appv1.Application {
 	return &appv1.Application{
 		TypeMeta: newTypeMeta(),
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      team.Spec.TeamName,
+			Name:      env.Config.CompanyName + "-" + team.Spec.TeamName,
 			Namespace: env.ArgocdNamespace(),
 			Labels: map[string]string{
 				"zlifecycle.com/model": "team",
@@ -224,7 +224,7 @@ func GenerateTeamConfigWatcherApp(team *stablev1.Team) *appv1.Application {
 	return &appv1.Application{
 		TypeMeta: newTypeMeta(),
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      team.Spec.TeamName + "-team-watcher",
+			Name:      env.Config.CompanyName + "-" + team.Spec.TeamName + "-team-watcher",
 			Namespace: env.ArgocdNamespace(),
 			Labels: map[string]string{
 				"zlifecycle.com/model":                   "config-watcher",
