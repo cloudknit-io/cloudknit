@@ -37,9 +37,8 @@ export class ReconciliationController {
     ) {}
 
   @Get("environments")
-  async getEnvironment(@Request() req, @Query(new RequiredQueryValidationPipe()) tec: TeamEnvCompQueryParams) {
-    console.log(tec);
-    const env = await this.envSvc.getEnvironment(req.org, tec.compName, tec.envName);
+  async getEnvironment(@Request() req, @Query(new RequiredQueryValidationPipe()) tec: TeamEnvQueryParams) {
+    const env = await this.envSvc.getEnvironment(req.org, tec.envName, tec.teamName);
 
     if (!env) {
       throw new BadRequestException('could not find environment');

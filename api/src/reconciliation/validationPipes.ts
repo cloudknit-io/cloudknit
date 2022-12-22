@@ -1,9 +1,8 @@
 import { ValidationPipe } from "@nestjs/common";
-import { ValidatorOptions } from "class-validator";
+import { IsString, ValidatorOptions } from "class-validator";
 
 export class RequiredQueryValidationPipe extends ValidationPipe {
   protected validatorOptions: ValidatorOptions;
-  // ValidationPipe({forbidUnknownValues: true, skipMissingProperties: false})
   constructor() {
     super();
     
@@ -15,12 +14,20 @@ export class RequiredQueryValidationPipe extends ValidationPipe {
 }
 
 export class TeamEnvCompQueryParams {
+  @IsString()
   teamName: string
+
+  @IsString()
   envName: string
+
+  @IsString()
   compName: string
 }
 
 export class TeamEnvQueryParams {
+  @IsString()
   teamName: string
+
+  @IsString()
   envName: string
 }

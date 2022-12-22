@@ -41,7 +41,6 @@ export class EnvironmentService {
   }
 
   async getEnvironment(org: Organization, envName: string, teamName: string) {
-    console.log('envName', envName);
     return await this.environmentRepository.findOne({
       where: {
         name: envName,

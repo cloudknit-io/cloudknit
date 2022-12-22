@@ -73,17 +73,22 @@ export class ComponentService {
     return Number(raw.cost || 0);
   }
 
-  async getComponentCost(org: Organization, id: string): Promise<ComponentDto> {
-    let component = (await this.componentRepository
-      .createQueryBuilder('component')
-      .where('component.organizationId = :orgId and component.id = :name', {
-        orgId: org.id,
-        name: id
-      })
-      .getOne()) || null;
+  async getComponentCost(org: Organization, compName: string, teamName: string, envName: string): Promise<ComponentDto> {
+    const component = await this.componentRepository.findOne({
+      where: {
+        componentName: compName,
+        teamName,
+        environment: {
+          name: envName
+        },
+        organization: {
+          id: org.id
+        }
+      }
+    });
 
     if (!component) {
-      this.logger.error(`could not find component ${id} for org ${org.name}`)
+      this.logger.error({message: 'could not find component', teamName, compName, envName})
       throw new NotFoundException();
     }
 
@@ -121,14 +126,15 @@ export class ComponentService {
   async saveOrUpdate(org: Organization, costing: CostingDto): Promise<boolean> {
     const id = `${costing.teamName}-${costing.environmentName}-${costing.component.componentName}`;
 
-    const env = await this.envRepo
-      .createQueryBuilder()
-      .where('name = :envName and team_name = :teamName and organizationId = :orgId', {
-        envName: costing.environmentName,
+    const env = await this.envRepo.findOne({
+      where: {
+        name: costing.environmentName,
         teamName: costing.teamName,
-        orgId: org.id
-      })
-      .getOne();
+        organization: {
+          id: org.id
+        }
+      }
+    });
 
     if (!env) {
       throw new BadRequestException(`could not find environment associated with this component ${id}`);

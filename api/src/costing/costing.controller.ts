@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Post, Query, Request } from '@nestjs/common'
-import { RequiredQueryValidationPipe, TeamEnvQueryParams } from 'src/reconciliation/validationPipes';
+import { RequiredQueryValidationPipe, TeamEnvCompQueryParams, TeamEnvQueryParams } from 'src/reconciliation/validationPipes';
 import { ComponentDto } from './dtos/Component.dto';
 import { CostingDto } from './dtos/Costing.dto'
 import { ComponentService } from './services/component.service'
@@ -32,12 +32,12 @@ export class CostingController {
     )
   }
 
-  @Get('component/:componentId')
+  @Get('component')
   async getComponentCost(
     @Request() req,
-    @Param('componentId') componentId: string,
+    @Query(new RequiredQueryValidationPipe()) tec: TeamEnvCompQueryParams
   ): Promise<ComponentDto> {
-    return await this.componentService.getComponentCost(req.org, componentId);
+    return await this.componentService.getComponentCost(req.org, tec.compName, tec.teamName, tec.envName);
   }
 
   @Post('saveComponent')
