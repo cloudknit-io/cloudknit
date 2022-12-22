@@ -268,7 +268,7 @@ export const EnvironmentComponents: React.FC = () => {
 		return newComponents.map(e => {
 			const { team, component, environment } = getSeparatedConfigId(e);
 			return CostingService.getInstance()
-				.getComponentCostStream(team, environment, component)
+				.getComponentCostStream(team || '', environment || '', component || '')
 				.subscribe(d => {
 					setComponents([
 						...componentArrayRef.current.map(nc => {
