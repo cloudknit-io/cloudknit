@@ -106,7 +106,7 @@ export class ReconciliationService {
       return comp;
     }
 
-    this.logger.error(`Could not find component [${id}] for org [${org.id} / ${org.name}]`);
+    this.logger.error({ message: 'could not find component', id });
     throw new NotFoundException('could not find component');
   }
 
@@ -150,7 +150,7 @@ export class ReconciliationService {
       existingEntry.end_date_time = runData.endDateTime ? runData.endDateTime : "";
       existingEntry.status = runData.status;
         
-      this.logger.log(`updating existing environment reconcile entry ${JSON.stringify(existingEntry)}`);
+      this.logger.log({ message: 'updating existing environment reconcile entry', existingEntry });
       
       savedEntry = await this.environmentReconcileRepository.save(
         existingEntry
@@ -306,15 +306,13 @@ export class ReconciliationService {
       },
     });
 
-    this.logger.log(`updateSkippedWorkflows ${name} entries ${JSON.stringify(entries)}`);
-
     if (entries.length > 0) {
       const newEntries = entries.map((entry) => ({
         ...entry,
         status: "skipped_reconcile",
       })) as any;
 
-      this.logger.log(`updateSkippedWorkflows ${name} newEntries ${JSON.stringify(newEntries)}`);
+      this.logger.log({message: 'updating skipped workflows', newEntries});
 
       await repo.save(newEntries);
     }

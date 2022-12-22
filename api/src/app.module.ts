@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { RouterModule } from "@nestjs/core";
 import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
@@ -14,6 +14,7 @@ import { UsersModule } from "./users/users.module";
 import { SystemModule } from "./system/system.module";
 import { get } from "./config";
 import { OperationsModule } from './operations/operations.module';
+import { AppLoggerMiddleware } from "./middleware/logger.middle";
 
 const config = get();
 
@@ -49,4 +50,8 @@ const typeOrmModuleOptions: TypeOrmModuleOptions = {
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(AppLoggerMiddleware).forRoutes('*');
+  }
+}
