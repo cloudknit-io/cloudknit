@@ -234,7 +234,7 @@ export const ConfigWorkflowView: FC<Props> = (props: Props) => {
 						auditColumns={auditColumns}
 						config={config}
 						fetch={AuditService.getInstance().getComponent.bind(
-							null,
+							AuditService.getInstance(),
 							separatedConfigId?.team || '',
 							separatedConfigId?.environment || '',
 							separatedConfigId?.component || ''

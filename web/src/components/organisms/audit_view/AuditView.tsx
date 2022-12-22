@@ -73,7 +73,7 @@ export const AuditView: FC<Props> = ({ auditId, fetch, auditColumns, fetchLogs, 
 
 	useEffect(() => {
 		setSelectedLog(null);
-		const $auditNotification = fetch.call(auditServiceInstance)?.subscribe(data => {
+		const $auditNotification = fetch()?.subscribe(data => {
 			if (data.type !== 'update') {
 				auditDataMap.clear();
 			}

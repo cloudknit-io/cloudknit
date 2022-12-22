@@ -496,7 +496,7 @@ export const EnvironmentComponents: React.FC = () => {
 										</div>
 										<div id="Audit">
 											<AuditView
-												fetch={AuditService.getInstance().getEnvironment.bind(null, environmentId.replace(projectId + '-', ''), projectId)}
+												fetch={AuditService.getInstance().getEnvironment.bind(AuditService.getInstance(), environmentId.replace(projectId + '-', ''), projectId)}
 												auditColumns={auditColumns}
 												auditId={environmentId}
 											/>
