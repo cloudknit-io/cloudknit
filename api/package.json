@@ -30,6 +30,8 @@
     "@nestjs/swagger": "^5.2.1",
     "@nestjs/typeorm": "^8.1.4",
     "aws-sdk": "^2.952.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.13.2",
     "multer": "^1.4.5-lts.1",
     "mysql2": "^2.3.3",
     "reflect-metadata": "^0.1.13",
