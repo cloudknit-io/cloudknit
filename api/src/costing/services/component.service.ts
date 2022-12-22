@@ -43,15 +43,16 @@ export class ComponentService {
     org: Organization,
     teamName: string,
     environmentName: string,
-    fullEnvName?: string
   ): Promise<number> {
-    const env = await this.envRepo
-      .createQueryBuilder()
-      .where('name = :envName and organizationId = :orgId', {
-        envName: fullEnvName ? fullEnvName : `${teamName}-${environmentName}`,
-        orgId: org.id
-      })
-      .getOne();
+    const env = await this.envRepo.findOne({
+      where: {
+        name: environmentName,
+        teamName,
+        organization: {
+          id: org.id
+        }
+      }
+    });
 
     if (!env) {
       this.logger.error(`could not find environment [${environmentName}] for org [${org.id} / ${org.name}]`);
@@ -206,13 +207,7 @@ export class ComponentService {
         cost: await this.getEnvironmentCost(
           org,
           component.teamName,
-          component.environment.name,
-          // TECH DEBT: this contains the full `teamName-envName` environment name.
-          // this is fixed by fixing our data model by creating a `teams` table with proper
-          // relationships between teams/environment/component tables.
-          // Currently, the `name` column on `environment` table is formatted like : 'teamName-envName'.
-          // it should just be 'envName'
-          component.environment.name 
+          component.environment.name
         ),
       },
       component: {

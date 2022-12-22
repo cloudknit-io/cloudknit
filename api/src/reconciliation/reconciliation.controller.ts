@@ -23,6 +23,8 @@ import { EvnironmentReconcileDto } from "./dtos/reconcile.Dto";
 import { EnvironmentService } from "./environment.service";
 import { ReconciliationService } from "./reconciliation.service";
 import { SSEService } from "./sse.service";
+import { RequiredQueryValidationPipe, TeamEnvCompQueryParams, TeamEnvQueryParams } from "./validationPipes";
+
 
 @Controller({
   version: '1'
@@ -35,8 +37,9 @@ export class ReconciliationController {
     ) {}
 
   @Get("environments")
-  async getEnvironment(@Request() req, @Query("envName") envName: string, @Query("teamName") teamName: string) {
-    const env = await this.envSvc.getEnvironment(req.org, envName, teamName);
+  async getEnvironment(@Request() req, @Query(new RequiredQueryValidationPipe()) tec: TeamEnvCompQueryParams) {
+    console.log(tec);
+    const env = await this.envSvc.getEnvironment(req.org, tec.compName, tec.envName);
 
     if (!env) {
       throw new BadRequestException('could not find environment');
@@ -46,8 +49,8 @@ export class ReconciliationController {
   }
 
   @Get("components")
-  async getComponent(@Request() req, @Query("compName") compName: string, @Query("envName") envName: string, @Query("teamName") teamName: string) {
-    const comp = await this.reconciliationService.getComponent(req.org, compName, envName, teamName);
+  async getComponent(@Request() req, @Query(new RequiredQueryValidationPipe()) tec: TeamEnvCompQueryParams) {
+    const comp = await this.reconciliationService.getComponent(req.org, tec.compName, tec.envName, tec.teamName);
 
     if (!comp) {
       throw new BadRequestException('could not find component');
@@ -62,11 +65,11 @@ export class ReconciliationController {
   }
 
   @Get("approved-by")
-  async getApprovedBy(@Request() req, @Query("compName") compName: string, @Query("envName") envName: string, @Query("teamName") teamName: string, @Query("rid") rid: number) {
+  async getApprovedBy(@Request() req, @Query(new RequiredQueryValidationPipe()) tec: TeamEnvCompQueryParams, @Query("rid") rid: number) {
     const body: ApprovedByDto = {
-      compName,
-      envName,
-      teamName,
+      compName: tec.compName,
+      envName: tec.envName,
+      teamName: tec.teamName,
       rid,
     }
     return await this.reconciliationService.getApprovedBy(req.org, body);
@@ -83,13 +86,13 @@ export class ReconciliationController {
   }
 
   @Get("audit/components")
-  async getComponents(@Request() req, @Query("compName") compName: string, @Query("envName") envName: string, @Query("teamName") teamName: string): Promise<ComponentAudit[]> {
-    return await this.reconciliationService.getComponentAuditList(req.org, compName, envName, teamName);
+  async getComponents(@Request() req, @Query(new RequiredQueryValidationPipe()) tec: TeamEnvCompQueryParams): Promise<ComponentAudit[]> {
+    return await this.reconciliationService.getComponentAuditList(req.org, tec.compName, tec.envName, tec.teamName);
   }
 
   @Get("audit/environments")
-  async getEnvironments(@Request() req, @Query("envName") envName: string, @Query("teamName") teamName: string): Promise<EnvironmentAudit[]> {
-    return await this.reconciliationService.getEnvironmentAuditList(req.org, envName, teamName);
+  async getEnvironments(@Request() req, @Query(new RequiredQueryValidationPipe()) te: TeamEnvQueryParams): Promise<EnvironmentAudit[]> {
+    return await this.reconciliationService.getEnvironmentAuditList(req.org, te.envName, te.teamName);
   }
 
   @Get("component/logs/:team/:environment/:component/:id")
@@ -167,10 +170,10 @@ export class ReconciliationController {
   }
 
   @Sse("components/notify")
-  notifyComponents(@Request() req, @Query("compName") compName: string, @Query("envName") envName: string, @Query("teamName") teamName: string): Observable<MessageEvent> {
+  notifyComponents(@Request() req, @Query(new RequiredQueryValidationPipe()) tec: TeamEnvCompQueryParams): Observable<MessageEvent> {
     return from(this.sseSvc.notifyStream).pipe(
       map((component: ComponentReconcile) => {
-        if (component.name !== compName || envName !== component.environmentReconcile.name || teamName !== component.environmentReconcile.team_name || component.organization.id !== req.org.id) {
+        if (component.name !== tec.compName || tec.envName !== component.environmentReconcile.name || tec.teamName !== component.environmentReconcile.team_name || component.organization.id !== req.org.id) {
           return { data: [] };
         }
         const data: ComponentAudit[] = Mapper.getComponentAuditList([
@@ -182,10 +185,10 @@ export class ReconciliationController {
   }
 
   @Sse("environments/notify")
-  notifyEnvironments(@Request() req, @Query("envName") envName: string, @Query("teamName") teamName: string): Observable<MessageEvent> {
+  notifyEnvironments(@Request() req, @Query(new RequiredQueryValidationPipe()) te: TeamEnvQueryParams): Observable<MessageEvent> {
     return from(this.sseSvc.notifyStream).pipe(
       map((environment: EnvironmentReconcile) => {
-        if (environment.name !== envName || teamName != environment.team_name || req.org.id !== environment.organization.id) {
+        if (environment.name !== te.envName || te.teamName != environment.team_name || req.org.id !== environment.organization.id) {
           return { data: [] };
         }
         const data: EnvironmentAudit[] = Mapper.getEnvironmentAuditList([
