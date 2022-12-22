@@ -270,17 +270,17 @@ export const EnvironmentComponents: React.FC = () => {
 			return CostingService.getInstance()
 				.getComponentCostStream(team || '', environment || '', component || '')
 				.subscribe(d => {
-					setComponents([
-						...componentArrayRef.current.map(nc => {
-							if (nc.displayValue === d.id) {
-								nc.componentCost = d.estimatedCost;
-								nc.componentStatus = d.status;
-								nc.costResources = d.costResources;
-								nc.syncFinishedAt = d.lastReconcileDatetime
-							}
-							return nc;
-						}),
-					]);
+					const newItems = componentArrayRef.current.map(nc => {
+						if (nc.displayValue === d.id) {
+							nc.componentCost = d.estimatedCost;
+							nc.componentStatus = d.status;
+							nc.costResources = d.costResources;
+							nc.syncFinishedAt = d.lastReconcileDatetime;
+						}
+						return nc;
+					})
+					componentArrayRef.current = newItems;
+					setComponents(newItems);
 				});
 		});
 	};
