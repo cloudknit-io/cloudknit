@@ -192,13 +192,6 @@ export const EnvironmentComponents: React.FC = () => {
 		);
 		setComponents(newComponents);
 		componentArrayRef.current = newComponents;
-		const selectedConf = newComponents.find((itm: any) => itm.id === selectedConfig?.id);
-		if (selectedConf) {
-			setSelectedConfig(selectedConf);
-			if (selectedConf.labels?.last_workflow_run_id !== workflowId) {
-				setWorkflowId(selectedConf.labels?.last_workflow_run_id || '');
-			}
-		}
 	}, [streamData]);
 
 	useEffect(() => {
@@ -263,6 +256,10 @@ export const EnvironmentComponents: React.FC = () => {
 			setSelectedConfig(undefined);
 		}
 	}, [showSidePanel]);
+
+	useEffect(() => {
+		resetSelectedConfig(componentArrayRef.current);
+	}, [components]);
 
 	const setUpComponentStreams = (newComponents: EnvironmentComponentsList) => {
 		return newComponents.map(e => {
@@ -389,6 +386,18 @@ export const EnvironmentComponents: React.FC = () => {
 			return item.name.toLowerCase().includes(query) || labelsMatch(item.labels, query);
 		});
 	};
+
+
+
+	const resetSelectedConfig = (ref: any) => {
+		const selectedConf = ref.find((itm: any) => itm.id === selectedConfig?.id);
+		if (selectedConf) {
+			setSelectedConfig(selectedConf);
+			if (selectedConf.labels?.last_workflow_run_id !== workflowId) {
+				setWorkflowId(selectedConf.labels?.last_workflow_run_id || '');
+			}
+		}
+	}
 
 	useEffect(() => {
 		if (workflowId) {
