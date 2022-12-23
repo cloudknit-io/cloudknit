@@ -9,7 +9,6 @@ export type Props = {
     config: EnvironmentComponentItem;
 };
 export const ConfigWorkflowLeftView: React.FC<Props> = ({ configLabels, config }: Props) => {
-	const [syncStatus, setSyncStatus] = useState<ReactNode>(<></>);
 	const [cost, setCost] = useState<JSX.Element>(<></>);
 	const [labels, setLabels] = useState<ReactNode[]>([]);
 	const [envName, setEnvName] = useState<string>('');
@@ -21,7 +20,6 @@ export const ConfigWorkflowLeftView: React.FC<Props> = ({ configLabels, config }
 		setTeamName(configLabels.project_id || '');
 		setEnvName(configLabels.environment_id?.replace(configLabels.project_id + '-', ''));
 		setCost(<CostRenderer data={config.componentCost}/>);
-		setSyncStatus(renderSyncedStatus(config.componentStatus, '', '', '', config));
 		setOperation(configLabels.is_destroy === 'true' ? 'destroy' : 'provision');
 		setLabels(renderLabels(filterLabels(config)));
 	}, [configLabels, config]);
@@ -41,7 +39,7 @@ export const ConfigWorkflowLeftView: React.FC<Props> = ({ configLabels, config }
 				<div>
 					{<span>Operation:</span>} <span className="capitalize-text">{operation}</span>
 				</div>
-				<div>{syncStatus}</div>
+				<div>{renderSyncedStatus(config.componentStatus, '', '', '', config)}</div>
 			</div>
 			<div>{labels}</div>
 		</div>
