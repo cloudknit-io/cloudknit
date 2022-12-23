@@ -274,11 +274,11 @@ export const processNodeLogs = (data: any) => {
 	for (let i = 0; i < splitData.length; i++) {
 		const e = splitData[i];
 		const content = JSON.parse(e || '{}')?.result?.content || '';
-		if (content === showLogsStart) {
+		if (content.includes(showLogsStart)) {
 			cp = true;
 			continue;
 		}
-		if (content === showLogsEnd) {
+		if (content.includes(showLogsEnd)) {
 			cp = false;
 		}
 		if (cp) {
