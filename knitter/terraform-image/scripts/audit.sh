@@ -16,6 +16,8 @@ api_version='v1'
 team_env_name=$team_name-$env_name
 team_env_config_name=$team_name-$env_name-$config_name
 
+. /initialize-functions.sh
+
 # yaml status values
 # config --> Initialising... , Success , Failed
 # env --> initializing , ended 
