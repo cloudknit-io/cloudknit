@@ -1,7 +1,7 @@
-import { Resource } from 'src/typeorm/resources/Resource.entity';
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
-import { Organization } from '../Organization.entity';
-import { Environment } from '../reconciliation/environment.entity';
+import { CostResource } from 'src/costing/dtos/Resource.dto';
+import { Column, Entity, JoinColumn, ManyToOne, UpdateDateColumn } from 'typeorm';
+import { Organization } from './Organization.entity';
+import { Environment } from './reconciliation/environment.entity';
 
 @Entity({ name: 'components' })
 export class Component {
@@ -28,23 +28,40 @@ export class Component {
   componentName: string;
 
   @Column({
-    name: 'cost',
+    name: 'status'
+  })
+  status: string;
+
+  @Column({
+    name: 'estimated_cost',
     type: 'decimal',
     precision: 10,
     scale: 3,
   })
-  cost: number = 0;
+  estimatedCost: number = 0;
+
+  @UpdateDateColumn({
+    name: 'last_reconcile_datetime'
+  })
+  lastReconcileDatetime: string;
+
+  @Column({
+    default: -1
+  })
+  duration: number;
 
   @Column({
     default: false,
     type: 'boolean'
   })
-  isDeleted?: boolean
+  isDestroyed?: boolean
 
-  @OneToMany(() => Resource, resource => resource.component, {
-    cascade: true,
+  @Column({
+    name: 'cost_resources',
+    default: null,
+    type: 'json'
   })
-  resources: Resource[];
+  costResources: CostResource[];
 
   @ManyToOne(() => Organization, (org) => org.id, {
     onDelete: "CASCADE"

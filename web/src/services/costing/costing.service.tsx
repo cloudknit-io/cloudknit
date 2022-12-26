@@ -1,5 +1,6 @@
 import { Subject } from 'rxjs';
 import { BaseService } from 'services/base/base.service';
+import ApiClient from 'utils/apiClient';
 import { EventClientCost, subscriberCost } from 'utils/apiClient/EventClient';
 
 export class CostingService extends BaseService {
@@ -15,6 +16,15 @@ export class CostingService extends BaseService {
 			CostingService.instance = new CostingService();
 		}
 		return CostingService.instance;
+	}
+
+	async getEnvironmentInfo(teamName: string, envName: string): Promise<any> {
+		const url = this.constructUri(CostingtUriType.environmentInfo(teamName, envName));
+		try {
+			return await ApiClient.get(url);
+		} catch (err) {
+			return null;
+		}
 	}
 
 	getTeamCostStream(teamName?: string): Subject<any> {
@@ -33,23 +43,10 @@ export class CostingService extends BaseService {
 		return this.getStream<number>(key, url);
 	}
 
-	getComponentCostStream(componentId = ''): Subject<any> {
-		const key = componentId;
-		const url = this.constructUri(CostingtUriType.component(componentId));
+	getComponentCostStream(teamName: string, envName: string, compName: string): Subject<any> {
+		const key = `${teamName}-${envName}-${compName}`;
+		const url = this.constructUri(CostingtUriType.component(teamName, envName, compName));
 		return this.getStream<number>(key, url);
-	}
-
-	getResourceDataStream(componentId = ''): Subject<any> {
-		if (!componentId) {
-			throw 'Component Id cannot be empty';
-		}
-
-		const key = `${componentId}-resources`;
-		const url = this.constructUri(CostingtUriType.resources(componentId));
-
-		console.log('getResourceDataStream', componentId, key, url);
-
-		return this.getStream<any>(key, url);
 	}
 
 	streamTeamCost(teamId: string): any {
@@ -57,7 +54,9 @@ export class CostingService extends BaseService {
 	}
 
 	streamEnvironmentCost(teamId: string, environmentName: string): void {
-		new EventClientCost(`/costing/stream/api/v1/environment/${teamId}/${environmentName}`).listen();
+		new EventClientCost(
+			`/costing/stream/api/v1/environment?teamName=${teamId}&envName=${environmentName}`
+		).listen();
 	}
 
 	streamNotification(): void {
@@ -69,6 +68,10 @@ export class CostingService extends BaseService {
 
 	streamAll(): void {
 		new EventClientCost(`/costing/stream/api/v1/all`).listen();
+	}
+
+	setComponentStatus(data: any) {
+		return ApiClient.post('/costing/api/v1/saveComponent', data);
 	}
 
 	private notify(data: any = null) {
@@ -84,7 +87,7 @@ export class CostingService extends BaseService {
 		};
 		notifier(team.teamId, team.cost);
 		notifier(environment.environmentId, environment.cost);
-		notifier(component.componentId, component.cost);
+		notifier(component.id, component);
 		notifier(`${component.componentId}-resources`, {
 			componentId: component.componentId,
 			resources: component.resources,
@@ -93,8 +96,11 @@ export class CostingService extends BaseService {
 }
 
 class CostingtUriType {
-	static environment = (teamId: string, environmentId: string) => `environment/${teamId}/${environmentId}`;
-	static component = (componentId: string) => `component/${componentId}`;
+	static environment = (teamId: string, environmentId: string) =>
+		`environment?teamName=${teamId}&envName=${environmentId}`;
+	static environmentInfo = (teamId: string, environmentId: string) =>
+		`info/environment?teamName=${teamId}&envName=${environmentId}`;
+	static component = (teamName: string, envName: string, compName: string) =>
+		`component?teamName=${teamName}&envName=${envName}&compName=${compName}`;
 	static team = (teamId: string) => `team/${teamId}`;
-	static resources = (componentId: string) => `resources/${componentId}`;
 }

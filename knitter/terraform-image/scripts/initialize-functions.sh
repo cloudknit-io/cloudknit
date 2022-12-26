@@ -31,8 +31,7 @@ function PatchError() {
 
   argocd app patch $team_env_name --patch $data --type merge > null
 
-  data='{"metadata":{"labels":{"component_status":"'$component_error_status'"}}}'
-  argocd app patch $team_env_config_name --patch $data --type merge >null
+  UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "${component_error_status}"
 
   # TODO : Add org_id here
   sh /audit.sh $team_name $env_name $config_name "Failed" $component_error_status $reconcile_id $config_reconcile_id $is_destroy 0 "noSkip" $customer_id
@@ -56,7 +55,6 @@ function Error() {
 
   exit 1
 }
-
 
 # 'Sub Error Function' this Function should be called instead of Error function as we need to save the logs to s3.
 function SaveAndExit() {
@@ -99,4 +97,32 @@ function setAWSCreds() {
     return 1
   fi
   return 0
+}
+
+# Saves or updates a component
+#   Args:
+#     $1 - env name (required)
+#     $2 - team name (required)
+#     $3 - component name (required)
+#     $4 - component status (required)
+#     $5 - component isDestroyed (default: false)
+function UpdateComponentStatus() {
+  local envName="${1}"
+  local teamName="${2}"
+  local compName="${3}"
+  local compStatus="${4}"
+  local isDestroyed=${5}
+
+  if [ "$isDestroyed" = true ]; then
+      isDestroyed=true
+  else
+      isDestroyed=false
+  fi
+
+  local payload='{"teamName": "'${teamName}'", "environmentName": "'${envName}'", "component": { "componentName": "'${compName}'", "status" : "'${compStatus}'", "isDestroyed" : '${isDestroyed}' }}'
+  
+  echo "Running UpdateComponentStatus ${compStatus} : ${payload}"
+  echo $payload >temp_payload.json
+
+  curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/costing/saveComponent" -H 'accept: */*' -H 'Content-Type: application/json' -d @temp_payload.json
 }

@@ -24,8 +24,7 @@ echo "   workspace=${workspace}"
 echo $show_output_start
 echo "Executing plan..." 2>&1 | appendLogs /tmp/plan_output.txt
 echo $show_output_end
-data='{"metadata":{"labels":{"component_status":"running_destroy_plan","audit_status":"running_destroy_plan"}}}'
-argocd app patch $team_env_config_name --patch $data --type merge >null
+UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "running_destroy_plan"
 
 echo $show_output_start
 
@@ -43,7 +42,7 @@ echo $show_output_end
 aws s3 cp /tmp/plan_output.txt s3://zlifecycle-$zl_env-tfplan-$customer_id/$team_name/$env_name/$config_name/$config_reconcile_id/plan_output --profile compuzest-shared
 aws s3 cp terraform-plan s3://zlifecycle-$zl_env-tfplan-$customer_id/$team_name/$env_name/$config_name/tfplans/$config_reconcile_id --profile compuzest-shared
 
-costing_payload='{"teamName": "'$team_name'", "environmentName": "'$env_name'", "component": { "componentName": "'$config_name'", "isDeleted" : '1'  }}'
+costing_payload='{"teamName": "'$team_name'", "environmentName": "'$env_name'", "component": { "componentName": "'$config_name'", "isDestroyed" : '1'  }}'
 echo $costing_payload >temp_costing_payload.json
 
 echo "TERRAFORM DESTROY PLAN - COSTING PAYLOAD"

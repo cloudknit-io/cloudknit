@@ -1,5 +1,7 @@
 export interface ComponentDto {
     environmentName: string;
-    componentName: string;
+    name: string;
+    teamName: string;
     duration: number;
+    status: string;
 }

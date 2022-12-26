@@ -28,9 +28,8 @@ echo "   auto_approve=${auto_approve}"
 echo "   customer_id=${customer_id}"
 echo ""
 
-function PatchError() {
-    data='{"metadata":{"labels":{"component_status":"plan_failed"}}}'
-    argocd app patch $team_env_config_name --patch $data --type merge > null
+function PatchProcessPlanError() {
+    UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "plan_failed"
     # TODO : Pass orgId
     sh ../audit.sh $team_name $env_name $config_name "" "plan_failed" $reconcile_id $config_reconcile_id $is_destroy 0 "noSkip" ${customer_id}
     if [ $is_destroy = true ]
@@ -42,29 +41,31 @@ function PatchError() {
     argocd app patch $team_env_name --patch $data --type merge > null
 }
 
-function Error() {
+function ProcessPlanError() {
   if [ -n "$1" ];
   then
-    echo "Error: "$1
-    PatchError
+    echo "ProcessPlanError: "$1
+    PatchProcessPlanError
   fi
 
     exit 1;
 }
 
-env_sync_status=$(argocd app get $team_env_name -o json | jq -r '.status.sync.status') || Error "Failed getting env_sync_status"
+. /initialize-functions.sh
 
-config_sync_status=$(argocd app get $team_env_config_name -o json | jq -r '.status.sync.status') || Error "Failed getting config_sync_status"
+env_sync_status=$(argocd app get $team_env_name -o json | jq -r '.status.sync.status') || ProcessPlanError "Failed getting env_sync_status"
+
+config_sync_status=$(argocd app get $team_env_config_name -o json | jq -r '.status.sync.status') || ProcessPlanError "Failed getting config_sync_status"
 
 if [ $result -eq 0 ]
 then
     if [ $is_destroy = true ]
     then
-        data='{"metadata":{"labels":{"component_status":"destroyed"}}}'
+        compStatus="destroyed"
     else
-        data='{"metadata":{"labels":{"component_status":"provisioned"}}}'
+        compStatus="provisioned"
     fi
-    argocd app patch $team_env_config_name --patch $data --type merge > null
+    UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "${compStatus}"
 
     if [ $config_sync_status == "OutOfSync" ]
     then
@@ -76,8 +77,7 @@ then
     then
         if [ $config_sync_status != "OutOfSync" ]
         then
-            data='{"metadata":{"labels":{"component_status":"out_of_sync"}}}'
-            argocd app patch $team_env_config_name --patch $data --type merge > null
+            UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "out_of_sync"
 
             if [ $env_sync_status != "OutOfSync" ]
             then
@@ -96,8 +96,8 @@ then
               --status waiting_for_approval \
               -u http://zlifecycle-state-manager."${customer_id}"-system.svc.cluster.local:8080 \
               -v
-            data='{"metadata":{"labels":{"component_status":"waiting_for_approval","audit_status":"waiting_for_approval"}}}'
-            argocd app patch $team_env_config_name --patch $data --type merge > null
+
+            UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "waiting_for_approval"
         fi
     fi
 fi

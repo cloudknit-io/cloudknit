@@ -1,15 +1,15 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Subject } from "rxjs";
-import { Component } from "src/typeorm/costing/Component";
-import { Resource } from "src/typeorm/resources/Resource.entity";
+import { Component } from "src/typeorm/component.entity";
 import { Repository } from "typeorm";
 import { CostingDto } from "../dtos/Costing.dto";
-import { CostingStreamDto } from "../streams/costing.stream";
-import { Mapper } from "../utilities/mapper";
+import { StreamDto as StreamDto } from "../streams/costing.stream";
 import { MessageEvent } from "@nestjs/common";
 import { Organization } from "src/typeorm";
+import { SqlErrorCodes } from "src/types";
 import { Environment } from "src/typeorm/reconciliation/environment.entity";
+import { ComponentDto } from "../dtos/Component.dto";
 
 @Injectable()
 export class ComponentService {
@@ -22,8 +22,6 @@ export class ComponentService {
     private componentRepository: Repository<Component>,
     @InjectRepository(Environment)
     private envRepo: Repository<Environment>,
-    @InjectRepository(Resource)
-    private resourceRepository: Repository<Resource>
   ) {
     setInterval(() => {
       this.notifyStream.next({ data: {} });
@@ -33,7 +31,7 @@ export class ComponentService {
   async getAll(org: Organization): Promise<Component[]> {
     const components = await this.componentRepository
       .createQueryBuilder()
-      .where('organizationId = :orgId and isDeleted = 0', {
+      .where('organizationId = :orgId and isDestroyed = 0', {
         orgId: org.id
       })
       .getMany();
@@ -45,15 +43,16 @@ export class ComponentService {
     org: Organization,
     teamName: string,
     environmentName: string,
-    fullEnvName?: string
   ): Promise<number> {
-    const env = await this.envRepo
-      .createQueryBuilder()
-      .where('name = :envName and organizationId = :orgId', {
-        envName: fullEnvName ? fullEnvName : `${teamName}-${environmentName}`,
-        orgId: org.id
-      })
-      .getOne();
+    const env = await this.envRepo.findOne({
+      where: {
+        name: environmentName,
+        teamName,
+        organization: {
+          id: org.id
+        }
+      }
+    });
 
     if (!env) {
       this.logger.error(`could not find environment [${environmentName}] for org [${org.id} / ${org.name}]`);
@@ -62,44 +61,84 @@ export class ComponentService {
 
     const raw = await this.componentRepository
       .createQueryBuilder("components")
-      .select("SUM(components.cost) as cost")
+      .select("SUM(components.estimated_cost) as cost")
       .where(
-        `components.cost != -1 and 
+        `components.estimated_cost != -1 and 
         components.teamName = '${teamName}' and 
         components.environmentId = '${env.id}' and 
-        components.isDeleted = 0 and 
+        components.isDestroyed = 0 and 
         components.organizationId = ${org.id}`
       )
       .getRawOne();
     return Number(raw.cost || 0);
   }
 
-  async getComponentCost(org: Organization, componentId: string): Promise<number> {
-    const raw = await this.componentRepository
-      .createQueryBuilder("components")
-      .select("SUM(components.cost) as cost")
-      .where(
-        `components.id = '${componentId}' and 
-        components.isDeleted = 0 and
-        components.organizationId = ${org.id}`)
-      .getRawOne();
+  async getEnvironment(
+    org: Organization,
+    teamName: string,
+    environmentName: string,
+  ): Promise<Environment> {
+    const env = await this.envRepo.findOne({
+      where: {
+        name: environmentName,
+        teamName,
+        organization: {
+          id: org.id
+        }
+      },
+      relations: {
+        components: {
+          environment: false
+        }
+      }
+    });
 
-    if (!raw) {
-      this.logger.error(`could not find cost for component ${componentId} for org ${org.name}`)
+    if (!env) {
+      this.logger.error(`could not find environment [${environmentName}] for org [${org.id} / ${org.name}]`);
       throw new NotFoundException();
     }
 
-    return Number(raw.cost || 0);
+    return env;
+  }
+
+  async getComponentCost(org: Organization, compName: string, teamName: string, envName: string): Promise<ComponentDto> {
+    const component = await this.componentRepository.findOne({
+      where: {
+        componentName: compName,
+        teamName,
+        environment: {
+          name: envName
+        },
+        organization: {
+          id: org.id
+        }
+      }
+    });
+
+    if (!component) {
+      this.logger.error({message: 'could not find component', teamName, compName, envName})
+      throw new NotFoundException();
+    }
+
+    return {
+      id: component.id,
+      estimatedCost: component.isDestroyed ? 0 : component.estimatedCost,
+      status: component.status,
+      duration: component.duration,
+      componentName: component.componentName,
+      lastReconcileDatetime: component.lastReconcileDatetime,
+      costResources: component.costResources,
+    };
   }
 
   async getTeamCost(org: Organization, name: string): Promise<number> {
     const raw = await this.componentRepository
       .createQueryBuilder("components")
-      .select("SUM(components.cost) as cost")
+      .select("SUM(components.estimated_cost) as cost")
       .where(
         `components.teamName = '${name}' and 
-        components.isDeleted = 0 and 
-        components.cost != -1 and
+        components.isDestroyed = 0 and 
+        components.estimated_cost != -1 and
         components.organizationId = ${org.id}`
       )
       .getRawOne();
@@ -112,82 +151,111 @@ export class ComponentService {
     return Number(raw.cost || 0);
   }
 
-  async saveComponents(org: Organization, costing: CostingDto): Promise<boolean> {
+  async saveOrUpdate(org: Organization, costing: CostingDto): Promise<boolean> {
     const id = `${costing.teamName}-${costing.environmentName}-${costing.component.componentName}`;
 
-    let savedComponent = (await this.componentRepository.findOne({ 
-      where: { 
-        id,
-        organization: org
-      },
-      relations: {
-        environment: true
-      } })) || null;
-    
-    if (costing.component.isDeleted && savedComponent) {
-      savedComponent = await this.softDelete(savedComponent);
-    } else {
-      const env = await this.envRepo
-      .createQueryBuilder()
-      .where('name = :envName and organizationId = :orgId', {
-        envName: `${costing.teamName}-${costing.environmentName}`,
-        orgId: org.id
-      })
-      .getOne();
+    const env = await this.envRepo.findOne({
+      where: {
+        name: costing.environmentName,
+        teamName: costing.teamName,
+        organization: {
+          id: org.id
+        }
+      }
+    });
 
+    if (!env) {
+      throw new BadRequestException(`could not find environment associated with this component ${id}`);
+    }
+
+    let savedComponent = (await this.componentRepository
+      .createQueryBuilder('component')
+      .leftJoinAndSelect('component.environment', 'environment')
+      .leftJoinAndSelect('component.organization', 'organization')
+      .where('component.organizationId = :orgId and component.id = :name', {
+        orgId: org.id,
+        name: id
+      })
+      .getOne()) || null;
+    
+    if (costing.component.isDestroyed && savedComponent) {
+      // Update existing component
+      if (costing.component.status && savedComponent.status !== costing.component.status) {
+	savedComponent.status = costing.component.status;
+      }
+      savedComponent = await this.softDelete(savedComponent);
+    }
+    else if (savedComponent) {
+      // Update existing component
+      if (costing.component.status && savedComponent.status !== costing.component.status) {
+        savedComponent.status = costing.component.status;
+      }
+  
+      if (costing.component.cost !== undefined && savedComponent.estimatedCost !== costing.component.cost) {
+        savedComponent.estimatedCost = costing.component.cost;
+        savedComponent.costResources = costing.component.resources;
+      }
+
+      if (costing.component.duration != undefined && savedComponent.duration !== costing.component.duration) {
+        savedComponent.duration = costing.component.duration;
+      }
+
+      savedComponent = await this.componentRepository.save(savedComponent);
+    } else {
+      // Create new component
       const component = new Component();
       component.organization = org;
       component.teamName = costing.teamName;
       component.environment = env;
       component.id = id;
+      component.status = costing.component.status;
       component.componentName = costing.component.componentName;
-      component.cost = costing.component.cost;
-      component.isDeleted = costing.component.isDeleted;
+      component.estimatedCost = costing.component.cost;
+      component.isDestroyed = costing.component.isDestroyed;
 
-      await this.componentRepository.delete({
-        id: id,
-        organization: org
-      });
+      try {
+        savedComponent = await this.componentRepository.save(component);
+      } catch (err) {
+        if (err.code === SqlErrorCodes.NO_DEFAULT) {
+          throw new BadRequestException(err.sqlMessage);
+        }
 
-      savedComponent = await this.componentRepository.save(component);
-      savedComponent.environment = env;
-
-      const resources = await this.resourceRepository.save(
-        Mapper.mapToResourceEntity(org, component, costing.component.resources)
-      );
-
-      savedComponent.resources = resources;
+        this.logger.error({ message: 'error saving new component', component, error: err.message });
+        throw new InternalServerErrorException();
+      }
     }
 
-    const data = await this.getCostingStreamDto(savedComponent);
+    savedComponent.environment = env;
+
+    const data = await this.getComponentSteamDto(org, savedComponent);
+    this.logger.debug({message: 'notifying cost stream', data})
     this.notifyStream.next({ data });
 
     return true;
   }
 
-  async getCostingStreamDto(component: Component): Promise<CostingStreamDto> {
-    const data: CostingStreamDto = {
+  async getComponentSteamDto(org: Organization, component: Component): Promise<StreamDto> {
+    const data: StreamDto = {
       team: {
         teamId: component.teamName,
-        cost: await this.getTeamCost(component.organization, component.teamName),
+        cost: await this.getTeamCost(org, component.teamName),
       },
       environment: {
         environmentId: component.environment.name,
         cost: await this.getEnvironmentCost(
-          component.organization,
+          org,
           component.teamName,
-          component.environment.name,
-          // TECH DEBT: this contains the full `teamName-envName` environment name.
-          // this is fixed by fixing our data model by creating a `teams` table with proper
-          // relationships between teams/environment/component tables.
-          // Currently, the `name` column on `environment` table is formatted like : 'teamName-envName'.
-          // it should just be 'envName'
-          component.environment.name 
+          component.environment.name
         ),
       },
       component: {
-        componentId: component.id,
-        cost: component.isDeleted ? 0 : component.cost,
+        id: component.id,
+        estimatedCost: component.isDestroyed ? 0 : component.estimatedCost,
+        status: component.status,
+        duration: component.duration,
+        componentName: component.componentName,
+        lastReconcileDatetime: component.lastReconcileDatetime,
+        costResources: component.costResources,
       },
     };
     
@@ -195,38 +263,7 @@ export class ComponentService {
   }
 
   async softDelete(component: Component): Promise<Component> {
-    component.isDeleted = true;
+    component.isDestroyed = true;
     return await this.componentRepository.save(component);
-  }
-
-  async getResourceData(org: Organization, id: string) {
-    const resultSet = await this.resourceRepository.find({
-      where: {
-        componentId: id,
-        organization: {
-          id: org.id
-        }
-      },
-  });
-
-    const roots = [];
-    var resources = new Map<string, any>(
-      resultSet.map((e) => [e.id, { ...e, subresources: [] }])
-    );
-
-    for (let i = 0; i < resultSet.length; i++) {
-      const resource = resources.get(resultSet[i].id);
-
-      if (!resource.parentId) {
-        roots.push(resource);
-      } else {
-        resources.get(resource.parentId).subresources.push(resource);
-      }
-    }
-
-    return {
-      componentId: id,
-      resources: roots,
-    };
   }
 }

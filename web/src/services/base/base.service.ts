@@ -25,7 +25,7 @@ export class BaseService {
 
 	protected setStreamHandler<T>(url: string, key: string) {
 		const subject = new Subject<any>();
-		const requestHandler = debounce(
+		const requestHandler = () => debounce(
 			this.createRequest.bind(null, async () => {
 				const { data } = await ApiClient.get<T>(url);
 				this.notifySubscribers(key, data, subject);
@@ -57,7 +57,7 @@ export class BaseService {
 		if (!this.streamMap.has(key)) {
 			this.setStreamHandler<T>(url, key);
 		}
-		this.requestMap.get(key)();
+		Promise.resolve(this.requestMap.get(key)()());
 		return this.streamMap.get(key) as Subject<any>;
 	}
 

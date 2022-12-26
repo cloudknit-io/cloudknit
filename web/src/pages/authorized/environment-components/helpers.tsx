@@ -1,7 +1,7 @@
 import { ReactComponent as AWSIcon } from 'assets/images/icons/AWS.svg';
 import { ReactComponent as MoreOptionsIcon } from 'assets/images/icons/more-options.svg';
 import { TableColumn } from 'components/atoms/table/Table';
-import { CostRenderer, renderHealthStatus, renderSyncedStatus } from 'components/molecules/cards/renderFunctions';
+import { CostRenderer, currency, renderHealthStatus, renderSyncedStatus } from 'components/molecules/cards/renderFunctions';
 import { ZStreamRenderer } from 'components/molecules/zasync-renderer/ZStreamRenderer';
 import { AuditStatus } from 'models/argo.models';
 import { EnvironmentComponentItem } from 'models/projects.models';
@@ -50,20 +50,6 @@ const renderServices = () => <AWSIcon />;
 
 const renderActions = () => <MoreOptionsIcon />;
 
-export const renderCost = (componentId?: string) => {
-	if (!componentId) {
-		return <></>;
-	}
-	return (
-		<ZStreamRenderer
-			key={componentId}
-			subject={CostingService.getInstance().getComponentCostStream(componentId)}
-			defaultValue={CostingService.getInstance().getCachedValue(componentId)}
-			Component={CostRenderer}
-		/>
-	);
-};
-
 export const getTime = (time: string): string => {
 	moment.locale('en', {
 		relativeTime: {
@@ -107,7 +93,6 @@ export const configTableColumns: TableColumn[] = [
 	{
 		id: 'id',
 		name: 'Cost',
-		render: renderCost,
 	},
 	{
 		id: 'dependsOn',
@@ -289,11 +274,11 @@ export const processNodeLogs = (data: any) => {
 	for (let i = 0; i < splitData.length; i++) {
 		const e = splitData[i];
 		const content = JSON.parse(e || '{}')?.result?.content || '';
-		if (content === showLogsStart) {
+		if (content.includes(showLogsStart)) {
 			cp = true;
 			continue;
 		}
-		if (content === showLogsEnd) {
+		if (content.includes(showLogsEnd)) {
 			cp = false;
 		}
 		if (cp) {

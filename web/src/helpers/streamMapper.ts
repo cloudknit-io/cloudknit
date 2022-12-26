@@ -51,6 +51,11 @@ export const streamMapper = <T>(
 			if (index !== -1 && data.type === 'MODIFIED') {
 				newItems = items.map(x => {
 					if (x.id === item.id) {
+						//NOTE: This is done so that argo doesn't override cost and status since we are fetching them from API
+						item.componentCost = x.componentCost;
+						item.componentStatus = x.componentStatus;
+						item.costResources = x.costResources;
+						item.syncFinishedAt = x.syncFinishedAt;
 						return item;
 					}
 					return x;

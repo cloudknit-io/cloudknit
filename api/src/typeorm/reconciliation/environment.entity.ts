@@ -1,6 +1,6 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Organization } from "../Organization.entity";
-import { Component } from "./component.entity";
+import { Component } from "../component.entity";
 
 @Entity({
   name: "environment",
@@ -12,6 +12,11 @@ export class Environment {
   @Column()
   @Index()
   name: string;
+
+  @Column({
+    name: 'team_name',
+  })
+  teamName: string;
 
   @UpdateDateColumn({
     name: "last_reconcile_datetime",

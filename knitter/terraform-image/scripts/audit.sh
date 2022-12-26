@@ -16,6 +16,8 @@ api_version='v1'
 team_env_name=$team_name-$env_name
 team_env_config_name=$team_name-$env_name-$config_name
 
+. /initialize-functions.sh
+
 # yaml status values
 # config --> Initialising... , Success , Failed
 # env --> initializing , ended 
@@ -86,16 +88,17 @@ if [[ $config_name != 0 && $config_reconcile_id = null ]]; then
             data='{"metadata":{"labels":{"is_skipped":"'$is_skipped'"}}}'
         fi
     else
-        data='{"metadata":{"labels":{"is_skipped":"'$is_skipped'","component_status":"initializing","is_destroy":"'$is_destroy'","audit_status":"initializing","last_workflow_run_id":"initializing"}}}'
+        data='{"metadata":{"labels":{"is_skipped":"'$is_skipped'","audit_status":"initializing","last_workflow_run_id":"initializing"}}}'
     fi
     echo "patch argocd resource $team_env_config_name with data $data"
-    argocd app patch $team_env_config_name --patch $data --type merge > null
+    argocd app patch $team_env_config_name --patch $data --type merge > null 
+    UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "initializing" ${is_destroy}
 else
     echo "write 0 to /tmp/error_code.txt"
     echo -n '0' >/tmp/error_code.txt
 fi
 
-component_payload='[{"reconcileId" : '$config_reconcile_id', "name" : "'$team_env_config_name'", "status" : "'$config_status'", "startDateTime" : "'$start_date'", "endDateTime" : '$end_date'}]'
+component_payload='[{"reconcileId" : '$config_reconcile_id', "teamName" : "'${team_name}'", "environmentName" : "'${env_name}'", "name" : "'$config_name'", "status" : "'$config_status'", "startDateTime" : "'$start_date'", "endDateTime" : '$end_date'}]'
 
 end_date='"'$(date '+%Y-%m-%d %H:%M:%S')'"'
 if [ $reconcile_id -eq 0 ]; then
@@ -117,7 +120,7 @@ else
     status="provision_"$status
 fi
 
-payload='{"reconcileId": '$reconcile_id', "name" : "'$team_env_name'", "teamName" : "'$team_name'", "status" : "'$status'", "startDateTime" : "'$start_date'", "endDateTime" : '$end_date', "componentReconciles" : '$component_payload'}'
+payload='{"reconcileId": '$reconcile_id', "name" : "'$env_name'", "teamName" : "'$team_name'", "status" : "'$status'", "startDateTime" : "'$start_date'", "endDateTime" : '$end_date', "componentReconciles" : '$component_payload'}'
 
 echo "AUDIT PAYLOAD: $payload"
 echo $payload >reconcile_payload.txt

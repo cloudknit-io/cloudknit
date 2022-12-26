@@ -9,12 +9,7 @@ import { TreeComponent } from 'components/organisms/tree-view/TreeComponent';
 import { Context } from 'context/argo/ArgoUi';
 import { streamMapper, streamMapperWF } from 'helpers/streamMapper';
 import { useApi } from 'hooks/use-api/useApi';
-import {
-	ApplicationWatchEvent,
-	HealthStatusCode,
-	ZComponentSyncStatus,
-	ZSyncStatus,
-} from 'models/argo.models';
+import { ApplicationWatchEvent, HealthStatusCode, ZComponentSyncStatus, ZSyncStatus } from 'models/argo.models';
 import { LocalStorageKey } from 'models/localStorage';
 import {
 	EnvironmentComponentItem,
@@ -27,6 +22,7 @@ import {
 	auditColumns,
 	ConfigParamsSet,
 	configTableColumns,
+	getSeparatedConfigId,
 	getWorkflowLogs,
 } from 'pages/authorized/environment-components/helpers';
 import React, { useContext, useEffect, useRef, useState } from 'react';
@@ -49,6 +45,7 @@ import { ErrorView } from 'components/organisms/error-view/ErrorView';
 import { ZTablControl } from 'components/molecules/tab-control/TabControl';
 import { ErrorStateService } from 'services/error/error-state.service';
 import { eventErrorColumns } from 'models/error.model';
+import { CostingService } from 'services/costing/costing.service';
 
 const envTabs = [
 	{
@@ -160,6 +157,168 @@ export const EnvironmentComponents: React.FC = () => {
 		});
 	}, [checkBoxFilters, viewType, environments]);
 
+	useEffect(() => {
+		fetchEnvironments(projectId).then(({ data }) => {
+			if (data) {
+				checkForFailedEnvironments(data);
+				setEnvironments(data);
+			}
+			setLoading(false);
+		});
+	}, [projectId]);
+
+	useEffect(() => {
+		const newEnvironments = streamMapper<EnvironmentItem>(
+			streamData,
+			environments,
+			ArgoMapper.parseEnvironment,
+			'environment',
+			{
+				projectId,
+			}
+		);
+		checkForFailedEnvironments(newEnvironments);
+		setEnvironments(newEnvironments);
+
+		const newComponents = streamMapper<EnvironmentComponentItem>(
+			streamData,
+			components,
+			ArgoMapper.parseComponent,
+			'config',
+			{
+				projectId,
+				environmentId,
+			}
+		);
+		setComponents(newComponents);
+		componentArrayRef.current = newComponents;
+	}, [streamData]);
+
+	useEffect(() => {
+		if (environments.length === 0 || !environmentId) return;
+		const env = environments.find(e => e.id === environmentId);
+		if (!env) return;
+		const sub = ctx?.failedEnvironments.subscribe(res => {
+			const errors = [...res.values()].filter(e => e.labels.env_name === env.labels?.env_name);
+			console.log(errors);
+		});
+
+		return () => sub?.unsubscribe();
+	}, [environmentId, environments]);
+
+	useEffect(() => {
+		const $subscription: Subscription = subscriber.subscribe((response: any) => {
+			setStreamData(response);
+		});
+		const $subscription2: Subscription = subscriberWF.subscribe((response: any) => {
+			setStreamData2(response);
+		});
+
+		return (): void => {
+			$subscription.unsubscribe();
+			$subscription2.unsubscribe();
+		};
+	}, []);
+
+	useEffect(() => {
+		const newWf: any = streamMapperWF(streamData2);
+		if (newWf && workflowData) {
+			setWorkflowData({
+				...workflowData,
+				status: newWf?.object?.status,
+			});
+		}
+	}, [streamData2]);
+
+	useEffect(() => {
+		let subs: Subscription[] = [];
+		setLoading(true);
+		const fetchs = [
+			CostingService.getInstance().getEnvironmentInfo(projectId, environmentId.replace(projectId + '-', '')),
+			fetch(projectId, environmentId),
+		];
+		Promise.allSettled(fetchs).then(resps => {
+			const { data0, data1 } = resolveFetchs(resps);
+			if (data1) {
+				componentArrayRef.current = data1;
+				subs = setUpComponentStreams(data1);
+			}
+			if (data0) {
+				const newItems = componentArrayRef.current.map(nc => {
+					const newItem = data0.find((c: any) => c.id === nc.displayValue);
+					if (newItem) {
+						nc.componentCost = newItem.estimatedCost;
+						nc.componentStatus = newItem.status;
+						nc.costResources = newItem.costResources;
+						nc.syncFinishedAt = newItem.lastReconcileDatetime;
+					}
+					return nc;
+				});
+				componentArrayRef.current = newItems;
+			}
+			setComponents(componentArrayRef.current);
+			setLoading(false);
+		});
+		return () => {
+			subs.forEach(s => s.unsubscribe());
+		};
+	}, ['projectId', environmentId]);
+
+	useEffect(() => {
+		if (showSidePanel === false) {
+			setLogs(null);
+			setPlans(null);
+			setIsLoadingWorkflow(false);
+			setWorkflowData(null);
+			setWorkflowId('');
+			setSelectedConfig(undefined);
+		}
+	}, [showSidePanel]);
+
+	useEffect(() => {
+		resetSelectedConfig(componentArrayRef.current);
+	}, [components]);
+
+	const setUpComponentStreams = (newComponents: EnvironmentComponentsList) => {
+		return newComponents.map(e => {
+			const { team, component, environment } = getSeparatedConfigId(e);
+			return CostingService.getInstance()
+				.getComponentCostStream(team || '', environment || '', component || '')
+				.subscribe(d => {
+					const newItems = componentArrayRef.current.map(nc => {
+						if (nc.displayValue === d.id) {
+							nc.componentCost = d.estimatedCost;
+							nc.componentStatus = d.status;
+							nc.costResources = d.costResources;
+							nc.syncFinishedAt = d.lastReconcileDatetime;
+						}
+						return nc;
+					});
+					componentArrayRef.current = newItems;
+					setComponents(newItems);
+				});
+		});
+	};
+
+	const resolveFetchs = (fetchResps: PromiseSettledResult<any>[]) => {
+		const [data0, data1] = fetchResps;
+		const respData: any = {
+			data0: null,
+			data1: null,
+		};
+		if (data1.status === 'fulfilled' && data1.value && 'data' in data1.value) {
+			const { data } = data1.value;
+			respData.data1 = data;
+		}
+		if (data0.status === 'fulfilled' && data0.value && 'data' in data0.value) {
+			const { data } = data0.value;
+			if ('components' in data) {
+				respData.data0 = data.components;
+			}
+		}
+		return respData;
+	};
+
 	const syncStatusMatch = (item: EnvironmentComponentItem): boolean => {
 		return syncStatusFilter.has(item.componentStatus);
 	};
@@ -226,17 +385,15 @@ export const EnvironmentComponents: React.FC = () => {
 			}
 		}
 		if (configName === 'root') {
-			// const rootEnv = environments.find(e => e.id === environmentId);
-			// const failedEnv = ErrorStateService.getInstance().errorsInEnvironment(
-			// 	rootEnv?.labels?.env_name || ''
-			// );
+			const rootEnv = environments.find(e => e.id === environmentId);
+			const failedEnv = ErrorStateService.getInstance().errorsInEnvironment(rootEnv?.labels?.env_name || '');
 
-			// if (failedEnv?.length > 0) {
-			// 	setEnvErrors(failedEnv);
-			// }
+			if (failedEnv?.length > 0) {
+				setEnvErrors(failedEnv);
+			}
 
-			// setEnvironmentNodeSelected(true);
-			// setShowSidePanel(true);
+			setEnvironmentNodeSelected(true);
+			setShowSidePanel(true);
 			return;
 		}
 		setEnvironmentNodeSelected(false);
@@ -252,108 +409,6 @@ export const EnvironmentComponents: React.FC = () => {
 		}
 	};
 
-	useEffect(() => {
-		fetchEnvironments(projectId).then(({ data }) => {
-			if (data) {
-				checkForFailedEnvironments(data);
-				setEnvironments(data);
-			}
-			setLoading(false);
-		});
-	}, [projectId]);
-
-	useEffect(() => {
-		const newEnvironments = streamMapper<EnvironmentItem>(
-			streamData,
-			environments,
-			ArgoMapper.parseEnvironment,
-			'environment',
-			{
-				projectId,
-			}
-		);
-		checkForFailedEnvironments(newEnvironments);
-		setEnvironments(newEnvironments);
-
-		const newComponents = streamMapper<EnvironmentComponentItem>(
-			streamData,
-			components,
-			ArgoMapper.parseComponent,
-			'config',
-			{
-				projectId,
-				environmentId,
-			}
-		);
-		setComponents(newComponents);
-		componentArrayRef.current = newComponents;
-		const selectedConf = newComponents.find((itm: any) => itm.id === selectedConfig?.id);
-		if (selectedConf) {
-			setSelectedConfig(selectedConf);
-			if (selectedConf.labels?.last_workflow_run_id !== workflowId) {
-				setWorkflowId(selectedConf.labels?.last_workflow_run_id || '');
-			}
-		}
-	}, [streamData]);
-
-	useEffect(() => {
-		if (environments.length === 0 || !environmentId) return;
-		const env = environments.find(e => e.id === environmentId);
-		if (!env) return;
-		const sub = ctx?.failedEnvironments.subscribe(res => {
-			const errors = [...res.values()].filter(e => e.labels.env_name === env.labels?.env_name);
-			console.log(errors);
-		});
-
-		return () => sub?.unsubscribe();
-	}, [environmentId, environments]);
-
-	useEffect(() => {
-		const $subscription: Subscription = subscriber.subscribe((response: any) => {
-			setStreamData(response);
-		});
-		const $subscription2: Subscription = subscriberWF.subscribe((response: any) => {
-			setStreamData2(response);
-		});
-
-		return (): void => {
-			$subscription.unsubscribe();
-			$subscription2.unsubscribe();
-		};
-	}, []);
-
-	useEffect(() => {
-		const newWf: any = streamMapperWF(streamData2);
-		if (newWf && workflowData) {
-			setWorkflowData({
-				...workflowData,
-				status: newWf?.object?.status,
-			});
-		}
-	}, [streamData2]);
-
-	useEffect(() => {
-		setLoading(true);
-		fetch(projectId, environmentId).then(({ data }) => {
-			if (data) {
-				componentArrayRef.current = data;
-				setComponents(data);
-			}
-			setLoading(false);
-		});
-	}, ['projectId', environmentId]);
-
-	useEffect(() => {
-		if (showSidePanel === false) {
-			setLogs(null);
-			setPlans(null);
-			setIsLoadingWorkflow(false);
-			setWorkflowData(null);
-			setWorkflowId('');
-			setSelectedConfig(undefined);
-		}
-	}, [showSidePanel]);
-
 	const labelsMatch = (labels: EnvironmentItem['labels'] = {}, query: string): boolean => {
 		return Object.values(labels).some(val => val.includes(query));
 	};
@@ -367,6 +422,16 @@ export const EnvironmentComponents: React.FC = () => {
 		return filteredItems.filter(item => {
 			return item.name.toLowerCase().includes(query) || labelsMatch(item.labels, query);
 		});
+	};
+
+	const resetSelectedConfig = (ref: any) => {
+		const selectedConf = ref.find((itm: any) => itm.id === selectedConfig?.id);
+		if (selectedConf) {
+			setSelectedConfig(selectedConf);
+			if (selectedConf.labels?.last_workflow_run_id !== workflowId) {
+				setWorkflowId(selectedConf.labels?.last_workflow_run_id || '');
+			}
+		}
 	};
 
 	useEffect(() => {
@@ -472,14 +537,15 @@ export const EnvironmentComponents: React.FC = () => {
 										selected={envErrors?.length ? 'Errors' : 'Audit'}
 										tabs={envTabs.filter(t => t.show(() => Boolean(envErrors?.length)))}>
 										<div id="Errors">
-											<ErrorView
-												columns={eventErrorColumns}
-												dataRows={envErrors}
-											/>
+											<ErrorView columns={eventErrorColumns} dataRows={envErrors} />
 										</div>
 										<div id="Audit">
 											<AuditView
-												fetch={AuditService.getInstance().getEnvironment}
+												fetch={AuditService.getInstance().getEnvironment.bind(
+													AuditService.getInstance(),
+													environmentId.replace(projectId + '-', ''),
+													projectId
+												)}
 												auditColumns={auditColumns}
 												auditId={environmentId}
 											/>

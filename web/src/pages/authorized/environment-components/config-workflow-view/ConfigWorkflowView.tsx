@@ -18,7 +18,7 @@ import { ArgoWorkflowsService } from 'services/argo/ArgoWorkflows.service';
 import { AuditService } from 'services/audit/audit.service';
 import { CostingService } from 'services/costing/costing.service';
 
-import { auditColumns, getSeparatedConfigId, renderCost, ViewType, ViewTypeTabName } from '../helpers';
+import { auditColumns, getSeparatedConfigId, ViewType, ViewTypeTabName } from '../helpers';
 import { EventClientLogs } from 'utils/apiClient/EventClient';
 import { StateFileView } from 'components/organisms/state-file-view/StateFileView';
 import { ArgoComponentsService } from 'services/argo/ArgoComponents.service';
@@ -110,7 +110,7 @@ export const ConfigWorkflowView: FC<Props> = (props: Props) => {
 					};
 
 					const clientLogUrl = `/wf/api/v1/stream/projects/${projectId}/environments/${environmentId}/config/${config.id}/${config.labels?.last_workflow_run_id}/log/${podName}`;
-					
+
 					if (
 						!clientLogMap.has(clientLogUrl) &&
 						node.phase !== 'Succeeded' &&
@@ -119,7 +119,7 @@ export const ConfigWorkflowView: FC<Props> = (props: Props) => {
 					) {
 						clientLogMap.set(clientLogUrl, new EventClientLogs(clientLogUrl));
 					}
-					
+
 					return {
 						...node,
 						configStatus: config.componentStatus,
@@ -179,12 +179,15 @@ export const ConfigWorkflowView: FC<Props> = (props: Props) => {
 							namespace: 'argocd',
 						},
 					}).then(resp => {
-						console.log(resp.data);
 						Promise.resolve(
-							ArgoComponentsService.patchComponentStatus(
-								config.displayValue,
-								ZSyncStatus.InitializingApply
-							)
+							CostingService.getInstance().setComponentStatus({
+								teamName: separatedConfigId?.team,
+								environmentName: separatedConfigId?.environment,
+								component: {
+									componentName: separatedConfigId?.component,
+									status: ZSyncStatus.InitializingApply,
+								},
+							})
 						);
 						Promise.resolve(AuditService.getInstance().patchApprovedBy(config.name));
 					});
@@ -221,17 +224,7 @@ export const ConfigWorkflowView: FC<Props> = (props: Props) => {
 			case ViewType.Detailed_Cost_Breakdown:
 				return (
 					<div className="zlifecycle-config-workflow-view__diagram--detailed-cost-breakdown">
-						{config.id && (
-							<ZStreamRenderer
-								key={config.id}
-								subject={CostingService.getInstance().getResourceDataStream(config.id)}
-								Component={HierarchicalView}
-								defaultValue={CostingService.getInstance().getCachedValue(`${config.id}-resources`)}
-								componentProps={{
-									componentId: config.id,
-								}}
-							/>
-						)}
+						{config.id && <HierarchicalView data={config} componentId={config.id} />}
 					</div>
 				);
 			case ViewType.Audit_View:
@@ -240,7 +233,12 @@ export const ConfigWorkflowView: FC<Props> = (props: Props) => {
 						auditId={config.id || ''}
 						auditColumns={auditColumns}
 						config={config}
-						fetch={AuditService.getInstance().getComponent}
+						fetch={AuditService.getInstance().getComponent.bind(
+							AuditService.getInstance(),							
+							separatedConfigId?.component || '',
+							separatedConfigId?.environment || '',
+							separatedConfigId?.team || '',
+						)}
 						fetchLogs={AuditService.getInstance().fetchLogs.bind(
 							AuditService.getInstance(),
 							separatedConfigId?.team || '',

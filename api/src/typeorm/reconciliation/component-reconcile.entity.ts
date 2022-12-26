@@ -39,10 +39,10 @@ export class ComponentReconcile {
   end_date_time?: string;
 
   @ManyToOne(() => Organization, (org) => org.id, {
-    onDelete: "CASCADE"
+    onDelete: "CASCADE",
   })
   @JoinColumn({
-    referencedColumnName: 'id'
+    referencedColumnName: 'id',
   })
   organization: Organization
 }

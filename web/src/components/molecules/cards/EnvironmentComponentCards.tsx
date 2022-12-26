@@ -5,7 +5,6 @@ import { ZModelCard } from 'components/molecules/cards/Card';
 import { renderHealthStatus, renderLabels, renderSyncedStatus } from 'components/molecules/cards/renderFunctions';
 import { ZSyncStatus } from 'models/argo.models';
 import { EnvironmentComponentItem, EnvironmentComponentsList } from 'models/projects.models';
-import { renderCost } from 'pages/authorized/environment-components/helpers';
 import { renderCost as renderCostEnv } from 'pages/authorized/environments/helpers';
 import React, { FC, useEffect, useState } from 'react';
 
@@ -149,7 +148,7 @@ export const ConfigCard: FC<EnvironmentComponentItemProps> = ({
 			model="Environment Component"
 			teamName={config.labels?.project_id || ''}
 			envName={getEnvironmentName(config.labels?.project_id, config.labels?.environment_id)}
-			estimatedCost={renderCost(config.id)}
+			estimatedCost={config.componentCost}
 			title={
 				showAll
 					? getFullName(config.labels?.project_id, config.labels?.environment_id, config.componentName)

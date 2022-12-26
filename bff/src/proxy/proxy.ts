@@ -27,15 +27,15 @@ import { getUser } from '../auth/auth';
 const proxies = new Map();
 
 const pathRewrite = (route: string, mappings: PathMapping[], extraParams: any=null) => (path: string) => {
+  const parts = path.split("?"); // split on get params
+
   for (let i = 0; i < mappings.length; i++) {
-    const parts = path.split("?"); // split on get params
     const pathMatch = mappings[i].pathMatch(parts[0]);
 
     // Path Match
     if (pathMatch !== false) {
       // Use params from path match and add team to params
       const params = { team: 'default', ...pathMatch.params, ...extraParams };
-
       const url = mappings[i].newPath(params);
 
       if (parts.length > 1) {

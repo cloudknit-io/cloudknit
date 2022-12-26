@@ -157,13 +157,22 @@ const COSTING_PATH_MAPPINGS = [
     newPath: (params: any) => `/v1/orgs/${params.orgId}/costing/team/${params.name}`,
   },
   {
-    path: "/costing/api/v1/environment/:teamName/:environmentName",
+    path: "/costing/api/v1/environment",
     newPath: (params: any) =>
-      `/v1/orgs/${params.orgId}/costing/environment/${params.teamName}/${params.environmentName}`,
+      `/v1/orgs/${params.orgId}/costing/environment`,
   },
   {
-    path: "/costing/api/v1/component/:componentId",
-    newPath: (params: any) => `/v1/orgs/${params.orgId}/costing/component/${params.componentId}`,
+    path: "/costing/api/v1/info/environment",
+    newPath: (params: any) =>
+      `/v1/orgs/${params.orgId}/costing/info/environment`,
+  },
+  {
+    path: "/costing/api/v1/component",
+    newPath: (params: any) => `/v1/orgs/${params.orgId}/costing/component`,
+  },
+  {
+    path: "/costing/api/v1/saveComponent",
+    newPath: (params: any) => `/v1/orgs/${params.orgId}/costing/saveComponent`,
   },
   {
     path: "/costing/api/v1/resources/:componentId",
@@ -182,36 +191,36 @@ const COSTING_PATH_MAPPINGS = [
     newPath: (params: any) => `/v1/orgs/${params.orgId}/costing/stream/team/${params.name}`,
   },
   {
-    path: "/costing/stream/api/v1/environment/:teamName/:environmentName",
+    path: "/costing/stream/api/v1/environment",
     newPath: (params: any) =>
-      `/v1/orgs/${params.orgId}/costing/stream/environment/${params.teamName}/${params.environmentName}`,
+      `/v1/orgs/${params.orgId}/costing/stream/environment`,
   },
 ];
 // /v1/orgs/1/reconciliation/environments/equity-error-2
 // /reconciliation/api/v1/environments/equity-error-2
 const AUDIT_PATH_MAPPINGS = [
   {
-    path: "/reconciliation/api/v1/environments/:id",
+    path: "/reconciliation/api/v1/environments",
     newPath: (params: any) =>
-      `/v1/orgs/${params.orgId}/reconciliation/environments/${params.id}`,
+      `/v1/orgs/${params.orgId}/reconciliation/environments`,
   },
   {
-    path: "/reconciliation/api/v1/components/:id",
+    path: "/reconciliation/api/v1/components",
     newPath: (params: any) =>
-      `/v1/orgs/${params.orgId}/reconciliation/components/${params.id}`,
+      `/v1/orgs/${params.orgId}/reconciliation/components`,
   },
   {
-    path: "/reconciliation/api/v1/component/:id",
+    path: "/reconciliation/api/v1/component",
     newPath: (params: any) =>
-      `/v1/orgs/${params.orgId}/reconciliation/component/${params.id}`,
+      `/v1/orgs/${params.orgId}/reconciliation/audit/components`,
   },
   {
-    path: "/reconciliation/api/v1/environment/:id",
+    path: "/reconciliation/api/v1/environment",
     newPath: (params: any) =>
-      `/v1/orgs/${params.orgId}/reconciliation/component/${params.id}`,
+      `/v1/orgs/${params.orgId}/reconciliation/audit/environments`,
   },
   {
-    path: "/reconciliation/api/v1​/notification/save",
+    path: "/reconciliation/api/v1/notification/save",
     newPath: (params: any) => `/v1/orgs/${params.orgId}/reconciliation/notification/save`,
   },
   {
@@ -250,25 +259,20 @@ const AUDIT_PATH_MAPPINGS = [
       `/v1/orgs/${params.orgId}/reconciliation/notifications/${params.teamName}`,
   },
   {
-    path: "/reconciliation/api/v1/components/notify/:id",
+    path: "/reconciliation/api/v1/components/notify",
     newPath: (params: any) =>
-      `/v1/orgs/${params.orgId}/reconciliation/components/notify/${params.id}`,
+      `/v1/orgs/${params.orgId}/reconciliation/components/notify`,
   },
   {
-    path: "/reconciliation/api/v1/environments/notify/:id",
+    path: "/reconciliation/api/v1/environments/notify",
     newPath: (params: any) =>
-      `/v1/orgs/${params.orgId}/reconciliation/environments/notify/${params.id}`,
+      `/v1/orgs/${params.orgId}/reconciliation/environments/notify`,
   },
   {
-    path: "/reconciliation/api/v1/approved-by/:id",
+    path: "/reconciliation/api/v1/approved-by/",
     newPath: (params: any) =>
-      `/v1/orgs/${params.orgId}/reconciliation/approved-by/${params.id}/${params.email}`,
-  },
-  {
-    path: "/reconciliation/api/v1/approved-by/:id/:rid",
-    newPath: (params: any) =>
-      `/v1/orgs/${params.orgId}/reconciliation/approved-by/${params.id}/${params.rid}`,
-  },
+      `/v1/orgs/${params.orgId}/reconciliation/approved-by/`,
+  }
 ];
 
 const SECRET_PATH_MAPPINGS = [

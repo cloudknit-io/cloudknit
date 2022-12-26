@@ -56,10 +56,16 @@ export const getTextWidth = (name: string): number => {
 	return width;
 };
 
-export const getLastReconcileTime = async (id: string, defaultValue: string, type: 'ENVIRONMENT' | 'COMPONENT') => {
+export const getEnvironment = async (envName: string, teamName: string) => {
+	return await AuditService.getInstance().getEnvironmentInfo(envName, teamName);
+};
+
+export const getLastReconcileTime = async (id: string, envName: string, teamName: string, defaultValue: string) => {
 	try {
-		const info = await AuditService.getInstance()[type === 'COMPONENT' ? 'getComponentInfo' : 'getEnvironmentInfo'](
-			id
+		const info = await AuditService.getInstance().getComponentInfo(
+			id,
+			envName,
+			teamName
 		);
 		if (!info) {
 			return defaultValue;
@@ -104,6 +110,7 @@ export function updateNodeFigure({
 	labels,
 	expandIcon,
 	onNodeClick,
+	estimatedCost,
 }: any) {
 	const nodeId = id === 'root' ? name : displayValue;
 	const props = dagNodeCache.get(nodeId);
@@ -118,6 +125,7 @@ export function updateNodeFigure({
 		SyncStatus: syncStatus,
 		projectId,
 		onNodeClick,
+		estimatedCost,
 		operation: labels.env_status === 'destroying' || labels.is_destroy === 'true' ? 'Destroy' : 'Provision',
 		updater: props.updater,
 	});
@@ -138,6 +146,7 @@ function createNodeFigure({
 	labels,
 	expandIcon,
 	onNodeClick,
+	estimatedCost
 }: any) {
 	const nodeId = id === 'root' ? name : displayValue;
 	const isApp = labels?.component_type !== 'terraform';
@@ -193,6 +202,8 @@ function createNodeFigure({
 				SyncStatus={syncStatus}
 				projectId={projectId}
 				onNodeClick={onNodeClick}
+				estimatedCost={estimatedCost}
+				labels={labels}
 				operation={labels.env_status === 'destroying' || labels.is_destroy === 'true' ? 'Destroy' : 'Provision'}
 				updater={updater}
 			/>

@@ -5,6 +5,7 @@ import ReactDOMServer from 'react-dom/server';
 import { FeatureKeys, featureToggled } from 'pages/authorized/feature_toggle';
 import {
 	getClassName,
+	getEnvironment,
 	getLastReconcileTime,
 	getTextWidth,
 	getTime,
@@ -23,9 +24,11 @@ export type DagNodeProps = {
 	projectId: string;
 	SyncStatus: ZSyncStatus;
 	Icon: JSX.Element;
+	estimatedCost: string;
 	operation: 'Provision' | 'Destroy';
 	onNodeClick: (...params: any) => any;
 	updater: Subject<DagNodeProps>;
+	labels?: any;
 };
 
 export const ZDagNode: FC<DagNodeProps> = ({
@@ -39,12 +42,14 @@ export const ZDagNode: FC<DagNodeProps> = ({
 	Icon,
 	projectId,
 	operation,
+	estimatedCost,
 	onNodeClick,
 	updater,
+	labels,
 }: DagNodeProps) => {
 	const [cost, updateCost] = useState<number | null>(
-		CostingService.getInstance().getCachedValue(id === 'root' ? name : displayValue)
-	);
+		id === 'root' ?
+		CostingService.getInstance().getCachedValue(name) : Number(estimatedCost || 0));
 	const [syncTime, setSyncTime] = useState<any>(syncFinishedAt);
 	const [status, setStatus] = useState<ZSyncStatus>(componentStatus);
 	const [syncStatus, setSyncStatus] = useState<ZSyncStatus>(SyncStatus);
@@ -54,39 +59,39 @@ export const ZDagNode: FC<DagNodeProps> = ({
 	const timeWidth = 40 + getTextWidth(getTime(syncTime));
 	width = timeWidth > width ? timeWidth : width;
 	const rectWidth = width + 100 > 160 ? width + 100 : 160;
+	const envName = (id: string, teamName: string) => id.replace(teamName + '-', '');
 
 	useEffect(() => {
 		let $subscription: Subscription[] = [];
 		if (id === 'root') {
-			getLastReconcileTime(name, syncFinishedAt, 'ENVIRONMENT').then(r => setSyncTime(r));
+			getEnvironment(envName(name, projectId), projectId)
+				.then(env => setSyncTime(env['lastReconcileDatetime']))
+				.catch(e => setSyncTime(syncFinishedAt));
 			$subscription.push(
 				CostingService.getInstance()
-					.getEnvironmentCostStream(projectId, name.replace(projectId + '-', ''))
+					.getEnvironmentCostStream(projectId, envName(name, projectId))
 					.subscribe(data => {
 						updateCost(data);
 					})
 			);
 		} else {
-			getLastReconcileTime(displayValue, syncFinishedAt, 'COMPONENT').then(r => setSyncTime(r));
-			$subscription.push(
-				CostingService.getInstance()
-					.getComponentCostStream(displayValue)
-					.subscribe(data => {
-						updateCost(data);
-					})
-			);
+			getLastReconcileTime(name, envName(labels.environment_id, labels.project_id), labels.project_id,  syncFinishedAt).then(r => setSyncTime(r));
 		}
 		$subscription.push(
 			updater.pipe(debounceTime(1000)).subscribe(async (data: DagNodeProps) => {
+				if (data.estimatedCost) {
+					updateCost(Number(data.estimatedCost || 0))
+				}
 				setStatus(data.componentStatus);
 				setSyncStatus(data.SyncStatus);
 				setSkippedStatus(data.isSkipped);
 				setOperationType(data.operation);
 				if (id === 'root') {
-					const time = await getLastReconcileTime(name, syncFinishedAt, 'ENVIRONMENT');
-					setSyncTime(time);
+					getEnvironment(envName(name, projectId), projectId)
+						.then(env => setSyncTime(env['lastReconcileDatetime']))
+						.catch(e => setSyncTime(syncFinishedAt));
 				} else {
-					const time = await getLastReconcileTime(displayValue, syncFinishedAt, 'COMPONENT');
+					const time = await getLastReconcileTime(name, envName(labels.environment_id, labels.project_id), labels.project_id, syncFinishedAt);
 					setSyncTime(time);
 				}
 			})
@@ -114,7 +119,7 @@ export const ZDagNode: FC<DagNodeProps> = ({
 			<text x="65" y="22" fill="#323232" fontFamily="DM Sans" fontWeight={'light'} fontSize="15px">
 				{name}
 			</text>
-			{syncFinishedAt && (
+			{(syncFinishedAt || syncTime) && (
 				<text x="85" y="61" fill="#323232" fontFamily="DM Sans" fontWeight={'light'} fontSize="14px">
 					{' | ' + getTime(syncTime)}
 				</text>

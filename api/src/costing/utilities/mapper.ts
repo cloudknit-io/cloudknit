@@ -2,10 +2,9 @@ import { ComponentAudit } from "src/reconciliation/dtos/componentAudit.dto";
 import { EnvironmentAudit } from "src/reconciliation/dtos/environmentAudit.dto";
 import { ComponentReconcileDto } from "src/reconciliation/dtos/reconcile.Dto";
 import { Organization } from "src/typeorm";
-import { Component } from "src/typeorm/costing/Component";
+import { Component } from "src/typeorm/component.entity";
 import { ComponentReconcile } from "src/typeorm/reconciliation/component-reconcile.entity";
 import { EnvironmentReconcile } from "src/typeorm/reconciliation/environment-reconcile.entity";
-import { CostComponent, Resource } from "src/typeorm/resources/Resource.entity";
 
 export class Mapper {
   static getStreamData(mapFrom: Component[]): {} {
@@ -20,7 +19,7 @@ export class Mapper {
       teamName: t,
       cost: mapFrom
         .filter((e) => e.teamName === t)
-        .reduce((p, c, _i) => p + Number(c.cost), 0),
+        .reduce((p, c, _i) => p + Number(c.estimatedCost), 0),
     }));
 
     data["environments"] = environments.map((e) => {
@@ -33,14 +32,14 @@ export class Mapper {
             (e) =>
               e.teamName === teamName && e.environment.name === environmentName
           )
-          .reduce((p, c, _i) => p + Number(c.cost), 0),
+          .reduce((p, c, _i) => p + Number(c.estimatedCost), 0),
       };
     });
 
     data["components"] = mapFrom.map((e) => ({
       componentId: e.id,
       componentName: e.componentName,
-      cost: Number(e.cost),
+      cost: Number(e.estimatedCost),
     }));
 
     return data;
@@ -67,58 +66,6 @@ export class Mapper {
       price: data["price"],
       unit: data["unit"],
     };
-  }
-
-  static mapToResourceEntity(
-    org: Organization,
-    component: Component,
-    resources: any[] = [],
-    parentId: string = null
-  ): Resource[] {
-    if (resources.length === 0) return [];
-    return resources.map((resource) => {
-      const id = `${component.id}-${resource.name}`;
-      return {
-        organization: org,
-        id: id,
-        name: resource.name,
-        componentId: component.id,
-        hourlyCost: resource.hourlyCost,
-        monthlyCost: resource.monthlyCost,
-        parentId: parentId,
-        component: component,
-        subresources: this.mapToResourceEntity(
-          org,
-          component,
-          resource.subresources,
-          id
-        ),
-        costComponents: this.mapToCostComponentEntity(
-          org,
-          id,
-          resource.costComponents
-        ),
-      };
-    });
-  }
-
-  static mapToCostComponentEntity(
-    org: Organization,
-    id: string,
-    costComponents: any[] = []
-  ): CostComponent[] {
-    if (costComponents.length === 0) return [];
-    return costComponents.map((cc) => ({
-      organization: org,
-      id: `${id}-${cc.name}`,
-      name: cc.name,
-      hourlyCost: cc.hourlyCost,
-      hourlyQuantity: cc.hourlyQuantity,
-      monthlyCost: cc.monthlyCost,
-      monthlyQuantity: cc.monthlyQuantity,
-      price: cc.price,
-      unit: cc.unit,
-    }));
   }
 
   static mapToComponentReconcile(
