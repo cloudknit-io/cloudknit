@@ -15,6 +15,7 @@ import { ApplicationWatchEvent, ZSyncStatus } from 'models/argo.models';
 import { streamMapper } from 'helpers/streamMapper';
 import { ArgoMapper } from 'services/argo/ArgoMapper';
 import { Loader } from 'components/atoms/loader/Loader';
+import AuthStore from 'auth/AuthStore';
 
 type Props = {
 	teams: TeamsList;
@@ -119,7 +120,8 @@ export const TeamCard: FC<TeamItemProps> = ({ team }: TeamItemProps) => {
 		<div
 			className="com-card com-card--with-header"
 			onClick={(): void => {
-				history.push('/' + team.id);
+				const teamId = (team.id || '').replace(AuthStore.getOrganization()?.name + '-', '');
+				history.push('/' + teamId);
 			}}>
 			<div className="com-card__header">
 				<ZText.Body>{team.name}</ZText.Body>
