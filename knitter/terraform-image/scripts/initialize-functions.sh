@@ -113,8 +113,7 @@ function UpdateComponentStatus() {
   local compStatus="${4}"
   local isDestroyed=${5}
 
-  if [ ${isDestroyed} = true ]
-  then
+  if [ $isDestroyed = true ]; then
       isDestroyed=true
   else
       isDestroyed=false
