@@ -29,6 +29,7 @@ import { subscriber } from 'utils/apiClient/EventClient';
 import { usePageHeader } from '../contexts/EnvironmentHeaderContext';
 import { DiffEditor } from '@monaco-editor/react';
 import { ErrorStateService } from 'services/error/error-state.service';
+import AuthStore from 'auth/AuthStore';
 
 type CompareEnv = {
 	env: EnvironmentItem | null;
@@ -65,10 +66,11 @@ export const Environments: React.FC = () => {
 	const headerTabs: PageHeaderTabs = [
 		{ name: 'All', path: '/dashboard', active: projectId === undefined },
 		...teams.map(team => {
+			const teamId = (team.id || '').replace(AuthStore.getOrganization()?.name + '-', '');
 			return {
-				active: projectId === team.id,
-				name: (team.name || '').charAt(0).toUpperCase() + (team.name || '').slice(1),
-				path: `/${team.id}`,
+				active: projectId === teamId,
+				name: teamId.charAt(0).toUpperCase() + teamId.slice(1),
+				path: `/${teamId}`,
 			};
 		}),
 	];
