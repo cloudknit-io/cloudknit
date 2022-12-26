@@ -73,6 +73,34 @@ export class ComponentService {
     return Number(raw.cost || 0);
   }
 
+  async getEnvironment(
+    org: Organization,
+    teamName: string,
+    environmentName: string,
+  ): Promise<Environment> {
+    const env = await this.envRepo.findOne({
+      where: {
+        name: environmentName,
+        teamName,
+        organization: {
+          id: org.id
+        }
+      },
+      relations: {
+        components: {
+          environment: false
+        }
+      }
+    });
+
+    if (!env) {
+      this.logger.error(`could not find environment [${environmentName}] for org [${org.id} / ${org.name}]`);
+      throw new NotFoundException();
+    }
+
+    return env;
+  }
+
   async getComponentCost(org: Organization, compName: string, teamName: string, envName: string): Promise<ComponentDto> {
     const component = await this.componentRepository.findOne({
       where: {

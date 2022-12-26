@@ -233,12 +233,30 @@ export const EnvironmentComponents: React.FC = () => {
 	useEffect(() => {
 		let subs: Subscription[] = [];
 		setLoading(true);
-		fetch(projectId, environmentId).then(({ data }) => {
-			if (data) {
-				componentArrayRef.current = data;
-				setComponents(data);
-				subs = setUpComponentStreams(data);
+		const fetchs = [
+			CostingService.getInstance().getEnvironmentInfo(projectId, environmentId.replace(projectId + '-', '')),
+			fetch(projectId, environmentId),
+		];
+		Promise.allSettled(fetchs).then(resps => {
+			const { data0, data1 } = resolveFetchs(resps);
+			if (data1) {
+				componentArrayRef.current = data1;
+				subs = setUpComponentStreams(data1);
 			}
+			if (data0) {
+				const newItems = componentArrayRef.current.map(nc => {
+					const newItem = data0.find((c: any) => c.id === nc.displayValue);
+					if (newItem) {
+						nc.componentCost = newItem.estimatedCost;
+						nc.componentStatus = newItem.status;
+						nc.costResources = newItem.costResources;
+						nc.syncFinishedAt = newItem.lastReconcileDatetime;
+					}
+					return nc;
+				});
+				componentArrayRef.current = newItems;
+			}
+			setComponents(componentArrayRef.current);
 			setLoading(false);
 		});
 		return () => {
@@ -275,11 +293,30 @@ export const EnvironmentComponents: React.FC = () => {
 							nc.syncFinishedAt = d.lastReconcileDatetime;
 						}
 						return nc;
-					})
+					});
 					componentArrayRef.current = newItems;
 					setComponents(newItems);
 				});
 		});
+	};
+
+	const resolveFetchs = (fetchResps: PromiseSettledResult<any>[]) => {
+		const [data0, data1] = fetchResps;
+		const respData: any = {
+			data0: null,
+			data1: null,
+		};
+		if (data1.status === 'fulfilled' && data1.value && 'data' in data1.value) {
+			const { data } = data1.value;
+			respData.data1 = data;
+		}
+		if (data0.status === 'fulfilled' && data0.value && 'data' in data0.value) {
+			const { data } = data0.value;
+			if ('components' in data) {
+				respData.data0 = data.components;
+			}
+		}
+		return respData;
 	};
 
 	const syncStatusMatch = (item: EnvironmentComponentItem): boolean => {
@@ -387,8 +424,6 @@ export const EnvironmentComponents: React.FC = () => {
 		});
 	};
 
-
-
 	const resetSelectedConfig = (ref: any) => {
 		const selectedConf = ref.find((itm: any) => itm.id === selectedConfig?.id);
 		if (selectedConf) {
@@ -397,7 +432,7 @@ export const EnvironmentComponents: React.FC = () => {
 				setWorkflowId(selectedConf.labels?.last_workflow_run_id || '');
 			}
 		}
-	}
+	};
 
 	useEffect(() => {
 		if (workflowId) {

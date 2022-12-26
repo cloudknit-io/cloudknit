@@ -18,6 +18,15 @@ export class CostingService extends BaseService {
 		return CostingService.instance;
 	}
 
+	async getEnvironmentInfo(teamName: string, envName: string): Promise<any> {
+		const url = this.constructUri(CostingtUriType.environmentInfo(teamName, envName));
+		try {
+			return await ApiClient.get(url);
+		} catch (err) {
+			return null;
+		}
+	}
+
 	getTeamCostStream(teamName?: string): Subject<any> {
 		if (!teamName) {
 			throw 'Team Name cannot be empty';
@@ -45,7 +54,9 @@ export class CostingService extends BaseService {
 	}
 
 	streamEnvironmentCost(teamId: string, environmentName: string): void {
-		new EventClientCost(`/costing/stream/api/v1/environment?teamName=${teamId}&envName=${environmentName}`).listen();
+		new EventClientCost(
+			`/costing/stream/api/v1/environment?teamName=${teamId}&envName=${environmentName}`
+		).listen();
 	}
 
 	streamNotification(): void {
@@ -85,7 +96,11 @@ export class CostingService extends BaseService {
 }
 
 class CostingtUriType {
-	static environment = (teamId: string, environmentId: string) => `environment?teamName=${teamId}&envName=${environmentId}`;
-	static component = (teamName: string, envName: string, compName: string) => `component?teamName=${teamName}&envName=${envName}&compName=${compName}`;
+	static environment = (teamId: string, environmentId: string) =>
+		`environment?teamName=${teamId}&envName=${environmentId}`;
+	static environmentInfo = (teamId: string, environmentId: string) =>
+		`info/environment?teamName=${teamId}&envName=${environmentId}`;
+	static component = (teamName: string, envName: string, compName: string) =>
+		`component?teamName=${teamName}&envName=${envName}&compName=${compName}`;
 	static team = (teamId: string) => `team/${teamId}`;
 }

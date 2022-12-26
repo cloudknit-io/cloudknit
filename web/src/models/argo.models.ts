@@ -261,7 +261,6 @@ export interface RevisionHistory {
 }
 
 export enum ZSyncStatus {
-	WaitingLoader='WaitingLoader',
 	Initializing = 'initializing',
 	InitializingApply = 'initializing_apply',
 	Unknown = 'unknown',

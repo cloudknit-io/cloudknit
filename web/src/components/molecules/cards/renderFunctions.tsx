@@ -26,7 +26,6 @@ import {
 import moment from 'moment';
 import React, { FC, ReactNode } from 'react';
 import { useState } from 'react';
-import { WaitingLoader } from 'components/atoms/waiting/WaitingLoader';
 
 const BACKEND_LABELS: string[] = [
 	'zlifecycle.com/model',
@@ -447,6 +446,6 @@ export const getSyncStatusIcon = (syncStatus: any, operation?: 'Destroy' | 'Prov
 		case ESyncStatus.Synced:
 			return <SyncedIcon height={16} width={16} />;
 		default:
-			return <WaitingLoader radius={3} title="Waiting For Parent" />;
+			return <Hourglass height={16} width={16} title="Waiting For Parent" />;
 	}
 };
