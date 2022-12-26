@@ -130,7 +130,7 @@ export const ZDagNode: FC<DagNodeProps> = ({
 			<text x="65" y="42" fill="#323232" fontFamily="DM Sans" fontWeight={'light'} fontSize="14px">
 				<CostRenderer data={cost} />
 			</text>
-			{syncStatus && <g transform={`translate(${65},${48})`}>{getSyncStatusIcon(syncStatus, operationType)}</g>}
+			{syncStatus && <g transform={syncStatus === ZSyncStatus.WaitingLoader ? `translate(${48},${34})` : `translate(${65},${48})`}>{getSyncStatusIcon(syncStatus, operationType)}</g>}
 			{Icon && (
 				<g
 					onClick={e => {
