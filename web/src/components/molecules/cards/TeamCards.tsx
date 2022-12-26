@@ -15,6 +15,7 @@ import { ApplicationWatchEvent, ZSyncStatus } from 'models/argo.models';
 import { streamMapper } from 'helpers/streamMapper';
 import { ArgoMapper } from 'services/argo/ArgoMapper';
 import { Loader } from 'components/atoms/loader/Loader';
+import AuthStore from 'auth/AuthStore';
 
 type Props = {
 	teams: TeamsList;
@@ -88,6 +89,7 @@ export const TeamCard: FC<TeamItemProps> = ({ team }: TeamItemProps) => {
 	const { fetch } = useApi(ArgoEnvironmentsService.getEnvironments);
 	const [streamData, setStreamData] = useState<ApplicationWatchEvent | null>(null);
 	const [environments, setEnvironments] = useState<EnvironmentsList>([]);
+	const teamId = (team.id || '').replace(AuthStore.getOrganization()?.name + '-', '');
 
 	useEffect(() => {
 		const $subscription = subscriber.subscribe(response => {
@@ -108,7 +110,7 @@ export const TeamCard: FC<TeamItemProps> = ({ team }: TeamItemProps) => {
 	}, [streamData, environments]);
 
 	useEffect(() => {
-		fetch(team.name).then(({ data }) => {
+		fetch(teamId).then(({ data }) => {
 			if (data) {
 				setEnvironments(data);
 			}
@@ -119,7 +121,7 @@ export const TeamCard: FC<TeamItemProps> = ({ team }: TeamItemProps) => {
 		<div
 			className="com-card com-card--with-header"
 			onClick={(): void => {
-				history.push('/' + team.id);
+				history.push('/' + teamId);
 			}}>
 			<div className="com-card__header">
 				<ZText.Body>{team.name}</ZText.Body>
