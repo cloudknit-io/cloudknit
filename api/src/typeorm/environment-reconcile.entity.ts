@@ -1,5 +1,5 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm'
-import { Organization } from '../Organization.entity'
+import { Organization } from './Organization.entity'
 import { ComponentReconcile } from './component-reconcile.entity'
 import { Environment } from './environment.entity'
 

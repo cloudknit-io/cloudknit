@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post, Query, Request } from '@nestjs/common'
 import { RequiredQueryValidationPipe, TeamEnvCompQueryParams, TeamEnvQueryParams } from 'src/reconciliation/validationPipes';
-import { Environment } from 'src/typeorm/reconciliation/environment.entity';
+import { Environment } from 'src/typeorm/environment.entity';
 import { ComponentDto } from './dtos/Component.dto';
 import { CostingDto } from './dtos/Costing.dto'
 import { ComponentService } from './services/component.service'

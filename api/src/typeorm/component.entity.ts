@@ -1,7 +1,7 @@
 import { CostResource } from 'src/costing/dtos/Resource.dto';
 import { Column, Entity, JoinColumn, ManyToOne, UpdateDateColumn } from 'typeorm';
 import { Organization } from './Organization.entity';
-import { Environment } from './reconciliation/environment.entity';
+import { Environment } from './environment.entity';
 
 @Entity({ name: 'components' })
 export class Component {

@@ -14,8 +14,8 @@ import {
 import { from, Observable } from "rxjs";
 import { map } from "rxjs/operators";
 import { Mapper } from "src/costing/utilities/mapper";
-import { ComponentReconcile } from "src/typeorm/reconciliation/component-reconcile.entity";
-import { EnvironmentReconcile } from "src/typeorm/reconciliation/environment-reconcile.entity";
+import { ComponentReconcile } from "src/typeorm/component-reconcile.entity";
+import { EnvironmentReconcile } from "src/typeorm/environment-reconcile.entity";
 import { APIRequest } from "src/types";
 import { ApprovedByDto, ComponentAudit } from "./dtos/componentAudit.dto";
 import { EnvironmentAudit } from "./dtos/environmentAudit.dto";

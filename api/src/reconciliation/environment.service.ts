@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { get } from "src/config";
 import { Organization } from "src/typeorm";
-import { Environment } from "src/typeorm/reconciliation/environment.entity";
+import { Environment } from "src/typeorm/environment.entity";
 import { Repository } from "typeorm";
 import { EnvironmentDto } from "./dtos/environment.dto";
 import { SSEService } from "./sse.service";

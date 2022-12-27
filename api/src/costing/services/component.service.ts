@@ -8,7 +8,7 @@ import { StreamDto as StreamDto } from "../streams/costing.stream";
 import { MessageEvent } from "@nestjs/common";
 import { Organization } from "src/typeorm";
 import { SqlErrorCodes } from "src/types";
-import { Environment } from "src/typeorm/reconciliation/environment.entity";
+import { Environment } from "src/typeorm/environment.entity";
 import { ComponentDto } from "../dtos/Component.dto";
 
 @Injectable()
