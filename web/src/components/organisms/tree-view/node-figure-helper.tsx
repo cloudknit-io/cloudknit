@@ -111,6 +111,7 @@ export function updateNodeFigure({
 	expandIcon,
 	onNodeClick,
 	estimatedCost,
+	isDestroy
 }: any) {
 	const nodeId = id === 'root' ? name : displayValue;
 	const props = dagNodeCache.get(nodeId);
@@ -126,7 +127,7 @@ export function updateNodeFigure({
 		projectId,
 		onNodeClick,
 		estimatedCost,
-		operation: labels.env_status === 'destroying' || labels.is_destroy === 'true' ? 'Destroy' : 'Provision',
+		operation: labels.env_status === 'destroying' || isDestroy ? 'Destroy' : 'Provision',
 		updater: props.updater,
 	});
 	return dagNodeCache.get(nodeId);
@@ -146,7 +147,8 @@ function createNodeFigure({
 	labels,
 	expandIcon,
 	onNodeClick,
-	estimatedCost
+	estimatedCost,
+	isDestroy
 }: any) {
 	const nodeId = id === 'root' ? name : displayValue;
 	const isApp = labels?.component_type !== 'terraform';
@@ -204,7 +206,7 @@ function createNodeFigure({
 				onNodeClick={onNodeClick}
 				estimatedCost={estimatedCost}
 				labels={labels}
-				operation={labels.env_status === 'destroying' || labels.is_destroy === 'true' ? 'Destroy' : 'Provision'}
+				operation={labels.env_status === 'destroying' || isDestroy ? 'Destroy' : 'Provision'}
 				updater={updater}
 			/>
 		);

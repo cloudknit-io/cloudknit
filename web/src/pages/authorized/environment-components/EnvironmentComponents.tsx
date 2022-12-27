@@ -251,6 +251,7 @@ export const EnvironmentComponents: React.FC = () => {
 						nc.componentStatus = newItem.status;
 						nc.costResources = newItem.costResources;
 						nc.syncFinishedAt = newItem.lastReconcileDatetime;
+						nc.isDestroy = newItem.isDestroyed;
 					}
 					return nc;
 				});
@@ -291,6 +292,7 @@ export const EnvironmentComponents: React.FC = () => {
 							nc.componentStatus = d.status;
 							nc.costResources = d.costResources;
 							nc.syncFinishedAt = d.lastReconcileDatetime;
+							nc.isDestroy = d.isDestroyed;
 						}
 						return nc;
 					});

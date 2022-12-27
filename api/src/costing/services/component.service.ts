@@ -236,7 +236,7 @@ export class ComponentService {
         cost: await this.getTeamCost(org, component.teamName),
       },
       environment: {
-        environmentId: component.environment.name,
+        environmentId: `${component.teamName}-${component.environment.name}`,
         cost: await this.getEnvironmentCost(
           org,
           component.teamName,
