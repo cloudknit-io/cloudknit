@@ -24,7 +24,7 @@ echo "   workspace=${workspace}"
 echo $show_output_start
 echo "Executing plan..." 2>&1 | appendLogs /tmp/plan_output.txt
 echo $show_output_end
-UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "running_destroy_plan"
+UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "running_destroy_plan" true
 
 echo $show_output_start
 
