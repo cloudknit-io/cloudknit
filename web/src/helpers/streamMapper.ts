@@ -56,6 +56,7 @@ export const streamMapper = <T>(
 						item.componentStatus = x.componentStatus;
 						item.costResources = x.costResources;
 						item.syncFinishedAt = x.syncFinishedAt;
+						item.isDestroy = x.isDestroy;
 						return item;
 					}
 					return x;

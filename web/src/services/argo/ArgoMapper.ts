@@ -86,7 +86,7 @@ export class ArgoMapper {
 			modules: item.spec.source.repoURL,
 			variables: item.spec.source.repoURL,
 			status: item.status.health.status,
-			isDestroy: labels.is_destroy === 'true',
+			isDestroy: false,
 			isSkipped: labels.is_skipped === 'true',
 			dependsOn: ArgoMapper.parseDependsOn(item.metadata.labels),
 			componentName: labels.component_name || '',
