@@ -181,11 +181,12 @@ export class ComponentService {
     if (costing.component.isDestroyed && savedComponent) {
       // Update existing component
       if (costing.component.status && savedComponent.status !== costing.component.status) {
-	savedComponent.status = costing.component.status;
+	      savedComponent.status = costing.component.status;
       }
       savedComponent = await this.softDelete(savedComponent);
     }
     else if (savedComponent) {
+      savedComponent.isDestroyed = costing.component.isDestroyed ?? savedComponent.isDestroyed;
       // Update existing component
       if (costing.component.status && savedComponent.status !== costing.component.status) {
         savedComponent.status = costing.component.status;

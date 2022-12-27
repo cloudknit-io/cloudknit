@@ -61,8 +61,8 @@ resources=$(cat output.json | jq -r ".projects[0].breakdown.resources")
 # then
 #    estimated_cost='-1'
 # fi
-
-costing_payload='{"teamName": "'$team_name'", "environmentName": "'$env_name'", "component": { "componentName": "'$config_name'", "cost": '$estimated_cost', "resources" : '$resources'  }}'
+isDestroyed=false
+costing_payload='{"teamName": "'$team_name'", "environmentName": "'$env_name'", "component": { "componentName": "'$config_name'", "cost": '$estimated_cost', "resources" : '$resources', "isDestroyed" : '${isDestroyed}'  }}'
 echo "Costing Payload : ${costing_payload}"
 echo $costing_payload >temp_costing_payload.json
 
