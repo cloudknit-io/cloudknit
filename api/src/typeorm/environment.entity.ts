@@ -1,6 +1,6 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { Organization } from "../Organization.entity";
-import { Component } from "../component.entity";
+import { Organization } from "./Organization.entity";
+import { Component } from "./component.entity";
 
 @Entity({
   name: "environment",

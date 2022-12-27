@@ -1,9 +1,9 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { Subject } from "rxjs";
 import { get } from "src/config";
-import { ComponentReconcile } from "src/typeorm/reconciliation/component-reconcile.entity";
-import { EnvironmentReconcile } from "src/typeorm/reconciliation/environment-reconcile.entity";
-import { Environment } from "src/typeorm/reconciliation/environment.entity";
+import { ComponentReconcile } from "src/typeorm/component-reconcile.entity";
+import { EnvironmentReconcile } from "src/typeorm/environment-reconcile.entity";
+import { Environment } from "src/typeorm/environment.entity";
 
 @Injectable()
 export class SSEService {
