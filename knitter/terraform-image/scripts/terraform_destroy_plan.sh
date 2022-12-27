@@ -24,7 +24,7 @@ echo "   workspace=${workspace}"
 echo $show_output_start
 echo "Executing plan..." 2>&1 | appendLogs /tmp/plan_output.txt
 echo $show_output_end
-UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "running_destroy_plan"
+UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "running_destroy_plan" true
 
 echo $show_output_start
 
@@ -42,7 +42,8 @@ echo $show_output_end
 aws s3 cp /tmp/plan_output.txt s3://zlifecycle-$zl_env-tfplan-$customer_id/$team_name/$env_name/$config_name/$config_reconcile_id/plan_output --profile compuzest-shared
 aws s3 cp terraform-plan s3://zlifecycle-$zl_env-tfplan-$customer_id/$team_name/$env_name/$config_name/tfplans/$config_reconcile_id --profile compuzest-shared
 
-costing_payload='{"teamName": "'$team_name'", "environmentName": "'$env_name'", "component": { "componentName": "'$config_name'", "isDestroyed" : '1'  }}'
+isDestroyed=true
+costing_payload='{"teamName": "'$team_name'", "environmentName": "'$env_name'", "component": { "componentName": "'$config_name'", "isDestroyed" : '${isDestroyed}'  }}'
 echo $costing_payload >temp_costing_payload.json
 
 echo "TERRAFORM DESTROY PLAN - COSTING PAYLOAD"

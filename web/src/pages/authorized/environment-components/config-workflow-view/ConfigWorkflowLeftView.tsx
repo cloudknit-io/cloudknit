@@ -20,7 +20,7 @@ export const ConfigWorkflowLeftView: React.FC<Props> = ({ configLabels, config }
 		setTeamName(configLabels.project_id || '');
 		setEnvName(configLabels.environment_id?.replace(configLabels.project_id + '-', ''));
 		setCost(<CostRenderer data={config.componentCost}/>);
-		setOperation(configLabels.is_destroy === 'true' ? 'destroy' : 'provision');
+		setOperation(config.isDestroy ? 'destroy' : 'provision');
 		setLabels(renderLabels(filterLabels(config)));
 	}, [configLabels, config]);
 
