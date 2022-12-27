@@ -66,7 +66,6 @@ export class ComponentService {
         `components.estimated_cost != -1 and 
         components.teamName = '${teamName}' and 
         components.environmentId = '${env.id}' and 
-        components.isDestroyed = 0 and 
         components.organizationId = ${org.id}`
       )
       .getRawOne();
@@ -137,7 +136,6 @@ export class ComponentService {
       .select("SUM(components.estimated_cost) as cost")
       .where(
         `components.teamName = '${name}' and 
-        components.isDestroyed = 0 and 
         components.estimated_cost != -1 and
         components.organizationId = ${org.id}`
       )
@@ -178,15 +176,11 @@ export class ComponentService {
       })
       .getOne()) || null;
     
-    if (costing.component.isDestroyed && savedComponent) {
-      // Update existing component
-      if (costing.component.status && savedComponent.status !== costing.component.status) {
-	      savedComponent.status = costing.component.status;
-      }
-      savedComponent = await this.softDelete(savedComponent);
-    }
-    else if (savedComponent) {
+    if (savedComponent) {
       savedComponent.isDestroyed = costing.component.isDestroyed ?? savedComponent.isDestroyed;
+      if (savedComponent.isDestroyed) {
+        savedComponent.estimatedCost = -1;
+      }
       // Update existing component
       if (costing.component.status && savedComponent.status !== costing.component.status) {
         savedComponent.status = costing.component.status;
@@ -251,12 +245,13 @@ export class ComponentService {
       },
       component: {
         id: component.id,
-        estimatedCost: component.isDestroyed ? 0 : component.estimatedCost,
+        estimatedCost: component.estimatedCost,
         status: component.status,
         duration: component.duration,
         componentName: component.componentName,
         lastReconcileDatetime: component.lastReconcileDatetime,
         costResources: component.costResources,
+        isDestroyed: component.isDestroyed
       },
     };
     
@@ -265,6 +260,7 @@ export class ComponentService {
 
   async softDelete(component: Component): Promise<Component> {
     component.isDestroyed = true;
+    component.estimatedCost = -1;
     return await this.componentRepository.save(component);
   }
 }
