@@ -78,21 +78,26 @@ fi
 if [[ $config_name != 0 && $config_reconcile_id = null ]]; then
     echo "running validate environment component script: team $team_name, environment $env_name, component $config_name"
     sh ./validate_env_component.sh $team_name $env_name $config_name $customer_id
+    component_status=0;
     if [[ $config_status == *"skipped"* ]]; then
         echo "getting environment component previous status"
         config_previous_status=$(argocd app get $team_env_config_name -o json | jq -r '.metadata.labels.component_status') || null
         echo "config_prev_status: $config_previous_status"
         if [[ $config_previous_status == null ]]; then
+            component_status="not_provisioned"
             data='{"metadata":{"labels":{"is_skipped":"'$is_skipped'","component_status":"not_provisioned"}}}'
         else
             data='{"metadata":{"labels":{"is_skipped":"'$is_skipped'"}}}'
         fi
     else
+        component_status="initializing"
         data='{"metadata":{"labels":{"is_skipped":"'$is_skipped'","audit_status":"initializing","last_workflow_run_id":"initializing"}}}'
     fi
     echo "patch argocd resource $team_env_config_name with data $data"
-    argocd app patch $team_env_config_name --patch $data --type merge > null 
-    UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "initializing" ${is_destroy}
+    argocd app patch $team_env_config_name --patch $data --type merge > null
+    if [[ $component_status != 0 ]]; then
+        UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "${component_status}" ${is_destroy}
+    fi
 else
     echo "write 0 to /tmp/error_code.txt"
     echo -n '0' >/tmp/error_code.txt
