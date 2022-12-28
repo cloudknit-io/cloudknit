@@ -2,9 +2,11 @@
 
 If you have admin permissions to your organization in CloudKnit, you can manage other Users using Settings --> Users page. 
 
+![users](/assets/images/users.png "Users")
+
 ## Invite another user
 
-If you want to invite another user to your organization you can do that entering details as seen in the screenshot below and hitting `Create` button. After the user has been added, they can go to https://cloudknit.app and login with their Github creds.
+If you want to invite another user to your organization you can do that entering details as seen in the screenshot above and hitting `Create` button. After the user has been added, they can go to https://cloudknit.app and login with their Github creds.
 
 We currently have 2 user levels: 
 * Admin - They can perform all operations in their org
