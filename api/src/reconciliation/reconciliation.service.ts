@@ -544,7 +544,6 @@ export class ReconciliationService {
       });
 
       this.logger.debug({message: `getting latest component reconcile id`, compName, envName, teamName, envRecon});
-      console.log('----->', latestAuditId.reconcile_id);
       return latestAuditId;
     } catch (err) {
       this.logger.error('could not get latestAuditId', err);
