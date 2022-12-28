@@ -15,6 +15,9 @@ import { SystemModule } from "./system/system.module";
 import { get } from "./config";
 import { OperationsModule } from './operations/operations.module';
 import { AppLoggerMiddleware } from "./middleware/logger.middle";
+import { TeamModule } from './team/team.module';
+import { RootTeamModule } from './root-team/root-team.module';
+import { EnvironmentModule } from './environment/environment.module';
 
 const config = get();
 
@@ -46,6 +49,9 @@ const typeOrmModuleOptions: TypeOrmModuleOptions = {
     SecretsModule,
     AuthModule,
     OperationsModule,
+    TeamModule,
+    RootTeamModule,
+    EnvironmentModule
   ],
   controllers: [],
   providers: [],

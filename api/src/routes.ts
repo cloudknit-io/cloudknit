@@ -8,6 +8,8 @@ import { SecretsModule } from "./secrets/secrets.module";
 import { UsersModule } from "./users/users.module";
 import { SystemModule } from "./system/system.module";
 import { OperationsModule } from "./operations/operations.module";
+import { TeamModule } from "./team/team.module";
+import { RootTeamModule } from "./root-team/root-team.module";
 
 export const appRoutes: Routes = [
   {
@@ -27,14 +29,6 @@ export const appRoutes: Routes = [
         module: OrganizationModule,
         children: [
           {
-            path: 'costing',
-            module: CostingModule
-          },
-          {
-            path: 'reconciliation',
-            module: ReconciliationModule
-          },
-          {
             path: "secrets",
             module: SecretsModule
           },
@@ -46,6 +40,26 @@ export const appRoutes: Routes = [
             path: "ops",
             module: OperationsModule
           },
+          {
+            path: 'teams',
+            module: RootTeamModule,
+            children: [
+              {
+                path: '/:teamId',
+                module: TeamModule,
+                children: [
+                  {
+                    path: 'costing',
+                    module: CostingModule
+                  },
+                  {
+                    path: 'reconciliation',
+                    module: ReconciliationModule
+                  },
+                ]
+              }
+            ]
+          }
         ]
       }
     ]

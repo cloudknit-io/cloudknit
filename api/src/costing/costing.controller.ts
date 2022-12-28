@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Param, Post, Query, Request } from '@nestjs/common'
+import { BadRequestException, Body, Controller, Get, Param, Post, Query, Request } from '@nestjs/common'
 import { RequiredQueryValidationPipe, TeamEnvCompQueryParams, TeamEnvQueryParams } from 'src/reconciliation/validationPipes';
+import { TeamService } from 'src/team/team.service';
 import { Environment } from 'src/typeorm/environment.entity';
 import { ComponentDto } from './dtos/Component.dto';
 import { CostingDto } from './dtos/Costing.dto'
@@ -9,16 +10,14 @@ import { ComponentService } from './services/component.service'
   version: '1'
 })
 export class CostingController {
-  constructor(private readonly componentService: ComponentService) {}
+  constructor(
+    private readonly compSvc: ComponentService,
+    private readonly teamSvc: TeamService
+  ) {}
 
   @Get('all')
   async getAll(@Request() req): Promise<{}> {
-    return await this.componentService.getAll(req.org);
-  }
-
-  @Get('team/:name')
-  async getTeamCost(@Request() req, @Param('name') name: string): Promise<number> {
-    return await this.componentService.getTeamCost(req.org, name);
+    return await this.compSvc.getAll(req.org);
   }
 
   @Get('environment')
@@ -26,21 +25,16 @@ export class CostingController {
     @Request() req,
     @Query(new RequiredQueryValidationPipe()) te: TeamEnvQueryParams
   ): Promise<number> {
-    return await this.componentService.getEnvironmentCost(
-      req.org,
-      te.teamName,
-      te.envName,
-    )
-  }
+    const org = req.org;
+    const team = await this.teamSvc.findByName(org, te.teamName);
 
-  @Get('info/environment')
-  async getEnvironment(
-    @Request() req,
-    @Query(new RequiredQueryValidationPipe()) te: TeamEnvQueryParams
-  ): Promise<Environment> {
-    return await this.componentService.getEnvironment(
+    if (!team) {
+      throw new BadRequestException('could not find team');
+    }
+
+    return await this.compSvc.getEnvironmentCost(
       req.org,
-      te.teamName,
+      team,
       te.envName,
     )
   }
@@ -50,11 +44,6 @@ export class CostingController {
     @Request() req,
     @Query(new RequiredQueryValidationPipe()) tec: TeamEnvCompQueryParams
   ): Promise<ComponentDto> {
-    return await this.componentService.getComponentCost(req.org, tec.compName, tec.teamName, tec.envName);
-  }
-
-  @Post('saveComponent')
-  async saveComponent(@Request() req, @Body() costing: CostingDto): Promise<boolean> {
-    return await this.componentService.saveOrUpdate(req.org, costing)
+    return await this.compSvc.getComponentCost(req.org, tec.compName, tec.teamName, tec.envName);
   }
 }

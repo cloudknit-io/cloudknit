@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ComponentReconcile } from 'src/typeorm/component-reconcile.entity';
-import { Component } from 'src/typeorm/component.entity';
-import { EnvironmentReconcile } from 'src/typeorm/environment-reconcile.entity';
-import { Environment } from 'src/typeorm/environment.entity';
-import { EnvironmentService } from './environment.service';
+import { ComponentService } from 'src/costing/services/component.service';
+import { EnvironmentService } from 'src/environment/environment.service';
+import { TeamService } from 'src/team/team.service';
+import { Component, ComponentReconcile, Environment, EnvironmentReconcile, Team } from 'src/typeorm';
 import { ReconciliationController } from './reconciliation.controller';
 import { ReconciliationService } from './reconciliation.service';
 import { SSEService } from './sse.service';
@@ -16,7 +15,8 @@ import { SSEService } from './sse.service';
       EnvironmentReconcile,
       ComponentReconcile,
       Environment,
-      Component
+      Component,
+      Team
     ])
   ],
   controllers: [
@@ -25,7 +25,9 @@ import { SSEService } from './sse.service';
   providers: [
     ReconciliationService,
     EnvironmentService,
-    SSEService
+    SSEService,
+    TeamService,
+    ComponentService
   ],
 })
 export class ReconciliationModule {

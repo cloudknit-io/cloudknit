@@ -7,7 +7,7 @@ export class ComponentDto {
   @ApiProperty({
     name: 'Component Name'
   })
-  componentName: string = '';
+  name: string = '';
 
   @ApiProperty({
     name: 'Cost'
@@ -15,7 +15,7 @@ export class ComponentDto {
   estimatedCost: number = -1;
 
   @ApiProperty()
-  id: string;
+  id: number;
 
   @ApiProperty()
   environment?: EnvironmentDto;
