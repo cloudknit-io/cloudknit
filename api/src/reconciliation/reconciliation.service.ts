@@ -171,9 +171,8 @@ export class ReconciliationService {
       //
       // Querying by `name` is the wrong way to do this.
       try {
-        await this.updateSkippedWorkflows(
+        await this.updateSkippedWorkflowsForEnvironment(
           entry.team_name,
-          entry.name,
           entry.name,
           this.environmentReconcileRepository
         );
@@ -242,7 +241,7 @@ export class ReconciliationService {
     this.logger.log({message: 'created component entry', reconcileId, env, componentEntry});
 
     if (!componentEntry.reconcile_id) {
-      await this.updateSkippedWorkflows(
+      await this.updateSkippedWorkflowsForComponent(
         envReconcile.teamName,
         envReconcile.name,
         componentEntry.name,
@@ -294,29 +293,32 @@ export class ReconciliationService {
     return entry.reconcile_id;
   }
 
-  async updateSkippedWorkflows(teamName: string, envName: string, name: string, repo: Repository<ComponentReconcile|EnvironmentReconcile>) {
-    let entries = [];
-    if (repo instanceof ComponentReconcile) {
-      entries = await repo.find({
-        where: {
-          name: name,
-          end_date_time: IsNull(),
-          environmentReconcile: {
-            team_name: teamName,
-            name: envName
-          }
-        },
-      });
-    } else {
-      entries = await repo.find({
-        where: {
+  async updateSkippedWorkflowsForComponent(teamName: string, envName: string, name: string, repo: Repository<ComponentReconcile>) {
+    const entries = await repo.find({
+      where: {
+        name: name,
+        end_date_time: IsNull(),
+        environmentReconcile: {
           team_name: teamName,
-          name: name,
-          end_date_time: IsNull(),
-        },
-      });
-    }
+          name: envName
+        }
+      },
+    });
+    await this.updateSkippedWorkflows(entries, repo);
+  }
 
+  async updateSkippedWorkflowsForEnvironment(teamName: string, name: string, repo: Repository<EnvironmentReconcile>) {
+    const entries = await repo.find({
+      where: {
+        team_name: teamName,
+        name: name,
+        end_date_time: IsNull(),
+      },
+    });
+    await this.updateSkippedWorkflows(entries, repo);
+  }
+
+  async updateSkippedWorkflows(entries: ComponentReconcile[]|EnvironmentReconcile[], repo: Repository<ComponentReconcile|EnvironmentReconcile>) {
     if (entries.length > 0) {
       const newEntries = entries.map((entry) => ({
         ...entry,
