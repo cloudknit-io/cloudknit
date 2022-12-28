@@ -120,7 +120,7 @@ export function handlePublicRoutes(router: express.Router) : express.Router {
     const data = { ...req.body };
 
     try {
-      await axios.post(argoCdUrl, data, {
+      const resp = await axios.post(argoCdUrl, data, {
         headers: {
           'X-GitHub-Event': req.header('X-GitHub-Event'),
           'X-GitHub-Delivery': req.header('X-GitHub-Delivery'),
@@ -128,6 +128,8 @@ export function handlePublicRoutes(router: express.Router) : express.Router {
           'X-Hub-Signature-256': req.header('X-Hub-Signature-256'),
         }
       });
+
+      logger.debug('Argo CD GitHub webhook response', { org, resp });
 
       res.status(200).send();
     } catch (error) {
