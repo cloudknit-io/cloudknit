@@ -1,21 +1,12 @@
 import { CostResource } from 'src/costing/dtos/Resource.dto';
-import { Column, Entity, JoinColumn, ManyToOne, UpdateDateColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { Organization } from './Organization.entity';
 import { Environment } from './environment.entity';
 
 @Entity({ name: 'components' })
 export class Component {
-  // TODO : Get rid of this.
-  @Column({
-    primary: true,
-    name: 'id',
-  })
-  id: string;
-
-  @Column({
-    name: 'team_name',
-  })
-  teamName: string;
+  @PrimaryGeneratedColumn()
+  id: number
 
   @ManyToOne(() => Environment, (environment) => environment.components, {
     eager: true
@@ -25,10 +16,11 @@ export class Component {
   @Column({
     name: 'component_name',
   })
-  componentName: string;
+  name: string;
 
   @Column({
-    name: 'status'
+    name: 'status',
+    default: null
   })
   status: string;
 

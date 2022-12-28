@@ -2,49 +2,10 @@ import { ComponentAudit } from "src/reconciliation/dtos/componentAudit.dto";
 import { EnvironmentAudit } from "src/reconciliation/dtos/environmentAudit.dto";
 import { ComponentReconcileDto } from "src/reconciliation/dtos/reconcile.Dto";
 import { Organization } from "src/typeorm";
-import { Component } from "src/typeorm/component.entity";
 import { ComponentReconcile } from "src/typeorm/component-reconcile.entity";
 import { EnvironmentReconcile } from "src/typeorm/environment-reconcile.entity";
 
 export class Mapper {
-  static getStreamData(mapFrom: Component[]): {} {
-    const data = {};
-    const teams = [...new Set(mapFrom.map((e) => e.teamName))];
-    const environments = [
-      ...new Set(mapFrom.map((e) => `${e.teamName}$$$${e.environment.name}`)),
-    ];
-
-    data["teams"] = teams.map((t) => ({
-      teamId: t,
-      teamName: t,
-      cost: mapFrom
-        .filter((e) => e.teamName === t)
-        .reduce((p, c, _i) => p + Number(c.estimatedCost), 0),
-    }));
-
-    data["environments"] = environments.map((e) => {
-      const [teamName, environmentName] = e.split("$$$");
-      return {
-        environmentId: e.replace("$$$", "-"),
-        environmentName,
-        cost: mapFrom
-          .filter(
-            (e) =>
-              e.teamName === teamName && e.environment.name === environmentName
-          )
-          .reduce((p, c, _i) => p + Number(c.estimatedCost), 0),
-      };
-    });
-
-    data["components"] = mapFrom.map((e) => ({
-      componentId: e.id,
-      componentName: e.componentName,
-      cost: Number(e.estimatedCost),
-    }));
-
-    return data;
-  }
-
   static getResource(data: any) {
     return {
       name: data["name"],

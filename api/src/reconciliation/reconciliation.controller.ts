@@ -3,6 +3,8 @@ import {
   Body,
   Controller,
   Get,
+  InternalServerErrorException,
+  Logger,
   Param,
   Patch,
   Post,
@@ -13,14 +15,16 @@ import {
 } from "@nestjs/common";
 import { from, Observable } from "rxjs";
 import { map } from "rxjs/operators";
+import { ComponentService } from "src/costing/services/component.service";
 import { Mapper } from "src/costing/utilities/mapper";
-import { ComponentReconcile } from "src/typeorm/component-reconcile.entity";
-import { EnvironmentReconcile } from "src/typeorm/environment-reconcile.entity";
+import { EnvironmentService } from "src/environment/environment.service";
+import { TeamService } from "src/team/team.service";
+import { ComponentReconcile, EnvironmentReconcile } from "src/typeorm";
 import { APIRequest } from "src/types";
 import { ApprovedByDto, ComponentAudit } from "./dtos/componentAudit.dto";
+import { SpecDto } from "./dtos/env-spec.dto";
 import { EnvironmentAudit } from "./dtos/environmentAudit.dto";
 import { EvnironmentReconcileDto } from "./dtos/reconcile.Dto";
-import { EnvironmentService } from "./environment.service";
 import { ReconciliationService } from "./reconciliation.service";
 import { SSEService } from "./sse.service";
 import { RequiredQueryValidationPipe, TeamEnvCompQueryParams, TeamEnvQueryParams } from "./validationPipes";
@@ -30,32 +34,59 @@ import { RequiredQueryValidationPipe, TeamEnvCompQueryParams, TeamEnvQueryParams
   version: '1'
 })
 export class ReconciliationController {
+  private readonly logger = new Logger(ReconciliationController.name);
+
   constructor(
     private readonly reconciliationService: ReconciliationService,
     private readonly envSvc: EnvironmentService,
-    private readonly sseSvc: SSEService
+    private readonly sseSvc: SSEService,
+    private readonly teamSvc: TeamService,
+    private readonly compSvc: ComponentService
     ) {}
+
+  @Post('/spec')
+  async newReconciliation(@Request() req, @Body() body: SpecDto) {
+    const org = req.org;
+    const team = req.team;
+
+    // get environment or create
+    let env = await this.envSvc.findByName(org, body.envName, team);
+
+    if (!env) {
+      env = await this.envSvc.create({
+        name: body.envName,
+        team,
+        org
+      });
+
+      if (!env) {
+        this.logger.error({ message: 'could not create environment', env, specDto: body})
+        throw new InternalServerErrorException('could not create environment');
+      }
+    }
+
+    // get components or create
+    const dbComps = await this.compSvc.getAllForEnvironment(org, env);
+
+    const existingComponents = body.components.filter(incoming => {
+      return dbComps.find(dbComp => incoming.name === dbComp.name)
+    });
+
+    const newComponents = body.components.filter(incoming => {
+      return !dbComps.find(dbComp => incoming.name === dbComp.name)
+    });
+  }
 
   @Get("environments")
   async getEnvironment(@Request() req, @Query(new RequiredQueryValidationPipe()) tec: TeamEnvQueryParams) {
-    const env = await this.envSvc.getEnvironment(req.org, tec.envName, tec.teamName);
+    const team = await this.teamSvc.findByName(req.org, tec.teamName);
+    const env = await this.envSvc.findByName(req.org, tec.envName, team);
 
     if (!env) {
       throw new BadRequestException('could not find environment');
     }
 
     return env;
-  }
-
-  @Get("components")
-  async getComponent(@Request() req, @Query(new RequiredQueryValidationPipe()) tec: TeamEnvCompQueryParams) {
-    const comp = await this.reconciliationService.getComponent(req.org, tec.compName, tec.envName, tec.teamName);
-
-    if (!comp) {
-      throw new BadRequestException('could not find component');
-    }
-
-    return comp;
   }
 
   @Patch("approved-by")
@@ -74,24 +105,16 @@ export class ReconciliationController {
     return await this.reconciliationService.getApprovedBy(req.org, body);
   }
 
-  @Post("environment/save")
-  async saveEnvironment(@Request() req, @Body() runData: EvnironmentReconcileDto) {
-    return await this.reconciliationService.saveOrUpdateEnvironment(req.org, runData);
-  }
-
-  @Post("component/save")
-  async saveComponent(@Request() req, @Body() runData: EvnironmentReconcileDto) {
-    return await this.reconciliationService.saveOrUpdateComponent(req.org, runData);
-  }
-
   @Get("audit/components")
   async getComponents(@Request() req, @Query(new RequiredQueryValidationPipe()) tec: TeamEnvCompQueryParams): Promise<ComponentAudit[]> {
-    return await this.reconciliationService.getComponentAuditList(req.org, tec.compName, tec.envName, tec.teamName);
+    const {org, team} = req;
+    return await this.reconciliationService.getComponentAuditList(org, team, tec.compName, tec.envName);
   }
 
   @Get("audit/environments")
   async getEnvironments(@Request() req, @Query(new RequiredQueryValidationPipe()) te: TeamEnvQueryParams): Promise<EnvironmentAudit[]> {
-    return await this.reconciliationService.getEnvironmentAuditList(req.org, te.envName, te.teamName);
+    const {org, team} = req;
+    return await this.reconciliationService.getEnvironmentAuditList(org, team, te.envName);
   }
 
   @Get("component/logs/:team/:environment/:component/:id")
