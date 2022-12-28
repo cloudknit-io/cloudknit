@@ -171,7 +171,9 @@ export class ReconciliationService {
       //
       // Querying by `name` is the wrong way to do this.
       try {
-        await this.updateSkippedWorkflows<EnvironmentReconcile>(
+        await this.updateSkippedWorkflows(
+          entry.team_name,
+          entry.name,
           entry.name,
           this.environmentReconcileRepository
         );
@@ -240,7 +242,9 @@ export class ReconciliationService {
     this.logger.log({message: 'created component entry', reconcileId, env, componentEntry});
 
     if (!componentEntry.reconcile_id) {
-      await this.updateSkippedWorkflows<ComponentReconcile>(
+      await this.updateSkippedWorkflows(
+        envReconcile.teamName,
+        envReconcile.name,
         componentEntry.name,
         this.componentReconcileRepository
       );
@@ -290,13 +294,28 @@ export class ReconciliationService {
     return entry.reconcile_id;
   }
 
-  async updateSkippedWorkflows<T>(name: string, repo: Repository<ComponentReconcile|EnvironmentReconcile>) {
-    const entries = await repo.find({
-      where: {
-        name: name,
-        end_date_time: IsNull(),
-      },
-    });
+  async updateSkippedWorkflows(teamName: string, envName: string, name: string, repo: Repository<ComponentReconcile|EnvironmentReconcile>) {
+    let entries = [];
+    if (repo instanceof ComponentReconcile) {
+      entries = await repo.find({
+        where: {
+          name: name,
+          end_date_time: IsNull(),
+          environmentReconcile: {
+            team_name: teamName,
+            name: envName
+          }
+        },
+      });
+    } else {
+      entries = await repo.find({
+        where: {
+          team_name: teamName,
+          name: name,
+          end_date_time: IsNull(),
+        },
+      });
+    }
 
     if (entries.length > 0) {
       const newEntries = entries.map((entry) => ({
@@ -525,7 +544,7 @@ export class ReconciliationService {
       });
 
       this.logger.debug({message: `getting latest component reconcile id`, compName, envName, teamName, envRecon});
-  
+      console.log('----->', latestAuditId.reconcile_id);
       return latestAuditId;
     } catch (err) {
       this.logger.error('could not get latestAuditId', err);
