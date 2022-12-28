@@ -81,7 +81,7 @@ if [[ $config_name != 0 && $config_reconcile_id = null ]]; then
     component_status=0;
     if [[ $config_status == *"skipped"* ]]; then
         echo "getting environment component previous status"
-        config_previous_status=$(argocd app get $team_env_config_name -o json | jq -r '.metadata.labels.component_status') || null
+        config_previous_status=$(curl "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/costing/component?teamName=${team_name}&envName=${env_name}&compName=${config_name}" | jq -r ".status") || null
         echo "config_prev_status: $config_previous_status"
         if [[ $config_previous_status == null ]]; then
             component_status="not_provisioned"
