@@ -3,11 +3,9 @@ import {
   Body,
   Controller,
   Get,
-  InternalServerErrorException,
   Logger,
   Param,
   Patch,
-  Post,
   Query,
   Req,
   Request,
@@ -18,11 +16,11 @@ import { map } from "rxjs/operators";
 import { ComponentService } from "src/costing/services/component.service";
 import { Mapper } from "src/costing/utilities/mapper";
 import { EnvironmentService } from "src/environment/environment.service";
+import { RootEnvironmentService } from "src/root-environment/root.environment.service";
 import { TeamService } from "src/team/team.service";
 import { ComponentReconcile, EnvironmentReconcile } from "src/typeorm";
 import { APIRequest } from "src/types";
 import { ApprovedByDto, ComponentAudit } from "./dtos/componentAudit.dto";
-import { SpecDto } from "./dtos/env-spec.dto";
 import { EnvironmentAudit } from "./dtos/environmentAudit.dto";
 import { EvnironmentReconcileDto } from "./dtos/reconcile.Dto";
 import { ReconciliationService } from "./reconciliation.service";
@@ -38,49 +36,17 @@ export class ReconciliationController {
 
   constructor(
     private readonly reconciliationService: ReconciliationService,
+    private readonly rootEnvService: RootEnvironmentService,
     private readonly envSvc: EnvironmentService,
     private readonly sseSvc: SSEService,
     private readonly teamSvc: TeamService,
     private readonly compSvc: ComponentService
     ) {}
 
-  @Post('/spec')
-  async newReconciliation(@Request() req, @Body() body: SpecDto) {
-    const org = req.org;
-    const team = req.team;
-
-    // get environment or create
-    let env = await this.envSvc.findByName(org, body.envName, team);
-
-    if (!env) {
-      env = await this.envSvc.create({
-        name: body.envName,
-        team,
-        org
-      });
-
-      if (!env) {
-        this.logger.error({ message: 'could not create environment', env, specDto: body})
-        throw new InternalServerErrorException('could not create environment');
-      }
-    }
-
-    // get components or create
-    const dbComps = await this.compSvc.getAllForEnvironment(org, env);
-
-    const existingComponents = body.components.filter(incoming => {
-      return dbComps.find(dbComp => incoming.name === dbComp.name)
-    });
-
-    const newComponents = body.components.filter(incoming => {
-      return !dbComps.find(dbComp => incoming.name === dbComp.name)
-    });
-  }
-
   @Get("environments")
   async getEnvironment(@Request() req, @Query(new RequiredQueryValidationPipe()) tec: TeamEnvQueryParams) {
-    const team = await this.teamSvc.findByName(req.org, tec.teamName);
-    const env = await this.envSvc.findByName(req.org, tec.envName, team);
+    const {org, team } = req;
+    const env = await this.envSvc.findByName(req.org, team, tec.envName);
 
     if (!env) {
       throw new BadRequestException('could not find environment');

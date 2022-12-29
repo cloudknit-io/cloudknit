@@ -32,13 +32,18 @@ export class Environment {
   })
   dag: DagDto;
 
+  @Column({
+    default: false
+  })
+  isDeleted: boolean;
+
   @ManyToOne(() => Team, (team) => team.id, {
     onDelete: "CASCADE"
   })
   @JoinColumn({
     referencedColumnName: 'id'
   })
-  team: Team
+  team: Team;
 
   @ManyToOne(() => Organization, (org) => org.id, {
     onDelete: "CASCADE"
@@ -46,5 +51,5 @@ export class Environment {
   @JoinColumn({
     referencedColumnName: 'id'
   })
-  organization: Organization
+  organization: Organization;
 }

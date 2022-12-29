@@ -3,7 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Organization, User } from "src/typeorm";
 import { get } from "src/config";
-import { CreateOrganizationDto } from "./rootOrganization.dto";
+import { CreateOrganizationDto } from "./root.organization.dto";
 import { UsersService } from "src/users/users.service";
 import { SubmitProvisionOrg } from "src/argowf/api";
 import { getGithubOrgFromRepoUrl } from "src/organization/utilities";

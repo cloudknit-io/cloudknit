@@ -1,6 +1,6 @@
 import { BadRequestException, Body, Controller, Get, InternalServerErrorException, Logger, Param, Post, Query, Request } from "@nestjs/common";
-import { CreateOrganizationDto } from "./rootOrganization.dto";
-import { RootOrganizationsService } from "./rootOrganization.service";
+import { CreateOrganizationDto } from "./root.organization.dto";
+import { RootOrganizationsService } from "./root.organization.service";
 
 @Controller({
   version: '1'

@@ -13,6 +13,12 @@ export class Team {
   @Column()
   name: string;
 
+  @Column()
+  repo: string;
+
+  @Column()
+  repo_path: string;
+
   @Column({
     default: false
   })

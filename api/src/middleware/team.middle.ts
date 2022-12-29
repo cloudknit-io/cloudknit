@@ -29,7 +29,7 @@ export class TeamMiddleware implements NestMiddleware {
       }
     } else {
       try {
-        team = await this.teamSvc.findOne(org, id);
+        team = await this.teamSvc.findById(org, id);
       } catch (e) {
         this.logger.error({message: 'could not get team by number', teamId, error: e.message})
       }
