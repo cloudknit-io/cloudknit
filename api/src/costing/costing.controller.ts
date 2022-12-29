@@ -25,15 +25,10 @@ export class CostingController {
     @Request() req,
     @Query(new RequiredQueryValidationPipe()) te: TeamEnvQueryParams
   ): Promise<number> {
-    const org = req.org;
-    const team = await this.teamSvc.findByName(org, te.teamName);
-
-    if (!team) {
-      throw new BadRequestException('could not find team');
-    }
+    const {org, team } = req;
 
     return await this.compSvc.getEnvironmentCost(
-      req.org,
+      org,
       team,
       te.envName,
     )
@@ -44,6 +39,7 @@ export class CostingController {
     @Request() req,
     @Query(new RequiredQueryValidationPipe()) tec: TeamEnvCompQueryParams
   ): Promise<ComponentDto> {
-    return await this.compSvc.getComponentCost(req.org, tec.compName, tec.teamName, tec.envName);
+    const {org, team } = req;
+    return await this.compSvc.getComponentCost(org, team, tec.compName, tec.envName);
   }
 }

@@ -5,7 +5,7 @@ import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { AuthModule } from "./auth/auth.module";
 import { CostingModule } from "./costing/costing.module";
 import { OrganizationModule } from "./organization/organization.module";
-import { RootOrganizationsModule } from "./rootOrganization/rootOrganization.module";
+import { RootOrganizationsModule } from "./root-organization/root.organization.module";
 import { ReconciliationModule } from "./reconciliation/reconciliation.module";
 import { appRoutes } from "./routes";
 import { SecretsModule } from "./secrets/secrets.module";
@@ -16,8 +16,9 @@ import { get } from "./config";
 import { OperationsModule } from './operations/operations.module';
 import { AppLoggerMiddleware } from "./middleware/logger.middle";
 import { TeamModule } from './team/team.module';
-import { RootTeamModule } from './root-team/root-team.module';
+import { RootTeamModule } from './root-team/root.team.module';
 import { EnvironmentModule } from './environment/environment.module';
+import { RootEnvironmentModule } from './root-environment/root.environment.module';
 
 const config = get();
 
@@ -51,7 +52,8 @@ const typeOrmModuleOptions: TypeOrmModuleOptions = {
     OperationsModule,
     TeamModule,
     RootTeamModule,
-    EnvironmentModule
+    EnvironmentModule,
+    RootEnvironmentModule
   ],
   controllers: [],
   providers: [],

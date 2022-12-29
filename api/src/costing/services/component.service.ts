@@ -89,7 +89,7 @@ export class ComponentService {
     team: Team,
     environmentName: string,
   ): Promise<number> {
-    const env = await this.envSvc.findByName(org, environmentName, team);
+    const env = await this.envSvc.findByName(org, team, environmentName);
 
     if (!env) {
       this.logger.error({ message: 'could not find environment', environmentName, team });
@@ -128,12 +128,12 @@ export class ComponentService {
     return Number(raw.cost || 0);
   }
 
-  async getComponentCost(org: Organization, compName: string, teamName: string, envName: string): Promise<ComponentDto> {
-    const env = await this.envSvc.findByName(org, envName);
+  async getComponentCost(org: Organization, team: Team, compName: string, envName: string): Promise<ComponentDto> {
+    const env = await this.envSvc.findByName(org, team, envName);
     const component = await this.findByName(org, env, compName);
 
     if (!component) {
-      this.logger.error({message: 'could not find component', teamName, compName, envName})
+      this.logger.error({message: 'could not find component', teamName: team.name, compName, envName})
       throw new NotFoundException();
     }
 

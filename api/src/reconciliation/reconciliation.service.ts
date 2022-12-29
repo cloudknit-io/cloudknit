@@ -303,7 +303,7 @@ export class ReconciliationService {
   }
 
   async getEnvironmentAuditList(org: Organization, team: Team, envName: string): Promise<EnvironmentAudit[]> {
-    const env = await this.envSvc.findByName(org, envName, team);
+    const env = await this.envSvc.findByName(org, team, envName);
 
     if (!env) {
       this.logger.error({ message: `Could not find environment with name ${envName}`, org })

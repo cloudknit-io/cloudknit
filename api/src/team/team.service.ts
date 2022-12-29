@@ -24,7 +24,7 @@ export class TeamService {
     })
   }
 
-  async findOne(org: Organization, id: number): Promise<Team> {
+  async findById(org: Organization, id: number): Promise<Team> {
     return this.teamRepo.findOne({
       where: {
         id,
@@ -36,7 +36,7 @@ export class TeamService {
   }
 
   async update(org: Organization, id: number, updateTeamDto: UpdateTeamDto): Promise<Team> {
-    const team = await this.findOne(org, id);
+    const team = await this.findById(org, id);
 
     this.teamRepo.merge(team, updateTeamDto);
 
@@ -44,12 +44,10 @@ export class TeamService {
   }
 
   async remove(org: Organization, id: number): Promise<Team> {
-    const team = await this.findOne(org, id);
+    const team = await this.findById(org, id);
 
     team.isDeleted = true;
 
     return this.teamRepo.save(team);
-  }
-
-  
+  }  
 }

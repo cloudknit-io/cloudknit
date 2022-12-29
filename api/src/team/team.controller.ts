@@ -3,7 +3,9 @@ import { TeamService } from './team.service';
 import { UpdateTeamDto } from './dto/update-team.dto';
 import { ComponentService } from 'src/costing/services/component.service';
 
-@Controller('team')
+@Controller({
+  version: '1'
+})
 export class TeamController {
   constructor(
     private readonly teamSvc: TeamService,
@@ -11,7 +13,7 @@ export class TeamController {
 
   @Get()
   async findOne(@Request() req) {
-    return this.teamSvc.findOne(req.org, req.team.id);
+    return this.teamSvc.findById(req.org, req.team.id);
   }
 
   @Get('/cost')

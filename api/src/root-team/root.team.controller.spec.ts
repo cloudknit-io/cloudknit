@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { RootTeamController } from './root-team.controller';
-import { RootTeamService } from './root-team.service';
+import { RootTeamController } from './root.team.controller';
+import { RootTeamService } from './root.team.service';
 
 describe('RootTeamController', () => {
   let controller: RootTeamController;
