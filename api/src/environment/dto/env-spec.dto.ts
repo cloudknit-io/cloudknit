@@ -1,5 +1,4 @@
 export class EnvSpecDto {
-  teamName: string
   envName: string
   components: EnvSpecComponentDto[]
 }

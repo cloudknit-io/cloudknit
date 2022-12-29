@@ -7,8 +7,8 @@ export class DagDto {
 
 export class DagItemDto {
   @ApiProperty()
-  componentId: number;
+  componentName: string;
   
   @ApiProperty()
-  parentComponentIds: number[];
+  parentComponentNames: string[];
 }

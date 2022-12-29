@@ -47,7 +47,7 @@ export const appRoutes: Routes = [
             module: RootTeamModule,
             children: [
               {
-                path: '/:teamId',
+                path: ':teamId',
                 module: TeamModule,
                 children: [
                   {

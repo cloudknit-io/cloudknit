@@ -2,11 +2,12 @@ import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGenerat
 import { Organization } from "./Organization.entity";
 import { Component } from "./component.entity";
 import { Team } from "./team.entity";
-import { DagDto } from "src/reconciliation/dtos/environment-dag.dto";
+import { EnvSpecComponentDto } from "src/environment/dto/env-spec.dto";
 
 @Entity({
   name: "environment",
 })
+@Index(['organization', 'team', 'name'], { unique: true })
 export class Environment {
   @PrimaryGeneratedColumn()
   id: number
@@ -20,7 +21,9 @@ export class Environment {
   })
   lastReconcileDatetime: string;
 
-  @Column()
+  @Column({
+    default: -1
+  })
   duration: number;
 
   @OneToMany(() => Component, (component) => component.environment)
@@ -30,7 +33,7 @@ export class Environment {
     type: 'json',
     default: null
   })
-  dag: DagDto;
+  dag: EnvSpecComponentDto[];
 
   @Column({
     default: false
