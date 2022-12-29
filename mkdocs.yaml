@@ -34,6 +34,7 @@ nav:
 - Settings:
   - settings/aws_credentials.md
   - settings/secrets.md
+  - settings/users.md
 - Define:
   - define/define_environment.md
   - define/field_reference.md
