@@ -5,12 +5,12 @@ import { Environment } from "./environment.entity";
 @Entity({
   name: "team",
 })
+@Index(['organization', 'name'], { unique: true })
 export class Team {
   @PrimaryGeneratedColumn()
   id: number
 
   @Column()
-  @Index()
   name: string;
 
   @Column({
