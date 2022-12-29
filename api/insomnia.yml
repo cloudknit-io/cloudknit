@@ -1,22 +1,22 @@
 _type: export
 __export_format: 4
-__export_date: 2022-12-29T23:14:59.098Z
+__export_date: 2022-12-29T23:53:03.193Z
 __export_source: insomnia.desktop.app:v2022.6.0
 resources:
-  - _id: req_b9a2a92ead2b4bd989e02e216a297065
+  - _id: req_e6195f041a3642c69a65518abeb3b248
     parentId: fld_fc1e6ad192bc4eccbb376d4cf2bc91c9
-    modified: 1672355559559
-    created: 1672328551779
-    url: "{{ _.baseUrl }}/v1/orgs/{{ _.orgId }}/teams/brads/environments"
-    name: Create Env
+    modified: 1672357403067
+    created: 1672352196921
+    url: "{{ _.baseUrl }}/v1/orgs/{{ _.orgId }}/teams/checkout/environments"
+    name: Create Env W/ Spec
     description: ""
     method: POST
     body:
       mimeType: application/json
       text: |-
         {
-        	"name": "brad-with-22",
-        	"dag": [
+        	"envName": "brads",
+        	"components": [
         		{
         			"name": "comp1",
         			"type": "terraform",
@@ -26,6 +26,11 @@ resources:
         			"name": "comp2",
         			"type": "terraform",
         			"dependsOn": ["comp1"]
+        		},
+        				{
+        			"name": "comp3",
+        			"type": "terraform",
+        			"dependsOn": []
         		}
         	]
         }
@@ -34,7 +39,7 @@ resources:
       - name: Content-Type
         value: application/json
     authentication: {}
-    metaSortKey: -1671983018759.5
+    metaSortKey: -1671911720145.875
     isPrivate: false
     settingStoreCookies: true
     settingSendCookies: true
@@ -61,51 +66,11 @@ resources:
     description: ""
     scope: design
     _type: workspace
-  - _id: req_e6195f041a3642c69a65518abeb3b248
-    parentId: fld_fc1e6ad192bc4eccbb376d4cf2bc91c9
-    modified: 1672355581637
-    created: 1672352196921
-    url: "{{ _.baseUrl }}/v1/orgs/{{ _.orgId }}/teams/brads/environments"
-    name: Create Env W/ Spec
-    description: ""
-    method: POST
-    body:
-      mimeType: application/json
-      text: |-
-        {
-        	"envName": "brads",
-        	"components": [
-        		{
-        			"name": "comp1",
-        			"type": "terraform",
-        			"dependsOn": []
-        		},
-        		{
-        			"name": "comp2",
-        			"type": "terraform",
-        			"dependsOn": ["comp1"]
-        		}
-        	]
-        }
-    parameters: []
-    headers:
-      - name: Content-Type
-        value: application/json
-    authentication: {}
-    metaSortKey: -1671911720145.875
-    isPrivate: false
-    settingStoreCookies: true
-    settingSendCookies: true
-    settingDisableRenderRequestBody: false
-    settingEncodeUrl: true
-    settingRebuildPath: true
-    settingFollowRedirects: global
-    _type: request
   - _id: req_8d7b138ecedf4786947a8cc91017a248
     parentId: fld_fc1e6ad192bc4eccbb376d4cf2bc91c9
-    modified: 1672352153439
+    modified: 1672357264013
     created: 1672352143085
-    url: "{{ _.baseUrl }}/v1/orgs/{{ _.orgId }}/teams/brads/environments"
+    url: "{{ _.baseUrl }}/v1/orgs/{{ _.orgId }}/teams/checkout/environments"
     name: Get Envs
     description: ""
     method: GET
@@ -122,28 +87,29 @@ resources:
     settingRebuildPath: true
     settingFollowRedirects: global
     _type: request
-  - _id: req_64ef59e0c1e84d0aba4735751da62b61
+  - _id: req_eb00bec79eaa43da810fd350a6cbe375
     parentId: fld_c5c304e0238d4b6982d57492e9c8eabc
-    modified: 1672351913211
-    created: 1672268213214
+    modified: 1672357177612
+    created: 1672345104056
     url: "{{ _.baseUrl }}/v1/orgs/{{ _.orgId }}/teams"
-    name: Create Team
+    name: Create Team W/ Spec
     description: ""
     method: POST
     body:
       mimeType: application/json
       text: |-
         {
-        	"name": "auto-gen",
-        	"repo": "https://github.com/some-random-org/hello-world.git",
-        	"repo_path": "blah"
+        	"teamName": "gfgfgf",
+        	"configRepo": {
+        		"source": "https://github.com/some-random-org/hello-world.git",
+        		"path": "blah3333"	}
         }
     parameters: []
     headers:
       - name: Content-Type
         value: application/json
     authentication: {}
-    metaSortKey: -1672268213214
+    metaSortKey: -1672125616011.75
     isPrivate: false
     settingStoreCookies: true
     settingSendCookies: true
@@ -162,38 +128,6 @@ resources:
     environmentPropertyOrder: null
     metaSortKey: -1672268210432
     _type: request_group
-  - _id: req_eb00bec79eaa43da810fd350a6cbe375
-    parentId: fld_c5c304e0238d4b6982d57492e9c8eabc
-    modified: 1672345581858
-    created: 1672345104056
-    url: "{{ _.baseUrl }}/v1/orgs/{{ _.orgId }}/teams/spec"
-    name: Create Team W/ Spec
-    description: ""
-    method: POST
-    body:
-      mimeType: application/json
-      text: |-
-        {
-        	"teamName": "specteam",
-        	"configRepo": {
-        		"source": "https://github.com/some-random-org/hello-world.git",
-        		"path": "blah"
-        	}
-        }
-    parameters: []
-    headers:
-      - name: Content-Type
-        value: application/json
-    authentication: {}
-    metaSortKey: -1672125616011.75
-    isPrivate: false
-    settingStoreCookies: true
-    settingSendCookies: true
-    settingDisableRenderRequestBody: false
-    settingEncodeUrl: true
-    settingRebuildPath: true
-    settingFollowRedirects: global
-    _type: request
   - _id: req_fd08c5c17cb64f8981990d87e33d2e4c
     parentId: fld_c5c304e0238d4b6982d57492e9c8eabc
     modified: 1672344336529
@@ -217,9 +151,9 @@ resources:
     _type: request
   - _id: req_341ab03512084419842f9117eb95c1f5
     parentId: fld_c5c304e0238d4b6982d57492e9c8eabc
-    modified: 1672346466935
+    modified: 1672356771819
     created: 1672328568117
-    url: "{{ _.baseUrl }}/v1/orgs/{{ _.orgId }}/teams/brads"
+    url: "{{ _.baseUrl }}/v1/orgs/{{ _.orgId }}/teams/64"
     name: Get Team
     description: ""
     method: GET
@@ -869,9 +803,9 @@ resources:
     _type: request_group
   - _id: req_caef27539b7e4741b74dbea6803472f5
     parentId: fld_6a0317ab64ec4a418edff63a65546e95
-    modified: 1668696450164
+    modified: 1672356402052
     created: 1658151248844
-    url: "{{baseUrl}}/v1/orgs/mtndevelopment"
+    url: "{{baseUrl}}/v1/orgs/adarsh-org"
     name: Get Org
     description: ""
     method: GET
@@ -890,7 +824,7 @@ resources:
     _type: request
   - _id: req_b5e2b746c47b4dd79a1c1784eb560b25
     parentId: fld_6a0317ab64ec4a418edff63a65546e95
-    modified: 1672346200337
+    modified: 1672356347775
     created: 1656354596101
     url: "{{baseUrl}}/v1/orgs"
     name: Add Org
@@ -900,7 +834,7 @@ resources:
       mimeType: application/json
       text: |-
         {
-        	"name": "anotherorg"
+        	"name": "adarsh-org"
         }
     parameters: []
     headers:
@@ -951,12 +885,12 @@ resources:
     _type: unit_test_suite
   - _id: env_3fe079360d3a4670aae8b7c054dd9f87
     parentId: env_73878836187dcf0db4284a0c84bba46f15ccd49b
-    modified: 1672351888529
+    modified: 1672356407900
     created: 1656088827615
     name: CK API - local
     data:
       baseUrl: http://localhost:3001
-      orgId: 1
+      orgId: adarsh-org
     dataPropertyOrder:
       "&":
         - baseUrl
