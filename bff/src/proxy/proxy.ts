@@ -129,7 +129,7 @@ export function handlePublicRoutes(router: express.Router) : express.Router {
         }
       });
 
-      logger.debug('Argo CD GitHub webhook response', { org, resp });
+      logger.info('Argo CD GitHub webhook response', { org, resp });
 
       res.status(200).send();
     } catch (error) {
