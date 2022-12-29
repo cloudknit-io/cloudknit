@@ -19,8 +19,8 @@ export class RootEnvironmentController {
     private readonly compSvc: ComponentService
   ) {}
 
-  @Post('/spec')
-  async spec(@Request() req, @Body() body: EnvSpecDto) {
+  @Post()
+  async create(@Request() req, @Body() body: EnvSpecDto) {
     const { org, team } = req;
     
     let env = await this.envSvc.findByName(org, team, body.envName);
@@ -59,13 +59,6 @@ export class RootEnvironmentController {
     }
 
     return env;
-  }
-
-  @Post()
-  async new(@Request() req, @Body() createEnv: CreateEnvironmentDto) {
-    const {org, team} = req;
-    
-    return this.createEnv(org, team, createEnv);
   }
 
   @Get()
