@@ -11,6 +11,8 @@ import { Team } from 'src/typeorm';
     ])
   ],
   controllers: [RootTeamController],
-  providers: [RootTeamService]
+  providers: [
+    RootTeamService
+  ]
 })
 export class RootTeamModule {}
