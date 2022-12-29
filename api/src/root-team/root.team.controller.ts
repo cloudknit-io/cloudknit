@@ -18,14 +18,14 @@ export class RootTeamController {
     private readonly teamSvc: TeamService
     ) {}
 
-  @Post('/spec')
+  @Post()
   async spec(@Request() req, @Body() spec: TeamSpecDto) {
     const { org } = req;
 
     let team = await this.teamSvc.findByName(org, spec.teamName);
 
     if (!team) {
-      return await this.create(req, {
+      return await this.createTeam(req, {
         name: spec.teamName,
         organization: org,
         repo: spec.configRepo.source,
@@ -40,8 +40,7 @@ export class RootTeamController {
     }
   }
 
-  @Post()
-  async create(@Request() req, @Body() createTeam: CreateTeamDto) {
+  async createTeam(@Request() req, @Body() createTeam: CreateTeamDto) {
     if (!this.TeamNameRegex.test(createTeam.name) || createTeam.name.length > 63) {
       throw new BadRequestException("team name is invalid");
     }
