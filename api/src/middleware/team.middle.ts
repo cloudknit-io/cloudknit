@@ -18,12 +18,12 @@ export class TeamMiddleware implements NestMiddleware {
     let team, id;
 
     try {
-      id = parseInt(req.params.teamId, 10);
+      id = parseInt(teamId, 10);
     } catch (e) {}
     
     if (isNaN(id)) {
       try {
-        team = await this.teamSvc.findByName(org, id)
+        team = await this.teamSvc.findByName(org, teamId)
       } catch (e) {
         this.logger.error({message: 'could not get team by name', teamId, error: e.message})
       }

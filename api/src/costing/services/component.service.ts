@@ -32,7 +32,7 @@ export class ComponentService {
     });
   }
 
-  async getAllForEnvironment(org: Organization, env: Environment): Promise<Component[]> {
+  async getAllForEnvironmentById(org: Organization, env: Environment): Promise<Component[]> {
     return this.compRepo.find({
       where: {
         organization: {

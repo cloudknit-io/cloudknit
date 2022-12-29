@@ -1,11 +1,10 @@
-import { Controller, Get, Post, Body, Request, BadRequestException, Logger, InternalServerErrorException, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Request, BadRequestException, Logger, InternalServerErrorException } from '@nestjs/common';
 import { RootTeamService } from './root.team.service';
 import { CreateTeamDto } from 'src/team/dto/create-team.dto';
 import { SqlErrorCodes } from 'src/types';
 import { TeamSpecDto } from 'src/team/dto/team-spec.dto';
 import { TeamService } from 'src/team/team.service';
 import { getGithubOrgFromRepoUrl } from 'src/organization/utilities';
-import { ApiResponse } from '@nestjs/swagger';
 
 @Controller({
   version: '1'
