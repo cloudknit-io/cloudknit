@@ -19,6 +19,11 @@ export class Component {
   name: string;
 
   @Column({
+    default: 'terraform'
+  })
+  type: string;
+
+  @Column({
     name: 'status',
     default: null
   })
@@ -29,8 +34,9 @@ export class Component {
     type: 'decimal',
     precision: 10,
     scale: 3,
+    default: 0
   })
-  estimatedCost: number = 0;
+  estimatedCost: number;
 
   @UpdateDateColumn({
     name: 'last_reconcile_datetime'

@@ -3,6 +3,7 @@ import { ComponentService } from 'src/costing/services/component.service';
 import { CreateEnvironmentDto } from 'src/environment/dto/create-environment.dto';
 import { EnvSpecComponentDto, EnvSpecDto } from 'src/environment/dto/env-spec.dto';
 import { EnvironmentService } from 'src/environment/environment.service';
+import { Environment, Organization, Team } from 'src/typeorm';
 import { SqlErrorCodes } from 'src/types';
 import { RootEnvironmentService } from './root.environment.service';
 
@@ -25,14 +26,10 @@ export class RootEnvironmentController {
     let env = await this.envSvc.findByName(org, team, body.envName);
 
     if (!env) {
-      env = await this.create(req, {
+      this.createEnv(org, team, {
         name: body.envName,
-        organization: org,
-        team,
         dag: body.components
       });
-      
-      // create all new components
     } else {
       const dbComps = await this.compSvc.getAllForEnvironmentById(org, env);
       const existingComponents = body.components.filter(incoming => {
@@ -65,14 +62,24 @@ export class RootEnvironmentController {
   }
 
   @Post()
-  async create(@Request() req, @Body() createEnv: CreateEnvironmentDto) {
+  async new(@Request() req, @Body() createEnv: CreateEnvironmentDto) {
+    const {org, team} = req;
+    
+    return this.createEnv(org, team, createEnv);
+  }
+
+  @Get()
+  async findAll(@Request() req) {
     const {org, team} = req;
 
-    createEnv.organization = org;
-    createEnv.team = team;
+    return this.rootEnvSvc.findAll(org, team);
+  }
+
+  async createEnv(org: Organization, team: Team, createEnv: CreateEnvironmentDto): Promise<Environment> {
+    let env: Environment;
 
     try {
-      return await this.rootEnvSvc.create(createEnv);
+      env = await this.rootEnvSvc.create(org, team, createEnv);
     } catch (err) {
       if (err.code === SqlErrorCodes.DUP_ENTRY) {
         throw new BadRequestException('environment already exists');
@@ -85,12 +92,27 @@ export class RootEnvironmentController {
       this.logger.error({ message: 'could not create environment', createEnv, err });
       throw new InternalServerErrorException('could not create environment');
     }
-  }
 
-  @Get()
-  async findAll(@Request() req) {
-    const {org, team} = req;
+    if (!createEnv.dag || createEnv.dag.length == 0) {
+      return env;
+    }
 
-    return this.rootEnvSvc.findAll(org, team);
+    // create all new components
+    try {
+      await this.compSvc.batchCreate(org, env, createEnv.dag.map(comp => comp.name))
+    } catch (err) {
+      if (err.code === SqlErrorCodes.DUP_ENTRY) {
+        throw new BadRequestException('component already exists');
+      }
+
+      if (err.code === SqlErrorCodes.NO_DEFAULT) {
+        throw new BadRequestException(err.sqlMessage);
+      }
+
+      this.logger.error({ message: 'could not batch create components during environment creation', err});
+      throw new InternalServerErrorException('could not create components');
+    }
+
+    return env;
   }
 }
