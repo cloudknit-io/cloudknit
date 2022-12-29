@@ -11,8 +11,12 @@ export class RootEnvironmentService {
     private envRepo: Repository<Environment>,
   ) {}
 
-  async create(createEnvDto: CreateEnvironmentDto) {
-    return this.envRepo.save(createEnvDto);
+  async create(org: Organization, team: Team, createEnvDto: CreateEnvironmentDto) {
+    return this.envRepo.save({
+      organization: org,
+      team,
+      ...createEnvDto
+    });
   }
 
   async findAll(org: Organization, team: Team) {

@@ -24,6 +24,22 @@ export class ComponentService {
     }, 20000);
   }
 
+  async batchCreate(org: Organization, env: Environment, names: string[]) {
+    await this.compRepo
+    .createQueryBuilder()
+    .useTransaction(true)
+    .insert()
+    .into(Component)
+    .values(names.map(name => {
+      return {
+        name,
+        environment: env,
+        organization: org
+      }
+    }))
+    .execute();
+  }
+
   async create(org: Organization, env: Environment, name: string): Promise<Component> {
     return this.compRepo.save({
       name,
@@ -128,12 +144,11 @@ export class ComponentService {
     return Number(raw.cost || 0);
   }
 
-  async getComponentCost(org: Organization, team: Team, compName: string, envName: string): Promise<ComponentDto> {
-    const env = await this.envSvc.findByName(org, team, envName);
+  async getComponentCost(org: Organization, team: Team, env: Environment, compName: string): Promise<ComponentDto> {
     const component = await this.findByName(org, env, compName);
 
     if (!component) {
-      this.logger.error({message: 'could not find component', teamName: team.name, compName, envName})
+      this.logger.error({message: 'could not find component', teamName: team.name, compName, env})
       throw new NotFoundException();
     }
 

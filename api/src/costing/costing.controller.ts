@@ -1,9 +1,6 @@
-import { BadRequestException, Body, Controller, Get, Param, Post, Query, Request } from '@nestjs/common'
+import { Controller, Get, Query, Request } from '@nestjs/common'
 import { RequiredQueryValidationPipe, TeamEnvCompQueryParams, TeamEnvQueryParams } from 'src/reconciliation/validationPipes';
-import { TeamService } from 'src/team/team.service';
-import { Environment } from 'src/typeorm/environment.entity';
 import { ComponentDto } from './dtos/Component.dto';
-import { CostingDto } from './dtos/Costing.dto'
 import { ComponentService } from './services/component.service'
 
 @Controller({
@@ -12,7 +9,6 @@ import { ComponentService } from './services/component.service'
 export class CostingController {
   constructor(
     private readonly compSvc: ComponentService,
-    private readonly teamSvc: TeamService
   ) {}
 
   @Get('all')
@@ -39,7 +35,7 @@ export class CostingController {
     @Request() req,
     @Query(new RequiredQueryValidationPipe()) tec: TeamEnvCompQueryParams
   ): Promise<ComponentDto> {
-    const {org, team } = req;
-    return await this.compSvc.getComponentCost(org, team, tec.compName, tec.envName);
+    const {org, team, env } = req;
+    return await this.compSvc.getComponentCost(org, team, env, tec.compName);
   }
 }
