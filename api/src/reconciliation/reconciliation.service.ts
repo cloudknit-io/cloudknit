@@ -506,29 +506,6 @@ export class ReconciliationService {
 
   private async getLatestCompReconcile(org: Organization, compName: string, envName: string, teamName: string): Promise<ComponentReconcile> {
     try {
-      // const latestAuditId = this.componentReconcileRepository
-      // .createQueryBuilder()
-      // .where('name = :name and organizationId = :orgId', {
-      //   name: componentId,
-      //   orgId: org.id,
-      //   status: Not(Like("skipped%")),
-      // })
-      // .orderBy('start_date_time', 'DESC')
-      // .getOne();
-
-      const envRecon = await this.environmentReconcileRepository.findOne({
-        where: {
-          name: envName,
-          team_name: teamName,
-          organization: {
-            id : org.id
-          }
-        },
-        order: {
-          start_date_time: -1,
-        }
-      });
-  
       const latestAuditId = await this.componentReconcileRepository.findOne({
         where: {
           name: compName,
@@ -537,7 +514,8 @@ export class ReconciliationService {
             id : org.id
           },
           environmentReconcile: {
-            reconcile_id: envRecon.reconcile_id
+            name: envName,
+            team_name: teamName
           }
         },
         order: {
@@ -545,7 +523,7 @@ export class ReconciliationService {
         }
       });
 
-      this.logger.debug({message: `getting latest component reconcile id`, compName, envName, teamName, envRecon});
+      this.logger.debug({message: `getting latest component reconcile id`, compName, envName, teamName});
       return latestAuditId;
     } catch (err) {
       this.logger.error('could not get latestAuditId', err);
