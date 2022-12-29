@@ -120,7 +120,7 @@ export function handlePublicRoutes(router: express.Router) : express.Router {
     const data = { ...req.body };
 
     try {
-      const resp = await axios.post(argoCdUrl, data, {
+      await axios.post(argoCdUrl, data, {
         headers: {
           'X-GitHub-Event': req.header('X-GitHub-Event'),
           'X-GitHub-Delivery': req.header('X-GitHub-Delivery'),
