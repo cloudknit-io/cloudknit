@@ -93,33 +93,9 @@ const getOrg = async (orgName: string) : Promise<Organization> => {
 const syncWatcher = async (orgName: string, teamName: string) => {
   try {
   const {authorization} = await getArgoCDAuthHeader(orgName);
-
-  const requestPayload = {
-    appNamespace: "zlifecycle-system",
-    revision: "HEAD",
-    prune: false,
-    dryRun: false,
-    strategy: {
-      hook: {
-        force: false,
-      },
-    },
-    resources: null,
-    syncOptions: {
-      items: ["ServerSideApply=true"],
-    },
-    retryStrategy: {
-      limit: 1,
-      backoff: {
-        duration: "5s",
-        maxDuration: "3m0s",
-        factor: 2,
-      },
-    },
-  };
   await axios.post(
     `${config.ARGOCD_URL}/api/v1/applications/${orgName}-${teamName}-team-watcher/sync`,
-    requestPayload,
+    {},
     {
       headers: {
         authorization,
