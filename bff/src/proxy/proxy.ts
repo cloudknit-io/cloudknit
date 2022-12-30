@@ -116,6 +116,7 @@ export function handlePublicRoutes(router: express.Router) : express.Router {
   // GitHub webhook proxy
   router.post('/webhook/argocd', express.json(), async (req: BFFRequest, res: express.Response, next) => {
     const org = await helper.orgFromReq(req);
+    const { o, t } = req.query;
     const argoCdUrl = `${config.ARGOCD_URL}/api/webhook`;
     const data = { ...req.body };
 
@@ -128,9 +129,34 @@ export function handlePublicRoutes(router: express.Router) : express.Router {
           'X-Hub-Signature-256': req.header('X-Hub-Signature-256'),
         }
       });
-
-      logger.info('org from webhook', JSON.stringify(org))
-
+      if (o && t) {
+        const requestPayload = {
+          "appNamespace": "zlifecycle-system",
+          "revision": "HEAD",
+          "prune": false,
+          "dryRun": false,
+          "strategy": {
+            "hook": {
+              "force": false
+            }
+          },
+          "resources": null,
+          "syncOptions": {
+            "items": [
+              "ServerSideApply=true"
+            ]
+          },
+          "retryStrategy": {
+            "limit": 1,
+            "backoff": {
+              "duration": "5s",
+              "maxDuration": "3m0s",
+              "factor": 2
+            }
+          }
+        };
+        await axios.post(`${config.ARGOCD_URL}/api/v1/applications/${o}-${t}-team-watcher/sync`, requestPayload);
+      }
       res.status(200).send();
     } catch (error) {
       const { data, status, headers } = error.response
