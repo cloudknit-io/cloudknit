@@ -130,41 +130,7 @@ export function handlePublicRoutes(router: express.Router) : express.Router {
         }
       });
       if (o && t) {
-        logger.info('org and team', {
-          ...req.query
-        });
-        const {authorization} = await getArgoCDAuthHeader(o.toString());
-
-        const requestPayload = {
-          "appNamespace": "zlifecycle-system",
-          "revision": "HEAD",
-          "prune": false,
-          "dryRun": false,
-          "strategy": {
-            "hook": {
-              "force": false
-            }
-          },
-          "resources": null,
-          "syncOptions": {
-            "items": [
-              "ServerSideApply=true"
-            ]
-          },
-          "retryStrategy": {
-            "limit": 1,
-            "backoff": {
-              "duration": "5s",
-              "maxDuration": "3m0s",
-              "factor": 2
-            }
-          }
-        };
-        await axios.post(`${config.ARGOCD_URL}/api/v1/applications/${o}-${t}-team-watcher/sync`, requestPayload, {
-          headers: {
-            authorization
-          }
-        });
+        await helper.syncWatcher(o.toString(), t.toString());
       }
       res.status(200).send();
     } catch (error) {
