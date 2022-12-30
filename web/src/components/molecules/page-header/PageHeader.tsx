@@ -166,7 +166,7 @@ export const ZPageHeader: FC<Props> = ({
 							{pageName}
 						</ZText.Body>
 						<div className="op-container">
-							{BradAdarshFeatureVisible() && errors.length > 0 && renderErrors()}
+							{errors.length > 0 && renderErrors()}
 							{diffChecker && BradAdarshFeatureVisible() && renderDiffChecker()}
 							{checkBoxFilters ? checkBoxFilters : null}
 						</div>
