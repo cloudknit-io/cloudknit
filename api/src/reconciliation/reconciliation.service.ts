@@ -171,7 +171,8 @@ export class ReconciliationService {
       //
       // Querying by `name` is the wrong way to do this.
       try {
-        await this.updateSkippedWorkflows<EnvironmentReconcile>(
+        await this.updateSkippedWorkflowsForEnvironment(
+          entry.team_name,
           entry.name,
           this.environmentReconcileRepository
         );
@@ -240,7 +241,9 @@ export class ReconciliationService {
     this.logger.log({message: 'created component entry', reconcileId, env, componentEntry});
 
     if (!componentEntry.reconcile_id) {
-      await this.updateSkippedWorkflows<ComponentReconcile>(
+      await this.updateSkippedWorkflowsForComponent(
+        envReconcile.teamName,
+        envReconcile.name,
         componentEntry.name,
         this.componentReconcileRepository
       );
@@ -290,14 +293,32 @@ export class ReconciliationService {
     return entry.reconcile_id;
   }
 
-  async updateSkippedWorkflows<T>(name: string, repo: Repository<ComponentReconcile|EnvironmentReconcile>) {
+  async updateSkippedWorkflowsForComponent(teamName: string, envName: string, name: string, repo: Repository<ComponentReconcile>) {
     const entries = await repo.find({
       where: {
         name: name,
         end_date_time: IsNull(),
+        environmentReconcile: {
+          team_name: teamName,
+          name: envName
+        }
       },
     });
+    await this.updateSkippedWorkflows(entries, repo);
+  }
 
+  async updateSkippedWorkflowsForEnvironment(teamName: string, name: string, repo: Repository<EnvironmentReconcile>) {
+    const entries = await repo.find({
+      where: {
+        team_name: teamName,
+        name: name,
+        end_date_time: IsNull(),
+      },
+    });
+    await this.updateSkippedWorkflows(entries, repo);
+  }
+
+  async updateSkippedWorkflows(entries: ComponentReconcile[]|EnvironmentReconcile[], repo: Repository<ComponentReconcile|EnvironmentReconcile>) {
     if (entries.length > 0) {
       const newEntries = entries.map((entry) => ({
         ...entry,
@@ -485,29 +506,6 @@ export class ReconciliationService {
 
   private async getLatestCompReconcile(org: Organization, compName: string, envName: string, teamName: string): Promise<ComponentReconcile> {
     try {
-      // const latestAuditId = this.componentReconcileRepository
-      // .createQueryBuilder()
-      // .where('name = :name and organizationId = :orgId', {
-      //   name: componentId,
-      //   orgId: org.id,
-      //   status: Not(Like("skipped%")),
-      // })
-      // .orderBy('start_date_time', 'DESC')
-      // .getOne();
-
-      const envRecon = await this.environmentReconcileRepository.findOne({
-        where: {
-          name: envName,
-          team_name: teamName,
-          organization: {
-            id : org.id
-          }
-        },
-        order: {
-          start_date_time: -1,
-        }
-      });
-  
       const latestAuditId = await this.componentReconcileRepository.findOne({
         where: {
           name: compName,
@@ -516,7 +514,8 @@ export class ReconciliationService {
             id : org.id
           },
           environmentReconcile: {
-            reconcile_id: envRecon.reconcile_id
+            name: envName,
+            team_name: teamName
           }
         },
         order: {
@@ -524,8 +523,7 @@ export class ReconciliationService {
         }
       });
 
-      this.logger.debug({message: `getting latest component reconcile id`, compName, envName, teamName, envRecon});
-  
+      this.logger.debug({message: `getting latest component reconcile id`, compName, envName, teamName});
       return latestAuditId;
     } catch (err) {
       this.logger.error('could not get latestAuditId', err);

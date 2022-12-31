@@ -5,6 +5,7 @@ import { BFFRequest } from "../types";
 import { getUser } from "../auth/auth";
 import axios from "axios";
 import logger from '../utils/logger';
+import { getArgoCDAuthHeader } from "../auth/argo";
 
 const orgFromReq = async (req: BFFRequest) : Promise<Organization> => {
   if (!req.cookies[config.SELECTED_ORG_HEADER]) {
@@ -89,6 +90,22 @@ const getOrg = async (orgName: string) : Promise<Organization> => {
     return null;
   }
 }
+const syncWatcher = async (orgName: string, teamName: string) => {
+  try {
+  const {authorization} = await getArgoCDAuthHeader(orgName);
+  await axios.post(
+    `${config.ARGOCD_URL}/api/v1/applications/${orgName}-${teamName}-team-watcher/sync`,
+    {},
+    {
+      headers: {
+        authorization,
+      },
+    }
+  );
+  } catch (err) {
+    logger.error('could not sync watcher', { orgName, teamName, err });
+  }
+};
 
 export default {
   orgFromReq,
@@ -96,5 +113,6 @@ export default {
   handleNoOrg,
   getSystemSSMSecret,
   getSSMSecret,
-  getOrg
-}
+  getOrg,
+  syncWatcher,
+};

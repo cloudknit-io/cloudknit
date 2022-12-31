@@ -180,6 +180,7 @@ export class ComponentService {
       savedComponent.isDestroyed = costing.component.isDestroyed ?? savedComponent.isDestroyed;
       if (savedComponent.isDestroyed) {
         savedComponent.estimatedCost = -1;
+        savedComponent.costResources = [];
       }
       // Update existing component
       if (costing.component.status && savedComponent.status !== costing.component.status) {

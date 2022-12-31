@@ -115,7 +115,8 @@ const createProxy = function() {
 export function handlePublicRoutes(router: express.Router) : express.Router {
   // GitHub webhook proxy
   router.post('/webhook/argocd', express.json(), async (req: BFFRequest, res: express.Response, next) => {
-    const org = helper.orgFromReq(req);
+    const org = await helper.orgFromReq(req);
+    const { o, t } = req.query;
     const argoCdUrl = `${config.ARGOCD_URL}/api/webhook`;
     const data = { ...req.body };
 
@@ -128,7 +129,9 @@ export function handlePublicRoutes(router: express.Router) : express.Router {
           'X-Hub-Signature-256': req.header('X-Hub-Signature-256'),
         }
       });
-
+      if (o && t) {
+        await helper.syncWatcher(o.toString(), t.toString());
+      }
       res.status(200).send();
     } catch (error) {
       const { data, status, headers } = error.response
