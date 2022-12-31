@@ -1,7 +1,7 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from "@nestjs/common";
+import { Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Subject } from "rxjs";
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 import { MessageEvent } from "@nestjs/common";
 import { Component, Organization, Team } from "src/typeorm";
 import { Environment } from "src/typeorm/environment.entity";
@@ -25,7 +25,7 @@ export class ComponentService {
   }
 
   async batchCreate(org: Organization, env: Environment, names: string[]) {
-    await this.compRepo
+    return await this.compRepo
     .createQueryBuilder()
     .useTransaction(true)
     .insert()
@@ -40,6 +40,18 @@ export class ComponentService {
     .execute();
   }
 
+  async batchDelete(org: Organization, env: Environment, comps: Component[]) {
+    return this.compRepo.delete({
+      id: In(comps.map(c => c.id)),
+      organization: {
+        id: org.id
+      },
+      environment: {
+        id: env.id
+      }
+    })
+  }
+
   async create(org: Organization, env: Environment, name: string): Promise<Component> {
     return this.compRepo.save({
       name,
@@ -48,7 +60,7 @@ export class ComponentService {
     });
   }
 
-  async getAllForEnvironmentById(org: Organization, env: Environment): Promise<Component[]> {
+  async getAllForEnvironmentById(org: Organization, env: Environment, withDestroyed: boolean = false): Promise<Component[]> {
     return this.compRepo.find({
       where: {
         organization: {
@@ -56,36 +68,39 @@ export class ComponentService {
         },
         environment: {
           id: env.id
-        }
+        },
+        // isDestroyed: withDestroyed === true ? null : false
       }
     })
   }
 
-  async getAll(org: Organization): Promise<Component[]> {
+  async getAll(org: Organization, isDestroyed: boolean = false): Promise<Component[]> {
     const components = await this.compRepo.find({
       where: {
         organization: {
           id: org.id
-        }
+        },
+        isDestroyed
       }
     });
 
     return components;
   }
 
-  async findById(org: Organization, id: number, relations?: {}): Promise<Component> {
+  async findById(org: Organization, id: number, isDestroyed: boolean = false, relations?: {}): Promise<Component> {
     return await this.compRepo.findOne({
       where: {
         id,
         organization: {
           id: org.id
-        }
+        },
+        isDestroyed
       },
       relations
     });
   }
 
-  async findByName(org: Organization, env: Environment, name: string, relations?: {}): Promise<Component> {
+  async findByName(org: Organization, env: Environment, name: string, isDestroyed: boolean = false, relations?: {}): Promise<Component> {
     return await this.compRepo.findOne({
       where: {
         name,
@@ -94,7 +109,8 @@ export class ComponentService {
         },
         organization: {
           id: org.id
-        }
+        },
+        isDestroyed
       },
       relations
     });
@@ -119,7 +135,8 @@ export class ComponentService {
         `components.estimated_cost != -1 and 
         components.teamName = '${team.name}' and 
         components.environmentId = '${env.id}' and 
-        components.organizationId = ${org.id}`
+        components.organizationId = ${org.id} and
+        components.isDestroyed = false`
       )
       .getRawOne();
     return Number(raw.cost || 0);
@@ -132,7 +149,8 @@ export class ComponentService {
       .where(
         `components.teamName = '${team.name}' and 
         components.estimated_cost != -1 and
-        components.organizationId = ${org.id}`
+        components.organizationId = ${org.id} and
+        components.isDestroyed = false`
       )
       .getRawOne();
 

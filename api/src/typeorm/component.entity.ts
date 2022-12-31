@@ -1,9 +1,10 @@
 import { CostResource } from 'src/costing/dtos/Resource.dto';
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { Organization } from './Organization.entity';
 import { Environment } from './environment.entity';
 
 @Entity({ name: 'components' })
+@Index(['organization', 'environment', 'name'], { unique: true })
 export class Component {
   @PrimaryGeneratedColumn()
   id: number

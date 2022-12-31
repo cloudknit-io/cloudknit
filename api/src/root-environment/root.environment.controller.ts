@@ -1,9 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Request, BadRequestException, Logger, InternalServerErrorException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Request, BadRequestException, Logger, InternalServerErrorException } from '@nestjs/common';
 import { ComponentService } from 'src/costing/services/component.service';
 import { CreateEnvironmentDto } from 'src/environment/dto/create-environment.dto';
 import { EnvSpecComponentDto, EnvSpecDto } from 'src/environment/dto/env-spec.dto';
 import { EnvironmentService } from 'src/environment/environment.service';
-import { Environment, Organization, Team } from 'src/typeorm';
+import { Component, Environment, Organization, Team } from 'src/typeorm';
 import { SqlErrorCodes } from 'src/types';
 import { RootEnvironmentService } from './root.environment.service';
 
@@ -26,37 +26,45 @@ export class RootEnvironmentController {
     let env = await this.envSvc.findByName(org, team, body.envName);
 
     if (!env) {
-      this.createEnv(org, team, {
+      return this.createEnv(org, team, {
         name: body.envName,
         dag: body.components
       });
-    } else {
-      const dbComps = await this.compSvc.getAllForEnvironmentById(org, env);
-      const existingComponents = body.components.filter(incoming => {
-        return dbComps.find(dbComp => incoming.name === dbComp.name)
-      });
-      const newComponents = body.components.filter(incoming => {
-        return !dbComps.find(dbComp => incoming.name === dbComp.name)
-      });
-      const dag: EnvSpecComponentDto[] = [...existingComponents, ...newComponents].map(val => {
-        return {
-          name: val.name,
-          type: val.type,
-          dependsOn: val.dependsOn
-        };
-      });
-
-      env = await this.envSvc.update(org, env.id, {
-        dag,
-        name: env.name,
-        duration: env.duration,
-        isDeleted: env.isDeleted
-      })
-
-      // create new components
-      // update existing
-      // delete missing
     }
+
+    const currentComps: Component[] = await this.compSvc.getAllForEnvironmentById(org, env);
+    const incoming: EnvSpecComponentDto[] = body.components;
+    const newComponents: EnvSpecComponentDto[] = incoming.filter(inc => {
+      return !currentComps.find(comp => comp.name === inc.name)
+    });
+    const missingComponents: Component[] = [];
+    const existingComponents: EnvSpecComponentDto[] = [];
+
+    for (const comp of currentComps) {
+      const found = incoming.find(i => comp.name === i.name);
+      
+      if(!found) {
+        missingComponents.push(comp);
+        continue;
+      } 
+      
+      existingComponents.push(found);
+    }
+
+    const dag: EnvSpecComponentDto[] = [].concat(existingComponents).concat(newComponents);
+
+    env = await this.envSvc.update(org, env.id, {
+      dag,
+      name: env.name,
+      duration: env.duration,
+      isDeleted: env.isDeleted
+    })
+
+    // create new components
+    await this.batchCreateComponents(org, env, newComponents);
+
+    // delete missing
+    await this.batchDeleteComponents(org, env, missingComponents);
 
     return env;
   }
@@ -73,6 +81,7 @@ export class RootEnvironmentController {
 
     try {
       env = await this.rootEnvSvc.create(org, team, createEnv);
+      this.logger.log({ message: `created new environment`, env})
     } catch (err) {
       if (err.code === SqlErrorCodes.DUP_ENTRY) {
         throw new BadRequestException('environment already exists');
@@ -91,10 +100,22 @@ export class RootEnvironmentController {
     }
 
     // create all new components
+    await this.batchCreateComponents(org, env, createEnv.dag);
+
+    return env;
+  }
+
+  async batchCreateComponents(org: Organization, env: Environment, comps: EnvSpecComponentDto[]) {
+    if (!comps || comps.length === 0) {
+      return;
+    }
+
     try {
-      await this.compSvc.batchCreate(org, env, createEnv.dag.map(comp => comp.name))
+      const res = await this.compSvc.batchCreate(org, env, comps.map(comp => comp.name));
+      this.logger.log({ message: `created ${res.identifiers.length} new components`, env})
     } catch (err) {
       if (err.code === SqlErrorCodes.DUP_ENTRY) {
+        this.logger.error({ message: 'component already exists', env, sqlMessage: err.sqlMessage });
         throw new BadRequestException('component already exists');
       }
 
@@ -105,7 +126,23 @@ export class RootEnvironmentController {
       this.logger.error({ message: 'could not batch create components during environment creation', err});
       throw new InternalServerErrorException('could not create components');
     }
+  }
 
-    return env;
+  async batchDeleteComponents(org: Organization, env: Environment, comps: Component[]) {
+    if (!comps || comps.length === 0) {
+      return;
+    }
+
+    try {
+      const res = await this.compSvc.batchDelete(org, env, comps)
+      this.logger.log({ message: `deleted ${res.affected} components`, env})
+    } catch (err) {
+      if (err.code === SqlErrorCodes.NO_DEFAULT) {
+        throw new BadRequestException(err.sqlMessage);
+      }
+
+      this.logger.error({ message: 'could not batch delete components during environment spec reconciliation', err});
+      throw new InternalServerErrorException('could not delete components');
+    }
   }
 }
