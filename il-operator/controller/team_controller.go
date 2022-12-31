@@ -125,8 +125,6 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		defer tx.End()
 	}
 
-	teamRepoURL := team.Spec.ConfigRepo.Source
-
 	// services init
 	fileAPI := file.NewOSFileService()
 	watcherServices, err := watcherservices.NewGitHubServices(apmCtx, r.Client, env.Config.GitHubCompanyOrganization, r.LogV2)
@@ -159,6 +157,8 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error creating team dir"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
 	}
+
+	teamRepoURL := team.Spec.ConfigRepo.Source
 
 	if err := watcherServices.CompanyWatcher.Watch(teamRepoURL); err != nil {
 		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error registering argocd team repo via github app auth"))
@@ -194,7 +194,8 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	}
 
 	if !util.IsGitLabURL(teamRepoURL) {
-		_, err = github.CreateRepoWebhook(r.LogV2, watcherServices.CompanyGitClient, teamRepoURL, env.Config.ArgocdWebhookURL, env.Config.GitHubWebhookSecret)
+		webhookURL := env.Config.ArgocdWebhookURL + "?o=" + env.Config.CompanyName + "&t=" + team.Spec.TeamName
+		_, err = github.CreateRepoWebhook(r.LogV2, watcherServices.CompanyGitClient, teamRepoURL, webhookURL, env.Config.GitHubWebhookSecret)
 		if err != nil {
 			r.LogV2.WithError(err).Error("error creating Team webhook")
 		}
