@@ -28,7 +28,8 @@ export class Organization {
 
   @Column({
     name: "github_org_name",
-    default: null
+    default: null,
+    unique: true
   })
   githubOrgName: string;
 
