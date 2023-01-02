@@ -115,30 +115,70 @@ const createProxy = function() {
 export function handlePublicRoutes(router: express.Router) : express.Router {
   // GitHub webhook proxy
   router.post('/webhook/argocd', express.json(), async (req: BFFRequest, res: express.Response, next) => {
-    const org = await helper.orgFromReq(req);
-    const { o, t } = req.query;
     const argoCdUrl = `${config.ARGOCD_URL}/api/webhook`;
-    const data = { ...req.body };
+    const body = { ...req.body };
+    const XGitHubEvent = req.header('X-GitHub-Event')
+    const XGitHubDelivery = req.header('X-GitHub-Delivery')
+    const XHubSignature = req.header('X-Hub-Signature')
+    const XHubSignature256 = req.header('X-Hub-Signature-256')
+
+    if (!XGitHubEvent || !XGitHubDelivery || !XHubSignature || !XHubSignature256) {
+      logger.error('valid GitHub headers were not sent to webhook endpoint');
+      res.status(400).send();
+      return;
+    }
 
     try {
-      await axios.post(argoCdUrl, data, {
+      await axios.post(argoCdUrl, body, {
         headers: {
-          'X-GitHub-Event': req.header('X-GitHub-Event'),
-          'X-GitHub-Delivery': req.header('X-GitHub-Delivery'),
-          'X-Hub-Signature': req.header('X-Hub-Signature'),
-          'X-Hub-Signature-256': req.header('X-Hub-Signature-256'),
+          'X-GitHub-Event': XGitHubEvent,
+          'X-GitHub-Delivery': XGitHubDelivery,
+          'X-Hub-Signature': XHubSignature,
+          'X-Hub-Signature-256': XHubSignature256,
         }
       });
-      if (o && t) {
-        await helper.syncWatcher(o.toString(), t.toString());
-      }
-      res.status(200).send();
     } catch (error) {
-      const { data, status, headers } = error.response
-      logger.error('GitHub webhook error', { org, error: { data, status, headers } });
+      if (error.response) {
+        const { data, status, headers } = error.response
+        logger.error('GitHub webhook ArgoCD error', { error: { data, status, headers } });
+      } else {
+        logger.error('GitHub webhook ArgoCD error', error);
+      }
+
       res.status(500).send();
       return;
     }
+
+    try {
+      const { t: team } = req.query;
+      
+      if (!team) {
+        logger.info(`no "team" query param on GitHub webhook url for ${body.organization}`);
+        res.status(200).send();
+        return;
+      }
+
+      const orgsUrl = `${config.API_URL}/orgs?github-org-name=${body.organization}`;
+      const { data: orgData } = await axios.get(orgsUrl);
+      const org = orgData.org;
+  
+      if (org && team) {
+        // @ts-ignore
+        await helper.syncWatcher(org.name, team.toString());
+      }
+    } catch (error) {
+      if (error.response) {
+        const { data, status, headers } = error.response
+        logger.error('GitHub webhook ArgoCD sync call error', { error: { data, status, headers } });
+      } else {
+        logger.error('GitHub webhook ArgoCD sync call error', error);
+      }
+
+      res.status(500).send();
+      return;
+    }
+
+    res.status(200).send();
   });
 
   return router;

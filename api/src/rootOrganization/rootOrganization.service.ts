@@ -22,6 +22,14 @@ export class RootOrganizationsService {
     return this.orgRepo.find();
   }
 
+  async getOrgByGithubOrg(ghOrgName: string) {
+    return this.orgRepo.findOne({
+      where: {
+        githubOrgName: ghOrgName
+      }
+    });
+  }
+
   async create(newOrg: CreateOrganizationDto) {
     let user;
 

@@ -194,7 +194,7 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	}
 
 	if !util.IsGitLabURL(teamRepoURL) {
-		webhookURL := env.Config.ArgocdWebhookURL + "?o=" + env.Config.CompanyName + "&t=" + team.Spec.TeamName
+		webhookURL := env.Config.ArgocdWebhookURL + "?t=" + team.Spec.TeamName
 		_, err = github.CreateRepoWebhook(r.LogV2, watcherServices.CompanyGitClient, teamRepoURL, webhookURL, env.Config.GitHubWebhookSecret)
 		if err != nil {
 			r.LogV2.WithError(err).Error("error creating Team webhook")
