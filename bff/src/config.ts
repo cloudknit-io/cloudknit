@@ -5,6 +5,7 @@ const config = {
     AUTH0_ISSUER_BASE_URL: process.env.AUTH0_ISSUER_BASE_URL,
     AUTH0_SECRET: process.env.AUTH0_SECRET,
     WEB_URL: process.env.SITE_URL,
+    API_URL: `${process.env.ZLIFECYCLE_API_URL}/v1`,
     ARGOCD_URL: process.env.ARGO_CD_API_URL,
     argoWFUrl: (orgName: string) => process.env.ARGO_WORKFLOW_API_URL.replaceAll(':org', orgName),
     stateMgrUrl: (orgName: string) => process.env.ZLIFECYCLE_STATE_MANAGER_URL.replaceAll(':org', orgName),
