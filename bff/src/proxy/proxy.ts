@@ -160,11 +160,11 @@ export function handlePublicRoutes(router: express.Router) : express.Router {
 
       const orgsUrl = `${config.API_URL}/orgs?github-org-name=${body.repository.organization}`;
       const { data: orgData } = await axios.get(orgsUrl);
-      const org = orgData.org;
+      const orgName = orgData.name;
   
-      if (org && team) {
+      if (orgName && team) {
         // @ts-ignore
-        await helper.syncWatcher(org.name, team.toString());
+        await helper.syncWatcher(orgName, team.toString());
       }
     } catch (error) {
       if (error.response) {
