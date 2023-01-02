@@ -153,12 +153,12 @@ export function handlePublicRoutes(router: express.Router) : express.Router {
       const { t: team } = req.query;
       
       if (!team) {
-        logger.info(`no "team" query param on GitHub webhook url for ${body.organization}`);
+        logger.info(`no "team" query param on GitHub webhook url for ${body.repository.organization}`);
         res.status(200).send();
         return;
       }
 
-      const orgsUrl = `${config.API_URL}/orgs?github-org-name=${body.organization}`;
+      const orgsUrl = `${config.API_URL}/orgs?github-org-name=${body.repository.organization}`;
       const { data: orgData } = await axios.get(orgsUrl);
       const org = orgData.org;
   
