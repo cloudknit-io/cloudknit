@@ -8,6 +8,7 @@ domain: zcustomer.zlifecycle.com
 environment:
 enabledFeatureFlags:
 adminDomain: zcustomer-admin.zlifecycle.com
+replicas: 1
 bff:
   urlWithProtocol:
   authPath:

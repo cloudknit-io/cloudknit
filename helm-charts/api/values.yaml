@@ -2,6 +2,7 @@ image:
   name: zlifecycle-api
   tag: latest
   repository:
+replicas: 1
 database:
   host:
   username:
