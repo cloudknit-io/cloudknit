@@ -61,6 +61,12 @@ const envTabs = [
 ];
 
 export const EnvironmentComponents: React.FC = () => {
+
+	// Migrating to API
+	// Get all components and start streaming
+	// End Streaming whenever we change the environment or URL changes [ this would decrease load on web ]
+	// Alter the data store
+
 	const { fetch } = useApi(ArgoComponentsService.getComponents);
 	const fetchEnvironments = useApi(ArgoEnvironmentsService.getEnvironments).fetch;
 	const { fetch: fetchWorkflowData } = useApi(ArgoWorkflowsService.getConfigWorkflow);

@@ -16,60 +16,62 @@ import { streamMapper } from 'helpers/streamMapper';
 import { ArgoMapper } from 'services/argo/ArgoMapper';
 import { Loader } from 'components/atoms/loader/Loader';
 import AuthStore from 'auth/AuthStore';
+import { Environment, Team } from 'models/entity.store';
 
 type Props = {
-	teams: TeamsList;
+	teams: Team[];
 };
 
 type TeamItemProps = {
-	team: TeamItem;
+	team: Team;
 };
 
-const getEnvironmentStatus = (team: any, children: any[]) => {
+const getEnvironmentStatus = (team: Team) => {
 	const envLimit = 3;
 	return (
 		<div className="environment-status">
-			{team.resources?.length && children.length > 0 ? (
+			{team.environments?.length > 0 ? (
 				<>
 					<div className="environment-status__preview">
-						{children?.slice(0, envLimit).map(resource => (
+						{team.environments?.slice(0, envLimit).map(resource => (
 							<div>
-								<b title={resource.name.replace(`${team.id}-`, '')}>
-									{resource.name.replace(`${team.id}-`, '')}
+								<b title={resource.name}>
+									{resource.name}
 								</b>
-								{renderEnvSyncedStatus((resource.labels?.env_status as ZSyncStatus) || 'Unknown')}
+								{renderEnvSyncedStatus('Unknown')}
 							</div>
 						))}
-						{children.length > envLimit && <div>More...</div>}
+						{team.environments.length > envLimit && <div>More...</div>}
 					</div>
-					{children.length > envLimit && (
+					{team.environments.length > envLimit && (
 						<div className="environment-status__tooltip">
-							{children.map(resource => (
+							{team.environments.map(resource => (
 								<div>
 									<b title={resource.name.replace(`${team.id}-`, '')}>
 										{resource.name.replace(`${team.id}-`, '')}
 									</b>
-									{renderEnvSyncedStatus((resource.labels?.env_status as ZSyncStatus) || 'Unknown')}
+									{renderEnvSyncedStatus('Unknown')}
 								</div>
 							))}
 						</div>
 					)}
 				</>
 			) : (
-				<>{team.resources?.length ? <Loader height={16} width={16} /> : <></>}</>
+				<>{team.environments?.length ? <Loader height={16} width={16} /> : <></>}</>
 			)}
 		</div>
 	);
 };
-const items = (team: TeamItem, children: EnvironmentItem[]): ListItem[] => {
+const items = (team: Team): ListItem[] => {
 	return [
 		{
 			label: 'Cost',
-			value: renderCost(team.id),
+			// value: renderCost(team.id),
+			value: -1,
 		},
 		{
-			label: `Envs (${team.resources?.length || 0})`,
-			value: getEnvironmentStatus(team, children),
+			label: `Envs (${team.environments?.length || 0})`,
+			value: getEnvironmentStatus(team),
 		},
 	];
 };
@@ -77,7 +79,7 @@ const items = (team: TeamItem, children: EnvironmentItem[]): ListItem[] => {
 export const TeamCards: FC<Props> = ({ teams }: Props) => {
 	return (
 		<div className="team com-cards">
-			{teams.map((team: TeamItem, _i) => (
+			{teams.map((team: Team, _i) => (
 				<TeamCard team={team} key={_i} />
 			))}
 		</div>
@@ -86,35 +88,11 @@ export const TeamCards: FC<Props> = ({ teams }: Props) => {
 
 export const TeamCard: FC<TeamItemProps> = ({ team }: TeamItemProps) => {
 	const history = useHistory();
-	const { fetch } = useApi(ArgoEnvironmentsService.getEnvironments);
-	const [streamData, setStreamData] = useState<ApplicationWatchEvent | null>(null);
-	const [environments, setEnvironments] = useState<EnvironmentsList>([]);
-	const teamId = (team.id || '').replace(AuthStore.getOrganization()?.name + '-', '');
+	const [teamItem, setTeam] = useState<Team>(team);
+	const teamId = team.name;
 
 	useEffect(() => {
-		const $subscription = subscriber.subscribe(response => {
-			setStreamData(response);
-		});
-
-		return (): void => $subscription.unsubscribe();
-	}, []);
-
-	useEffect(() => {
-		const newItems = streamMapper<EnvironmentItem>(
-			streamData,
-			environments,
-			ArgoMapper.parseEnvironment,
-			'environment'
-		);
-		setEnvironments(newItems);
-	}, [streamData, environments]);
-
-	useEffect(() => {
-		fetch(teamId).then(({ data }) => {
-			if (data) {
-				setEnvironments(data);
-			}
-		});
+		setTeam(teamItem);	
 	}, [team]);
 
 	return (
@@ -127,7 +105,7 @@ export const TeamCard: FC<TeamItemProps> = ({ team }: TeamItemProps) => {
 				<ZText.Body>{team.name}</ZText.Body>
 			</div>
 			<div className="com-card__body">
-				<ZGridDisplayListWithLabel items={items(team, environments)} />
+				<ZGridDisplayListWithLabel items={items(team)} />
 			</div>
 		</div>
 	);

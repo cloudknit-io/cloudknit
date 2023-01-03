@@ -1,5 +1,6 @@
 import AuthStore from 'auth/AuthStore';
 import { Layout, TopBar } from 'components/argo-core';
+import { EntityStore } from 'models/entity.store';
 import React, { ReactElement, useState } from 'react';
 import { useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
@@ -13,14 +14,11 @@ import {
 import { EnvironmentHeader } from './environments/EnvironmentHeader';
 
 const Authorized: React.FC = ({ children }) => {
-	const history = useHistory();
-	const [sideNavCollapsed, setSideNavCollapseState] = useState(true);
-	const sideNavToggleCollapse = () => setSideNavCollapseState(!sideNavCollapsed);
 	useEffect(() => {
 		if (!AuthStore.getOrganization()) {
 			return;
 		}
-		CostingService.getInstance().streamNotification();
+		EntityStore.getInstance();
 	}, []);
 
 	return (
@@ -29,10 +27,6 @@ const Authorized: React.FC = ({ children }) => {
 				<TopBar title="zLifecycle" />
 			</div>
 			<main className="zlifecycle-main-content">
-				<div
-					className={`dark-overlay ${sideNavCollapsed ? 'collapsed' : ''}`}
-					onClick={() => sideNavToggleCollapse()}
-				/>
 				<div className="page zlifecycle-main">
 					<EnvironmentPageHeaderCtx.Provider
 						value={{

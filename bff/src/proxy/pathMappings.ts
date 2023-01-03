@@ -196,8 +196,7 @@ const COSTING_PATH_MAPPINGS = [
       `/v1/orgs/${params.orgId}/costing/stream/environment`,
   },
 ];
-// /v1/orgs/1/reconciliation/environments/equity-error-2
-// /reconciliation/api/v1/environments/equity-error-2
+
 const AUDIT_PATH_MAPPINGS = [
   {
     path: "/reconciliation/api/v1/environments",
@@ -362,6 +361,17 @@ const OPERATION_PATH_MAPPING = [
   },
 ];
 
+const API_PATH_MAPPINGS = [
+  {
+    path: "/api/teams",
+    newPath: (params: any) => `v1/orgs/${params.orgId}/teams`,
+  },
+  {
+    path: "/api/teams/:teamId/environments",
+    newPath: (params: any) => `v1/orgs/${params.orgId}/teams/${params.teamId}/environments`,
+  },
+]
+
 // eslint-disable-next-line no-unused-vars
 function mapToRegex(mapping: {
   path: string;
@@ -387,3 +397,4 @@ export const STATE_MAPPINGS: PathMapping[] = STATE_PATH_MAPPINGS.map(mapToRegex)
 export const ORGANIZATION_MAPPINGS: PathMapping[] = ORGANIZATION_PATH_MAPPINGS.map(mapToRegex);
 export const EVENT_MAPPINGS: PathMapping[] = EVENT_API.map(mapToRegex);
 export const OPERATION_MAPPINGS: PathMapping[] = OPERATION_PATH_MAPPING.map(mapToRegex);
+export const API_MAPPINGS: PathMapping[] = API_PATH_MAPPINGS.map(mapToRegex);
