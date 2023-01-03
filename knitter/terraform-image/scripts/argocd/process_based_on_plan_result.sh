@@ -98,6 +98,8 @@ then
               -v
 
             UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "waiting_for_approval"
+        else
+            UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "initializing_apply"
         fi
     fi
 fi

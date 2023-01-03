@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, InternalServerErrorException, Logger, Param, Post, Request } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, InternalServerErrorException, Logger, Param, Post, Query, Request } from "@nestjs/common";
 import { CreateOrganizationDto } from "./root.organization.dto";
 import { RootOrganizationsService } from "./root.organization.service";
 
@@ -14,10 +14,14 @@ export class RootOrganizationsController {
 
   private OrganizationNameRegex = /^[a-zA-Z]+[a-zA-Z0-9]*(-[a-zA-Z0-9]+)*$/;
 
-  // @Get()
-  // public async getAll() {
-  //   return await this.orgService.getOrganizations();
-  // }
+  @Get()
+  public async getAll(@Query('github-org-name') ghOrgName: string) {
+    if (!ghOrgName) {
+      throw new BadRequestException();
+    }
+
+    return await this.orgService.getOrgByGithubOrg(ghOrgName);
+  }
 
   @Post()
   public async create(@Body() body: CreateOrganizationDto) {
