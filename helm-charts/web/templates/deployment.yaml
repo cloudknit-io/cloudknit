@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: zlifecycle-web
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
       app: zlifecycle-web
