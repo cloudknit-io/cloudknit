@@ -2,6 +2,7 @@ image:
   name: zlifecycle-web-bff
   tag: latest
   repository:
+replicas: 1
 # rename zcustomer with the client name
 domain:
 company: !!!CompanyName!!!

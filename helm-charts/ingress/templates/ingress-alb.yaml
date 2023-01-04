@@ -6,7 +6,7 @@ metadata:
     kubernetes.io/ingress.class: alb
   annotations:
     external-dns.alpha.kubernetes.io/hostname: {{ .Values.alb.domains }}
-    alb.ingress.kubernetes.io/load-balancer-name: {{ .Values.alb.environment }}-{{ .Values.alb.instance }}-public-alb
+    alb.ingress.kubernetes.io/load-balancer-name: {{ .Values.alb.environment }}-public-alb
     alb.ingress.kubernetes.io/scheme: "internet-facing"
     alb.ingress.kubernetes.io/subnets: "{{ .Values.alb.subnets }}"
     alb.ingress.kubernetes.io/target-type: "ip"
