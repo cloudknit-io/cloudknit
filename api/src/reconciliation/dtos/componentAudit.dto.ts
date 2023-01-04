@@ -7,9 +7,7 @@ export interface ComponentAudit {
 }
 
 export interface ApprovedByDto {
-    email?: string;
+    email: string;
     compName: string;
-    envName: string;
-    teamName: string;
-    rid: number;
+    envReconcileId: number;
 }

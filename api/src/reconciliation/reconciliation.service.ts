@@ -49,7 +49,7 @@ export class ReconciliationService {
     return this.envReconRepo.save(envRecon);
   }
 
-  async getEnvReconByReconcileId(org: Organization, reconcileId: number, relations?: any) {
+  async getEnvReconByReconcileId(org: Organization, reconcileId: number, withEnv: boolean = false) {
     return this.envReconRepo.findOne({
       where: {
         reconcileId,
@@ -57,7 +57,9 @@ export class ReconciliationService {
           id: org.id
         }
       },
-      relations
+      relations: {
+        environment: withEnv
+      }
     })
   }
 
@@ -114,7 +116,7 @@ export class ReconciliationService {
       name: createComp.name,
       status: 'initializing',
       organization: org,
-      start_date_time: createComp.startDateTime,
+      startDateTime: createComp.startDateTime,
       environmentReconcile: envRecon
     });
   }
@@ -173,9 +175,7 @@ export class ReconciliationService {
   }
 
   async patchApprovedBy(org: Organization, body: ApprovedByDto): Promise<ComponentReconcile> {
-    const team = await this.teamSvc.findByName(org, body.teamName);
-    const env = await this.envSvc.findByName(org, team, body.envName);
-    const envRecon = await this.getEnvReconByEnv(org, env);
+    const envRecon = await this.getEnvReconByReconcileId(org, body.envReconcileId);
     const compRecon = await this.getLatestCompReconcile(org, envRecon, body.compName);
 
     this.compReconRepo.merge(compRecon, { approved_by: body.email })

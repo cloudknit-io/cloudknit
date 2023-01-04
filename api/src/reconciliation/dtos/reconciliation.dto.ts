@@ -12,8 +12,6 @@ export class UpdateEnvironmentReconciliationDto {
 export class CreateComponentReconciliationDto {
   envReconcileId: number;
   name: string;
-  envName: string;
-  teamName: string;
   startDateTime: string;
 }
 

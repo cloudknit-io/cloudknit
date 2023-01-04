@@ -87,7 +87,7 @@ export class ReconciliationController {
   async updateEnvironmentReconciliation(@Req() req: APIRequest, @Param('reconcileId') reconcileId: number, @Body() body: UpdateEnvironmentReconciliationDto) {
     const { org } = req;
 
-    const existingEntry = await this.reconSvc.getEnvReconByReconcileId(org, reconcileId, { environment: true });
+    const existingEntry = await this.reconSvc.getEnvReconByReconcileId(org, reconcileId, true);
     if (!existingEntry) {
       this.logger.error({message: 'could not find environment reconcile entry', reconcileId })
       throw new BadRequestException('could not find environment reconcile entry');
@@ -132,50 +132,26 @@ export class ReconciliationController {
   async newComponentReconciliation(@Req() req: APIRequest, @Body() body: CreateComponentReconciliationDto): Promise<number> {
     const { org } = req;
 
-    const team = await this.teamSvc.findByName(org, body.teamName);
-    if (!team) {
-      this.logger.error({ message: 'could not find team in newComponentReconciliation', body });
-      throw new BadRequestException('could not find team');
-    }
-
-    const env = await this.envSvc.findByName(org, team, body.envName);
-    if (!env) {
-      this.logger.error({ message: 'could not find environment in newComponentReconciliation', body });
-      throw new BadRequestException('could not find environment');
-    }
-
-    const envRecon = await this.reconSvc.getEnvReconByReconcileId(org, body.envReconcileId);
+    const envRecon = await this.reconSvc.getEnvReconByReconcileId(org, body.envReconcileId, true);
     if (!envRecon) {
       this.logger.error({ message: 'could not find environment-reconcile in newComponentReconciliation', body });
       throw new BadRequestException('could not find environment-reconcile');
     }
 
-    const compRecon = await this.reconSvc.createCompRecon(org, envRecon, body);
+    try {
+      const compRecon = await this.reconSvc.createCompRecon(org, envRecon, body);
+      return compRecon.reconcileId;
+    } catch (err) {
+      handleSqlErrors(err);
 
-    return compRecon.reconcileId;
+      this.logger.error({ message: 'could not save component-reconcile in newComponentReconciliation', body });
+      throw new BadRequestException('could not save component-reconcile');
+    }
   }
 
   @Post('component/:reconcileId')
   async updateComponentReconciliation(@Req() req: APIRequest, @Param('reconcileId') compReconcileId: number, @Body() body: UpdateComponentReconciliationDto) {
     const { org } = req;
-
-    const team = await this.teamSvc.findByName(org, body.teamName);
-    if (!team) {
-      this.logger.error({ message: 'could not find team in updateComponentReconciliation', body });
-      throw new BadRequestException('could not find team');
-    }
-
-    const env = await this.envSvc.findByName(org, team, body.envName);
-    if (!env) {
-      this.logger.error({ message: 'could not find environment in updateComponentReconciliation', body });
-      throw new BadRequestException('could not find environment');
-    }
-
-    const comp = await this.compSvc.findByName(org, env, body.name);
-    if (!comp) {
-      this.logger.error({ message: 'could not find associated component in updateComponentReconciliation', body });
-      throw new BadRequestException('could not find component');
-    }
 
     const compRecon: ComponentReconcile = await this.reconSvc.getCompReconById(org, compReconcileId, true);
     if (!compRecon) {
@@ -183,10 +159,18 @@ export class ReconciliationController {
       throw new BadRequestException('could not find component-reconcile');
     }
     
-    const envRecon = await this.reconSvc.getEnvReconByReconcileId(org, compRecon.environmentReconcile.reconcileId);
-    if (!envRecon) {
-      this.logger.error({ message: 'could not find component-reconcile in updateComponentReconciliation', body });
-      throw new BadRequestException('could not find component-reconcile');
+    const envRecon = compRecon.environmentReconcile;
+
+    const env = await this.envSvc.findById(org, envRecon.environment.id);
+    if (!env) {
+      this.logger.error({ message: 'could not find environment in updateComponentReconciliation', body });
+      throw new BadRequestException('could not find environment');
+    }
+    
+    const comp = await this.compSvc.findByName(org, env, compRecon.name);
+    if (!comp) {
+      this.logger.error({ message: 'could not find component in updateComponentReconciliation', body });
+      throw new BadRequestException('could not find component');
     }
 
     const updatedCompRecon = await this.reconSvc.updateCompRecon(compRecon, body);
