@@ -19,13 +19,13 @@ export class EnvironmentReconcile {
   @Column({
       type: 'datetime'
   })
-  start_date_time: string
+  startDateTime: string
 
   @Column({
     type: 'datetime',
     nullable: true
   })
-  end_date_time?: string
+  endDateTime?: string
 
   @OneToMany(() => ComponentReconcile, (component) => component.environmentReconcile, {
     eager: true,

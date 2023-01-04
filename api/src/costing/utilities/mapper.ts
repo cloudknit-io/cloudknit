@@ -34,15 +34,15 @@ export class Mapper {
   ): ComponentAudit[] {
     return components.map((c) => {
       let diff = -1;
-      if (c.end_date_time) {
-        const ed = new Date(c.end_date_time).getTime();
-        const sd = new Date(c.start_date_time).getTime()
+      if (c.endDateTime) {
+        const ed = new Date(c.endDateTime).getTime();
+        const sd = new Date(c.startDateTime).getTime()
         diff = ed - sd;
       }
 
       return {
         reconcileId: c.reconcileId,
-        startDateTime: c.start_date_time,
+        startDateTime: c.startDateTime,
         duration: diff,
         status: c.status,
         approvedBy: c.approved_by,
@@ -55,15 +55,15 @@ export class Mapper {
   ): EnvironmentAudit[] {
     return components.map((c) => {
       let diff = -1;
-      if (c.end_date_time) {
-        const ed = new Date(c.end_date_time).getTime();
-        const sd = new Date(c.start_date_time).getTime()
+      if (c.endDateTime) {
+        const ed = new Date(c.endDateTime).getTime();
+        const sd = new Date(c.startDateTime).getTime()
         diff = ed - sd;
       }
 
       return {
         reconcileId: c.reconcileId,
-        startDateTime: c.start_date_time,
+        startDateTime: c.startDateTime,
         duration: diff,
         status: c.status,
       };

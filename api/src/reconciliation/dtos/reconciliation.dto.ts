@@ -4,7 +4,7 @@ export class CreateEnvironmentReconciliationDto {
   startDateTime: string;
 }
 
-export class UpdateEnvironmentReconciliationDto extends CreateEnvironmentReconciliationDto {
+export class UpdateEnvironmentReconciliationDto {
   status: string;
   endDateTime?: string;
 }

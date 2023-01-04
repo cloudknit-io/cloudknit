@@ -18,7 +18,7 @@ export class TeamService {
       where: {
         name: Equal(name),
         organization: {
-          id: org.id
+          id: Equal(org.id)
         }
       }
     })
@@ -27,9 +27,9 @@ export class TeamService {
   async findById(org: Organization, id: number): Promise<Team> {
     return this.teamRepo.findOne({
       where: {
-        id,
+        id: Equal(id),
         organization: {
-          id: org.id
+          id: Equal(org.id)
         }
       }
     })

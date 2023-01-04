@@ -33,12 +33,12 @@ export class ComponentReconcile {
   @Column({
       type: 'datetime'
   })
-  start_date_time: string;
+  startDateTime: string;
 
   @Column({
       nullable: true
   })
-  end_date_time?: string;
+  endDateTime?: string;
 
   @ManyToOne(() => Organization, (org) => org.id, {
     onDelete: "CASCADE",

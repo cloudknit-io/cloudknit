@@ -12,11 +12,9 @@ import { Equal, In, IsNull, Like, Not } from "typeorm";
 import { Repository } from "typeorm/repository/Repository";
 import { ApprovedByDto, ComponentAudit } from "./dtos/componentAudit.dto";
 import { EnvironmentAudit } from "./dtos/environmentAudit.dto";
-import { SSEService } from "./sse.service";
 import { EnvironmentService } from "src/environment/environment.service";
 import { TeamService } from "src/team/team.service";
 import { CreateEnvironmentReconciliationDto, UpdateEnvironmentReconciliationDto, CreateComponentReconciliationDto, UpdateComponentReconciliationDto } from "./dtos/reconciliation.dto";
-import { IsNotIn } from "class-validator";
 
 @Injectable()
 export class ReconciliationService {
@@ -31,15 +29,13 @@ export class ReconciliationService {
     @InjectRepository(ComponentReconcile)
     private readonly compReconRepo: Repository<ComponentReconcile>,
     @InjectRepository(Component)
-    private readonly compRepo: Repository<Component>,
     private readonly envSvc: EnvironmentService,
     private readonly teamSvc: TeamService,
-    private readonly sseSvc: SSEService
   ) { }
 
   async createEnvRecon(org: Organization, team: Team, env: Environment, createEnv: CreateEnvironmentReconciliationDto): Promise<EnvironmentReconcile> {
     return this.envReconRepo.save({
-      start_date_time: createEnv.startDateTime,
+      startDateTime: createEnv.startDateTime,
       environment: env,
       team,
       status: "initializing",
@@ -53,14 +49,15 @@ export class ReconciliationService {
     return this.envReconRepo.save(envRecon);
   }
 
-  async getEnvReconByReconcileId(org: Organization, reconcileId: number) {
+  async getEnvReconByReconcileId(org: Organization, reconcileId: number, relations?: any) {
     return this.envReconRepo.findOne({
       where: {
         reconcileId,
         organization: {
           id: org.id
         }
-      }
+      },
+      relations
     })
   }
 
@@ -75,7 +72,7 @@ export class ReconciliationService {
         }
       },
       order: {
-        start_date_time: -1
+        startDateTime: -1
       }
     })
   }
@@ -83,7 +80,7 @@ export class ReconciliationService {
   async getSkippedEnvironments(org: Organization, team: Team, env: Environment, ignoreReconcileIds: number[]) {
     return this.envReconRepo.find({
       where: {
-        end_date_time: IsNull(),
+        endDateTime: IsNull(),
         status: Not(Equal('skipped_reconcile')),
         reconcileId: Not(In(ignoreReconcileIds)),
         team: {
@@ -154,7 +151,7 @@ export class ReconciliationService {
         }
       },
       order: {
-        start_date_time: -1
+        startDateTime: -1
       },
     })
   }
@@ -162,7 +159,7 @@ export class ReconciliationService {
   async getSkippedComponents(org: Organization, env: Environment) {
     return await this.compReconRepo.find({
       where: {
-        end_date_time: IsNull(),
+        endDateTime: IsNull(),
         environmentReconcile: {
           environment: {
             id: env.id
@@ -492,7 +489,7 @@ export class ReconciliationService {
         }
       },
       order: {
-        start_date_time: -1,
+        startDateTime: -1,
       }
     });
   }

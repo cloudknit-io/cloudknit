@@ -61,7 +61,7 @@ export class ReconciliationController {
       throw new BadRequestException('could not find environment');
     }
 
-    let envReconEntry;
+    let envReconEntry: EnvironmentReconcile;
 
     try {
       envReconEntry = await this.reconSvc.createEnvRecon(org, team, env, body);
@@ -86,24 +86,44 @@ export class ReconciliationController {
   @Post('environment/:reconcileId')
   async updateEnvironmentReconciliation(@Req() req: APIRequest, @Param('reconcileId') reconcileId: number, @Body() body: UpdateEnvironmentReconciliationDto) {
     const { org } = req;
-    const team = await this.teamSvc.findByName(org, body.teamName);
-    const existingEntry = await this.reconSvc.getEnvReconByReconcileId(org, reconcileId);
 
+    const existingEntry = await this.reconSvc.getEnvReconByReconcileId(org, reconcileId, { environment: true });
     if (!existingEntry) {
-      this.logger.error({message: 'could not find environment reconcile entry', reconcileId, team})
+      this.logger.error({message: 'could not find environment reconcile entry', reconcileId })
       throw new BadRequestException('could not find environment reconcile entry');
     }
     
-    const envRecon = await this.reconSvc.updateEnvRecon(existingEntry, body);
-    this.sseSvc.sendEnvironmentReconcile(envRecon);
+    const env = existingEntry.environment;
+    let envRecon: EnvironmentReconcile;
 
-    const ed = new Date(envRecon.end_date_time).getTime();
-    const sd = new Date(envRecon.start_date_time).getTime();
-    const duration = ed - sd;
+    try {
+      envRecon = await this.reconSvc.updateEnvRecon(existingEntry, body);
+    } catch (err) {
+      handleSqlErrors(err);
 
-    await this.envSvc.updateByName(org, team, body.name, {
-      duration
-    });
+      this.logger.error({ message: 'could not update env recon', reconcileId, existingEntry, body });
+      throw new InternalServerErrorException('could not update environment reconcile');
+    }
+
+    let duration = -1;
+
+    if (envRecon.endDateTime) {
+      const ed = new Date(envRecon.endDateTime).getTime();
+      const sd = new Date(envRecon.startDateTime).getTime();
+      duration = ed - sd;
+    }
+
+    try {
+      await this.envSvc.update(org, env.id, {
+        duration,
+        status: body.status
+      });
+    } catch (err) {
+      handleSqlErrors(err);
+
+      this.logger.error({ message: 'could not update environment with env recon', envRecon, body, duration, err});
+      throw new InternalServerErrorException('could not update environment');
+    }
 
     return envRecon;
   }
@@ -157,7 +177,7 @@ export class ReconciliationController {
       throw new BadRequestException('could not find component');
     }
 
-    const compRecon = await this.reconSvc.getCompReconById(org, compReconcileId, true);
+    const compRecon: ComponentReconcile = await this.reconSvc.getCompReconById(org, compReconcileId, true);
     if (!compRecon) {
       this.logger.error({ message: 'could not find component-reconcile in updateComponentReconciliation', body });
       throw new BadRequestException('could not find component-reconcile');
@@ -173,9 +193,9 @@ export class ReconciliationController {
     this.logger.log({message: 'updated component reconcile entry', updatedCompRecon});
     
     let duration = comp.duration;
-    if (updatedCompRecon.end_date_time) {
+    if (updatedCompRecon.endDateTime) {
       const ed = new Date(body.endDateTime).getTime();
-      const sd = new Date(compRecon.start_date_time).getTime();
+      const sd = new Date(compRecon.startDateTime).getTime();
       duration = ed - sd;
     }
 
