@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Body,
+  ConsoleLogger,
   Controller,
   Get,
   InternalServerErrorException,
@@ -18,10 +19,10 @@ import { map } from "rxjs/operators";
 import { ComponentService } from "src/component/component.service";
 import { Mapper } from "src/costing/utilities/mapper";
 import { EnvironmentService } from "src/environment/environment.service";
-import { RootEnvironmentService } from "src/root-environment/root.environment.service";
 import { TeamService } from "src/team/team.service";
 import { ComponentReconcile, EnvironmentReconcile } from "src/typeorm";
 import { APIRequest } from "src/types";
+import { handleSqlErrors } from "src/utilities/errorHandler";
 import { ApprovedByDto, ComponentAudit } from "./dtos/componentAudit.dto";
 import { EnvironmentAudit } from "./dtos/environmentAudit.dto";
 import { CreateComponentReconciliationDto, CreateEnvironmentReconciliationDto, UpdateComponentReconciliationDto, UpdateEnvironmentReconciliationDto } from "./dtos/reconciliation.dto";
@@ -38,7 +39,6 @@ export class ReconciliationController {
 
   constructor(
     private readonly reconSvc: ReconciliationService,
-    private readonly rootEnvSvc: RootEnvironmentService,
     private readonly envSvc: EnvironmentService,
     private readonly sseSvc: SSEService,
     private readonly teamSvc: TeamService,
@@ -50,11 +50,30 @@ export class ReconciliationController {
     const { org } = req;
 
     const team = await this.teamSvc.findByName(org, body.teamName);
+    if (!team) {
+      this.logger.error({ message: 'could not find team in newEnvironmentReconciliation', body});
+      throw new BadRequestException('could not find team');
+    }
+
     const env = await this.envSvc.findByName(org, team, body.name);
-    const envReconEntry = await this.reconSvc.createEnvRecon(org, team, env, body);
+    if (!env) {
+      this.logger.error({ message: 'could not find environment in newEnvironmentReconciliation', body});
+      throw new BadRequestException('could not find environment');
+    }
+
+    let envReconEntry;
 
     try {
-      const skippedEntries = await this.reconSvc.getSkippedEnvironments(org, team, env);
+      envReconEntry = await this.reconSvc.createEnvRecon(org, team, env, body);
+    } catch(err) {
+      handleSqlErrors(err);
+
+      this.logger.error({ message: 'could not create environment recon', body, err });
+      throw new InternalServerErrorException('could not create environment reconciliation');
+    }
+
+    try {
+      const skippedEntries = await this.reconSvc.getSkippedEnvironments(org, team, env, [envReconEntry.reconcileId]);
       await this.reconSvc.bulkUpdateEnvironmentEntries(skippedEntries, 'skipped_reconcile');
     } catch (err) {
       this.logger.error('could not update skipped workflows', err);

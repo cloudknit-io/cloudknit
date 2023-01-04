@@ -1,9 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { SSEService } from "src/reconciliation/sse.service";
-import { TeamService } from "src/team/team.service";
 import { Environment, Organization, Team } from "src/typeorm";
-import { Repository } from "typeorm";
+import { Equal, Repository } from "typeorm";
 import { UpdateEnvironmentDto } from "./dto/update-environment.dto";
 
 @Injectable()
@@ -13,7 +12,6 @@ export class EnvironmentService {
   constructor(
     @InjectRepository(Environment)
     private readonly envRepo: Repository<Environment>,
-    private readonly teamSvc: TeamService,
     private readonly sseSvc: SSEService
   ) { }
 
@@ -39,27 +37,20 @@ export class EnvironmentService {
     return updatedEnv;
   }
 
-  async findById(org: Organization, id: number, team?: Team, relations?: {}): Promise<Environment> {
+  async findById(org: Organization, id: number, relations?: {}): Promise<Environment> {
     const where = {
       id,
       organization: {
         id : org.id
-      },
-      team: null
-    };
-
-    if (team) {
-      where.team = {
-        id: team.id
       }
-    }
+    };
 
     return await this.envRepo.findOne({ where, relations });
   }
 
   async findByName(org: Organization, team: Team, name: string, relations?: {}) {
     const where = {
-      name,
+      name: Equal(name),
       organization: {
         id : org.id
       },

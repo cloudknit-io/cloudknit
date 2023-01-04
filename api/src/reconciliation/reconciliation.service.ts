@@ -8,7 +8,7 @@ import { ComponentReconcile } from "src/typeorm/component-reconcile.entity";
 import { Component } from "src/typeorm/component.entity";
 import { EnvironmentReconcile } from "src/typeorm/environment-reconcile.entity";
 import { Environment } from "src/typeorm/environment.entity";
-import { In, IsNull, Like, Not } from "typeorm";
+import { Equal, In, IsNull, Like, Not } from "typeorm";
 import { Repository } from "typeorm/repository/Repository";
 import { ApprovedByDto, ComponentAudit } from "./dtos/componentAudit.dto";
 import { EnvironmentAudit } from "./dtos/environmentAudit.dto";
@@ -16,6 +16,7 @@ import { SSEService } from "./sse.service";
 import { EnvironmentService } from "src/environment/environment.service";
 import { TeamService } from "src/team/team.service";
 import { CreateEnvironmentReconciliationDto, UpdateEnvironmentReconciliationDto, CreateComponentReconciliationDto, UpdateComponentReconciliationDto } from "./dtos/reconciliation.dto";
+import { IsNotIn } from "class-validator";
 
 @Injectable()
 export class ReconciliationService {
@@ -79,10 +80,12 @@ export class ReconciliationService {
     })
   }
 
-  async getSkippedEnvironments(org: Organization, team: Team, env: Environment) {
+  async getSkippedEnvironments(org: Organization, team: Team, env: Environment, ignoreReconcileIds: number[]) {
     return this.envReconRepo.find({
       where: {
         end_date_time: IsNull(),
+        status: Not(Equal('skipped_reconcile')),
+        reconcileId: Not(In(ignoreReconcileIds)),
         team: {
           id: team.id
         },

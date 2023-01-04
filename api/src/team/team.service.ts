@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Organization, Team } from 'src/typeorm';
-import { Repository } from 'typeorm';
+import { Equal, Repository } from 'typeorm';
 import { UpdateTeamDto } from './dto/update-team.dto';
 
 @Injectable()
@@ -16,7 +16,7 @@ export class TeamService {
   async findByName(org: Organization, name: string): Promise<Team> {
     return this.teamRepo.findOne({
       where: {
-        name,
+        name: Equal(name),
         organization: {
           id: org.id
         }

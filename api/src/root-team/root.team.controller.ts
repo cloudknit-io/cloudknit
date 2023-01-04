@@ -1,10 +1,11 @@
 import { Controller, Get, Post, Body, Request, BadRequestException, Logger, InternalServerErrorException } from '@nestjs/common';
 import { RootTeamService } from './root.team.service';
 import { CreateTeamDto } from 'src/team/dto/create-team.dto';
-import { SqlErrorCodes } from 'src/types';
+import { APIRequest } from 'src/types';
 import { TeamSpecDto } from 'src/team/dto/team-spec.dto';
 import { TeamService } from 'src/team/team.service';
 import { getGithubOrgFromRepoUrl } from 'src/organization/utilities';
+import { handleSqlErrors } from 'src/utilities/errorHandler';
 
 @Controller({
   version: '1'
@@ -19,7 +20,7 @@ export class RootTeamController {
     ) {}
 
   @Post()
-  async spec(@Request() req, @Body() spec: TeamSpecDto) {
+  async spec(@Request() req: APIRequest, @Body() spec: TeamSpecDto) {
     const { org } = req;
 
     let team = await this.teamSvc.findByName(org, spec.teamName);
@@ -40,7 +41,7 @@ export class RootTeamController {
     }
   }
 
-  async createTeam(@Request() req, @Body() createTeam: CreateTeamDto) {
+  async createTeam(@Request() req: APIRequest, @Body() createTeam: CreateTeamDto) {
     if (!this.TeamNameRegex.test(createTeam.name) || createTeam.name.length > 63) {
       throw new BadRequestException("team name is invalid");
     }
@@ -57,13 +58,7 @@ export class RootTeamController {
     try {
       return await this.rootTeamSvc.create(createTeam);
     } catch (err) {
-      if (err.code === SqlErrorCodes.DUP_ENTRY) {
-        throw new BadRequestException('team already exists');
-      }
-
-      if (err.code === SqlErrorCodes.NO_DEFAULT) {
-        throw new BadRequestException(err.sqlMessage);
-      }
+      handleSqlErrors(err, 'team already exists');
       
       this.logger.error({ message: 'could not create team', createTeam, err });
       throw new InternalServerErrorException('could not create team');

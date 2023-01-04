@@ -4,7 +4,7 @@ import { CreateEnvironmentDto } from 'src/environment/dto/create-environment.dto
 import { EnvSpecComponentDto, EnvSpecDto } from 'src/environment/dto/env-spec.dto';
 import { EnvironmentService } from 'src/environment/environment.service';
 import { Component, Environment, Organization, Team } from 'src/typeorm';
-import { SqlErrorCodes } from 'src/types';
+import { handleSqlErrors } from 'src/utilities/errorHandler';
 import { RootEnvironmentService } from './root.environment.service';
 
 @Controller({
@@ -85,13 +85,7 @@ export class RootEnvironmentController {
       env = await this.rootEnvSvc.create(org, team, createEnv);
       this.logger.log({ message: `created new environment`, env});
     } catch (err) {
-      if (err.code === SqlErrorCodes.DUP_ENTRY) {
-        throw new BadRequestException('environment already exists');
-      }
-
-      if (err.code === SqlErrorCodes.NO_DEFAULT) {
-        throw new BadRequestException(err.sqlMessage);
-      }
+      handleSqlErrors(err, 'environment already exists');
       
       this.logger.error({ message: 'could not create environment', createEnv, err });
       throw new InternalServerErrorException('could not create environment');
@@ -116,14 +110,7 @@ export class RootEnvironmentController {
       const res = await this.compSvc.batchCreate(org, env, comps.map(comp => comp.name));
       this.logger.log({ message: `created ${res.identifiers.length} new components`, env})
     } catch (err) {
-      if (err.code === SqlErrorCodes.DUP_ENTRY) {
-        this.logger.error({ message: 'component already exists', env, sqlMessage: err.sqlMessage });
-        throw new BadRequestException('component already exists');
-      }
-
-      if (err.code === SqlErrorCodes.NO_DEFAULT) {
-        throw new BadRequestException(err.sqlMessage);
-      }
+      handleSqlErrors(err, 'component already exists');
 
       this.logger.error({ message: 'could not batch create components during environment creation', err});
       throw new InternalServerErrorException('could not create components');
@@ -139,9 +126,7 @@ export class RootEnvironmentController {
       const res = await this.compSvc.batchDelete(org, env, comps)
       this.logger.log({ message: `deleted ${res.affected} components`, env})
     } catch (err) {
-      if (err.code === SqlErrorCodes.NO_DEFAULT) {
-        throw new BadRequestException(err.sqlMessage);
-      }
+      handleSqlErrors(err);
 
       this.logger.error({ message: 'could not batch delete components during environment spec reconciliation', err});
       throw new InternalServerErrorException('could not delete components');
