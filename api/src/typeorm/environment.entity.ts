@@ -26,6 +26,12 @@ export class Environment {
   })
   duration: number;
 
+  @Column({
+    name: 'status',
+    default: null
+  })
+  status: string;
+
   @OneToMany(() => Component, (component) => component.environment)
   components: Component[];
 

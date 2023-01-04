@@ -6,14 +6,16 @@ import { EnvironmentReconcile } from './environment-reconcile.entity'
   name: 'component_reconcile',
 })
 export class ComponentReconcile {
-  @PrimaryGeneratedColumn()
-  reconcile_id?: number
+  @PrimaryGeneratedColumn({
+    name: 'id'
+  })
+  reconcileId: number
 
   @ManyToOne(() => EnvironmentReconcile, environmentReconcile => environmentReconcile.componentReconciles, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({
-      referencedColumnName: 'reconcile_id',
+      referencedColumnName: 'reconcileId',
   })
   environmentReconcile: EnvironmentReconcile
 

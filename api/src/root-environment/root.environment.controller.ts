@@ -20,7 +20,7 @@ export class RootEnvironmentController {
   ) {}
 
   @Post()
-  async create(@Request() req, @Body() body: EnvSpecDto) {
+  async saveOrUpdate(@Request() req, @Body() body: EnvSpecDto) {
     const { org, team } = req;
     
     let env = await this.envSvc.findByName(org, team, body.envName);
@@ -34,6 +34,7 @@ export class RootEnvironmentController {
 
     const currentComps: Component[] = await this.compSvc.getAllForEnvironmentById(org, env);
     const incoming: EnvSpecComponentDto[] = body.components;
+
     const newComponents: EnvSpecComponentDto[] = incoming.filter(inc => {
       return !currentComps.find(comp => comp.name === inc.name)
     });
@@ -57,8 +58,9 @@ export class RootEnvironmentController {
       dag,
       name: env.name,
       duration: env.duration,
-      isDeleted: env.isDeleted
-    })
+      isDeleted: env.isDeleted,
+      status: 'initializing'
+    });
 
     // create new components
     await this.batchCreateComponents(org, env, newComponents);
@@ -70,7 +72,7 @@ export class RootEnvironmentController {
   }
 
   @Get()
-  async findAll(@Request() req) {
+  async findAll(@Request() req): Promise<Environment[]> {
     const {org, team} = req;
 
     return this.rootEnvSvc.findAll(org, team);
@@ -81,7 +83,7 @@ export class RootEnvironmentController {
 
     try {
       env = await this.rootEnvSvc.create(org, team, createEnv);
-      this.logger.log({ message: `created new environment`, env})
+      this.logger.log({ message: `created new environment`, env});
     } catch (err) {
       if (err.code === SqlErrorCodes.DUP_ENTRY) {
         throw new BadRequestException('environment already exists');

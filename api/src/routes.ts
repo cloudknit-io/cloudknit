@@ -12,6 +12,7 @@ import { TeamModule } from "./team/team.module";
 import { RootTeamModule } from "./root-team/root.team.module";
 import { EnvironmentModule } from "./environment/environment.module";
 import { RootEnvironmentModule } from "./root-environment/root.environment.module";
+import { ComponentModule } from "./component/component.module";
 
 export const appRoutes: Routes = [
   {
@@ -43,6 +44,10 @@ export const appRoutes: Routes = [
             module: OperationsModule
           },
           {
+            path: 'reconciliation',
+            module: ReconciliationModule
+          },
+          {
             path: 'teams',
             module: RootTeamModule,
             children: [
@@ -55,17 +60,19 @@ export const appRoutes: Routes = [
                     module: RootEnvironmentModule,
                     children: [
                       {
-                        path: '/:environmentId',
-                        module: EnvironmentModule
+                        path: ':environmentId',
+                        module: EnvironmentModule,
+                        children: [
+                          {
+                            path: 'components',
+                            module: ComponentModule
+                          }
+                        ]
                       },
                       {
                         path: 'costing',
                         module: CostingModule
-                      },
-                      {
-                        path: 'reconciliation',
-                        module: ReconciliationModule
-                      },
+                      }
                     ]
                   },
                 ]

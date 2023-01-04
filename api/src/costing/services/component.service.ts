@@ -60,7 +60,7 @@ export class ComponentService {
     });
   }
 
-  async getAllForEnvironmentById(org: Organization, env: Environment, withDestroyed: boolean = false): Promise<Component[]> {
+  async getAllForEnvironmentById(org: Organization, env: Environment): Promise<Component[]> {
     return this.compRepo.find({
       where: {
         organization: {
@@ -68,8 +68,7 @@ export class ComponentService {
         },
         environment: {
           id: env.id
-        },
-        // isDestroyed: withDestroyed === true ? null : false
+        }
       }
     })
   }

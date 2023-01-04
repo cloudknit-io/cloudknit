@@ -1,6 +1,8 @@
-team_env_name=$team_name-$env_name
+# this script has access to:
+# $team_name
+# $env_name
 
-data='0'
+status='0'
 
 echo "Patching environment"
 
@@ -10,9 +12,9 @@ if [ $phase = '0' ]
 then
     if [ $is_destroy = true ]
     then
-        data='{"metadata":{"labels":{"env_status":"destroying"}}}'    
+        status="destroying"
     else
-        data='{"metadata":{"labels":{"env_status":"provisioning"}}}'
+        status="provisioning"
     fi  
 fi
 
@@ -20,15 +22,16 @@ if [ $phase = '1' ]
 then
     if [ $is_destroy = true ]
     then
-        data='{"metadata":{"labels":{"env_status":"destroyed"}}}'    
+        status="destroyed"
     else
-        data='{"metadata":{"labels":{"env_status":"provisioned"}}}'
+        status="provisioned"
     fi    
 fi
 
-echo "data is: "$data
+echo "status is: "$status
 
-if [ $data != '0' ]
+if [ $status != '0' ]
 then
-    argocd app patch $team_env_name --patch $data --type merge > null
+    # argocd app patch $team_env_name --patch $data --type merge > null
+    UpdateEnvironmentStatus "${team_name}" "${env_name}" "${status}"
 fi

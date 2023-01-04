@@ -29,24 +29,6 @@ export class Mapper {
     };
   }
 
-  static mapToComponentReconcile(
-    org: Organization,
-    environmentReconcile: EnvironmentReconcile,
-    componentReconciles: ComponentReconcileDto[]
-  ): ComponentReconcile[] {
-    const mappedData: ComponentReconcile[] = componentReconciles.map((cr) => ({
-      reconcile_id: parseInt(cr.reconcileId) || null,
-      name: cr.name,
-      environmentReconcile: environmentReconcile,
-      start_date_time: cr.startDateTime,
-      status: cr.status,
-      end_date_time: cr.endDateTime,
-      organization: org
-    }));
-
-    return mappedData;
-  }
-
   static getComponentAuditList(
     components: ComponentReconcile[]
   ): ComponentAudit[] {
@@ -59,7 +41,7 @@ export class Mapper {
       }
 
       return {
-        reconcileId: c.reconcile_id,
+        reconcileId: c.reconcileId,
         startDateTime: c.start_date_time,
         duration: diff,
         status: c.status,
@@ -80,7 +62,7 @@ export class Mapper {
       }
 
       return {
-        reconcileId: c.reconcile_id,
+        reconcileId: c.reconcileId,
         startDateTime: c.start_date_time,
         duration: diff,
         status: c.status,

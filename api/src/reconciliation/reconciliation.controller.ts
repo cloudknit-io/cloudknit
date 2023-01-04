@@ -3,9 +3,11 @@ import {
   Body,
   Controller,
   Get,
+  InternalServerErrorException,
   Logger,
   Param,
   Patch,
+  Post,
   Query,
   Req,
   Request,
@@ -13,7 +15,7 @@ import {
 } from "@nestjs/common";
 import { from, Observable } from "rxjs";
 import { map } from "rxjs/operators";
-import { ComponentService } from "src/costing/services/component.service";
+import { ComponentService } from "src/component/component.service";
 import { Mapper } from "src/costing/utilities/mapper";
 import { EnvironmentService } from "src/environment/environment.service";
 import { RootEnvironmentService } from "src/root-environment/root.environment.service";
@@ -22,7 +24,7 @@ import { ComponentReconcile, EnvironmentReconcile } from "src/typeorm";
 import { APIRequest } from "src/types";
 import { ApprovedByDto, ComponentAudit } from "./dtos/componentAudit.dto";
 import { EnvironmentAudit } from "./dtos/environmentAudit.dto";
-import { EvnironmentReconcileDto } from "./dtos/reconcile.Dto";
+import { CreateComponentReconciliationDto, CreateEnvironmentReconciliationDto, UpdateComponentReconciliationDto, UpdateEnvironmentReconciliationDto } from "./dtos/reconciliation.dto";
 import { ReconciliationService } from "./reconciliation.service";
 import { SSEService } from "./sse.service";
 import { RequiredQueryValidationPipe, TeamEnvCompQueryParams, TeamEnvQueryParams } from "./validationPipes";
@@ -35,52 +37,170 @@ export class ReconciliationController {
   private readonly logger = new Logger(ReconciliationController.name);
 
   constructor(
-    private readonly reconciliationService: ReconciliationService,
-    private readonly rootEnvService: RootEnvironmentService,
+    private readonly reconSvc: ReconciliationService,
+    private readonly rootEnvSvc: RootEnvironmentService,
     private readonly envSvc: EnvironmentService,
     private readonly sseSvc: SSEService,
     private readonly teamSvc: TeamService,
     private readonly compSvc: ComponentService
     ) {}
 
-  @Get("environments")
-  async getEnvironment(@Request() req, @Query(new RequiredQueryValidationPipe()) tec: TeamEnvQueryParams) {
-    const {org, team } = req;
-    const env = await this.envSvc.findByName(req.org, team, tec.envName);
+  @Post('environment')
+  async newEnvironmentReconciliation(@Req() req: APIRequest, @Body() body: CreateEnvironmentReconciliationDto) {
+    const { org } = req;
 
+    const team = await this.teamSvc.findByName(org, body.teamName);
+    const env = await this.envSvc.findByName(org, team, body.name);
+    const envReconEntry = await this.reconSvc.createEnvRecon(org, team, env, body);
+
+    try {
+      const skippedEntries = await this.reconSvc.getSkippedEnvironments(org, team, env);
+      await this.reconSvc.bulkUpdateEnvironmentEntries(skippedEntries, 'skipped_reconcile');
+    } catch (err) {
+      this.logger.error('could not update skipped workflows', err);
+      throw new InternalServerErrorException();
+    }
+
+    return envReconEntry.reconcileId;
+  }
+
+  @Post('environment/:reconcileId')
+  async updateEnvironmentReconciliation(@Req() req: APIRequest, @Param('reconcileId') reconcileId: number, @Body() body: UpdateEnvironmentReconciliationDto) {
+    const { org } = req;
+    const team = await this.teamSvc.findByName(org, body.teamName);
+    const existingEntry = await this.reconSvc.getEnvReconByReconcileId(org, reconcileId);
+
+    if (!existingEntry) {
+      this.logger.error({message: 'could not find environment reconcile entry', reconcileId, team})
+      throw new BadRequestException('could not find environment reconcile entry');
+    }
+    
+    const envRecon = await this.reconSvc.updateEnvRecon(existingEntry, body);
+    this.sseSvc.sendEnvironmentReconcile(envRecon);
+
+    const ed = new Date(envRecon.end_date_time).getTime();
+    const sd = new Date(envRecon.start_date_time).getTime();
+    const duration = ed - sd;
+
+    await this.envSvc.updateByName(org, team, body.name, {
+      duration
+    });
+
+    return envRecon;
+  }
+
+  @Post('component')
+  async newComponentReconciliation(@Req() req: APIRequest, @Body() body: CreateComponentReconciliationDto): Promise<number> {
+    const { org } = req;
+
+    const team = await this.teamSvc.findByName(org, body.teamName);
+    if (!team) {
+      this.logger.error({ message: 'could not find team in newComponentReconciliation', body });
+      throw new BadRequestException('could not find team');
+    }
+
+    const env = await this.envSvc.findByName(org, team, body.envName);
     if (!env) {
+      this.logger.error({ message: 'could not find environment in newComponentReconciliation', body });
       throw new BadRequestException('could not find environment');
     }
 
-    return env;
+    const envRecon = await this.reconSvc.getEnvReconByReconcileId(org, body.envReconcileId);
+    if (!envRecon) {
+      this.logger.error({ message: 'could not find environment-reconcile in newComponentReconciliation', body });
+      throw new BadRequestException('could not find environment-reconcile');
+    }
+
+    const compRecon = await this.reconSvc.createCompRecon(org, envRecon, body);
+
+    return compRecon.reconcileId;
+  }
+
+  @Post('component/:reconcileId')
+  async updateComponentReconciliation(@Req() req: APIRequest, @Param('reconcileId') compReconcileId: number, @Body() body: UpdateComponentReconciliationDto) {
+    const { org } = req;
+
+    const team = await this.teamSvc.findByName(org, body.teamName);
+    if (!team) {
+      this.logger.error({ message: 'could not find team in updateComponentReconciliation', body });
+      throw new BadRequestException('could not find team');
+    }
+
+    const env = await this.envSvc.findByName(org, team, body.envName);
+    if (!env) {
+      this.logger.error({ message: 'could not find environment in updateComponentReconciliation', body });
+      throw new BadRequestException('could not find environment');
+    }
+
+    const comp = await this.compSvc.findByName(org, env, body.name);
+    if (!comp) {
+      this.logger.error({ message: 'could not find associated component in updateComponentReconciliation', body });
+      throw new BadRequestException('could not find component');
+    }
+
+    const compRecon = await this.reconSvc.getCompReconById(org, compReconcileId, true);
+    if (!compRecon) {
+      this.logger.error({ message: 'could not find component-reconcile in updateComponentReconciliation', body });
+      throw new BadRequestException('could not find component-reconcile');
+    }
+    
+    const envRecon = await this.reconSvc.getEnvReconByReconcileId(org, compRecon.environmentReconcile.reconcileId);
+    if (!envRecon) {
+      this.logger.error({ message: 'could not find component-reconcile in updateComponentReconciliation', body });
+      throw new BadRequestException('could not find component-reconcile');
+    }
+
+    const updatedCompRecon = await this.reconSvc.updateCompRecon(compRecon, body);
+    this.logger.log({message: 'updated component reconcile entry', updatedCompRecon});
+    
+    let duration = comp.duration;
+    if (updatedCompRecon.end_date_time) {
+      const ed = new Date(body.endDateTime).getTime();
+      const sd = new Date(compRecon.start_date_time).getTime();
+      duration = ed - sd;
+    }
+
+    await this.compSvc.updateCompRecon(comp, {
+      duration,
+      status: updatedCompRecon.status
+    });
+    this.logger.log({ message: 'updated component', comp});
+
+    updatedCompRecon.environmentReconcile = envRecon;
+    updatedCompRecon.organization = org;
+    this.sseSvc.sendComponentReconcile(updatedCompRecon);
+
+    return updatedCompRecon.reconcileId;
   }
 
   @Patch("approved-by")
   async patchApprovedBy(@Req() req: APIRequest, @Body() body: ApprovedByDto) {
-    return await this.reconciliationService.patchApprovedBy(req.org, body);
+    return await this.reconSvc.patchApprovedBy(req.org, body);
   }
 
   @Get("approved-by")
-  async getApprovedBy(@Request() req, @Query(new RequiredQueryValidationPipe()) tec: TeamEnvCompQueryParams, @Query("rid") rid: number) {
-    const body: ApprovedByDto = {
-      compName: tec.compName,
-      envName: tec.envName,
-      teamName: tec.teamName,
-      rid,
+  async getApprovedBy(@Request() req: APIRequest, @Query(new RequiredQueryValidationPipe()) tec: TeamEnvCompQueryParams, @Query("rid") rid: number) {
+    const { org } = req;
+
+    if (rid > 0) {
+      return this.reconSvc.getCompReconById(org, rid);
     }
-    return await this.reconciliationService.getApprovedBy(req.org, body);
+
+    const team = await this.teamSvc.findByName(org, tec.teamName);
+    const env = await this.envSvc.findByName(org, team, tec.envName);
+    return await this.reconSvc.getCompReconByName(org, env, tec.compName);
   }
 
   @Get("audit/components")
   async getComponents(@Request() req, @Query(new RequiredQueryValidationPipe()) tec: TeamEnvCompQueryParams): Promise<ComponentAudit[]> {
     const {org, team} = req;
-    return await this.reconciliationService.getComponentAuditList(org, team, tec.compName, tec.envName);
+    return await this.reconSvc.getComponentAuditList(org, team, tec.compName, tec.envName);
   }
 
   @Get("audit/environments")
   async getEnvironments(@Request() req, @Query(new RequiredQueryValidationPipe()) te: TeamEnvQueryParams): Promise<EnvironmentAudit[]> {
     const {org, team} = req;
-    return await this.reconciliationService.getEnvironmentAuditList(org, team, te.envName);
+    return await this.reconSvc.getEnvironmentAuditList(org, team, te.envName);
   }
 
   @Get("component/logs/:team/:environment/:component/:id")
@@ -91,7 +211,7 @@ export class ReconciliationController {
     @Param("component") component: string,
     @Param("id") id: number
   ) {
-    return await this.reconciliationService.getLogs(
+    return await this.reconSvc.getLogs(
       req.org,
       team,
       environment,
@@ -107,7 +227,7 @@ export class ReconciliationController {
     @Param("environment") environment: string,
     @Param("component") component: string
   ) {
-    return await this.reconciliationService.getStateFile(
+    return await this.reconSvc.getStateFile(
       req.org,
       team,
       environment,
@@ -126,14 +246,15 @@ export class ReconciliationController {
     @Param("id") id: number,
     @Param("latest") latest: string
   ) {
-    return await this.reconciliationService.getPlanLogs(
-      req.org,
-      team,
-      environment,
-      component,
-      id,
-      latest === "true"
-    );
+    return {};
+    // return await this.reconSvc.getPlanLogs(
+    //   req.org,
+    //   team,
+    //   environment,
+    //   component,
+    //   id,
+    //   latest === "true"
+    // );
   }
 
   @Get(
@@ -147,21 +268,22 @@ export class ReconciliationController {
     @Param("id") id: number,
     @Param("latest") latest: string
   ) {
-    return await this.reconciliationService.getApplyLogs(
-      req.org,
-      team,
-      environment,
-      component,
-      id,
-      latest === "true"
-    );
+    return {};
+    // return await this.reconSvc.getApplyLogs(
+    //   req.org,
+    //   team,
+    //   environment,
+    //   component,
+    //   id,
+    //   latest === "true"
+    // );
   }
 
   @Sse("components/notify")
   notifyComponents(@Request() req, @Query(new RequiredQueryValidationPipe()) tec: TeamEnvCompQueryParams): Observable<MessageEvent> {
     return from(this.sseSvc.notifyStream).pipe(
       map((component: ComponentReconcile) => {
-        if (component.name !== tec.compName || tec.envName !== component.environmentReconcile.name || tec.teamName !== component.environmentReconcile.team_name || component.organization.id !== req.org.id) {
+        if (component.name !== tec.compName || tec.envName !== component.environmentReconcile.environment.name || tec.teamName !== component.environmentReconcile.environment.team.name || component.organization.id !== req.org.id) {
           return { data: [] };
         }
         const data: ComponentAudit[] = Mapper.getComponentAuditList([
@@ -176,7 +298,7 @@ export class ReconciliationController {
   notifyEnvironments(@Request() req, @Query(new RequiredQueryValidationPipe()) te: TeamEnvQueryParams): Observable<MessageEvent> {
     return from(this.sseSvc.notifyStream).pipe(
       map((environment: EnvironmentReconcile) => {
-        if (environment.name !== te.envName || te.teamName != environment.team_name || req.org.id !== environment.organization.id) {
+        if (environment.environment.name !== te.envName || te.teamName != environment.team.name || req.org.id !== environment.organization.id) {
           return { data: [] };
         }
         const data: EnvironmentAudit[] = Mapper.getEnvironmentAuditList([

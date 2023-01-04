@@ -24,8 +24,6 @@ team_env_config_name=$team_name-$env_name-$config_name
 
 echo "config name: $config_name"
 
-# TODO : add orgId to URL
-# TODO : replace customer_id with generic multi-tenant API url
 url_environment="http://zlifecycle-api.${zlifecycle_namespace}.svc.cluster.local/${api_version}/orgs/${customer_id}/reconciliation/environment/save"
 url="http://zlifecycle-api.${zlifecycle_namespace}.svc.cluster.local/${api_version}/orgs/${customer_id}/reconciliation/component/save"
 start_date=$(date '+%Y-%m-%d %H:%M:%S')
@@ -107,6 +105,7 @@ if [ $reconcile_id -eq 0 ]; then
     reconcile_id=null
 fi
 
+# there is no config so must be an environment?
 if [ $config_name -eq 0 ]; then
     component_payload=[]
     url=$url_environment
@@ -120,6 +119,33 @@ else
     status="provision_"$status
 fi
 
+if [ $config_name -eq 0 ]; then # environment recon
+    if [ $reconcile_id -eq 0 ]; then # create env reconcile
+        payload='{"name": "'${env_name}'", "teamName": "'${team_name}'", "startDateTime": "'${start_date}'"}'
+        echo ${payload} > /tmp/tmp_new_env_recon.json
+
+        result=$(curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/environment" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_new_env_recon.json)
+    else # update env reconcile
+        payload='{"status": "'${status}'", "teamName": "'${team_name}'", "endDateTime": "'${end_date}'"}'
+        echo ${payload} > /tmp/tmp_update_env_recon.json
+
+        result=$(curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/environment/${reconcile_id}" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_update_env_recon.json)
+    fi
+else # component recon
+    if [ $config_reconcile_id -eq 0 ]; then # create comp reconcile
+        payload='{"name": "'${env_name}'", "teamName": "'${team_name}'", "startDateTime": "'${start_date}'", "envReconcileId": "'${reconcile_id}'"}'
+        echo ${payload} > /tmp/tmp_new_env_recon.json
+
+        result=$(curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/component" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_new_env_recon.json)
+    else # update comp reconcile
+        payload='{"name": "'${env_name}'", "teamName": "'${team_name}'", "startDateTime": "'${start_date}'"}'
+        echo ${payload} > /tmp/tmp_new_env_recon.json
+
+        result=$(curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/component/${reconcile_id}" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_new_env_recon.json)
+    fi
+fi
+
+# TODO : this payload was used for both environment and component saves
 payload='{"reconcileId": '$reconcile_id', "name" : "'$env_name'", "teamName" : "'$team_name'", "status" : "'$status'", "startDateTime" : "'$start_date'", "endDateTime" : '$end_date', "componentReconciles" : '$component_payload'}'
 
 echo "AUDIT PAYLOAD: $payload"

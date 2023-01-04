@@ -2,19 +2,16 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumn, Primar
 import { Organization } from './Organization.entity'
 import { ComponentReconcile } from './component-reconcile.entity'
 import { Environment } from './environment.entity'
+import { Team } from './team.entity'
 
 @Entity({
   name: 'environment_reconcile',
 })
 export class EnvironmentReconcile {
-  @PrimaryGeneratedColumn()
-  reconcile_id: number
-
-  @Column()
-  name: string
-
-  @Column()
-  team_name: string
+  @PrimaryGeneratedColumn({
+    name: 'id'
+  })
+  reconcileId: number
 
   @Column()
   status: string
@@ -25,7 +22,8 @@ export class EnvironmentReconcile {
   start_date_time: string
 
   @Column({
-      nullable: true
+    type: 'datetime',
+    nullable: true
   })
   end_date_time?: string
 
@@ -39,6 +37,9 @@ export class EnvironmentReconcile {
     eager: true
   })
   environment: Environment;
+
+  @ManyToOne(() => Team, (team) => team.id)
+  team: Team;
 
   @ManyToOne(() => Organization, (org) => org.id, {
     onDelete: "CASCADE"

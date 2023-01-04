@@ -24,16 +24,16 @@ echo "   custom_state_lock_table=${custom_state_lock_table}"
 function PatchError() {
   if [ $is_destroy = true ]
   then
-      data='{"metadata":{"labels":{"env_status":"destroy_failed"}}}'
+      status="destroy_failed"
   else
-      data='{"metadata":{"labels":{"env_status":"provision_failed"}}}'
+      status="provision_failed"
   fi
 
-  argocd app patch $team_env_name --patch $data --type merge > null
+  # argocd app patch $team_env_name --patch $data --type merge > null
 
   UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "${component_error_status}"
+  UpdateEnvironmentStatus "${team_name}" "${env_name}" "${status}"
 
-  # TODO : Add org_id here
   sh /audit.sh $team_name $env_name $config_name "Failed" $component_error_status $reconcile_id $config_reconcile_id $is_destroy 0 "noSkip" $customer_id
 }
 
@@ -125,4 +125,22 @@ function UpdateComponentStatus() {
   echo $payload >temp_payload.json
 
   curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/costing/saveComponent" -H 'accept: */*' -H 'Content-Type: application/json' -d @temp_payload.json
+}
+
+# Saves or updates a component
+#   Args:
+#     $1 - team name (required)
+#     $2 - env name (required)
+#     $3 - env status (required)
+function UpdateEnvironmentStatus() {
+  local teamName="${1}"
+  local envName="${2}"
+  local status="${3}"
+
+  local payload='{"status": "'${status}'"}'
+  
+  echo "Running UpdateEnvironmentStatus ${status} : ${payload}"
+  echo $payload >temp_env_status_payload.json
+
+  curl -X 'PATCH' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/teams/${teamName}/environments/${envName}" -H 'accept: */*' -H 'Content-Type: application/json' -d @temp_env_status_payload.json
 }

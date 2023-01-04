@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ComponentService } from 'src/costing/services/component.service';
+import { ComponentService } from 'src/component/component.service';
 import { EnvironmentService } from 'src/environment/environment.service';
 import { RootEnvironmentService } from 'src/root-environment/root.environment.service';
 import { TeamService } from 'src/team/team.service';

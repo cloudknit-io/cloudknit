@@ -19,6 +19,7 @@ import { TeamModule } from './team/team.module';
 import { RootTeamModule } from './root-team/root.team.module';
 import { EnvironmentModule } from './environment/environment.module';
 import { RootEnvironmentModule } from './root-environment/root.environment.module';
+import { ComponentModule } from './component/component.module';
 
 const config = get();
 
@@ -53,7 +54,8 @@ const typeOrmModuleOptions: TypeOrmModuleOptions = {
     TeamModule,
     RootTeamModule,
     EnvironmentModule,
-    RootEnvironmentModule
+    RootEnvironmentModule,
+    ComponentModule
   ],
   controllers: [],
   providers: [],

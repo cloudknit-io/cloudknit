@@ -28,6 +28,17 @@ export class EnvironmentService {
     return updatedEnv;
   }
 
+  async updateByName(org: Organization, team: Team, name: string, updateEnvDto: UpdateEnvironmentDto): Promise<Environment> {
+    const env = await this.findByName(org, team, name);
+
+    this.envRepo.merge(env, updateEnvDto);
+
+    const updatedEnv = await this.envRepo.save(env);
+    this.sseSvc.sendEnvironment(updatedEnv);
+
+    return updatedEnv;
+  }
+
   async findById(org: Organization, id: number, team?: Team, relations?: {}): Promise<Environment> {
     const where = {
       id,

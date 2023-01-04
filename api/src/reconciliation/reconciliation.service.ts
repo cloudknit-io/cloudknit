@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Body, Injectable, InternalServerErrorException, Logger, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { get } from "src/config";
 import { Mapper } from "src/costing/utilities/mapper";
@@ -15,6 +15,8 @@ import { ApprovedByDto, ComponentAudit } from "./dtos/componentAudit.dto";
 import { EnvironmentAudit } from "./dtos/environmentAudit.dto";
 import { SSEService } from "./sse.service";
 import { EnvironmentService } from "src/environment/environment.service";
+import { EvnironmentReconcileDto } from "./dtos/reconcile.Dto";
+import { TeamService } from "src/team/team.service";
 
 @Injectable()
 export class ReconciliationService {
@@ -25,14 +27,162 @@ export class ReconciliationService {
 
   constructor(
     @InjectRepository(EnvironmentReconcile)
-    private readonly environmentReconcileRepository: Repository<EnvironmentReconcile>,
+    private readonly envReconRepo: Repository<EnvironmentReconcile>,
     @InjectRepository(ComponentReconcile)
-    private readonly componentReconcileRepository: Repository<ComponentReconcile>,
+    private readonly compReconRepo: Repository<ComponentReconcile>,
     @InjectRepository(Component)
-    private readonly componentRepository: Repository<Component>,
+    private readonly compRepo: Repository<Component>,
     private readonly envSvc: EnvironmentService,
+    private readonly teamSvc: TeamService,
     private readonly sseSvc: SSEService
   ) { }
+
+  async createEnvRecon(org: Organization, team: Team, env: Environment, createEnv: CreateEnvironmentReconciliationDto): Promise<EnvironmentReconcile> {
+    return this.envReconRepo.save({
+      start_date_time: createEnv.startDateTime,
+      environment: env,
+      team,
+      status: "initializing",
+      organization: org
+    });
+  }
+
+  async updateEnvRecon(envRecon: EnvironmentReconcile, mergeRecon: UpdateEnvironmentReconciliationDto): Promise<EnvironmentReconcile> {
+    this.envReconRepo.merge(envRecon, mergeRecon);
+
+    return this.envReconRepo.save(envRecon);
+  }
+
+  async getEnvReconByReconcileId(org: Organization, reconcileId: number) {
+    return this.envReconRepo.findOne({
+      where: {
+        reconcileId,
+        organization: {
+          id: org.id
+        }
+      }
+    })
+  }
+
+  async getEnvReconByEnv(org: Organization, env: Environment) {
+    return this.envReconRepo.findOne({
+      where: {
+        environment: {
+          id: env.id
+        },
+        organization: {
+          id: org.id
+        }
+      },
+      order: {
+        start_date_time: -1
+      }
+    })
+  }
+
+  async getSkippedEnvironments(org: Organization, team: Team, env: Environment) {
+    return this.envReconRepo.find({
+      where: {
+        end_date_time: IsNull(),
+        team: {
+          id: team.id
+        },
+        organization: {
+          id: org.id
+        },
+        environment: {
+          id: env.id
+        }
+      },
+    });
+  }
+
+  async bulkUpdateEnvironmentEntries(entries: EnvironmentReconcile[], status: string) {
+    if (entries.length > 0) {
+      const newEntries = entries.map((entry) => ({
+        ...entry,
+        status
+      })) as any;
+
+      this.logger.log({message: 'updating skipped workflows', environment: entries[0].environment});
+
+      await this.envReconRepo.save(newEntries);
+    }
+  }
+
+  async createCompRecon(org: Organization, envRecon: EnvironmentReconcile, createComp: CreateComponentReconciliationDto): Promise<ComponentReconcile> {
+    return this.compReconRepo.save({
+      name: createComp.name,
+      status: 'initializing',
+      organization: org,
+      start_date_time: createComp.startDateTime,
+      environmentReconcile: envRecon
+    });
+  }
+
+  async updateCompRecon(compRecon: ComponentReconcile, mergeRecon: UpdateComponentReconciliationDto): Promise<ComponentReconcile> {
+    this.compReconRepo.merge(compRecon, mergeRecon);
+
+    return this.compReconRepo.save(compRecon);
+  }
+
+  async getCompReconById(org: Organization, reconcileId: number, withEnvRecon: boolean = false): Promise<ComponentReconcile> {
+    return this.compReconRepo.findOne({
+      where: {
+        reconcileId,
+        organization: {
+          id: org.id
+        }
+      },
+      relations: withEnvRecon === true ? { environmentReconcile: true } : null
+    })
+  }
+
+  async getCompReconByName(org: Organization, env: Environment, compName: string): Promise<ComponentReconcile> {
+    return this.compReconRepo.findOne({
+      where: {
+        name: compName,
+        environmentReconcile: {
+          environment: {
+            id: env.id
+          }
+        },
+        organization: {
+          id: org.id
+        }
+      },
+      order: {
+        start_date_time: -1
+      },
+    })
+  }
+
+  async getSkippedComponents(org: Organization, env: Environment) {
+    return await this.compReconRepo.find({
+      where: {
+        end_date_time: IsNull(),
+        environmentReconcile: {
+          environment: {
+            id: env.id
+          }
+        },
+        organization: {
+          id: org.id
+        }
+      },
+    });
+  }
+
+  async patchApprovedBy(org: Organization, body: ApprovedByDto): Promise<ComponentReconcile> {
+    const team = await this.teamSvc.findByName(org, body.teamName);
+    const env = await this.envSvc.findByName(org, team, body.envName);
+    const envRecon = await this.getEnvReconByEnv(org, env);
+    const compRecon = await this.getLatestCompReconcile(org, envRecon, body.compName);
+
+    this.compReconRepo.merge(compRecon, { approved_by: body.email })
+
+    return this.compReconRepo.save(compRecon);
+  }
 
   // async putComponent(org: Organization, team: Team, component: ComponentDto, env: Environment) {
   //   if (typeof env === 'undefined') {
@@ -69,105 +219,6 @@ export class ReconciliationService {
   //   const entry = await this.componentRepository.save(existing);
     
   //   return entry;
-  // }
-
-  // async saveOrUpdateEnvironment(org: Organization, runData: EvnironmentReconcileDto) {
-  //   const reconcileId = Number.isNaN(parseInt(runData.reconcileId))
-  //     ? null
-  //     : parseInt(runData.reconcileId);
-
-  //   let savedEntry: EnvironmentReconcile = null;
-  //   let env = await this.envSvc.findById(org, runData.name, runData.teamName);
-
-  //   if (!env) {
-  //     try {
-  //       env = await this.envSvc.putEnvironment(org, {name: runData.name, teamName: runData.teamName, duration: -1});
-
-  //       this.logger.log({message: 'created environment', runData });
-  //     } catch (e) {
-  //       this.logger.error({message: `could not create environment ${runData.name}`, error: e.message });
-  //       throw new InternalServerErrorException('could not create environment');
-  //     }
-  //   }
-
-  //   this.logger.log({ message: 'saveOrUpdateEnvironment', reconcileId, environment: env, runData });
-
-  //   if (reconcileId) {
-  //     const existingEntry = await this.environmentReconcileRepository
-  //       .createQueryBuilder()
-  //       .where('reconcile_id = :reconcileId and environmentId = :envId',
-  //         {
-  //           reconcileId,
-  //           envId: env.id
-  //         }
-  //       )
-  //       .getOne();
-
-  //     if (!existingEntry) {
-  //       this.logger.error({message: `could not find environment reconcile entry`, reconcileId, environment: env})
-  //       throw new BadRequestException(`could not find environment reconcile entry`);
-  //     }
-      
-  //     existingEntry.end_date_time = runData.endDateTime ? runData.endDateTime : "";
-  //     existingEntry.status = runData.status;
-        
-  //     this.logger.log({ message: 'updating existing environment reconcile entry', existingEntry });
-      
-  //     savedEntry = await this.environmentReconcileRepository.save(
-  //       existingEntry
-  //     );
-
-  //     const ed = new Date(savedEntry.end_date_time).getTime();
-  //     const sd = new Date(savedEntry.start_date_time).getTime();
-  //     const duration = ed - sd;
-
-  //     await this.envSvc.putEnvironment(org, {
-  //       name: savedEntry.name,
-  //       teamName: runData.teamName,
-  //       duration,
-  //     });
-  //   } else {
-  //     const entry: EnvironmentReconcile = {
-  //       reconcile_id: null,
-  //       environment: env,
-  //       name: runData.name,
-  //       start_date_time: runData.startDateTime,
-  //       team_name: runData.teamName,
-  //       status: runData.status,
-  //       end_date_time: runData.endDateTime,
-  //       organization: org
-  //     };
-
-      // // QUESTION : This queries all previously unfinished (status == null) EnvironmentReconcile's 
-      // // by environment name and sets them to "skipped".
-      // // What it should do is query Reconcile table to get the most recent run for the Environment
-      // // Then query the EnvironmentReconcile table by ReconcileId and set those to "skipped"
-      // //
-      // // Querying by `name` is the wrong way to do this.
-      // try {
-      //   await this.updateSkippedWorkflowsForEnvironment(
-      //     entry.team_name,
-      //     entry.name,
-      //     this.environmentReconcileRepository
-      //   );
-      // } catch (err) {
-      //   this.logger.error('could not update skipped workflows', err);
-      //   throw new InternalServerErrorException();
-      // }
-
-  //     this.logger.log({ message: 'creating new environmentReconcileEntry', entry });
-  //     savedEntry = await this.environmentReconcileRepository.save(entry);
-
-  //     await this.envSvc.putEnvironment(org, {
-  //       name: savedEntry.name,
-  //       teamName: runData.teamName,
-  //       duration: -1,
-  //     });
-  //   }
-  //   savedEntry.organization = org;
-  //   this.sseSvc.sendEnvironmentReconcile(savedEntry);
-
-  //   return savedEntry.reconcile_id;
   // }
 
   // async saveOrUpdateComponent(org: Organization, envReconcile: EvnironmentReconcileDto) {
@@ -214,21 +265,21 @@ export class ReconciliationService {
 
   //   this.logger.log({message: 'created component entry', reconcileId, env, componentEntry});
 
-    // if (!componentEntry.reconcile_id) {
-    //   await this.updateSkippedWorkflowsForComponent(
-    //     envReconcile.teamName,
-    //     envReconcile.name,
-    //     componentEntry.name,
-    //     this.componentReconcileRepository
-    //   );
-    // }
+  //   if (!componentEntry.reconcileId) {
+  //     await this.updateSkippedWorkflowsForComponent(
+  //       envReconcile.teamName,
+  //       envReconcile.name,
+  //       componentEntry.name,
+  //       this.componentReconcileRepository
+  //     );
+  //   }
 
   //   let duration = -1;
-  //   if (componentEntry.reconcile_id) {
+  //   if (componentEntry.reconcileId) {
   //     const existingEntry = await this.componentReconcileRepository.findOne(
   //       {
   //         where: {
-  //           reconcile_id: componentEntry.reconcile_id
+  //           reconcile_id: componentEntry.reconcileId
   //         }
   //       }
   //     );
@@ -267,31 +318,6 @@ export class ReconciliationService {
   //   return entry.reconcile_id;
   // }
 
-  // async updateSkippedWorkflowsForComponent(teamName: string, envName: string, name: string, repo: Repository<ComponentReconcile>) {
-  //   const entries = await repo.find({
-  //     where: {
-  //       name: name,
-  //       end_date_time: IsNull(),
-  //       environmentReconcile: {
-  //         team_name: teamName,
-  //         name: envName
-  //       }
-  //     },
-  //   });
-  //   await this.updateSkippedWorkflows(entries, repo);
-  // }
-
-  // async updateSkippedWorkflowsForEnvironment(teamName: string, name: string, repo: Repository<EnvironmentReconcile>) {
-  //   const entries = await repo.find({
-  //     where: {
-  //       team_name: teamName,
-  //       name: name,
-  //       end_date_time: IsNull(),
-  //     },
-  //   });
-  //   await this.updateSkippedWorkflows(entries, repo);
-  // }
-
   // async updateSkippedWorkflows(entries: ComponentReconcile[]|EnvironmentReconcile[], repo: Repository<ComponentReconcile|EnvironmentReconcile>) {
   //   if (entries.length > 0) {
   //     const newEntries = entries.map((entry) => ({
@@ -308,14 +334,14 @@ export class ReconciliationService {
   async getComponentAuditList(org: Organization, team: Team, id: string, envName: string): Promise<ComponentAudit[]> {
     const envAuditList = await this.getEnvironmentAuditList(org, team, envName);
     const reconcileIds = envAuditList.map(e => e.reconcileId);
-    const components = await this.componentReconcileRepository.find({
+    const components = await this.compReconRepo.find({
       where: {
         name: id,
         organization: {
           id: org.id
         },
         environmentReconcile: {
-          reconcile_id: In(reconcileIds)
+          reconcileId: In(reconcileIds)
         }
       }
     });
@@ -331,7 +357,7 @@ export class ReconciliationService {
       throw new BadRequestException(`Could not find environment`);
     }
 
-    const environments = await this.environmentReconcileRepository.find({
+    const environments = await this.envReconRepo.find({
       where: {
         environment: {
           id: env.id
@@ -371,97 +397,67 @@ export class ReconciliationService {
     }
   }
 
-  async getApplyLogs(
-    org: Organization,
-    team: string,
-    environment: string,
-    component: string,
-    id: number,
-    latest: boolean
-  ) {
-    const logs =
-      latest === true
-        ? await this.getLatestLogs(org, team, environment, component)
-        : await this.getLogs(org, team, environment, component, id);
+  // async getApplyLogs(
+  //   org: Organization,
+  //   team: string,
+  //   environment: string,
+  //   component: string,
+  //   id: number,
+  //   latest: boolean
+  // ) {
+  //   const logs =
+  //     latest === true
+  //       ? await this.getLatestLogs(org, team, environment, component)
+  //       : await this.getLogs(org, team, environment, component, id);
 
-    if (Array.isArray(logs)) {
-      return logs.filter((e) => e.key.includes("apply_output"));
-    }
+  //   if (Array.isArray(logs)) {
+  //     return logs.filter((e) => e.key.includes("apply_output"));
+  //   }
 
-    return logs;
-  }
+  //   return logs;
+  // }
 
-  async getPlanLogs(
-    org: Organization,
-    team: string,
-    environment: string,
-    component: string,
-    id: number,
-    latest: boolean
-  ) {
-    const logs =
-      latest === true
-        ? await this.getLatestLogs(org, team, environment, component)
-        : await this.getLogs(org, team, environment, component, id);
+  // async getPlanLogs(
+  //   org: Organization,
+  //   team: string,
+  //   environment: string,
+  //   component: string,
+  //   id: number,
+  //   latest: boolean
+  // ) {
+  //   const logs =
+  //     latest === true
+  //       ? await this.getLatestLogs(org, team, environment, component)
+  //       : await this.getLogs(org, team, environment, component, id);
 
-    if (Array.isArray(logs)) {
-      return logs.filter((e) => e.key.includes("plan_output"));
-    }
+  //   if (Array.isArray(logs)) {
+  //     return logs.filter((e) => e.key.includes("plan_output"));
+  //   }
 
-    return logs;
-  }
+  //   return logs;
+  // }
 
-  async getLatestLogs(
-    org: Organization,
-    team: string,
-    environment: string,
-    component: string
-  ) {
-    const latestAudit = await this.getLatestCompReconcile(org, component, environment, team);
+  // async getLatestLogs(
+  //   org: Organization,
+  //   env: Environment,
+  //   compName: string
+  // ) {    
+  //   const envRecon = await this.getEnvReconByEnv(org, env);
+  //   const compRecon = await this.getLatestCompReconcile(org, envRecon, compName);
 
-    if (!latestAudit) {
-      this.logger.error({ message: 'could not find latestAuditId to get latest logs', component, environment, team });
-      throw new NotFoundException(`could not find audit logs for ${team}-${environment}-${component}`);
-    }
+  //   if (!compRecon) {
+  //     this.logger.error({ message: 'could not find latestAuditId to get latest logs', component: compName, environment, team });
+  //     throw new NotFoundException(`could not find audit logs for ${team}-${environment}-${compName}`);
+  //   }
 
-    return await this.getLogs(
-      org,
-      team,
-      environment,
-      component,
-      latestAudit.reconcile_id
-    );
-  }
-
-  async patchApprovedBy(org: Organization, body: ApprovedByDto) {
-    const latestAudit = await this.getLatestCompReconcile(org, body.compName, body.envName, body.teamName);
-
-    if (!latestAudit) {
-      throw new NotFoundException(`could not find latest audit for component ${body.compName} in env ${body.envName} for team ${body.teamName}`);
-    }
-
-    latestAudit.approved_by = body.email;
-
-    return await this.componentReconcileRepository.save(latestAudit);
-  }
-
-  async getApprovedBy(org: Organization, body: ApprovedByDto) {
-    if (body.rid < 0) {
-      const latestAudit = await this.getLatestCompReconcile(org, body.compName, body.envName, body.teamName);
-
-      if (!latestAudit) {
-        throw new NotFoundException(`could not find latest audit for component ${body.compName} in env ${body.envName} for team ${body.teamName}`);
-      }
-
-      return latestAudit;
-    }
-
-    return await this.componentReconcileRepository.findOne({
-      where : {
-        reconcile_id : body.rid
-      }
-    });
-  }
+  //   return await this.getLogs(
+  //     org,
+  //     team,
+  //     environment,
+  //     compName,
+  //     compRecon.reconcileId
+  //   );
+  // }
 
   async getStateFile(
     org: Organization,
@@ -481,30 +477,21 @@ export class ReconciliationService {
     };
   }
 
-  private async getLatestCompReconcile(org: Organization, compName: string, envName: string, teamName: string): Promise<ComponentReconcile> {
-    try {
-      const latestAuditId = await this.componentReconcileRepository.findOne({
-        where: {
-          name: compName,
-          status: Not(Like("skipped%")),
-          organization: {
-            id : org.id
-          },
-          environmentReconcile: {
-            name: envName,
-            team_name: teamName
-          }
+  private async getLatestCompReconcile(org: Organization, envRecon: EnvironmentReconcile, compName: string): Promise<ComponentReconcile> {
+    return await this.compReconRepo.findOne({
+      where: {
+        name: compName,
+        status: Not(Like("skipped%")),
+        organization: {
+          id : org.id
         },
-        order: {
-          start_date_time: -1,
+        environmentReconcile: {
+          reconcileId: envRecon.reconcileId
         }
-      });
-
-      this.logger.debug({message: `getting latest component reconcile id`, compName, envName, teamName});
-      return latestAuditId;
-    } catch (err) {
-      this.logger.error('could not get latestAuditId', err);
-      throw new InternalServerErrorException('could not get latest audit id');
-    }
+      },
+      order: {
+        start_date_time: -1,
+      }
+    });
   }
 }
