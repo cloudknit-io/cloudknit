@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/compuzest/zlifecycle-il-operator/controller/common/cloudknitservice"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/eventservice"
 	"github.com/newrelic/go-agent/v3/newrelic"
 
@@ -371,6 +372,13 @@ func (r *EnvironmentReconciler) handleNonDeleteEvent(
 		return errors.Wrap(err, "error generating and saving environment apps")
 	}
 
+	cloudKnitServiceClient := cloudknitservice.NewService(env.Config.ZLifecycleAPIURL)
+	err := cloudKnitServiceClient.PostEnvironment(ctx, env.Config.CompanyName, *e, r.LogV2)
+
+	if err != nil {
+		return errors.Wrap(err, "error saving environment components via API")
+	}
+
 	if err := generateAndSaveEnvironmentComponents(
 		ctx,
 		r.LogV2,
@@ -383,7 +391,7 @@ func (r *EnvironmentReconciler) handleNonDeleteEvent(
 		e,
 		tfcfg,
 	); err != nil {
-		return errors.Wrap(err, "error generating and saving environment components")
+		return errors.Wrap(err, "error generating and saving environment components IL")
 	}
 
 	return nil

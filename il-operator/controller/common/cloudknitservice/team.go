@@ -38,7 +38,7 @@ func (s *Service) PostTeam(ctx context.Context, organizationName string,
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewBuffer(jsonBody))
 	if err != nil {
-		return errors.Wrap(err, "error creating GET organization request")
+		return errors.Wrap(err, "error creating POST Team request")
 	}
 	req.Header.Add("Content-Type", runtime.ContentTypeJSON)
 	resp, err := s.httpClient.Do(req)
