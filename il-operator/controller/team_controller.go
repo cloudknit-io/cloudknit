@@ -151,13 +151,6 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 
 	teamAppFilename := fmt.Sprintf("%s-team.yaml", team.Spec.TeamName)
 
-	/*
-		if err := generateAndSaveTeamApp(fileAPI, team, teamAppFilename, tempILRepoDir); err != nil {
-			teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error generating team argocd app"))
-			return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
-		}
-	*/
-
 	cloudKnitServiceClient := cloudknitservice.NewService(env.Config.ZLifecycleAPIURL)
 	err = cloudKnitServiceClient.PostTeam(ctx, env.Config.CompanyName, *team, r.LogV2)
 
