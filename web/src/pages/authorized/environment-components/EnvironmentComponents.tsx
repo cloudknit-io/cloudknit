@@ -83,7 +83,7 @@ export const EnvironmentComponents: React.FC = () => {
 	const { pageHeaderObservable, breadcrumbObservable } = usePageHeader();
 	const [query, setQuery] = useState<string>('');
 	const [showSidePanel, setShowSidePanel] = useState<boolean>(false);
-	const [selectedConfig, setSelectedConfig] = useState<EnvironmentComponentItem>();
+	const [selectedConfig, setSelectedConfig] = useState<Component>();
 	const [loading, setLoading] = useState<boolean>(true);
 	const [components, setComponents] = useState<Component[]>([]);
 	const [workflowData, setWorkflowData] = useState<any>();
@@ -407,16 +407,17 @@ export const EnvironmentComponents: React.FC = () => {
 			return;
 		}
 		setEnvironmentNodeSelected(false);
-		const selectedConfig = componentArrayRef.current.find(config => config.componentName === configName);
-		if (selectedConfig) {
-			let workflowId = selectedConfig.labels?.last_workflow_run_id || '';
-			if (!selectedConfig.labels?.last_workflow_run_id) {
-				workflowId = 'initializing';
-			}
-			setSelectedConfig(selectedConfig);
-			setShowSidePanel(true);
-			setWorkflowId(workflowId);
-		}
+		const selectedConfig = components.find(c => c.name === configName);
+		// componentArrayRef.current.find(config => config.componentName === configName);
+		// if (selectedConfig) {
+		// 	let workflowId = selectedConfig.labels?.last_workflow_run_id || '';
+		// 	if (!selectedConfig.labels?.last_workflow_run_id) {
+		// 		workflowId = 'initializing';
+		// 	}
+		// 	setSelectedConfig(selectedConfig);
+		// 	setShowSidePanel(true);
+		// 	setWorkflowId(workflowId);
+		// }
 	};
 
 	const labelsMatch = (labels: EnvironmentItem['labels'] = {}, query: string): boolean => {
@@ -436,13 +437,13 @@ export const EnvironmentComponents: React.FC = () => {
 	};
 
 	const resetSelectedConfig = (ref: any) => {
-		const selectedConf = ref.find((itm: any) => itm.id === selectedConfig?.id);
-		if (selectedConf) {
-			setSelectedConfig(selectedConf);
-			if (selectedConf.labels?.last_workflow_run_id !== workflowId) {
-				setWorkflowId(selectedConf.labels?.last_workflow_run_id || '');
-			}
-		}
+		// const selectedConf = ref.find((itm: any) => itm.id === selectedConfig?.id);
+		// if (selectedConf) {
+		// 	setSelectedConfig(selectedConf);
+		// 	if (selectedConf.labels?.last_workflow_run_id !== workflowId) {
+		// 		setWorkflowId(selectedConf.labels?.last_workflow_run_id || '');
+		// 	}
+		// }
 	};
 
 	useEffect(() => {
@@ -453,7 +454,7 @@ export const EnvironmentComponents: React.FC = () => {
 				setIsLoadingWorkflow(false);
 				setWorkflowData(null);
 			} else {
-				getWorkflowData(workflowId, selectedConfig?.id || '');
+				getWorkflowData(workflowId, selectedConfig?.name || '');
 			}
 		}
 	}, [workflowId]);
@@ -500,20 +501,19 @@ export const EnvironmentComponents: React.FC = () => {
 						/>
 					);
 			default:
-				return <>Card View</>;
-				// return (
-				// 	<EnvironmentComponentCards
-				// 		showAll={showAll}
-				// 		components={components ? getFilteredData() : []}
-				// 		projectId={projectId}
-				// 		envName={environmentName(environments.find(e => e.id === environmentId))}
-				// 		selectedConfig={selectedConfig}
-				// 		workflowPhase={workflowData?.status?.phase}
-				// 		onClick={(config: EnvironmentComponentItem): void => {
-				// 			onNodeClick(config.componentName);
-				// 		}}
-				// 	/>
-				// );
+				return (
+					<EnvironmentComponentCards
+						showAll={showAll}
+						components={components || []}
+						projectId={projectId}
+						envName={environment?.name || ''}
+						selectedConfig={selectedConfig}
+						workflowPhase={workflowData?.status?.phase}
+						onClick={(config: EnvironmentComponentItem): void => {
+							onNodeClick(config.componentName);
+						}}
+					/>
+				);
 		}
 	};
 
@@ -559,7 +559,7 @@ export const EnvironmentComponents: React.FC = () => {
 								</div>
 							</div>
 						)}
-						<ZLoaderCover loading={isLoadingWorkflow}>
+						{/* <ZLoaderCover loading={isLoadingWorkflow}>
 							{selectedConfig &&
 								!isEnvironmentNodeSelected &&
 								(selectedConfig.labels?.component_type === 'argocd' ? (
@@ -578,7 +578,7 @@ export const EnvironmentComponents: React.FC = () => {
 										workflowData={workflowData}
 									/>
 								))}
-						</ZLoaderCover>
+						</ZLoaderCover> */}
 					</ZSidePanel>
 				</section>
 			</ZLoaderCover>
