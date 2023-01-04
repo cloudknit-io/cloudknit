@@ -53,7 +53,7 @@ func (r *EnvironmentReconciler) initServices(ctx context.Context, environment *v
 	argocdClient := argocd.NewHTTPClient(ctx, r.LogV2, env.Config.ArgocdServerURL)
 	argoworkflowClient := argoworkflow2.NewHTTPClient(ctx, env.Config.ArgoWorkflowsServerURL)
 
-	organization, err := cloudKnitServiceClient.Get(ctx, env.Config.CompanyName, r.LogV2)
+	organization, err := cloudKnitServiceClient.GetOrganization(ctx, env.Config.CompanyName, r.LogV2)
 
 	if err != nil {
 		return nil, errors.Wrap(err, "error getting Organization Response")

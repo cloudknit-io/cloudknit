@@ -103,7 +103,7 @@ func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	cloudKnitServiceClient := cloudknitservice.NewService(env.Config.ZLifecycleAPIURL)
-	organization, err := cloudKnitServiceClient.Get(ctx, env.Config.CompanyName, r.LogV2)
+	organization, err := cloudKnitServiceClient.GetOrganization(ctx, env.Config.CompanyName, r.LogV2)
 
 	if err != nil {
 		companyErr := zerrors.NewCompanyError(
