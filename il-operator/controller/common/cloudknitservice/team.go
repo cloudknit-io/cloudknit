@@ -47,7 +47,7 @@ func (s *Service) PostTeam(ctx context.Context, organizationName string,
 	}
 	defer util.CloseBody(resp.Body)
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != 200 && resp.StatusCode != 201 {
 		return errors.Errorf("POST team returned a non-OK status code: [%d]", resp.StatusCode)
 	}
 
