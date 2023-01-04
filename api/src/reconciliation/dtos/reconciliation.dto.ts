@@ -15,7 +15,7 @@ export class CreateComponentReconciliationDto {
   startDateTime: string;
 }
 
-export class UpdateComponentReconciliationDto extends CreateComponentReconciliationDto {
+export class UpdateComponentReconciliationDto {
   status?: string;
   endDateTime?: string;
   approvedBy?: string;

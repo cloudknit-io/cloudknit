@@ -76,7 +76,7 @@ export class ReconciliationController {
       const skippedEntries = await this.reconSvc.getSkippedEnvironments(org, team, env, [envReconEntry.reconcileId]);
       await this.reconSvc.bulkUpdateEnvironmentEntries(skippedEntries, 'skipped_reconcile');
     } catch (err) {
-      this.logger.error('could not update skipped workflows', err);
+      this.logger.error('could not update skipped environment reconciles', err);
       throw new InternalServerErrorException();
     }
 
@@ -138,15 +138,26 @@ export class ReconciliationController {
       throw new BadRequestException('could not find environment-reconcile');
     }
 
+    let compRecon: ComponentReconcile;
+
     try {
-      const compRecon = await this.reconSvc.createCompRecon(org, envRecon, body);
-      return compRecon.reconcileId;
+      compRecon = await this.reconSvc.createCompRecon(org, envRecon, body);
     } catch (err) {
       handleSqlErrors(err);
-
+      
       this.logger.error({ message: 'could not save component-reconcile in newComponentReconciliation', body });
       throw new BadRequestException('could not save component-reconcile');
     }
+
+    try {
+      const skippedEntries = await this.reconSvc.getSkippedComponents(org, envRecon.environment, [compRecon.reconcileId])
+      await this.reconSvc.bulkUpdateComponentEntries(skippedEntries, 'skipped_reconcile');
+    } catch (err) {
+      this.logger.error('could not update skipped component reconciles', err);
+      throw new InternalServerErrorException();
+    }
+
+    return compRecon.reconcileId;
   }
 
   @Post('component/:reconcileId')
@@ -193,7 +204,7 @@ export class ReconciliationController {
     updatedCompRecon.organization = org;
     this.sseSvc.sendComponentReconcile(updatedCompRecon);
 
-    return updatedCompRecon.reconcileId;
+    return updatedCompRecon;
   }
 
   @Patch("approved-by")

@@ -158,10 +158,12 @@ export class ReconciliationService {
     })
   }
 
-  async getSkippedComponents(org: Organization, env: Environment) {
+  async getSkippedComponents(org: Organization, env: Environment, ignoreReconcileIds: number[]) {
     return await this.compReconRepo.find({
       where: {
         endDateTime: IsNull(),
+        status: Not(Equal('skipped_reconcile')),
+        reconcileId: Not(In(ignoreReconcileIds)),
         environmentReconcile: {
           environment: {
             id: env.id
@@ -172,6 +174,17 @@ export class ReconciliationService {
         }
       },
     });
+  }
+
+  async bulkUpdateComponentEntries(entries: ComponentReconcile[], status: string) {
+    if (entries.length > 0) {
+      const newEntries = entries.map((entry) => ({
+        ...entry,
+        status
+      })) as any;
+
+      await this.compReconRepo.save(newEntries);
+    }
   }
 
   async patchApprovedBy(org: Organization, body: ApprovedByDto): Promise<ComponentReconcile> {
