@@ -135,7 +135,9 @@ export class ReconciliationService {
           id: org.id
         }
       },
-      relations: withEnvRecon === true ? { environmentReconcile: true } : null
+      relations: {
+        environmentReconcile: withEnvRecon
+      }
     })
   }
 

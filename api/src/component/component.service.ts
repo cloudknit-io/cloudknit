@@ -117,7 +117,7 @@ export class ComponentService {
     })
   }
 
-  async updateCompRecon(comp: Component, mergeComp: UpdateComponentDto): Promise<Component> {
+  async updateFromCompRecon(comp: Component, mergeComp: UpdateComponentDto): Promise<Component> {
     this.compRepo.merge(comp, mergeComp);
 
     return this.compRepo.save(comp);

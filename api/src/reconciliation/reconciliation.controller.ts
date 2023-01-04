@@ -185,6 +185,7 @@ export class ReconciliationController {
     }
 
     const updatedCompRecon = await this.reconSvc.updateCompRecon(compRecon, body);
+    delete updatedCompRecon.environmentReconcile;
     this.logger.log({message: 'updated component reconcile entry', updatedCompRecon});
     
     let duration = comp.duration;
@@ -194,15 +195,11 @@ export class ReconciliationController {
       duration = ed - sd;
     }
 
-    await this.compSvc.updateCompRecon(comp, {
+    await this.compSvc.updateFromCompRecon(comp, {
       duration,
       status: updatedCompRecon.status
     });
     this.logger.log({ message: 'updated component', comp});
-
-    updatedCompRecon.environmentReconcile = envRecon;
-    updatedCompRecon.organization = org;
-    this.sseSvc.sendComponentReconcile(updatedCompRecon);
 
     return updatedCompRecon;
   }
