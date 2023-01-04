@@ -19,7 +19,7 @@ func (s *Service) PostEnvironment(ctx context.Context, organizationName string,
 	environment stablev1.Environment, log *logrus.Entry) error {
 	endpoint := fmt.Sprintf("%s/%s/%s/%s/%s/%s", s.host,
 		"v1/orgs", organizationName, "teams",
-		environment.Spec.TeamName, environment.Spec.EnvName)
+		environment.Spec.TeamName, "environments")
 
 	log.
 		Infof(
