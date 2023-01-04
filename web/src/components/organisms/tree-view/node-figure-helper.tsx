@@ -113,7 +113,7 @@ export function updateNodeFigure({
 	estimatedCost,
 	isDestroy
 }: any) {
-	const nodeId = id === 'root' ? name : displayValue;
+	const nodeId = name;
 	const props = dagNodeCache.get(nodeId);
 	props?.updater?.next({
 		componentStatus,
@@ -127,7 +127,8 @@ export function updateNodeFigure({
 		projectId,
 		onNodeClick,
 		estimatedCost,
-		operation: labels.env_status === 'destroying' || isDestroy ? 'Destroy' : 'Provision',
+		operation: 'Provision',
+		// operation: labels.env_status === 'destroying' || isDestroy ? 'Destroy' : 'Provision',
 		updater: props.updater,
 	});
 	return dagNodeCache.get(nodeId);
@@ -151,7 +152,7 @@ function createNodeFigure({
 	isDestroy
 }: any) {
 	const nodeId = id === 'root' ? name : displayValue;
-	const isApp = labels?.component_type !== 'terraform';
+	const isApp = false; //labels?.component_type !== 'terraform';
 	const groupNode = getSVGNode(
 		{
 			class: 'roundedCorners',
@@ -206,7 +207,7 @@ function createNodeFigure({
 				onNodeClick={onNodeClick}
 				estimatedCost={estimatedCost}
 				labels={labels}
-				operation={labels.env_status === 'destroying' || isDestroy ? 'Destroy' : 'Provision'}
+				operation={'Provision'}
 				updater={updater}
 			/>
 		);

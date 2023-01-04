@@ -25,7 +25,7 @@ import {
 	getSeparatedConfigId,
 	getWorkflowLogs,
 } from 'pages/authorized/environment-components/helpers';
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
@@ -46,6 +46,7 @@ import { ZTablControl } from 'components/molecules/tab-control/TabControl';
 import { ErrorStateService } from 'services/error/error-state.service';
 import { eventErrorColumns } from 'models/error.model';
 import { CostingService } from 'services/costing/costing.service';
+import { Component, EntityStore, Environment } from 'models/entity.store';
 
 const envTabs = [
 	{
@@ -66,7 +67,7 @@ export const EnvironmentComponents: React.FC = () => {
 	// Get all components and start streaming
 	// End Streaming whenever we change the environment or URL changes [ this would decrease load on web ]
 	// Alter the data store
-
+	const entityStore = useMemo(() => EntityStore.getInstance(), []);
 	const { fetch } = useApi(ArgoComponentsService.getComponents);
 	const fetchEnvironments = useApi(ArgoEnvironmentsService.getEnvironments).fetch;
 	const { fetch: fetchWorkflowData } = useApi(ArgoWorkflowsService.getConfigWorkflow);
@@ -74,17 +75,17 @@ export const EnvironmentComponents: React.FC = () => {
 	const [filterDropDownOpen, toggleFilterDropDown] = useState(false);
 	const [checkBoxFilters, setCheckBoxFilters] = useState<JSX.Element>(<></>);
 	const [filterItems, setFilterItems] = useState<Array<() => JSX.Element>>([]);
-	const { projectId, environmentId } = useParams<any>();
+	const { projectId, environmentName } = useParams<any>();
 	const [isLoadingWorkflow, setIsLoadingWorkflow] = useState<boolean>();
-	const showAll = environmentId === 'all' && projectId === 'all';
+	const showAll = environmentName === 'all' && projectId === 'all';
 	const notificationManager = React.useContext(Context)?.notifications;
-	const [environments, setEnvironments] = useState<EnvironmentsList>([]);
+	const [environment, setEnvironment] = useState<Environment>();
 	const { pageHeaderObservable, breadcrumbObservable } = usePageHeader();
 	const [query, setQuery] = useState<string>('');
 	const [showSidePanel, setShowSidePanel] = useState<boolean>(false);
 	const [selectedConfig, setSelectedConfig] = useState<EnvironmentComponentItem>();
 	const [loading, setLoading] = useState<boolean>(true);
-	const [components, setComponents] = useState<EnvironmentComponentsList>([]);
+	const [components, setComponents] = useState<Component[]>([]);
 	const [workflowData, setWorkflowData] = useState<any>();
 	const [streamData, setStreamData] = useState<ApplicationWatchEvent | null>(null);
 	const [streamData2, setStreamData2] = useState<ApplicationWatchEvent | null>(null);
@@ -109,8 +110,8 @@ export const EnvironmentComponents: React.FC = () => {
 			active: false,
 		},
 		{
-			path: `/${projectId}/${environmentId}`,
-			name: environmentId,
+			path: `/${projectId}/${environmentName}`,
+			name: environmentName,
 			active: true,
 		},
 	];
@@ -127,7 +128,7 @@ export const EnvironmentComponents: React.FC = () => {
 		setFilterItems([
 			renderSyncStatusItems
 				.bind(null, ZComponentSyncStatus, syncStatusFilter, setSyncStatusFilter, 'Component Status')
-				.bind(null, (status: string) => components.filter(e => e.componentStatus === status).length),
+				.bind(null, (status: string) => components.filter(e => 'e.componentStatus' === status).length),
 		]);
 	}, [components, syncStatusFilter]);
 
@@ -136,16 +137,15 @@ export const EnvironmentComponents: React.FC = () => {
 	}, [filterItems, filterDropDownOpen, filterDropDownOpen]);
 
 	useEffect(() => {
-		const headerTabs = [
-			...environments.map(environment => {
-				const name: string = environmentName(environment);
+		const headerTabs = 
+			entityStore.getAllEnvironmentsByTeamName(projectId).map(environment => {
+				const name: string = environment.name;
 				return {
-					active: environmentId === environment.id,
+					active: environmentName === environment.name,
 					name: name.charAt(0).toUpperCase() + name.slice(1),
-					path: `/${projectId}/${environment.id}`,
+					path: `/${projectId}/${environment.name}`,
 				};
-			}),
-		];
+			});
 
 		pageHeaderObservable.next({
 			breadcrumbs: breadcrumbItems,
@@ -161,70 +161,72 @@ export const EnvironmentComponents: React.FC = () => {
 		breadcrumbObservable.next({
 			[LocalStorageKey.ENVIRONMENTS]: !showAll ? headerTabs : [],
 		});
-	}, [checkBoxFilters, viewType, environments]);
+	}, [checkBoxFilters, viewType, environment]);
 
 	useEffect(() => {
-		fetchEnvironments(projectId).then(({ data }) => {
-			if (data) {
-				checkForFailedEnvironments(data);
-				setEnvironments(data);
-			}
+		if (!projectId || !environmentName) return;
+		entityStore.emitter.subscribe(data => {
+			if (data.length === 0) return;
+			const env = entityStore.getEnvironment(projectId, environmentName);
+			if (!env) return;
+			setEnvironment(env);
+			setComponents(env.dag);
 			setLoading(false);
-		});
-	}, [projectId]);
+		})
+	}, [projectId, environmentName]);
 
-	useEffect(() => {
-		const newEnvironments = streamMapper<EnvironmentItem>(
-			streamData,
-			environments,
-			ArgoMapper.parseEnvironment,
-			'environment',
-			{
-				projectId,
-			}
-		);
-		checkForFailedEnvironments(newEnvironments);
-		setEnvironments(newEnvironments);
+	// useEffect(() => {
+	// 	const newEnvironments = streamMapper<EnvironmentItem>(
+	// 		streamData,
+	// 		environments,
+	// 		ArgoMapper.parseEnvironment,
+	// 		'environment',
+	// 		{
+	// 			projectId,
+	// 		}
+	// 	);
+	// 	checkForFailedEnvironments(newEnvironments);
+	// 	setEnvironments(newEnvironments);
 
-		const newComponents = streamMapper<EnvironmentComponentItem>(
-			streamData,
-			components,
-			ArgoMapper.parseComponent,
-			'config',
-			{
-				projectId,
-				environmentId,
-			}
-		);
-		setComponents(newComponents);
-		componentArrayRef.current = newComponents;
-	}, [streamData]);
+	// 	const newComponents = streamMapper<EnvironmentComponentItem>(
+	// 		streamData,
+	// 		components,
+	// 		ArgoMapper.parseComponent,
+	// 		'config',
+	// 		{
+	// 			projectId,
+	// 			environmentId,
+	// 		}
+	// 	);
+	// 	setComponents(newComponents);
+	// 	componentArrayRef.current = newComponents;
+	// }, [streamData]);
 
-	useEffect(() => {
-		if (environments.length === 0 || !environmentId) return;
-		const env = environments.find(e => e.id === environmentId);
-		if (!env) return;
-		const sub = ctx?.failedEnvironments.subscribe(res => {
-			const errors = [...res.values()].filter(e => e.labels.env_name === env.labels?.env_name);
-			console.log(errors);
-		});
+	// useEffect(() => {
+	// 	if (environments.length === 0 || !environmentId) return;
+	// 	const env = environments.find(e => e.id === environmentId);
+	// 	if (!env) return;
+	// 	const sub = ctx?.failedEnvironments.subscribe(res => {
+	// 		const errors = [...res.values()].filter(e => e.labels.env_name === env.labels?.env_name);
+	// 		console.log(errors);
+	// 	});
 
-		return () => sub?.unsubscribe();
-	}, [environmentId, environments]);
+	// 	return () => sub?.unsubscribe();
+	// }, [environmentId, environments]);
 
-	useEffect(() => {
-		const $subscription: Subscription = subscriber.subscribe((response: any) => {
-			setStreamData(response);
-		});
-		const $subscription2: Subscription = subscriberWF.subscribe((response: any) => {
-			setStreamData2(response);
-		});
+	// useEffect(() => {
+	// 	const $subscription: Subscription = subscriber.subscribe((response: any) => {
+	// 		setStreamData(response);
+	// 	});
+	// 	const $subscription2: Subscription = subscriberWF.subscribe((response: any) => {
+	// 		setStreamData2(response);
+	// 	});
 
-		return (): void => {
-			$subscription.unsubscribe();
-			$subscription2.unsubscribe();
-		};
-	}, []);
+	// 	return (): void => {
+	// 		$subscription.unsubscribe();
+	// 		$subscription2.unsubscribe();
+	// 	};
+	// }, []);
 
 	useEffect(() => {
 		const newWf: any = streamMapperWF(streamData2);
@@ -236,40 +238,40 @@ export const EnvironmentComponents: React.FC = () => {
 		}
 	}, [streamData2]);
 
-	useEffect(() => {
-		let subs: Subscription[] = [];
-		setLoading(true);
-		const fetchs = [
-			CostingService.getInstance().getEnvironmentInfo(projectId, environmentId.replace(projectId + '-', '')),
-			fetch(projectId, environmentId),
-		];
-		Promise.allSettled(fetchs).then(resps => {
-			const { data0, data1 } = resolveFetchs(resps);
-			if (data1) {
-				componentArrayRef.current = data1;
-				subs = setUpComponentStreams(data1);
-			}
-			if (data0) {
-				const newItems = componentArrayRef.current.map(nc => {
-					const newItem = data0.find((c: any) => c.id === nc.displayValue);
-					if (newItem) {
-						nc.componentCost = newItem.estimatedCost;
-						nc.componentStatus = newItem.status;
-						nc.costResources = newItem.costResources;
-						nc.syncFinishedAt = newItem.lastReconcileDatetime;
-						nc.isDestroy = newItem.isDestroyed;
-					}
-					return nc;
-				});
-				componentArrayRef.current = newItems;
-			}
-			setComponents(componentArrayRef.current);
-			setLoading(false);
-		});
-		return () => {
-			subs.forEach(s => s.unsubscribe());
-		};
-	}, ['projectId', environmentId]);
+	// useEffect(() => {
+	// 	let subs: Subscription[] = [];
+	// 	setLoading(true);
+	// 	const fetchs = [
+	// 		CostingService.getInstance().getEnvironmentInfo(projectId, environmentId.replace(projectId + '-', '')),
+	// 		fetch(projectId, environmentId),
+	// 	];
+	// 	Promise.allSettled(fetchs).then(resps => {
+	// 		const { data0, data1 } = resolveFetchs(resps);
+	// 		if (data1) {
+	// 			componentArrayRef.current = data1;
+	// 			subs = setUpComponentStreams(data1);
+	// 		}
+	// 		if (data0) {
+	// 			const newItems = componentArrayRef.current.map(nc => {
+	// 				const newItem = data0.find((c: any) => c.id === nc.displayValue);
+	// 				if (newItem) {
+	// 					nc.componentCost = newItem.estimatedCost;
+	// 					nc.componentStatus = newItem.status;
+	// 					nc.costResources = newItem.costResources;
+	// 					nc.syncFinishedAt = newItem.lastReconcileDatetime;
+	// 					nc.isDestroy = newItem.isDestroyed;
+	// 				}
+	// 				return nc;
+	// 			});
+	// 			componentArrayRef.current = newItems;
+	// 		}
+	// 		setComponents(componentArrayRef.current);
+	// 		setLoading(false);
+	// 	});
+	// 	return () => {
+	// 		subs.forEach(s => s.unsubscribe());
+	// 	};
+	// }, ['projectId', environmentId]);
 
 	useEffect(() => {
 		if (showSidePanel === false) {
@@ -283,49 +285,49 @@ export const EnvironmentComponents: React.FC = () => {
 	}, [showSidePanel]);
 
 	useEffect(() => {
-		resetSelectedConfig(componentArrayRef.current);
+		// resetSelectedConfig(componentArrayRef.current);
 	}, [components]);
 
-	const setUpComponentStreams = (newComponents: EnvironmentComponentsList) => {
-		return newComponents.map(e => {
-			const { team, component, environment } = getSeparatedConfigId(e);
-			return CostingService.getInstance()
-				.getComponentCostStream(team || '', environment || '', component || '')
-				.subscribe(d => {
-					const newItems = componentArrayRef.current.map(nc => {
-						if (nc.displayValue === d.id) {
-							nc.componentCost = d.estimatedCost;
-							nc.componentStatus = d.status;
-							nc.costResources = d.costResources;
-							nc.syncFinishedAt = d.lastReconcileDatetime;
-							nc.isDestroy = d.isDestroyed;
-						}
-						return nc;
-					});
-					componentArrayRef.current = newItems;
-					setComponents(newItems);
-				});
-		});
-	};
+	// const setUpComponentStreams = (newComponents: EnvironmentComponentsList) => {
+	// 	return newComponents.map(e => {
+	// 		const { team, component, environment } = getSeparatedConfigId(e);
+	// 		return CostingService.getInstance()
+	// 			.getComponentCostStream(team || '', environment || '', component || '')
+	// 			.subscribe(d => {
+	// 				const newItems = componentArrayRef.current.map(nc => {
+	// 					if (nc.displayValue === d.id) {
+	// 						nc.componentCost = d.estimatedCost;
+	// 						nc.componentStatus = d.status;
+	// 						nc.costResources = d.costResources;
+	// 						nc.syncFinishedAt = d.lastReconcileDatetime;
+	// 						nc.isDestroy = d.isDestroyed;
+	// 					}
+	// 					return nc;
+	// 				});
+	// 				componentArrayRef.current = newItems;
+	// 				setComponents(newItems);
+	// 			});
+	// 	});
+	// };
 
-	const resolveFetchs = (fetchResps: PromiseSettledResult<any>[]) => {
-		const [data0, data1] = fetchResps;
-		const respData: any = {
-			data0: null,
-			data1: null,
-		};
-		if (data1.status === 'fulfilled' && data1.value && 'data' in data1.value) {
-			const { data } = data1.value;
-			respData.data1 = data;
-		}
-		if (data0.status === 'fulfilled' && data0.value && 'data' in data0.value) {
-			const { data } = data0.value;
-			if ('components' in data) {
-				respData.data0 = data.components;
-			}
-		}
-		return respData;
-	};
+	// const resolveFetchs = (fetchResps: PromiseSettledResult<any>[]) => {
+	// 	const [data0, data1] = fetchResps;
+	// 	const respData: any = {
+	// 		data0: null,
+	// 		data1: null,
+	// 	};
+	// 	if (data1.status === 'fulfilled' && data1.value && 'data' in data1.value) {
+	// 		const { data } = data1.value;
+	// 		respData.data1 = data;
+	// 	}
+	// 	if (data0.status === 'fulfilled' && data0.value && 'data' in data0.value) {
+	// 		const { data } = data0.value;
+	// 		if ('components' in data) {
+	// 			respData.data0 = data.components;
+	// 		}
+	// 	}
+	// 	return respData;
+	// };
 
 	const syncStatusMatch = (item: EnvironmentComponentItem): boolean => {
 		return syncStatusFilter.has(item.componentStatus);
@@ -335,70 +337,70 @@ export const EnvironmentComponents: React.FC = () => {
 		toggleFilterDropDown(val);
 	};
 
-	const handleVisualizationFlow = (configName: string) => {
-		if (!configName.includes('eks') && !configName.includes('networking') && !configName.includes('ec2')) return -1;
+	// const handleVisualizationFlow = (configName: string) => {
+	// 	if (!configName.includes('eks') && !configName.includes('networking') && !configName.includes('ec2')) return -1;
 
-		const toastId = `visualization_call_for_${configName}`;
-		notificationManager?.show({
-			content: (
-				<div style={{ display: 'flex', alignItems: 'center' }}>
-					<Loader height={16} width={16} color="white" />
-					<span style={{ marginLeft: 10 }}>Loading visualization for {configName}...</span>
-				</div>
-			),
-			type: NotificationType.Warning,
-			toastOptions: {
-				progress: 0,
-				toastId,
-				autoClose: false,
-				draggable: false,
-			},
-		});
-		toast.update(toastId, {
-			progress: 0.5,
-		});
+	// 	const toastId = `visualization_call_for_${configName}`;
+	// 	notificationManager?.show({
+	// 		content: (
+	// 			<div style={{ display: 'flex', alignItems: 'center' }}>
+	// 				<Loader height={16} width={16} color="white" />
+	// 				<span style={{ marginLeft: 10 }}>Loading visualization for {configName}...</span>
+	// 			</div>
+	// 		),
+	// 		type: NotificationType.Warning,
+	// 		toastOptions: {
+	// 			progress: 0,
+	// 			toastId,
+	// 			autoClose: false,
+	// 			draggable: false,
+	// 		},
+	// 	});
+	// 	toast.update(toastId, {
+	// 		progress: 0.5,
+	// 	});
 		// MOCKING THE CALL
-		setTimeout(() => {
-			AuditService.getInstance()
-				.getVisualizationSVGDemo({
-					team: projectId,
-					environment: environmentId.replace(projectId + '-', ''),
-					component: configName,
-				})
-				.then(response => {
-					toast.update(toastId, {
-						progress: 0.75,
-					});
-					if (response?.data?.includes('</svg>')) {
-						toast.done(toastId);
-						return;
-					}
-					throw 'No visualization found';
-				})
-				.catch(err => {
-					toast.dismiss(toastId);
-					notificationManager?.show({
-						content: 'Failed to load visualization. Please contact admin.',
-						type: NotificationType.Error,
-					});
-				});
-		}, 1000);
-	};
+	// 	setTimeout(() => {
+	// 		AuditService.getInstance()
+	// 			.getVisualizationSVGDemo({
+	// 				team: projectId,
+	// 				environment: environmentId.replace(projectId + '-', ''),
+	// 				component: configName,
+	// 			})
+	// 			.then(response => {
+	// 				toast.update(toastId, {
+	// 					progress: 0.75,
+	// 				});
+	// 				if (response?.data?.includes('</svg>')) {
+	// 					toast.done(toastId);
+	// 					return;
+	// 				}
+	// 				throw 'No visualization found';
+	// 			})
+	// 			.catch(err => {
+	// 				toast.dismiss(toastId);
+	// 				notificationManager?.show({
+	// 					content: 'Failed to load visualization. Please contact admin.',
+	// 					type: NotificationType.Error,
+	// 				});
+	// 			});
+	// 	}, 1000);
+	// };
 
 	const onNodeClick = (configName: string, visualizationHandler?: boolean): void => {
-		if (visualizationHandler) {
-			const v = handleVisualizationFlow(configName);
-			if (v !== -1) {
-				return;
-			}
-		}
+		// if (visualizationHandler) {
+		// 	const v = handleVisualizationFlow(configName);
+		// 	if (v !== -1) {
+		// 		return;
+		// 	}
+		// }
 		if (configName === 'root') {
-			const rootEnv = environments.find(e => e.id === environmentId);
-			const failedEnv = ErrorStateService.getInstance().errorsInEnvironment(rootEnv?.labels?.env_name || '');
+			// const rootEnv = environments.find(e => e.name === environmentName);
+			// const failedEnv = ErrorStateService.getInstance().errorsInEnvironment(rootEnv?.labels?.env_name || '');
 
-			if (failedEnv?.length > 0) {
-				setEnvErrors(failedEnv);
-			}
+			// if (failedEnv?.length > 0) {
+			// 	setEnvErrors(failedEnv);
+			// }
 
 			setEnvironmentNodeSelected(true);
 			setShowSidePanel(true);
@@ -422,14 +424,15 @@ export const EnvironmentComponents: React.FC = () => {
 	};
 
 	const getFilteredData = (): EnvironmentComponentItem[] => {
-		let filteredItems = [...components];
-		if (syncStatusFilter.size > 0) {
-			filteredItems = [...filteredItems.filter(syncStatusMatch)];
-		}
+		return [];
+		// let filteredItems = [...components];
+		// if (syncStatusFilter.size > 0) {
+		// 	filteredItems = [...filteredItems.filter(syncStatusMatch)];
+		// }
 
-		return filteredItems.filter(item => {
-			return item.name.toLowerCase().includes(query) || labelsMatch(item.labels, query);
-		});
+		// return filteredItems.filter(item => {
+		// 	return item.name.toLowerCase().includes(query) || labelsMatch(item.labels, query);
+		// });
 	};
 
 	const resetSelectedConfig = (ref: any) => {
@@ -456,27 +459,27 @@ export const EnvironmentComponents: React.FC = () => {
 	}, [workflowId]);
 
 	const getWorkflowData = (workflowId: string, configId: string) => {
-		setLogs(null);
-		setPlans(null);
-		setIsLoadingWorkflow(true);
-		fetchWorkflowData({
-			projectId: projectId,
-			environmentId: environmentId,
-			configId: configId,
-			workflowId: workflowId,
-		}).then(({ data }) => {
-			setIsLoadingWorkflow(false);
-			setWorkflowData(data);
-			const configParamsSet: ConfigParamsSet = {
-				projectId,
-				environmentId,
-				configId: configId,
-				workflowId: workflowId,
-			};
-			ArgoStreamService.streamWF(configParamsSet);
-			getWorkflowLogs(configParamsSet, fetchWorkflowData, setPlans, setLogs);
-		});
-		return;
+		// setLogs(null);
+		// setPlans(null);
+		// setIsLoadingWorkflow(true);
+		// fetchWorkflowData({
+		// 	projectId: projectId,
+		// 	environmentId: environmentId,
+		// 	configId: configId,
+		// 	workflowId: workflowId,
+		// }).then(({ data }) => {
+		// 	setIsLoadingWorkflow(false);
+		// 	setWorkflowData(data);
+		// 	const configParamsSet: ConfigParamsSet = {
+		// 		projectId,
+		// 		environmentId,
+		// 		configId: configId,
+		// 		workflowId: workflowId,
+		// 	};
+		// 	ArgoStreamService.streamWF(configParamsSet);
+		// 	getWorkflowLogs(configParamsSet, fetchWorkflowData, setPlans, setLogs);
+		// });
+		// return;
 	};
 
 	const renderItems = (): any => {
@@ -488,48 +491,42 @@ export const EnvironmentComponents: React.FC = () => {
 					</div>
 				);
 			case 'DAG':
-				if (
-					components.length > 0 &&
-					environments.length > 0 &&
-					components[0].labels?.environment_id === environmentId
-				) {
 					return (
 						<TreeComponent
-							environmentId={environmentId}
+							environmentId={environmentName}
 							nodes={components}
-							environmentItem={environments.find(e => e.id === environmentId)}
+							environmentItem={environment}
 							onNodeClick={onNodeClick}
 						/>
 					);
-				}
-				break;
 			default:
-				return (
-					<EnvironmentComponentCards
-						showAll={showAll}
-						components={components ? getFilteredData() : []}
-						projectId={projectId}
-						envName={environmentName(environments.find(e => e.id === environmentId))}
-						selectedConfig={selectedConfig}
-						workflowPhase={workflowData?.status?.phase}
-						onClick={(config: EnvironmentComponentItem): void => {
-							onNodeClick(config.componentName);
-						}}
-					/>
-				);
+				return <>Card View</>;
+				// return (
+				// 	<EnvironmentComponentCards
+				// 		showAll={showAll}
+				// 		components={components ? getFilteredData() : []}
+				// 		projectId={projectId}
+				// 		envName={environmentName(environments.find(e => e.id === environmentId))}
+				// 		selectedConfig={selectedConfig}
+				// 		workflowPhase={workflowData?.status?.phase}
+				// 		onClick={(config: EnvironmentComponentItem): void => {
+				// 			onNodeClick(config.componentName);
+				// 		}}
+				// 	/>
+				// );
 		}
 	};
 
-	const checkForFailedEnvironments = (envs: EnvironmentsList) => {
-		if (!envs?.length) {
-			return;
-		}
-		const currentEnv = (envs as any).find((e: any) => e.id === environmentId);
-		const failedEnv = ErrorStateService.getInstance().errorsInEnvironment(currentEnv.labels?.env_name);
-		if (failedEnv?.length && currentEnv.labels?.env_status) {
-			currentEnv.labels.env_status = ZSyncStatus.ProvisionFailed;
-		}
-	};
+	// const checkForFailedEnvironments = (envs: EnvironmentsList) => {
+	// 	if (!envs?.length) {
+	// 		return;
+	// 	}
+	// 	const currentEnv = (envs as any).find((e: any) => e.id === environmentName);
+	// 	const failedEnv = ErrorStateService.getInstance().errorsInEnvironment(currentEnv.labels?.env_name);
+	// 	if (failedEnv?.length && currentEnv.labels?.env_status) {
+	// 		currentEnv.labels.env_status = ZSyncStatus.ProvisionFailed;
+	// 	}
+	// };
 
 	return (
 		<div className="zlifecycle-page">
@@ -551,11 +548,11 @@ export const EnvironmentComponents: React.FC = () => {
 											<AuditView
 												fetch={AuditService.getInstance().getEnvironment.bind(
 													AuditService.getInstance(),
-													environmentId.replace(projectId + '-', ''),
+													environmentName,
 													projectId
 												)}
 												auditColumns={auditColumns}
-												auditId={environmentId}
+												auditId={environmentName}
 											/>
 										</div>
 									</ZTablControl>
@@ -568,13 +565,13 @@ export const EnvironmentComponents: React.FC = () => {
 								(selectedConfig.labels?.component_type === 'argocd' ? (
 									<ConfigWorkflowViewApplication
 										projectId={projectId}
-										environmentId={environmentId}
+										environmentId={environmentName}
 										config={selectedConfig}
 									/>
 								) : (
 									<ConfigWorkflowView
 										projectId={projectId}
-										environmentId={environmentId}
+										environmentId={environmentName}
 										config={selectedConfig}
 										logs={logs}
 										plans={plans}

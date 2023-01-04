@@ -5,7 +5,7 @@ import { NotificationsApi, Select } from 'components/argo-core';
 import { getHealthStatusIcon, getSyncStatusIcon } from 'components/molecules/cards/renderFunctions';
 import { useApi } from 'hooks/use-api/useApi';
 import { EnvironmentComponentItem, EnvironmentItem } from 'models/projects.models';
-import React, { FC, useEffect, useState } from 'react';
+import React, { FC, useEffect, useMemo, useState } from 'react';
 import { ArgoEnvironmentsService } from 'services/argo/ArgoEnvironments.service';
 import { ReactComponent as SyncIcon } from 'assets/images/icons/sync-icon.svg';
 
@@ -19,6 +19,7 @@ import { ReactComponent as Add } from 'assets/images/icons/add.svg';
 import { ReactComponent as Subtract } from 'assets/images/icons/subtract.svg';
 import { ReactComponent as AppIcon } from 'assets/images/icons/DAG-View/Layers.svg';
 import { cleanDagNodeCache } from './node-figure-helper';
+import { Component, EntityStore, Environment } from 'models/entity.store';
 
 const curveTypes = [
 	{ value: '0', title: 'Curve Basis' },
@@ -59,10 +60,11 @@ interface Props {
 	environmentId: string;
 	nodes: any;
 	onNodeClick: any;
-	environmentItem?: EnvironmentItem;
+	environmentItem?: Environment;
 }
 
 export const TreeComponent: FC<Props> = ({ environmentId, nodes, onNodeClick, environmentItem }: Props) => {
+	const entityStore = useMemo(() => EntityStore.getInstance(), []);
 	const [data, setData] = useState<any[]>([]);
 	const [option, setOption] = useState('0');
 	const [rankSep, setRankSep] = useState(70);
@@ -91,145 +93,112 @@ export const TreeComponent: FC<Props> = ({ environmentId, nodes, onNodeClick, en
 		window.location.href = `${protocol}//${host}/applications/${name}/resource-view`;
 	};
 
-	const addResourceNodesForApplication = (
-		resources: ResourceResult[],
-		parentRef: EnvironmentComponentItem,
-		generatedNodes: any
-	) => {
-		generatedNodes.push(
-			...resources.map((r: ResourceResult) => {
-				return {
-					id: r.name,
-					name: r.name,
-					dependsOn: [parentRef.componentName],
-					syncFinishedAt: parentRef.syncFinishedAt,
-					shape: getShape(''),
-					icon: <AppIcon height={128} width={128} y="3" />,
-					syncStatus: r.status,
-					healthStatusIcon: null,
-					expandIcon:
-						r.kind === 'Application' ? (
-							<Expand
-								title="expand"
-								onClick={e => {
-									e.stopPropagation();
-									routeToAppView(r.name);
-								}}
-							/>
-						) : (
-							''
-						),
-					labels: {
-						component_type: 'argocd',
-					},
-					kind: r.kind,
-					onNodeClick,
-				};
-			})
-		);
-		return generatedNodes;
-	};
+	// const addResourceNodesForApplication = (
+	// 	resources: ResourceResult[],
+	// 	parentRef: EnvironmentComponentItem,
+	// 	generatedNodes: any
+	// ) => {
+	// 	generatedNodes.push(
+	// 		...resources.map((r: ResourceResult) => {
+	// 			return {
+	// 				id: r.name,
+	// 				name: r.name,
+	// 				dependsOn: [parentRef.componentName],
+	// 				syncFinishedAt: parentRef.syncFinishedAt,
+	// 				shape: getShape(''),
+	// 				icon: <AppIcon height={128} width={128} y="3" />,
+	// 				syncStatus: r.status,
+	// 				healthStatusIcon: null,
+	// 				expandIcon:
+	// 					r.kind === 'Application' ? (
+	// 						<Expand
+	// 							title="expand"
+	// 							onClick={e => {
+	// 								e.stopPropagation();
+	// 								routeToAppView(r.name);
+	// 							}}
+	// 						/>
+	// 					) : (
+	// 						''
+	// 					),
+	// 				labels: {
+	// 					component_type: 'argocd',
+	// 				},
+	// 				kind: r.kind,
+	// 				onNodeClick,
+	// 			};
+	// 		})
+	// 	);
+	// 	return generatedNodes;
+	// };
 
 	const generateNodes = () => {
-		const projectId = nodes.length ? nodes[0]?.labels?.project_id : '';
+		const projectId = entityStore.getTeam((environmentItem as Environment).teamId)?.name;
 		cleanDagNodeCache(environmentId);
 		const generatedNodes: any[] = [
 			{
-				projectId: projectId,
+				projectId,
 				name: environmentId, // TODO check what name here goes from metadata
 				id: 'root',
 				shape: getShape('root'),
 				icon: <LayersIcon />,
-				syncStatus: environmentItem?.labels?.env_status,
-				healthStatusIcon: getHealthStatusIcon(environmentItem?.healthStatus),
-				syncFinishedAt: environmentItem?.syncFinishedAt,
-				componentStatus: environmentItem?.labels?.env_status || environmentItem?.syncStatus,
-				labels: {
-					component_type: 'terraform',
-					...environmentItem?.labels,
-				},
+				syncStatus: 'Unknown',
+				syncFinishedAt: environmentItem?.lastReconcileDatetime,
+				componentStatus: 'Unknown',
 				onNodeClick,
 			},
 		];
 		generatedNodes.push(
-			...nodes.map((item: EnvironmentComponentItem) => ({
+			...nodes.map((item: Component) => ({
 				...item,
 				onNodeClick,
-				id: item.componentName,
-				name: item.componentName,
-				dependsOn: item.dependsOn.length === 0 ? ['root'] : item.dependsOn,
-				icon:
-					item.labels?.component_type === 'argocd' ? (
-						<AppIcon height={128} width={128} y="4" />
-					) : (
-						<ComputeIcon />
-					),
-				isSkipped: item.labels?.is_skipped === 'true',
-				estimatedCost: item.componentCost,
-				syncStatus:
-					item.isDestroy && item.componentStatus === ZSyncStatus.Unknown
-						? ZSyncStatus.Initializing
-						: item.componentStatus,
-				componentStatus: item.componentStatus,
-				healthStatusIcon: getHealthStatusIcon(item.healthStatus),
-				syncFinishedAt: item.syncFinishedAt,
-				expandIcon:
-					item.labels?.component_type === 'argocd' ? (
-						expandedNodes.has(item) ? (
-							<Subtract
-								title="collapse"
-								height={16}
-								width={16}
-								onClick={e => {
-									expandedNodes.delete(item);
-									generateNodes();
-								}}
-							/>
-						) : (
-							<Add
-								title="expand"
-								height={16}
-								width={16}
-								onClick={e => {
-									expandedNodes.add(item);
-									generateNodes();
-								}}
-							/>
-						)
-					) : (
-						''
-					),
+				id: item.name,
+				name: item.name,
+				dependsOn: item.dependsOn?.length ? item.dependsOn : ['root'],
+				icon: <ComputeIcon />,
+					// item.labels?.component_type === 'argocd' ? (
+						// <AppIcon height={128} width={128} y="4" />
+					// ) : (
+					// 	<ComputeIcon />
+					// ),
+				isSkipped: false,
+				estimatedCost: -1,
+				syncStatus: 'Unknown',
+				componentStatus: 'Unknown',
+				syncFinishedAt: Date.now().toLocaleString(),
+				expandIcon: '',
 			}))
 		);
 
-		if (expandedNodes.size > 0) {
-			[...expandedNodes.values()].forEach(e =>
-				addResourceNodesForApplication(e.syncResult?.resources || [], e, generatedNodes)
-			);
-		}
+		// if (expandedNodes.size > 0) {
+		// 	[...expandedNodes.values()].forEach(e =>
+		// 		addResourceNodesForApplication(e.syncResult?.resources || [], e, generatedNodes)
+		// 	);
+		// }
 
 		setData(generatedNodes);
 	};
 
 	useEffect(() => {
+		if (!environmentItem || !nodes) return;
 		generateNodes();
 	}, [nodes, environmentItem]);
 
-	useEffect(() => {
-		if (!environmentItem) {
-			return;
-		}
-		const watcherSub = subscriberWatcher.subscribe(e => {
-			if (e?.application?.metadata?.name?.replace('-team-watcher', '') === environmentItem?.labels?.project_id) {
-				const status = e?.application?.status?.operationState?.phase;
-				setWatcherStatus(status);
-			}
-		});
-		if (environmentItem.conditions.length > 0) {
-			setEnvironmentCondition(getEnvironmentErrorCondition(environmentItem.conditions));
-		}
-		return () => watcherSub.unsubscribe();
-	}, [environmentItem]);
+	// useEffect(() => {
+	// 	if (!environmentItem) {
+	// 		return;
+	// 	}
+	// 	const watcherSub = subscriberWatcher.subscribe(e => {
+	// 		if (e?.application?.metadata?.name?.replace('-team-watcher', '') === environmentItem?.labels?.project_id) {
+	// 			const status = e?.application?.status?.operationState?.phase;
+	// 			setWatcherStatus(status);
+	// 		}
+	// 	});
+	// 	if (environmentItem.conditions.length > 0) {
+	// 		setEnvironmentCondition(getEnvironmentErrorCondition(environmentItem.conditions));
+	// 	}
+	// 	return () => watcherSub.unsubscribe();
+	// }, [environmentItem]);
 
 	useEffect(() => {
 		if (!syncStarted) {
@@ -261,32 +230,36 @@ export const TreeComponent: FC<Props> = ({ environmentId, nodes, onNodeClick, en
 					<button
 						className="dag-controls-reconcile"
 						onClick={async (e: any) => {
-							e.stopPropagation();
-							if (environmentItem?.healthStatus !== 'Progressing')
-								await syncMe(
-									environmentItem as EnvironmentItem,
-									syncStarted,
-									setSyncStarted,
-									nm as NotificationsApi,
-									watcherStatus
-								);
+							// e.stopPropagation();
+							// if (environmentItem?.healthStatus !== 'Progressing')
+							// 	await syncMe(
+							// 		environmentItem as EnvironmentItem,
+							// 		syncStarted,
+							// 		setSyncStarted,
+							// 		nm as NotificationsApi,
+							// 		watcherStatus
+							// 	);
 						}}>
 						<span
 							className={`tooltip ${
-								environmentItem?.healthStatus !== 'Progressing' &&
-								!syncStarted &&
-								environmentCondition &&
-								'error'
+								// environmentItem?.healthStatus !== 'Progressing' &&
+								// !syncStarted &&
+								// environmentCondition &&
+								// 'error'
+								''
 							}`}>{`${
-							environmentItem?.healthStatus === 'Progressing' || syncStarted
-								? 'Reconciling...'
-								: environmentCondition || 'Reconcile Environment'
+							// environmentItem?.healthStatus === 'Progressing' || syncStarted
+							// 	? 'Reconciling...'
+							// 	: environmentCondition || 'Reconcile Environment'
+							'Reconcile Environment'
 						}`}</span>
 						<SyncIcon
 							className={`large-health-icon-container__sync-button large-health-icon-container__sync-button${getSyncIconClass(
-								environmentItem?.syncStatus
+								// environmentItem?.syncStatus
+								''
 							)} large-health-icon-container__sync-button${
-								environmentItem?.healthStatus === 'Progressing' || syncStarted ? '--in-progress' : ''
+								// environmentItem?.healthStatus === 'Progressing' || syncStarted ? '--in-progress' : ''
+								''
 							}`}
 							title="Reconcile Environment"
 						/>

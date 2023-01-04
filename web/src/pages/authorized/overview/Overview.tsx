@@ -48,5 +48,6 @@ export const Overview: React.FC = () => {
 		breadcrumbObservable.next(false);
 	}, [breadcrumbObservable]);
 
-    return <div id="cluster" className="graph-container"><CircularClusterPacking data={hierarchicalData}  /></div>;
+	return <></>;
+    // return <div id="cluster" className="graph-container"><CircularClusterPacking data={hierarchicalData}  /></div>;
 }

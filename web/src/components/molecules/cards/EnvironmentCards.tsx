@@ -8,7 +8,7 @@ import { ESyncStatus, OperationPhase, ZSyncStatus } from 'models/argo.models';
 import { ListItem } from 'models/general.models';
 import { EnvironmentItem, EnvironmentsList } from 'models/projects.models';
 import { getEnvironmentErrorCondition, renderCost, syncMe } from 'pages/authorized/environments/helpers';
-import React, { FC } from 'react';
+import React, { FC, useMemo } from 'react';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import { useHistory } from 'react-router-dom';
@@ -99,6 +99,7 @@ export const EnvironmentCard: FC<PropsEnvironmentItem> = ({
 	notificationManager,
 	compareEnabled,
 }: PropsEnvironmentItem) => {
+	const entityStore = useMemo(() => EntityStore.getInstance(), []);
 	const ref = React.createRef<any>();
 	const [env, setEnv] = useState<Environment>(environment);
 	const [gridItems, setGridItems] = useState<ListItem[]>([]);
@@ -120,7 +121,7 @@ export const EnvironmentCard: FC<PropsEnvironmentItem> = ({
 		const gridItems = [
 			{
 				label: 'Team',
-				value: EntityStore.getInstance().getTeam(env.teamId)?.name,
+				value: entityStore.getTeam(env.teamId)?.name,
 			},
 			{
 				label: 'Name',

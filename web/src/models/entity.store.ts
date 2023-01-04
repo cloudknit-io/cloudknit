@@ -4,17 +4,21 @@ import { BehaviorSubject } from 'rxjs';
 export class EntityStore {
 	private static instance: EntityStore;
 	private entityService = EntityService.getInstance();
+	private teamMap = new Map<number, Team>();
 	public emitter = new BehaviorSubject<Team[]>([]);
-	private envEmitters = new Map<string, BehaviorSubject<Environment[]>>();
 
 	private teams: Team[] = [];
+	private envs: Environment[] = [];
+
+    public get Teams() {
+        return this.teams;
+    }
+
+    public get Environments() {
+        return this.envs;
+    }
 
 	private constructor() {
-		this.emitter.subscribe(data => {
-			data.forEach(e =>
-				(this.envEmitters.get(e.name) as BehaviorSubject<Environment[]>)?.next(e?.environments || [])
-			);
-		});
 		Promise.resolve(this.getTeams());
 	}
 
@@ -27,42 +31,50 @@ export class EntityStore {
 
 	private async getTeams() {
 		this.teams = await this.entityService.getTeams();
+		this.teams.forEach(e => this.teamMap.set(e.id, e));
 		await this.getEnvironments();
 	}
 
 	private async getEnvironments() {
-		const envCalls = this.teams.map(team => this.entityService.getEnvironments(team.id));
+		const envCalls = this.teams.map(team =>
+			this.entityService.getEnvironments(team.id).then(e => ({ data: e, teamId: team.id }))
+		);
 		const resps = await Promise.all(envCalls);
-		resps.forEach((resp, _i) => {
-            resp.forEach(r => r.teamId = this.teams[_i].id);
-            this.teams[_i].environments = resp;
-		});
+        
+        resps.forEach(r => {
+            if (this.teamMap.has(r.teamId)) {
+                (this.teamMap.get(r.teamId) as Team).environments = r.data;
+            }
+        });
+        
+        this.envs = this.teams.map(e => e.environments).flat();
 		this.emitter.next(this.teams);
 	}
 
-    public getEnvironmentsEmitter(teamName: string) {
-		if (!this.envEmitters.has(teamName)) {
-			this.envEmitters.set(teamName, new BehaviorSubject<Environment[]>([]));
-		}
-		const emitter = this.envEmitters.get(teamName) as BehaviorSubject<Environment[]>;
-        emitter.next(this.getTeam(teamName)?.environments || []);
-        return emitter;
-	};
+    public getAllEnvironmentsByTeamName(teamName: string): Environment[] {
+        const teamId = this.teams.find(e => e.name === teamName)?.id;
+        if (teamId && this.teamMap.has(teamId)) {
+            return this.getTeam(teamId)?.environments as Environment[];
+        }
+		return [];
+	}
 
-    public getAllEnvironments(team: Team[]): Environment[] {
-        return team.map(t => t.environments).flat();
-    }
+    public getEnvironment(teamName: string, envName: string): Environment | null | undefined {
+        const teamId = this.teams.find(e => e.name === teamName)?.id;
+        if (!teamId || !this.teamMap.has(teamId)) return null;
+        return this.getTeam(teamId)?.environments.find(e => e.name === envName);
+	}
 
-    public getTeam(id: number | string) {
-        return this.teams.find(e => e.id === id || e.name === id);
-    }
+	public getTeam(id: number) {
+		return this.teamMap.get(id);
+	}
 }
 
 export type Team = {
 	id: number;
 	name: string;
 	cost?: number;
-	environments: Environment[];
+    environments: Environment[];
 };
 
 export type Environment = {
@@ -71,7 +83,7 @@ export type Environment = {
 	lastReconcileDatetime: Date;
 	duration: number;
 	dag: Component[];
-    teamId: number;
+	teamId: number;
 };
 
 export type Component = {

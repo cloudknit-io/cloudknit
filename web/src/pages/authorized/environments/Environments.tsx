@@ -15,7 +15,7 @@ import {
 	mockOriginalYaml,
 	renderSyncStatusItems,
 } from 'pages/authorized/environments/helpers';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Subscription } from 'rxjs';
 import { ArgoEnvironmentsService } from 'services/argo/ArgoEnvironments.service';
@@ -39,6 +39,7 @@ type CompareEnvs = {
 
 export const Environments: React.FC = () => {
 	const { projectId } = useParams();
+	const entityStore = useMemo(() => EntityStore.getInstance(), []);
 	const { fetch } = useApi(ArgoEnvironmentsService.getEnvironments);
 	const [filterDropDownOpen, toggleFilterDropDown] = useState(false);
 	const [query, setQuery] = useState<string>('');
@@ -60,17 +61,6 @@ export const Environments: React.FC = () => {
 		a: null,
 		b: null,
 	});
-	const headerTabs: PageHeaderTabs = [
-		{ name: 'All', path: '/dashboard', active: projectId === undefined },
-		...teams.map(team => {
-			const teamId = team.name;
-			return {
-				active: projectId === teamId,
-				name: teamId.charAt(0).toUpperCase() + teamId.slice(1),
-				path: `/${teamId}`,
-			};
-		}),
-	];
 
 	const breadcrumbItems = [
 		{
@@ -88,9 +78,11 @@ export const Environments: React.FC = () => {
 	useEffect(() => {
 		const $subscription: Subscription[] = [];
 		$subscription.push(
-			EntityStore.getInstance().emitter.subscribe(data => {
+			entityStore.emitter.subscribe(data => {
 				if (data.length === 0) return;
-				setEnvironments(EntityStore.getInstance().getAllEnvironments(data));
+				setEnvironments(
+					projectId ? entityStore.getAllEnvironmentsByTeamName(projectId) : entityStore.Environments
+				);
 				setLoading(false);
 			})
 		);
@@ -100,55 +92,54 @@ export const Environments: React.FC = () => {
 		// 	})
 		// );
 		return (): void => $subscription.forEach(e => e.unsubscribe());
-	}, []);
-
-	useEffect(() => {
-		
-		// fetch(projectId).then(({ data }) => {
-		// 	if (data) {
-		// 		data.forEach(e => checkForFailedEnvironments(e));
-		// 		setEnvironments(data);
-		// 	}
-		// 	setLoading(false);
-		// });
-		if (!projectId) return;
-		
-		setLoading(true);
-		const $subscription: Subscription[] = [];
-		$subscription.push(
-			EntityStore.getInstance().getEnvironmentsEmitter(projectId).subscribe((data) => {
-				if(data.length === 0) return;
-				setEnvironments(data);
-				setLoading(false);
-			})
-		);
-		// const setFailedEnv = (envs: any) => {
-		// 	const list: any = envs
-		// 		.filter((e: any) => !environments.some(en => en.labels?.env_name === e.environment))
-		// 		.map((e: any) => ({
-		// 			id: `${e.team}-${e.environment}`,
-		// 			name: e.environment,
-		// 			labels: {
-		// 				project_id: e.team,
-		// 				env_name: e.environment,
-		// 				env_status: ZSyncStatus.ProvisionFailed,
-		// 				failed_environment: true,
-		// 			},
-		// 		}));
-		// 	if (projectId) {
-		// 		setFailedEnvironments(list.filter((e: any) => e.labels?.project_id === projectId));
-		// 	} else {
-		// 		setFailedEnvironments(list);
-		// 	}
-		// };
-		// setFailedEnv(errorStateService.ErrorsEnvs || []);
-		// $subscription.push(
-		// 	errorStateService.updates.subscribe(() => {
-		// 		setFailedEnv(errorStateService.ErrorsEnvs);
-		// 	})
-		// );
-		return (): void => $subscription.forEach(e => e.unsubscribe());
 	}, [projectId]);
+
+	// useEffect(() => {
+	// fetch(projectId).then(({ data }) => {
+	// 	if (data) {
+	// 		data.forEach(e => checkForFailedEnvironments(e));
+	// 		setEnvironments(data);
+	// 	}
+	// 	setLoading(false);
+	// });
+	// if (!projectId) return;
+
+	// setLoading(true);
+	// const $subscription: Subscription[] = [];
+	// const envSub = entityStore
+	// .getEnvironmentsEmitter(projectId)?.subscribe(data => {
+	// 	if (data.length === 0) return;
+	// 	setEnvironments(data);
+	// 	setLoading(false);
+	// });
+	// envSub && $subscription.push(envSub);
+	// const setFailedEnv = (envs: any) => {
+	// 	const list: any = envs
+	// 		.filter((e: any) => !environments.some(en => en.labels?.env_name === e.environment))
+	// 		.map((e: any) => ({
+	// 			id: `${e.team}-${e.environment}`,
+	// 			name: e.environment,
+	// 			labels: {
+	// 				project_id: e.team,
+	// 				env_name: e.environment,
+	// 				env_status: ZSyncStatus.ProvisionFailed,
+	// 				failed_environment: true,
+	// 			},
+	// 		}));
+	// 	if (projectId) {
+	// 		setFailedEnvironments(list.filter((e: any) => e.labels?.project_id === projectId));
+	// 	} else {
+	// 		setFailedEnvironments(list);
+	// 	}
+	// };
+	// setFailedEnv(errorStateService.ErrorsEnvs || []);
+	// $subscription.push(
+	// 	errorStateService.updates.subscribe(() => {
+	// 		setFailedEnv(errorStateService.ErrorsEnvs);
+	// 	})
+	// );
+	// return (): void => $subscription.forEach(e => e.unsubscribe());
+	// }, [projectId]);
 
 	// useEffect(() => {
 	// 	const newItems = streamMapper<EnvironmentItem>(
@@ -199,6 +190,17 @@ export const Environments: React.FC = () => {
 	}, [filterItems, filterDropDownOpen, filterDropDownOpen]);
 
 	useEffect(() => {
+		const headerTabs: PageHeaderTabs = [
+			{ name: 'All', path: '/dashboard', active: projectId === undefined },
+			...entityStore.Teams.map(team => {
+				const teamId = team.name;
+				return {
+					active: projectId === teamId,
+					name: teamId.charAt(0).toUpperCase() + teamId.slice(1),
+					path: `/${teamId}`,
+				};
+			}),
+		];
 		pageHeaderObservable.next({
 			breadcrumbs: breadcrumbItems,
 			headerTabs,

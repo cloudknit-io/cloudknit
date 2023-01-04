@@ -34,7 +34,7 @@ export class EntityService extends BaseService {
 		const url = this.constructUri(EntitytUriType.environments(teamId));
 		try {
 			const { data } = await ApiClient.get<Environment[]>(url);
-			return data;
+			return data.map(e => ({ ...e, teamId }));
 		} catch (err) {
 			console.error(err);
 			return [];
