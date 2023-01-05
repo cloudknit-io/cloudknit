@@ -103,7 +103,7 @@ export class ComponentService {
     });
   }
 
-  async findAll(org: Organization, env: Environment, isDestroyed: boolean = false) {
+  async findAll(org: Organization, env: Environment, isDestroyed: boolean = false, withEnv: boolean = false) {
     return this.compRepo.find({
       where: {
         environment: {
@@ -113,6 +113,9 @@ export class ComponentService {
           id: org.id
         },
         isDestroyed
+      },
+      relations: {
+        environment: withEnv
       }
     })
   }
