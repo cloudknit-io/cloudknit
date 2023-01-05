@@ -5,7 +5,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Component, Environment, Team } from 'src/typeorm';
 import { ComponentService } from 'src/costing/services/component.service';
 import { EnvironmentService } from 'src/environment/environment.service';
-import { SSEService } from 'src/reconciliation/sse.service';
 import { TeamMiddleware } from 'src/middleware/team.middle';
 
 @Module({
@@ -20,8 +19,7 @@ import { TeamMiddleware } from 'src/middleware/team.middle';
   providers: [
     TeamService,
     ComponentService,
-    EnvironmentService,
-    SSEService
+    EnvironmentService
   ]
 })
 export class TeamModule implements NestModule {

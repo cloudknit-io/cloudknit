@@ -1,16 +1,22 @@
-import { EntitySubscriberInterface, EventSubscriber, InsertEvent } from "typeorm"
+import { Injectable } from "@nestjs/common";
+import { ModuleRef } from "@nestjs/core";
+import { StreamService } from "src/stream/stream.service";
+import { EntitySubscriberInterface, EventSubscriber, InsertEvent, UpdateEvent } from "typeorm"
 import { Component } from "./component.entity"
 
 @EventSubscriber()
+@Injectable()
 export class ComponentSubscriber implements EntitySubscriberInterface<Component> {
+  constructor() {
+  }
 
   listenTo(): string | Function {
     return Component;
   }
-  /**
-   * Called after entity insertion.
-   */
+
   afterInsert(event: InsertEvent<Component>) {
-      console.log(`Component INSERTED: `, event.entity)
+  }
+
+  afterUpdate(event: UpdateEvent<Component>): void | Promise<any> {
   }
 }

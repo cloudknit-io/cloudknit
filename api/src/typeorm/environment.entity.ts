@@ -9,11 +9,6 @@ import { EnvSpecComponentDto } from "src/environment/dto/env-spec.dto";
 })
 @Index(['organization', 'team', 'name'], { unique: true })
 export class Environment {
-  @AfterInsert()
-  streamUpdate() {
-    console.log('AFTERINSERT', this);
-  }
-
   @PrimaryGeneratedColumn()
   id: number
 

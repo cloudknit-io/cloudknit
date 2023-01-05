@@ -1,40 +1,32 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { SSEService } from "src/reconciliation/sse.service";
 import { Environment, Organization, Team } from "src/typeorm";
 import { Equal, Repository } from "typeorm";
 import { UpdateEnvironmentDto } from "./dto/update-environment.dto";
 
 @Injectable()
 export class EnvironmentService {
-  private readonly logger = new Logger(EnvironmentService.name);
-
   constructor(
     @InjectRepository(Environment)
     private readonly envRepo: Repository<Environment>,
-    private readonly sseSvc: SSEService
   ) { }
 
   async update(org: Organization, id: number, updateEnvDto: UpdateEnvironmentDto): Promise<Environment> {
     const env = await this.findById(org, id);
 
     this.envRepo.merge(env, updateEnvDto);
+    env.organization = org;
 
-    const updatedEnv = await this.envRepo.save(env);
-    this.sseSvc.sendEnvironment(updatedEnv);
-
-    return updatedEnv;
+    return this.envRepo.save(env);
   }
 
   async updateByName(org: Organization, team: Team, name: string, updateEnvDto: UpdateEnvironmentDto): Promise<Environment> {
     const env = await this.findByName(org, team, name);
 
     this.envRepo.merge(env, updateEnvDto);
+    env.organization = org;
 
-    const updatedEnv = await this.envRepo.save(env);
-    this.sseSvc.sendEnvironment(updatedEnv);
-
-    return updatedEnv;
+    return this.envRepo.save(env);
   }
 
   async findById(org: Organization, id: number, withTeam: boolean = false): Promise<Environment> {
@@ -73,10 +65,8 @@ export class EnvironmentService {
     const env = await this.findById(org, id);
 
     env.isDeleted = true;
+    env.organization = org;
 
-    const updatedEnv = await this.envRepo.save(env);
-    this.sseSvc.sendEnvironment(updatedEnv);
-
-    return updatedEnv;
+    return this.envRepo.save(env);
   }
 }

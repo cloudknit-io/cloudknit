@@ -13,6 +13,7 @@ import { RootTeamModule } from "./root-team/root.team.module";
 import { EnvironmentModule } from "./environment/environment.module";
 import { RootEnvironmentModule } from "./root-environment/root.environment.module";
 import { ComponentModule } from "./component/component.module";
+import { StreamModule } from "./stream/stream.module";
 
 export const appRoutes: Routes = [
   {
@@ -34,6 +35,10 @@ export const appRoutes: Routes = [
           {
             path: "secrets",
             module: SecretsModule
+          },
+          {
+            path: "stream",
+            module: StreamModule
           },
           {
             path: "auth",

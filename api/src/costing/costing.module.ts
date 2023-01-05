@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EnvironmentService } from 'src/environment/environment.service';
-import { SSEService } from 'src/reconciliation/sse.service';
 import { TeamService } from 'src/team/team.service';
 import { Team } from 'src/typeorm';
 import { Component } from 'src/typeorm/component.entity';
@@ -25,7 +24,6 @@ import { ComponentService } from './services/component.service';
     ComponentService,
     EnvironmentService,
     TeamService,
-    SSEService
   ],
 })
 export class CostingModule {

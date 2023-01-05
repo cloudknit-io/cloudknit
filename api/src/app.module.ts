@@ -9,7 +9,7 @@ import { RootOrganizationsModule } from "./root-organization/root.organization.m
 import { ReconciliationModule } from "./reconciliation/reconciliation.module";
 import { appRoutes } from "./routes";
 import { SecretsModule } from "./secrets/secrets.module";
-import { entities, subscribers } from "./typeorm";
+import { entities } from "./typeorm";
 import { UsersModule } from "./users/users.module";
 import { SystemModule } from "./system/system.module";
 import { get } from "./config";
@@ -20,6 +20,7 @@ import { RootTeamModule } from './root-team/root.team.module';
 import { EnvironmentModule } from './environment/environment.module';
 import { RootEnvironmentModule } from './root-environment/root.environment.module';
 import { ComponentModule } from './component/component.module';
+import { StreamModule } from './stream/stream.module';
 
 const config = get();
 
@@ -31,7 +32,6 @@ const typeOrmModuleOptions: TypeOrmModuleOptions = {
   password: config.TypeORM.password,
   database: config.TypeORM.database,
   entities,
-  subscribers,
   migrations: [],
   synchronize: true,
 };
@@ -56,7 +56,8 @@ const typeOrmModuleOptions: TypeOrmModuleOptions = {
     RootTeamModule,
     EnvironmentModule,
     RootEnvironmentModule,
-    ComponentModule
+    ComponentModule,
+    StreamModule
   ],
   controllers: [],
   providers: [],

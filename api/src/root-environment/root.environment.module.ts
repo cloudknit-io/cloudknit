@@ -6,7 +6,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ComponentService } from 'src/costing/services/component.service';
 import { EnvironmentService } from 'src/environment/environment.service';
 import { TeamService } from 'src/team/team.service';
-import { SSEService } from 'src/reconciliation/sse.service';
 
 @Module({
   imports: [
@@ -21,8 +20,7 @@ import { SSEService } from 'src/reconciliation/sse.service';
     ComponentService,
     EnvironmentService,
     RootEnvironmentService,
-    TeamService,
-    SSEService
+    TeamService
   ]
 })
 export class RootEnvironmentModule {}

@@ -27,7 +27,6 @@ import { ApprovedByDto, ComponentAudit } from "./dtos/componentAudit.dto";
 import { EnvironmentAudit } from "./dtos/environmentAudit.dto";
 import { CreateComponentReconciliationDto, CreateEnvironmentReconciliationDto, UpdateComponentReconciliationDto, UpdateEnvironmentReconciliationDto } from "./dtos/reconciliation.dto";
 import { ReconciliationService } from "./reconciliation.service";
-import { SSEService } from "./sse.service";
 import { RequiredQueryValidationPipe, TeamEnvCompQueryParams, TeamEnvQueryParams } from "./validationPipes";
 
 
@@ -40,7 +39,6 @@ export class ReconciliationController {
   constructor(
     private readonly reconSvc: ReconciliationService,
     private readonly envSvc: EnvironmentService,
-    private readonly sseSvc: SSEService,
     private readonly teamSvc: TeamService,
     private readonly compSvc: ComponentService
     ) {}
@@ -308,36 +306,6 @@ export class ReconciliationController {
     //   id,
     //   latest === "true"
     // );
-  }
-
-  @Sse("components/notify")
-  notifyComponents(@Request() req, @Query(new RequiredQueryValidationPipe()) tec: TeamEnvCompQueryParams): Observable<MessageEvent> {
-    return from(this.sseSvc.notifyStream).pipe(
-      map((component: ComponentReconcile) => {
-        if (component.name !== tec.compName || tec.envName !== component.environmentReconcile.environment.name || tec.teamName !== component.environmentReconcile.environment.team.name || component.organization.id !== req.org.id) {
-          return { data: [] };
-        }
-        const data: ComponentAudit[] = Mapper.getComponentAuditList([
-          component,
-        ]);
-        return { data };
-      })
-    );
-  }
-
-  @Sse("environments/notify")
-  notifyEnvironments(@Request() req, @Query(new RequiredQueryValidationPipe()) te: TeamEnvQueryParams): Observable<MessageEvent> {
-    return from(this.sseSvc.notifyStream).pipe(
-      map((environment: EnvironmentReconcile) => {
-        if (environment.environment.name !== te.envName || te.teamName != environment.team.name || req.org.id !== environment.organization.id) {
-          return { data: [] };
-        }
-        const data: EnvironmentAudit[] = Mapper.getEnvironmentAuditList([
-          environment,
-        ]);
-        return { data };
-      })
-    );
   }
 }
 

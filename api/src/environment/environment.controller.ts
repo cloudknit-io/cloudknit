@@ -1,8 +1,7 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Request, Sse } from '@nestjs/common';
 import { EnvironmentService } from './environment.service';
 import { UpdateEnvironmentDto } from './dto/update-environment.dto';
 import { ComponentService } from 'src/costing/services/component.service';
-import { In } from 'typeorm';
 import { APIRequest } from 'src/types';
 
 @Controller({

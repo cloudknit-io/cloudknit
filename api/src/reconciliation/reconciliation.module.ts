@@ -7,7 +7,6 @@ import { TeamService } from 'src/team/team.service';
 import { Component, ComponentReconcile, Environment, EnvironmentReconcile, Team } from 'src/typeorm';
 import { ReconciliationController } from './reconciliation.controller';
 import { ReconciliationService } from './reconciliation.service';
-import { SSEService } from './sse.service';
 
 
 @Module({
@@ -27,7 +26,6 @@ import { SSEService } from './sse.service';
     ReconciliationService,
     RootEnvironmentService,
     EnvironmentService,
-    SSEService,
     TeamService,
     ComponentService
   ],
