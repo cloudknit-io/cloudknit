@@ -65,11 +65,12 @@ fi
 echo "running argocd login script"
 sh /argocd/login.sh $customer_id
 
-echo "current config status: $config_status"
-if [[ $config_name != 0 ]]; then
-    echo "Fetching component status via zlifecycle-internal-cli"
-    . /component-state-zlifecycle-internal-cli.sh
-fi
+# TODO: Look at this block to see if we need to replicate it
+#echo "current config status: $config_status"
+#if [[ $config_name != 0 ]]; then
+#    echo "Fetching component status via zlifecycle-internal-cli"
+    #. /component-state-zlifecycle-internal-cli.sh
+#fi
 
 if [[ $config_name != 0 && $config_reconcile_id = null ]]; then
     echo "running validate environment component script: team $team_name, environment $env_name, component $config_name"
