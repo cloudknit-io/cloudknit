@@ -43,22 +43,21 @@ export class EnvironmentService {
     });
   }
 
-  async findByName(org: Organization, team: Team, name: string, relations?: {}) {
-    const where = {
-      name: Equal(name),
-      organization: {
-        id : org.id
+  async findByName(org: Organization, team: Team, name: string, withTeam: boolean = false) {
+    return this.envRepo.findOne({
+      where: {
+        name: Equal(name),
+        organization: {
+          id: org.id
+        },
+        team: {
+          id: team.id
+        }
       },
-      team: null
-    };
-
-    if (team) {
-      where.team = {
-        id: team.id
+      relations: {
+        team: withTeam
       }
-    }
-
-    return await this.envRepo.findOne({ where, relations });
+    });
   }
 
   async remove(org: Organization, id: number): Promise<Environment> {

@@ -20,7 +20,7 @@ export class EnvironmentController {
     // TODO : Cost?
     // this.compSvc.getAllForEnvironmentById(org, env);
 
-    return this.envSvc.findById(org, env.id, team);
+    return this.envSvc.findById(org, env.id);
   }
 
   @Get('dag')

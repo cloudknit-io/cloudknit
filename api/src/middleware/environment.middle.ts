@@ -23,7 +23,7 @@ export class EnvironmentMiddleware implements NestMiddleware {
     
     if (isNaN(id)) {
       try {
-        env = await this.envSvc.findByName(org, team, id)
+        env = await this.envSvc.findByName(org, team, envId)
       } catch (e) {
         this.logger.error({message: 'could not get environment by name', envId, error: e.message})
       }
