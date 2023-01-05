@@ -100,8 +100,6 @@ fi
 echo "write 0 to /tmp/error_code.txt"
 echo -n '0' >/tmp/error_code.txt
 
-component_payload='[{"reconcileId" : '$config_reconcile_id', "teamName" : "'${team_name}'", "environmentName" : "'${env_name}'", "name" : "'$config_name'", "status" : "'$config_status'", "startDateTime" : "'$start_date'", "endDateTime" : '$end_date'}]'
-
 end_date='"'$(date '+%Y-%m-%d %H:%M:%S')'"'
 if [ $reconcile_id -eq 0 ]; then
     echo "set end_date and reconcile_id to null"
@@ -138,15 +136,15 @@ if [ $config_name -eq 0 ]; then # environment recon
     fi
 else # component recon
     if [ $config_reconcile_id = null ]; then # create comp reconcile
-        payload='{"name": "'${env_name}'", "teamName": "'${team_name}'", "startDateTime": "'${start_date}'", "envReconcileId": "'${reconcile_id}'"}'
-        echo ${payload} >tmp_new_env_recon.json
+        payload='{"name": "'${config_name}'", "startDateTime": "'${start_date}'", "envReconcileId": "'${reconcile_id}'"}'
+        echo ${payload} >tmp_new_comp_recon.json
 
-        result=$(curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/component" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_new_env_recon.json)
+        result=$(curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/component" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_new_comp_recon.json)
     else # update comp reconcile
-        payload='{"name": "'${env_name}'", "teamName": "'${team_name}'", "startDateTime": "'${start_date}'"}'
-        echo ${payload} >tmp_new_env_recon.json
+        payload='{"status": "'${status}'", "endDateTime": "'${end_date}'"}'
+        echo ${payload} >tmp_update_comp_recon.json
 
-        result=$(curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/component/${reconcile_id}" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_new_env_recon.json)
+        result=$(curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/component/${config_reconcile_id}" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_update_comp_recon.json)
     fi
 fi
 
