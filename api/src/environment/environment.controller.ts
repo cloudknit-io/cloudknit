@@ -38,16 +38,16 @@ export class EnvironmentController {
   }
 
   @Patch()
-  async update(@Request() req: APIRequest, @Param('id') id: number, @Body() updateEnvDto: UpdateEnvironmentDto) {
-    const {org } = req;
+  async update(@Request() req: APIRequest, @Body() updateEnvDto: UpdateEnvironmentDto) {
+    const { org, env } = req;
 
-    return this.envSvc.update(org, id, updateEnvDto);
+    return this.envSvc.update(org, env.id, updateEnvDto);
   }
 
   @Delete()
-  remove(@Request() req: APIRequest, @Param('id') id: number) {
-    const { org } = req;
+  remove(@Request() req: APIRequest) {
+    const { org, env } = req;
 
-    return this.envSvc.remove(org, id);
+    return this.envSvc.remove(org, env.id);
   }
 }
