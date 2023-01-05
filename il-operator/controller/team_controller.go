@@ -159,6 +159,11 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
 	}
 
+	if err := generateAndSaveTeamApp(fileAPI, team, teamAppFilename, tempILRepoDir); err != nil {
+		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error generating team argocd app"))
+		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
+	}
+
 	if err := generateAndSaveConfigWatchers(fileAPI, team, teamAppFilename, tempILRepoDir); err != nil {
 		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error generating team config watchers"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
