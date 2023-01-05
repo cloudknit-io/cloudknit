@@ -24,8 +24,6 @@ team_env_config_name=$team_name-$env_name-$config_name
 
 echo "config name: $config_name"
 
-url_environment="http://zlifecycle-api.${zlifecycle_namespace}.svc.cluster.local/${api_version}/orgs/${customer_id}/reconciliation/environment/save"
-url="http://zlifecycle-api.${zlifecycle_namespace}.svc.cluster.local/${api_version}/orgs/${customer_id}/reconciliation/component/save"
 start_date=$(date '+%Y-%m-%d %H:%M:%S')
 end_date='"'$(date '+%Y-%m-%d %H:%M:%S')'"'
 
@@ -113,7 +111,6 @@ fi
 # there is no config so must be an environment?
 if [ $config_name -eq 0 ]; then
     component_payload=[]
-    url=$url_environment
     echo "calling patch environment script"
     . /patch_environment.sh
 fi
@@ -123,6 +120,8 @@ if [[ $is_destroy = true ]]; then
 else
     status="provision_"$status
 fi
+
+result=""
 
 if [ $config_name -eq 0 ]; then # environment recon
     if [ $reconcile_id -eq 0 ]; then # create env reconcile
@@ -150,15 +149,6 @@ else # component recon
     fi
 fi
 
-# TODO : this payload was used for both environment and component saves
-payload='{"reconcileId": '$reconcile_id', "name" : "'$env_name'", "teamName" : "'$team_name'", "status" : "'$status'", "startDateTime" : "'$start_date'", "endDateTime" : '$end_date', "componentReconciles" : '$component_payload'}'
-
-echo "AUDIT PAYLOAD: $payload"
-echo $payload >reconcile_payload.txt
-
-echo "AUDIT URL: $url"
-
-result=$(curl -X 'POST' "$url" -H 'accept: */*' -H 'Content-Type: application/json' -d @reconcile_payload.txt)
 echo "AUDIT RECONCILE_ID: $result"
 echo $result > /tmp/reconcile_id.txt
 
