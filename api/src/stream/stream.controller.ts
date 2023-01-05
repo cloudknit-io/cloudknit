@@ -16,7 +16,7 @@ export class StreamController {
 
     return from(this.sseSvc.compStream).pipe(
       map((comp: Component) => {
-        if (!comp.organization || comp.organization.id !== org.id) {
+        if (!comp || comp.orgId !== org.id) {
           return;
         }
 
@@ -34,9 +34,9 @@ export class StreamController {
 
     return from(this.sseSvc.envStream).pipe(
       map((env: Environment) => {
-        if (!env.organization || env.organization.id !== org.id) {
+        if (!env || env.orgId !== org.id) {
           return;
-        }
+        }        
 
         return {
           data: env,

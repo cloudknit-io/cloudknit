@@ -31,7 +31,7 @@ export class StreamComponentService implements EntitySubscriberInterface<Compone
   }
 
   validateAndSend(comp: Component, operation: string) {
-    if (comp.organization) {
+    if (comp.organization || comp.orgId) {
       this.sseSvc.sendComponent(comp);
       return;
     }

@@ -8,24 +8,18 @@ import { UpdateEnvironmentDto } from "./dto/update-environment.dto";
 export class EnvironmentService {
   constructor(
     @InjectRepository(Environment)
-    private readonly envRepo: Repository<Environment>,
+    private readonly envRepo: Repository<Environment>
   ) { }
 
-  async update(org: Organization, id: number, updateEnvDto: UpdateEnvironmentDto): Promise<Environment> {
+  async updateById(org: Organization, id: number, updateEnvDto: UpdateEnvironmentDto): Promise<Environment> {
     const env = await this.findById(org, id);
-
     this.envRepo.merge(env, updateEnvDto);
-    env.organization = org;
-
     return this.envRepo.save(env);
   }
 
   async updateByName(org: Organization, team: Team, name: string, updateEnvDto: UpdateEnvironmentDto): Promise<Environment> {
     const env = await this.findByName(org, team, name);
-
     this.envRepo.merge(env, updateEnvDto);
-    env.organization = org;
-
     return this.envRepo.save(env);
   }
 
@@ -64,7 +58,6 @@ export class EnvironmentService {
     const env = await this.findById(org, id);
 
     env.isDeleted = true;
-    env.organization = org;
 
     return this.envRepo.save(env);
   }

@@ -12,10 +12,10 @@ export class StreamService {
   readonly reconcileStream: Subject<ComponentReconcile | EnvironmentReconcile> = new Subject<ComponentReconcile | EnvironmentReconcile>();
 
   constructor() {
-    setInterval(() => {
-      this.notifyStream.next({});
-      this.envStream.next(null);
-    }, 20000);
+    // setInterval(() => {
+    //   this.notifyStream.next({});
+    //   this.envStream.next(null);
+    // }, 20000);
   }
 
   sendEnvironment(env: Environment) {

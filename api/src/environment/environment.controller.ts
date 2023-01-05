@@ -41,7 +41,7 @@ export class EnvironmentController {
   async update(@Request() req: APIRequest, @Body() updateEnvDto: UpdateEnvironmentDto) {
     const { org, env } = req;
 
-    return this.envSvc.update(org, env.id, updateEnvDto);
+    return this.envSvc.updateById(org, env.id, updateEnvDto);
   }
 
   @Delete()

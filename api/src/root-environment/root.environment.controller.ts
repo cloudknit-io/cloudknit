@@ -54,7 +54,7 @@ export class RootEnvironmentController {
 
     const dag: EnvSpecComponentDto[] = [].concat(existingComponents).concat(newComponents);
 
-    env = await this.envSvc.update(org, env.id, {
+    env = await this.envSvc.updateById(org, env.id, {
       dag,
       name: env.name,
       duration: env.duration,

@@ -29,7 +29,6 @@ export class ComponentController {
     const {org, env} = req;
 
     const comp = await this.getCompFromRequest(org, env, id);
-    comp.organization = org;
 
     return this.compSvc.update(comp, body);
   }

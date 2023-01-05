@@ -30,12 +30,12 @@ export class StreamEnvironmentService implements EntitySubscriberInterface<Envir
     this.validateAndSend(event.entity, 'afterRemove');
   }
 
-  validateAndSend(comp: Environment, operation: string) {
-    if (comp.organization) {
-      this.sseSvc.sendEnvironment(comp);
+  validateAndSend(env: Environment, operation: string) {
+    if (env.organization || env.orgId) {
+      this.sseSvc.sendEnvironment(env);
       return;
     }
 
-    this.logger.error({message: 'environment stream object has no organization', comp, operation}); 
+    this.logger.error({message: 'environment stream object has no organization', env, operation}); 
   }
 }

@@ -47,7 +47,7 @@ export class ComponentService {
     });
   }
 
-  async getAllForEnvironmentById(org: Organization, env: Environment, isDestroyed: boolean = false): Promise<Component[]> {
+  async getAllForEnvironmentById(org: Organization, env: Environment, isDestroyed: boolean = false, withEnv: boolean = false): Promise<Component[]> {
     return this.compRepo.find({
       where: {
         organization: {
@@ -57,24 +57,30 @@ export class ComponentService {
           id: env.id
         },
         isDestroyed
+      },
+      relations: {
+        environment: withEnv
       }
     })
   }
 
-  async getAll(org: Organization, isDestroyed: boolean = false): Promise<Component[]> {
+  async getAll(org: Organization, isDestroyed: boolean = false, withEnv: boolean = false): Promise<Component[]> {
     const components = await this.compRepo.find({
       where: {
         organization: {
           id: org.id
         },
         isDestroyed
+      },
+      relations: {
+        environment: withEnv
       }
     });
 
     return components;
   }
 
-  async findById(org: Organization, id: number, isDestroyed: boolean = false, relations?: {}): Promise<Component> {
+  async findById(org: Organization, id: number, isDestroyed: boolean = false, withEnv: boolean = false): Promise<Component> {
     return await this.compRepo.findOne({
       where: {
         id,
@@ -83,11 +89,13 @@ export class ComponentService {
         },
         isDestroyed
       },
-      relations
+      relations: {
+        environment: withEnv
+      }
     });
   }
 
-  async findByName(org: Organization, env: Environment, name: string, isDestroyed: boolean = false, relations?: {}): Promise<Component> {
+  async findByName(org: Organization, env: Environment, name: string, isDestroyed: boolean = false, withEnv: boolean = false): Promise<Component> {
     return await this.compRepo.findOne({
       where: {
         name,
@@ -99,7 +107,9 @@ export class ComponentService {
         },
         isDestroyed
       },
-      relations
+      relations: {
+        environment: withEnv
+      }
     });
   }
 

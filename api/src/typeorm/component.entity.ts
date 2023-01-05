@@ -1,5 +1,5 @@
 import { CostResource } from 'src/costing/dtos/Resource.dto';
-import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, RelationId, UpdateDateColumn } from 'typeorm';
 import { Organization } from './Organization.entity';
 import { Environment } from './environment.entity';
 
@@ -9,9 +9,7 @@ export class Component {
   @PrimaryGeneratedColumn()
   id: number
 
-  @ManyToOne(() => Environment, (environment) => environment.components, {
-    eager: true
-  })
+  @ManyToOne(() => Environment, (environment) => environment.components)
   environment: Environment;
 
   @Column({
@@ -69,4 +67,10 @@ export class Component {
     referencedColumnName: 'id'
   })
   organization: Organization
+
+  @RelationId((comp: Component) => comp.environment)
+  envId: number
+
+  @RelationId((comp: Component) => comp.organization)
+  orgId: number
 }

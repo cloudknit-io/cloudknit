@@ -1,4 +1,4 @@
-import { AfterInsert, Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { AfterInsert, Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, RelationId, UpdateDateColumn } from "typeorm";
 import { Organization } from "./Organization.entity";
 import { Component } from "./component.entity";
 import { Team } from "./team.entity";
@@ -61,4 +61,10 @@ export class Environment {
     referencedColumnName: 'id'
   })
   organization: Organization;
+
+  @RelationId((env: Environment) => env.team)
+  teamId: number
+
+  @RelationId((env: Environment) => env.organization)
+  orgId: number
 }

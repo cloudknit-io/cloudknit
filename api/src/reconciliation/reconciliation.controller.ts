@@ -112,7 +112,7 @@ export class ReconciliationController {
     }
 
     try {
-      await this.envSvc.update(org, env.id, {
+      await this.envSvc.updateById(org, env.id, {
         duration,
         status: body.status
       });
