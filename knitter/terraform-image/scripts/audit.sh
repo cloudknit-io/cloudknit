@@ -62,8 +62,8 @@ if [ "$skip_component" != "noSkip" ]; then
     fi
 fi
 
-echo "running argocd login script"
-sh /argocd/login.sh $customer_id
+#echo "running argocd login script"
+#sh /argocd/login.sh $customer_id
 
 # TODO: Look at this block to see if we need to replicate it
 #echo "current config status: $config_status"
