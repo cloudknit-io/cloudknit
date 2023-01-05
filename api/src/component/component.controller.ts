@@ -2,7 +2,9 @@ import { Controller, Get, Param, Request } from '@nestjs/common';
 import { Component } from 'src/typeorm';
 import { ComponentService } from './component.service';
 
-@Controller('component')
+@Controller({
+  version: '1'
+})
 export class ComponentController {
   constructor(private readonly compSvc: ComponentService) {}
 
