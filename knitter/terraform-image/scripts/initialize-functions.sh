@@ -119,12 +119,12 @@ function UpdateComponentStatus() {
       isDestroyed=false
   fi
 
-  local payload='{"teamName": "'${teamName}'", "environmentName": "'${envName}'", "component": { "componentName": "'${compName}'", "status" : "'${compStatus}'", "isDestroyed" : '${isDestroyed}' }}'
+  local payload='{ "status" : "'${compStatus}'" }'
   
   echo "Running UpdateComponentStatus ${compStatus} : ${payload}"
   echo $payload >temp_payload.json
 
-  curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/costing/saveComponent" -H 'accept: */*' -H 'Content-Type: application/json' -d @temp_payload.json
+  curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/teams/${teamName}/environments/${envName}/components/${compName}" -H 'accept: */*' -H 'Content-Type: application/json' -d @temp_payload.json
 }
 
 # Saves or updates a component
