@@ -95,10 +95,10 @@ if [[ $config_name != 0 && $config_reconcile_id = null ]]; then
     if [[ $comp_status != 0 ]]; then
         UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "${comp_status}" ${is_destroy}
     fi
-else
-    echo "write 0 to /tmp/error_code.txt"
-    echo -n '0' >/tmp/error_code.txt
 fi
+
+echo "write 0 to /tmp/error_code.txt"
+echo -n '0' >/tmp/error_code.txt
 
 component_payload='[{"reconcileId" : '$config_reconcile_id', "teamName" : "'${team_name}'", "environmentName" : "'${env_name}'", "name" : "'$config_name'", "status" : "'$config_status'", "startDateTime" : "'$start_date'", "endDateTime" : '$end_date'}]'
 
