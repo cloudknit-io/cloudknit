@@ -9,7 +9,7 @@ import { RootOrganizationsModule } from "./root-organization/root.organization.m
 import { ReconciliationModule } from "./reconciliation/reconciliation.module";
 import { appRoutes } from "./routes";
 import { SecretsModule } from "./secrets/secrets.module";
-import { entities } from "./typeorm";
+import { entities, subscribers } from "./typeorm";
 import { UsersModule } from "./users/users.module";
 import { SystemModule } from "./system/system.module";
 import { get } from "./config";
@@ -30,7 +30,8 @@ const typeOrmModuleOptions: TypeOrmModuleOptions = {
   username: config.TypeORM.username,
   password: config.TypeORM.password,
   database: config.TypeORM.database,
-  entities: entities,
+  entities,
+  subscribers,
   migrations: [],
   synchronize: true,
 };

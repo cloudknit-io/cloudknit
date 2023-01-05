@@ -24,7 +24,14 @@ export class EnvironmentController {
     return this.envSvc.findById(org, env.id, team);
   }
 
-  @Get('/cost')
+  @Get('dag')
+  async getDag(@Request() req: APIRequest) {
+    const { env } = req;
+
+    return env.dag;
+  }
+
+  @Get('cost')
   async getCost(@Request() req: APIRequest) {
     const {org, team, env} = req;
     

@@ -37,15 +37,18 @@ export class EnvironmentService {
     return updatedEnv;
   }
 
-  async findById(org: Organization, id: number, relations?: {}): Promise<Environment> {
-    const where = {
-      id,
-      organization: {
-        id : org.id
+  async findById(org: Organization, id: number, withTeam: boolean = false): Promise<Environment> {
+    return this.envRepo.findOne({
+      where: {
+        id: Equal(id),
+        organization: {
+          id: Equal(org.id)
+        },
+      },
+      relations: {
+        team: withTeam
       }
-    };
-
-    return await this.envRepo.findOne({ where, relations });
+    });
   }
 
   async findByName(org: Organization, team: Team, name: string, relations?: {}) {

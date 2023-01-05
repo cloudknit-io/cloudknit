@@ -29,13 +29,13 @@ export class EnvironmentMiddleware implements NestMiddleware {
       }
     } else {
       try {
-        env = await this.envSvc.findById(org, id, team);
+        env = await this.envSvc.findById(org, id, true);
       } catch (e) {
         this.logger.error({message: 'could not get environment by number', envId, error: e.message})
       }
     }
 
-    if (!team) {
+    if (!env) {
       this.logger.error({ message: 'bad environmentId', envId});
       throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
     }

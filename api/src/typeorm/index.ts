@@ -4,7 +4,9 @@ import { Organization } from './Organization.entity';
 import { ComponentReconcile } from './component-reconcile.entity';
 import { EnvironmentReconcile } from './environment-reconcile.entity';
 import { Environment } from './environment.entity';
+import { EnvironmentSubscriber } from './environment.subscriber';
 import { Team } from './team.entity';
+import { ComponentSubscriber } from './component.subscriber';
 
 export const entities = [
     User,
@@ -14,6 +16,11 @@ export const entities = [
     EnvironmentReconcile,
     Environment,
     Team
+];
+
+export const subscribers = [
+    EnvironmentSubscriber,
+    ComponentSubscriber
 ];
 
 export {

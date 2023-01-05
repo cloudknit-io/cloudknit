@@ -1,4 +1,4 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { AfterInsert, Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Organization } from "./Organization.entity";
 import { Component } from "./component.entity";
 import { Team } from "./team.entity";
@@ -9,6 +9,11 @@ import { EnvSpecComponentDto } from "src/environment/dto/env-spec.dto";
 })
 @Index(['organization', 'team', 'name'], { unique: true })
 export class Environment {
+  @AfterInsert()
+  streamUpdate() {
+    console.log('AFTERINSERT', this);
+  }
+
   @PrimaryGeneratedColumn()
   id: number
 
