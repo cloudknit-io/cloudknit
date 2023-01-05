@@ -30,7 +30,7 @@ echo ""
 
 function PatchProcessPlanError() {
     UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "plan_failed"
-    # TODO : Pass orgId
+
     sh ../audit.sh $team_name $env_name $config_name "" "plan_failed" $reconcile_id $config_reconcile_id $is_destroy 0 "noSkip" ${customer_id}
     if [ $is_destroy = true ]
     then
@@ -38,7 +38,8 @@ function PatchProcessPlanError() {
     else
         data='{"metadata":{"labels":{"env_status":"provision_failed"}}}'
     fi
-    argocd app patch $team_env_name --patch $data --type merge > null
+
+    # argocd app patch $team_env_name --patch $data --type merge > null
 }
 
 function ProcessPlanError() {

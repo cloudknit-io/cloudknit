@@ -73,7 +73,7 @@ fi
 
 if [[ $config_name != 0 && $config_reconcile_id = null ]]; then
     echo "running validate environment component script: team $team_name, environment $env_name, component $config_name"
-    sh ./validate_env_component.sh $team_name $env_name $config_name $customer_id
+    # sh ./validate_env_component.sh $team_name $env_name $config_name $customer_id
     comp_status=0
     if [[ $config_status == *"skipped"* ]]; then
         echo "getting environment component previous status"
@@ -89,8 +89,8 @@ if [[ $config_name != 0 && $config_reconcile_id = null ]]; then
         comp_status="initializing"
         data='{"metadata":{"labels":{"is_skipped":"'$is_skipped'","audit_status":"initializing","last_workflow_run_id":"initializing"}}}'
     fi
-    echo "patch argocd resource $team_env_config_name with data $data"
-    argocd app patch $team_env_config_name --patch $data --type merge > null
+    # echo "patch argocd resource $team_env_config_name with data $data"
+    # argocd app patch $team_env_config_name --patch $data --type merge > null
     if [[ $comp_status != 0 ]]; then
         UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "${comp_status}" ${is_destroy}
     fi
