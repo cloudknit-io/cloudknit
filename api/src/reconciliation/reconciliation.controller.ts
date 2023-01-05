@@ -193,7 +193,7 @@ export class ReconciliationController {
       duration = ed - sd;
     }
 
-    await this.compSvc.updateFromCompRecon(comp, {
+    await this.compSvc.update(comp, {
       duration,
       status: updatedCompRecon.status
     });

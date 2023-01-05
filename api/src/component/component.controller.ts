@@ -1,6 +1,8 @@
-import { Controller, Get, Param, Request } from '@nestjs/common';
-import { Component } from 'src/typeorm';
+import { Body, Controller, Get, Param, Post, Put, Request } from '@nestjs/common';
+import { Component, Environment, Organization } from 'src/typeorm';
+import { APIRequest } from 'src/types';
 import { ComponentService } from './component.service';
+import { UpdateComponentDto } from './dto/update-component.dto';
 
 @Controller({
   version: '1'
@@ -19,10 +21,23 @@ export class ComponentController {
   async findOne(@Request() req, @Param('id') id: string): Promise<Component> {
     const {org, env} = req;
 
+    return this.getCompFromRequest(org, env, id);
+  }
+
+  @Put(':id')
+  async updateComponent(@Request() req: APIRequest, @Param('id') id: string, @Body() body: UpdateComponentDto): Promise<Component> {
+    const {org, env} = req;
+
+    const comp = await this.getCompFromRequest(org, env, id);
+
+    return this.compSvc.update(comp, body);
+  }
+
+  async getCompFromRequest(org: Organization, env: Environment, id: any): Promise<Component> {
     let numId, comp;
 
     try {
-      numId = parseInt(req.params.environmentId, 10);
+      numId = parseInt(id, 10);
     } catch (e) {}
     
     if (isNaN(numId)) {
