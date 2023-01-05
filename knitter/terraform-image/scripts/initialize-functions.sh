@@ -124,7 +124,7 @@ function UpdateComponentStatus() {
   echo "Running UpdateComponentStatus ${compStatus} : ${payload}"
   echo $payload >temp_payload.json
 
-  curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/teams/${teamName}/environments/${envName}/components/${compName}" -H 'accept: */*' -H 'Content-Type: application/json' -d @temp_payload.json
+  curl -X 'PUT' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/teams/${teamName}/environments/${envName}/components/${compName}" -H 'accept: */*' -H 'Content-Type: application/json' -d @temp_payload.json
 }
 
 # Saves or updates a component
