@@ -124,7 +124,7 @@ fi
 result=""
 
 if [ $config_name -eq 0 ]; then # environment recon
-    if [ $reconcile_id -eq 0 ]; then # create env reconcile
+    if [ $reconcile_id = null ]; then # create env reconcile
         payload='{"name": "'${env_name}'", "teamName": "'${team_name}'", "startDateTime": "'${start_date}'"}'
         echo ${payload} >tmp_new_env_recon.json
 
@@ -136,7 +136,7 @@ if [ $config_name -eq 0 ]; then # environment recon
         result=$(curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/environment/${reconcile_id}" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_update_env_recon.json)
     fi
 else # component recon
-    if [ $config_reconcile_id -eq 0 ]; then # create comp reconcile
+    if [ $config_reconcile_id = null ]; then # create comp reconcile
         payload='{"name": "'${env_name}'", "teamName": "'${team_name}'", "startDateTime": "'${start_date}'", "envReconcileId": "'${reconcile_id}'"}'
         echo ${payload} >tmp_new_env_recon.json
 
