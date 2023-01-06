@@ -119,7 +119,7 @@ function UpdateComponentStatus() {
       isDestroyed=false
   fi
 
-  local payload='{ "status" : "'${compStatus}'" }'
+  local payload='{ "status" : "'${compStatus}'", "isDestroyed" : "'${isDestroyed}'" }'
   
   echo "Running UpdateComponentStatus ${compStatus} : ${payload}"
   echo $payload >tmp_comp_status.json
@@ -145,6 +145,28 @@ function UpdateComponentWfRunId() {
   echo $payload >tmp_comp_wf_runid.json
 
   curl -X 'PUT' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/teams/${teamName}/environments/${envName}/components/${compName}" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_comp_wf_runid.json
+}
+
+# Saves or updates a component
+#   Args:
+#     $1 - env name (required)
+#     $2 - team name (required)
+#     $3 - component name (required)
+#     $4 - cost (required)
+#     $5 - cost resources (required)
+function UpdateComponentCost() {
+  local envName="${1}"
+  local teamName="${2}"
+  local compName="${3}"
+  local estimatedCost="${4}"
+  local costResources="${5}"
+
+  local payload='{ "estimatedCost" : '${estimatedCost}', "costResources" : '${costResources}' }'
+  
+  echo "Running UpdateComponentCost : ${payload}"
+  echo $payload >tmp_comp_cost.json
+
+  curl -X 'PUT' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/teams/${teamName}/environments/${envName}/components/${compName}" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_comp_cost.json
 }
 
 # Saves or updates a component

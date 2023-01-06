@@ -42,13 +42,4 @@ echo $show_output_end
 aws s3 cp /tmp/plan_output.txt s3://zlifecycle-$zl_env-tfplan-$customer_id/$team_name/$env_name/$config_name/$config_reconcile_id/plan_output --profile compuzest-shared
 aws s3 cp terraform-plan s3://zlifecycle-$zl_env-tfplan-$customer_id/$team_name/$env_name/$config_name/tfplans/$config_reconcile_id --profile compuzest-shared
 
-isDestroyed=true
-costing_payload='{"teamName": "'$team_name'", "environmentName": "'$env_name'", "component": { "componentName": "'$config_name'", "isDestroyed" : '${isDestroyed}'  }}'
-echo $costing_payload >temp_costing_payload.json
-
-echo "TERRAFORM DESTROY PLAN - COSTING PAYLOAD"
-echo $costing_payload
-
-# TODO : add orgId to URL
-# TODO : replace customer_id with generic multi-tenant API url
-curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/costing/saveComponent" -H 'accept: */*' -H 'Content-Type: application/json' -d @temp_costing_payload.json
+UpdateComponentCost "${env_name}" "${team_name}" "${config_name}" "-1" "[]"

@@ -54,18 +54,8 @@ aws s3 cp terraform-plan s3://zlifecycle-$zl_env-tfplan-$customer_id/$team_name/
 UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "calculating_cost"
 
 infracost breakdown --path terraform-plan --format json --log-level=warn >>output.json
-estimated_cost=$(cat output.json | jq -r ".projects[0].breakdown.totalMonthlyCost")
-resources=$(cat output.json | jq -r ".projects[0].breakdown.resources")
-# unsupportedResources=$(cat output.json | jq ' .projects[0].summary.unsupportedResourceCounts == {}')
-# if [[ $unsupportedResources != "true" && $estimated_cost == '0' ]]
-# then
-#    estimated_cost='-1'
-# fi
-isDestroyed=false
-costing_payload='{"teamName": "'$team_name'", "environmentName": "'$env_name'", "component": { "componentName": "'$config_name'", "cost": '$estimated_cost', "resources" : '$resources', "isDestroyed" : '${isDestroyed}'  }}'
-echo "Costing Payload : ${costing_payload}"
-echo $costing_payload >temp_costing_payload.json
 
-# TODO : add orgId to URL
-# TODO : replace customer_id with generic multi-tenant API url
-curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/costing/saveComponent" -H 'accept: */*' -H 'Content-Type: application/json' -d @temp_costing_payload.json
+estimated_cost=$(cat output.json | jq -r ".projects[0].breakdown.totalMonthlyCost")
+costResources=$(cat output.json | jq -r ".projects[0].breakdown.resources")
+
+UpdateComponentCost "${env_name}" "${team_name}" "${config_name}" "${estimated_cost}" "${costResources}"
