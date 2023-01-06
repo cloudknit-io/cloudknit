@@ -23,8 +23,8 @@ export class EnvironmentService {
     return this.envRepo.save(env);
   }
 
-  async findById(org: Organization, id: number, withTeam: boolean = false): Promise<Environment> {
-    return this.envRepo.findOne({
+  async findById(org: Organization, id: number, withTeam: boolean = false, withComps: boolean = false): Promise<Environment> {
+  return this.envRepo.findOne({
       where: {
         id: Equal(id),
         organization: {
@@ -32,12 +32,13 @@ export class EnvironmentService {
         },
       },
       relations: {
-        team: withTeam
+        team: withTeam,
+        components: withComps
       }
     });
   }
 
-  async findByName(org: Organization, team: Team, name: string, withTeam: boolean = false) {
+  async findByName(org: Organization, team: Team, name: string, withTeam: boolean = false, withComps: boolean = false) {
     return this.envRepo.findOne({
       where: {
         name: Equal(name),
@@ -49,7 +50,8 @@ export class EnvironmentService {
         }
       },
       relations: {
-        team: withTeam
+        team: withTeam,
+        components: withComps
       }
     });
   }
@@ -60,5 +62,19 @@ export class EnvironmentService {
     env.isDeleted = true;
 
     return this.envRepo.save(env);
+  }
+
+  async updateCost(org: Organization, env: Environment) {
+    env = await this.findById(org, env.id, false, true);
+
+    let estimatedCost = 0.0;
+
+    for (const comp of env.components) {
+      if (comp.estimatedCost > 0) {
+        estimatedCost += parseFloat(comp.estimatedCost+'');
+      }
+    }
+
+    await this.updateById(org, env.id, { estimatedCost });    
   }
 }

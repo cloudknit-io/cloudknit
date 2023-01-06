@@ -36,6 +36,15 @@ export class Environment {
   components: Component[];
 
   @Column({
+    name: 'estimated_cost',
+    type: 'decimal',
+    precision: 10,
+    scale: 3,
+    default: 0
+  })
+  estimatedCost: number;
+
+  @Column({
     type: 'json',
     default: null
   })
