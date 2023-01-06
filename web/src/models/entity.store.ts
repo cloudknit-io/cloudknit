@@ -118,6 +118,7 @@ export class EntityStore {
 				const compDag = currEnv.dag.find(d => d.name === c.name);
 				c.dependsOn = compDag?.dependsOn || [];
                 c.argoId = `${currEnv.argoId}-${c.name}`;
+				c.teamId = currEnv.teamId;
 				this.compMap.set(c.id, c);
 			});
 		}

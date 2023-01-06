@@ -426,15 +426,15 @@ export const EnvironmentComponents: React.FC = () => {
 		setEnvironmentNodeSelected(false);
 		const selectedConfig = components.find(c => c.name === configName);
 		// componentArrayRef.current.find(config => config.componentName === configName);
-		// if (selectedConfig) {
-		// 	let workflowId = selectedConfig.labels?.last_workflow_run_id || '';
-		// 	if (!selectedConfig.labels?.last_workflow_run_id) {
-		// 		workflowId = 'initializing';
-		// 	}
-		// 	setSelectedConfig(selectedConfig);
-		// 	setShowSidePanel(true);
-		// 	setWorkflowId(workflowId);
-		// }
+		if (selectedConfig) {
+			// let workflowId = selectedConfig.labels?.last_workflow_run_id || '';
+			// if (!selectedConfig.labels?.last_workflow_run_id) {
+			// 	workflowId = 'initializing';
+			// }
+			setSelectedConfig(selectedConfig);
+			setShowSidePanel(true);
+			// setWorkflowId(workflowId);
+		}
 	};
 
 	const labelsMatch = (labels: EnvironmentItem['labels'] = {}, query: string): boolean => {
@@ -565,8 +565,9 @@ export const EnvironmentComponents: React.FC = () => {
 											<AuditView
 												fetch={AuditService.getInstance().getEnvironment.bind(
 													AuditService.getInstance(),
-													environmentName,
-													projectId
+													environment?.id || 0,
+													environment?.teamId || 0,
+													environment?.argoId || ''
 												)}
 												auditColumns={auditColumns}
 												auditId={environmentName}
@@ -576,16 +577,16 @@ export const EnvironmentComponents: React.FC = () => {
 								</div>
 							</div>
 						)}
-						{/* <ZLoaderCover loading={isLoadingWorkflow}>
+						<ZLoaderCover loading={isLoadingWorkflow}>
 							{selectedConfig &&
 								!isEnvironmentNodeSelected &&
-								(selectedConfig.labels?.component_type === 'argocd' ? (
-									<ConfigWorkflowViewApplication
-										projectId={projectId}
-										environmentId={environmentName}
-										config={selectedConfig}
-									/>
-								) : (
+								// (selectedConfig.labels?.component_type === 'argocd' ? (
+								// 	<ConfigWorkflowViewApplication
+								// 		projectId={projectId}
+								// 		environmentId={environmentName}
+								// 		config={selectedConfig}
+								// 	/>
+								// ) : (
 									<ConfigWorkflowView
 										projectId={projectId}
 										environmentId={environmentName}
@@ -594,8 +595,9 @@ export const EnvironmentComponents: React.FC = () => {
 										plans={plans}
 										workflowData={workflowData}
 									/>
-								))}
-						</ZLoaderCover> */}
+								// ))
+								}
+						</ZLoaderCover>
 					</ZSidePanel>
 				</section>
 			</ZLoaderCover>

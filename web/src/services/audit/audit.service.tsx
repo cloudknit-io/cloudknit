@@ -175,14 +175,15 @@ export class AuditService extends BaseService {
 		return null;
 	}
 
-	getComponent(id: string, envName: string, teamName: string): Subject<any> | undefined {
-		this.startStream(id, this.constructUri(AuditUriType.componentStream(id, envName, teamName)));
-		return this.getStream(id, this.constructUri(AuditUriType.component(id, envName, teamName)));
+	getComponent(id: number, envId: number, teamId: number, argoId: string): Subject<any> | undefined {
+		// return ApiClient.get(this.constructUri(AuditUriType.component(id, envId, envId)));
+		// this.startStream(argoId, this.constructUri(AuditUriType.componentStream(id, envName, teamName)));
+		return this.getStream(argoId, this.constructUri(AuditUriType.component(id, envId, teamId)));
 	}
 
-	getEnvironment(envName: string, teamName: string): Subject<any> | undefined {
-		this.startStream(envName, this.constructUri(AuditUriType.environmentStream(envName, teamName)));
-		return this.getStream(envName, this.constructUri(AuditUriType.environment(envName, teamName)));
+	getEnvironment(envId: number, teamId: number, argoId: string): Subject<any> | undefined {
+		// this.startStream(envName, this.constructUri(AuditUriType.environmentStream(envName, teamName)));
+		return this.getStream(argoId, this.constructUri(AuditUriType.environment(envId, teamId)));
 	}
 
 	async initNotifications(teamName: string) {
@@ -216,7 +217,7 @@ class AuditUriType {
 	static customerName = ENVIRONMENT_VARIABLES.REACT_APP_CUSTOMER_NAME;
 	static environmentInfo = (envName: string, teamName: string) => `environments?envName=${envName}&teamName=${teamName}`;
 	static componentInfo = (componentId: string, envName: string, teamName: string) => `components?compName=${componentId}&envName=${envName}&teamName=${teamName}`;
-	static component = (componentId: string, envName: string, teamName: string) => `component?compName=${componentId}&envName=${envName}&teamName=${teamName}`;
+	static component = (componentId: number, envId: number, teamId: number) => `component/${teamId}/${envId}/${componentId}`;
 	static patchApprovedBy = (componentId: string) => `approved-by/${componentId}`;
 	static getApprovedBy = (componentId: string, reconcileId: string) => `approved-by/${componentId}/${reconcileId}`;
 	static componentLogs = (teamId: string, environmentId: string, componentId: string, id: number) =>
@@ -227,7 +228,7 @@ class AuditUriType {
 		`getApplyLogs/${teamId}/${environmentId}/${componentId}/${id}/${latest}`;
 	static getStateFile = (teamId: string, environmentId: string, componentId: string) =>
 		`getStateFile/${teamId}/${environmentId}/${componentId}`;
-	static environment = (envName: string, teamName: string) => `environment?envName=${envName}&teamName=${teamName}`;
+	static environment = (envId: number, teamId: number) => `environment/${teamId}/${envId}`;
 	static getNotification = (teamName: string) => `notifications/get/${teamName}`;
 	static seenNotification = (id: string) => `notification/seen/${id}`;
 	static getVisualization = () => `visualization/get`;

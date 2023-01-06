@@ -162,7 +162,7 @@ export const TreeComponent: FC<Props> = ({ environmentId, nodes, onNodeClick, en
 					// 	<ComputeIcon />
 					// ),
 				isSkipped: false,
-				estimatedCost: -1,
+				estimatedCost: item.estimatedCost,
 				syncStatus: item.status || 'Unknown',
 				componentStatus: item.status || 'Unknown',
 				syncFinishedAt: item.lastReconcileDatetime,

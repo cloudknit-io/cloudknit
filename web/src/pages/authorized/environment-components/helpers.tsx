@@ -4,7 +4,7 @@ import { TableColumn } from 'components/atoms/table/Table';
 import { CostRenderer, currency, renderHealthStatus, renderSyncedStatus } from 'components/molecules/cards/renderFunctions';
 import { ZStreamRenderer } from 'components/molecules/zasync-renderer/ZStreamRenderer';
 import { AuditStatus, ZSyncStatus } from 'models/argo.models';
-import { Component } from 'models/entity.store';
+import { Component, EntityStore, Environment, Team } from 'models/entity.store';
 import { EnvironmentComponentItem } from 'models/projects.models';
 import moment from 'moment';
 import React from 'react';
@@ -192,11 +192,13 @@ export const momentHumanizer = (data: number) => {
 	return moment.duration(data, 'milliseconds').humanize();
 };
 
-export const getSeparatedConfigId = (config: EnvironmentComponentItem) => {
+export const getSeparatedConfigId = (config: Component) => {
+	const env = EntityStore.getInstance().getEnvironmentById(config.envId) as Environment;
+	const team = EntityStore.getInstance().getTeam(env?.teamId) as Team;
 	return {
-		team: config.labels?.project_id,
-		component: config.componentName,
-		environment: config.labels?.environment_id.replace(`${config.labels?.project_id}-`, ''),
+		team: team.name,
+		component: config.name,
+		environment: env.name,
 	};
 };
 

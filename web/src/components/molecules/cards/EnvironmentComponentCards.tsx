@@ -35,17 +35,11 @@ const getEnvironmentName = (teamId = '', environmentId = '') => {
 	return environmentId.replace(`${teamId}-`, '');
 };
 
-export const filterLabels = (config: any): { [name: string]: string } => {
-	const { labels } = config; 
+export const filterLabels = (config: Component): { [name: string]: string } => {
+	const labels: any = {};
 	labels.team_id = labels.project_id;
 	labels.dependsOn = config.dependsOn.toString();
-	const HIDDEN_KEYS = new Set(['component_status', 'component_name', 'component_cost', 'is_destroy', 'audit_status']);
-	return Object.keys(labels).reduce((obj: any, key) => {
-		if (labels[key] && !HIDDEN_KEYS.has(key) && !key.startsWith('depends_on_')) {
-			obj[key] = labels[key];
-		}
-		return obj;
-	}, {});
+	return labels;
 };
 
 const totalCost = (components: EnvironmentComponentsList): string => {

@@ -17,6 +17,7 @@ import { ZAccordion, ZAccordionItem } from '../accordion/ZAccordion';
 import { AuditStatus, ZSyncStatus } from 'models/argo.models';
 import { SmallText } from '../workflow-diagram/WorkflowDiagram';
 import { EnvironmentComponentItem } from 'models/projects.models';
+import { Component } from 'models/entity.store';
 
 export interface AuditData {
 	reconcileId: number;
@@ -28,16 +29,16 @@ export interface AuditData {
 }
 
 type Props = {
-	auditId: string;
+	auditId: number;
 	fetch: () => Subject<any> | undefined;
 	auditColumns: any[];
 	fetchLogs?: (auditId: number) => Promise<any>;
-	config?: EnvironmentComponentItem;
+	config?: Component;
 };
 
 export const AuditView: FC<Props> = ({ auditId, fetch, auditColumns, fetchLogs, config }: Props) => {
 	const auditServiceInstance = AuditService.getInstance();
-	const [auditData, setAuditData] = useState<AuditData[]>(auditServiceInstance.getCachedValue(auditId) || []);
+	const [auditData, setAuditData] = useState<AuditData[] | null>(null);
 	const auditDataMap = new Map<number, AuditData>((auditData || []).map(ad => [ad.reconcileId, ad]));
 	const [selectedLog, setSelectedLog] = useState<AuditData | null>(null);
 	const [logs, setLogs] = useState<ZAccordionItem[] | null>();
@@ -100,9 +101,9 @@ export const AuditView: FC<Props> = ({ auditId, fetch, auditColumns, fetchLogs, 
 		}
 	}, [auditId]);
 
-	useEffect(() => {
-		if (isArray(auditData)) auditServiceInstance.setAuditCache(auditId, auditData);
-	}, [auditData]);
+	// useEffect(() => {
+	// 	if (isArray(auditData)) auditServiceInstance.setAuditCache(auditId, auditData);
+	// }, [auditData]);
 
 	const getNodeStatus = (status: string): NodeStatus => {
 		switch (status) {

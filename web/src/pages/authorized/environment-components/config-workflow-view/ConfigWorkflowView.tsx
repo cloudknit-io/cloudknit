@@ -23,11 +23,12 @@ import { EventClientLogs } from 'utils/apiClient/EventClient';
 import { StateFileView } from 'components/organisms/state-file-view/StateFileView';
 import { ArgoComponentsService } from 'services/argo/ArgoComponents.service';
 import { ConfigWorkflowLeftView } from './ConfigWorkflowLeftView';
+import { Component } from 'models/entity.store';
 
 type Props = {
 	projectId: string;
 	environmentId: string;
-	config: EnvironmentComponentItem;
+	config: Component;
 	workflowData: any;
 	logs: string | null;
 	plans: string | null;
@@ -58,98 +59,88 @@ export const ConfigWorkflowView: FC<Props> = (props: Props) => {
 	const separatedConfigId = config ? getSeparatedConfigId(config) : null;
 
 	const ctx = useContext(Context);
+	// useEffect(() => {
+	// 	if (!workflowData) {
+	// 		setFilteredNodes([]);
+	// 		return;
+	// 	}
+	// 	const newNodes: any[] = Object.values(workflowData?.status?.nodes || {}).filter(
+	// 		(node: any) => node.type === 'Steps' || node.type === 'Pod' || node.type === 'Suspend'
+	// 	);
+	// 	const planNode = newNodes.find(e => e.displayName === 'plan');
+	// 	const teardown = planNode?.inputs?.parameters?.find((param: any) => param.name === 'is_destroy')?.value;
+	// 	const ilRepo = workflowData?.spec?.arguments?.parameters?.find((param: any) => param.name === 'il_repo')?.value;
+	// 	setIlRepo(ilRepo);
+	// 	const foundApprovedNode = newNodes.find((node: any) => node.displayName === 'approve') as any;
+	// 	const needsApproval = foundApprovedNode?.phase === 'Running' || false;
+	// 	const isApproved = foundApprovedNode?.phase !== 'Running' || false;
+	// 	setIsApproved(isApproved);
+	// 	setNeedsApproval(needsApproval);
+	// 	if (foundApprovedNode) {
+	// 		AuditService.getInstance()
+	// 			.getApprovedBy(config.displayValue, '-1')
+	// 			.then((auditData: any) => {
+	// 				setApprovedBy(auditData?.approved_by || '');
+	// 			});
+	// 	}
+	// 	setFilteredNodes(
+	// 		newNodes
+	// 			.filter((node: any) => node.displayName !== 'notify' && node.type !== 'Steps')
+	// 			.map((node: any) => {
+	// 				const podName = node.boundaryID + '-run' + node.id.replace(node.boundaryID, '');
+	// 				const status = getComponentStatus(config, teardown);
+	// 				if ((node.displayName === 'apply' || node.displayName === 'plan') && status) {
+	// 					node.displayName = `${status} ${node.displayName}`;
+	// 				}
 
-	useEffect(() => {
-		const delayedStatus = [ZSyncStatus.Destroyed, ZSyncStatus.Provisioned, ZSyncStatus.InSync];
-		if (delayedStatus.includes(config.componentStatus)) {
-			workflowData?.status?.phase === 'Succeeded' && setComponentStatus(config.componentStatus);
-		} else {
-			setComponentStatus(config.componentStatus);
-		}
-	}, [config?.componentStatus, workflowData?.status?.phase]);
+	// 				const paramSet = {
+	// 					environmentId: config?.labels?.environment_id || '',
+	// 					projectId: config?.labels?.project_id || '',
+	// 					configId: config?.id || '',
+	// 					workflowId: config?.labels?.last_workflow_run_id,
+	// 				};
 
-	useEffect(() => {
-		if (!workflowData) {
-			setFilteredNodes([]);
-			return;
-		}
-		const newNodes: any[] = Object.values(workflowData?.status?.nodes || {}).filter(
-			(node: any) => node.type === 'Steps' || node.type === 'Pod' || node.type === 'Suspend'
-		);
-		const planNode = newNodes.find(e => e.displayName === 'plan');
-		const teardown = planNode?.inputs?.parameters?.find((param: any) => param.name === 'is_destroy')?.value;
-		const ilRepo = workflowData?.spec?.arguments?.parameters?.find((param: any) => param.name === 'il_repo')?.value;
-		setIlRepo(ilRepo);
-		const foundApprovedNode = newNodes.find((node: any) => node.displayName === 'approve') as any;
-		const needsApproval = foundApprovedNode?.phase === 'Running' || false;
-		const isApproved = foundApprovedNode?.phase !== 'Running' || false;
-		setIsApproved(isApproved);
-		setNeedsApproval(needsApproval);
-		if (foundApprovedNode) {
-			AuditService.getInstance()
-				.getApprovedBy(config.displayValue, '-1')
-				.then((auditData: any) => {
-					setApprovedBy(auditData?.approved_by || '');
-				});
-		}
-		setFilteredNodes(
-			newNodes
-				.filter((node: any) => node.displayName !== 'notify' && node.type !== 'Steps')
-				.map((node: any) => {
-					const podName = node.boundaryID + '-run' + node.id.replace(node.boundaryID, '');
-					const status = getComponentStatus(config, teardown);
-					if ((node.displayName === 'apply' || node.displayName === 'plan') && status) {
-						node.displayName = `${status} ${node.displayName}`;
-					}
+	// 				const clientLogUrl = `/wf/api/v1/stream/projects/${projectId}/environments/${environmentId}/config/${config.id}/${config.labels?.last_workflow_run_id}/log/${podName}`;
 
-					const paramSet = {
-						environmentId: config?.labels?.environment_id || '',
-						projectId: config?.labels?.project_id || '',
-						configId: config?.id || '',
-						workflowId: config?.labels?.last_workflow_run_id,
-					};
+	// 				if (
+	// 					!clientLogMap.has(clientLogUrl) &&
+	// 					node.phase !== 'Succeeded' &&
+	// 					node.displayName !== 'approve' &&
+	// 					node.phase !== 'Failed'
+	// 				) {
+	// 					clientLogMap.set(clientLogUrl, new EventClientLogs(clientLogUrl));
+	// 				}
 
-					const clientLogUrl = `/wf/api/v1/stream/projects/${projectId}/environments/${environmentId}/config/${config.id}/${config.labels?.last_workflow_run_id}/log/${podName}`;
-
-					if (
-						!clientLogMap.has(clientLogUrl) &&
-						node.phase !== 'Succeeded' &&
-						node.displayName !== 'approve' &&
-						node.phase !== 'Failed'
-					) {
-						clientLogMap.set(clientLogUrl, new EventClientLogs(clientLogUrl));
-					}
-
-					return {
-						...node,
-						configStatus: config.componentStatus,
-						getZFeedbackModal: () => getZFeedbackModal(isApproved, needsApproval),
-						getS3Logs: async () =>
-							AuditService.getInstance()
-								[node.displayName.includes('apply') ? 'fetchApplyLogs' : 'fetchPlanLogs'](
-									separatedConfigId?.team || '',
-									separatedConfigId?.environment || '',
-									separatedConfigId?.component || '',
-									0,
-									true
-								)
-								.then(({ data }) => {
-									if (Array.isArray(data) && data.length > 0) {
-										return data[0].body;
-									}
-									return data;
-								}),
-						getNodeLogs: () => clientLogMap.get(clientLogUrl),
-					};
-				})
-		);
-		return () => {
-			[...clientLogMap.values()].forEach(o => {
-				o.close();
-			});
-			clientLogMap.clear();
-		};
-	}, [workflowData]);
+	// 				return {
+	// 					...node,
+	// 					configStatus: config.componentStatus,
+	// 					getZFeedbackModal: () => getZFeedbackModal(isApproved, needsApproval),
+	// 					getS3Logs: async () =>
+	// 						AuditService.getInstance()
+	// 							[node.displayName.includes('apply') ? 'fetchApplyLogs' : 'fetchPlanLogs'](
+	// 								separatedConfigId?.team || '',
+	// 								separatedConfigId?.environment || '',
+	// 								separatedConfigId?.component || '',
+	// 								0,
+	// 								true
+	// 							)
+	// 							.then(({ data }) => {
+	// 								if (Array.isArray(data) && data.length > 0) {
+	// 									return data[0].body;
+	// 								}
+	// 								return data;
+	// 							}),
+	// 					getNodeLogs: () => clientLogMap.get(clientLogUrl),
+	// 				};
+	// 			})
+	// 	);
+	// 	return () => {
+	// 		[...clientLogMap.values()].forEach(o => {
+	// 			o.close();
+	// 		});
+	// 		clientLogMap.clear();
+	// 	};
+	// }, [workflowData]);
 
 	const getComponentStatus = (config: EnvironmentComponentItem, teardown: string) => {
 		if (config.componentStatus === ZSyncStatus.Skipped) {
@@ -161,55 +152,55 @@ export const ConfigWorkflowView: FC<Props> = (props: Props) => {
 		}
 	};
 
-	const getZFeedbackModal = (isApproved: boolean, needsApproval: boolean) => {
-		if (!needsApproval) {
-			return <></>;
-		}
-		return (
-			<ZFeedbackModal
-				approved={isApproved}
-				onApprove={async () => {
-					fetchApprove({
-						projectId: projectId,
-						environmentId: environmentId,
-						configId: config.id,
-						workflowId: workflowData.metadata.name,
-						data: {
-							name: workflowData.metadata.name,
-							namespace: 'argocd',
-						},
-					}).then(resp => {
-						Promise.resolve(
-							CostingService.getInstance().setComponentStatus({
-								teamName: separatedConfigId?.team,
-								environmentName: separatedConfigId?.environment,
-								component: {
-									componentName: separatedConfigId?.component,
-									status: ZSyncStatus.InitializingApply,
-								},
-							})
-						);
-						Promise.resolve(AuditService.getInstance().patchApprovedBy(config.name));
-					});
-				}}
-				onDecline={() => {
-					fetchDecline({
-						projectId: projectId,
-						environmentId: environmentId,
-						configId: config.id,
-						workflowId: workflowData.metadata.name,
-						data: {
-							message: 'no message',
-							name: workflowData.id,
-							namespace: 'argocd',
-						},
-					}).then((d: any) => {
-						console.log('----------------------------------> decline', d);
-					});
-				}}
-			/>
-		);
-	};
+	// const getZFeedbackModal = (isApproved: boolean, needsApproval: boolean) => {
+	// 	if (!needsApproval) {
+	// 		return <></>;
+	// 	}
+	// 	return (
+	// 		<ZFeedbackModal
+	// 			approved={isApproved}
+	// 			onApprove={async () => {
+	// 				fetchApprove({
+	// 					projectId: projectId,
+	// 					environmentId: environmentId,
+	// 					configId: config.id,
+	// 					workflowId: workflowData.metadata.name,
+	// 					data: {
+	// 						name: workflowData.metadata.name,
+	// 						namespace: 'argocd',
+	// 					},
+	// 				}).then(resp => {
+	// 					Promise.resolve(
+	// 						CostingService.getInstance().setComponentStatus({
+	// 							teamName: separatedConfigId?.team,
+	// 							environmentName: separatedConfigId?.environment,
+	// 							component: {
+	// 								componentName: separatedConfigId?.component,
+	// 								status: ZSyncStatus.InitializingApply,
+	// 							},
+	// 						})
+	// 					);
+	// 					Promise.resolve(AuditService.getInstance().patchApprovedBy(config.name));
+	// 				});
+	// 			}}
+	// 			onDecline={() => {
+	// 				fetchDecline({
+	// 					projectId: projectId,
+	// 					environmentId: environmentId,
+	// 					configId: config.id,
+	// 					workflowId: workflowData.metadata.name,
+	// 					data: {
+	// 						message: 'no message',
+	// 						name: workflowData.id,
+	// 						namespace: 'argocd',
+	// 					},
+	// 				}).then((d: any) => {
+	// 					console.log('----------------------------------> decline', d);
+	// 				});
+	// 			}}
+	// 		/>
+	// 	);
+	// };
 
 	const getView = () => {
 		switch (viewType) {
@@ -230,14 +221,15 @@ export const ConfigWorkflowView: FC<Props> = (props: Props) => {
 			case ViewType.Audit_View:
 				return (
 					<AuditView
-						auditId={config.id || ''}
+						auditId={config.id}
 						auditColumns={auditColumns}
 						config={config}
 						fetch={AuditService.getInstance().getComponent.bind(
-							AuditService.getInstance(),							
-							separatedConfigId?.component || '',
-							separatedConfigId?.environment || '',
-							separatedConfigId?.team || '',
+							AuditService.getInstance(),
+							config.id,
+							config.envId,
+							config.teamId,
+							config.argoId
 						)}
 						fetchLogs={AuditService.getInstance().fetchLogs.bind(
 							AuditService.getInstance(),
@@ -292,10 +284,10 @@ export const ConfigWorkflowView: FC<Props> = (props: Props) => {
 				<div className="zlifecycle-config-workflow-view__config-info">
 					<div className="zlifecycle-config-workflow-view__header">
 						<p className="heading">
-							<span>{config.componentName}</span>
+							<span>{config.name}</span>
 						</p>
 					</div>
-					<ConfigWorkflowLeftView config={config} configLabels={config.labels} />
+					<ConfigWorkflowLeftView config={config} />
 				</div>
 				{
 					<div className="zlifecycle-config-workflow-view__diagram">
