@@ -139,7 +139,7 @@ function UpdateComponentWfRunId() {
   local compName="${3}"
   local wfRunId="${4}"
 
-  local payload='{ "lastWorkflowRunId" : '${wfRunId}' }'
+  local payload='{ "lastWorkflowRunId" : "'${wfRunId}'" }'
   
   echo "Running UpdateComponentWfRunId ${wfRunId} : ${payload}"
   echo $payload >tmp_comp_wf_runid.json
