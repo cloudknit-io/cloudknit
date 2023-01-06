@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   Body,
-  ConsoleLogger,
   Controller,
   Get,
   InternalServerErrorException,
@@ -12,22 +11,17 @@ import {
   Query,
   Req,
   Request,
-  Sse,
 } from "@nestjs/common";
-import { from, Observable } from "rxjs";
-import { map } from "rxjs/operators";
 import { ComponentService } from "src/component/component.service";
-import { Mapper } from "src/costing/utilities/mapper";
 import { EnvironmentService } from "src/environment/environment.service";
 import { TeamService } from "src/team/team.service";
 import { ComponentReconcile, EnvironmentReconcile } from "src/typeorm";
 import { APIRequest } from "src/types";
 import { handleSqlErrors } from "src/utilities/errorHandler";
-import { ApprovedByDto, ComponentAudit } from "./dtos/componentAudit.dto";
-import { EnvironmentAudit } from "./dtos/environmentAudit.dto";
+import { ApprovedByDto } from "./dtos/componentAudit.dto";
 import { CreateComponentReconciliationDto, CreateEnvironmentReconciliationDto, UpdateComponentReconciliationDto, UpdateEnvironmentReconciliationDto } from "./dtos/reconciliation.dto";
 import { ReconciliationService } from "./reconciliation.service";
-import { RequiredQueryValidationPipe, TeamEnvCompQueryParams, TeamEnvQueryParams } from "./validationPipes";
+import { RequiredQueryValidationPipe, TeamEnvCompQueryParams } from "./validationPipes";
 
 
 @Controller({

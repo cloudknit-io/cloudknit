@@ -3,7 +3,6 @@ import { ConfigModule } from "@nestjs/config";
 import { RouterModule } from "@nestjs/core";
 import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { AuthModule } from "./auth/auth.module";
-import { CostingModule } from "./costing/costing.module";
 import { OrganizationModule } from "./organization/organization.module";
 import { RootOrganizationsModule } from "./root-organization/root.organization.module";
 import { ReconciliationModule } from "./reconciliation/reconciliation.module";
@@ -47,7 +46,6 @@ const typeOrmModuleOptions: TypeOrmModuleOptions = {
     SystemModule,
     RootOrganizationsModule,
     OrganizationModule,
-    CostingModule,
     ReconciliationModule,
     SecretsModule,
     AuthModule,
