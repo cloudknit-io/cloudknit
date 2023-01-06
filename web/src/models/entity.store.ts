@@ -167,6 +167,7 @@ export type Component = {
 	costResources: any;
 	dependsOn: string[];
 	envId: number;
+	lastWorkflowRunId: string;
 };
 
 export type Update = {

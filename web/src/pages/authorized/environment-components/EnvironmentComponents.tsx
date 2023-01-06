@@ -427,13 +427,13 @@ export const EnvironmentComponents: React.FC = () => {
 		const selectedConfig = components.find(c => c.name === configName);
 		// componentArrayRef.current.find(config => config.componentName === configName);
 		if (selectedConfig) {
-			// let workflowId = selectedConfig.labels?.last_workflow_run_id || '';
-			// if (!selectedConfig.labels?.last_workflow_run_id) {
-			// 	workflowId = 'initializing';
-			// }
+			let workflowId = selectedConfig.lastWorkflowRunId;
+			if (!workflowId) {
+				workflowId = 'initializing';
+			}
 			setSelectedConfig(selectedConfig);
 			setShowSidePanel(true);
-			// setWorkflowId(workflowId);
+			setWorkflowId(workflowId);
 		}
 	};
 
@@ -471,33 +471,33 @@ export const EnvironmentComponents: React.FC = () => {
 				setIsLoadingWorkflow(false);
 				setWorkflowData(null);
 			} else {
-				getWorkflowData(workflowId, selectedConfig?.name || '');
+				getWorkflowData(workflowId, selectedConfig?.argoId || '');
 			}
 		}
 	}, [workflowId]);
 
 	const getWorkflowData = (workflowId: string, configId: string) => {
-		// setLogs(null);
-		// setPlans(null);
-		// setIsLoadingWorkflow(true);
-		// fetchWorkflowData({
-		// 	projectId: projectId,
-		// 	environmentId: environmentId,
-		// 	configId: configId,
-		// 	workflowId: workflowId,
-		// }).then(({ data }) => {
-		// 	setIsLoadingWorkflow(false);
-		// 	setWorkflowData(data);
-		// 	const configParamsSet: ConfigParamsSet = {
-		// 		projectId,
-		// 		environmentId,
-		// 		configId: configId,
-		// 		workflowId: workflowId,
-		// 	};
-		// 	ArgoStreamService.streamWF(configParamsSet);
-		// 	getWorkflowLogs(configParamsSet, fetchWorkflowData, setPlans, setLogs);
-		// });
-		// return;
+		setLogs(null);
+		setPlans(null);
+		setIsLoadingWorkflow(true);
+		fetchWorkflowData({
+			projectId: projectId,
+			environmentId: environmentName,
+			configId: configId,
+			workflowId: workflowId,
+		}).then(({ data }) => {
+			setIsLoadingWorkflow(false);
+			setWorkflowData(data);
+			const configParamsSet: ConfigParamsSet = {
+				projectId,
+				environmentId: environmentName,
+				configId: configId,
+				workflowId: workflowId,
+			};
+			ArgoStreamService.streamWF(configParamsSet);
+			getWorkflowLogs(configParamsSet, fetchWorkflowData, setPlans, setLogs);
+		});
+		return;
 	};
 
 	const renderItems = (): any => {
