@@ -48,6 +48,12 @@ export class Component {
   duration: number;
 
   @Column({
+    default: null,
+    nullable: true
+  })
+  lastWorkflowRunId: number;
+
+  @Column({
     default: false,
     type: 'boolean'
   })

@@ -122,9 +122,29 @@ function UpdateComponentStatus() {
   local payload='{ "status" : "'${compStatus}'" }'
   
   echo "Running UpdateComponentStatus ${compStatus} : ${payload}"
-  echo $payload >temp_payload.json
+  echo $payload >tmp_comp_status.json
 
-  curl -X 'PUT' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/teams/${teamName}/environments/${envName}/components/${compName}" -H 'accept: */*' -H 'Content-Type: application/json' -d @temp_payload.json
+  curl -X 'PUT' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/teams/${teamName}/environments/${envName}/components/${compName}" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_comp_status.json
+}
+
+# Saves or updates a component
+#   Args:
+#     $1 - env name (required)
+#     $2 - team name (required)
+#     $3 - component name (required)
+#     $4 - workflow run id (required)
+function UpdateComponentWfRunId() {
+  local envName="${1}"
+  local teamName="${2}"
+  local compName="${3}"
+  local wfRunId="${4}"
+
+  local payload='{ "lastWorkflowRunId" : '${wfRunId}' }'
+  
+  echo "Running UpdateComponentWfRunId ${wfRunId} : ${payload}"
+  echo $payload >tmp_comp_wf_runid.json
+
+  curl -X 'PUT' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/teams/${teamName}/environments/${envName}/components/${compName}" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_comp_wf_runid.json
 }
 
 # Saves or updates a component
