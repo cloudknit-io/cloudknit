@@ -3,6 +3,7 @@ import { EnvironmentService } from './environment.service';
 import { UpdateEnvironmentDto } from './dto/update-environment.dto';
 import { ComponentService } from 'src/costing/services/component.service';
 import { APIRequest } from 'src/types';
+import { ReconciliationService } from 'src/reconciliation/reconciliation.service';
 
 @Controller({
   version: '1'
@@ -10,7 +11,8 @@ import { APIRequest } from 'src/types';
 export class EnvironmentController {
   constructor(
     private readonly envSvc: EnvironmentService,
-    private readonly compSvc: ComponentService
+    private readonly compSvc: ComponentService,
+    private readonly reconSvc: ReconciliationService
     ) {}
 
   @Get()
@@ -49,5 +51,12 @@ export class EnvironmentController {
     const { org, env } = req;
 
     return this.envSvc.remove(org, env.id);
+  }
+
+  @Get('audit')
+  async getAudits(@Request() req: APIRequest) {
+    const { org, env } = req;
+
+    return this.reconSvc.getEnvironmentAuditList(org, env);
   }
 }

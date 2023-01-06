@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable, Logger, NestMiddleware } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable, Logger, NestMiddleware } from '@nestjs/common';
 import { Response, NextFunction } from 'express';
 import { EnvironmentService } from 'src/environment/environment.service';
 import { APIRequest } from 'src/types';
@@ -36,8 +36,8 @@ export class EnvironmentMiddleware implements NestMiddleware {
     }
 
     if (!env) {
-      this.logger.error({ message: 'bad environmentId', envId});
-      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+      this.logger.error({ message: 'bad environmentId', envId });
+      throw new BadRequestException('environment not found');
     }
 
     req.env = env;

@@ -220,18 +220,6 @@ export class ReconciliationController {
     return await this.reconSvc.getCompReconByName(org, env, tec.compName);
   }
 
-  @Get("audit/components")
-  async getComponents(@Request() req, @Query(new RequiredQueryValidationPipe()) tec: TeamEnvCompQueryParams): Promise<ComponentAudit[]> {
-    const {org, team} = req;
-    return await this.reconSvc.getComponentAuditList(org, team, tec.compName, tec.envName);
-  }
-
-  @Get("audit/environments")
-  async getEnvironments(@Request() req, @Query(new RequiredQueryValidationPipe()) te: TeamEnvQueryParams): Promise<EnvironmentAudit[]> {
-    const {org, team} = req;
-    return await this.reconSvc.getEnvironmentAuditList(org, team, te.envName);
-  }
-
   @Get("component/logs/:team/:environment/:component/:id")
   async getLogs(
     @Request() req,

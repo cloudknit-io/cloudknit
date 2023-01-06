@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Param, Post, Put, Request } from '@nestjs/common';
+import { ReconciliationService } from 'src/reconciliation/reconciliation.service';
 import { Component, Environment, Organization } from 'src/typeorm';
 import { APIRequest } from 'src/types';
 import { ComponentService } from './component.service';
@@ -8,7 +9,10 @@ import { UpdateComponentDto } from './dto/update-component.dto';
   version: '1'
 })
 export class ComponentController {
-  constructor(private readonly compSvc: ComponentService) {}
+  constructor(
+    private readonly compSvc: ComponentService,
+    private readonly reconSvc: ReconciliationService
+  ) {}
 
   @Get()
   async findAll(@Request() req): Promise<Component[]> {
@@ -47,5 +51,13 @@ export class ComponentController {
     }
 
     return comp;
+  }
+
+  @Get(':id/audit')
+  async getAudits(@Request() req: APIRequest, @Param('id') id: string) {
+    const { org, env } = req;
+    const comp = await this.getCompFromRequest(org, env, id);
+
+    return this.reconSvc.getComponentAuditList(org, env, comp);
   }
 }
