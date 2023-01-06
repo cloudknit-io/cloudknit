@@ -51,7 +51,7 @@ export class Component {
     default: null,
     nullable: true
   })
-  lastWorkflowRunId: number;
+  lastWorkflowRunId: string;
 
   @Column({
     default: false,
