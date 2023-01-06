@@ -1,7 +1,6 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Request, Sse } from '@nestjs/common';
+import { Controller, Get, Body, Patch, Delete, Request } from '@nestjs/common';
 import { EnvironmentService } from './environment.service';
 import { UpdateEnvironmentDto } from './dto/update-environment.dto';
-import { ComponentService } from 'src/costing/services/component.service';
 import { APIRequest } from 'src/types';
 import { ReconciliationService } from 'src/reconciliation/reconciliation.service';
 
@@ -11,16 +10,12 @@ import { ReconciliationService } from 'src/reconciliation/reconciliation.service
 export class EnvironmentController {
   constructor(
     private readonly envSvc: EnvironmentService,
-    private readonly compSvc: ComponentService,
     private readonly reconSvc: ReconciliationService
     ) {}
 
   @Get()
   async findOne(@Request() req) {
     const {org, team, env} = req;
-
-    // TODO : Cost?
-    // this.compSvc.getAllForEnvironmentById(org, env);
 
     return this.envSvc.findById(org, env.id);
   }
@@ -30,13 +25,6 @@ export class EnvironmentController {
     const { env } = req;
 
     return env.dag;
-  }
-
-  @Get('cost')
-  async getCost(@Request() req: APIRequest) {
-    const {org, team, env} = req;
-    
-    return this.compSvc.getEnvironmentCost(org, team, env.name);
   }
 
   @Patch()

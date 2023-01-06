@@ -6,4 +6,5 @@ export class UpdateEnvironmentDto extends PartialType(CreateEnvironmentDto) {
   status?: string;
   duration?: number;
   isDeleted?: boolean;
+  estimatedCost?: number;
 }
