@@ -94,7 +94,8 @@ export const EnvironmentComponents: React.FC = () => {
 	const [workflowId, setWorkflowId] = useState<string>('');
 	const [viewType, setViewType] = useState<string>(showAll ? '' : 'DAG');
 	const [isEnvironmentNodeSelected, setEnvironmentNodeSelected] = useState<boolean>(false);
-	const componentArrayRef = useRef<EnvironmentComponentItem[]>([]);
+	const componentArrayRef = useRef<Component[]>([]);
+	const selectedComponentRef = useRef<Component>();
 	const [envErrors, setEnvErrors] = useState<any[]>();
 	const ctx = useContext(Context);
 
@@ -182,7 +183,9 @@ export const EnvironmentComponents: React.FC = () => {
 
 		const sub = entityStore.emitterComp.subscribe((components: Component[]) => {
 			if (components.length === 0 || components[0].envId !== environment.id) return;
-			setComponents(components);
+			componentArrayRef.current = components;
+			setComponents(componentArrayRef.current);
+			resetSelectedConfig(componentArrayRef.current);
 			setLoading(false);
 		});
 		Promise.resolve(entityStore.getComponents(environment.teamId, environment.id));
@@ -301,9 +304,9 @@ export const EnvironmentComponents: React.FC = () => {
 		}
 	}, [showSidePanel]);
 
-	useEffect(() => {
-		// resetSelectedConfig(componentArrayRef.current);
-	}, [components]);
+	// useEffect(() => {
+	// 	resetSelectedConfig(componentArrayRef.current);
+	// }, [components]);
 
 	// const setUpComponentStreams = (newComponents: EnvironmentComponentsList) => {
 	// 	return newComponents.map(e => {
@@ -424,14 +427,14 @@ export const EnvironmentComponents: React.FC = () => {
 			return;
 		}
 		setEnvironmentNodeSelected(false);
-		const selectedConfig = components.find(c => c.name === configName);
-		// componentArrayRef.current.find(config => config.componentName === configName);
+		const selectedConfig = componentArrayRef.current.find(c => c.name === configName);
 		if (selectedConfig) {
 			let workflowId = selectedConfig.lastWorkflowRunId;
 			if (!workflowId) {
 				workflowId = 'initializing';
 			}
-			setSelectedConfig(selectedConfig);
+			selectedComponentRef.current = selectedConfig;
+			setSelectedConfig(selectedComponentRef.current);
 			setShowSidePanel(true);
 			setWorkflowId(workflowId);
 		}
@@ -453,14 +456,13 @@ export const EnvironmentComponents: React.FC = () => {
 		// });
 	};
 
-	const resetSelectedConfig = (ref: any) => {
-		// const selectedConf = ref.find((itm: any) => itm.id === selectedConfig?.id);
-		// if (selectedConf) {
-		// 	setSelectedConfig(selectedConf);
-		// 	if (selectedConf.labels?.last_workflow_run_id !== workflowId) {
-		// 		setWorkflowId(selectedConf.labels?.last_workflow_run_id || '');
-		// 	}
-		// }
+	const resetSelectedConfig = (components: Component[]) => {
+		const selectedConf = components.find((itm: any) => itm.id === selectedComponentRef.current?.id);
+		if (selectedConf) {
+			selectedComponentRef.current = selectedConf;
+			setSelectedConfig(selectedComponentRef.current);
+			setWorkflowId(selectedComponentRef.current.lastWorkflowRunId);
+		}
 	};
 
 	useEffect(() => {
