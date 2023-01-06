@@ -165,15 +165,32 @@ export const EnvironmentComponents: React.FC = () => {
 
 	useEffect(() => {
 		if (!projectId || !environmentName) return;
-		entityStore.emitter.subscribe(data => {
-			if (data.length === 0) return;
-			const env = entityStore.getEnvironment(projectId, environmentName);
+		const subs: any[] = []
+		subs.push(entityStore.emitter.subscribe(async data => {
+			if (data.environments.length === 0) return;
+			const env = entityStore.getEnvironmentByName(projectId, environmentName);
 			if (!env) return;
 			setEnvironment(env);
-			setComponents(env.dag);
-			setLoading(false);
-		})
+		}));
+		return () => {
+			subs.forEach(sub => sub.unsubscribe());
+		}
 	}, [projectId, environmentName]);
+
+	useEffect(() => {
+		if (!environment?.id) return;
+
+		const sub = entityStore.emitterComp.subscribe((components: Component[]) => {
+			if (components.length === 0 || components[0].envId !== environment.id) return;
+			setComponents(components);
+			setLoading(false);
+		});
+		Promise.resolve(entityStore.getComponents(environment.teamId, environment.id));
+
+		return () => {
+			sub.unsubscribe();
+		}
+	}, [environment?.id]);
 
 	// useEffect(() => {
 	// 	const newEnvironments = streamMapper<EnvironmentItem>(
@@ -492,14 +509,14 @@ export const EnvironmentComponents: React.FC = () => {
 					</div>
 				);
 			case 'DAG':
-					return (
+					return components.length > 0 ? (
 						<TreeComponent
 							environmentId={environmentName}
 							nodes={components}
 							environmentItem={environment}
 							onNodeClick={onNodeClick}
 						/>
-					);
+					) : <></>;
 			default:
 				return (
 					<EnvironmentComponentCards

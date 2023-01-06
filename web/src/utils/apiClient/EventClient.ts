@@ -230,10 +230,15 @@ export class EventClientLogs {
 
 export class EventClient<T> {
 	private publisher: Subject<T> = new Subject<T>();
-	private eventSource: EventSource;
+	private eventSource: any;
+	private listenerType = '';
+	private handler = (event: MessageEvent): void => {
+		this.publisher.next(JSON.parse(event.data) as T);
+	};
 	
-	constructor(url: string) {
+	constructor(url: string, listenerType: string = '') {
 		this.eventSource = new EventSource(baseUrl + url, { withCredentials: true });
+		this.listenerType = listenerType;
 	}
 	
 
@@ -241,10 +246,14 @@ export class EventClient<T> {
 		this.eventSource.onopen = (): void => {
 			return;
 		};
-		this.eventSource.onmessage = (event: MessageEvent): void => {
-			this.publisher.next(JSON.parse(event.data) as T);
-		};
-		this.eventSource.onerror = (err): void => {
+		
+		if (this.listenerType) {
+			this.eventSource.addEventListener(this.listenerType, this.handler); 
+		} else {
+			this.eventSource.onmessage = this.handler;
+		}
+		
+		this.eventSource.onerror = (err: any): void => {
 			console.log(err);
 			return;
 		};
@@ -254,6 +263,7 @@ export class EventClient<T> {
 
 	close(): void {
 		this.eventSource.close();
+		this.listenerType && this.eventSource.removeEventListener(this.listenerType, this.handler);
 		this.publisher.unsubscribe();
 	}
 }

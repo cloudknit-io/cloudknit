@@ -6,6 +6,7 @@ import { HealthStatusCode, SyncStatusCode, SyncStatuses } from 'models/argo.mode
 import { EntityStore, Team } from 'models/entity.store';
 import { TeamItem, TeamsList } from 'models/projects.models';
 import React, { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { ArgoTeamsService } from 'services/argo/ArgoProjects.service';
 
 import { usePageHeader } from '../contexts/EnvironmentHeaderContext';
@@ -13,6 +14,7 @@ import { getCheckBoxFilters, renderHealthStatusItems, renderSyncStatusItems } fr
 import { teamTableColumns } from './helpers';
 
 export const Teams: React.FC = () => {
+	const entityStore = useMemo(() => EntityStore.getInstance(), []);
 	const { pageHeaderObservable, breadcrumbObservable } = usePageHeader();
 	const [loading, setLoading] = useState<boolean>(true);
 	const [query, setQuery] = useState<string>('');
@@ -35,7 +37,8 @@ export const Teams: React.FC = () => {
 	// }, [fetchTeams]);
 
 	useEffect(() => {
-		const subscription = EntityStore.getInstance().emitter.subscribe((teams) => {
+		const subscription = entityStore.emitter.subscribe((update) => {
+			const teams = update.teams;
 			if (teams.length === 0) return;
 			setTeams(teams);
 			setLoading(false);

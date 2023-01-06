@@ -16,7 +16,7 @@ import { streamMapper } from 'helpers/streamMapper';
 import { ArgoMapper } from 'services/argo/ArgoMapper';
 import { Loader } from 'components/atoms/loader/Loader';
 import AuthStore from 'auth/AuthStore';
-import { Environment, Team } from 'models/entity.store';
+import { EntityStore, Environment, Team } from 'models/entity.store';
 
 type Props = {
 	teams: Team[];
@@ -26,43 +26,44 @@ type TeamItemProps = {
 	team: Team;
 };
 
-const getEnvironmentStatus = (team: Team) => {
+const getEnvironmentStatus = (envs: Environment[]) => {
 	const envLimit = 3;
 	return (
 		<div className="environment-status">
-			{team.environments?.length > 0 ? (
+			{envs?.length > 0 ? (
 				<>
 					<div className="environment-status__preview">
-						{team.environments?.slice(0, envLimit).map(resource => (
+						{envs?.slice(0, envLimit).map(resource => (
 							<div>
 								<b title={resource.name}>
 									{resource.name}
 								</b>
-								{renderEnvSyncedStatus('Unknown')}
+								{renderEnvSyncedStatus(resource.status as ZSyncStatus)}
 							</div>
 						))}
-						{team.environments.length > envLimit && <div>More...</div>}
+						{envs.length > envLimit && <div>More...</div>}
 					</div>
-					{team.environments.length > envLimit && (
+					{envs.length > envLimit && (
 						<div className="environment-status__tooltip">
-							{team.environments.map(resource => (
+							{envs.map(resource => (
 								<div>
-									<b title={resource.name.replace(`${team.id}-`, '')}>
-										{resource.name.replace(`${team.id}-`, '')}
+									<b title={resource.name}>
+										{resource.name}
 									</b>
-									{renderEnvSyncedStatus('Unknown')}
+									{renderEnvSyncedStatus(resource.status as ZSyncStatus)}
 								</div>
 							))}
 						</div>
 					)}
 				</>
 			) : (
-				<>{team.environments?.length ? <Loader height={16} width={16} /> : <></>}</>
+				<>{envs?.length ? <Loader height={16} width={16} /> : <></>}</>
 			)}
 		</div>
 	);
 };
 const items = (team: Team): ListItem[] => {
+	const envs = EntityStore.getInstance().getAllEnvironmentsByTeamId(team.id);
 	return [
 		{
 			label: 'Cost',
@@ -70,8 +71,8 @@ const items = (team: Team): ListItem[] => {
 			value: -1,
 		},
 		{
-			label: `Envs (${team.environments?.length || 0})`,
-			value: getEnvironmentStatus(team),
+			label: `Envs (${envs.length})`,
+			value: getEnvironmentStatus(envs),
 		},
 	];
 };

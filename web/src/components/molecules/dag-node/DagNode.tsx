@@ -61,44 +61,23 @@ export const ZDagNode: FC<DagNodeProps> = ({
 	const rectWidth = width + 100 > 160 ? width + 100 : 160;
 	const envName = (id: string, teamName: string) => id.replace(teamName + '-', '');
 
-	// useEffect(() => {
-	// 	let $subscription: Subscription[] = [];
-	// 	if (id === 'root') {
-	// 		getEnvironment(envName(name, projectId), projectId)
-	// 			.then(env => setSyncTime(env['lastReconcileDatetime']))
-	// 			.catch(e => setSyncTime(syncFinishedAt));
-	// 		$subscription.push(
-	// 			CostingService.getInstance()
-	// 				.getEnvironmentCostStream(projectId, envName(name, projectId))
-	// 				.subscribe(data => {
-	// 					updateCost(data);
-	// 				})
-	// 		);
-	// 	} else {
-	// 		getLastReconcileTime(name, envName(labels.environment_id, labels.project_id), labels.project_id,  syncFinishedAt).then(r => setSyncTime(r));
-	// 	}
-	// 	$subscription.push(
-	// 		updater.pipe(debounceTime(1000)).subscribe(async (data: DagNodeProps) => {
-	// 			if (data.estimatedCost) {
-	// 				updateCost(Number(data.estimatedCost || 0))
-	// 			}
-	// 			setStatus(data.componentStatus);
-	// 			setSyncStatus(data.SyncStatus);
-	// 			setSkippedStatus(data.isSkipped);
-	// 			setOperationType(data.operation);
-	// 			if (id === 'root') {
-	// 				getEnvironment(envName(name, projectId), projectId)
-	// 					.then(env => setSyncTime(env['lastReconcileDatetime']))
-	// 					.catch(e => setSyncTime(syncFinishedAt));
-	// 			} else {
-	// 				const time = await getLastReconcileTime(name, envName(labels.environment_id, labels.project_id), labels.project_id, syncFinishedAt);
-	// 				setSyncTime(time);
-	// 			}
-	// 		})
-	// 	);
+	useEffect(() => {
+		let $subscription: Subscription[] = [];
+		$subscription.push(
+			updater.pipe(debounceTime(1000)).subscribe(async (data: DagNodeProps) => {
+				if (data.estimatedCost) {
+					updateCost(Number(data.estimatedCost || 0))
+				}
+				setStatus(data.componentStatus);
+				setSyncStatus(data.SyncStatus);
+				setSkippedStatus(data.isSkipped);
+				setOperationType(data.operation);
+				setSyncTime(data.syncFinishedAt)
+			})
+		);
 
-	// 	return () => $subscription.forEach(e => e.unsubscribe());
-	// }, []);
+		return () => $subscription.forEach(e => e.unsubscribe());
+	}, []);
 
 	return (
 		<g

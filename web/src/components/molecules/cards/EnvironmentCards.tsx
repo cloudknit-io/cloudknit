@@ -137,21 +137,21 @@ export const EnvironmentCard: FC<PropsEnvironmentItem> = ({
 			},
 		];
 
-		// if (environment.labels?.env_status) {
-		// 	gridItems.splice(2, 0, {
-		// 		label: 'Status',
-		// 		value: (
-		// 			<>
-		// 				{renderEnvSyncedStatus(
-		// 					environment.labels.env_status as ZSyncStatus,
-		// 					'',
-		// 					'',
-		// 					env.syncFinishedAt
-		// 				)}
-		// 			</>
-		// 		),
-		// 	});
-		// }
+		if (environment.status) {
+			gridItems.splice(2, 0, {
+				label: 'Status',
+				value: (
+					<>
+						{renderEnvSyncedStatus(
+							environment.status as ZSyncStatus,
+							'',
+							'',
+							env.lastReconcileDatetime.toString()
+						)}
+					</>
+				),
+			});
+		}
 
 		return gridItems;
 	};

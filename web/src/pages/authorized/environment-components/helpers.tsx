@@ -3,7 +3,8 @@ import { ReactComponent as MoreOptionsIcon } from 'assets/images/icons/more-opti
 import { TableColumn } from 'components/atoms/table/Table';
 import { CostRenderer, currency, renderHealthStatus, renderSyncedStatus } from 'components/molecules/cards/renderFunctions';
 import { ZStreamRenderer } from 'components/molecules/zasync-renderer/ZStreamRenderer';
-import { AuditStatus } from 'models/argo.models';
+import { AuditStatus, ZSyncStatus } from 'models/argo.models';
+import { Component } from 'models/entity.store';
 import { EnvironmentComponentItem } from 'models/projects.models';
 import moment from 'moment';
 import React from 'react';
@@ -40,9 +41,9 @@ export const renderSync = (data: any) => (
 	</div>
 );
 
-export const renderSyncStatus = (data: any) => (
+export const renderSyncStatus = (data: Component) => (
 	<div className="d-flex">
-		{renderSyncedStatus(data.componentStatus, data.operationPhase, data.runningStatus, '', data)}
+		{renderSyncedStatus(data.status as ZSyncStatus, '', '', '', data)}
 	</div>
 );
 

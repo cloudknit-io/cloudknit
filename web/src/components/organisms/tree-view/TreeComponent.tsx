@@ -142,9 +142,9 @@ export const TreeComponent: FC<Props> = ({ environmentId, nodes, onNodeClick, en
 				id: 'root',
 				shape: getShape('root'),
 				icon: <LayersIcon />,
-				syncStatus: 'Unknown',
+				syncStatus: environmentItem?.status,
 				syncFinishedAt: environmentItem?.lastReconcileDatetime,
-				componentStatus: 'Unknown',
+				componentStatus: environmentItem?.status,
 				onNodeClick,
 			},
 		];
@@ -163,9 +163,9 @@ export const TreeComponent: FC<Props> = ({ environmentId, nodes, onNodeClick, en
 					// ),
 				isSkipped: false,
 				estimatedCost: -1,
-				syncStatus: 'Unknown',
-				componentStatus: 'Unknown',
-				syncFinishedAt: Date.now().toLocaleString(),
+				syncStatus: item.status || 'Unknown',
+				componentStatus: item.status || 'Unknown',
+				syncFinishedAt: item.lastReconcileDatetime,
 				expandIcon: '',
 			}))
 		);
@@ -230,15 +230,15 @@ export const TreeComponent: FC<Props> = ({ environmentId, nodes, onNodeClick, en
 					<button
 						className="dag-controls-reconcile"
 						onClick={async (e: any) => {
-							// e.stopPropagation();
+							e.stopPropagation();
 							// if (environmentItem?.healthStatus !== 'Progressing')
-							// 	await syncMe(
-							// 		environmentItem as EnvironmentItem,
-							// 		syncStarted,
-							// 		setSyncStarted,
-							// 		nm as NotificationsApi,
-							// 		watcherStatus
-							// 	);
+								await syncMe(
+									environmentItem as Environment,
+									syncStarted,
+									setSyncStarted,
+									nm as NotificationsApi,
+									watcherStatus
+								);
 						}}>
 						<span
 							className={`tooltip ${

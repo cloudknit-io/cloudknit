@@ -370,6 +370,18 @@ const API_PATH_MAPPINGS = [
     path: "/api/teams/:teamId/environments",
     newPath: (params: any) => `v1/orgs/${params.orgId}/teams/${params.teamId}/environments`,
   },
+  {
+    path: "/api/teams/:teamId/environments/:envId/components",
+    newPath: (params: any) => `v1/orgs/${params.orgId}/teams/${params.teamId}/environments/${params.envId}/components`,
+  },
+  {
+    path: "/api/stream/components",
+    newPath: (params: any) => `v1/orgs/${params.orgId}/stream/components`,
+  },
+  {
+    path: "/api/stream/environments",
+    newPath: (params: any) => `v1/orgs/${params.orgId}/stream/environments`,
+  },
 ]
 
 // eslint-disable-next-line no-unused-vars

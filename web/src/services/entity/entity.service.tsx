@@ -1,8 +1,7 @@
-import { Environment, Team } from 'models/entity.store';
-import { Subject } from 'rxjs';
+import { Environment, Team, Component } from 'models/entity.store';
 import { BaseService } from 'services/base/base.service';
 import ApiClient from 'utils/apiClient';
-import { EventClientCost, subscriberCost } from 'utils/apiClient/EventClient';
+import { EventClient } from 'utils/apiClient/EventClient';
 
 export class EntityService extends BaseService {
 	private static instance: EntityService | null = null;
@@ -34,15 +33,39 @@ export class EntityService extends BaseService {
 		const url = this.constructUri(EntitytUriType.environments(teamId));
 		try {
 			const { data } = await ApiClient.get<Environment[]>(url);
-			return data.map(e => ({ ...e, teamId }));
+			return data;
 		} catch (err) {
 			console.error(err);
 			return [];
 		}
+	}
+
+	async getComponents(teamId: number, envId: number): Promise<Component[]> {
+		const url = this.constructUri(EntitytUriType.components(teamId, envId));
+		try {
+			const { data } = await ApiClient.get<Component[]>(url);
+			return data;
+		} catch (err) {
+			console.error(err);
+			return [];
+		}
+	}
+
+	streamComponents() {
+		const ec = new EventClient<Component>(this.constructUri(EntitytUriType.streamComponents()), 'Component');
+		return ec.listen();
+	}
+
+	streamEnvironments() {
+		const ec = new EventClient<Environment>(this.constructUri(EntitytUriType.streamEnvironments()), 'Environment');
+		return ec.listen();
 	}
 }
 
 class EntitytUriType {
 	static teams = () => `teams`;
 	static environments = (teamId: number) => `teams/${teamId}/environments`;
+	static components = (teamId: number, envId: number) => `teams/${teamId}/environments/${envId}/components`;
+	static streamEnvironments = () => `stream/environments?teamName=0&envName=0`;
+	static streamComponents = () => `stream/components?teamName=0&envName=0&compName=0`;
 }

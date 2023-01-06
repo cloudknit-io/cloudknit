@@ -13,6 +13,7 @@ import {
 import { MenuItem, ZDropdownMenuJSX } from 'components/molecules/dropdown-menu/DropdownMenu';
 import { ZStreamRenderer } from 'components/molecules/zasync-renderer/ZStreamRenderer';
 import { ApplicationCondition, HealthStatuses, OperationPhase, OperationPhases } from 'models/argo.models';
+import { Environment } from 'models/entity.store';
 import { EnvironmentItem } from 'models/projects.models';
 import React from 'react';
 import { ArgoComponentsService } from 'services/argo/ArgoComponents.service';
@@ -195,7 +196,7 @@ export const getEnvironmentErrorCondition = (conditions: ApplicationCondition[])
 };
 
 export const syncMe = async (
-	environment: EnvironmentItem,
+	environment: Environment,
 	syncStarted: any,
 	setSyncStarted: any,
 	notificationManager: NotificationsApi,
@@ -207,22 +208,22 @@ export const syncMe = async (
 	setSyncStarted(true);
 	try {
 		notificationManager.show({
-			content: `Reconciling ${environment.displayValue}`,
+			content: `Reconciling ${environment.name}`,
 			type: NotificationType.Success,
 		});
-		if (watcherStatus === OperationPhases.Failed) {
-			await hardSync(environment.labels?.project_id || '', environment.displayValue || '', notificationManager);
-			return;
-		}
-		await ArgoEnvironmentsService.deleteEnvironment(environment.id as string);
+		// if (watcherStatus === OperationPhases.Failed) {
+		// 	await hardSync(environment.labels?.project_id || '', environment.displayValue || '', notificationManager);
+		// 	return;
+		// }
+		await ArgoEnvironmentsService.deleteEnvironment(environment.argoId as string);
 		setTimeout(async () => {
-			await ArgoEnvironmentsService.syncEnvironment(environment.id as string);
+			await ArgoEnvironmentsService.syncEnvironment(environment.argoId as string);
 		}, 1500);
 	} catch (err) {
-		if ((err as any)?.message?.includes('not found') && environment.syncStatus === 'OutOfSync') {
-			await ArgoEnvironmentsService.syncEnvironment(environment.id as string);
-		}
-		console.log(err);
+		// if ((err as any)?.message?.includes('not found') && environment.syncStatus === 'OutOfSync') {
+		// 	await ArgoEnvironmentsService.syncEnvironment(environment.id as string);
+		// }
+		// console.log(err);
 	}
 };
 

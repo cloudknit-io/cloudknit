@@ -79,10 +79,10 @@ export const Environments: React.FC = () => {
 		const $subscription: Subscription[] = [];
 		$subscription.push(
 			entityStore.emitter.subscribe(data => {
-				if (data.length === 0) return;
-				setEnvironments(
-					projectId ? entityStore.getAllEnvironmentsByTeamName(projectId) : entityStore.Environments
-				);
+				if (data.environments.length === 0) return;
+				setEnvironments([
+					...(projectId ? entityStore.getAllEnvironmentsByTeamName(projectId) : entityStore.Environments),
+				]);
 				setLoading(false);
 			})
 		);

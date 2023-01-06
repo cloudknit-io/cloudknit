@@ -127,7 +127,7 @@ export function updateNodeFigure({
 		projectId,
 		onNodeClick,
 		estimatedCost,
-		operation: 'Provision',
+		operation: isDestroy ? 'Destroy' : 'Provision',
 		// operation: labels.env_status === 'destroying' || isDestroy ? 'Destroy' : 'Provision',
 		updater: props.updater,
 	});
@@ -207,7 +207,7 @@ function createNodeFigure({
 				onNodeClick={onNodeClick}
 				estimatedCost={estimatedCost}
 				labels={labels}
-				operation={'Provision'}
+				operation={isDestroy ? 'Destroy' : 'Provision'}
 				updater={updater}
 			/>
 		);
