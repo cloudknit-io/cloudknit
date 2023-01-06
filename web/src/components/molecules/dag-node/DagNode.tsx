@@ -47,9 +47,7 @@ export const ZDagNode: FC<DagNodeProps> = ({
 	updater,
 	labels,
 }: DagNodeProps) => {
-	const [cost, updateCost] = useState<number | null>(
-		id === 'root' ?
-		CostingService.getInstance().getCachedValue(name) : Number(estimatedCost || 0));
+	const [cost, updateCost] = useState<number>(Number(estimatedCost || 0));
 	const [syncTime, setSyncTime] = useState<any>(syncFinishedAt);
 	const [status, setStatus] = useState<ZSyncStatus>(componentStatus);
 	const [syncStatus, setSyncStatus] = useState<ZSyncStatus>(SyncStatus);

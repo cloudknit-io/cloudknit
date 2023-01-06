@@ -144,6 +144,7 @@ export type Environment = {
 	teamId: number;
     status: string;
     isDeleted: boolean;
+	estimatedCost: number;
 };
 
 export type DAG = {

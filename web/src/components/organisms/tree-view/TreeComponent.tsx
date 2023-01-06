@@ -146,6 +146,7 @@ export const TreeComponent: FC<Props> = ({ environmentId, nodes, onNodeClick, en
 				syncFinishedAt: environmentItem?.lastReconcileDatetime,
 				componentStatus: environmentItem?.status,
 				onNodeClick,
+				estimatedCost: environmentItem?.estimatedCost,
 			},
 		];
 		generatedNodes.push(

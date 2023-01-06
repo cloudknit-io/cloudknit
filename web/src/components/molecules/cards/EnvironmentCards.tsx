@@ -2,7 +2,7 @@ import './style.scss';
 
 import { ReactComponent as AWSIcon } from 'assets/images/icons/AWS.svg';
 import { ReactComponent as SyncIcon } from 'assets/images/icons/sync-icon.svg';
-import { renderEnvSyncedStatus } from 'components/molecules/cards/renderFunctions';
+import { CostRenderer, renderEnvSyncedStatus } from 'components/molecules/cards/renderFunctions';
 import { ZGridDisplayListWithLabel } from 'components/molecules/grid-display-list/GridDisplayList';
 import { ESyncStatus, OperationPhase, ZSyncStatus } from 'models/argo.models';
 import { ListItem } from 'models/general.models';
@@ -129,7 +129,7 @@ export const EnvironmentCard: FC<PropsEnvironmentItem> = ({
 			},
 			{
 				label: 'Cost',
-				value: -1,
+				value: <CostRenderer data={environment.estimatedCost} />,
 			},
 			{
 				label: 'Cloud',

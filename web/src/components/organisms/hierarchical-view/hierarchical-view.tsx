@@ -5,6 +5,7 @@ import { ZStreamRenderer } from 'components/molecules/zasync-renderer/ZStreamRen
 import React from 'react';
 import { FC } from 'react';
 import { CostingService } from 'services/costing/costing.service';
+import { Component } from 'models/entity.store';
 
 type ResourceProps = {
 	resource: Resource;
@@ -26,7 +27,11 @@ type Resource = {
 	costComponents: [];
 };
 
-export const HierarchicalView: FC<any> = ({ data, componentId }: any) => {
+export type Props = {
+	data: Component
+}
+
+export const HierarchicalView: FC<Props> = ({ data }) => {
 	return (
 		<>
 			{data?.costResources?.length > 0 ? (
@@ -58,7 +63,7 @@ export const HierarchicalView: FC<any> = ({ data, componentId }: any) => {
 						</li>
 						<li>
 							<span>
-								<CostRenderer data={data.componentCost} />
+								<CostRenderer data={data.estimatedCost} />
 							</span>
 						</li>
 					</ul>

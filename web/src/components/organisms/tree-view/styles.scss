@@ -201,6 +201,10 @@
 		&--destroyed {
 			fill: #ddd;
 		}
+
+		&--initializing {
+			fill: $dag-initializing;
+		}
 	}
 
 	&__pod {

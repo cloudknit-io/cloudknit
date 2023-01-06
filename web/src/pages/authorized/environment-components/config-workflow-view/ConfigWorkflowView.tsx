@@ -208,7 +208,7 @@ export const ConfigWorkflowView: FC<Props> = (props: Props) => {
 			case ViewType.Detailed_Cost_Breakdown:
 				return (
 					<div className="zlifecycle-config-workflow-view__diagram--detailed-cost-breakdown">
-						{config.id && <HierarchicalView data={config} componentId={config.id} />}
+						{config.id && <HierarchicalView data={config} />}
 					</div>
 				);
 			case ViewType.Audit_View:
