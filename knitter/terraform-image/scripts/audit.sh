@@ -127,11 +127,13 @@ if [ $config_name -eq 0 ]; then # environment recon
         payload='{"name": "'${env_name}'", "teamName": "'${team_name}'", "startDateTime": "'${start_date}'"}'
         echo ${payload} >tmp_new_env_recon.json
 
+	echo "PAYLOAD: $payload"
         result=$(curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/environment" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_new_env_recon.json)
     else # update env reconcile
         payload='{"status": "'${status}'", "teamName": "'${team_name}'", "endDateTime": "'${end_date}'"}'
         echo ${payload} >tmp_update_env_recon.json
 
+	echo "PAYLOAD: $payload"
         result=$(curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/environment/${reconcile_id}" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_update_env_recon.json)
     fi
 else # component recon
@@ -139,11 +141,13 @@ else # component recon
         payload='{"name": "'${config_name}'", "startDateTime": "'${start_date}'", "envReconcileId": "'${reconcile_id}'"}'
         echo ${payload} >tmp_new_comp_recon.json
 
+	echo "PAYLOAD: $payload"
         result=$(curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/component" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_new_comp_recon.json)
     else # update comp reconcile
         payload='{"status": "'${status}'", "endDateTime": "'${end_date}'"}'
         echo ${payload} >tmp_update_comp_recon.json
 
+	echo "PAYLOAD: $payload"
         result=$(curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/component/${config_reconcile_id}" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_update_comp_recon.json)
     fi
 fi
