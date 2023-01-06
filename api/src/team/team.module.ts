@@ -3,7 +3,6 @@ import { TeamService } from './team.service';
 import { TeamController } from './team.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Component, Environment, Team } from 'src/typeorm';
-import { ComponentService } from 'src/costing/services/component.service';
 import { EnvironmentService } from 'src/environment/environment.service';
 import { TeamMiddleware } from 'src/middleware/team.middle';
 
@@ -18,7 +17,6 @@ import { TeamMiddleware } from 'src/middleware/team.middle';
   controllers: [TeamController],
   providers: [
     TeamService,
-    ComponentService,
     EnvironmentService
   ]
 })

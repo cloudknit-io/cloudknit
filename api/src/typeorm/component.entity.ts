@@ -1,7 +1,7 @@
-import { CostResource } from 'src/costing/dtos/Resource.dto';
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, RelationId, UpdateDateColumn } from 'typeorm';
 import { Organization } from './Organization.entity';
 import { Environment } from './environment.entity';
+import { CostResource } from 'src/component/dto/update-component.dto';
 
 @Entity({ name: 'components' })
 @Index(['organization', 'environment', 'name'], { unique: true })

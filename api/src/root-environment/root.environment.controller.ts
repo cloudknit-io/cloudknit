@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Request, BadRequestException, Logger, InternalServerErrorException } from '@nestjs/common';
-import { ComponentService } from 'src/costing/services/component.service';
+import { ComponentService } from 'src/component/component.service';
 import { CreateEnvironmentDto } from 'src/environment/dto/create-environment.dto';
 import { EnvSpecComponentDto, EnvSpecDto } from 'src/environment/dto/env-spec.dto';
 import { EnvironmentService } from 'src/environment/environment.service';

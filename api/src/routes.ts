@@ -1,6 +1,5 @@
 import { Routes } from "@nestjs/core";
 import { AuthModule } from "./auth/auth.module";
-import { CostingModule } from "./costing/costing.module";
 import { OrganizationModule } from "./organization/organization.module";
 import { RootOrganizationsModule } from "./root-organization/root.organization.module";
 import { ReconciliationModule } from "./reconciliation/reconciliation.module";
@@ -73,10 +72,6 @@ export const appRoutes: Routes = [
                             module: ComponentModule
                           }
                         ]
-                      },
-                      {
-                        path: 'costing',
-                        module: CostingModule
                       }
                     ]
                   },

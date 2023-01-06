@@ -3,9 +3,9 @@ import { RootEnvironmentService } from './root.environment.service';
 import { RootEnvironmentController } from './root.environment.controller';
 import { Component, Environment, Team } from 'src/typeorm';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ComponentService } from 'src/costing/services/component.service';
 import { EnvironmentService } from 'src/environment/environment.service';
 import { TeamService } from 'src/team/team.service';
+import { ComponentService } from 'src/component/component.service';
 
 @Module({
   imports: [
