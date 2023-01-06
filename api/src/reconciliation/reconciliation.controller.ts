@@ -148,7 +148,7 @@ export class ReconciliationController {
     }
 
     try {
-      const skippedEntries = await this.reconSvc.getSkippedComponents(org, envRecon.environment, [compRecon.reconcileId])
+      const skippedEntries = await this.reconSvc.getSkippedComponents(org, envRecon.environment, body.name, [compRecon.reconcileId])
       await this.reconSvc.bulkUpdateComponentEntries(skippedEntries, 'skipped_reconcile');
     } catch (err) {
       this.logger.error('could not update skipped component reconciles', err);
@@ -295,11 +295,4 @@ export class ReconciliationController {
     //   latest === "true"
     // );
   }
-}
-
-export interface MessageEvent {
-  data: string | object;
-  id?: string;
-  type?: string;
-  retry?: number;
 }

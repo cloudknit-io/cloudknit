@@ -160,9 +160,10 @@ export class ReconciliationService {
     })
   }
 
-  async getSkippedComponents(org: Organization, env: Environment, ignoreReconcileIds: number[]) {
+  async getSkippedComponents(org: Organization, env: Environment, compName: string, ignoreReconcileIds: number[]) {
     return await this.compReconRepo.find({
       where: {
+        name: Equal(compName),
         endDateTime: IsNull(),
         status: Not(Equal('skipped_reconcile')),
         reconcileId: Not(In(ignoreReconcileIds)),

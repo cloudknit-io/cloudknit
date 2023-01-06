@@ -20,7 +20,9 @@ export class TeamController {
   async getTeamCost(@Request() req) {
     const { org, team } = req;
     
-    return this.compSvc.getCostByTeam(org, team);
+    // TODO : Add get cost by team
+    
+    return team;
   }
 
   @Patch()
