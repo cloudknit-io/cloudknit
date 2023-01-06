@@ -12,10 +12,11 @@ import {
   Req,
   Request,
 } from "@nestjs/common";
+import { Environments } from "aws-sdk/clients/iot";
 import { ComponentService } from "src/component/component.service";
 import { EnvironmentService } from "src/environment/environment.service";
 import { TeamService } from "src/team/team.service";
-import { ComponentReconcile, EnvironmentReconcile } from "src/typeorm";
+import { Component, ComponentReconcile, Environment, EnvironmentReconcile, Organization, Team } from "src/typeorm";
 import { APIRequest } from "src/types";
 import { handleSqlErrors } from "src/utilities/errorHandler";
 import { ApprovedByDto } from "./dtos/componentAudit.dto";
@@ -217,16 +218,24 @@ export class ReconciliationController {
   @Get("component/logs/:team/:environment/:component/:id")
   async getLogs(
     @Request() req,
-    @Param("team") team: string,
-    @Param("environment") environment: string,
-    @Param("component") component: string,
+    @Param("team") teamName: string,
+    @Param("environment") envName: string,
+    @Param("component") compName: string,
     @Param("id") id: number
   ) {
+    const { org } = req;
+    
+    const comp = await this.compSvc.findByNameWithTeamName(org, teamName, envName, compName, true);
+    if (!comp) {
+      this.logger.error({message: 'could not find logs', teamName, envName, compName, id });
+      throw new BadRequestException('could not find logs');
+    }
+
     return await this.reconSvc.getLogs(
       req.org,
-      team,
-      environment,
-      component,
+      teamName,
+      comp.environment,
+      comp,
       id
     );
   }
@@ -250,22 +259,22 @@ export class ReconciliationController {
     "component/plan/logs/:team/:environment/:component/:id/:latest"
   )
   async getPlanLogs(
-    @Request() req,
-    @Param("team") team: string,
-    @Param("environment") environment: string,
-    @Param("component") component: string,
+    @Request() req: APIRequest,
+    @Param("team") teamName: string,
+    @Param("environment") envName: string,
+    @Param("component") compName: string,
     @Param("id") id: number,
     @Param("latest") latest: string
   ) {
-    return {};
-    // return await this.reconSvc.getPlanLogs(
-    //   req.org,
-    //   team,
-    //   environment,
-    //   component,
-    //   id,
-    //   latest === "true"
-    // );
+    const { org } = req;
+
+    const comp = await this.compSvc.findByNameWithTeamName(org, teamName, envName, compName, true);
+    if (!comp) {
+      this.logger.error({message: 'could not find plan logs', teamName, envName, compName, id, latest});
+      throw new BadRequestException('could not find logs');
+    }
+
+    return this.getTfLogs(org, teamName, comp.environment, comp, id, latest === 'true', 'plan_output');
   }
 
   @Get(
@@ -273,20 +282,37 @@ export class ReconciliationController {
   )
   async getApplyLogs(
     @Request() req,
-    @Param("team") team: string,
-    @Param("environment") environment: string,
-    @Param("component") component: string,
+    @Param("team") teamName: string,
+    @Param("environment") envName: string,
+    @Param("component") compName: string,
     @Param("id") id: number,
     @Param("latest") latest: string
   ) {
-    return {};
-    // return await this.reconSvc.getApplyLogs(
-    //   req.org,
-    //   team,
-    //   environment,
-    //   component,
-    //   id,
-    //   latest === "true"
-    // );
+    const { org } = req;
+    
+    const comp = await this.compSvc.findByNameWithTeamName(org, teamName, envName, compName, true);
+    if (!comp) {
+      this.logger.error({message: 'could not find apply logs', teamName, envName, compName, id, latest});
+      throw new BadRequestException('could not find logs');
+    }
+
+    return this.getTfLogs(org, teamName, comp.environment, comp, id, latest === 'true', 'apply_output');
+  }
+
+  async getTfLogs(org: Organization, team: string, env: Environment, comp: Component, id: number, latest: boolean, logType: string) {
+    let logs;
+
+    if (latest) {
+      const compRecon = await this.reconSvc.getLatestCompReconcileByEnv(org, env, comp.name);
+      logs = await this.reconSvc.getLatestLogs(org, team, env, comp, compRecon)
+    } else {
+      logs = await this.reconSvc.getLogs(org, team, env, comp, id);
+    }
+
+    if (Array.isArray(logs)) {
+      return logs.filter((e) => e.key.includes(logType));
+    }
+
+    return logs;
   }
 }

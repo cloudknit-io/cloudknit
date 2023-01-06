@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Component, Environment, Organization } from 'src/typeorm';
 import { UpdateComponentDto } from './dto/update-component.dto'
-import { In, Repository } from 'typeorm';
+import { Equal, In, Repository } from 'typeorm';
 
 @Injectable()
 export class ComponentService {
@@ -106,6 +106,26 @@ export class ComponentService {
           id: org.id
         },
         isDestroyed
+      },
+      relations: {
+        environment: withEnv
+      }
+    });
+  }
+
+  async findByNameWithTeamName(org: Organization, teamName: string, envName: string, name: string, withEnv: boolean = false): Promise<Component> {
+    return await this.compRepo.findOne({
+      where: {
+        name: Equal(name),
+        environment: {
+          name: Equal(envName),
+          team: {
+            name: Equal(teamName)
+          }
+        },
+        organization: {
+          id: org.id
+        }
       },
       relations: {
         environment: withEnv

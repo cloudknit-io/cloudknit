@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable, InternalServerErrorException, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { get } from "src/config";
 import { S3Handler } from "src/utilities/s3Handler";
@@ -76,7 +76,7 @@ export class ReconciliationService {
       order: {
         startDateTime: -1
       }
-    })
+    });
   }
 
   async getSkippedEnvironments(org: Organization, team: Team, env: Environment, ignoreReconcileIds: number[]) {
@@ -239,11 +239,11 @@ export class ReconciliationService {
   async getLogs(
     org: Organization,
     team: string,
-    environment: string,
-    component: string,
+    environment: Environment,
+    component: Component,
     id: number
   ) {
-    const prefix = `${team}/${environment}/${component}/${id}/`;
+    const prefix = `${team}/${environment.name}/${component.name}/${id}/`;
     const bucket = `zlifecycle-${this.ckEnvironment}-tfplan-${org.name}`;
     
     try {
@@ -258,7 +258,7 @@ export class ReconciliationService {
       }));
     } catch (err) {
       this.logger.error({ message: 'error getting S3 terraform logs', prefix, bucket }, err);
-      return err;
+      return new InternalServerErrorException('could not get logs');
     }
   }
 
@@ -280,10 +280,10 @@ export class ReconciliationService {
     };
   }
 
-  private async getLatestCompReconcile(org: Organization, envRecon: EnvironmentReconcile, compName: string): Promise<ComponentReconcile> {
+  async getLatestCompReconcile(org: Organization, envRecon: EnvironmentReconcile, compName: string): Promise<ComponentReconcile> {
     return await this.compReconRepo.findOne({
       where: {
-        name: compName,
+        name: Equal(compName),
         status: Not(Like("skipped%")),
         organization: {
           id : org.id
@@ -296,5 +296,42 @@ export class ReconciliationService {
         startDateTime: -1,
       }
     });
+  }
+
+  async getLatestCompReconcileByEnv(org: Organization, env: Environment, compName: string): Promise<ComponentReconcile> {
+    return await this.compReconRepo.findOne({
+      where: {
+        name: Equal(compName),
+        status: Not(Like("skipped%")),
+        organization: {
+          id : org.id
+        },
+        environmentReconcile: {
+          environment: {
+            id: env.id
+          }
+        }
+      },
+      order: {
+        startDateTime: -1,
+      }
+    });
+  }
+
+  async getLatestLogs(
+    org: Organization,
+    team: string,
+    environment: Environment,
+    component: Component,
+    latestCompRecon: ComponentReconcile
+  ) {
+
+    return await this.getLogs(
+      org,
+      team,
+      environment,
+      component,
+      latestCompRecon.reconcileId
+    );
   }
 }
