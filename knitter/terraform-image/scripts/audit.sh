@@ -88,6 +88,7 @@ if [[ $config_name != 0 && $config_reconcile_id = null ]]; then
         fi
     else
         comp_status="initializing"
+        UpdateComponentWfRunId "${env_name}" "${team_name}" "${config_name}" "initializing"
         data='{"metadata":{"labels":{"is_skipped":"'$is_skipped'","audit_status":"initializing","last_workflow_run_id":"initializing"}}}'
     fi
     # echo "patch argocd resource $team_env_config_name with data $data"
