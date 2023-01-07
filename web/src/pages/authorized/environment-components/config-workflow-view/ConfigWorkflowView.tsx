@@ -77,11 +77,11 @@ export const ConfigWorkflowView: FC<Props> = (props: Props) => {
 		setIsApproved(isApproved);
 		setNeedsApproval(needsApproval);
 		if (foundApprovedNode) {
-			AuditService.getInstance()
-				.getApprovedBy(config.name, '-1')
-				.then((auditData: any) => {
-					setApprovedBy(auditData?.approved_by || '');
-				});
+			// AuditService.getInstance()
+			// 	.getApprovedBy(config.name, '-1')
+			// 	.then((auditData: any) => {
+			// 		setApprovedBy(auditData?.approved_by || '');
+			// 	});
 		}
 		setFilteredNodes(
 			newNodes

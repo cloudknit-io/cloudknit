@@ -173,6 +173,10 @@ export const EnvironmentComponents: React.FC = () => {
 			if (!env) return;
 			setEnvironment(env);
 		}));
+		
+		subs.push(subscriberWF.subscribe((response: any) => {
+			setStreamData2(response);
+		}));
 		return () => {
 			subs.forEach(sub => sub.unsubscribe());
 		}
