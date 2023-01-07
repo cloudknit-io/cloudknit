@@ -28,7 +28,7 @@ export const ZFeedbackModal: FC<Props> = ({ onApprove, onDecline }: Props) => {
 					</Button>
 				</div>
 			)}
-			{showLoader && <Loader />}
+			{showLoader && <Loader height={20} width={20} />}
 		</>
 	);
 };
