@@ -2,17 +2,16 @@ import './style.scss';
 
 import { ZText } from 'components/atoms/text/Text';
 import { ZModelCard } from 'components/molecules/cards/Card';
-import { renderHealthStatus, renderLabels, renderSyncedStatus } from 'components/molecules/cards/renderFunctions';
+import { CostRenderer, renderHealthStatus, renderLabels, renderSyncedStatus } from 'components/molecules/cards/renderFunctions';
 import { ZSyncStatus } from 'models/argo.models';
 import { EnvironmentComponentItem, EnvironmentComponentsList } from 'models/projects.models';
-import { renderCost as renderCostEnv } from 'pages/authorized/environments/helpers';
 import React, { FC, useEffect, useState } from 'react';
-import { Component } from 'models/entity.store';
+import { Component, EntityStore, Environment } from 'models/entity.store';
 
 type Props = {
 	components: Component[];
 	projectId: string;
-	envName: string;
+	env?: Environment;
 	onClick: Function;
 	showAll?: boolean;
 	selectedConfig?: Component;
@@ -52,11 +51,11 @@ const totalCost = (components: EnvironmentComponentsList): string => {
 	return cost.toFixed(3).toString();
 };
 
-const mapGridItems = (component: Component, componentStatus: ZSyncStatus) => {
+const mapGridItems = (component: Component) => {
 	return (
 		<>
 			{renderSyncedStatus(
-				componentStatus
+				component.status as ZSyncStatus
 			)}
 		</>
 	);
@@ -69,7 +68,7 @@ const getLabels = (component: Component): any => {
 export const EnvironmentComponentCards: FC<Props> = ({
 	components,
 	projectId,
-	envName,
+	env,
 	onClick,
 	showAll,
 	selectedConfig,
@@ -84,13 +83,13 @@ export const EnvironmentComponentCards: FC<Props> = ({
 							<ZText.Body className="color-gray" size="20" lineHeight="18" weight="bold">
 								Environment
 							</ZText.Body>
-							<h5 className="color-gray">{envName}</h5>
+							<h5 className="color-gray">{env?.argoId}</h5>
 						</div>
 						<div>
 							<ZText.Body className="color-gray" size="20" lineHeight="18" weight="bold">
 								Est. Monthly Cost
 							</ZText.Body>
-							<h5 className="color-gray">{renderCostEnv(projectId, envName)}</h5>
+							<h5 className="color-gray">{<CostRenderer data={env?.estimatedCost} />}</h5>
 						</div>
 					</>
 				)}
@@ -98,7 +97,7 @@ export const EnvironmentComponentCards: FC<Props> = ({
 			<div className="com-cards border">
 				{components.map((config: Component) => (
 					<ConfigCard
-						key={config.name}
+						key={config.argoId}
 						config={config}
 						showAll={showAll}
 						onClick={onClick}
@@ -118,29 +117,21 @@ export const ConfigCard: FC<EnvironmentComponentItemProps> = ({
 	isSelected,
 	workflowPhase,
 }: EnvironmentComponentItemProps) => {
-	const [componentStatus, setComponentStatus] = useState<ZSyncStatus>(ZSyncStatus.Unknown);
-	// useEffect(() => {
-	// 	const delayedStatus = [ZSyncStatus.Destroyed, ZSyncStatus.Provisioned, ZSyncStatus.InSync];
-	// 	if (delayedStatus.includes(config.componentStatus) && isSelected) {
-	// 		workflowPhase === 'Succeeded' && setComponentStatus(config.componentStatus);
-	// 	} else {
-	// 		setComponentStatus(config.componentStatus);
-	// 	}
-	// }, [config?.componentStatus, workflowPhase]);
+	const env = EntityStore.getInstance().getEnvironmentById(config.envId);
+	const team = EntityStore.getInstance().getTeam(env?.teamId || -1)
 
 	return (
 		<ZModelCard
 			classNames={`component-card ${
-				// config.componentStatus === ZSyncStatus.Destroyed ? 'destroyed' : ''
-				''
+				config.status === ZSyncStatus.Destroyed ? 'destroyed' : ''
 			}`}
 			key={config.name}
 			model="Environment Component"
-			teamName={''}
-			envName={''}
-			estimatedCost={"-1"}
+			teamName={team?.name || ''}
+			envName={env?.name || ''}
+			estimatedCost={<CostRenderer data={config.estimatedCost} />}
 			title={config.name}
-			items={mapGridItems(config, componentStatus)}
+			items={mapGridItems(config)}
 			labels={getLabels(config)}
 			onClick={(): void => onClick(config)}
 		/>

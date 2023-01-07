@@ -7,7 +7,7 @@ import { ZGridDisplayListWithLabel } from 'components/molecules/grid-display-lis
 import { ESyncStatus, OperationPhase, ZSyncStatus } from 'models/argo.models';
 import { ListItem } from 'models/general.models';
 import { EnvironmentItem, EnvironmentsList } from 'models/projects.models';
-import { getEnvironmentErrorCondition, renderCost, syncMe } from 'pages/authorized/environments/helpers';
+import { getEnvironmentErrorCondition, syncMe } from 'pages/authorized/environments/helpers';
 import React, { FC, useMemo } from 'react';
 import { useEffect } from 'react';
 import { useState } from 'react';

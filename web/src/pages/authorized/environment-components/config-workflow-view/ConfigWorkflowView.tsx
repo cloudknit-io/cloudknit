@@ -24,6 +24,8 @@ import { StateFileView } from 'components/organisms/state-file-view/StateFileVie
 import { ArgoComponentsService } from 'services/argo/ArgoComponents.service';
 import { ConfigWorkflowLeftView } from './ConfigWorkflowLeftView';
 import { Component } from 'models/entity.store';
+import { useMemo } from 'react';
+import { useRef } from 'react';
 
 type Props = {
 	projectId: string;
@@ -34,9 +36,20 @@ type Props = {
 	plans: string | null;
 };
 
+export type WorkflowNode = {
+	configStatus: string;
+	getZFeedbackModal: Function;
+	getS3Logs: Function;
+	getNodeLogs: Function;
+	displayName: string;
+	name: string;
+	phase: string;
+};
+
 export const ConfigWorkflowView: FC<Props> = (props: Props) => {
 	const { projectId, environmentId, config, logs, plans, workflowData } = props;
 	const clientLogMap = new Map<string, EventClientLogs>();
+	const nodesRef = useRef<Map<string, EventClientLogs>>(new Map<string, EventClientLogs>());
 	const tabs: OptionItem[] = [
 		{
 			id: 'plans',
@@ -47,7 +60,7 @@ export const ConfigWorkflowView: FC<Props> = (props: Props) => {
 			name: 'Logs',
 		},
 	];
-	const [filteredNodes, setFilteredNodes] = useState<any>([]);
+	const [filteredNodes, setFilteredNodes] = useState<WorkflowNode[]>([]);
 	const [viewType, setViewType] = useState<any>(ViewType.Concise_Logs);
 	const [isApproved, setIsApproved] = useState<boolean>(false);
 	const [approvedBy, setApprovedBy] = useState<string>('');
@@ -59,6 +72,7 @@ export const ConfigWorkflowView: FC<Props> = (props: Props) => {
 	const separatedConfigId = config ? getSeparatedConfigId(config) : null;
 
 	const ctx = useContext(Context);
+
 	useEffect(() => {
 		if (!workflowData) {
 			setFilteredNodes([]);
@@ -88,24 +102,25 @@ export const ConfigWorkflowView: FC<Props> = (props: Props) => {
 				.filter((node: any) => node.displayName !== 'notify' && node.type !== 'Steps')
 				.map((node: any) => {
 					const podName = node.boundaryID + '-run' + node.id.replace(node.boundaryID, '');
-					const status = getComponentStatus(config, teardown);
+					const status = getComponentStatus(config);
 					if ((node.displayName === 'apply' || node.displayName === 'plan') && status) {
 						node.displayName = `${status} ${node.displayName}`;
 					}
 
-					const clientLogUrl = `/wf/api/v1/stream/projects/${projectId}/environments/${environmentId}/config/${config.id}/${config.lastWorkflowRunId}/log/${podName}`;
-
+					const clientLogUrl = `/wf/api/v1/stream/projects/${projectId}/environments/${environmentId}/config/${config.argoId}/${config.lastWorkflowRunId}/log/${podName}`;
 					if (
 						!clientLogMap.has(clientLogUrl) &&
 						node.phase !== 'Succeeded' &&
 						node.displayName !== 'approve' &&
 						node.phase !== 'Failed'
 					) {
-						clientLogMap.set(clientLogUrl, new EventClientLogs(clientLogUrl));
+						nodesRef.current.set(clientLogUrl, new EventClientLogs(clientLogUrl));
 					}
 
 					return {
-						...node,
+						phase: node.phase,
+						name: node.name,
+						displayName: node.displayName,
 						configStatus: config.status,
 						getZFeedbackModal: () => getZFeedbackModal(isApproved, needsApproval),
 						getS3Logs: async () =>
@@ -123,25 +138,23 @@ export const ConfigWorkflowView: FC<Props> = (props: Props) => {
 									}
 									return data;
 								}),
-						getNodeLogs: () => clientLogMap.get(clientLogUrl),
+						getNodeLogs: () => nodesRef.current.get(clientLogUrl),
 					};
 				})
 		);
+
 		return () => {
-			[...clientLogMap.values()].forEach(o => {
-				o.close();
-			});
-			clientLogMap.clear();
-		};
+			[...nodesRef.current.values()].forEach(e => e.close());
+		}
 	}, [workflowData]);
 
-	const getComponentStatus = (config: Component, teardown: string) => {
+	const getComponentStatus = (config: Component) => {
 		if (config.status === ZSyncStatus.Skipped) {
 			return 'skipped destroy';
 		} else if (config.status === ZSyncStatus.SkippedReconcile) {
 			return 'skipped provision';
 		} else {
-			return teardown === 'true' ? 'destroy' : teardown === 'false' ? 'provision' : '';
+			return config.isDestroyed ? 'destroy' : 'provision';
 		}
 	};
 

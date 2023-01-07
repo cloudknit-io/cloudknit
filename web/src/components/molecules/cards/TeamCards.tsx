@@ -5,7 +5,6 @@ import { renderEnvSyncedStatus } from 'components/molecules/cards/renderFunction
 import { ZGridDisplayListWithLabel } from 'components/molecules/grid-display-list/GridDisplayList';
 import { ListItem } from 'models/general.models';
 import { EnvironmentItem, EnvironmentsList, TeamItem, TeamsList } from 'models/projects.models';
-import { renderCost } from 'pages/authorized/teams/helpers';
 import React, { FC, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { subscriber } from 'utils/apiClient/EventClient';

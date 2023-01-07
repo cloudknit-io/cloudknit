@@ -188,8 +188,8 @@ export const EnvironmentComponents: React.FC = () => {
 		const sub = entityStore.emitterComp.subscribe((components: Component[]) => {
 			if (components.length === 0 || components[0].envId !== environment.id) return;
 			componentArrayRef.current = components;
-			setComponents(componentArrayRef.current);
-			resetSelectedConfig(componentArrayRef.current);
+			setComponents(components);
+			resetSelectedConfig(components);
 			setLoading(false);
 		});
 		Promise.resolve(entityStore.getComponents(environment.teamId, environment.id));
@@ -433,14 +433,17 @@ export const EnvironmentComponents: React.FC = () => {
 		setEnvironmentNodeSelected(false);
 		const selectedConfig = componentArrayRef.current.find(c => c.name === configName);
 		if (selectedConfig) {
-			let workflowId = selectedConfig.lastWorkflowRunId;
-			if (!workflowId) {
-				workflowId = 'initializing';
+			let _workflowId = selectedConfig.lastWorkflowRunId;
+			if (!_workflowId) {
+				_workflowId = 'initializing';
 			}
 			selectedComponentRef.current = selectedConfig;
-			setSelectedConfig(selectedComponentRef.current);
+			setSelectedConfig(selectedConfig);
 			setShowSidePanel(true);
-			setWorkflowId(workflowId);
+			if (workflowId !== _workflowId){
+				setWorkflowId(_workflowId);
+			}
+			
 		}
 	};
 
@@ -464,8 +467,10 @@ export const EnvironmentComponents: React.FC = () => {
 		const selectedConf = components.find((itm: any) => itm.id === selectedComponentRef.current?.id);
 		if (selectedConf) {
 			selectedComponentRef.current = selectedConf;
-			setSelectedConfig(selectedComponentRef.current);
-			setWorkflowId(selectedComponentRef.current.lastWorkflowRunId);
+			setSelectedConfig(selectedConf);
+			if (selectedConf.lastWorkflowRunId !== workflowId) {
+				setWorkflowId(selectedConf.lastWorkflowRunId);
+			}
 		}
 	};
 
@@ -529,11 +534,11 @@ export const EnvironmentComponents: React.FC = () => {
 						showAll={showAll}
 						components={components || []}
 						projectId={projectId}
-						envName={environment?.name || ''}
+						env={environment}
 						selectedConfig={selectedConfig}
 						workflowPhase={workflowData?.status?.phase}
-						onClick={(config: EnvironmentComponentItem): void => {
-							onNodeClick(config.componentName);
+						onClick={(config: Component): void => {
+							onNodeClick(config.name);
 						}}
 					/>
 				);

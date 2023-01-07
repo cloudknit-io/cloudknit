@@ -22,7 +22,7 @@ export const ZEditor: FC<Props> = (props: Props) => {
 				defaultLanguage={language || 'yaml'}
 				defaultValue={''}
 				theme="light"
-				value={data}
+				value={(data || '').toString()}
 				options={{
 					readOnly: readOnly,
 					scrollbar: {

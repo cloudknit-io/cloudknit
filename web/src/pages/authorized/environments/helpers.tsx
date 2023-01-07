@@ -237,19 +237,6 @@ const renderServices = () => <AWSIcon />;
 
 const renderActions = () => <MoreOptionsIcon />;
 
-export const renderCost = (teamId?: string, environmentName?: string) => {
-	if (!teamId || !environmentName) {
-		return <></>;
-	}
-	return (
-		<ZStreamRenderer
-			subject={CostingService.getInstance().getEnvironmentCostStream(teamId, environmentName)}
-			defaultValue={CostingService.getInstance().getCachedValue(`${teamId}-${environmentName}`)}
-			Component={CostRenderer}
-		/>
-	);
-};
-
 export const environmentTableColumns: TableColumn[] = [
 	{
 		id: 'name',
@@ -272,7 +259,7 @@ export const environmentTableColumns: TableColumn[] = [
 		id: 'labels',
 		name: 'Cost',
 		width: 100,
-		render: data => renderCost(data.project_id, data.env_name),
+		render: data => -1,
 	},
 	{
 		id: 'healthStatus',
