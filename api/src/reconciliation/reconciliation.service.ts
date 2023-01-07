@@ -258,7 +258,7 @@ export class ReconciliationService {
       }));
     } catch (err) {
       this.logger.error({ message: 'error getting S3 terraform logs', prefix, bucket }, err);
-      return new InternalServerErrorException('could not get logs');
+      throw new InternalServerErrorException('could not get logs');
     }
   }
 
