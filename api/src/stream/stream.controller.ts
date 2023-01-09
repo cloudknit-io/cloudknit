@@ -16,7 +16,13 @@ export class StreamController {
     return from(this.sseSvc.compStream).pipe(
       map((comp: Component) => {
         if (!comp || comp.orgId !== org.id) {
-          return;
+          if (comp.organization && comp.organization.id === org.id) {
+            comp.orgId = comp.organization.id;
+            delete comp.environment;
+            delete comp.organization;
+          } else {
+            return;
+          }
         }
 
         return {
@@ -34,9 +40,17 @@ export class StreamController {
     return from(this.sseSvc.reconcileStream).pipe(
       map((item: AuditWrapper) => {
         const data = item.item;
+
         if (!data || data.orgId !== org.id) {
-          return;
+          if (data.organization && data.organization.id === org.id) {
+            data.orgId = data.organization.id;
+          } else {
+            return;
+          }
         }
+
+        // @ts-ignore
+        delete data.environment;
 
         return {
           data,
@@ -53,8 +67,15 @@ export class StreamController {
     return from(this.sseSvc.envStream).pipe(
       map((env: Environment) => {
         if (!env || env.orgId !== org.id) {
-          return;
-        }        
+          if (env.organization && env.organization.id === org.id) {
+            env.orgId = env.organization.id;
+          } else {
+            return;
+          }
+        }
+
+        delete env.team;
+        delete env.organization;
 
         return {
           data: env,
