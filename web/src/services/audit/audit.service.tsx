@@ -239,7 +239,7 @@ class AuditUriType {
 		`component/${teamId}/${envId}/${componentId}`;
 	static patchApprovedBy = (componentId: string) => `approved-by/${componentId}`;
 	static getApprovedBy = (componentId: string, reconcileId: string) => `approved-by/${componentId}/${reconcileId}`;
-	static approve = (componentReconcileId: number) => `approve/${componentReconcileId}`;
+	static approve = (componentReconcileId: number) => `component/approve/${componentReconcileId}`;
 	static componentLogs = (teamId: string, environmentId: string, componentId: string, id: number) =>
 		`getLogs/${teamId}/${environmentId}/${componentId}/${id}`;
 	static planLogs = (teamId: string, environmentId: string, componentId: string, id: number, latest: boolean) =>
