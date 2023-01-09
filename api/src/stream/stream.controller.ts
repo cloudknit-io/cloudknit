@@ -18,8 +18,6 @@ export class StreamController {
         if (!comp || comp.orgId !== org.id) {
           if (comp.organization && comp.organization.id === org.id) {
             comp.orgId = comp.organization.id;
-            delete comp.environment;
-            delete comp.organization;
           } else {
             return;
           }

@@ -1,5 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { Subject } from "rxjs";
+import { ComponentReconcileWrap } from "src/reconciliation/dtos/componentAudit.dto";
+import { EnvironmentReconcileWrap } from "src/reconciliation/dtos/environmentAudit.dto";
+import { Mapper } from "src/reconciliation/mapper";
 import { Component, ComponentReconcile, EnvironmentReconcile, Team } from "src/typeorm";
 import { Environment } from "src/typeorm/environment.entity";
 
@@ -20,15 +23,19 @@ export class StreamService {
   }
 
   sendCompReconcile(compRecon: ComponentReconcile) {
-    this.reconcileStream.next({data: compRecon, type: 'ComponentReconcile'});
+    const data = Mapper.wrapComponentRecon(compRecon);
+
+    this.reconcileStream.next({data, type: 'ComponentReconcile'});
   }
 
   sendEnvReconcile(envRecon: EnvironmentReconcile) {
-    this.reconcileStream.next({data: envRecon, type: 'EnvironmentReconcile'});
+    const data = Mapper.wrapEnvironmentRecon(envRecon);
+
+    this.reconcileStream.next({data, type: 'EnvironmentReconcile'});
   }
 }
 
 export class AuditWrapper {
-  data: EnvironmentReconcile|ComponentReconcile;
+  data: EnvironmentReconcileWrap|ComponentReconcileWrap;
   type: 'EnvironmentReconcile'|'ComponentReconcile';
 }
