@@ -14,7 +14,8 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "ts-node test/e2e.ts"
+    "test": "ts-node test/e2e.ts",
+    "step-test": "STEPCI_DISABLE_ANALYTICS=true stepci run stepci.yml --env startTime=$(node --eval=\"console.log(new Date(Date.now()))\") --env endTime=$(node --eval=\"console.log(new Date(Date.now() + 86400))\")"
   },
   "dependencies": {
     "@kubernetes/client-node": "0.16.3",

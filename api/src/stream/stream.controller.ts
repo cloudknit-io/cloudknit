@@ -1,8 +1,7 @@
-import { Controller, Sse, Request, Query } from '@nestjs/common';
-import { StreamService } from './stream.service';
+import { Controller, Sse, Request } from '@nestjs/common';
+import { AuditWrapper, StreamService } from './stream.service';
 import { from, map, Observable } from 'rxjs';
-import { TeamEnvCompQueryParams, TeamEnvQueryParams } from 'src/reconciliation/validationPipes';
-import { Component, Environment } from 'src/typeorm';
+import { Component, ComponentReconcile, Environment, EnvironmentReconcile } from 'src/typeorm';
 
 @Controller({
   version: '1'
@@ -10,8 +9,8 @@ import { Component, Environment } from 'src/typeorm';
 export class StreamController {
   constructor(private readonly sseSvc: StreamService) {}
 
-  @Sse("components")
-  components(@Request() req, @Query() tec: TeamEnvCompQueryParams): Observable<MessageEvent> {
+  @Sse("component")
+  components(@Request() req): Observable<MessageEvent> {
     const { org } = req;
 
     return from(this.sseSvc.compStream).pipe(
@@ -28,8 +27,27 @@ export class StreamController {
     );
   }
 
-  @Sse("environments")
-  environments(@Request() req, @Query() te: TeamEnvQueryParams): Observable<MessageEvent> {
+  @Sse("audit")
+  componentReconcile(@Request() req): Observable<MessageEvent> {
+    const { org } = req;
+
+    return from(this.sseSvc.reconcileStream).pipe(
+      map((item: AuditWrapper) => {
+        const data = item.item;
+        if (!data || data.orgId !== org.id) {
+          return;
+        }
+
+        return {
+          data,
+          type: item.type
+        }
+      })
+    );
+  }
+
+  @Sse("environment")
+  environments(@Request() req): Observable<MessageEvent> {
     const { org } = req;
 
     return from(this.sseSvc.envStream).pipe(

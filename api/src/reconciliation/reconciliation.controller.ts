@@ -6,9 +6,7 @@ import {
   InternalServerErrorException,
   Logger,
   Param,
-  Patch,
   Post,
-  Query,
   Req,
   Request,
 } from "@nestjs/common";
@@ -22,7 +20,6 @@ import { handleSqlErrors } from "src/utilities/errorHandler";
 import { ApprovedByDto } from "./dtos/componentAudit.dto";
 import { CreateComponentReconciliationDto, CreateEnvironmentReconciliationDto, UpdateComponentReconciliationDto, UpdateEnvironmentReconciliationDto } from "./dtos/reconciliation.dto";
 import { ReconciliationService } from "./reconciliation.service";
-import { TeamEnvCompQueryParams } from "./validationPipes";
 
 
 @Controller({
@@ -183,19 +180,6 @@ export class ReconciliationController {
       this.logger.error({ message: 'could not set approved by', compRecon, body, err});
       throw new InternalServerErrorException('could not approve workflow');
     }
-  }
-
-  @Get("approved-by")
-  async getApprovedBy(@Request() req: APIRequest, @Query() tec: TeamEnvCompQueryParams, @Query("rid") rid: number) {
-    const { org } = req;
-
-    if (rid > 0) {
-      return this.reconSvc.findCompReconById(org, rid);
-    }
-
-    const comp = await this.compSvc.findByNameWithTeamName(org, tec.teamName, tec.envName, tec.compName);
-    
-    return await this.reconSvc.getCompReconByComponent(org, comp);
   }
 
   @Get("component/logs/:team/:environment/:component/:id")

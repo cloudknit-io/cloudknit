@@ -5,18 +5,11 @@ import { Environment } from "src/typeorm/environment.entity";
 
 @Injectable()
 export class StreamService {
-  readonly notifyStream: Subject<{}> = new Subject<{}>();
   readonly envStream: Subject<Environment> = new Subject<Environment>();
   readonly compStream: Subject<Component> = new Subject<Component>();
-  readonly teamStream: Subject<Team> = new Subject<Team>();
-  readonly reconcileStream: Subject<ComponentReconcile | EnvironmentReconcile> = new Subject<ComponentReconcile | EnvironmentReconcile>();
+  readonly reconcileStream: Subject<AuditWrapper> = new Subject<AuditWrapper>();
 
-  constructor() {
-    // setInterval(() => {
-    //   this.notifyStream.next({});
-    //   this.envStream.next(null);
-    // }, 20000);
-  }
+  constructor() { }
 
   sendEnvironment(env: Environment) {
     this.envStream.next(env);
@@ -26,15 +19,16 @@ export class StreamService {
     this.compStream.next(comp);
   }
 
-  sendTeam(team: Team) {
-    this.teamStream.next(team);
-  }
-
   sendCompReconcile(compRecon: ComponentReconcile) {
-    this.reconcileStream.next(compRecon);
+    this.reconcileStream.next({item: compRecon, type: 'ComponentReconcile'});
   }
 
   sendEnvReconcile(envRecon: EnvironmentReconcile) {
-    this.reconcileStream.next(envRecon);
+    this.reconcileStream.next({item: envRecon, type: 'EnvironmentReconcile'});
   }
+}
+
+export class AuditWrapper {
+  item: EnvironmentReconcile|ComponentReconcile;
+  type: 'EnvironmentReconcile'|'ComponentReconcile';
 }
