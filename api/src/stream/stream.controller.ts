@@ -39,7 +39,7 @@ export class StreamController {
 
     return from(this.sseSvc.reconcileStream).pipe(
       map((item: AuditWrapper) => {
-        const data = item.item;
+        const { data } = item;
 
         if (!data || data.orgId !== org.id) {
           if (data.organization && data.organization.id === org.id) {
