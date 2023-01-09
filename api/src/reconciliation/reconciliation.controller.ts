@@ -12,7 +12,7 @@ import {
   Req,
   Request,
 } from "@nestjs/common";
-import { ApproveWorkflow } from "src/argowf/api";
+import { ApproveWorkflow as ResumeWorkflow } from "src/argowf/api";
 import { ComponentService } from "src/component/component.service";
 import { EnvironmentService } from "src/environment/environment.service";
 import { TeamService } from "src/team/team.service";
@@ -189,7 +189,7 @@ export class ReconciliationController {
 
     try {
       // Resume Argo Workflow run
-      await ApproveWorkflow(org, comp.lastWorkflowRunId);
+      await ResumeWorkflow(org, comp.lastWorkflowRunId);
     } catch (err) {
       this.logger.error({ message: 'could not approve workflow', compRecon, lastWorkflowRunId: comp.lastWorkflowRunId, err});
       throw new InternalServerErrorException('could not approve workflow');
