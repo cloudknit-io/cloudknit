@@ -1,4 +1,4 @@
-image: 
+image:
   name: zlifecycle-api
   tag: latest
   repository:
@@ -15,7 +15,10 @@ awsCredentials:
   region:
 argowf:
   url:
-  namespace: 
+  namespace:
+org:
+  argoWf:
+    url: ""
 ckEnvironment:
 namespace: zlifecycle-system
 resources:

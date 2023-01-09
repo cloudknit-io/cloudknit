@@ -24,6 +24,8 @@ spec:
               value: {{ .Values.argowf.namespace }}
             - name: CK_ARGO_WF_SKIP_PROVISION
               value: "false"
+            - name: CK_ARGO_WF_ORG_URL
+              value: {{ .Values.org.argowf.url }}
             - name: TYPEORM_HOST
               value: {{ .Values.database.host }}
             - name: TYPEORM_DATABASE
