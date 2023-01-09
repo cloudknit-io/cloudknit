@@ -14,22 +14,39 @@ export class StreamService {
 
   constructor() { }
 
+  normalizeOrg(obj: Environment|Component|ComponentReconcile|EnvironmentReconcile) {
+    if (obj && obj.orgId) {
+      delete obj.organization;
+
+      return obj;
+    }
+
+    if (obj.organization) {
+      obj.orgId = obj.organization.id;
+      delete obj.organization;
+
+      return obj;
+    }
+
+    return obj;
+  }
+
   sendEnvironment(env: Environment) {
-    this.envStream.next(env);
+    this.envStream.next(this.normalizeOrg(env) as Environment);
   }
 
   sendComponent(comp: Component) {
-    this.compStream.next(comp);
+    this.compStream.next(this.normalizeOrg(comp) as Component);
   }
 
   sendCompReconcile(compRecon: ComponentReconcile) {
-    const data = Mapper.wrapComponentRecon(compRecon);
+    const data = Mapper.wrapComponentRecon(this.normalizeOrg(compRecon) as ComponentReconcile);
 
     this.reconcileStream.next({data, type: 'ComponentReconcile'});
   }
 
   sendEnvReconcile(envRecon: EnvironmentReconcile) {
-    const data = Mapper.wrapEnvironmentRecon(envRecon);
+    const data = Mapper.wrapEnvironmentRecon(this.normalizeOrg(envRecon) as EnvironmentReconcile);
 
     this.reconcileStream.next({data, type: 'EnvironmentReconcile'});
   }
