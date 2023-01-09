@@ -1,6 +1,5 @@
-export interface EnvironmentAudit {
-    reconcileId: number;
+import { EnvironmentReconcile } from "src/typeorm";
+
+export interface EnvironmentReconcileWrap extends EnvironmentReconcile {
     duration: number;
-    status: string;
-    startDateTime: string;
 }

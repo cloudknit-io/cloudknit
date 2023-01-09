@@ -9,10 +9,8 @@ import { EnvironmentReconcile } from "src/typeorm/environment-reconcile.entity";
 import { Environment } from "src/typeorm/environment.entity";
 import { Equal, In, IsNull, Like, Not } from "typeorm";
 import { Repository } from "typeorm/repository/Repository";
-import { ApprovedByDto, ComponentAudit } from "./dtos/componentAudit.dto";
-import { EnvironmentAudit } from "./dtos/environmentAudit.dto";
-import { EnvironmentService } from "src/environment/environment.service";
-import { TeamService } from "src/team/team.service";
+import { ComponentReconcileWrap } from "./dtos/componentAudit.dto";
+import { EnvironmentReconcileWrap } from "./dtos/environmentAudit.dto";
 import { CreateEnvironmentReconciliationDto, UpdateEnvironmentReconciliationDto, CreateComponentReconciliationDto, UpdateComponentReconciliationDto } from "./dtos/reconciliation.dto";
 import { Mapper } from "./mapper";
 
@@ -184,7 +182,7 @@ export class ReconciliationService {
     }
   }
 
-  async getComponentAuditList(org: Organization, comp: Component): Promise<ComponentAudit[]> {    
+  async getComponentAuditList(org: Organization, comp: Component): Promise<ComponentReconcileWrap[]> {    
     const components = await this.compReconRepo.find({
       where: {
         component: {
@@ -202,7 +200,7 @@ export class ReconciliationService {
     return Mapper.getComponentAuditList(components);
   }
 
-  async getEnvironmentAuditList(org: Organization, env: Environment): Promise<EnvironmentAudit[]> {
+  async getEnvironmentAuditList(org: Organization, env: Environment): Promise<EnvironmentReconcileWrap[]> {
     const environments = await this.envReconRepo.find({
       where: {
         environment: {
