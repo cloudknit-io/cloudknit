@@ -89,13 +89,13 @@ export class EntityStore {
             }
         });
 
-		this.entityService.streamComponentAudits().subscribe((data: CompAuditData) => {
+		this.entityService.streamComponentAudit().subscribe((data: CompAuditData) => {
 			if (this.componentAuditListeners.has(data.id)) {
 				this.emitterCompAudit.next(data);
 			}
 		});
 
-		this.entityService.streamEnvironmentAudits().subscribe((data: EnvAuditData) => {
+		this.entityService.streamEnvironmentAudit().subscribe((data: EnvAuditData) => {
 			if (this.environmentAuditListeners.has(data.id)) {
 				this.emitterEnvAudit.next(data);
 			}

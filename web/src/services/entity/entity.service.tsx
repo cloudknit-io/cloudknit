@@ -61,13 +61,13 @@ export class EntityService extends BaseService {
 		return ec.listen();
 	}
 
-	streamEnvironmentAudits() {
-		const ec = new EventClient<EnvAuditData>(this.constructUri(EntitytUriType.streamEnvironmentAudits()), 'EnvironmentReconcile');
+	streamEnvironmentAudit() {
+		const ec = new EventClient<EnvAuditData>(this.constructUri(EntitytUriType.streamAudit()), 'EnvironmentReconcile');
 		return ec.listen();
 	}
 
-	streamComponentAudits() {
-		const ec = new EventClient<CompAuditData>(this.constructUri(EntitytUriType.streamComponentAudits()), 'ComponentReconcile');
+	streamComponentAudit() {
+		const ec = new EventClient<CompAuditData>(this.constructUri(EntitytUriType.streamAudit()), 'ComponentReconcile');
 		return ec.listen();
 	}
 }
@@ -76,8 +76,7 @@ class EntitytUriType {
 	static teams = () => `teams`;
 	static environments = (teamId: number) => `teams/${teamId}/environments`;
 	static components = (teamId: number, envId: number) => `teams/${teamId}/environments/${envId}/components`;
-	static streamEnvironments = () => `stream/environments?teamName=0&envName=0`;
-	static streamComponents = () => `stream/components?teamName=0&envName=0&compName=0`;
-	static streamEnvironmentAudits = () => `stream/environment/audits`;
-	static streamComponentAudits = () => `stream/component/audits`;
+	static streamEnvironments = () => `stream/environment`;
+	static streamComponents = () => `stream/component`;
+	static streamAudit = () => `stream/audit`;
 }

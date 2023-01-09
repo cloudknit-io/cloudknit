@@ -198,7 +198,13 @@ export const EnvironmentComponents: React.FC = () => {
 					subEnvAudit = entityStore
 						.setEnvironmentAuditLister(environment.id)
 						.subscribe((response: EnvAuditData) => {
-							setEnvAuditList(envAuditList.concat(response));
+							const idx = envAuditList.findIndex(e => e.id === response.id);
+							if (idx !== -1) {
+								envAuditList[idx] = response;
+							} else {
+								envAuditList.push(response);
+							}
+							setEnvAuditList([...envAuditList]);
 						});
 				}
 			});
@@ -229,7 +235,13 @@ export const EnvironmentComponents: React.FC = () => {
 					subCompAudit = entityStore
 						.setComponentAuditLister(selectedConfig.id)
 						.subscribe((response: CompAuditData) => {
-							setCompAuditList(compAuditList.concat(response));
+							const idx = compAuditList.findIndex(e => e.id === response.id);
+							if (idx !== -1) {
+								compAuditList[idx] = response;
+							} else {
+								compAuditList.push(response);
+							}
+							setCompAuditList([...compAuditList]);
 						});
 				}
 			});
