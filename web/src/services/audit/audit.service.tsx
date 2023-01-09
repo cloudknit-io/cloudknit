@@ -8,6 +8,8 @@ import { ReactComponent as EC2 } from 'assets/visualization-demo/platform-ec2.sv
 import { ReactComponent as Networking } from 'assets/visualization-demo/networking.svg';
 import ReactDOMServer from 'react-dom/server';
 import React from 'react';
+import { CompAuditData } from 'models/entity.store';
+import AuthStore from 'auth/AuthStore';
 
 export class AuditService extends BaseService {
 	private static instance: AuditService | null = null;
@@ -38,7 +40,10 @@ export class AuditService extends BaseService {
 	}
 
 	async getComponentInfo(compName: string, envName: string, teamName: string) {
-		const resp = await ApiClient.get<any>(this.constructUri(AuditUriType.componentInfo(compName, envName, teamName)), {});
+		const resp = await ApiClient.get<any>(
+			this.constructUri(AuditUriType.componentInfo(compName, envName, teamName)),
+			{}
+		);
 		if (resp.data) {
 			return resp.data;
 		}
@@ -112,7 +117,7 @@ export class AuditService extends BaseService {
 		if (!latest && this.getCachedValue(`plan_log_${auditId}`)) {
 			return this.getCachedValue(`plan_log_${auditId}`);
 		}
-		
+
 		const resp: any = await ApiClient.get(
 			this.constructUri(AuditUriType.planLogs(teamId, environmentId, componentId, auditId, latest))
 		);
@@ -175,21 +180,32 @@ export class AuditService extends BaseService {
 		return null;
 	}
 
-	getComponent(id: number, envId: number, teamId: number, argoId: string): Subject<any> | undefined {
+	async getComponent(id: number, envId: number, teamId: number): Promise<CompAuditData> {
 		// return ApiClient.get(this.constructUri(AuditUriType.component(id, envId, envId)));
 		// this.startStream(argoId, this.constructUri(AuditUriType.componentStream(id, envName, teamName)));
-		return this.getStream(argoId, this.constructUri(AuditUriType.component(id, envId, teamId)));
+		// return this.getStream(argoId, this.constructUri(AuditUriType.component(id, envId, teamId)));
+		const { data } = await ApiClient.get<CompAuditData>(
+			this.constructUri(AuditUriType.component(id, envId, teamId))
+		);
+		return data;
 	}
 
-	getEnvironment(envId: number, teamId: number, argoId: string): Subject<any> | undefined {
+	async getEnvironment(envId: number, teamId: number): Promise<CompAuditData> {
 		// this.startStream(envName, this.constructUri(AuditUriType.environmentStream(envName, teamName)));
-		return this.getStream(argoId, this.constructUri(AuditUriType.environment(envId, teamId)));
+		// return this.getStream(argoId, this.constructUri(AuditUriType.environment(envId, teamId)));
+		const { data } = await ApiClient.get<CompAuditData>(
+			this.constructUri(AuditUriType.environment(envId, teamId)));
+		return data;
+	}
+
+	async approve(configReconcileId: number) {
+		return ApiClient.get(this.constructUri(AuditUriType.approve(configReconcileId)), {
+			email: AuthStore.getUser()?.email
+		});
 	}
 
 	async initNotifications(teamName: string) {
-		return await ApiClient.get(
-			this.constructUri(AuditUriType.getNotification(teamName))
-		);
+		return await ApiClient.get(this.constructUri(AuditUriType.getNotification(teamName)));
 	}
 
 	getNotifications(teamName: string): Subject<any> | undefined {
@@ -215,11 +231,15 @@ export class AuditService extends BaseService {
 
 class AuditUriType {
 	static customerName = ENVIRONMENT_VARIABLES.REACT_APP_CUSTOMER_NAME;
-	static environmentInfo = (envName: string, teamName: string) => `environments?envName=${envName}&teamName=${teamName}`;
-	static componentInfo = (componentId: string, envName: string, teamName: string) => `components?compName=${componentId}&envName=${envName}&teamName=${teamName}`;
-	static component = (componentId: number, envId: number, teamId: number) => `component/${teamId}/${envId}/${componentId}`;
+	static environmentInfo = (envName: string, teamName: string) =>
+		`environments?envName=${envName}&teamName=${teamName}`;
+	static componentInfo = (componentId: string, envName: string, teamName: string) =>
+		`components?compName=${componentId}&envName=${envName}&teamName=${teamName}`;
+	static component = (componentId: number, envId: number, teamId: number) =>
+		`component/${teamId}/${envId}/${componentId}`;
 	static patchApprovedBy = (componentId: string) => `approved-by/${componentId}`;
 	static getApprovedBy = (componentId: string, reconcileId: string) => `approved-by/${componentId}/${reconcileId}`;
+	static approve = (componentReconcileId: number) => `approve/${componentReconcileId}`;
 	static componentLogs = (teamId: string, environmentId: string, componentId: string, id: number) =>
 		`getLogs/${teamId}/${environmentId}/${componentId}/${id}`;
 	static planLogs = (teamId: string, environmentId: string, componentId: string, id: number, latest: boolean) =>
@@ -233,7 +253,9 @@ class AuditUriType {
 	static seenNotification = (id: string) => `notification/seen/${id}`;
 	static getVisualization = () => `visualization/get`;
 	static getVisualizationSVG = () => `get/object`;
-	static componentStream = (componentId: string, envName: string, teamName: string) => `components/notify?compName=${componentId}&envName=${envName}&teamName=${teamName}`;
-	static environmentStream = (envName: string, teamName: string) => `environments/notify?envName=${envName}&teamName=${teamName}`;
+	static componentStream = (componentId: string, envName: string, teamName: string) =>
+		`components/notify?compName=${componentId}&envName=${envName}&teamName=${teamName}`;
+	static environmentStream = (envName: string, teamName: string) =>
+		`environments/notify?envName=${envName}&teamName=${teamName}`;
 	static notificationStream = (teamName: string) => `notifications/${teamName}`;
 }

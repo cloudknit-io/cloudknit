@@ -4,7 +4,7 @@ import { filterLabels } from 'components/molecules/cards/EnvironmentComponentCar
 import { renderHealthStatus, renderLabels, renderSyncedStatus } from 'components/molecules/cards/renderFunctions';
 import { ZEditor } from 'components/molecules/editor/Editor';
 import { ZStreamRenderer } from 'components/molecules/zasync-renderer/ZStreamRenderer';
-import { AuditData, AuditView } from 'components/organisms/audit_view/AuditView';
+import { AuditView } from 'components/organisms/audit_view/AuditView';
 import { HierarchicalView } from 'components/organisms/hierarchical-view/hierarchical-view';
 import { ZWorkflowDiagram } from 'components/organisms/workflow-diagram/WorkflowDiagram';
 import { Context } from 'context/argo/ArgoUi';
@@ -23,9 +23,10 @@ import { EventClientLogs } from 'utils/apiClient/EventClient';
 import { StateFileView } from 'components/organisms/state-file-view/StateFileView';
 import { ArgoComponentsService } from 'services/argo/ArgoComponents.service';
 import { ConfigWorkflowLeftView } from './ConfigWorkflowLeftView';
-import { Component } from 'models/entity.store';
+import { CompAuditData, Component } from 'models/entity.store';
 import { useMemo } from 'react';
 import { useRef } from 'react';
+import ApiClient from 'utils/apiClient';
 
 type Props = {
 	projectId: string;
@@ -34,6 +35,7 @@ type Props = {
 	workflowData: any;
 	logs: string | null;
 	plans: string | null;
+	auditData: CompAuditData[];
 };
 
 export type WorkflowNode = {
@@ -47,7 +49,7 @@ export type WorkflowNode = {
 };
 
 export const ConfigWorkflowView: FC<Props> = (props: Props) => {
-	const { projectId, environmentId, config, logs, plans, workflowData } = props;
+	const { projectId, environmentId, config, logs, plans, workflowData, auditData } = props;
 	const clientLogMap = new Map<string, EventClientLogs>();
 	const nodesRef = useRef<Map<string, EventClientLogs>>(new Map<string, EventClientLogs>());
 	const tabs: OptionItem[] = [
@@ -166,43 +168,11 @@ export const ConfigWorkflowView: FC<Props> = (props: Props) => {
 			<ZFeedbackModal
 				approved={isApproved}
 				onApprove={async () => {
-					fetchApprove({
-						projectId: projectId,
-						environmentId: environmentId,
-						configId: config.argoId,
-						workflowId: workflowData.metadata.name,
-						data: {
-							name: workflowData.metadata.name,
-							namespace: 'argocd',
-						},
-					}).then(resp => {
-						// Promise.resolve(
-						// 	CostingService.getInstance().setComponentStatus({
-						// 		teamName: separatedConfigId?.team,
-						// 		environmentName: separatedConfigId?.environment,
-						// 		component: {
-						// 			componentName: separatedConfigId?.component,
-						// 			status: ZSyncStatus.InitializingApply,
-						// 		},
-						// 	})
-						// );
-						// Promise.resolve(AuditService.getInstance().patchApprovedBy(config.name));
-					});
+					if (!auditData || auditData.length === 0) return;
+					const latestId = auditData.sort((d1, d2) => d1.id - d2.id)[0].id;
+					await AuditService.getInstance().approve(latestId);
 				}}
 				onDecline={() => {
-					fetchDecline({
-						projectId: projectId,
-						environmentId: environmentId,
-						configId: config.argoId,
-						workflowId: workflowData.metadata.name,
-						data: {
-							message: 'no message',
-							name: workflowData.id,
-							namespace: 'argocd',
-						},
-					}).then((d: any) => {
-						console.log('----------------------------------> decline', d);
-					});
 				}}
 			/>
 		);
@@ -230,13 +200,7 @@ export const ConfigWorkflowView: FC<Props> = (props: Props) => {
 						auditId={config.id}
 						auditColumns={auditColumns}
 						config={config}
-						fetch={AuditService.getInstance().getComponent.bind(
-							AuditService.getInstance(),
-							config.id,
-							config.envId,
-							config.teamId,
-							config.argoId
-						)}
+						auditData={auditData}
 						fetchLogs={AuditService.getInstance().fetchLogs.bind(
 							AuditService.getInstance(),
 							separatedConfigId?.team || '',

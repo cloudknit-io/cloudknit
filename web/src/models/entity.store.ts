@@ -1,5 +1,7 @@
 import { EntityService } from 'services/entity/entity.service';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject, Subject, Subscription } from 'rxjs';
+import { AuditStatus } from './argo.models';
+import { string } from 'yup';
 
 export class EntityStore {
 	private static instance: EntityStore;
@@ -12,6 +14,10 @@ export class EntityStore {
 		environments: []
 	});
     public emitterComp = new Subject<Component[]>();
+	private emitterCompAudit = new Subject<CompAuditData>();
+	private emitterEnvAudit = new Subject<EnvAuditData>();
+	private componentAuditListeners = new Set<number>();
+	private environmentAuditListeners = new Set<number>();
 
 	public get Teams() {
 		return [...this.teamMap.values()];
@@ -82,6 +88,18 @@ export class EntityStore {
                 this.emitterComp.next(this.getComponentsByEnvId(component.envId));
             }
         });
+
+		this.entityService.streamComponentAudits().subscribe((data: CompAuditData) => {
+			if (this.componentAuditListeners.has(data.id)) {
+				this.emitterCompAudit.next(data);
+			}
+		});
+
+		this.entityService.streamEnvironmentAudits().subscribe((data: EnvAuditData) => {
+			if (this.environmentAuditListeners.has(data.id)) {
+				this.emitterEnvAudit.next(data);
+			}
+		});
     }
 
     public getTeam(id: number) {
@@ -124,6 +142,26 @@ export class EntityStore {
 		}
 		this.emitterComp.next(this.getComponentsByEnvId(envId))
 		return components;
+	}
+
+	public setComponentAuditLister(componentId: number) {
+		this.componentAuditListeners.add(componentId);
+		return this.emitterCompAudit;
+	}
+
+	public removeComponentAuditLister(componentId: number, sub: Subscription) {
+		this.componentAuditListeners.delete(componentId);
+		sub.unsubscribe();
+	}
+
+	public setEnvironmentAuditLister(envId: number) {
+		this.environmentAuditListeners.add(envId);
+		return this.emitterEnvAudit;
+	}
+
+	public removeEnvironmentAuditLister(envId: number, sub: Subscription) {
+		this.environmentAuditListeners.delete(envId);
+		sub.unsubscribe();
 	}
 }
 
@@ -175,5 +213,22 @@ export type Update = {
 	teams: Team[];
 	environments: Environment[];
  };
+
+export type AuditData = {
+	id: number;
+	duration: number;
+	status: AuditStatus;
+	startDateTime: string;
+	operation?: string;
+	approvedBy?: string;
+}
+
+export type EnvAuditData = {
+	envId: string;
+} & AuditData
+
+export type CompAuditData = {
+	compId: string;
+} & AuditData
 
 // export type Update

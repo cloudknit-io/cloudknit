@@ -46,7 +46,7 @@ import { ZTablControl } from 'components/molecules/tab-control/TabControl';
 import { ErrorStateService } from 'services/error/error-state.service';
 import { eventErrorColumns } from 'models/error.model';
 import { CostingService } from 'services/costing/costing.service';
-import { Component, EntityStore, Environment } from 'models/entity.store';
+import { CompAuditData, Component, EntityStore, EnvAuditData, Environment } from 'models/entity.store';
 
 const envTabs = [
 	{
@@ -62,7 +62,6 @@ const envTabs = [
 ];
 
 export const EnvironmentComponents: React.FC = () => {
-
 	// Migrating to API
 	// Get all components and start streaming
 	// End Streaming whenever we change the environment or URL changes [ this would decrease load on web ]
@@ -97,6 +96,8 @@ export const EnvironmentComponents: React.FC = () => {
 	const componentArrayRef = useRef<Component[]>([]);
 	const selectedComponentRef = useRef<Component>();
 	const [envErrors, setEnvErrors] = useState<any[]>();
+	const [envAuditList, setEnvAuditList] = useState<EnvAuditData[]>([]);
+	const [compAuditList, setCompAuditList] = useState<CompAuditData[]>([]);
 	const ctx = useContext(Context);
 
 	const breadcrumbItems = [
@@ -138,15 +139,14 @@ export const EnvironmentComponents: React.FC = () => {
 	}, [filterItems, filterDropDownOpen, filterDropDownOpen]);
 
 	useEffect(() => {
-		const headerTabs = 
-			entityStore.getAllEnvironmentsByTeamName(projectId).map(environment => {
-				const name: string = environment.name;
-				return {
-					active: environmentName === environment.name,
-					name: name.charAt(0).toUpperCase() + name.slice(1),
-					path: `/${projectId}/${environment.name}`,
-				};
-			});
+		const headerTabs = entityStore.getAllEnvironmentsByTeamName(projectId).map(environment => {
+			const name: string = environment.name;
+			return {
+				active: environmentName === environment.name,
+				name: name.charAt(0).toUpperCase() + name.slice(1),
+				path: `/${projectId}/${environment.name}`,
+			};
+		});
 
 		pageHeaderObservable.next({
 			breadcrumbs: breadcrumbItems,
@@ -166,24 +166,42 @@ export const EnvironmentComponents: React.FC = () => {
 
 	useEffect(() => {
 		if (!projectId || !environmentName) return;
-		const subs: any[] = []
-		subs.push(entityStore.emitter.subscribe(async data => {
-			if (data.environments.length === 0) return;
-			const env = entityStore.getEnvironmentByName(projectId, environmentName);
-			if (!env) return;
-			setEnvironment(env);
-		}));
-		
-		subs.push(subscriberWF.subscribe((response: any) => {
-			setStreamData2(response);
-		}));
+		const subs: any[] = [];
+		subs.push(
+			entityStore.emitter.subscribe(async data => {
+				if (data.environments.length === 0) return;
+				const env = entityStore.getEnvironmentByName(projectId, environmentName);
+				if (!env) return;
+				setEnvironment(env);
+			})
+		);
+
+		subs.push(
+			subscriberWF.subscribe((response: any) => {
+				setStreamData2(response);
+			})
+		);
+
 		return () => {
 			subs.forEach(sub => sub.unsubscribe());
-		}
+		};
 	}, [projectId, environmentName]);
 
 	useEffect(() => {
 		if (!environment?.id) return;
+		let subEnvAudit: Subscription | null = null;
+		AuditService.getInstance()
+			.getEnvironment(environment.id, environment.teamId)
+			.then(data => {
+				if (Array.isArray(data)) {
+					setEnvAuditList(data);
+					subEnvAudit = entityStore
+						.setEnvironmentAuditLister(environment.id)
+						.subscribe((response: EnvAuditData) => {
+							setEnvAuditList(envAuditList.concat(response));
+						});
+				}
+			});
 
 		const sub = entityStore.emitterComp.subscribe((components: Component[]) => {
 			if (components.length === 0 || components[0].envId !== environment.id) return;
@@ -196,8 +214,29 @@ export const EnvironmentComponents: React.FC = () => {
 
 		return () => {
 			sub.unsubscribe();
-		}
+			subEnvAudit && entityStore.removeEnvironmentAuditLister(environment.id, subEnvAudit);
+		};
 	}, [environment?.id]);
+
+	useEffect(() => {
+		if (!selectedConfig) return;
+		let subCompAudit: Subscription | null = null;
+		AuditService.getInstance()
+			.getComponent(selectedConfig.id, selectedConfig.envId, selectedConfig.teamId)
+			.then(data => {
+				if (Array.isArray(data)) {
+					setCompAuditList(data);
+					subCompAudit = entityStore
+						.setComponentAuditLister(selectedConfig.id)
+						.subscribe((response: CompAuditData) => {
+							setCompAuditList(compAuditList.concat(response));
+						});
+				}
+			});
+		return () => {
+			subCompAudit && entityStore.removeComponentAuditLister(selectedConfig.id, subCompAudit);
+		};
+	}, [selectedConfig]);
 
 	// useEffect(() => {
 	// 	const newEnvironments = streamMapper<EnvironmentItem>(
@@ -383,7 +422,7 @@ export const EnvironmentComponents: React.FC = () => {
 	// 	toast.update(toastId, {
 	// 		progress: 0.5,
 	// 	});
-		// MOCKING THE CALL
+	// MOCKING THE CALL
 	// 	setTimeout(() => {
 	// 		AuditService.getInstance()
 	// 			.getVisualizationSVGDemo({
@@ -440,10 +479,9 @@ export const EnvironmentComponents: React.FC = () => {
 			selectedComponentRef.current = selectedConfig;
 			setSelectedConfig(selectedConfig);
 			setShowSidePanel(true);
-			if (workflowId !== _workflowId){
+			if (workflowId !== _workflowId) {
 				setWorkflowId(_workflowId);
 			}
-			
 		}
 	};
 
@@ -520,14 +558,16 @@ export const EnvironmentComponents: React.FC = () => {
 					</div>
 				);
 			case 'DAG':
-					return components.length > 0 ? (
-						<TreeComponent
-							environmentId={environmentName}
-							nodes={components}
-							environmentItem={environment}
-							onNodeClick={onNodeClick}
-						/>
-					) : <></>;
+				return components.length > 0 ? (
+					<TreeComponent
+						environmentId={environmentName}
+						nodes={components}
+						environmentItem={environment}
+						onNodeClick={onNodeClick}
+					/>
+				) : (
+					<></>
+				);
 			default:
 				return (
 					<EnvironmentComponentCards
@@ -574,12 +614,7 @@ export const EnvironmentComponents: React.FC = () => {
 										</div>
 										<div id="Audit">
 											<AuditView
-												fetch={AuditService.getInstance().getEnvironment.bind(
-													AuditService.getInstance(),
-													environment?.id || 0,
-													environment?.teamId || 0,
-													environment?.argoId || ''
-												)}
+												auditData={envAuditList}
 												auditColumns={auditColumns}
 												auditId={environmentName}
 											/>
@@ -589,15 +624,15 @@ export const EnvironmentComponents: React.FC = () => {
 							</div>
 						)}
 						<ZLoaderCover loading={isLoadingWorkflow}>
-							{selectedConfig &&
-								!isEnvironmentNodeSelected &&
-								// (selectedConfig.labels?.component_type === 'argocd' ? (
-								// 	<ConfigWorkflowViewApplication
-								// 		projectId={projectId}
-								// 		environmentId={environmentName}
-								// 		config={selectedConfig}
-								// 	/>
-								// ) : (
+							{
+								selectedConfig && !isEnvironmentNodeSelected && (
+									// (selectedConfig.labels?.component_type === 'argocd' ? (
+									// 	<ConfigWorkflowViewApplication
+									// 		projectId={projectId}
+									// 		environmentId={environmentName}
+									// 		config={selectedConfig}
+									// 	/>
+									// ) : (
 									<ConfigWorkflowView
 										projectId={projectId}
 										environmentId={environmentName}
@@ -605,9 +640,11 @@ export const EnvironmentComponents: React.FC = () => {
 										logs={logs}
 										plans={plans}
 										workflowData={workflowData}
+										auditData={compAuditList}
 									/>
+								)
 								// ))
-								}
+							}
 						</ZLoaderCover>
 					</ZSidePanel>
 				</section>

@@ -268,9 +268,24 @@ const AUDIT_PATH_MAPPINGS = [
       `/v1/orgs/${params.orgId}/reconciliation/environments/notify`,
   },
   {
-    path: "/reconciliation/api/v1/approved-by/",
+    path: "/reconciliation/api/v1/environment/audits",
     newPath: (params: any) =>
-      `/v1/orgs/${params.orgId}/reconciliation/approved-by/`,
+      `/v1/orgs/${params.orgId}/reconciliation/environments/reconcile`,
+  },
+  {
+    path: "/reconciliation/api/v1/component/audits",
+    newPath: (params: any) =>
+      `/v1/orgs/${params.orgId}/reconciliation/component/reconcile`,
+  },
+  {
+    path: "/reconciliation/api/v1/component/approve",
+    newPath: (params: any) =>
+      `/v1/orgs/${params.orgId}/reconciliation/component/:compReconId/approve`,
+  },
+  {
+    path: "/reconciliation/api/v1/approved-by/:teamId/:envId/:compId",
+    newPath: (params: any) =>
+      `/v1/orgs/${params.orgId}/reconciliation/approved-by/${params.teamId}/${params.envId}/${params.compId}/${params.email}`,
   }
 ];
 

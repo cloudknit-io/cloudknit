@@ -1,4 +1,4 @@
-import { Environment, Team, Component } from 'models/entity.store';
+import { Environment, Team, Component, EnvAuditData, CompAuditData } from 'models/entity.store';
 import { BaseService } from 'services/base/base.service';
 import ApiClient from 'utils/apiClient';
 import { EventClient } from 'utils/apiClient/EventClient';
@@ -60,6 +60,16 @@ export class EntityService extends BaseService {
 		const ec = new EventClient<Environment>(this.constructUri(EntitytUriType.streamEnvironments()), 'Environment');
 		return ec.listen();
 	}
+
+	streamEnvironmentAudits() {
+		const ec = new EventClient<EnvAuditData>(this.constructUri(EntitytUriType.streamEnvironmentAudits()), 'EnvironmentReconcile');
+		return ec.listen();
+	}
+
+	streamComponentAudits() {
+		const ec = new EventClient<CompAuditData>(this.constructUri(EntitytUriType.streamComponentAudits()), 'ComponentReconcile');
+		return ec.listen();
+	}
 }
 
 class EntitytUriType {
@@ -68,4 +78,6 @@ class EntitytUriType {
 	static components = (teamId: number, envId: number) => `teams/${teamId}/environments/${envId}/components`;
 	static streamEnvironments = () => `stream/environments?teamName=0&envName=0`;
 	static streamComponents = () => `stream/components?teamName=0&envName=0&compName=0`;
+	static streamEnvironmentAudits = () => `stream/environment/audits`;
+	static streamComponentAudits = () => `stream/component/audits`;
 }
