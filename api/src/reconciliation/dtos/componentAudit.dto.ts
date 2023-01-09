@@ -1,11 +1,8 @@
 import { IsNotEmpty, IsString } from "class-validator";
+import { ComponentReconcile } from "src/typeorm";
 
-export interface ComponentAudit {
-    reconcileId: number;
+export interface ComponentReconcileWrap extends ComponentReconcile {
     duration: number;
-    status: string;
-    startDateTime: string;
-    approvedBy?: string;
 }
 
 export class ApprovedByDto {

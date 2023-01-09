@@ -1,12 +1,12 @@
-import { ComponentAudit } from "src/reconciliation/dtos/componentAudit.dto";
-import { EnvironmentAudit } from "src/reconciliation/dtos/environmentAudit.dto";
+import { ComponentReconcileWrap } from "src/reconciliation/dtos/componentAudit.dto";
+import { EnvironmentReconcileWrap } from "src/reconciliation/dtos/environmentAudit.dto";
 import { ComponentReconcile } from "src/typeorm/component-reconcile.entity";
 import { EnvironmentReconcile } from "src/typeorm/environment-reconcile.entity";
 
 export class Mapper {
   static getComponentAuditList(
     components: ComponentReconcile[]
-  ): ComponentAudit[] {
+  ): ComponentReconcileWrap[] {
     return components.map((c) => {
       let diff = -1;
       if (c.endDateTime) {
@@ -16,18 +16,15 @@ export class Mapper {
       }
 
       return {
-        reconcileId: c.reconcileId,
-        startDateTime: c.startDateTime,
-        duration: diff,
-        status: c.status,
-        approvedBy: c.approved_by,
+        ...c,
+        duration: diff
       };
     });
   }
 
   static getEnvironmentAuditList(
     components: EnvironmentReconcile[]
-  ): EnvironmentAudit[] {
+  ): EnvironmentReconcileWrap[] {
     return components.map((c) => {
       let diff = -1;
       if (c.endDateTime) {
@@ -37,10 +34,8 @@ export class Mapper {
       }
 
       return {
-        reconcileId: c.reconcileId,
-        startDateTime: c.startDateTime,
-        duration: diff,
-        status: c.status,
+        ...c,
+        duration: diff
       };
     });
   }
