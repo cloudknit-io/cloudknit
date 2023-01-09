@@ -1,27 +1,63 @@
 import { PartialType, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { IsBoolean, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { CreateComponentDto } from './create-component.dto';
 
 export class UpdateComponentDto extends PartialType(CreateComponentDto) {
+  @IsOptional()
+  @IsString()
   status?: string;
+
+  @IsOptional()
+  @IsNumber({
+    maxDecimalPlaces: 0
+  })
   duration?: number;
+
+  @IsOptional()
+  @IsString()
   lastWorkflowRunId?: string;
+
+  @IsOptional()
+  @IsNumber({
+    maxDecimalPlaces: 5
+  })
   estimatedCost?: number;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CostResource)
   costResources?: CostResource[];
+
+  @IsOptional()
+  @IsBoolean()
   isDestroyed?: boolean;
 }
 
 export class CostResource {
-  @ApiProperty()
+  @IsString()
   name: string
-  @ApiPropertyOptional()
+
+  @IsOptional()
+  @IsString()
   hourlyCost?: string
-  @ApiPropertyOptional()
+
+  @IsOptional()
+  @IsString()
   monthlyCost?: string
-  @ApiPropertyOptional()
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CostResource)
   subresources?: CostResource[]
-  @ApiPropertyOptional()
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CostComponent)
   costComponents?: CostComponent[]
-  @ApiPropertyOptional()
+
+  @IsOptional()
+  @IsString()
   metadata?: object
 }
 

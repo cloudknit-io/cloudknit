@@ -1,6 +1,7 @@
-import { BadRequestException, Body, Controller, Get, InternalServerErrorException, Logger, Param, Post, Query, Request } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Logger, Post, Query, Request } from "@nestjs/common";
 import { CreateOrganizationDto } from "./root.organization.dto";
 import { RootOrganizationsService } from "./root.organization.service";
+import { handleSqlErrors } from 'src/utilities/errorHandler';
 
 @Controller({
   version: '1'
@@ -24,17 +25,15 @@ export class RootOrganizationsController {
   }
 
   @Post()
-  public async create(@Body() body: CreateOrganizationDto) {
-    if (!this.OrganizationNameRegex.test(body.name) || body.name.length > 63) {
+  public async create(@Request() req, @Body() body: CreateOrganizationDto) {
+    if (!body.name || !this.OrganizationNameRegex.test(body.name) || body.name.length > 63) {
       throw new BadRequestException("Organization name is invalid");
     }
 
     try {
       return await this.orgService.create(body);
     } catch (error) {
-      if (error.message.startsWith('Duplicate entry')) {
-        throw new BadRequestException('Organization name already exists');
-      }
+      handleSqlErrors(error, "organization already exists");
 
       this.logger.error({ message: 'error creating organization', body }, error.stack);
 

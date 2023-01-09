@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumn, PrimaryGeneratedColumn, RelationId } from 'typeorm'
 import { Organization } from './Organization.entity'
 import { ComponentReconcile } from './component-reconcile.entity'
 import { Environment } from './environment.entity'
@@ -48,4 +48,10 @@ export class EnvironmentReconcile {
     referencedColumnName: 'id'
   })
   organization: Organization
+
+  @RelationId((envRecon: EnvironmentReconcile) => envRecon.environment)
+  envId: number
+
+  @RelationId((envRecon: EnvironmentReconcile) => envRecon.organization)
+  orgId: number
 }

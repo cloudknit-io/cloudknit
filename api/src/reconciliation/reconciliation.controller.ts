@@ -12,7 +12,7 @@ import {
   Req,
   Request,
 } from "@nestjs/common";
-import { Environments } from "aws-sdk/clients/iot";
+import { ApproveWorkflow as ResumeWorkflow } from "src/argowf/api";
 import { ComponentService } from "src/component/component.service";
 import { EnvironmentService } from "src/environment/environment.service";
 import { TeamService } from "src/team/team.service";
@@ -22,7 +22,7 @@ import { handleSqlErrors } from "src/utilities/errorHandler";
 import { ApprovedByDto } from "./dtos/componentAudit.dto";
 import { CreateComponentReconciliationDto, CreateEnvironmentReconciliationDto, UpdateComponentReconciliationDto, UpdateEnvironmentReconciliationDto } from "./dtos/reconciliation.dto";
 import { ReconciliationService } from "./reconciliation.service";
-import { RequiredQueryValidationPipe, TeamEnvCompQueryParams } from "./validationPipes";
+import { TeamEnvCompQueryParams } from "./validationPipes";
 
 
 @Controller({
@@ -136,7 +136,7 @@ export class ReconciliationController {
   async updateComponentReconciliation(@Req() req: APIRequest, @Param('reconcileId') compReconcileId: number, @Body() body: UpdateComponentReconciliationDto) {
     const { org } = req;
 
-    const compRecon: ComponentReconcile = await this.reconSvc.getCompReconById(org, compReconcileId, true);
+    const compRecon: ComponentReconcile = await this.reconSvc.findCompReconById(org, compReconcileId, true);
     if (!compRecon) {
       this.logger.error({ message: 'could not find component-reconcile in updateComponentReconciliation', body });
       throw new BadRequestException('could not find component-reconcile');
@@ -162,17 +162,56 @@ export class ReconciliationController {
     return updatedCompRecon;
   }
 
-  @Patch("approved-by")
-  async patchApprovedBy(@Req() req: APIRequest, @Body() body: ApprovedByDto) {
-    return await this.reconSvc.patchApprovedBy(req.org, body);
+  /**
+   * Resumes Argo Workflow run and sets approved by user
+   * @param req APIRequest
+   * @param compReconId Component reconcile ID to approve
+   * @param body Email of user that issued approval
+   */
+  @Post('approve/:compReconId')
+  async approveWorkflow(@Req() req: APIRequest, @Param('compReconId') compReconId: number, @Body() body: ApprovedByDto) {
+    const { org } = req;
+
+    const compRecon = await this.reconSvc.findCompReconById(org, compReconId, true);
+    if (!compRecon) {
+      throw new BadRequestException('could not find component reconcile');
+    }
+
+    const env = await this.envSvc.findById(org, compRecon.environmentReconcile.envId);
+    if (!env) {
+      throw new BadRequestException('could not find environment for component reconcile');
+    }
+
+    const comp = await this.compSvc.findByName(org, env, compRecon.name);
+    if (!comp) {
+      throw new BadRequestException('could not find component for component reconcile');
+    }
+
+    try {
+      // Resume Argo Workflow run
+      await ResumeWorkflow(org, comp.lastWorkflowRunId);
+    } catch (err) {
+      this.logger.error({ message: 'could not approve workflow', compRecon, lastWorkflowRunId: comp.lastWorkflowRunId, err});
+      throw new InternalServerErrorException('could not approve workflow');
+    }
+
+    // Set approved by on reconcile entry
+    try {
+      return this.reconSvc.updateCompRecon(compRecon, { approvedBy: body.email });
+    } catch (err) {
+      handleSqlErrors(err);
+
+      this.logger.error({ message: 'could not set approved by', compRecon, body, err});
+      throw new InternalServerErrorException('could not approve workflow');
+    }
   }
 
   @Get("approved-by")
-  async getApprovedBy(@Request() req: APIRequest, @Query(new RequiredQueryValidationPipe()) tec: TeamEnvCompQueryParams, @Query("rid") rid: number) {
+  async getApprovedBy(@Request() req: APIRequest, @Query() tec: TeamEnvCompQueryParams, @Query("rid") rid: number) {
     const { org } = req;
 
     if (rid > 0) {
-      return this.reconSvc.getCompReconById(org, rid);
+      return this.reconSvc.findCompReconById(org, rid);
     }
 
     const team = await this.teamSvc.findByName(org, tec.teamName);

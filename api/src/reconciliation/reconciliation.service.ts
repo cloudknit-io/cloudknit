@@ -127,7 +127,7 @@ export class ReconciliationService {
     return this.compReconRepo.save(compRecon);
   }
 
-  async getCompReconById(org: Organization, reconcileId: number, withEnvRecon: boolean = false): Promise<ComponentReconcile> {
+  async findCompReconById(org: Organization, reconcileId: number, withEnvRecon: boolean = false): Promise<ComponentReconcile> {
     return this.compReconRepo.findOne({
       where: {
         reconcileId,
@@ -188,15 +188,6 @@ export class ReconciliationService {
 
       await this.compReconRepo.save(newEntries);
     }
-  }
-
-  async patchApprovedBy(org: Organization, body: ApprovedByDto): Promise<ComponentReconcile> {
-    const envRecon = await this.getEnvReconByReconcileId(org, body.envReconcileId);
-    const compRecon = await this.getLatestCompReconcile(org, envRecon, body.compName);
-
-    this.compReconRepo.merge(compRecon, { approved_by: body.email })
-
-    return this.compReconRepo.save(compRecon);
   }
 
   async getComponentAuditList(org: Organization, env: Environment, comp: Component): Promise<ComponentAudit[]> {
