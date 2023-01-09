@@ -138,7 +138,7 @@ if [ $config_name -eq 0 ]; then # environment recon
     fi
 else # component recon
     if [ $config_reconcile_id = null ]; then # create comp reconcile
-        payload='{"name": "'${config_name}'", "startDateTime": "'${start_date}'", "envReconcileId": "'${reconcile_id}'"}'
+        payload='{"name": "'${config_name}'", "startDateTime": "'${start_date}'", "envReconcileId": '${reconcile_id}'}'
         echo ${payload} >tmp_new_comp_recon.json
 
 	echo "PAYLOAD: $payload"
