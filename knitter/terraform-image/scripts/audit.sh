@@ -115,12 +115,6 @@ if [ $config_name -eq 0 ]; then
     . /patch_environment.sh
 fi
 
-if [[ $is_destroy = true ]]; then
-    status="destroy_"$status
-else
-    status="provision_"$status
-fi
-
 result=""
 
 if [ $config_name -eq 0 ]; then # environment recon
@@ -131,6 +125,11 @@ if [ $config_name -eq 0 ]; then # environment recon
 	echo "PAYLOAD: $payload"
         result=$(curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/environment" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_new_env_recon.json)
     else # update env reconcile
+        if [[ $is_destroy = true ]]; then
+            status="destroy_ended"
+        else
+            status="provision_ended"
+        fi
         payload='{"status": "'${status}'", "teamName": "'${team_name}'", "endDateTime": "'${end_date}'"}'
         echo ${payload} >tmp_update_env_recon.json
 
