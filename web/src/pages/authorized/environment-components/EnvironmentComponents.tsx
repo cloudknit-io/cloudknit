@@ -198,7 +198,7 @@ export const EnvironmentComponents: React.FC = () => {
 					subEnvAudit = entityStore
 						.setEnvironmentAuditLister(environment.id)
 						.subscribe((response: EnvAuditData) => {
-							const idx = envAuditList.findIndex(e => e.id === response.id);
+							const idx = envAuditList.findIndex(e => e.reconcileId === response.reconcileId);
 							if (idx !== -1) {
 								envAuditList[idx] = response;
 							} else {
@@ -235,7 +235,7 @@ export const EnvironmentComponents: React.FC = () => {
 					subCompAudit = entityStore
 						.setComponentAuditLister(selectedConfig.id)
 						.subscribe((response: CompAuditData) => {
-							const idx = compAuditList.findIndex(e => e.id === response.id);
+							const idx = compAuditList.findIndex(e => e.reconcileId === response.reconcileId);
 							if (idx !== -1) {
 								compAuditList[idx] = response;
 							} else {

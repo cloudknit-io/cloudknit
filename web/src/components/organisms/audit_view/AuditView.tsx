@@ -68,8 +68,8 @@ export const AuditView: FC<Props> = ({ auditId, auditData, auditColumns, fetchLo
 		setSelectedLog(null);
 		let recId = -1;
 		auditData.forEach((d: AuditData) => {
-			if (recId < d.id) {
-				recId = d.id;
+			if (recId < d.reconcileId) {
+				recId = d.reconcileId;
 			}
 		});
 
@@ -189,7 +189,7 @@ export const AuditView: FC<Props> = ({ auditId, auditData, auditColumns, fetchLo
 				<ZTable
 					table={{
 						columns: auditColumns,
-						rows: auditData.sort((a: AuditData, b: AuditData) => b.id - a.id),
+						rows: auditData.sort((a: AuditData, b: AuditData) => b.reconcileId - a.reconcileId),
 					}}
 					onRowClick={(rowData: AuditData) => {
 						if (
@@ -205,7 +205,7 @@ export const AuditView: FC<Props> = ({ auditId, auditData, auditColumns, fetchLo
 						}
 
 						setSelectedLog(rowData);
-						fetchLogs(rowData.id).then(({ data }) => {
+						fetchLogs(rowData.reconcileId).then(({ data }) => {
 							let zi: ZAccordionItem[] = [];
 							if (data && data === 'No Object was found') {
 								const item: ZAccordionItem = {

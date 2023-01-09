@@ -90,13 +90,13 @@ export class EntityStore {
         });
 
 		this.entityService.streamComponentAudit().subscribe((data: CompAuditData) => {
-			if (this.componentAuditListeners.has(data.id)) {
+			if (this.componentAuditListeners.has(data.compId)) {
 				this.emitterCompAudit.next(data);
 			}
 		});
 
 		this.entityService.streamEnvironmentAudit().subscribe((data: EnvAuditData) => {
-			if (this.environmentAuditListeners.has(data.id)) {
+			if (this.environmentAuditListeners.has(data.envId)) {
 				this.emitterEnvAudit.next(data);
 			}
 		});
@@ -215,7 +215,7 @@ export type Update = {
  };
 
 export type AuditData = {
-	id: number;
+	reconcileId: number;
 	duration: number;
 	status: AuditStatus;
 	startDateTime: string;
@@ -224,11 +224,11 @@ export type AuditData = {
 }
 
 export type EnvAuditData = {
-	envId: string;
+	envId: number;
 } & AuditData
 
 export type CompAuditData = {
-	compId: string;
+	compId: number;
 } & AuditData
 
 // export type Update

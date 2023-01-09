@@ -169,7 +169,7 @@ export const ConfigWorkflowView: FC<Props> = (props: Props) => {
 				approved={isApproved}
 				onApprove={async () => {
 					if (!auditData || auditData.length === 0) return;
-					const latestId = auditData.sort((d1, d2) => d1.id - d2.id)[0].id;
+					const latestId = auditData.sort((d1, d2) => d2.reconcileId - d1.reconcileId)[0].reconcileId;
 					await AuditService.getInstance().approve(latestId);
 				}}
 				onDecline={() => {
