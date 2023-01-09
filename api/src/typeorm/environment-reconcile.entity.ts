@@ -54,4 +54,7 @@ export class EnvironmentReconcile {
 
   @RelationId((envRecon: EnvironmentReconcile) => envRecon.organization)
   orgId: number
+
+  @RelationId((envRecon: EnvironmentReconcile) => envRecon.team)
+  teamId: number
 }

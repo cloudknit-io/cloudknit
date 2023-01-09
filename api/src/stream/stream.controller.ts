@@ -39,9 +39,6 @@ export class StreamController {
           return;
         }
 
-        // @ts-ignore
-        delete data.environment;
-
         return {
           data,
           type: item.type

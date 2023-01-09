@@ -32,21 +32,57 @@ export class StreamService {
   }
 
   sendEnvironment(env: Environment) {
+    if (env.team) {
+      env.teamId = env.team.id;
+
+      delete env.team;
+    }
+
     this.envStream.next(this.normalizeOrg(env) as Environment);
   }
 
   sendComponent(comp: Component) {
+    if (comp.environment) {
+      comp.envId = comp.environment.id;
+
+      delete comp.environment;
+    }
+
     this.compStream.next(this.normalizeOrg(comp) as Component);
   }
 
   sendCompReconcile(compRecon: ComponentReconcile) {
     const data = Mapper.wrapComponentRecon(this.normalizeOrg(compRecon) as ComponentReconcile);
 
+    if (data.environmentReconcile) {
+      data.envReconId = data.environmentReconcile.reconcileId;
+
+      delete data.environmentReconcile;
+    }
+
+    if (data.component) {
+      data.compId = data.component.id;
+
+      delete data.component;
+    }
+
     this.reconcileStream.next({data, type: 'ComponentReconcile'});
   }
 
   sendEnvReconcile(envRecon: EnvironmentReconcile) {
     const data = Mapper.wrapEnvironmentRecon(this.normalizeOrg(envRecon) as EnvironmentReconcile);
+
+    if (data.environment) {
+      data.envId = data.environment.id;
+
+      delete data.environment;
+    }
+
+    if (data.team) {
+      data.teamId = data.team.id;
+
+      delete data.team;
+    }
 
     this.reconcileStream.next({data, type: 'EnvironmentReconcile'});
   }
