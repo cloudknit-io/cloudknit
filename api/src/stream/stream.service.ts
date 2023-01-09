@@ -20,15 +20,15 @@ export class StreamService {
   }
 
   sendCompReconcile(compRecon: ComponentReconcile) {
-    this.reconcileStream.next({item: compRecon, type: 'ComponentReconcile'});
+    this.reconcileStream.next({data: compRecon, type: 'ComponentReconcile'});
   }
 
   sendEnvReconcile(envRecon: EnvironmentReconcile) {
-    this.reconcileStream.next({item: envRecon, type: 'EnvironmentReconcile'});
+    this.reconcileStream.next({data: envRecon, type: 'EnvironmentReconcile'});
   }
 }
 
 export class AuditWrapper {
-  item: EnvironmentReconcile|ComponentReconcile;
+  data: EnvironmentReconcile|ComponentReconcile;
   type: 'EnvironmentReconcile'|'ComponentReconcile';
 }

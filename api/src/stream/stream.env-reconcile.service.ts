@@ -4,8 +4,8 @@ import { Connection, EntitySubscriberInterface, InsertEvent, RemoveEvent, Update
 import { StreamService } from "./stream.service";
 
 @Injectable()
-export class StreamComponentService implements EntitySubscriberInterface<EnvironmentReconcile> {
-  private readonly logger = new Logger(StreamComponentService.name); 
+export class StreamEnvironmentReconcileService implements EntitySubscriberInterface<EnvironmentReconcile> {
+  private readonly logger = new Logger(StreamEnvironmentReconcileService.name); 
 
   constructor(
     @Inject(Connection) conn: Connection,

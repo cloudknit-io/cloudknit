@@ -47,7 +47,7 @@ export class ComponentService {
     });
   }
 
-  async getAllForEnvironmentById(org: Organization, env: Environment, isDestroyed: boolean = false, withEnv: boolean = false): Promise<Component[]> {
+  async getAllForEnvironmentById(org: Organization, env: Environment, withEnv: boolean = false): Promise<Component[]> {
     return this.compRepo.find({
       where: {
         organization: {
@@ -55,8 +55,7 @@ export class ComponentService {
         },
         environment: {
           id: env.id
-        },
-        isDestroyed
+        }
       },
       relations: {
         environment: withEnv
@@ -64,13 +63,12 @@ export class ComponentService {
     })
   }
 
-  async getAll(org: Organization, isDestroyed: boolean = false, withEnv: boolean = false): Promise<Component[]> {
+  async getAll(org: Organization, withEnv: boolean = false): Promise<Component[]> {
     const components = await this.compRepo.find({
       where: {
         organization: {
           id: org.id
-        },
-        isDestroyed
+        }
       },
       relations: {
         environment: withEnv
@@ -80,14 +78,13 @@ export class ComponentService {
     return components;
   }
 
-  async findById(org: Organization, id: number, isDestroyed: boolean = false, withEnv: boolean = false): Promise<Component> {
+  async findById(org: Organization, id: number, withEnv: boolean = false): Promise<Component> {
     return await this.compRepo.findOne({
       where: {
         id,
         organization: {
           id: org.id
-        },
-        isDestroyed
+        }
       },
       relations: {
         environment: withEnv
@@ -95,7 +92,7 @@ export class ComponentService {
     });
   }
 
-  async findByName(org: Organization, env: Environment, name: string, isDestroyed: boolean = false, withEnv: boolean = false): Promise<Component> {
+  async findByName(org: Organization, env: Environment, name: string, withEnv: boolean = false): Promise<Component> {
     return await this.compRepo.findOne({
       where: {
         name,
@@ -104,8 +101,7 @@ export class ComponentService {
         },
         organization: {
           id: org.id
-        },
-        isDestroyed
+        }
       },
       relations: {
         environment: withEnv
@@ -133,7 +129,7 @@ export class ComponentService {
     });
   }
 
-  async findAll(org: Organization, env: Environment, isDestroyed: boolean = false, withEnv: boolean = false) {
+  async findAll(org: Organization, env: Environment, withEnv: boolean = false) {
     return this.compRepo.find({
       where: {
         environment: {
@@ -141,8 +137,7 @@ export class ComponentService {
         },
         organization: {
           id: org.id
-        },
-        isDestroyed
+        }
       },
       relations: {
         environment: withEnv
