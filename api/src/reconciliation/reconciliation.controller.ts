@@ -80,13 +80,12 @@ export class ReconciliationController {
   async updateEnvironmentReconciliation(@Req() req: APIRequest, @Param('reconcileId') reconcileId: number, @Body() body: UpdateEnvironmentReconciliationDto) {
     const { org } = req;
 
-    const existingEntry = await this.reconSvc.getEnvReconByReconcileId(org, reconcileId, true);
+    const existingEntry = await this.reconSvc.getEnvReconByReconcileId(org, reconcileId, false);
     if (!existingEntry) {
       this.logger.error({message: 'could not find environment reconcile entry', reconcileId })
       throw new BadRequestException('could not find environment reconcile entry');
     }
     
-    const env = existingEntry.environment;
     let envRecon: EnvironmentReconcile;
 
     try {
@@ -96,26 +95,6 @@ export class ReconciliationController {
 
       this.logger.error({ message: 'could not update env recon', reconcileId, existingEntry, body });
       throw new InternalServerErrorException('could not update environment reconcile');
-    }
-
-    let duration = -1;
-
-    if (envRecon.endDateTime) {
-      const ed = new Date(envRecon.endDateTime).getTime();
-      const sd = new Date(envRecon.startDateTime).getTime();
-      duration = ed - sd;
-    }
-
-    try {
-      await this.envSvc.updateById(org, env.id, {
-        duration,
-        status: body.status
-      });
-    } catch (err) {
-      handleSqlErrors(err);
-
-      this.logger.error({ message: 'could not update environment with env recon', envRecon, body, duration, err});
-      throw new InternalServerErrorException('could not update environment');
     }
 
     return envRecon;
