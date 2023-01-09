@@ -145,7 +145,7 @@ else # component recon
 	echo "PAYLOAD: $payload"
         result=$(curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/component" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_new_comp_recon.json)
     else # update comp reconcile
-        payload='{"status": "'${status}'", "endDateTime": "'${end_date}'"}'
+        payload='{"status": "'${config_status}'", "endDateTime": "'${end_date}'"}'
         echo ${payload} >tmp_update_comp_recon.json
 
 	echo "PAYLOAD: $payload"
