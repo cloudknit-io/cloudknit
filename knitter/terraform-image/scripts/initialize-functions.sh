@@ -119,7 +119,7 @@ function UpdateComponentStatus() {
       isDestroyed=false
   fi
 
-  local payload='{ "status" : "'${compStatus}'", "isDestroyed" : "'${isDestroyed}'" }'
+  local payload='{ "status" : "'${compStatus}'", "isDestroyed" : '${isDestroyed}' }'
   
   echo "Running UpdateComponentStatus ${compStatus} : ${payload}"
   echo $payload >tmp_comp_status.json
