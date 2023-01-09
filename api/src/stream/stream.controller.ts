@@ -1,7 +1,7 @@
 import { Controller, Sse, Request, Query } from '@nestjs/common';
 import { StreamService } from './stream.service';
-import { from, map, noop, Observable } from 'rxjs';
-import { RequiredQueryValidationPipe, TeamEnvCompQueryParams, TeamEnvQueryParams } from 'src/reconciliation/validationPipes';
+import { from, map, Observable } from 'rxjs';
+import { TeamEnvCompQueryParams, TeamEnvQueryParams } from 'src/reconciliation/validationPipes';
 import { Component, Environment } from 'src/typeorm';
 
 @Controller({
@@ -11,7 +11,7 @@ export class StreamController {
   constructor(private readonly sseSvc: StreamService) {}
 
   @Sse("components")
-  components(@Request() req, @Query(new RequiredQueryValidationPipe()) tec: TeamEnvCompQueryParams): Observable<MessageEvent> {
+  components(@Request() req, @Query() tec: TeamEnvCompQueryParams): Observable<MessageEvent> {
     const { org } = req;
 
     return from(this.sseSvc.compStream).pipe(
@@ -29,7 +29,7 @@ export class StreamController {
   }
 
   @Sse("environments")
-  environments(@Request() req, @Query(new RequiredQueryValidationPipe()) te: TeamEnvQueryParams): Observable<MessageEvent> {
+  environments(@Request() req, @Query() te: TeamEnvQueryParams): Observable<MessageEvent> {
     const { org } = req;
 
     return from(this.sseSvc.envStream).pipe(

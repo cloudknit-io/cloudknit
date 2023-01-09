@@ -42,7 +42,7 @@ export class RootTeamController {
   }
 
   async createTeam(@Request() req: APIRequest, @Body() createTeam: CreateTeamDto) {
-    if (!this.TeamNameRegex.test(createTeam.name) || createTeam.name.length > 63) {
+    if (!createTeam.name || !this.TeamNameRegex.test(createTeam.name) || createTeam.name.length > 63) {
       throw new BadRequestException("team name is invalid");
     }
 

@@ -19,6 +19,7 @@ export type ApiConfig = {
     wf: {
       skipProvision: boolean,
       url: string,
+      orgUrl: Function,
       namespace: string
     }
   }
@@ -65,6 +66,7 @@ export function init() {
       wf: {
         skipProvision: getEnvVarOrDefault('CK_ARGO_WF_SKIP_PROVISION', 'true') === 'true',
         url: getEnvVarOrFail('CK_ARGO_WF_URL'),
+        orgUrl: (orgName: string) => getEnvVarOrFail('CK_ARGO_WF_ORG_URL').replaceAll(':org', orgName),
         namespace: getEnvVarOrFail('CK_ARGO_WF_NAMESPACE'),
       }
     },
