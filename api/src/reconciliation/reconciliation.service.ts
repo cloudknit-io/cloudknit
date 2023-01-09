@@ -28,9 +28,6 @@ export class ReconciliationService {
     private readonly envReconRepo: Repository<EnvironmentReconcile>,
     @InjectRepository(ComponentReconcile)
     private readonly compReconRepo: Repository<ComponentReconcile>,
-    @InjectRepository(Component)
-    private readonly envSvc: EnvironmentService,
-    private readonly teamSvc: TeamService,
   ) { }
 
   async createEnvRecon(org: Organization, team: Team, env: Environment, createEnv: CreateEnvironmentReconciliationDto): Promise<EnvironmentReconcile> {
@@ -111,9 +108,9 @@ export class ReconciliationService {
     }
   }
 
-  async createCompRecon(org: Organization, envRecon: EnvironmentReconcile, createComp: CreateComponentReconciliationDto): Promise<ComponentReconcile> {
+  async createCompRecon(org: Organization, envRecon: EnvironmentReconcile, comp: Component, createComp: CreateComponentReconciliationDto): Promise<ComponentReconcile> {
     return this.compReconRepo.save({
-      name: createComp.name,
+      component: comp,
       status: 'initializing',
       organization: org,
       startDateTime: createComp.startDateTime,
@@ -141,14 +138,11 @@ export class ReconciliationService {
     })
   }
 
-  async getCompReconByName(org: Organization, env: Environment, compName: string): Promise<ComponentReconcile> {
+  async getCompReconByComponent(org: Organization, comp: Component): Promise<ComponentReconcile> {
     return this.compReconRepo.findOne({
       where: {
-        name: compName,
-        environmentReconcile: {
-          environment: {
-            id: env.id
-          }
+        component: {
+          id: Equal(comp.id)
         },
         organization: {
           id: org.id
@@ -160,20 +154,20 @@ export class ReconciliationService {
     })
   }
 
-  async getSkippedComponents(org: Organization, env: Environment, compName: string, ignoreReconcileIds: number[]) {
+  async getSkippedComponents(org: Organization, envRecon: EnvironmentReconcile, comp: Component, ignoreReconcileIds: number[]) {
     return await this.compReconRepo.find({
       where: {
-        name: Equal(compName),
+        component: {
+          id: Equal(comp.id)
+        },
         endDateTime: IsNull(),
         status: Not(Equal('skipped_reconcile')),
         reconcileId: Not(In(ignoreReconcileIds)),
         environmentReconcile: {
-          environment: {
-            id: env.id
-          }
+          reconcileId: Equal(envRecon.reconcileId)
         },
         organization: {
-          id: org.id
+          id: Equal(org.id)
         }
       },
     });
@@ -190,18 +184,14 @@ export class ReconciliationService {
     }
   }
 
-  async getComponentAuditList(org: Organization, env: Environment, comp: Component): Promise<ComponentAudit[]> {
-    const envAuditList = await this.getEnvironmentAuditList(org, env);
-    const reconcileIds = envAuditList.map(e => e.reconcileId);
-    
+  async getComponentAuditList(org: Organization, comp: Component): Promise<ComponentAudit[]> {    
     const components = await this.compReconRepo.find({
       where: {
-        name: Equal(comp.name),
+        component: {
+          id: comp.id
+        },
         organization: {
           id: org.id
-        },
-        environmentReconcile: {
-          reconcileId: In(reconcileIds)
         }
       },
       order: {
@@ -271,36 +261,15 @@ export class ReconciliationService {
     };
   }
 
-  async getLatestCompReconcile(org: Organization, envRecon: EnvironmentReconcile, compName: string): Promise<ComponentReconcile> {
+  async getLatestCompReconcile(org: Organization, comp: Component): Promise<ComponentReconcile> {
     return await this.compReconRepo.findOne({
       where: {
-        name: Equal(compName),
+        component: {
+          id: comp.id
+        },
         status: Not(Like("skipped%")),
         organization: {
           id : org.id
-        },
-        environmentReconcile: {
-          reconcileId: envRecon.reconcileId
-        }
-      },
-      order: {
-        startDateTime: -1,
-      }
-    });
-  }
-
-  async getLatestCompReconcileByEnv(org: Organization, env: Environment, compName: string): Promise<ComponentReconcile> {
-    return await this.compReconRepo.findOne({
-      where: {
-        name: Equal(compName),
-        status: Not(Like("skipped%")),
-        organization: {
-          id : org.id
-        },
-        environmentReconcile: {
-          environment: {
-            id: env.id
-          }
         }
       },
       order: {

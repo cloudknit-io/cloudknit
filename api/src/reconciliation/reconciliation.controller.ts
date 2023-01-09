@@ -110,10 +110,11 @@ export class ReconciliationController {
       throw new BadRequestException('could not find environment-reconcile');
     }
 
+    const comp = await this.compSvc.findByName(org, envRecon.environment, body.name);
     let compRecon: ComponentReconcile;
 
     try {
-      compRecon = await this.reconSvc.createCompRecon(org, envRecon, body);
+      compRecon = await this.reconSvc.createCompRecon(org, envRecon, comp, body);
     } catch (err) {
       handleSqlErrors(err);
       
@@ -122,7 +123,7 @@ export class ReconciliationController {
     }
 
     try {
-      const skippedEntries = await this.reconSvc.getSkippedComponents(org, envRecon.environment, body.name, [compRecon.reconcileId])
+      const skippedEntries = await this.reconSvc.getSkippedComponents(org, envRecon, comp, [compRecon.reconcileId])
       await this.reconSvc.bulkUpdateComponentEntries(skippedEntries, 'skipped_reconcile');
     } catch (err) {
       this.logger.error('could not update skipped component reconciles', err);
@@ -141,20 +142,6 @@ export class ReconciliationController {
       this.logger.error({ message: 'could not find component-reconcile in updateComponentReconciliation', body });
       throw new BadRequestException('could not find component-reconcile');
     }
-    
-    const envRecon = compRecon.environmentReconcile;
-
-    const env = await this.envSvc.findById(org, envRecon.environment.id);
-    if (!env) {
-      this.logger.error({ message: 'could not find environment in updateComponentReconciliation', body });
-      throw new BadRequestException('could not find environment');
-    }
-    
-    const comp = await this.compSvc.findByName(org, env, compRecon.name);
-    if (!comp) {
-      this.logger.error({ message: 'could not find component in updateComponentReconciliation', body });
-      throw new BadRequestException('could not find component');
-    }
 
     const updatedCompRecon = await this.reconSvc.updateCompRecon(compRecon, body);
     delete updatedCompRecon.environmentReconcile;
@@ -168,7 +155,7 @@ export class ReconciliationController {
    * @param compReconId Component reconcile ID to approve
    * @param body Email of user that issued approval
    */
-  @Post('approve/:compReconId')
+  @Post('component/:compReconId/approve')
   async approveWorkflow(@Req() req: APIRequest, @Param('compReconId') compReconId: number, @Body() body: ApprovedByDto) {
     const { org } = req;
 
@@ -177,27 +164,19 @@ export class ReconciliationController {
       throw new BadRequestException('could not find component reconcile');
     }
 
-    const env = await this.envSvc.findById(org, compRecon.environmentReconcile.envId);
-    if (!env) {
-      throw new BadRequestException('could not find environment for component reconcile');
-    }
-
-    const comp = await this.compSvc.findByName(org, env, compRecon.name);
-    if (!comp) {
-      throw new BadRequestException('could not find component for component reconcile');
-    }
+    const lastWorkflowRunId = compRecon.component.lastWorkflowRunId;
 
     try {
       // Resume Argo Workflow run
-      await ResumeWorkflow(org, comp.lastWorkflowRunId);
+      await ResumeWorkflow(org, lastWorkflowRunId);
     } catch (err) {
-      this.logger.error({ message: 'could not approve workflow', compRecon, lastWorkflowRunId: comp.lastWorkflowRunId, err});
+      this.logger.error({ message: 'could not approve workflow', compRecon, lastWorkflowRunId, err});
       throw new InternalServerErrorException('could not approve workflow');
     }
 
     // Set approved by on reconcile entry
     try {
-      return this.reconSvc.updateCompRecon(compRecon, { approvedBy: body.email });
+      return this.reconSvc.updateCompRecon(compRecon, { approvedBy: body.email, status: 'initializing_apply' });
     } catch (err) {
       handleSqlErrors(err);
 
@@ -214,9 +193,9 @@ export class ReconciliationController {
       return this.reconSvc.findCompReconById(org, rid);
     }
 
-    const team = await this.teamSvc.findByName(org, tec.teamName);
-    const env = await this.envSvc.findByName(org, team, tec.envName);
-    return await this.reconSvc.getCompReconByName(org, env, tec.compName);
+    const comp = await this.compSvc.findByNameWithTeamName(org, tec.teamName, tec.envName, tec.compName);
+    
+    return await this.reconSvc.getCompReconByComponent(org, comp);
   }
 
   @Get("component/logs/:team/:environment/:component/:id")
@@ -307,7 +286,7 @@ export class ReconciliationController {
     let logs;
 
     if (latest) {
-      const compRecon = await this.reconSvc.getLatestCompReconcileByEnv(org, env, comp.name);
+      const compRecon = await this.reconSvc.getLatestCompReconcile(org, comp);
       logs = await this.reconSvc.getLatestLogs(org, team, env, comp, compRecon)
     } else {
       logs = await this.reconSvc.getLogs(org, team, env, comp, id);

@@ -77,6 +77,6 @@ export class ComponentController {
     const { org, env } = req;
     const comp = await this.getCompFromRequest(org, env, id);
 
-    return this.reconSvc.getComponentAuditList(org, env, comp);
+    return this.reconSvc.getComponentAuditList(org, comp);
   }
 }
