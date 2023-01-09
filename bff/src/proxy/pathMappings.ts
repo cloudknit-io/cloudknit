@@ -268,16 +268,6 @@ const AUDIT_PATH_MAPPINGS = [
       `/v1/orgs/${params.orgId}/reconciliation/environments/notify`,
   },
   {
-    path: "/reconciliation/api/v1/environment/audits",
-    newPath: (params: any) =>
-      `/v1/orgs/${params.orgId}/reconciliation/environments/reconcile`,
-  },
-  {
-    path: "/reconciliation/api/v1/component/audits",
-    newPath: (params: any) =>
-      `/v1/orgs/${params.orgId}/reconciliation/component/reconcile`,
-  },
-  {
     path: "/reconciliation/api/v1/component/approve",
     newPath: (params: any) =>
       `/v1/orgs/${params.orgId}/reconciliation/component/:compReconId/approve`,
@@ -390,12 +380,25 @@ const API_PATH_MAPPINGS = [
     newPath: (params: any) => `v1/orgs/${params.orgId}/teams/${params.teamId}/environments/${params.envId}/components`,
   },
   {
-    path: "/api/stream/components",
-    newPath: (params: any) => `v1/orgs/${params.orgId}/stream/components`,
+    path: "/api/stream/component",
+    newPath: (params: any) => `v1/orgs/${params.orgId}/stream/component`,
   },
   {
-    path: "/api/stream/environments",
-    newPath: (params: any) => `v1/orgs/${params.orgId}/stream/environments`,
+    path: "/api/stream/environment",
+    newPath: (params: any) => `v1/orgs/${params.orgId}/stream/environment`,
+  },
+  {
+    path: "/api/stream/component",
+    newPath: (params: any) => `v1/orgs/${params.orgId}/stream/component`,
+  },
+  {
+    path: "/api/stream/environment",
+    newPath: (params: any) => `v1/orgs/${params.orgId}/stream/environment`,
+  },
+  {
+    path: "/api/stream/audit",
+    newPath: (params: any) =>
+      `v1/orgs/${params.orgId}/stream/audit`,
   },
 ]
 
