@@ -199,7 +199,7 @@ export class AuditService extends BaseService {
 	}
 
 	async approve(configReconcileId: number) {
-		return ApiClient.get(this.constructUri(AuditUriType.approve(configReconcileId)), {
+		return ApiClient.post(this.constructUri(AuditUriType.approve(configReconcileId)), {
 			email: AuthStore.getUser()?.email
 		});
 	}
