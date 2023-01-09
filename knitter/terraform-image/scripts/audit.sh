@@ -25,7 +25,7 @@ team_env_config_name=$team_name-$env_name-$config_name
 echo "config name: $config_name"
 
 start_date=$(date '+%Y-%m-%d %H:%M:%S')
-end_date='"'$(date '+%Y-%m-%d %H:%M:%S')'"'
+end_date=$(date '+%Y-%m-%d %H:%M:%S')
 
 if [ $config_reconcile_id -eq 0 ]; then
     end_date=null
@@ -101,7 +101,7 @@ fi
 echo "write 0 to /tmp/error_code.txt"
 echo -n '0' >/tmp/error_code.txt
 
-end_date='"'$(date '+%Y-%m-%d %H:%M:%S')'"'
+end_date=$(date '+%Y-%m-%d %H:%M:%S')
 if [ $reconcile_id -eq 0 ]; then
     echo "set end_date and reconcile_id to null"
     end_date=null
