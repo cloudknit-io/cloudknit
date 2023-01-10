@@ -100,6 +100,7 @@ export const EnvironmentComponents: React.FC = () => {
 	const selectedComponentRef = useRef<Component>();
 	const compAuditRef = useRef<CompAuditData[]>([]);
 	const envAuditRef = useRef<EnvAuditData[]>([]);
+	const workflowIdRef = useRef<string>();
 	const ctx = useContext(Context);
 
 	const breadcrumbItems = [
@@ -352,16 +353,17 @@ export const EnvironmentComponents: React.FC = () => {
 	// 	};
 	// }, ['projectId', environmentId]);
 
-	useEffect(() => {
-		if (showSidePanel === false) {
-			setLogs(null);
-			setPlans(null);
-			setIsLoadingWorkflow(false);
-			setWorkflowData(null);
-			setWorkflowId('');
-			setSelectedConfig(undefined);
-		}
-	}, [showSidePanel]);
+	// useEffect(() => {
+	// 	if (showSidePanel === false) {
+	// 		setLogs(null);
+	// 		setPlans(null);
+	// 		setIsLoadingWorkflow(false);
+	// 		setWorkflowData(null);
+	// 		setWorkflowId('');
+	// 		workflowIdRef.current = '';
+	// 		setSelectedConfig(undefined);
+	// 	}
+	// }, [showSidePanel]);
 
 	// useEffect(() => {
 	// 	resetSelectedConfig(componentArrayRef.current);
@@ -495,8 +497,13 @@ export const EnvironmentComponents: React.FC = () => {
 			selectedComponentRef.current = selectedConfig;
 			setSelectedConfig(selectedConfig);
 			setShowSidePanel(true);
-			if (workflowId !== _workflowId) {
+			if (workflowIdRef.current !== _workflowId) {
+				workflowIdRef.current = _workflowId;
 				setWorkflowId(_workflowId);
+				setLogs(null);
+				setPlans(null);
+				setIsLoadingWorkflow(false);
+				setWorkflowData(null);
 			}
 		}
 	};
@@ -522,7 +529,8 @@ export const EnvironmentComponents: React.FC = () => {
 		if (selectedConf) {
 			selectedComponentRef.current = selectedConf;
 			setSelectedConfig(selectedConf);
-			if (selectedConf.lastWorkflowRunId !== workflowId) {
+			if (selectedConf.lastWorkflowRunId !== workflowIdRef.current) {
+				workflowIdRef.current = selectedConf.lastWorkflowRunId;
 				setWorkflowId(selectedConf.lastWorkflowRunId);
 			}
 		}
