@@ -94,7 +94,8 @@ if [[ $config_name != 0 && $config_reconcile_id = null ]]; then
     # echo "patch argocd resource $team_env_config_name with data $data"
     # argocd app patch $team_env_config_name --patch $data --type merge > null
     if [[ $comp_status != 0 ]]; then
-        UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "${comp_status}" ${is_destroy}
+        UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "${comp_status}"
+        UpdateComponentDestroyed "${env_name}" "${team_name}" "${config_name}" ${is_destroy}
     fi
 fi
 

@@ -99,7 +99,7 @@ function setAWSCreds() {
   return 0
 }
 
-# Saves or updates a component
+# Saves Component Status
 #   Args:
 #     $1 - env name (required)
 #     $2 - team name (required)
@@ -111,17 +111,30 @@ function UpdateComponentStatus() {
   local teamName="${2}"
   local compName="${3}"
   local compStatus="${4}"
-  local isDestroyed=${5}
 
-  if [ "$isDestroyed" = true ]; then
-      isDestroyed=true
-  else
-      isDestroyed=false
-  fi
-
-  local payload='{ "status" : "'${compStatus}'", "isDestroyed" : '${isDestroyed}' }'
+  local payload='{ "status" : "'${compStatus}'" }'
   
   echo "Running UpdateComponentStatus ${compStatus} : ${payload}"
+  echo $payload >tmp_comp_status.json
+
+  curl -X 'PUT' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/teams/${teamName}/environments/${envName}/components/${compName}" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_comp_status.json
+}
+
+# Saves Component isDestroyed
+#   Args:
+#     $1 - env name (required)
+#     $2 - team name (required)
+#     $3 - component name (required)
+#     $4 - component isDestroyed (required)
+function UpdateComponentDestroyed() {
+  local envName="${1}"
+  local teamName="${2}"
+  local compName="${3}"
+  local isDestroyed=${4}
+
+  local payload='{ "isDestroyed" : '${isDestroyed}' }'
+
+  echo "Running UpdateComponentDestroyed: ${payload}"
   echo $payload >tmp_comp_status.json
 
   curl -X 'PUT' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/teams/${teamName}/environments/${envName}/components/${compName}" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_comp_status.json
