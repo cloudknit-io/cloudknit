@@ -1,6 +1,6 @@
 import { PartialType, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsBoolean, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsBoolean, IsNumber, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { CreateComponentDto } from './create-component.dto';
 
 export class UpdateComponentDto extends PartialType(CreateComponentDto) {
@@ -57,7 +57,7 @@ export class CostResource {
   costComponents?: CostComponent[]
 
   @IsOptional()
-  @IsString()
+  @IsObject()
   metadata?: object
 }
 
