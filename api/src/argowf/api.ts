@@ -34,6 +34,12 @@ export function generateParams(parameters: object): Array<string> {
 
 export async function ApproveWorkflow(org: Organization, workflowRunId: string) {
   const config = get();
+  
+  if (config.isLocal === true) {
+    logger.log({ message: 'Running in local mode. Skipping ApproveWorkflow'});
+    return;
+  }
+
   const url = `${config.argo.wf.orgUrl(org.name)}/api/v1/workflows/${org.name}-executor/${workflowRunId}/resume`;
 
   const httpsAgent = new https.Agent({

@@ -31,7 +31,7 @@ export class ComponentReconcile {
   @Column({
     nullable: true
   })
-  approved_by?: string;
+  approvedBy?: string;
 
   @Column({
       type: 'datetime'
