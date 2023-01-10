@@ -93,11 +93,13 @@ export const EnvironmentComponents: React.FC = () => {
 	const [workflowId, setWorkflowId] = useState<string>('');
 	const [viewType, setViewType] = useState<string>(showAll ? '' : 'DAG');
 	const [isEnvironmentNodeSelected, setEnvironmentNodeSelected] = useState<boolean>(false);
-	const componentArrayRef = useRef<Component[]>([]);
-	const selectedComponentRef = useRef<Component>();
 	const [envErrors, setEnvErrors] = useState<any[]>();
 	const [envAuditList, setEnvAuditList] = useState<EnvAuditData[]>([]);
 	const [compAuditList, setCompAuditList] = useState<CompAuditData[]>([]);
+	const componentArrayRef = useRef<Component[]>([]);
+	const selectedComponentRef = useRef<Component>();
+	const compAuditRef = useRef<CompAuditData[]>([]);
+	const envAuditRef = useRef<EnvAuditData[]>([]);
 	const ctx = useContext(Context);
 
 	const breadcrumbItems = [
@@ -194,17 +196,18 @@ export const EnvironmentComponents: React.FC = () => {
 			.getEnvironment(environment.id, environment.teamId)
 			.then(data => {
 				if (Array.isArray(data)) {
+					envAuditRef.current = data;
 					setEnvAuditList(data);
 					subEnvAudit = entityStore
 						.setEnvironmentAuditLister(environment.id)
 						.subscribe((response: EnvAuditData) => {
-							const idx = envAuditList.findIndex(e => e.reconcileId === response.reconcileId);
+							const idx = envAuditRef.current.findIndex(e => e.reconcileId === response.reconcileId);
 							if (idx !== -1) {
-								envAuditList[idx] = response;
+								envAuditRef.current[idx] = response;
 							} else {
-								envAuditList.push(response);
+								envAuditRef.current.push(response);
 							}
-							setEnvAuditList([...envAuditList]);
+							setEnvAuditList([...envAuditRef.current]);
 						});
 				}
 			});
@@ -231,17 +234,18 @@ export const EnvironmentComponents: React.FC = () => {
 			.getComponent(selectedConfig.id, selectedConfig.envId, selectedConfig.teamId)
 			.then(data => {
 				if (Array.isArray(data)) {
+					compAuditRef.current = data;
 					setCompAuditList(data);
 					subCompAudit = entityStore
 						.setComponentAuditLister(selectedConfig.id)
 						.subscribe((response: CompAuditData) => {
-							const idx = compAuditList.findIndex(e => e.reconcileId === response.reconcileId);
+							const idx = compAuditRef.current.findIndex(e => e.reconcileId === response.reconcileId);
 							if (idx !== -1) {
-								compAuditList[idx] = response;
+								compAuditRef.current[idx] = response;
 							} else {
-								compAuditList.push(response);
+								compAuditRef.current.push(response);
 							}
-							setCompAuditList([...compAuditList]);
+							setCompAuditList([...compAuditRef.current]);
 						});
 				}
 			});
