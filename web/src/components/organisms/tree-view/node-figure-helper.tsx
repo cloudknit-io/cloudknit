@@ -111,9 +111,10 @@ export function updateNodeFigure({
 	expandIcon,
 	onNodeClick,
 	estimatedCost,
-	isDestroyed
+	isDestroyed,
+	argoId
 }: any) {
-	const nodeId = name;
+	const nodeId = argoId;
 	const props = dagNodeCache.get(nodeId);
 	props?.updater?.next({
 		componentStatus,
@@ -149,7 +150,8 @@ function createNodeFigure({
 	expandIcon,
 	onNodeClick,
 	estimatedCost,
-	isDestroyed
+	isDestroyed,
+	argoId
 }: any) {
 	const nodeId = id === 'root' ? name : displayValue;
 	const isApp = false; //labels?.component_type !== 'terraform';
@@ -211,7 +213,7 @@ function createNodeFigure({
 				updater={updater}
 			/>
 		);
-		dagNodeCache.set(nodeId, { container: groupNode, updater, node });
+		dagNodeCache.set(argoId, { container: groupNode, updater, node });
 	}
 
 	ReactDOM.render(node, groupNode);
