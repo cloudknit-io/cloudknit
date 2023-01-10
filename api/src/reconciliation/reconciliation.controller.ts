@@ -156,7 +156,7 @@ export class ReconciliationController {
   async approveWorkflow(@Req() req: APIRequest, @Param('compReconId') compReconId: number, @Body() body: ApprovedByDto) {
     const { org } = req;
 
-    const compRecon = await this.reconSvc.findCompReconById(org, compReconId, true);
+    const compRecon = await this.reconSvc.findCompReconById(org, compReconId);
     if (!compRecon) {
       throw new BadRequestException('could not find component reconcile');
     }
@@ -171,13 +171,22 @@ export class ReconciliationController {
       throw new InternalServerErrorException('could not approve workflow');
     }
 
-    // Set approved by on reconcile entry
     try {
-      return this.reconSvc.updateCompRecon(compRecon, { approvedBy: body.email, status: 'initializing_apply' });
+      await this.compSvc.update(compRecon.component, { status: 'initializing_apply' });
     } catch (err) {
       handleSqlErrors(err);
 
-      this.logger.error({ message: 'could not set approved by', compRecon, body, err});
+      this.logger.error({ message: 'could not update component status in approveWorkflow', compRecon, err })
+      throw new InternalServerErrorException('could not approve workflow');
+    }
+
+    // Set approved by on reconcile entry
+    try {
+      return this.reconSvc.updateCompRecon(compRecon, { approvedBy: body.email });
+    } catch (err) {
+      handleSqlErrors(err);
+
+      this.logger.error({ message: 'could not set approved by in approveWorkflow', compRecon, body, err});
       throw new InternalServerErrorException('could not approve workflow');
     }
   }
