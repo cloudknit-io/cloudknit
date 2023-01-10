@@ -7,6 +7,7 @@ IS_LOCAL=true \
 AWS_ACCESS_KEY_ID=[get from lastpass] \
 AWS_SECRET_ACCESS_KEY=[get from lastpass] \
 CK_ENVIRONMENT=dev \
+CK_ARGO_WF_ORG_URL=http://argo-workflow-server.:org-executor.svc.cluster.local:2746 \
 CK_ARGO_WF_URL=http://localhost:2746 \
 CK_ARGO_WF_NAMESPACE=default \
 CK_ARGO_WF_SKIP_PROVISION=true \

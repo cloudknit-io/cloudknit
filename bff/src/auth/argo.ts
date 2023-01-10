@@ -57,7 +57,7 @@ function isExpired(orgName: string) {
 
 async function getArgoToken (orgName: string): Promise<string> {
   while (lock === true) {
-    await wait(100);
+    await wait(25);
   }
 
   lock = true;
