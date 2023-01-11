@@ -3,6 +3,7 @@ import { Organization } from "./Organization.entity";
 import { Component } from "./component.entity";
 import { Team } from "./team.entity";
 import { EnvSpecComponentDto } from "src/environment/dto/env-spec.dto";
+import { ColumnNumericTransformer } from "./helper";
 
 @Entity({
   name: "environment",
@@ -40,7 +41,8 @@ export class Environment {
     type: 'decimal',
     precision: 10,
     scale: 3,
-    default: 0
+    default: 0,
+    transformer: new ColumnNumericTransformer()
   })
   estimatedCost: number;
 

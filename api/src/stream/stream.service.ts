@@ -14,9 +14,9 @@ export class StreamService {
 
   constructor() {
     setInterval(() => {
-      this.envStream.next(null);
-      this.compStream.next(null);
-      this.reconcileStream.next(null);
+      this.envStream.next({} as Environment);
+      this.compStream.next({} as Component);
+      this.reconcileStream.next({} as AuditWrapper);
     }, 20000);
   }
 

@@ -2,6 +2,7 @@ import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, R
 import { Organization } from './Organization.entity';
 import { Environment } from './environment.entity';
 import { CostResource } from 'src/component/dto/update-component.dto';
+import { ColumnNumericTransformer } from './helper';
 
 @Entity({ name: 'components' })
 @Index(['organization', 'environment', 'name'], { unique: true })
@@ -33,7 +34,8 @@ export class Component {
     type: 'decimal',
     precision: 10,
     scale: 3,
-    default: 0
+    default: 0,
+    transformer: new ColumnNumericTransformer()
   })
   estimatedCost: number;
 

@@ -9,8 +9,8 @@ export function calculateTeamCost(team: Team): number {
   let total = 0.0;
       
   for (const env of team.environments) {
-    total += parseFloat(env.estimatedCost+'');
+    total += env.estimatedCost;
   }
 
-  return parseFloat(total.toFixed(2));
+  return Math.round(total*100) / 100;
 }

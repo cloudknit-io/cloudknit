@@ -71,10 +71,10 @@ export class EnvironmentService {
 
     for (const comp of env.components) {
       if (comp.estimatedCost > 0) {
-        estimatedCost += parseFloat(comp.estimatedCost+'');
+        estimatedCost += comp.estimatedCost;
       }
     }
 
-    await this.updateById(org, env.id, { estimatedCost });    
+    await this.updateById(org, env.id, { estimatedCost });
   }
 }
