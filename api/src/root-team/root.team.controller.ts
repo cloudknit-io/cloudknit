@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Request, BadRequestException, Logger, InternalServerErrorException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Request, BadRequestException, Logger, InternalServerErrorException, Query } from '@nestjs/common';
 import { RootTeamService } from './root.team.service';
 import { CreateTeamDto } from 'src/team/dto/create-team.dto';
 import { APIRequest } from 'src/types';
@@ -6,6 +6,10 @@ import { TeamSpecDto } from 'src/team/dto/team-spec.dto';
 import { TeamService } from 'src/team/team.service';
 import { getGithubOrgFromRepoUrl } from 'src/organization/utilities';
 import { handleSqlErrors } from 'src/utilities/errorHandler';
+import { TeamWrapDto } from 'src/team/dto/team-cost.dto';
+import { TeamQueryParams } from './root.team.dto';
+import { calculateTeamCost } from 'src/team/team.helper';
+import { Team } from 'src/typeorm';
 
 @Controller({
   version: '1'
@@ -66,9 +70,29 @@ export class RootTeamController {
   }
 
   @Get()
-  async findAll(@Request() req) {
+  async findAll(@Request() req, @Query() qParams: TeamQueryParams): Promise<TeamWrapDto[]> {
     const org = req.org;
+    const withCost = qParams.withCost.toLowerCase() === 'true';
+    const withEnv = qParams.withEnvironments.toLowerCase() === 'true';
+    const getEnvs = withCost || withEnv
 
-    return this.rootTeamSvc.findAll(org);
+    const teams = await this.rootTeamSvc.findAll(org, getEnvs);
+
+    if (!withCost) {
+      return teams;
+    }
+
+    const teamsWrap: TeamWrapDto[] = teams.map((teamEntity: Team) => {
+      const team: TeamWrapDto = teamEntity;
+      team.estimatedCost = calculateTeamCost(teamEntity);
+      
+      if (!withEnv) {
+        delete team.environments;
+      }
+
+      return team;
+    });   
+
+    return teamsWrap;
   }
 }

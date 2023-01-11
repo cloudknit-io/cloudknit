@@ -1,5 +1,5 @@
 import { Type } from "class-transformer"
-import { IsInstance, IsNotEmpty, IsNotEmptyObject, IsObject, IsString, ValidateNested } from "class-validator"
+import { IsNotEmpty, IsString, ValidateNested } from "class-validator"
 
 export class TeamConfigRepoDto {
   @IsString()
