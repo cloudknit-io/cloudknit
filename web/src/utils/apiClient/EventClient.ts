@@ -232,7 +232,7 @@ export class EventClient<T> {
 	private publisher: Subject<T> = new Subject<T>();
 	private eventSource: any;
 	private listenerType = '';
-	private handler = (event: MessageEvent<any>): any => {
+	private handler = (event: MessageEvent): any => {
 		this.publisher.next(JSON.parse(event.data) as T);
 	};
 	
