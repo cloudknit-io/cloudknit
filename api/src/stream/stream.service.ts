@@ -12,7 +12,13 @@ export class StreamService {
   readonly compStream: Subject<Component> = new Subject<Component>();
   readonly reconcileStream: Subject<AuditWrapper> = new Subject<AuditWrapper>();
 
-  constructor() { }
+  constructor() {
+    setInterval(() => {
+      this.envStream.next(null);
+      this.compStream.next(null);
+      this.reconcileStream.next(null);
+    }, 20000);
+  }
 
   normalizeOrg(obj: Environment|Component|ComponentReconcile|EnvironmentReconcile) {
     if (obj && obj.orgId) {
