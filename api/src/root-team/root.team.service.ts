@@ -15,12 +15,15 @@ export class RootTeamService {
     return this.teamRepo.save(createTeamDto);
   }
 
-  async findAll(org: Organization) {
+  async findAll(org: Organization, withEnv: boolean = false) {
     return this.teamRepo.find({
       where: {
         organization: {
           id: org.id
         }
+      },
+      relations: {
+        environments: withEnv
       }
     })
   }

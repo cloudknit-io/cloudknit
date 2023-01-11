@@ -78,7 +78,7 @@ if [[ $config_name != 0 && $config_reconcile_id = null ]]; then
     comp_status=0
     if [[ $config_status == *"skipped"* ]]; then
         echo "getting environment component previous status"
-        config_previous_status=$(curl "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/costing/component?teamName=${team_name}&envName=${env_name}&compName=${config_name}" | jq -r ".status") || null
+        config_previous_status=$(curl "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/teams/${team_name}/environments/${env_name}/components/${config_name}" | jq -r ".status") || null
         echo "config_prev_status: $config_previous_status"
         if [[ $config_previous_status == null ]]; then
             comp_status="not_provisioned"
