@@ -61,17 +61,16 @@ const getEnvironmentStatus = (envs: Environment[]) => {
 		</div>
 	);
 };
+
 const items = (team: Team): ListItem[] => {
-	const envs = EntityStore.getInstance().getAllEnvironmentsByTeamId(team.id);
 	return [
 		{
 			label: 'Cost',
-			// value: renderCost(team.id),
-			value: -1,
+			value: `$${team.estimatedCost}` || '$__.__',
 		},
 		{
-			label: `Envs (${envs.length})`,
-			value: getEnvironmentStatus(envs),
+			label: `Envs (${team.environments.length})`,
+			value: getEnvironmentStatus(team.environments),
 		},
 	];
 };

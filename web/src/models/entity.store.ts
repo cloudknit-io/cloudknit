@@ -1,19 +1,18 @@
 import { EntityService } from 'services/entity/entity.service';
 import { BehaviorSubject, Subject, Subscription } from 'rxjs';
 import { AuditStatus } from './argo.models';
-import { string } from 'yup';
 
 export class EntityStore {
 	private static instance: EntityStore;
 	private entityService = EntityService.getInstance();
 	private teamMap = new Map<number, Team>();
-    private compMap = new Map<number, Component>();
+  private compMap = new Map<number, Component>();
 	private envMap = new Map<number, Environment>();
 	public emitter = new BehaviorSubject<Update>({
 		teams: [],
 		environments: []
 	});
-    public emitterComp = new Subject<Component[]>();
+  public emitterComp = new Subject<Component[]>();
 	private emitterCompAudit = new Subject<CompAuditData>();
 	private emitterEnvAudit = new Subject<EnvAuditData>();
 	private componentAuditListeners = new Set<number>();
@@ -64,30 +63,32 @@ export class EntityStore {
 		this.emit();
 	}
 
-    private startStreaming() {
-        this.entityService.streamEnvironments().subscribe((environment: Environment) => {
-            const present = this.envMap.has(environment.id);
-            if (present) {
-                const currEnv = this.envMap.get(environment.id);
+	private startStreaming() {
+		this.entityService.streamEnvironments().subscribe((environment: Environment) => {
+			const present = this.envMap.has(environment.id);
+			
+			if (present) {
+				const currEnv = this.envMap.get(environment.id);
 				this.envMap.set(environment.id, {
 					...currEnv,
 					...environment
 				});
-                this.emit();
-            }
-        });
+			
+				this.emit();
+			}
+		});
 
-        this.entityService.streamComponents().subscribe((component: Component) => {
+		this.entityService.streamComponents().subscribe((component: Component) => {
 			const present = this.compMap.has(component.id);
-            if (present) {
-                const currComp = this.compMap.get(component.id);
+			if (present) {
+				const currComp = this.compMap.get(component.id);
 				this.compMap.set(component.id, {
 					...currComp,
 					...component
 				});
-                this.emitterComp.next(this.getComponentsByEnvId(component.envId));
-            }
-        });
+				this.emitterComp.next(this.getComponentsByEnvId(component.envId));
+			}
+		});
 
 		this.entityService.streamComponentAudit().subscribe((data: CompAuditData) => {
 			if (this.componentAuditListeners.has(data.compId)) {
@@ -100,9 +101,9 @@ export class EntityStore {
 				this.emitterEnvAudit.next(data);
 			}
 		});
-    }
+	}
 
-    public getTeam(id: number) {
+	public getTeam(id: number) {
 		return this.teamMap.get(id);
 	}
 
@@ -120,7 +121,7 @@ export class EntityStore {
 		return this.Environments.find(e => e.name === envName && e.teamId === teamId);
 	}
 
-    public getEnvironmentById(envId: number): Environment | null | undefined {
+  public getEnvironmentById(envId: number): Environment | null | undefined {
 		return this.envMap.get(envId);
 	}
 
@@ -130,16 +131,20 @@ export class EntityStore {
 
 	public async getComponents(teamId: number, envId: number) {
 		const components = await this.entityService.getComponents(teamId, envId);
-        const currEnv = this.getEnvironmentById(envId);
+    const currEnv = this.getEnvironmentById(envId);
+
 		if (components.length > 0 && currEnv) {
 			components.forEach(c => {
 				const compDag = currEnv.dag.find(d => d.name === c.name);
+				
 				c.dependsOn = compDag?.dependsOn || [];
-                c.argoId = `${currEnv.argoId}-${c.name}`;
+        c.argoId = `${currEnv.argoId}-${c.name}`;
 				c.teamId = currEnv.teamId;
+
 				this.compMap.set(c.id, c);
 			});
 		}
+		
 		this.emitterComp.next(this.getComponentsByEnvId(envId))
 		return components;
 	}
@@ -168,7 +173,7 @@ export class EntityStore {
 export type Team = {
 	id: number;
 	name: string;
-	cost?: number;
+	estimatedCost?: number;
 	environments: Environment[];
 };
 
@@ -180,8 +185,8 @@ export type Environment = {
 	duration: number;
 	dag: DAG[];
 	teamId: number;
-    status: string;
-    isDeleted: boolean;
+	status: string;
+	isDeleted: boolean;
 	estimatedCost: number;
 };
 
@@ -192,7 +197,7 @@ export type DAG = {
 };
 
 export type Component = {
-    changeId: Symbol;
+  changeId: Symbol;
 	argoId: string;
 	teamId: number;
 	id: number;
@@ -212,7 +217,7 @@ export type Component = {
 export type Update = {
 	teams: Team[];
 	environments: Environment[];
- };
+};
 
 export type AuditData = {
 	reconcileId: number;
@@ -230,5 +235,3 @@ export type EnvAuditData = {
 export type CompAuditData = {
 	compId: number;
 } & AuditData
-
-// export type Update

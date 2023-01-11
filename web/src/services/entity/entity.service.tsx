@@ -73,7 +73,7 @@ export class EntityService extends BaseService {
 }
 
 class EntitytUriType {
-	static teams = () => `teams`;
+	static teams = () => `teams?withCost=true&withEnvironments=true`;
 	static environments = (teamId: number) => `teams/${teamId}/environments`;
 	static components = (teamId: number, envId: number) => `teams/${teamId}/environments/${envId}/components`;
 	static streamEnvironments = () => `stream/environment`;
