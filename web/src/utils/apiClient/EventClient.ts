@@ -230,7 +230,7 @@ export class EventClientLogs {
 
 export class EventClient<T> {
 	private publisher: Subject<T> = new Subject<T>();
-	private eventSource: any;
+	private eventSource: EventSource;
 	private listenerType = '';
 	private handler = (event: MessageEvent): void => {
 		this.publisher.next(JSON.parse(event.data) as T);
@@ -253,8 +253,8 @@ export class EventClient<T> {
 			this.eventSource.onmessage = this.handler;
 		}
 		
-		this.eventSource.onerror = (err: any): void => {
-			console.log(err);
+		this.eventSource.onerror = (ev: Event): any => {
+			console.log('EventSource error', this.eventSource.url, ev);
 			return;
 		};
 
