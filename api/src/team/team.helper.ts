@@ -12,5 +12,5 @@ export function calculateTeamCost(team: Team): number {
     total += parseFloat(env.estimatedCost+'');
   }
 
-  return total;
+  return parseFloat(total.toFixed(2));
 }
