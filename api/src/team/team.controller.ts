@@ -72,8 +72,6 @@ export class TeamController {
 
   @Get()
   @OrgApiParam()
-  @ApiQuery({name: 'withCost', required: false, type: 'boolean'})
-  @ApiQuery({name: 'withEnvironments', required: false, type: 'boolean'})
   async findAll(@Request() req: APIRequest, @Query() qParams: TeamQueryParams): Promise<TeamWrapDto[]> {
     const org = req.org;
     const withCost = qParams.withCost.toLowerCase() === 'true';
