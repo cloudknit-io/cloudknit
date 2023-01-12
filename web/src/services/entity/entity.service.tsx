@@ -40,8 +40,8 @@ export class EntityService extends BaseService {
 		}
 	}
 
-	async getComponents(teamId: number, envId: number): Promise<Component[]> {
-		const url = this.constructUri(EntitytUriType.components(teamId, envId));
+	async getComponents(teamId: number, envId: number, withLastAuditStatus: boolean = false): Promise<Component[]> {
+		const url = this.constructUri(EntitytUriType.components(teamId, envId, withLastAuditStatus));
 		try {
 			const { data } = await ApiClient.get<Component[]>(url);
 			return data;
@@ -70,7 +70,7 @@ export class EntityService extends BaseService {
 class EntitytUriType {
 	static teams = () => `teams?withCost=true&withEnvironments=true`;
 	static environments = (teamId: number) => `teams/${teamId}/environments`;
-	static components = (teamId: number, envId: number) => `teams/${teamId}/environments/${envId}/components`;
+	static components = (teamId: number, envId: number, withLastAuditStatus: boolean) => `teams/${teamId}/environments/${envId}/components?withLastAuditStatus=${withLastAuditStatus}`;
 	static streamEnvironments = () => `stream/environment`;
 	static streamComponents = () => `stream/component`;
 	static streamAudit = () => `stream/audit`;

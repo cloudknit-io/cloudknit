@@ -7,13 +7,13 @@ export class EntityStore {
 	private static instance: EntityStore;
 	private entityService = EntityService.getInstance();
 	private teamMap = new Map<number, Team>();
-  private compMap = new Map<number, Component>();
+	private compMap = new Map<number, Component>();
 	private envMap = new Map<number, Environment>();
 	public emitter = new BehaviorSubject<Update>({
 		teams: [],
-		environments: []
+		environments: [],
 	});
-  public emitterComp = new Subject<Component[]>();
+	public emitterComp = new Subject<Component[]>();
 	private emitterCompAudit = new Subject<CompAuditData>();
 	private emitterEnvAudit = new Subject<EnvAuditData>();
 	private componentAuditListeners = new Set<number>();
@@ -30,7 +30,7 @@ export class EntityStore {
 	private constructor() {
 		ErrorStateService.getInstance();
 		Promise.resolve(this.getTeams());
-        this.startStreaming();
+		this.startStreaming();
 	}
 
 	static getInstance() {
@@ -54,28 +54,28 @@ export class EntityStore {
 	}
 
 	private async getEnvironments() {
-		const envCalls = this.Teams.map(team =>
-			this.entityService.getEnvironments(team.id)
-		);
+		const envCalls = this.Teams.map(team => this.entityService.getEnvironments(team.id));
 		const resps = await Promise.all(envCalls);
-		resps.flat().forEach(e => this.envMap.set(e.id, {
-			...e,
-			argoId: `${this.getTeam(e.teamId)?.name}-${e.name}`
-		}));
+		resps.flat().forEach(e =>
+			this.envMap.set(e.id, {
+				...e,
+				argoId: `${this.getTeam(e.teamId)?.name}-${e.name}`,
+			})
+		);
 		this.emit();
 	}
 
 	private startStreaming() {
 		this.entityService.streamEnvironments().subscribe((environment: Environment) => {
 			const present = this.envMap.has(environment.id);
-			
+
 			if (present) {
 				const currEnv = this.envMap.get(environment.id);
 				this.envMap.set(environment.id, {
 					...currEnv,
-					...environment
+					...environment,
 				});
-			
+
 				this.emit();
 			}
 		});
@@ -86,7 +86,7 @@ export class EntityStore {
 				const currComp = this.compMap.get(component.id);
 				this.compMap.set(component.id, {
 					...currComp,
-					...component
+					...component,
 				});
 				this.emitterComp.next(this.getComponentsByEnvId(component.envId));
 			}
@@ -122,31 +122,49 @@ export class EntityStore {
 		return this.Environments.find(e => e.name === envName && e.teamId === teamId);
 	}
 
-  public getEnvironmentById(envId: number): Environment | null | undefined {
+	public getEnvironmentById(envId: number): Environment | null | undefined {
 		return this.envMap.get(envId);
 	}
 
-	public getComponentsByEnvId(envId: number) : Component[] {
+	public getComponentsByEnvId(envId: number): Component[] {
 		return [...this.compMap.values()].filter(e => e.envId === envId);
 	}
 
 	public async getComponents(teamId: number, envId: number) {
-		const components = await this.entityService.getComponents(teamId, envId);
-    const currEnv = this.getEnvironmentById(envId);
+		const components: any = await this.entityService.getComponents(teamId, envId, true);
+		const currEnv = this.getEnvironmentById(envId);
 
 		if (components.length > 0 && currEnv) {
-			components.forEach(c => {
-				const compDag = currEnv.dag.find(d => d.name === c.name);
-				
-				c.dependsOn = compDag?.dependsOn || [];
-        c.argoId = `${currEnv.argoId}-${c.name}`;
-				c.teamId = currEnv.teamId;
+			components.forEach((c: any) => {
+				const compDag = currEnv.dag.find(d => d.name === c['component_name']);
+				const rd: Component = {
+					costResources: c['cost_resources'],
+					name: c['component_name'],
+					duration: c['duration'],
+					envId: c['environmentId'],
+					estimatedCost: c['estimated_cost'],
+					isDestroyed: c['isDestroyed'],
+					lastReconcileDatetime: c['last_reconcile_datetime'],
+					status: c['status'],
+					id: c['id'],
+					lastWorkflowRunId: c['lastWorkflowRunId'],
+					lastAuditStatus: c['lastAuditStatus'],
+					dependsOn: compDag?.dependsOn || [],
+					argoId: `${currEnv.argoId}-${c.component_name}`,
+					teamId: currEnv.teamId,
+					changeId: Symbol(),
+					type: c['type'],
+				};
 
-				this.compMap.set(c.id, c);
+				// c.dependsOn = compDag?.dependsOn || [];
+				// c.argoId = `${currEnv.argoId}-${rd.name}`;
+				// c.teamId = currEnv.teamId;
+
+				this.compMap.set(c.id, rd);
 			});
 		}
-		
-		this.emitterComp.next(this.getComponentsByEnvId(envId))
+
+		this.emitterComp.next(this.getComponentsByEnvId(envId));
 		return components;
 	}
 
@@ -198,7 +216,7 @@ export type DAG = {
 };
 
 export type Component = {
-  changeId: Symbol;
+	changeId: Symbol;
 	argoId: string;
 	teamId: number;
 	id: number;
@@ -213,6 +231,7 @@ export type Component = {
 	dependsOn: string[];
 	envId: number;
 	lastWorkflowRunId: string;
+	lastAuditStatus: AuditStatus;
 };
 
 export type Update = {
@@ -227,12 +246,12 @@ export type AuditData = {
 	startDateTime: string;
 	operation?: string;
 	approvedBy?: string;
-}
+};
 
 export type EnvAuditData = {
 	envId: number;
-} & AuditData
+} & AuditData;
 
 export type CompAuditData = {
 	compId: number;
-} & AuditData
+} & AuditData;

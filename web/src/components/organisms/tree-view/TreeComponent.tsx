@@ -10,7 +10,7 @@ import { ArgoEnvironmentsService } from 'services/argo/ArgoEnvironments.service'
 
 
 import Tree from './TreeView';
-import { ESyncStatus, OperationPhase, ResourceResult, ZEnvSyncStatus, ZSyncStatus } from 'models/argo.models';
+import { AuditStatus, ESyncStatus, OperationPhase, ResourceResult, ZEnvSyncStatus, ZSyncStatus } from 'models/argo.models';
 import { Context } from 'context/argo/ArgoUi';
 import { subscriberWatcher } from 'utils/apiClient/EventClient';
 import { ReactComponent as Expand } from 'assets/images/icons/expand.svg';
@@ -167,7 +167,7 @@ export const TreeComponent: FC<Props> = ({ environmentId, nodes, onNodeClick, en
 				// ) : (
 				// 	<ComputeIcon />
 				// ),
-				isSkipped: false,
+				isSkipped: [AuditStatus.SkippedProvision, AuditStatus.SkippedDestroy].includes(item.lastAuditStatus),
 				estimatedCost: item.estimatedCost,
 				syncStatus: item.status || 'Unknown',
 				componentStatus: item.status || 'Unknown',

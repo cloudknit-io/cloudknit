@@ -255,6 +255,16 @@ export const EnvironmentComponents: React.FC = () => {
 		};
 	}, [selectedConfig]);
 
+	useEffect(() => {
+		if (compAuditList.length === 0) return;
+		const latestAudit = compAuditList.sort((a1, a2) => a2.reconcileId - a1.reconcileId)[0];
+		const idx = componentArrayRef.current.findIndex(comp => comp.id === latestAudit.compId);
+		if (idx !== -1) {
+			componentArrayRef.current[idx].lastAuditStatus = latestAudit.status;
+			setComponents([...componentArrayRef.current]);
+		}
+	}, [compAuditList])
+
 	// useEffect(() => {
 	// 	const newEnvironments = streamMapper<EnvironmentItem>(
 	// 		streamData,
