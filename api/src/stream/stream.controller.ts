@@ -1,7 +1,8 @@
 import { Controller, Sse, Request } from '@nestjs/common';
 import { AuditWrapper, StreamService } from './stream.service';
 import { from, map, Observable } from 'rxjs';
-import { Component, ComponentReconcile, Environment, EnvironmentReconcile } from 'src/typeorm';
+import { Component, Environment } from 'src/typeorm';
+import { OrgApiParam } from 'src/types';
 
 @Controller({
   version: '1'
@@ -10,6 +11,7 @@ export class StreamController {
   constructor(private readonly sseSvc: StreamService) {}
 
   @Sse("component")
+  @OrgApiParam()
   components(@Request() req): Observable<MessageEvent> {
     const { org } = req;
 
@@ -28,6 +30,7 @@ export class StreamController {
   }
 
   @Sse("audit")
+  @OrgApiParam()
   componentReconcile(@Request() req): Observable<MessageEvent> {
     const { org } = req;
 
@@ -48,6 +51,7 @@ export class StreamController {
   }
 
   @Sse("environment")
+  @OrgApiParam()
   environments(@Request() req): Observable<MessageEvent> {
     const { org } = req;
 

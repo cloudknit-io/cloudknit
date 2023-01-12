@@ -2,7 +2,7 @@ import { BadRequestException, Body, Controller, Get, Logger, Param, Post, Put, R
 import { EnvironmentService } from 'src/environment/environment.service';
 import { ReconciliationService } from 'src/reconciliation/reconciliation.service';
 import { Component, Environment, Organization } from 'src/typeorm';
-import { APIRequest } from 'src/types';
+import { APIRequest, EnvironmentApiParam } from 'src/types';
 import { ComponentService } from './component.service';
 import { UpdateComponentDto } from './dto/update-component.dto';
 
@@ -19,21 +19,24 @@ export class ComponentController {
   ) {}
 
   @Get()
+  @EnvironmentApiParam()
   async findAll(@Request() req): Promise<Component[]> {
     const {org, env} = req;
     
     return this.compSvc.findAll(org, env);
   }
 
-  @Get(':id')
-  async findOne(@Request() req, @Param('id') id: string): Promise<Component> {
+  @Get('/:componentId')
+  @EnvironmentApiParam()
+  async findOne(@Request() req, @Param('componentId') id: string): Promise<Component> {
     const {org, env} = req;
 
     return this.getCompFromRequest(org, env, id);
   }
 
-  @Put(':id')
-  async updateComponent(@Request() req: APIRequest, @Param('id') id: string, @Body() body: UpdateComponentDto): Promise<Component> {
+  @Put('/:componentId')
+  @EnvironmentApiParam()
+  async updateComponent(@Request() req: APIRequest, @Param('componentId') id: string, @Body() body: UpdateComponentDto): Promise<Component> {
     const {org, env} = req;
 
     const comp = await this.getCompFromRequest(org, env, id);
@@ -72,8 +75,9 @@ export class ComponentController {
     return comp;
   }
 
-  @Get(':id/audit')
-  async getAudits(@Request() req: APIRequest, @Param('id') id: string) {
+  @Get('/:componentId/audit')
+  @EnvironmentApiParam()
+  async getAudits(@Request() req: APIRequest, @Param('componentId') id: string) {
     const { org, env } = req;
     const comp = await this.getCompFromRequest(org, env, id);
 

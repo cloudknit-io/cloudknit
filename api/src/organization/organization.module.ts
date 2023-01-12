@@ -1,14 +1,21 @@
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { OrganizationMiddleware } from "src/middleware/organizations.middle";
-import { Organization } from "src/typeorm";
+import { Organization, User } from "src/typeorm";
+import { UsersService } from "src/users/users.service";
 import { OrganizationController } from "./organization.controller";
 import { OrganizationService } from "./organization.service";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Organization])],
+  imports: [TypeOrmModule.forFeature([
+    Organization,
+    User
+  ])],
   controllers: [OrganizationController],
-  providers: [OrganizationService],
+  providers: [
+    OrganizationService,
+    UsersService
+  ],
 })
 export class OrganizationModule implements NestModule {
   

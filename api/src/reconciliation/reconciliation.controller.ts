@@ -15,7 +15,7 @@ import { ComponentService } from "src/component/component.service";
 import { EnvironmentService } from "src/environment/environment.service";
 import { TeamService } from "src/team/team.service";
 import { Component, ComponentReconcile, Environment, EnvironmentReconcile, Organization, Team } from "src/typeorm";
-import { APIRequest } from "src/types";
+import { APIRequest, OrgApiParam } from "src/types";
 import { handleSqlErrors } from "src/utilities/errorHandler";
 import { ApprovedByDto } from "./dtos/componentAudit.dto";
 import { CreateComponentReconciliationDto, CreateEnvironmentReconciliationDto, UpdateComponentReconciliationDto, UpdateEnvironmentReconciliationDto } from "./dtos/reconciliation.dto";
@@ -36,6 +36,7 @@ export class ReconciliationController {
     ) {}
 
   @Post('environment')
+  @OrgApiParam()
   async newEnvironmentReconciliation(@Req() req: APIRequest, @Body() body: CreateEnvironmentReconciliationDto) {
     const { org } = req;
 
@@ -74,6 +75,7 @@ export class ReconciliationController {
   }
 
   @Post('environment/:reconcileId')
+  @OrgApiParam()
   async updateEnvironmentReconciliation(@Req() req: APIRequest, @Param('reconcileId') reconcileId: number, @Body() body: UpdateEnvironmentReconciliationDto) {
     const { org } = req;
 
@@ -98,6 +100,7 @@ export class ReconciliationController {
   }
 
   @Post('component')
+  @OrgApiParam()
   async newComponentReconciliation(@Req() req: APIRequest, @Body() body: CreateComponentReconciliationDto): Promise<number> {
     const { org } = req;
 
@@ -131,6 +134,7 @@ export class ReconciliationController {
   }
 
   @Post('component/:reconcileId')
+  @OrgApiParam()
   async updateComponentReconciliation(@Req() req: APIRequest, @Param('reconcileId') compReconcileId: number, @Body() body: UpdateComponentReconciliationDto) {
     const { org } = req;
 
@@ -153,6 +157,7 @@ export class ReconciliationController {
    * @param body Email of user that issued approval
    */
   @Post('component/:compReconId/approve')
+  @OrgApiParam()
   async approveWorkflow(@Req() req: APIRequest, @Param('compReconId') compReconId: number, @Body() body: ApprovedByDto) {
     const { org } = req;
 
@@ -192,6 +197,7 @@ export class ReconciliationController {
   }
 
   @Get("component/logs/:team/:environment/:component/:id")
+  @OrgApiParam()
   async getLogs(
     @Request() req,
     @Param("team") teamName: string,
@@ -217,6 +223,7 @@ export class ReconciliationController {
   }
 
   @Get("component/state-file/:team/:environment/:component")
+  @OrgApiParam()
   async getStateFile(
     @Request() req,
     @Param("team") team: string,
@@ -234,6 +241,7 @@ export class ReconciliationController {
   @Get(
     "component/plan/logs/:team/:environment/:component/:id/:latest"
   )
+  @OrgApiParam()
   async getPlanLogs(
     @Request() req: APIRequest,
     @Param("team") teamName: string,
@@ -256,6 +264,7 @@ export class ReconciliationController {
   @Get(
     "component/apply/logs/:team/:environment/:component/:id/:latest"
   )
+  @OrgApiParam()
   async getApplyLogs(
     @Request() req,
     @Param("team") teamName: string,
@@ -275,6 +284,7 @@ export class ReconciliationController {
     return this.getTfLogs(org, teamName, comp.environment, comp, id, latest === 'true', 'apply_output');
   }
 
+  @OrgApiParam()
   async getTfLogs(org: Organization, team: string, env: Environment, comp: Component, id: number, latest: boolean, logType: string) {
     let logs;
 

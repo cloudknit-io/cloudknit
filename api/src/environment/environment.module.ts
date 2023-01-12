@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Component, ComponentReconcile, Environment, EnvironmentReconcile, Team } from 'src/typeorm';
 import { EnvironmentMiddleware } from 'src/middleware/environment.middle';
 import { ReconciliationService } from 'src/reconciliation/reconciliation.service';
+import { ComponentService } from 'src/component/component.service';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ReconciliationService } from 'src/reconciliation/reconciliation.service
   ],
   controllers: [EnvironmentController],
   providers: [
+    ComponentService,
     EnvironmentService,
     TeamService,
     ReconciliationService

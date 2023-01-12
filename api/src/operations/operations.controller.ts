@@ -1,5 +1,6 @@
 import { Controller, Get, Request } from '@nestjs/common';
 import { OrganizationService } from 'src/organization/organization.service';
+import { OrgApiParam } from 'src/types';
 import { OperationsService } from './operations.service';
 
 @Controller({
@@ -12,6 +13,7 @@ export class OperationsController {
   ){}
 
   @Get("/is-provisioned")
+  @OrgApiParam()
   public async check(@Request() req) {
     const isProvisioned = await this.opsService.isOrgProvisioned(req.org);
 

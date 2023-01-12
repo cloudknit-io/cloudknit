@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Organization, Team } from 'src/typeorm';
 import { Equal, Repository } from 'typeorm';
+import { CreateTeamDto } from './dto/create-team.dto';
 import { UpdateTeamDto } from './dto/update-team.dto';
 
 @Injectable()
@@ -12,6 +13,23 @@ export class TeamService {
     @InjectRepository(Team)
     private teamRepo: Repository<Team>
   ) {}
+
+  async create(createTeamDto: CreateTeamDto) {
+    return this.teamRepo.save(createTeamDto);
+  }
+
+  async findAll(org: Organization, withEnv: boolean = false) {
+    return this.teamRepo.find({
+      where: {
+        organization: {
+          id: org.id
+        }
+      },
+      relations: {
+        environments: withEnv
+      }
+    })
+  }
 
   async findByName(org: Organization, name: string): Promise<Team> {
     return this.teamRepo.findOne({

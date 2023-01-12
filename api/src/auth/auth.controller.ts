@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Logger, NotFoundException, Param, Patch, Post, Request } from "@nestjs/common";
+import { OrgApiParam } from "src/types";
 import { CreateUserDto, PatchUserDto } from "src/users/User.dto";
 import { AuthService } from "./auth.service";
 
@@ -11,11 +12,13 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Get("users")
+  @OrgApiParam()
   public async getUsers(@Request() req) {
     return this.authService.getOrgUserList(req.org);
   }
 
   @Get("users/:username")
+  @OrgApiParam()
   public async getUser(@Request() req, @Param("username") username: string) {
     const user = await this.authService.getOrgUser(req.org, username);
 
@@ -27,16 +30,13 @@ export class AuthController {
   }
 
   @Post("users")
+  @OrgApiParam()
   public async createUser(@Request() req, @Body() user: CreateUserDto) {
     return await this.authService.createOrgUser(req.org, user);
   }
 
-  // @Patch("users/:username")
-  // public async updateUser(@Request() req, @Body() user: PatchUserDto) {
-  //   return await this.authService.createOrgUser(req.org, user);
-  // }
-
   @Delete("users/:username")
+  @OrgApiParam()
   public async deleteUser(@Request() req, @Param('username') username: string) {
     return await this.authService.deleteUser(req.org, username);
   }

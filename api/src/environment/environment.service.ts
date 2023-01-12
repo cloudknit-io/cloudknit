@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Environment, Organization, Team } from "src/typeorm";
 import { Equal, Repository } from "typeorm";
+import { CreateEnvironmentDto } from "./dto/create-environment.dto";
 import { UpdateEnvironmentDto } from "./dto/update-environment.dto";
 
 @Injectable()
@@ -10,6 +11,27 @@ export class EnvironmentService {
     @InjectRepository(Environment)
     private readonly envRepo: Repository<Environment>
   ) { }
+
+  async create(org: Organization, team: Team, createEnvDto: CreateEnvironmentDto) {
+    return this.envRepo.save({
+      organization: org,
+      team,
+      ...createEnvDto
+    });
+  }
+
+  async findAll(org: Organization, team: Team) {
+    return this.envRepo.find({
+      where: {
+        team: {
+          id: team.id
+        },
+        organization: {
+          id: org.id
+        }
+      }
+    })
+  }
 
   async updateById(org: Organization, id: number, updateEnvDto: UpdateEnvironmentDto): Promise<Environment> {
     const env = await this.findById(org, id);
