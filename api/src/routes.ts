@@ -1,16 +1,13 @@
 import { Routes } from "@nestjs/core";
 import { AuthModule } from "./auth/auth.module";
 import { OrganizationModule } from "./organization/organization.module";
-import { RootOrganizationsModule } from "./root-organization/root.organization.module";
 import { ReconciliationModule } from "./reconciliation/reconciliation.module";
 import { SecretsModule } from "./secrets/secrets.module";
 import { UsersModule } from "./users/users.module";
 import { SystemModule } from "./system/system.module";
 import { OperationsModule } from "./operations/operations.module";
 import { TeamModule } from "./team/team.module";
-import { RootTeamModule } from "./root-team/root.team.module";
 import { EnvironmentModule } from "./environment/environment.module";
-import { RootEnvironmentModule } from "./root-environment/root.environment.module";
 import { ComponentModule } from "./component/component.module";
 import { StreamModule } from "./stream/stream.module";
 
@@ -25,57 +22,39 @@ export const appRoutes: Routes = [
   },
   {
     path: '/orgs',
-    module: RootOrganizationsModule,
+    module: OrganizationModule,
     children: [
       {
-        path: '/:orgId',
-        module: OrganizationModule,
+        path: "/:orgId/secrets",
+        module: SecretsModule
+      },
+      {
+        path: "/:orgId/stream",
+        module: StreamModule
+      },
+      {
+        path: "/:orgId/auth",
+        module: AuthModule
+      },
+      {
+        path: "/:orgId/ops",
+        module: OperationsModule
+      },
+      {
+        path: '/:orgId/reconciliation',
+        module: ReconciliationModule
+      },
+      {
+        path: '/:orgId/teams',
+        module: TeamModule,
         children: [
           {
-            path: "secrets",
-            module: SecretsModule
-          },
-          {
-            path: "stream",
-            module: StreamModule
-          },
-          {
-            path: "auth",
-            module: AuthModule
-          },
-          {
-            path: "ops",
-            module: OperationsModule
-          },
-          {
-            path: 'reconciliation',
-            module: ReconciliationModule
-          },
-          {
-            path: 'teams',
-            module: RootTeamModule,
+            path: '/:teamId/environments',
+            module: EnvironmentModule,
             children: [
               {
-                path: ':teamId',
-                module: TeamModule,
-                children: [
-                  {
-                    path: 'environments',
-                    module: RootEnvironmentModule,
-                    children: [
-                      {
-                        path: ':environmentId',
-                        module: EnvironmentModule,
-                        children: [
-                          {
-                            path: 'components',
-                            module: ComponentModule
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                ]
+                path: '/:environmentId/components',
+                module: ComponentModule
               }
             ]
           }
