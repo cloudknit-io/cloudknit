@@ -14,7 +14,7 @@ export class EntityStore {
 		environments: [],
 	});
 	public emitterComp = new Subject<Component[]>();
-	private emitterCompAudit = new Subject<CompAuditData>();
+	public emitterCompAudit = new Subject<CompAuditData>();
 	private emitterEnvAudit = new Subject<EnvAuditData>();
 	private componentAuditListeners = new Set<number>();
 	private environmentAuditListeners = new Set<number>();
