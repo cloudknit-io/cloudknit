@@ -7,11 +7,10 @@ import { useApi } from 'hooks/use-api/useApi';
 import { EnvironmentComponentItem, EnvironmentItem } from 'models/projects.models';
 import React, { FC, useEffect, useMemo, useState } from 'react';
 import { ArgoEnvironmentsService } from 'services/argo/ArgoEnvironments.service';
-import { ReactComponent as SyncIcon } from 'assets/images/icons/sync-icon.svg';
+
 
 import Tree from './TreeView';
 import { ESyncStatus, OperationPhase, ResourceResult, ZEnvSyncStatus, ZSyncStatus } from 'models/argo.models';
-import { getEnvironmentErrorCondition, syncMe } from 'pages/authorized/environments/helpers';
 import { Context } from 'context/argo/ArgoUi';
 import { subscriberWatcher } from 'utils/apiClient/EventClient';
 import { ReactComponent as Expand } from 'assets/images/icons/expand.svg';
@@ -20,6 +19,8 @@ import { ReactComponent as Subtract } from 'assets/images/icons/subtract.svg';
 import { ReactComponent as AppIcon } from 'assets/images/icons/DAG-View/Layers.svg';
 import { cleanDagNodeCache } from './node-figure-helper';
 import { Component, EntityStore, Environment } from 'models/entity.store';
+import { Reconciler } from 'pages/authorized/environments/Reconciler';
+import { TreeReconcile } from 'pages/authorized/environments/helpers';
 
 const curveTypes = [
 	{ value: '0', title: 'Curve Basis' },
@@ -81,11 +82,10 @@ export const TreeComponent: FC<Props> = ({ environmentId, nodes, onNodeClick, en
 	const deleteEnvironment = useApi(ArgoEnvironmentsService.deleteEnvironment);
 	const [environmentCondition, setEnvironmentCondition] = useState<any>(null);
 	const expandedNodes: Set<EnvironmentComponentItem> = new Set<EnvironmentComponentItem>();
-	const reconciling = [
-		ZEnvSyncStatus.Provisioning,
-		ZEnvSyncStatus.Destroying,
-		ZEnvSyncStatus.Initializing,
-	].includes(environmentItem?.status as ZEnvSyncStatus) || syncStarted;
+	const reconciling =
+		[ZEnvSyncStatus.Provisioning, ZEnvSyncStatus.Destroying, ZEnvSyncStatus.Initializing].includes(
+			environmentItem?.status as ZEnvSyncStatus
+		) || syncStarted;
 
 	const initZoomEventHandlers = (zoomInHandler: () => void, zoomOutHandler: () => void, resetHandler: () => void) => {
 		zoomIn = zoomInHandler;
@@ -190,22 +190,6 @@ export const TreeComponent: FC<Props> = ({ environmentId, nodes, onNodeClick, en
 		generateNodes();
 	}, [nodes, environmentItem]);
 
-	// useEffect(() => {
-	// 	if (!environmentItem) {
-	// 		return;
-	// 	}
-	// 	const watcherSub = subscriberWatcher.subscribe(e => {
-	// 		if (e?.application?.metadata?.name?.replace('-team-watcher', '') === environmentItem?.labels?.project_id) {
-	// 			const status = e?.application?.status?.operationState?.phase;
-	// 			setWatcherStatus(status);
-	// 		}
-	// 	});
-	// 	if (environmentItem.conditions.length > 0) {
-	// 		setEnvironmentCondition(getEnvironmentErrorCondition(environmentItem.conditions));
-	// 	}
-	// 	return () => watcherSub.unsubscribe();
-	// }, [environmentItem]);
-
 	useEffect(() => {
 		if (!syncStarted) {
 			return;
@@ -215,59 +199,14 @@ export const TreeComponent: FC<Props> = ({ environmentId, nodes, onNodeClick, en
 		}, 10000);
 	}, [syncStarted]);
 
-	const getSyncIconClass = (syncStatus: any) => {
-		if (!syncStatus) {
-			return;
-		}
-		if (syncStatus === ESyncStatus.OutOfSync) {
-			return '--out-of-sync';
-		} else if (syncStatus === ESyncStatus.Synced) {
-			return '--in-sync';
-		} else {
-			return '--unknown';
-		}
-	};
-
 	return (
 		<div>
 			<p className="node__title m-0 cursor-pointer">
 				<span>* Costs are monthly estimates calculated at the time of last reconciliation</span>
 				<div className="dag-controls">
-					<button
-						className="dag-controls-reconcile"
-						onClick={async (e: any) => {
-							e.stopPropagation();
-							if (!reconciling)
-							await syncMe(
-								environmentItem as Environment,
-								syncStarted,
-								setSyncStarted,
-								nm as NotificationsApi,
-								watcherStatus
-							);
-						}}>
-						<span
-							className={`tooltip ${
-								// environmentItem?.healthStatus !== 'Progressing' &&
-								// !syncStarted &&
-								// environmentCondition &&
-								// 'error'
-								''
-							}`}>{`${
-								reconciling
-								? 'Reconciling...'
-								: 'Reconcile'
-						}`}</span>
-						<SyncIcon
-							className={`large-health-icon-container__sync-button large-health-icon-container__sync-button${getSyncIconClass(
-								''
-							)} large-health-icon-container__sync-button${
-								reconciling ? '--in-progress' : ''
-							}`}
-							title="Reconcile Environment"
-						/>
-						Reconcile
-					</button>
+					{environmentItem && (
+						<Reconciler environment={environmentItem} template={TreeReconcile} />
+					)}
 					<button className="dag-controls-zoom-button" onClick={() => zoomIn()}>
 						<span className={`tooltip`}>Zoom In</span>+
 					</button>

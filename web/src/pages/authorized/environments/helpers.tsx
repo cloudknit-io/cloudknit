@@ -12,14 +12,15 @@ import {
 } from 'components/molecules/cards/renderFunctions';
 import { MenuItem, ZDropdownMenuJSX } from 'components/molecules/dropdown-menu/DropdownMenu';
 import { ZStreamRenderer } from 'components/molecules/zasync-renderer/ZStreamRenderer';
-import { ApplicationCondition, HealthStatuses, OperationPhase, OperationPhases } from 'models/argo.models';
-import { Environment } from 'models/entity.store';
+import { ApplicationCondition, HealthStatuses, OperationPhase, OperationPhases, ZEnvSyncStatus } from 'models/argo.models';
+import { EntityStore, Environment } from 'models/entity.store';
 import { EnvironmentItem } from 'models/projects.models';
-import React from 'react';
+import React, { ReactElement } from 'react';
 import { ArgoComponentsService } from 'services/argo/ArgoComponents.service';
 import { ArgoEnvironmentsService } from 'services/argo/ArgoEnvironments.service';
 import { ArgoTeamsService } from 'services/argo/ArgoProjects.service';
 import { CostingService } from 'services/costing/costing.service';
+import { ReactComponent as SyncIcon } from 'assets/images/icons/sync-icon.svg';
 
 export const mockOriginalYaml = `
 apiVersion: stable.compuzest.com/v1
@@ -191,46 +192,72 @@ export const renderSyncStatus = (data: any) => (
 export const getEnvironmentErrorCondition = (conditions: ApplicationCondition[]) => {
 	const errors = conditions.filter(e => e.type.toLowerCase().includes('error'));
 	if (errors.length > 0)
-		return 'There seems to be a problem with your environment. Please contact your administrator.'; //errors.map(e => `${e.type}: ${e.message}`).join('\n');
+		return 'There seems to be a problem with your environment. Please contact your administrator.';
+	//errors.map(e => `${e.type}: ${e.message}`).join('\n');
 	return null;
 };
 
-export const syncMe = async (
-	environment: Environment,
-	syncStarted: any,
-	setSyncStarted: any,
-	notificationManager: NotificationsApi,
-	watcherStatus: OperationPhase | undefined
-) => {
-	if (syncStarted) {
-		return;
-	}
-	setSyncStarted(true);
-	try {
-		notificationManager.show({
-			content: `Reconciling ${environment.name}`,
-			type: NotificationType.Success,
-		});
-		// if (watcherStatus === OperationPhases.Failed) {
-		// 	await hardSync(environment.labels?.project_id || '', environment.displayValue || '', notificationManager);
-		// 	return;
-		// }
-		await ArgoEnvironmentsService.deleteEnvironment(environment.argoId as string);
-		setTimeout(async () => {
-			await ArgoEnvironmentsService.syncEnvironment(environment.argoId as string);
-		}, 1500);
-	} catch (err) {
-		// if ((err as any)?.message?.includes('not found') && environment.syncStatus === 'OutOfSync') {
-		// 	await ArgoEnvironmentsService.syncEnvironment(environment.id as string);
-		// }
-		// console.log(err);
-	}
-};
-
-export const hardSync = async (projectId: string, envName: string, notificationManager: NotificationsApi) => {
+export const hardSync = async (projectId: string, envName: string) => {
 	try {
 		await ArgoTeamsService.hardSyncTeam(projectId, envName);
 	} catch (err) {}
+};
+
+export const TreeReconcile = (env: Environment, reconciling: boolean, triggerSync: () => Promise<any>): ReactElement => {
+	return (
+		<button
+			className="dag-controls-reconcile"
+			onClick={async (e: any) => {
+				e.stopPropagation();
+				if (!reconciling)
+					await triggerSync();
+			}}>
+			<span
+				className={`tooltip ${
+					// environmentItem?.healthStatus !== 'Progressing' &&
+					// !syncStarted &&
+					// environmentCondition &&
+					// 'error'
+					''
+				}`}>{`${reconciling ? 'Reconciling...' : 'Reconcile'}`}</span>
+			<SyncIcon
+				className={`large-health-icon-container__sync-button large-health-icon-container__sync-button${getSyncIconClass(
+					env
+				)} large-health-icon-container__sync-button${reconciling ? '--in-progress' : ''}`}
+				title="Reconcile Environment"
+			/>
+			Reconcile
+		</button>
+	);
+};
+
+export const EnvCardReconcile = (env: Environment, reconciling: boolean, triggerSync: () => Promise<any>) => {
+	return (
+		<SyncIcon
+			className={`large-health-icon-container__sync-button large-health-icon-container__sync-button${getSyncIconClass(
+				env
+			)} large-health-icon-container__sync-button${
+				reconciling ? '--in-progress' : ''
+			}`}
+			title={'Reconcile Environment'}
+			onClick={async e => {
+				e.stopPropagation();
+				//TODO: Syncing env
+				if (!reconciling)
+					await triggerSync();
+			}}
+		/>
+	);
+};
+
+const getSyncIconClass = (environment: Environment) => {
+	if ([ZEnvSyncStatus.DestroyFailed, ZEnvSyncStatus.ProvisionFailed].includes(environment.status as ZEnvSyncStatus)) {
+		return '--out-of-sync';
+	} else if ([ZEnvSyncStatus.Provisioned, ZEnvSyncStatus.Destroyed].includes(environment.status as ZEnvSyncStatus)) {
+		return '--in-sync';
+	} else {
+		return '--in-sync';
+	}
 };
 
 const renderServices = () => <AWSIcon />;
@@ -289,7 +316,7 @@ export const renderSyncStatusItems = (
 	statusFilter: Set<any>,
 	setStatusFilter: any,
 	title: string,
-	getCount?: (status: string) => number,
+	getCount?: (status: string) => number
 ) => {
 	const menuItems: MenuItem[] = [];
 	for (const status in syncStatuses) {
@@ -312,12 +339,7 @@ export const renderSyncStatusItems = (
 		});
 	}
 	return (
-		<ZDropdownMenuJSX
-			className="checkbox-filter__inline-flex"
-			label={title}
-			isOpened={true}
-			items={menuItems}
-		/>
+		<ZDropdownMenuJSX className="checkbox-filter__inline-flex" label={title} isOpened={true} items={menuItems} />
 	);
 };
 

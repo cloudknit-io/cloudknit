@@ -31,13 +31,6 @@ const App: React.FC = () => {
 			if (!profile.selectedOrg) {
 				return;
 			}
-			fetch().then(({ data }) => {
-				if (data) {
-					setTeams(data);
-					ArgoStreamService.stream(data[0].resourceVersion || '');
-					ErrorStateService.getInstance();
-				}
-			});
 		});
 
 		return () => $subscription.unsubscribe();

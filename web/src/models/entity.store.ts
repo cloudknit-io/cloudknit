@@ -1,6 +1,7 @@
 import { EntityService } from 'services/entity/entity.service';
 import { BehaviorSubject, Subject, Subscription } from 'rxjs';
 import { AuditStatus } from './argo.models';
+import { ErrorStateService } from 'services/error/error-state.service';
 
 export class EntityStore {
 	private static instance: EntityStore;
@@ -27,6 +28,7 @@ export class EntityStore {
 	}
 
 	private constructor() {
+		ErrorStateService.getInstance();
 		Promise.resolve(this.getTeams());
         this.startStreaming();
 	}

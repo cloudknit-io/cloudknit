@@ -7,7 +7,7 @@ import { ZGridDisplayListWithLabel } from 'components/molecules/grid-display-lis
 import { ESyncStatus, OperationPhase, ZEnvSyncStatus, ZSyncStatus } from 'models/argo.models';
 import { ListItem } from 'models/general.models';
 import { EnvironmentItem, EnvironmentsList } from 'models/projects.models';
-import { getEnvironmentErrorCondition, syncMe } from 'pages/authorized/environments/helpers';
+import { EnvCardReconcile, getEnvironmentErrorCondition } from 'pages/authorized/environments/helpers';
 import React, { FC, useMemo } from 'react';
 import { useEffect } from 'react';
 import { useState } from 'react';
@@ -22,6 +22,7 @@ import { ErrorView } from 'components/organisms/error-view/ErrorView';
 import { ErrorStateService } from 'services/error/error-state.service';
 import { eventErrorColumns } from 'models/error.model';
 import { EntityStore, Environment } from 'models/entity.store';
+import { Reconciler } from 'pages/authorized/environments/Reconciler';
 
 type Props = {
 	environments: Environment[];
@@ -169,15 +170,7 @@ export const EnvironmentCard: FC<PropsEnvironmentItem> = ({
 	};
 
 	// TODO: Sync Status
-	const getSyncIconClass = (environment: Environment) => {
-		if ([ZEnvSyncStatus.DestroyFailed, ZEnvSyncStatus.ProvisionFailed].includes(environment.status as ZEnvSyncStatus)) {
-			return '--out-of-sync';
-		} else if ([ZEnvSyncStatus.Provisioned, ZEnvSyncStatus.Destroyed].includes(environment.status as ZEnvSyncStatus)) {
-			return '--in-sync';
-		} else {
-			return '--in-sync';
-		}
-	};
+	
 
 	// TODO: Watcher for environemts
 	// useEffect(() => {
@@ -226,26 +219,7 @@ export const EnvironmentCard: FC<PropsEnvironmentItem> = ({
 				</div>
 				<div className="large-health-icon-container">
 					{
-						<SyncIcon
-							className={`large-health-icon-container__sync-button large-health-icon-container__sync-button${getSyncIconClass(
-								env
-							)} large-health-icon-container__sync-button${
-								reconciling ? '--in-progress' : ''
-							}`}
-							title={environmentCondition || 'Reconcile Environment'}
-							onClick={async e => {
-								e.stopPropagation();
-								//TODO: Syncing env
-								if (!reconciling)
-									await syncMe(
-										env,
-										syncStarted,
-										setSyncStarted,
-										notificationManager as NotificationsApi,
-										watcherStatus
-									);
-							}}
-						/>
+						environment && <Reconciler environment={environment} template={EnvCardReconcile}/>
 					}
 					{featureToggled(FeatureKeys.DIFF_CHECKER, true) && (
 						<input
