@@ -90,15 +90,14 @@ export class EntityStore {
 			}
 		});
 
-		this.entityService.streamComponentAudit().subscribe((data: CompAuditData) => {
-			if (this.componentAuditListeners.has(data.compId)) {
-				this.emitterCompAudit.next(data);
+		this.entityService.streamAudit().subscribe((data: CompAuditData | EnvAuditData) => {
+			if ((data as CompAuditData).compId) {
+				const compData = data as CompAuditData;
+				this.componentAuditListeners.has(compData.compId) && this.emitterCompAudit.next(compData);
 			}
-		});
-
-		this.entityService.streamEnvironmentAudit().subscribe((data: EnvAuditData) => {
-			if (this.environmentAuditListeners.has(data.envId)) {
-				this.emitterEnvAudit.next(data);
+			if ((data as EnvAuditData).envId) {
+				const envData = data as EnvAuditData;
+				this.environmentAuditListeners.has(envData.envId) && this.emitterEnvAudit.next(envData);
 			}
 		});
 	}

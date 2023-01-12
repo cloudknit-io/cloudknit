@@ -52,22 +52,17 @@ export class EntityService extends BaseService {
 	}
 
 	streamComponents() {
-		const ec = new EventClient<Component>(this.constructUri(EntitytUriType.streamComponents()), 'Component');
+		const ec = new EventClient<Component>(this.constructUri(EntitytUriType.streamComponents()), ['Component']);
 		return ec.listen();
 	}
 
 	streamEnvironments() {
-		const ec = new EventClient<Environment>(this.constructUri(EntitytUriType.streamEnvironments()), 'Environment');
+		const ec = new EventClient<Environment>(this.constructUri(EntitytUriType.streamEnvironments()), ['Environment']);
 		return ec.listen();
 	}
 
-	streamEnvironmentAudit() {
-		const ec = new EventClient<EnvAuditData>(this.constructUri(EntitytUriType.streamAudit()), 'EnvironmentReconcile');
-		return ec.listen();
-	}
-
-	streamComponentAudit() {
-		const ec = new EventClient<CompAuditData>(this.constructUri(EntitytUriType.streamAudit()), 'ComponentReconcile');
+	streamAudit() {
+		const ec = new EventClient<CompAuditData | EnvAuditData>(this.constructUri(EntitytUriType.streamAudit()), ['EnvironmentReconcile', 'ComponentReconcile']);
 		return ec.listen();
 	}
 }
