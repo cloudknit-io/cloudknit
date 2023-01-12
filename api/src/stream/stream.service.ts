@@ -16,8 +16,11 @@ export class StreamService {
     setInterval(() => {
       this.envStream.next({} as Environment);
       this.compStream.next({} as Component);
-      this.reconcileStream.next({} as AuditWrapper);
-    }, 20000);
+      this.reconcileStream.next({
+        data: {},
+        type: 'ComponentReconcile'
+      } as AuditWrapper);
+    }, 10000);
   }
 
   normalizeOrg(obj: Environment|Component|ComponentReconcile|EnvironmentReconcile) {
