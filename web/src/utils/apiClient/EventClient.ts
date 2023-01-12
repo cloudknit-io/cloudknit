@@ -233,6 +233,7 @@ export class EventClient<T> {
 	private eventSource: any;
 	private listenerTypes: string[] = [];
 	private handler = (event: MessageEvent): any => {
+		if (event.data !== '{}') return;
 		this.publisher.next(JSON.parse(event.data) as T);
 	};
 	

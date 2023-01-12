@@ -169,8 +169,8 @@ export const Environments: React.FC = () => {
 		return Object.values(labels).some(val => val.toString().includes(query));
 	};
 
-	const syncStatusMatch = (item: EnvironmentItem): boolean => {
-		return syncStatusFilter.has(item.labels?.env_status as ZEnvSyncStatus);
+	const syncStatusMatch = (item: Environment): boolean => {
+		return syncStatusFilter.has(item.status as ZEnvSyncStatus);
 	};
 
 	useEffect(() => {
@@ -180,7 +180,7 @@ export const Environments: React.FC = () => {
 				.bind(
 					null,
 					(status: string) =>
-						[...environments, ...failedEnvironments].filter(e => 'Unknown' === status).length
+						[...environments].filter(e => e.status === status).length
 				),
 		]);
 	}, [query, environments, syncStatusFilter, failedEnvironments]);
@@ -224,15 +224,14 @@ export const Environments: React.FC = () => {
 	};
 
 	const getFilteredData = (): Environment[] => {
-		return [];
-		// let filteredItems = [...environments, ...failedEnvironments];
-		// if (syncStatusFilter.size > 0) {
-		// 	filteredItems = [...filteredItems.filter(syncStatusMatch)];
-		// }
+		let filteredItems = [...environments];
+		if (syncStatusFilter.size > 0) {
+			filteredItems = [...filteredItems.filter(syncStatusMatch)];
+		}
 
-		// return filteredItems.filter(item => {
-		// 	return item.name.toLowerCase().includes(query) || labelsMatch(item.labels, query);
-		// });
+		return filteredItems.filter(item => {
+			return item.name.toLowerCase().includes(query);
+		});
 	};
 
 	const renderDiffEditor = () => {
@@ -305,8 +304,7 @@ export const Environments: React.FC = () => {
 						</div>
 					) : (
 						<EnvironmentCards
-							// environments={environments ? getFilteredData() : []}
-							environments={environments}
+							environments={environments ? getFilteredData() : []}
 							compareEnabled={{
 								compareMode,
 								setSelectedEnvironmentToCompare,
