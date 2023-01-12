@@ -4,7 +4,7 @@ import { ReactComponent as AWSIcon } from 'assets/images/icons/AWS.svg';
 import { ReactComponent as SyncIcon } from 'assets/images/icons/sync-icon.svg';
 import { CostRenderer, renderEnvSyncedStatus } from 'components/molecules/cards/renderFunctions';
 import { ZGridDisplayListWithLabel } from 'components/molecules/grid-display-list/GridDisplayList';
-import { ESyncStatus, OperationPhase, ZSyncStatus } from 'models/argo.models';
+import { ESyncStatus, OperationPhase, ZEnvSyncStatus, ZSyncStatus } from 'models/argo.models';
 import { ListItem } from 'models/general.models';
 import { EnvironmentItem, EnvironmentsList } from 'models/projects.models';
 import { getEnvironmentErrorCondition, syncMe } from 'pages/authorized/environments/helpers';
@@ -107,6 +107,11 @@ export const EnvironmentCard: FC<PropsEnvironmentItem> = ({
 	const [watcherStatus, setWatcherStatus] = useState<OperationPhase | undefined>();
 	const [environmentCondition, setEnvironmentCondition] = useState<any>(null);
 	const [selected, setSelected] = useState<boolean>(false);
+	const reconciling = [
+		ZEnvSyncStatus.Provisioning,
+		ZEnvSyncStatus.Destroying,
+		ZEnvSyncStatus.Initializing,
+	].includes(environment?.status as ZEnvSyncStatus) || syncStarted;
 
 	useEffect(() => {
 		setEnv(environment);
@@ -164,13 +169,13 @@ export const EnvironmentCard: FC<PropsEnvironmentItem> = ({
 	};
 
 	// TODO: Sync Status
-	const getSyncIconClass = (environment: any) => {
-		if (environment.syncStatus === ESyncStatus.OutOfSync) {
+	const getSyncIconClass = (environment: Environment) => {
+		if ([ZEnvSyncStatus.DestroyFailed, ZEnvSyncStatus.ProvisionFailed].includes(environment.status as ZEnvSyncStatus)) {
 			return '--out-of-sync';
-		} else if (environment.syncStatus === ESyncStatus.Synced) {
+		} else if ([ZEnvSyncStatus.Provisioned, ZEnvSyncStatus.Destroyed].includes(environment.status as ZEnvSyncStatus)) {
 			return '--in-sync';
 		} else {
-			return '--unknown';
+			return '--in-sync';
 		}
 	};
 
@@ -225,21 +230,20 @@ export const EnvironmentCard: FC<PropsEnvironmentItem> = ({
 							className={`large-health-icon-container__sync-button large-health-icon-container__sync-button${getSyncIconClass(
 								env
 							)} large-health-icon-container__sync-button${
-								'Progressing'
-								// env.healthStatus === 'Progressing' || syncStarted ? '--in-progress' : ''
+								reconciling ? '--in-progress' : ''
 							}`}
 							title={environmentCondition || 'Reconcile Environment'}
 							onClick={async e => {
 								e.stopPropagation();
 								//TODO: Syncing env
-								// if (env.healthStatus !== 'Progressing')
-								// 	await syncMe(
-								// 		env,
-								// 		syncStarted,
-								// 		setSyncStarted,
-								// 		notificationManager as NotificationsApi,
-								// 		watcherStatus
-								// 	);
+								if (!reconciling)
+									await syncMe(
+										env,
+										syncStarted,
+										setSyncStarted,
+										notificationManager as NotificationsApi,
+										watcherStatus
+									);
 							}}
 						/>
 					}
