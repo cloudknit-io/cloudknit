@@ -10,6 +10,7 @@ import { TeamQueryParams } from './team.dto';
 import { TeamWrapDto } from './dto/team-cost.dto';
 import { calculateTeamCost } from './team.helper';
 import { Team } from 'src/typeorm';
+import { ApiQuery } from '@nestjs/swagger';
 
 @Controller({
   version: '1'
@@ -71,7 +72,9 @@ export class TeamController {
 
   @Get()
   @OrgApiParam()
-  async findAll(@Request() req, @Query() qParams: TeamQueryParams): Promise<TeamWrapDto[]> {
+  @ApiQuery({name: 'withCost', required: false, type: 'boolean'})
+  @ApiQuery({name: 'withEnvironments', required: false, type: 'boolean'})
+  async findAll(@Request() req: APIRequest, @Query() qParams: TeamQueryParams): Promise<TeamWrapDto[]> {
     const org = req.org;
     const withCost = qParams.withCost.toLowerCase() === 'true';
     const withEnv = qParams.withEnvironments.toLowerCase() === 'true';
