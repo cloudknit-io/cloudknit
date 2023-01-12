@@ -20,7 +20,7 @@ export class ComponentController {
 
   @Get()
   @EnvironmentApiParam()
-  async findAll(@Request() req): Promise<Component[]> {
+  async findAll(@Request() req: APIRequest): Promise<Component[]> {
     const {org, env} = req;
     
     return this.compSvc.findAll(org, env);
@@ -28,7 +28,7 @@ export class ComponentController {
 
   @Get('/:componentId')
   @EnvironmentApiParam()
-  async findOne(@Request() req, @Param('componentId') id: string): Promise<Component> {
+  async findOne(@Request() req: APIRequest, @Param('componentId') id: string): Promise<Component> {
     const {org, env} = req;
 
     return this.getCompFromRequest(org, env, id);
