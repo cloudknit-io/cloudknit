@@ -1,8 +1,9 @@
-import { BadRequestException, Body, Controller, Get, Logger, Param, Post, Put, Request } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Logger, Param, Post, Put, Query, Request } from '@nestjs/common';
 import { EnvironmentService } from 'src/environment/environment.service';
 import { ReconciliationService } from 'src/reconciliation/reconciliation.service';
 import { Component, Environment, Organization } from 'src/typeorm';
 import { APIRequest, EnvironmentApiParam } from 'src/types';
+import { ComponentQueryParams, ComponentWrap } from './component.dto';
 import { ComponentService } from './component.service';
 import { UpdateComponentDto } from './dto/update-component.dto';
 
@@ -20,10 +21,15 @@ export class ComponentController {
 
   @Get()
   @EnvironmentApiParam()
-  async findAll(@Request() req: APIRequest): Promise<Component[]> {
+  async findAll(@Request() req: APIRequest, @Query() params: ComponentQueryParams): Promise<ComponentWrap[]> {
     const {org, env} = req;
-    
-    return this.compSvc.findAll(org, env);
+    const withLastReconcile = params.withLastAuditStatus === 'true';
+
+    if (!withLastReconcile) {
+      return this.compSvc.findAll(org, env);
+    }
+
+    return this.compSvc.findAllWithLastCompRecon(org, env);
   }
 
   @Get('/:componentId')
