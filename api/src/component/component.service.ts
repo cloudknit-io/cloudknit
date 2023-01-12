@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Component, Environment, Organization } from 'src/typeorm';
+import { Component, ComponentReconcile, Environment, Organization } from 'src/typeorm';
 import { UpdateComponentDto } from './dto/update-component.dto'
 import { Equal, In, Repository } from 'typeorm';
 
@@ -143,6 +143,27 @@ export class ComponentService {
         environment: withEnv
       }
     })
+  }
+
+  async findAllWithLastCompRecon(org: Organization, env: Environment) {
+    return this.compRepo.createQueryBuilder('c')
+    .select('c.*')
+    .addSelect((subQuery) => {
+      return subQuery
+        .select('cr.status')
+        .from(ComponentReconcile, 'cr')
+        .where('c.organizationId = cr.organizationId')
+        .andWhere('c.id = cr.componentId')
+        .orderBy('cr.startDateTime', 'DESC')
+        .limit(1)
+    }, 'lastAuditStatus')
+    .where('c.organizationId = :orgId')
+    .andWhere('c.environmentId = :envId')
+    .setParameters({
+      orgId: org.id,
+      envId: env.id
+    })
+    .execute();
   }
 
   async update(comp: Component, mergeComp: UpdateComponentDto): Promise<Component> {
