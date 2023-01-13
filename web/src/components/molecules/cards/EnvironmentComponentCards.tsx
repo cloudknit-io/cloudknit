@@ -20,10 +20,7 @@ type Props = {
 
 type EnvironmentComponentItemProps = {
 	config: Component;
-	showAll?: boolean;
 	onClick: Function;
-	isSelected?: boolean;
-	workflowPhase?: string;
 };
 
 const getFullName = (teamId = '', environmentId = '', componentName = '') => {
@@ -99,10 +96,7 @@ export const EnvironmentComponentCards: FC<Props> = ({
 					<ConfigCard
 						key={config.argoId}
 						config={config}
-						showAll={showAll}
 						onClick={onClick}
-						isSelected={selectedConfig === config}
-						workflowPhase={workflowPhase}
 					/>
 				))}
 			</div>
@@ -112,10 +106,7 @@ export const EnvironmentComponentCards: FC<Props> = ({
 
 export const ConfigCard: FC<EnvironmentComponentItemProps> = ({
 	config,
-	showAll,
 	onClick,
-	isSelected,
-	workflowPhase,
 }: EnvironmentComponentItemProps) => {
 	const env = EntityStore.getInstance().getEnvironmentById(config.envId);
 	const team = EntityStore.getInstance().getTeam(env?.teamId || -1)

@@ -21,7 +21,7 @@ export const AuthProvider: React.FC = ({ children }) => {
 		ApiClient.init();
 		setLoading(true);
 		AuthService.me()
-			.then(async response => {;
+			.then(async response => {
 				const user: User = response.data;
 				let selectedOrg = null;
 				if (user.organizations.length === 1) {

@@ -1,16 +1,14 @@
 import { ZLoaderCover } from 'components/atoms/loader/LoaderCover';
 import { ZTable } from 'components/atoms/table/Table';
 import { TeamCards } from 'components/molecules/cards/TeamCards';
-import { useApi } from 'hooks/use-api/useApi';
-import { HealthStatusCode, SyncStatusCode, SyncStatuses } from 'models/argo.models';
+import { HealthStatusCode, SyncStatusCode } from 'models/argo.models';
 import { EntityStore, Team } from 'models/entity.store';
-import { TeamItem, TeamsList } from 'models/projects.models';
+import { TeamItem } from 'models/projects.models';
 import React, { useEffect, useState } from 'react';
 import { useMemo } from 'react';
-import { ArgoTeamsService } from 'services/argo/ArgoProjects.service';
 
 import { usePageHeader } from '../contexts/EnvironmentHeaderContext';
-import { getCheckBoxFilters, renderHealthStatusItems, renderSyncStatusItems } from '../environments/helpers';
+import { getCheckBoxFilters } from '../environments/helpers';
 import { teamTableColumns } from './helpers';
 
 export const Teams: React.FC = () => {
@@ -22,19 +20,9 @@ export const Teams: React.FC = () => {
 	const [healthStatusFilter, setHealthStatusFilter] = useState<Set<HealthStatusCode>>(new Set<HealthStatusCode>());
 	const [filterDropDownOpen, toggleFilterDropDown] = useState(false);
 	const [checkBoxFilters, setCheckBoxFilters] = useState<JSX.Element>(<></>);
-	const fetchTeams = useApi(ArgoTeamsService.getProjects).fetch;
 	const [teams, setTeams] = useState<Team[]>([]);
 	const [viewType, setViewType] = useState<string>('');
 	const [filterItems, setFilterItems] = useState<Array<() => JSX.Element>>([]);
-
-	// useEffect(() => {
-	// 	fetchTeams().then(({ data }) => {
-	// 		if (data) {
-	// 			setTeams(data);
-	// 		}
-	// 		setLoading(false);
-	// 	});
-	// }, [fetchTeams]);
 
 	useEffect(() => {
 		const subscription = entityStore.emitter.subscribe((update) => {
@@ -81,13 +69,13 @@ export const Teams: React.FC = () => {
 		// });
 	};
 
-	useEffect(() => {
-		setFilterItems([
-			// renderSyncStatusItems
-			// 	.bind(null, SyncStatuses, syncStatusFilter, setSyncStatusFilter, 'Team Status')
-			// 	.bind(null, (status: string) => teams.filter(e => e.syncStatus === status).length),
-		]);
-	}, [teams, syncStatusFilter, healthStatusFilter]);
+	// useEffect(() => {
+	// 	setFilterItems([
+	// 		renderSyncStatusItems
+	// 			.bind(null, SyncStatuses, syncStatusFilter, setSyncStatusFilter, 'Team Status')
+	// 			.bind(null, (status: string) => teams.filter(e => e.syncStatus === status).length),
+	// 	]);
+	// }, [teams, syncStatusFilter, healthStatusFilter]);
 
 	useEffect(() => {
 		setCheckBoxFilters(getCheckBoxFilters(filterDropDownOpen, setToggleFilterDropDownValue, filterItems));

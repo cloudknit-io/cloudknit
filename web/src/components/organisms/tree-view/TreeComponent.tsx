@@ -1,26 +1,16 @@
 import { ReactComponent as ArrowUp } from 'assets/images/icons/chevron-right.svg';
 import { ReactComponent as ComputeIcon } from 'assets/images/icons/DAG-View/config.svg';
 import { ReactComponent as LayersIcon } from 'assets/images/icons/DAG-View/environment-icon.svg';
-import { NotificationsApi, Select } from 'components/argo-core';
-import { getHealthStatusIcon, getSyncStatusIcon } from 'components/molecules/cards/renderFunctions';
-import { useApi } from 'hooks/use-api/useApi';
-import { EnvironmentComponentItem, EnvironmentItem } from 'models/projects.models';
+import { Select } from 'components/argo-core';
 import React, { FC, useEffect, useMemo, useState } from 'react';
-import { ArgoEnvironmentsService } from 'services/argo/ArgoEnvironments.service';
 
 
-import Tree from './TreeView';
-import { AuditStatus, ESyncStatus, OperationPhase, ResourceResult, ZEnvSyncStatus, ZSyncStatus } from 'models/argo.models';
-import { Context } from 'context/argo/ArgoUi';
-import { subscriberWatcher } from 'utils/apiClient/EventClient';
-import { ReactComponent as Expand } from 'assets/images/icons/expand.svg';
-import { ReactComponent as Add } from 'assets/images/icons/add.svg';
-import { ReactComponent as Subtract } from 'assets/images/icons/subtract.svg';
-import { ReactComponent as AppIcon } from 'assets/images/icons/DAG-View/Layers.svg';
-import { cleanDagNodeCache } from './node-figure-helper';
+import { AuditStatus } from 'models/argo.models';
 import { Component, EntityStore, Environment } from 'models/entity.store';
-import { Reconciler } from 'pages/authorized/environments/Reconciler';
 import { TreeReconcile } from 'pages/authorized/environments/helpers';
+import { Reconciler } from 'pages/authorized/environments/Reconciler';
+import { cleanDagNodeCache } from './node-figure-helper';
+import Tree from './TreeView';
 
 const curveTypes = [
 	{ value: '0', title: 'Curve Basis' },
@@ -73,19 +63,9 @@ export const TreeComponent: FC<Props> = ({ environmentId, nodes, onNodeClick, en
 	const [modifierMizimized, toggleMinimize] = useState(true);
 	const [syncStarted, setSyncStarted] = useState<boolean>(false);
 	const [ranker, setRanker] = useState('network-simplex');
-	const [watcherStatus, setWatcherStatus] = useState<OperationPhase | undefined>();
 	let zoomIn: () => void = () => {};
 	let zoomOut: () => void = () => {};
 	let reset: () => void = () => {};
-	const nm = React.useContext(Context)?.notifications;
-	const syncEnvironment = useApi(ArgoEnvironmentsService.syncEnvironment);
-	const deleteEnvironment = useApi(ArgoEnvironmentsService.deleteEnvironment);
-	const [environmentCondition, setEnvironmentCondition] = useState<any>(null);
-	const expandedNodes: Set<EnvironmentComponentItem> = new Set<EnvironmentComponentItem>();
-	const reconciling =
-		[ZEnvSyncStatus.Provisioning, ZEnvSyncStatus.Destroying, ZEnvSyncStatus.Initializing].includes(
-			environmentItem?.status as ZEnvSyncStatus
-		) || syncStarted;
 
 	const initZoomEventHandlers = (zoomInHandler: () => void, zoomOutHandler: () => void, resetHandler: () => void) => {
 		zoomIn = zoomInHandler;
@@ -93,57 +73,13 @@ export const TreeComponent: FC<Props> = ({ environmentId, nodes, onNodeClick, en
 		reset = resetHandler;
 	};
 
-	const routeToAppView = (name: string) => {
-		const { protocol, host } = window.location;
-		window.location.href = `${protocol}//${host}/applications/${name}/resource-view`;
-	};
-
-	// const addResourceNodesForApplication = (
-	// 	resources: ResourceResult[],
-	// 	parentRef: EnvironmentComponentItem,
-	// 	generatedNodes: any
-	// ) => {
-	// 	generatedNodes.push(
-	// 		...resources.map((r: ResourceResult) => {
-	// 			return {
-	// 				id: r.name,
-	// 				name: r.name,
-	// 				dependsOn: [parentRef.componentName],
-	// 				syncFinishedAt: parentRef.syncFinishedAt,
-	// 				shape: getShape(''),
-	// 				icon: <AppIcon height={128} width={128} y="3" />,
-	// 				syncStatus: r.status,
-	// 				healthStatusIcon: null,
-	// 				expandIcon:
-	// 					r.kind === 'Application' ? (
-	// 						<Expand
-	// 							title="expand"
-	// 							onClick={e => {
-	// 								e.stopPropagation();
-	// 								routeToAppView(r.name);
-	// 							}}
-	// 						/>
-	// 					) : (
-	// 						''
-	// 					),
-	// 				labels: {
-	// 					component_type: 'argocd',
-	// 				},
-	// 				kind: r.kind,
-	// 				onNodeClick,
-	// 			};
-	// 		})
-	// 	);
-	// 	return generatedNodes;
-	// };
-
 	const generateNodes = () => {
 		const projectId = entityStore.getTeam((environmentItem as Environment).teamId)?.name;
 		cleanDagNodeCache(environmentId);
 		const generatedNodes: any[] = [
 			{
 				projectId,
-				name: environmentId, // TODO check what name here goes from metadata
+				name: environmentId,
 				id: 'root',
 				shape: getShape('root'),
 				icon: <LayersIcon />,
@@ -162,11 +98,6 @@ export const TreeComponent: FC<Props> = ({ environmentId, nodes, onNodeClick, en
 				name: item.name,
 				dependsOn: item.dependsOn?.length ? item.dependsOn : ['root'],
 				icon: <ComputeIcon />,
-				// item.labels?.component_type === 'argocd' ? (
-				// <AppIcon height={128} width={128} y="4" />
-				// ) : (
-				// 	<ComputeIcon />
-				// ),
 				isSkipped: [AuditStatus.SkippedProvision, AuditStatus.SkippedDestroy].includes(item.lastAuditStatus),
 				estimatedCost: item.estimatedCost,
 				syncStatus: item.status || 'Unknown',
@@ -175,12 +106,6 @@ export const TreeComponent: FC<Props> = ({ environmentId, nodes, onNodeClick, en
 				expandIcon: '',
 			}))
 		);
-
-		// if (expandedNodes.size > 0) {
-		// 	[...expandedNodes.values()].forEach(e =>
-		// 		addResourceNodesForApplication(e.syncResult?.resources || [], e, generatedNodes)
-		// 	);
-		// }
 
 		setData(generatedNodes);
 	};

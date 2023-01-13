@@ -3,11 +3,9 @@ import { ZLoaderCover } from 'components/atoms/loader/LoaderCover';
 import { ZTable } from 'components/atoms/table/Table';
 import { EnvironmentCards } from 'components/molecules/cards/EnvironmentCards';
 import { Context } from 'context/argo/ArgoUi';
-import { streamMapper } from 'helpers/streamMapper';
-import { useApi } from 'hooks/use-api/useApi';
-import { ApplicationWatchEvent, ZEnvSyncStatus, ZSyncStatus } from 'models/argo.models';
+import { ZEnvSyncStatus} from 'models/argo.models';
 import { LocalStorageKey } from 'models/localStorage';
-import { EnvironmentItem, EnvironmentsList, PageHeaderTabs, TeamsList } from 'models/projects.models';
+import { EnvironmentItem, PageHeaderTabs } from 'models/projects.models';
 import {
 	environmentTableColumns,
 	getCheckBoxFilters,
@@ -18,15 +16,10 @@ import {
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Subscription } from 'rxjs';
-import { ArgoEnvironmentsService } from 'services/argo/ArgoEnvironments.service';
-import { ArgoMapper } from 'services/argo/ArgoMapper';
-import { ArgoTeamsService } from 'services/argo/ArgoProjects.service';
-import { subscriber } from 'utils/apiClient/EventClient';
 import { usePageHeader } from '../contexts/EnvironmentHeaderContext';
 import { DiffEditor } from '@monaco-editor/react';
 import { ErrorStateService } from 'services/error/error-state.service';
-import AuthStore from 'auth/AuthStore';
-import { EntityStore, Environment, Team } from 'models/entity.store';
+import { EntityStore, Environment } from 'models/entity.store';
 
 type CompareEnv = {
 	env: EnvironmentItem | null;
@@ -40,18 +33,13 @@ type CompareEnvs = {
 export const Environments: React.FC = () => {
 	const { projectId } = useParams();
 	const entityStore = useMemo(() => EntityStore.getInstance(), []);
-	const { fetch } = useApi(ArgoEnvironmentsService.getEnvironments);
 	const [filterDropDownOpen, toggleFilterDropDown] = useState(false);
 	const [query, setQuery] = useState<string>('');
 	const [syncStatusFilter, setSyncStatusFilter] = useState<Set<ZEnvSyncStatus>>(new Set<ZEnvSyncStatus>());
 	const [loading, setLoading] = useState<boolean>(true);
 	const [environments, setEnvironments] = useState<Environment[]>([]);
-	// Need to discuss about these
-	const [failedEnvironments, setFailedEnvironments] = useState<EnvironmentsList>([]);
 	const [viewType, setViewType] = useState<string>('');
-	// Filters [status]
 	const [checkBoxFilters, setCheckBoxFilters] = useState<JSX.Element>(<></>);
-	const [teams, setTeams] = useState<Team[]>([]);
 	const [filterItems, setFilterItems] = useState<Array<() => JSX.Element>>([]);
 	const { pageHeaderObservable, breadcrumbObservable } = usePageHeader();
 	const ctx = React.useContext(Context);
@@ -86,80 +74,8 @@ export const Environments: React.FC = () => {
 				setLoading(false);
 			})
 		);
-		// $subscription.push(
-		// 	errorStateService.updates.subscribe(() => {
-		// 		environments.forEach(e => checkForFailedEnvironments(e));
-		// 	})
-		// );
 		return (): void => $subscription.forEach(e => e.unsubscribe());
 	}, [projectId]);
-
-	// useEffect(() => {
-	// fetch(projectId).then(({ data }) => {
-	// 	if (data) {
-	// 		data.forEach(e => checkForFailedEnvironments(e));
-	// 		setEnvironments(data);
-	// 	}
-	// 	setLoading(false);
-	// });
-	// if (!projectId) return;
-
-	// setLoading(true);
-	// const $subscription: Subscription[] = [];
-	// const envSub = entityStore
-	// .getEnvironmentsEmitter(projectId)?.subscribe(data => {
-	// 	if (data.length === 0) return;
-	// 	setEnvironments(data);
-	// 	setLoading(false);
-	// });
-	// envSub && $subscription.push(envSub);
-	// const setFailedEnv = (envs: any) => {
-	// 	const list: any = envs
-	// 		.filter((e: any) => !environments.some(en => en.labels?.env_name === e.environment))
-	// 		.map((e: any) => ({
-	// 			id: `${e.team}-${e.environment}`,
-	// 			name: e.environment,
-	// 			labels: {
-	// 				project_id: e.team,
-	// 				env_name: e.environment,
-	// 				env_status: ZSyncStatus.ProvisionFailed,
-	// 				failed_environment: true,
-	// 			},
-	// 		}));
-	// 	if (projectId) {
-	// 		setFailedEnvironments(list.filter((e: any) => e.labels?.project_id === projectId));
-	// 	} else {
-	// 		setFailedEnvironments(list);
-	// 	}
-	// };
-	// setFailedEnv(errorStateService.ErrorsEnvs || []);
-	// $subscription.push(
-	// 	errorStateService.updates.subscribe(() => {
-	// 		setFailedEnv(errorStateService.ErrorsEnvs);
-	// 	})
-	// );
-	// return (): void => $subscription.forEach(e => e.unsubscribe());
-	// }, [projectId]);
-
-	// useEffect(() => {
-	// 	const newItems = streamMapper<EnvironmentItem>(
-	// 		streamData,
-	// 		environments,
-	// 		ArgoMapper.parseEnvironment,
-	// 		'environment'
-	// 	);
-	// 	setEnvironments(newItems);
-	// }, [streamData, environments]);
-
-	// const checkForFailedEnvironments = (currentEnv: EnvironmentItem) => {
-	// 	if (!currentEnv) {
-	// 		return;
-	// 	}
-	// 	const failedEnv = errorStateService.errorsInEnvironment(currentEnv.labels?.env_name || '');
-	// 	if (failedEnv?.length && currentEnv.labels?.env_status) {
-	// 		currentEnv.labels.env_status = ZSyncStatus.ProvisionFailed;
-	// 	}
-	// };
 
 	const setToggleFilterDropDownValue = (val: boolean) => {
 		toggleFilterDropDown(val);
@@ -183,7 +99,7 @@ export const Environments: React.FC = () => {
 						[...environments].filter(e => e.status === status).length
 				),
 		]);
-	}, [query, environments, syncStatusFilter, failedEnvironments]);
+	}, [query, environments, syncStatusFilter]);
 
 	useEffect(() => {
 		setCheckBoxFilters(getCheckBoxFilters(filterDropDownOpen, setToggleFilterDropDownValue, filterItems));
@@ -217,7 +133,7 @@ export const Environments: React.FC = () => {
 		});
 
 		breadcrumbObservable.next({ [LocalStorageKey.TEAMS]: headerTabs });
-	}, [teams, checkBoxFilters]);
+	}, [checkBoxFilters]);
 
 	const getCompareEnvs = () => {
 		return compareEnvs;
