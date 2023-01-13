@@ -1,13 +1,15 @@
 import { Routes } from "@nestjs/core";
 import { AuthModule } from "./auth/auth.module";
-import { CostingModule } from "./costing/costing.module";
 import { OrganizationModule } from "./organization/organization.module";
-import { RootOrganizationsModule } from "./rootOrganization/rootOrganization.module";
 import { ReconciliationModule } from "./reconciliation/reconciliation.module";
 import { SecretsModule } from "./secrets/secrets.module";
 import { UsersModule } from "./users/users.module";
 import { SystemModule } from "./system/system.module";
 import { OperationsModule } from "./operations/operations.module";
+import { TeamModule } from "./team/team.module";
+import { EnvironmentModule } from "./environment/environment.module";
+import { ComponentModule } from "./component/component.module";
+import { StreamModule } from "./stream/stream.module";
 
 export const appRoutes: Routes = [
   {
@@ -20,32 +22,42 @@ export const appRoutes: Routes = [
   },
   {
     path: '/orgs',
-    module: RootOrganizationsModule,
+    module: OrganizationModule,
     children: [
       {
-        path: '/:orgId',
-        module: OrganizationModule,
+        path: "/:orgId/secrets",
+        module: SecretsModule
+      },
+      {
+        path: "/:orgId/stream",
+        module: StreamModule
+      },
+      {
+        path: "/:orgId/auth",
+        module: AuthModule
+      },
+      {
+        path: "/:orgId/ops",
+        module: OperationsModule
+      },
+      {
+        path: '/:orgId/reconciliation',
+        module: ReconciliationModule
+      },
+      {
+        path: '/:orgId/teams',
+        module: TeamModule,
         children: [
           {
-            path: 'costing',
-            module: CostingModule
-          },
-          {
-            path: 'reconciliation',
-            module: ReconciliationModule
-          },
-          {
-            path: "secrets",
-            module: SecretsModule
-          },
-          {
-            path: "auth",
-            module: AuthModule
-          },
-          {
-            path: "ops",
-            module: OperationsModule
-          },
+            path: '/:teamId/environments',
+            module: EnvironmentModule,
+            children: [
+              {
+                path: '/:environmentId/components',
+                module: ComponentModule
+              }
+            ]
+          }
         ]
       }
     ]

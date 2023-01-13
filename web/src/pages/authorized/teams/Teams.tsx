@@ -3,8 +3,10 @@ import { ZTable } from 'components/atoms/table/Table';
 import { TeamCards } from 'components/molecules/cards/TeamCards';
 import { useApi } from 'hooks/use-api/useApi';
 import { HealthStatusCode, SyncStatusCode, SyncStatuses } from 'models/argo.models';
+import { EntityStore, Team } from 'models/entity.store';
 import { TeamItem, TeamsList } from 'models/projects.models';
 import React, { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { ArgoTeamsService } from 'services/argo/ArgoProjects.service';
 
 import { usePageHeader } from '../contexts/EnvironmentHeaderContext';
@@ -12,6 +14,7 @@ import { getCheckBoxFilters, renderHealthStatusItems, renderSyncStatusItems } fr
 import { teamTableColumns } from './helpers';
 
 export const Teams: React.FC = () => {
+	const entityStore = useMemo(() => EntityStore.getInstance(), []);
 	const { pageHeaderObservable, breadcrumbObservable } = usePageHeader();
 	const [loading, setLoading] = useState<boolean>(true);
 	const [query, setQuery] = useState<string>('');
@@ -20,18 +23,31 @@ export const Teams: React.FC = () => {
 	const [filterDropDownOpen, toggleFilterDropDown] = useState(false);
 	const [checkBoxFilters, setCheckBoxFilters] = useState<JSX.Element>(<></>);
 	const fetchTeams = useApi(ArgoTeamsService.getProjects).fetch;
-	const [teams, setTeams] = useState<TeamsList>([]);
+	const [teams, setTeams] = useState<Team[]>([]);
 	const [viewType, setViewType] = useState<string>('');
 	const [filterItems, setFilterItems] = useState<Array<() => JSX.Element>>([]);
 
+	// useEffect(() => {
+	// 	fetchTeams().then(({ data }) => {
+	// 		if (data) {
+	// 			setTeams(data);
+	// 		}
+	// 		setLoading(false);
+	// 	});
+	// }, [fetchTeams]);
+
 	useEffect(() => {
-		fetchTeams().then(({ data }) => {
-			if (data) {
-				setTeams(data);
-			}
+		const subscription = entityStore.emitter.subscribe((update) => {
+			const teams = update.teams;
+			if (teams.length === 0) return;
+			setTeams(teams);
 			setLoading(false);
 		});
-	}, [fetchTeams]);
+
+		return () => {
+			subscription.unsubscribe();
+		};
+	}, []);
 
 	const setQueryValue = (queryLoc: string): void => {
 		setQuery(queryLoc.toLowerCase());
@@ -49,26 +65,27 @@ export const Teams: React.FC = () => {
 		return healthStatusFilter.has(item.healthStatus);
 	};
 
-	const getFilteredData = (): TeamsList => {
-		let filteredItems = [...teams];
-		if (syncStatusFilter.size > 0) {
-			filteredItems = [...filteredItems.filter(syncStatusMatch)];
-		}
+	const getFilteredData = (): Team[] => {
+		return [];
+		// let filteredItems = [...teams];
+		// if (syncStatusFilter.size > 0) {
+		// 	filteredItems = [...filteredItems.filter(syncStatusMatch)];
+		// }
 
-		if (healthStatusFilter.size > 0) {
-			filteredItems = [...filteredItems.filter(healthStatusMatch)];
-		}
+		// if (healthStatusFilter.size > 0) {
+		// 	filteredItems = [...filteredItems.filter(healthStatusMatch)];
+		// }
 
-		return filteredItems.filter(item => {
-			return item.name.toLowerCase().includes(query);
-		});
+		// return filteredItems.filter(item => {
+		// 	return item.name.toLowerCase().includes(query);
+		// });
 	};
 
 	useEffect(() => {
 		setFilterItems([
-			renderSyncStatusItems
-				.bind(null, SyncStatuses, syncStatusFilter, setSyncStatusFilter, 'Team Status')
-				.bind(null, (status: string) => teams.filter(e => e.syncStatus === status).length),
+			// renderSyncStatusItems
+			// 	.bind(null, SyncStatuses, syncStatusFilter, setSyncStatusFilter, 'Team Status')
+			// 	.bind(null, (status: string) => teams.filter(e => e.syncStatus === status).length),
 		]);
 	}, [teams, syncStatusFilter, healthStatusFilter]);
 
@@ -100,7 +117,7 @@ export const Teams: React.FC = () => {
 					</div>
 				);
 			default:
-				return <TeamCards teams={getFilteredData() || teams} />;
+				return <TeamCards teams={teams} />;
 		}
 	};
 

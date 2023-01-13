@@ -30,7 +30,7 @@ echo ""
 
 function PatchProcessPlanError() {
     UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "plan_failed"
-    # TODO : Pass orgId
+
     sh ../audit.sh $team_name $env_name $config_name "" "plan_failed" $reconcile_id $config_reconcile_id $is_destroy 0 "noSkip" ${customer_id}
     if [ $is_destroy = true ]
     then
@@ -38,7 +38,8 @@ function PatchProcessPlanError() {
     else
         data='{"metadata":{"labels":{"env_status":"provision_failed"}}}'
     fi
-    argocd app patch $team_env_name --patch $data --type merge > null
+
+    # argocd app patch $team_env_name --patch $data --type merge > null
 }
 
 function ProcessPlanError() {
@@ -53,10 +54,6 @@ function ProcessPlanError() {
 
 . /initialize-functions.sh
 
-env_sync_status=$(argocd app get $team_env_name -o json | jq -r '.status.sync.status') || ProcessPlanError "Failed getting env_sync_status"
-
-config_sync_status=$(argocd app get $team_env_config_name -o json | jq -r '.status.sync.status') || ProcessPlanError "Failed getting config_sync_status"
-
 if [ $result -eq 0 ]
 then
     if [ $is_destroy = true ]
@@ -67,39 +64,21 @@ then
     fi
     UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "${compStatus}"
 
-    if [ $config_sync_status == "OutOfSync" ]
-    then
-        argocd app sync $team_env_config_name > null || true
-    fi
 elif [ $result -eq 2 ]
 then
-    if [ $is_sync -eq 0 ]
+    if [ $auto_approve = false ]
     then
-        if [ $config_sync_status != "OutOfSync" ]
-        then
-            UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "out_of_sync"
+	zlifecycle-internal-cli state component patch \
+	--company $customer_id \
+	--team $team_name \
+	--environment $env_name \
+	--component $config_name \
+	--status waiting_for_approval \
+	-u http://zlifecycle-state-manager."${customer_id}"-system.svc.cluster.local:8080 \
+	-v
 
-            if [ $env_sync_status != "OutOfSync" ]
-            then
-                argocd app sync $team_env_name > null || true
-            fi
-        fi
-    elif [ $is_sync -eq 1 ]
-    then
-        if [ $auto_approve = false ]
-        then
-            zlifecycle-internal-cli state component patch \
-              --company $customer_id \
-              --team $team_name \
-              --environment $env_name \
-              --component $config_name \
-              --status waiting_for_approval \
-              -u http://zlifecycle-state-manager."${customer_id}"-system.svc.cluster.local:8080 \
-              -v
-
-            UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "waiting_for_approval"
-        else
-            UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "initializing_apply"
-        fi
+	UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "waiting_for_approval"
+    else
+	UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "initializing_apply"
     fi
 fi

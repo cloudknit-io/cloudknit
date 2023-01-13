@@ -196,8 +196,7 @@ const COSTING_PATH_MAPPINGS = [
       `/v1/orgs/${params.orgId}/costing/stream/environment`,
   },
 ];
-// /v1/orgs/1/reconciliation/environments/equity-error-2
-// /reconciliation/api/v1/environments/equity-error-2
+
 const AUDIT_PATH_MAPPINGS = [
   {
     path: "/reconciliation/api/v1/environments",
@@ -210,14 +209,14 @@ const AUDIT_PATH_MAPPINGS = [
       `/v1/orgs/${params.orgId}/reconciliation/components`,
   },
   {
-    path: "/reconciliation/api/v1/component",
+    path: "/reconciliation/api/v1/component/:teamId/:environmentId/:componentId",
     newPath: (params: any) =>
-      `/v1/orgs/${params.orgId}/reconciliation/audit/components`,
+      `/v1/orgs/${params.orgId}/teams/${params.teamId}/environments/${params.environmentId}/components/${params.componentId}/audit`,
   },
   {
-    path: "/reconciliation/api/v1/environment",
+    path: "/reconciliation/api/v1/environment/:teamId/:environmentId",
     newPath: (params: any) =>
-      `/v1/orgs/${params.orgId}/reconciliation/audit/environments`,
+    `/v1/orgs/${params.orgId}/teams/${params.teamId}/environments/${params.environmentId}/audit`,
   },
   {
     path: "/reconciliation/api/v1/notification/save",
@@ -269,9 +268,14 @@ const AUDIT_PATH_MAPPINGS = [
       `/v1/orgs/${params.orgId}/reconciliation/environments/notify`,
   },
   {
-    path: "/reconciliation/api/v1/approved-by/",
+    path: "/reconciliation/api/v1/component/approve/:compReconId",
     newPath: (params: any) =>
-      `/v1/orgs/${params.orgId}/reconciliation/approved-by/`,
+      `/v1/orgs/${params.orgId}/reconciliation/component/${params.compReconId}/approve`,
+  },
+  {
+    path: "/reconciliation/api/v1/approved-by/:teamId/:envId/:compId",
+    newPath: (params: any) =>
+      `/v1/orgs/${params.orgId}/reconciliation/approved-by/${params.teamId}/${params.envId}/${params.compId}/${params.email}`,
   }
 ];
 
@@ -362,6 +366,42 @@ const OPERATION_PATH_MAPPING = [
   },
 ];
 
+const API_PATH_MAPPINGS = [
+  {
+    path: "/api/teams",
+    newPath: (params: any) => `v1/orgs/${params.orgId}/teams`,
+  },
+  {
+    path: "/api/teams/:teamId/environments",
+    newPath: (params: any) => `v1/orgs/${params.orgId}/teams/${params.teamId}/environments`,
+  },
+  {
+    path: "/api/teams/:teamId/environments/:envId/components",
+    newPath: (params: any) => `v1/orgs/${params.orgId}/teams/${params.teamId}/environments/${params.envId}/components`,
+  },
+  {
+    path: "/api/stream/component",
+    newPath: (params: any) => `v1/orgs/${params.orgId}/stream/component`,
+  },
+  {
+    path: "/api/stream/environment",
+    newPath: (params: any) => `v1/orgs/${params.orgId}/stream/environment`,
+  },
+  {
+    path: "/api/stream/component",
+    newPath: (params: any) => `v1/orgs/${params.orgId}/stream/component`,
+  },
+  {
+    path: "/api/stream/environment",
+    newPath: (params: any) => `v1/orgs/${params.orgId}/stream/environment`,
+  },
+  {
+    path: "/api/stream/audit",
+    newPath: (params: any) =>
+      `v1/orgs/${params.orgId}/stream/audit`,
+  },
+]
+
 // eslint-disable-next-line no-unused-vars
 function mapToRegex(mapping: {
   path: string;
@@ -387,3 +427,4 @@ export const STATE_MAPPINGS: PathMapping[] = STATE_PATH_MAPPINGS.map(mapToRegex)
 export const ORGANIZATION_MAPPINGS: PathMapping[] = ORGANIZATION_PATH_MAPPINGS.map(mapToRegex);
 export const EVENT_MAPPINGS: PathMapping[] = EVENT_API.map(mapToRegex);
 export const OPERATION_MAPPINGS: PathMapping[] = OPERATION_PATH_MAPPING.map(mapToRegex);
+export const API_MAPPINGS: PathMapping[] = API_PATH_MAPPINGS.map(mapToRegex);

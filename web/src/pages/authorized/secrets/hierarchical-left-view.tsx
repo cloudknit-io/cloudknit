@@ -1,12 +1,12 @@
 import { useApi } from 'hooks/use-api/useApi';
-import { TeamsList } from 'models/projects.models';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ArgoTeamsService } from 'services/argo/ArgoProjects.service';
 import { ReactComponent as DropdownArrow } from 'assets/images/icons/chevron-right.svg';
 import { ReactComponent as Add } from 'assets/images/icons/add.svg';
 import { SecretsService } from 'services/secrets/secrets.service';
 import { Subject } from 'rxjs';
 import AuthStore from 'auth/AuthStore';
+import { EntityStore } from 'models/entity.store';
 
 export type Hierarchy = {
 	id: string;
@@ -25,11 +25,10 @@ export type Props = {
 };
 
 export const HierachicalLeftView: React.FC<Props> = ({ hierarchyChanged, refreshView }) => {
+	const entityStore = useMemo(() => EntityStore.getInstance(), []);
 	const org = AuthStore.getOrganization();
-	const fetchTeams = useApi(ArgoTeamsService.getProjects).fetch;
 	const [hierarchy, setHeirarchy] = useState<Hierarchy[]>([]);
 	const [selectedHierarchy, setSelectedHierarchy] = useState<Hierarchy>();
-	const secretsService = SecretsService.getInstance();
 	const [environmentsMap, setEnvironmentsMap] = useState<Map<string, string[]>>(new Map<string, string[]>());
 	const selectHierarchy = (h: Hierarchy) => {
 		const selected = hierarchyChanged(h);
@@ -78,47 +77,24 @@ export const HierachicalLeftView: React.FC<Props> = ({ hierarchyChanged, refresh
 	}, [selectedHierarchy]);
 
 	useEffect(() => {
-		fetchTeams()
-			.then(({ data }) => {
-				if (!data) {
-					return {
-						requests: [],
-					};
-				}
-				const teams = data as TeamsList;
-				const requests = teams.map(team => {
-					environmentsMap.set(
-						team.name,
-						(team.resources || []).map(r => r.name)
-					);
+		const subscription = entityStore.emitter.subscribe(update => {
+			const teams = update.teams;
+			const envs = update.environments;
+			if (teams.length === 0 && envs.length === 0) return;
+			const map = new Map<string, string[]>();
+			teams.forEach(e =>
+				map.set(
+					e.name,
+					envs.filter(env => env.teamId === e.id).map(env => env.name)
+				)
+			);
+			setEnvironmentsMap(map)
+		});
 
-					return secretsService.getEnvironments(team.name);
-				});
-				return {
-					requests,
-				};
-			})
-			.then(({ requests }) => {
-				if (requests.length === 0) {
-					return;
-				}
-				return Promise.all(requests).then((res: any) => {
-					if (!res) return;
-					res.forEach(({ data }: any) => {
-						if (data.length === 0) return;
-						const envs = (environmentsMap.get(data[0][1]) as string[]) || [];
-						const envNames = data
-							.map((d: any) => `${d[1]}-${d[0]}`)
-							.filter((e: string) => !envs.includes(e));
-						envs.push(...envNames);
-						environmentsMap.set(data[0][1], envs);
-					});
-				});
-			})
-			.then(() => {
-				setEnvironmentsMap(new Map([...environmentsMap.entries()]));
-			});
-	}, [fetchTeams]);
+		return () => {
+			subscription.unsubscribe();
+		};
+	}, []);
 
 	useEffect(() => {
 		if (!org) {

@@ -47,9 +47,7 @@ export const ZDagNode: FC<DagNodeProps> = ({
 	updater,
 	labels,
 }: DagNodeProps) => {
-	const [cost, updateCost] = useState<number | null>(
-		id === 'root' ?
-		CostingService.getInstance().getCachedValue(name) : Number(estimatedCost || 0));
+	const [cost, updateCost] = useState<number>(Number(estimatedCost || 0));
 	const [syncTime, setSyncTime] = useState<any>(syncFinishedAt);
 	const [status, setStatus] = useState<ZSyncStatus>(componentStatus);
 	const [syncStatus, setSyncStatus] = useState<ZSyncStatus>(SyncStatus);
@@ -63,20 +61,6 @@ export const ZDagNode: FC<DagNodeProps> = ({
 
 	useEffect(() => {
 		let $subscription: Subscription[] = [];
-		if (id === 'root') {
-			getEnvironment(envName(name, projectId), projectId)
-				.then(env => setSyncTime(env['lastReconcileDatetime']))
-				.catch(e => setSyncTime(syncFinishedAt));
-			$subscription.push(
-				CostingService.getInstance()
-					.getEnvironmentCostStream(projectId, envName(name, projectId))
-					.subscribe(data => {
-						updateCost(data);
-					})
-			);
-		} else {
-			getLastReconcileTime(name, envName(labels.environment_id, labels.project_id), labels.project_id,  syncFinishedAt).then(r => setSyncTime(r));
-		}
 		$subscription.push(
 			updater.pipe(debounceTime(1000)).subscribe(async (data: DagNodeProps) => {
 				if (data.estimatedCost) {
@@ -86,14 +70,7 @@ export const ZDagNode: FC<DagNodeProps> = ({
 				setSyncStatus(data.SyncStatus);
 				setSkippedStatus(data.isSkipped);
 				setOperationType(data.operation);
-				if (id === 'root') {
-					getEnvironment(envName(name, projectId), projectId)
-						.then(env => setSyncTime(env['lastReconcileDatetime']))
-						.catch(e => setSyncTime(syncFinishedAt));
-				} else {
-					const time = await getLastReconcileTime(name, envName(labels.environment_id, labels.project_id), labels.project_id, syncFinishedAt);
-					setSyncTime(time);
-				}
+				setSyncTime(data.syncFinishedAt)
 			})
 		);
 

@@ -3,122 +3,234 @@ import {
   Body,
   Controller,
   Get,
+  InternalServerErrorException,
+  Logger,
   Param,
-  Patch,
   Post,
-  Query,
   Req,
   Request,
-  Sse,
 } from "@nestjs/common";
-import { from, Observable } from "rxjs";
-import { map } from "rxjs/operators";
-import { Mapper } from "src/costing/utilities/mapper";
-import { ComponentReconcile } from "src/typeorm/reconciliation/component-reconcile.entity";
-import { EnvironmentReconcile } from "src/typeorm/reconciliation/environment-reconcile.entity";
-import { APIRequest } from "src/types";
-import { ApprovedByDto, ComponentAudit } from "./dtos/componentAudit.dto";
-import { EnvironmentAudit } from "./dtos/environmentAudit.dto";
-import { EvnironmentReconcileDto } from "./dtos/reconcile.Dto";
-import { EnvironmentService } from "./environment.service";
+import { ApproveWorkflow as ResumeWorkflow } from "src/argowf/api";
+import { ComponentService } from "src/component/component.service";
+import { EnvironmentService } from "src/environment/environment.service";
+import { TeamService } from "src/team/team.service";
+import { Component, ComponentReconcile, Environment, EnvironmentReconcile, Organization, Team } from "src/typeorm";
+import { APIRequest, OrgApiParam } from "src/types";
+import { handleSqlErrors } from "src/utilities/errorHandler";
+import { ApprovedByDto } from "./dtos/componentAudit.dto";
+import { CreateComponentReconciliationDto, CreateEnvironmentReconciliationDto, UpdateComponentReconciliationDto, UpdateEnvironmentReconciliationDto } from "./dtos/reconciliation.dto";
 import { ReconciliationService } from "./reconciliation.service";
-import { SSEService } from "./sse.service";
-import { RequiredQueryValidationPipe, TeamEnvCompQueryParams, TeamEnvQueryParams } from "./validationPipes";
 
 
 @Controller({
   version: '1'
 })
 export class ReconciliationController {
+  private readonly logger = new Logger(ReconciliationController.name);
+
   constructor(
-    private readonly reconciliationService: ReconciliationService,
+    private readonly reconSvc: ReconciliationService,
     private readonly envSvc: EnvironmentService,
-    private readonly sseSvc: SSEService
+    private readonly teamSvc: TeamService,
+    private readonly compSvc: ComponentService
     ) {}
 
-  @Get("environments")
-  async getEnvironment(@Request() req, @Query(new RequiredQueryValidationPipe()) tec: TeamEnvQueryParams) {
-    const env = await this.envSvc.getEnvironment(req.org, tec.envName, tec.teamName);
+  @Post('environment')
+  @OrgApiParam()
+  async newEnvironmentReconciliation(@Req() req: APIRequest, @Body() body: CreateEnvironmentReconciliationDto) {
+    const { org } = req;
 
+    const team = await this.teamSvc.findByName(org, body.teamName);
+    if (!team) {
+      this.logger.error({ message: 'could not find team in newEnvironmentReconciliation', body});
+      throw new BadRequestException('could not find team');
+    }
+
+    const env = await this.envSvc.findByName(org, team, body.name);
     if (!env) {
+      this.logger.error({ message: 'could not find environment in newEnvironmentReconciliation', body});
       throw new BadRequestException('could not find environment');
     }
 
-    return env;
-  }
+    let envReconEntry: EnvironmentReconcile;
 
-  @Get("components")
-  async getComponent(@Request() req, @Query(new RequiredQueryValidationPipe()) tec: TeamEnvCompQueryParams) {
-    const comp = await this.reconciliationService.getComponent(req.org, tec.compName, tec.envName, tec.teamName);
+    try {
+      envReconEntry = await this.reconSvc.createEnvRecon(org, team, env, body);
+    } catch(err) {
+      handleSqlErrors(err);
 
-    if (!comp) {
-      throw new BadRequestException('could not find component');
+      this.logger.error({ message: 'could not create environment recon', body, err });
+      throw new InternalServerErrorException('could not create environment reconciliation');
     }
 
-    return comp;
-  }
-
-  @Patch("approved-by")
-  async patchApprovedBy(@Req() req: APIRequest, @Body() body: ApprovedByDto) {
-    return await this.reconciliationService.patchApprovedBy(req.org, body);
-  }
-
-  @Get("approved-by")
-  async getApprovedBy(@Request() req, @Query(new RequiredQueryValidationPipe()) tec: TeamEnvCompQueryParams, @Query("rid") rid: number) {
-    const body: ApprovedByDto = {
-      compName: tec.compName,
-      envName: tec.envName,
-      teamName: tec.teamName,
-      rid,
+    try {
+      const skippedEntries = await this.reconSvc.getSkippedEnvironments(org, team, env, [envReconEntry.reconcileId]);
+      await this.reconSvc.bulkUpdateEnvironmentEntries(skippedEntries, 'skipped_reconcile');
+    } catch (err) {
+      this.logger.error('could not update skipped environment reconciles', err);
+      throw new InternalServerErrorException();
     }
-    return await this.reconciliationService.getApprovedBy(req.org, body);
+
+    return envReconEntry.reconcileId;
   }
 
-  @Post("environment/save")
-  async saveEnvironment(@Request() req, @Body() runData: EvnironmentReconcileDto) {
-    return await this.reconciliationService.saveOrUpdateEnvironment(req.org, runData);
+  @Post('environment/:reconcileId')
+  @OrgApiParam()
+  async updateEnvironmentReconciliation(@Req() req: APIRequest, @Param('reconcileId') reconcileId: number, @Body() body: UpdateEnvironmentReconciliationDto) {
+    const { org } = req;
+
+    const existingEntry = await this.reconSvc.getEnvReconByReconcileId(org, reconcileId, false);
+    if (!existingEntry) {
+      this.logger.error({message: 'could not find environment reconcile entry', reconcileId })
+      throw new BadRequestException('could not find environment reconcile entry');
+    }
+    
+    let envRecon: EnvironmentReconcile;
+
+    try {
+      envRecon = await this.reconSvc.updateEnvRecon(existingEntry, body);
+    } catch (err) {
+      handleSqlErrors(err);
+
+      this.logger.error({ message: 'could not update env recon', reconcileId, existingEntry, body });
+      throw new InternalServerErrorException('could not update environment reconcile');
+    }
+
+    return envRecon;
   }
 
-  @Post("component/save")
-  async saveComponent(@Request() req, @Body() runData: EvnironmentReconcileDto) {
-    return await this.reconciliationService.saveOrUpdateComponent(req.org, runData);
+  @Post('component')
+  @OrgApiParam()
+  async newComponentReconciliation(@Req() req: APIRequest, @Body() body: CreateComponentReconciliationDto): Promise<number> {
+    const { org } = req;
+
+    const envRecon = await this.reconSvc.getEnvReconByReconcileId(org, body.envReconcileId, true);
+    if (!envRecon) {
+      this.logger.error({ message: 'could not find environment-reconcile in newComponentReconciliation', body });
+      throw new BadRequestException('could not find environment-reconcile');
+    }
+
+    const comp = await this.compSvc.findByName(org, envRecon.environment, body.name);
+    let compRecon: ComponentReconcile;
+
+    try {
+      compRecon = await this.reconSvc.createCompRecon(org, envRecon, comp, body);
+    } catch (err) {
+      handleSqlErrors(err);
+      
+      this.logger.error({ message: 'could not save component-reconcile in newComponentReconciliation', body });
+      throw new BadRequestException('could not save component-reconcile');
+    }
+
+    try {
+      const skippedEntries = await this.reconSvc.getSkippedComponents(org, envRecon, comp, [compRecon.reconcileId])
+      await this.reconSvc.bulkUpdateComponentEntries(skippedEntries, 'skipped_reconcile');
+    } catch (err) {
+      this.logger.error('could not update skipped component reconciles', err);
+      throw new InternalServerErrorException();
+    }
+
+    return compRecon.reconcileId;
   }
 
-  @Get("audit/components")
-  async getComponents(@Request() req, @Query(new RequiredQueryValidationPipe()) tec: TeamEnvCompQueryParams): Promise<ComponentAudit[]> {
-    return await this.reconciliationService.getComponentAuditList(req.org, tec.compName, tec.envName, tec.teamName);
+  @Post('component/:reconcileId')
+  @OrgApiParam()
+  async updateComponentReconciliation(@Req() req: APIRequest, @Param('reconcileId') compReconcileId: number, @Body() body: UpdateComponentReconciliationDto) {
+    const { org } = req;
+
+    const compRecon: ComponentReconcile = await this.reconSvc.findCompReconById(org, compReconcileId, true);
+    if (!compRecon) {
+      this.logger.error({ message: 'could not find component-reconcile in updateComponentReconciliation', body });
+      throw new BadRequestException('could not find component-reconcile');
+    }
+
+    const updatedCompRecon = await this.reconSvc.updateCompRecon(compRecon, body);
+    delete updatedCompRecon.environmentReconcile;
+    this.logger.log({message: 'updated component reconcile entry', updatedCompRecon});
+    return updatedCompRecon;
   }
 
-  @Get("audit/environments")
-  async getEnvironments(@Request() req, @Query(new RequiredQueryValidationPipe()) te: TeamEnvQueryParams): Promise<EnvironmentAudit[]> {
-    return await this.reconciliationService.getEnvironmentAuditList(req.org, te.envName, te.teamName);
+  /**
+   * Resumes Argo Workflow run and sets approved by user
+   * @param req APIRequest
+   * @param compReconId Component reconcile ID to approve
+   * @param body Email of user that issued approval
+   */
+  @Post('component/:compReconId/approve')
+  @OrgApiParam()
+  async approveWorkflow(@Req() req: APIRequest, @Param('compReconId') compReconId: number, @Body() body: ApprovedByDto) {
+    const { org } = req;
+
+    const compRecon = await this.reconSvc.findCompReconById(org, compReconId);
+    if (!compRecon) {
+      throw new BadRequestException('could not find component reconcile');
+    }
+
+    const lastWorkflowRunId = compRecon.component.lastWorkflowRunId;
+
+    try {
+      // Resume Argo Workflow run
+      await ResumeWorkflow(org, lastWorkflowRunId);
+    } catch (err) {
+      this.logger.error({ message: 'could not approve workflow', compRecon, lastWorkflowRunId, err});
+      throw new InternalServerErrorException('could not approve workflow');
+    }
+
+    try {
+      await this.compSvc.update(compRecon.component, { status: 'initializing_apply' });
+    } catch (err) {
+      handleSqlErrors(err);
+
+      this.logger.error({ message: 'could not update component status in approveWorkflow', compRecon, err })
+      throw new InternalServerErrorException('could not approve workflow');
+    }
+
+    // Set approved by on reconcile entry
+    try {
+      return this.reconSvc.updateCompRecon(compRecon, { approvedBy: body.email });
+    } catch (err) {
+      handleSqlErrors(err);
+
+      this.logger.error({ message: 'could not set approved by in approveWorkflow', compRecon, body, err});
+      throw new InternalServerErrorException('could not approve workflow');
+    }
   }
 
   @Get("component/logs/:team/:environment/:component/:id")
+  @OrgApiParam()
   async getLogs(
     @Request() req,
-    @Param("team") team: string,
-    @Param("environment") environment: string,
-    @Param("component") component: string,
+    @Param("team") teamName: string,
+    @Param("environment") envName: string,
+    @Param("component") compName: string,
     @Param("id") id: number
   ) {
-    return await this.reconciliationService.getLogs(
+    const { org } = req;
+    
+    const comp = await this.compSvc.findByNameWithTeamName(org, teamName, envName, compName, true);
+    if (!comp) {
+      this.logger.error({message: 'could not find logs', teamName, envName, compName, id });
+      throw new BadRequestException('could not find logs');
+    }
+
+    return await this.reconSvc.getLogs(
       req.org,
-      team,
-      environment,
-      component,
+      teamName,
+      comp.environment,
+      comp,
       id
     );
   }
 
   @Get("component/state-file/:team/:environment/:component")
+  @OrgApiParam()
   async getStateFile(
     @Request() req,
     @Param("team") team: string,
     @Param("environment") environment: string,
     @Param("component") component: string
   ) {
-    return await this.reconciliationService.getStateFile(
+    return await this.reconSvc.getStateFile(
       req.org,
       team,
       environment,
@@ -129,79 +241,64 @@ export class ReconciliationController {
   @Get(
     "component/plan/logs/:team/:environment/:component/:id/:latest"
   )
+  @OrgApiParam()
   async getPlanLogs(
-    @Request() req,
-    @Param("team") team: string,
-    @Param("environment") environment: string,
-    @Param("component") component: string,
+    @Request() req: APIRequest,
+    @Param("team") teamName: string,
+    @Param("environment") envName: string,
+    @Param("component") compName: string,
     @Param("id") id: number,
     @Param("latest") latest: string
   ) {
-    return await this.reconciliationService.getPlanLogs(
-      req.org,
-      team,
-      environment,
-      component,
-      id,
-      latest === "true"
-    );
+    const { org } = req;
+
+    const comp = await this.compSvc.findByNameWithTeamName(org, teamName, envName, compName, true);
+    if (!comp) {
+      this.logger.error({message: 'could not find plan logs', teamName, envName, compName, id, latest});
+      throw new BadRequestException('could not find logs');
+    }
+
+    return this.getTfLogs(org, teamName, comp.environment, comp, id, latest === 'true', 'plan_output');
   }
 
   @Get(
     "component/apply/logs/:team/:environment/:component/:id/:latest"
   )
+  @OrgApiParam()
   async getApplyLogs(
     @Request() req,
-    @Param("team") team: string,
-    @Param("environment") environment: string,
-    @Param("component") component: string,
+    @Param("team") teamName: string,
+    @Param("environment") envName: string,
+    @Param("component") compName: string,
     @Param("id") id: number,
     @Param("latest") latest: string
   ) {
-    return await this.reconciliationService.getApplyLogs(
-      req.org,
-      team,
-      environment,
-      component,
-      id,
-      latest === "true"
-    );
+    const { org } = req;
+    
+    const comp = await this.compSvc.findByNameWithTeamName(org, teamName, envName, compName, true);
+    if (!comp) {
+      this.logger.error({message: 'could not find apply logs', teamName, envName, compName, id, latest});
+      throw new BadRequestException('could not find logs');
+    }
+
+    return this.getTfLogs(org, teamName, comp.environment, comp, id, latest === 'true', 'apply_output');
   }
 
-  @Sse("components/notify")
-  notifyComponents(@Request() req, @Query(new RequiredQueryValidationPipe()) tec: TeamEnvCompQueryParams): Observable<MessageEvent> {
-    return from(this.sseSvc.notifyStream).pipe(
-      map((component: ComponentReconcile) => {
-        if (component.name !== tec.compName || tec.envName !== component.environmentReconcile.name || tec.teamName !== component.environmentReconcile.team_name || component.organization.id !== req.org.id) {
-          return { data: [] };
-        }
-        const data: ComponentAudit[] = Mapper.getComponentAuditList([
-          component,
-        ]);
-        return { data };
-      })
-    );
-  }
+  @OrgApiParam()
+  async getTfLogs(org: Organization, team: string, env: Environment, comp: Component, id: number, latest: boolean, logType: string) {
+    let logs;
 
-  @Sse("environments/notify")
-  notifyEnvironments(@Request() req, @Query(new RequiredQueryValidationPipe()) te: TeamEnvQueryParams): Observable<MessageEvent> {
-    return from(this.sseSvc.notifyStream).pipe(
-      map((environment: EnvironmentReconcile) => {
-        if (environment.name !== te.envName || te.teamName != environment.team_name || req.org.id !== environment.organization.id) {
-          return { data: [] };
-        }
-        const data: EnvironmentAudit[] = Mapper.getEnvironmentAuditList([
-          environment,
-        ]);
-        return { data };
-      })
-    );
-  }
-}
+    if (latest) {
+      const compRecon = await this.reconSvc.getLatestCompReconcile(org, comp);
+      logs = await this.reconSvc.getLatestLogs(org, team, env, comp, compRecon)
+    } else {
+      logs = await this.reconSvc.getLogs(org, team, env, comp, id);
+    }
 
-export interface MessageEvent {
-  data: string | object;
-  id?: string;
-  type?: string;
-  retry?: number;
+    if (Array.isArray(logs)) {
+      return logs.filter((e) => e.key.includes(logType));
+    }
+
+    return logs;
+  }
 }

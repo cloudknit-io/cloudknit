@@ -1,5 +1,26 @@
 # Changelog
 
+## 2022-12-28 Move ArgoCD fields to API
+
+### Created
+
+* teams `orgs/:orgId/teams/:teamId` routing
+* environments `orgs/:orgId/teams/:teamId/environments/:environmentId` routing
+
+### Modified
+
+* `costing` and `reconciliation` were moved to `/orgs/:orgId/teams/:teamId`
+
+### Removed
+
+* `costing/info/environment` endpoint
+* `GET reconciliation/components`- use `component` controller instead
+* `POST reconciliation/component/save` - all components are now saved via `POST /orgs/:orgId/team/:teamId/reconciliation/spec`
+* `POST reconciliation/environment/save` - all environments are now saved via `POST /orgs/:orgId/team/:teamId/reconciliation/spec`
+* `POST costing/savecomponent` - all components are now saved via `POST /orgs/:orgId/team/:teamId/reconciliation/spec`
+* `GET costing/team/:name` - use `GET teams/:teamId?withCost=true`
+* `GET costing/environment/:name` - use `GET teams/:teamId/environments/:environmentId?withCost=true`
+
 ## Multi-tenancy Changes
 
 ### Created

@@ -2,24 +2,24 @@ import './style.scss';
 
 import { ZText } from 'components/atoms/text/Text';
 import { ZModelCard } from 'components/molecules/cards/Card';
-import { renderHealthStatus, renderLabels, renderSyncedStatus } from 'components/molecules/cards/renderFunctions';
+import { CostRenderer, renderHealthStatus, renderLabels, renderSyncedStatus } from 'components/molecules/cards/renderFunctions';
 import { ZSyncStatus } from 'models/argo.models';
 import { EnvironmentComponentItem, EnvironmentComponentsList } from 'models/projects.models';
-import { renderCost as renderCostEnv } from 'pages/authorized/environments/helpers';
 import React, { FC, useEffect, useState } from 'react';
+import { Component, EntityStore, Environment } from 'models/entity.store';
 
 type Props = {
-	components: EnvironmentComponentsList;
+	components: Component[];
 	projectId: string;
-	envName: string;
+	env?: Environment;
 	onClick: Function;
 	showAll?: boolean;
-	selectedConfig?: EnvironmentComponentItem;
+	selectedConfig?: Component;
 	workflowPhase?: string;
 };
 
 type EnvironmentComponentItemProps = {
-	config: EnvironmentComponentItem;
+	config: Component;
 	showAll?: boolean;
 	onClick: Function;
 	isSelected?: boolean;
@@ -34,17 +34,11 @@ const getEnvironmentName = (teamId = '', environmentId = '') => {
 	return environmentId.replace(`${teamId}-`, '');
 };
 
-export const filterLabels = (config: any): { [name: string]: string } => {
-	const { labels } = config; 
+export const filterLabels = (config: Component): { [name: string]: string } => {
+	const labels: any = {};
 	labels.team_id = labels.project_id;
 	labels.dependsOn = config.dependsOn.toString();
-	const HIDDEN_KEYS = new Set(['component_status', 'component_name', 'component_cost', 'is_destroy', 'audit_status']);
-	return Object.keys(labels).reduce((obj: any, key) => {
-		if (labels[key] && !HIDDEN_KEYS.has(key) && !key.startsWith('depends_on_')) {
-			obj[key] = labels[key];
-		}
-		return obj;
-	}, {});
+	return labels;
 };
 
 const totalCost = (components: EnvironmentComponentsList): string => {
@@ -57,28 +51,24 @@ const totalCost = (components: EnvironmentComponentsList): string => {
 	return cost.toFixed(3).toString();
 };
 
-const mapGridItems = (component: EnvironmentComponentItem, componentStatus: ZSyncStatus) => {
+const mapGridItems = (component: Component) => {
 	return (
 		<>
 			{renderSyncedStatus(
-				componentStatus,
-				component.operationPhase,
-				component.runningStatus,
-				component.syncFinishedAt,
-				component
+				component.status as ZSyncStatus
 			)}
 		</>
 	);
 };
 
-const getLabels = (component: EnvironmentComponentItem): any => {
-	return component.labels ? renderLabels(filterLabels(component)) : <></>;
+const getLabels = (component: Component): any => {
+	return <></>;
 };
 
 export const EnvironmentComponentCards: FC<Props> = ({
 	components,
 	projectId,
-	envName,
+	env,
 	onClick,
 	showAll,
 	selectedConfig,
@@ -93,25 +83,21 @@ export const EnvironmentComponentCards: FC<Props> = ({
 							<ZText.Body className="color-gray" size="20" lineHeight="18" weight="bold">
 								Environment
 							</ZText.Body>
-							<h5 className="color-gray">{envName}</h5>
+							<h5 className="color-gray">{env?.argoId}</h5>
 						</div>
 						<div>
 							<ZText.Body className="color-gray" size="20" lineHeight="18" weight="bold">
 								Est. Monthly Cost
 							</ZText.Body>
-							<h5 className="color-gray">{renderCostEnv(projectId, envName)}</h5>
+							<h5 className="color-gray">{<CostRenderer data={env?.estimatedCost} />}</h5>
 						</div>
 					</>
 				)}
 			</div>
 			<div className="com-cards border">
-				{components.map((config: EnvironmentComponentItem) => (
+				{components.map((config: Component) => (
 					<ConfigCard
-						key={getFullName(
-							config.labels?.project_id,
-							config.labels?.environment_id,
-							config.componentName
-						)}
+						key={config.argoId}
 						config={config}
 						showAll={showAll}
 						onClick={onClick}
@@ -131,30 +117,21 @@ export const ConfigCard: FC<EnvironmentComponentItemProps> = ({
 	isSelected,
 	workflowPhase,
 }: EnvironmentComponentItemProps) => {
-	const [componentStatus, setComponentStatus] = useState<ZSyncStatus>(ZSyncStatus.Unknown);
-	useEffect(() => {
-		const delayedStatus = [ZSyncStatus.Destroyed, ZSyncStatus.Provisioned, ZSyncStatus.InSync];
-		if (delayedStatus.includes(config.componentStatus) && isSelected) {
-			workflowPhase === 'Succeeded' && setComponentStatus(config.componentStatus);
-		} else {
-			setComponentStatus(config.componentStatus);
-		}
-	}, [config?.componentStatus, workflowPhase]);
+	const env = EntityStore.getInstance().getEnvironmentById(config.envId);
+	const team = EntityStore.getInstance().getTeam(env?.teamId || -1)
 
 	return (
 		<ZModelCard
-			classNames={`component-card ${config.componentStatus === ZSyncStatus.Destroyed ? 'destroyed' : ''}`}
-			key={config.id}
+			classNames={`component-card ${
+				config.status === ZSyncStatus.Destroyed ? 'destroyed' : ''
+			}`}
+			key={config.name}
 			model="Environment Component"
-			teamName={config.labels?.project_id || ''}
-			envName={getEnvironmentName(config.labels?.project_id, config.labels?.environment_id)}
-			estimatedCost={config.componentCost}
-			title={
-				showAll
-					? getFullName(config.labels?.project_id, config.labels?.environment_id, config.componentName)
-					: config.componentName
-			}
-			items={mapGridItems(config, componentStatus)}
+			teamName={team?.name || ''}
+			envName={env?.name || ''}
+			estimatedCost={<CostRenderer data={config.estimatedCost} />}
+			title={config.name}
+			items={mapGridItems(config)}
 			labels={getLabels(config)}
 			onClick={(): void => onClick(config)}
 		/>

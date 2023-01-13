@@ -17,28 +17,20 @@ import { ZAccordion, ZAccordionItem } from '../accordion/ZAccordion';
 import { AuditStatus, ZSyncStatus } from 'models/argo.models';
 import { SmallText } from '../workflow-diagram/WorkflowDiagram';
 import { EnvironmentComponentItem } from 'models/projects.models';
+import { CompAuditData, Component, EnvAuditData } from 'models/entity.store';
 
-export interface AuditData {
-	reconcileId: number;
-	duration: number;
-	status: AuditStatus;
-	startDateTime: string;
-	operation?: string;
-	approvedBy?: string;
-}
+type AuditData = EnvAuditData | CompAuditData;
 
 type Props = {
-	auditId: string;
-	fetch: () => Subject<any> | undefined;
+	auditId: number;
+	auditData: EnvAuditData[] | CompAuditData[];
 	auditColumns: any[];
 	fetchLogs?: (auditId: number) => Promise<any>;
-	config?: EnvironmentComponentItem;
+	config?: Component;
 };
 
-export const AuditView: FC<Props> = ({ auditId, fetch, auditColumns, fetchLogs, config }: Props) => {
+export const AuditView: FC<Props> = ({ auditId, auditData, auditColumns, fetchLogs, config }: Props) => {
 	const auditServiceInstance = AuditService.getInstance();
-	const [auditData, setAuditData] = useState<AuditData[]>(auditServiceInstance.getCachedValue(auditId) || []);
-	const auditDataMap = new Map<number, AuditData>((auditData || []).map(ad => [ad.reconcileId, ad]));
 	const [selectedLog, setSelectedLog] = useState<AuditData | null>(null);
 	const [logs, setLogs] = useState<ZAccordionItem[] | null>();
 	const nodeOrder = ['plan', 'apply'];
@@ -72,37 +64,21 @@ export const AuditView: FC<Props> = ({ auditId, fetch, auditColumns, fetchLogs, 
 	};
 
 	useEffect(() => {
+		if (!auditData) return;
 		setSelectedLog(null);
-		const $auditNotification = fetch()?.subscribe(data => {
-			if (data.type !== 'update') {
-				auditDataMap.clear();
+		let recId = -1;
+		auditData.forEach((d: AuditData) => {
+			if (recId < d.reconcileId) {
+				recId = d.reconcileId;
 			}
-			let recId = latestReconcileId;
-			(data.type === 'update' ? data.data : data)
-				.map((ad: AuditData) => ({
-					...ad,
-					operation: getOperation(ad.status),
-				}))
-				.forEach((d: any) => {
-					if (recId < d.reconcileId) {
-						recId = d.reconcileId;
-					}
-					auditDataMap.set(d.reconcileId, d);
-				});
-
-			setAuditData([...auditDataMap.values()]);
-			setLatestReconcileId(recId);
 		});
 
-		return () => {
-			setAuditData([]);
-			$auditNotification?.unsubscribe();
-		}
-	}, [auditId]);
-
-	useEffect(() => {
-		if (isArray(auditData)) auditServiceInstance.setAuditCache(auditId, auditData);
+		setLatestReconcileId(recId);
 	}, [auditData]);
+
+	// useEffect(() => {
+	// 	if (isArray(auditData)) auditServiceInstance.setAuditCache(auditId, auditData);
+	// }, [auditData]);
 
 	const getNodeStatus = (status: string): NodeStatus => {
 		switch (status) {

@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/apm"
+	"github.com/compuzest/zlifecycle-il-operator/controller/common/cloudknitservice"
 	git2 "github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/git/gogit"
-	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/argocd"
 	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/git"
 	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/github"
 
@@ -28,10 +28,8 @@ import (
 
 	"github.com/go-logr/logr"
 	"go.uber.org/atomic"
-	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -81,20 +79,6 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	// delay Team Reconcile so Company reconciles finish first
 	delayTeamReconcileOnInitialRun(r.LogV2, 15)
 	start := time.Now()
-
-	/*
-		// init logic
-		var initError error
-		initArgocdAdminRbacLock.Do(func() {
-			initError = r.initArgocdAdminRbac(ctx)
-		})
-		if initError != nil {
-			if strings.Contains(initError.Error(), registry.OptimisticLockErrorMsg) {
-				// do manual retry without error
-				return reconcile.Result{RequeueAfter: time.Second * 1}, nil
-			}
-			return ctrl.Result{}, initError
-		}*/
 
 	// fetch Team resource from k8s cache
 	team := &stablev1.Team{}
@@ -167,6 +151,14 @@ func (r *TeamReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 
 	teamAppFilename := fmt.Sprintf("%s-team.yaml", team.Spec.TeamName)
 
+	cloudKnitServiceClient := cloudknitservice.NewService(env.Config.ZLifecycleAPIURL)
+	err = cloudKnitServiceClient.PostTeam(ctx, env.Config.CompanyName, *team, r.LogV2)
+
+	if err != nil {
+		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error with the POST team call"))
+		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
+	}
+
 	if err := generateAndSaveTeamApp(fileAPI, team, teamAppFilename, tempILRepoDir); err != nil {
 		teamErr := zerrors.NewTeamError(team.Spec.TeamName, perrors.Wrap(err, "error generating team argocd app"))
 		return ctrl.Result{}, r.APM.NoticeError(tx, r.LogV2, teamErr)
@@ -217,46 +209,6 @@ func (r *TeamReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&stablev1.Team{}).
 		Complete(r)
-}
-
-func (r *TeamReconciler) initArgocdAdminRbac(ctx context.Context) error {
-	rbacCm := v1.ConfigMap{}
-	nn := types.NamespacedName{Name: env.Config.ArgocdRBACConfigMap, Namespace: env.ArgocdNamespace()}
-	if err := r.Client.Get(ctx, nn, &rbacCm); err != nil {
-		return perrors.Wrap(err, "error getting argocd rbacm configmap from k8s")
-	}
-	if rbacCm.Data == nil {
-		rbacCm.Data = make(map[string]string)
-	}
-	admin := "admin"
-	oldPolicyCsv := rbacCm.Data["policy.csv"]
-	oidcGroup := fmt.Sprintf("%s:%s", env.Config.GitHubCompanyOrganization, admin)
-	newPolicyCsv, err := argocd.GenerateAdminRbacConfig(r.LogV2, oldPolicyCsv, oidcGroup, admin)
-	if err != nil {
-		return err
-	}
-	rbacCm.Data["policy.csv"] = newPolicyCsv
-
-	return r.Client.Update(ctx, &rbacCm)
-}
-
-func (r *TeamReconciler) updateArgocdRbac(ctx context.Context, t *stablev1.Team) error {
-	rbacCm := v1.ConfigMap{}
-	if err := r.Client.Get(ctx, types.NamespacedName{Name: env.Config.ArgocdRBACConfigMap, Namespace: env.ArgocdNamespace()}, &rbacCm); err != nil {
-		return err
-	}
-	if rbacCm.Data == nil {
-		rbacCm.Data = make(map[string]string)
-	}
-	teamName := t.Spec.TeamName
-	oldPolicyCsv := rbacCm.Data["policy.csv"]
-	oidcGroup := fmt.Sprintf("%s:%s", env.Config.GitHubCompanyOrganization, teamName)
-	newPolicyCsv, err := argocd.GenerateNewRbacConfig(r.LogV2, oldPolicyCsv, oidcGroup, teamName, t.Spec.Permissions)
-	if err != nil {
-		return err
-	}
-	rbacCm.Data["policy.csv"] = newPolicyCsv
-	return r.Client.Update(ctx, &rbacCm)
 }
 
 func delayTeamReconcileOnInitialRun(log *logrus.Entry, seconds int64) {

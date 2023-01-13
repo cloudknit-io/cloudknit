@@ -24,12 +24,8 @@ team_env_config_name=$team_name-$env_name-$config_name
 
 echo "config name: $config_name"
 
-# TODO : add orgId to URL
-# TODO : replace customer_id with generic multi-tenant API url
-url_environment="http://zlifecycle-api.${zlifecycle_namespace}.svc.cluster.local/${api_version}/orgs/${customer_id}/reconciliation/environment/save"
-url="http://zlifecycle-api.${zlifecycle_namespace}.svc.cluster.local/${api_version}/orgs/${customer_id}/reconciliation/component/save"
 start_date=$(date '+%Y-%m-%d %H:%M:%S')
-end_date='"'$(date '+%Y-%m-%d %H:%M:%S')'"'
+end_date=$(date '+%Y-%m-%d %H:%M:%S')
 
 if [ $config_reconcile_id -eq 0 ]; then
     end_date=null
@@ -66,22 +62,23 @@ if [ "$skip_component" != "noSkip" ]; then
     fi
 fi
 
-echo "running argocd login script"
-sh /argocd/login.sh $customer_id
+#echo "running argocd login script"
+#sh /argocd/login.sh $customer_id
 
-echo "current config status: $config_status"
-if [[ $config_name != 0 ]]; then
-    echo "Fetching component status via zlifecycle-internal-cli"
-    . /component-state-zlifecycle-internal-cli.sh
-fi
+# TODO: Look at this block to see if we need to replicate it
+#echo "current config status: $config_status"
+#if [[ $config_name != 0 ]]; then
+#    echo "Fetching component status via zlifecycle-internal-cli"
+    #. /component-state-zlifecycle-internal-cli.sh
+#fi
 
 if [[ $config_name != 0 && $config_reconcile_id = null ]]; then
     echo "running validate environment component script: team $team_name, environment $env_name, component $config_name"
-    sh ./validate_env_component.sh $team_name $env_name $config_name $customer_id
+    # sh ./validate_env_component.sh $team_name $env_name $config_name $customer_id
     comp_status=0
     if [[ $config_status == *"skipped"* ]]; then
         echo "getting environment component previous status"
-        config_previous_status=$(curl "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/costing/component?teamName=${team_name}&envName=${env_name}&compName=${config_name}" | jq -r ".status") || null
+        config_previous_status=$(curl "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/teams/${team_name}/environments/${env_name}/components/${config_name}" | jq -r ".status") || null
         echo "config_prev_status: $config_previous_status"
         if [[ $config_previous_status == null ]]; then
             comp_status="not_provisioned"
@@ -91,48 +88,71 @@ if [[ $config_name != 0 && $config_reconcile_id = null ]]; then
         fi
     else
         comp_status="initializing"
+        UpdateComponentWfRunId "${env_name}" "${team_name}" "${config_name}" "initializing"
         data='{"metadata":{"labels":{"is_skipped":"'$is_skipped'","audit_status":"initializing","last_workflow_run_id":"initializing"}}}'
     fi
-    echo "patch argocd resource $team_env_config_name with data $data"
-    argocd app patch $team_env_config_name --patch $data --type merge > null
+    # echo "patch argocd resource $team_env_config_name with data $data"
+    # argocd app patch $team_env_config_name --patch $data --type merge > null
     if [[ $comp_status != 0 ]]; then
-        UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "${comp_status}" ${is_destroy}
+        UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "${comp_status}"
+        UpdateComponentDestroyed "${env_name}" "${team_name}" "${config_name}" ${is_destroy}
     fi
-else
-    echo "write 0 to /tmp/error_code.txt"
-    echo -n '0' >/tmp/error_code.txt
 fi
 
-component_payload='[{"reconcileId" : '$config_reconcile_id', "teamName" : "'${team_name}'", "environmentName" : "'${env_name}'", "name" : "'$config_name'", "status" : "'$config_status'", "startDateTime" : "'$start_date'", "endDateTime" : '$end_date'}]'
+echo "write 0 to /tmp/error_code.txt"
+echo -n '0' >/tmp/error_code.txt
 
-end_date='"'$(date '+%Y-%m-%d %H:%M:%S')'"'
+end_date=$(date '+%Y-%m-%d %H:%M:%S')
 if [ $reconcile_id -eq 0 ]; then
     echo "set end_date and reconcile_id to null"
     end_date=null
     reconcile_id=null
 fi
 
+# there is no config so must be an environment?
 if [ $config_name -eq 0 ]; then
     component_payload=[]
-    url=$url_environment
     echo "calling patch environment script"
     . /patch_environment.sh
 fi
 
-if [[ $is_destroy = true ]]; then
-    status="destroy_"$status
-else
-    status="provision_"$status
+result=""
+
+if [ $config_name -eq 0 ]; then # environment recon
+    if [ $reconcile_id = null ]; then # create env reconcile
+        payload='{"name": "'${env_name}'", "teamName": "'${team_name}'", "startDateTime": "'${start_date}'"}'
+        echo ${payload} >tmp_new_env_recon.json
+
+	echo "PAYLOAD: $payload"
+        result=$(curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/environment" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_new_env_recon.json)
+    else # update env reconcile
+        if [[ $is_destroy = true ]]; then
+            status="destroy_ended"
+        else
+            status="provision_ended"
+        fi
+        payload='{"status": "'${status}'", "teamName": "'${team_name}'", "endDateTime": "'${end_date}'"}'
+        echo ${payload} >tmp_update_env_recon.json
+
+	echo "PAYLOAD: $payload"
+        result=$(curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/environment/${reconcile_id}" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_update_env_recon.json)
+    fi
+else # component recon
+    if [ $config_reconcile_id = null ]; then # create comp reconcile
+        payload='{"name": "'${config_name}'", "startDateTime": "'${start_date}'", "envReconcileId": '${reconcile_id}'}'
+        echo ${payload} >tmp_new_comp_recon.json
+
+	echo "PAYLOAD: $payload"
+        result=$(curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/component" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_new_comp_recon.json)
+    else # update comp reconcile
+        payload='{"status": "'${config_status}'", "endDateTime": "'${end_date}'"}'
+        echo ${payload} >tmp_update_comp_recon.json
+
+	echo "PAYLOAD: $payload"
+        result=$(curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/component/${config_reconcile_id}" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_update_comp_recon.json)
+    fi
 fi
 
-payload='{"reconcileId": '$reconcile_id', "name" : "'$env_name'", "teamName" : "'$team_name'", "status" : "'$status'", "startDateTime" : "'$start_date'", "endDateTime" : '$end_date', "componentReconciles" : '$component_payload'}'
-
-echo "AUDIT PAYLOAD: $payload"
-echo $payload >reconcile_payload.txt
-
-echo "AUDIT URL: $url"
-
-result=$(curl -X 'POST' "$url" -H 'accept: */*' -H 'Content-Type: application/json' -d @reconcile_payload.txt)
 echo "AUDIT RECONCILE_ID: $result"
 echo $result > /tmp/reconcile_id.txt
 

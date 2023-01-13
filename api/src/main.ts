@@ -1,4 +1,4 @@
-import { VersioningType } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
@@ -13,6 +13,12 @@ async function bootstrap() {
     logger: new WinstonLogger()
   });
 
+  app.useGlobalPipes(new ValidationPipe({
+      forbidUnknownValues: false,
+      skipMissingProperties: false,
+      enableDebugMessages: true
+    }));
+
   app.enableVersioning({
     type: VersioningType.URI
   });
@@ -21,6 +27,8 @@ async function bootstrap() {
     .setTitle('CloudKnit API')
     .setDescription('Internal API to manage organizations, users, secrets, and interactions with Argo Cd and Argo WF')
     .setVersion('0.1.0')
+    .setContact('Contact', 'cloudknit.io', 'contact@cloudknit.io')
+    .addServer('http://localhost:3001', 'local development')
     .build();
   
   const document = SwaggerModule.createDocument(app, openApiDoc);

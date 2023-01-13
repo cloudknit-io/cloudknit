@@ -1,34 +1,31 @@
-import { CostResource } from 'src/costing/dtos/Resource.dto';
-import { Column, Entity, JoinColumn, ManyToOne, UpdateDateColumn } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, RelationId, UpdateDateColumn } from 'typeorm';
 import { Organization } from './Organization.entity';
-import { Environment } from './reconciliation/environment.entity';
+import { Environment } from './environment.entity';
+import { CostResource } from 'src/component/dto/update-component.dto';
+import { ColumnNumericTransformer } from './helper';
 
 @Entity({ name: 'components' })
+@Index(['organization', 'environment', 'name'], { unique: true })
 export class Component {
-  // TODO : Get rid of this.
-  @Column({
-    primary: true,
-    name: 'id',
-  })
-  id: string;
+  @PrimaryGeneratedColumn()
+  id: number
 
-  @Column({
-    name: 'team_name',
-  })
-  teamName: string;
-
-  @ManyToOne(() => Environment, (environment) => environment.components, {
-    eager: true
-  })
+  @ManyToOne(() => Environment, (environment) => environment.components)
   environment: Environment;
 
   @Column({
     name: 'component_name',
   })
-  componentName: string;
+  name: string;
 
   @Column({
-    name: 'status'
+    default: 'terraform'
+  })
+  type: string;
+
+  @Column({
+    name: 'status',
+    default: null
   })
   status: string;
 
@@ -37,8 +34,10 @@ export class Component {
     type: 'decimal',
     precision: 10,
     scale: 3,
+    default: 0,
+    transformer: new ColumnNumericTransformer()
   })
-  estimatedCost: number = 0;
+  estimatedCost: number;
 
   @UpdateDateColumn({
     name: 'last_reconcile_datetime'
@@ -49,6 +48,12 @@ export class Component {
     default: -1
   })
   duration: number;
+
+  @Column({
+    default: null,
+    nullable: true
+  })
+  lastWorkflowRunId: string;
 
   @Column({
     default: false,
@@ -70,4 +75,10 @@ export class Component {
     referencedColumnName: 'id'
   })
   organization: Organization
+
+  @RelationId((comp: Component) => comp.environment)
+  envId: number
+
+  @RelationId((comp: Component) => comp.organization)
+  orgId: number
 }

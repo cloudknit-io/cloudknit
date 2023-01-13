@@ -2,15 +2,13 @@ import './style.scss';
 
 import { ReactComponent as AWSIcon } from 'assets/images/icons/AWS.svg';
 import { ReactComponent as SyncIcon } from 'assets/images/icons/sync-icon.svg';
-import {
-	renderEnvSyncedStatus,
-} from 'components/molecules/cards/renderFunctions';
+import { CostRenderer, renderEnvSyncedStatus } from 'components/molecules/cards/renderFunctions';
 import { ZGridDisplayListWithLabel } from 'components/molecules/grid-display-list/GridDisplayList';
-import { ESyncStatus, OperationPhase, ZSyncStatus } from 'models/argo.models';
+import { ESyncStatus, OperationPhase, ZEnvSyncStatus, ZSyncStatus } from 'models/argo.models';
 import { ListItem } from 'models/general.models';
 import { EnvironmentItem, EnvironmentsList } from 'models/projects.models';
-import { getEnvironmentErrorCondition, renderCost, syncMe } from 'pages/authorized/environments/helpers';
-import React, { FC } from 'react';
+import { EnvCardReconcile, getEnvironmentErrorCondition } from 'pages/authorized/environments/helpers';
+import React, { FC, useMemo } from 'react';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import { useHistory } from 'react-router-dom';
@@ -23,14 +21,16 @@ import { ZSidePanel } from '../side-panel/SidePanel';
 import { ErrorView } from 'components/organisms/error-view/ErrorView';
 import { ErrorStateService } from 'services/error/error-state.service';
 import { eventErrorColumns } from 'models/error.model';
+import { EntityStore, Environment } from 'models/entity.store';
+import { Reconciler } from 'pages/authorized/environments/Reconciler';
 
 type Props = {
-	environments: EnvironmentsList;
+	environments: Environment[];
 	compareEnabled?: any;
 };
 
 type PropsEnvironmentItem = {
-	environment: EnvironmentItem;
+	environment: Environment;
 	notificationManager?: NotificationsApi;
 	compareEnabled?: any;
 };
@@ -57,16 +57,17 @@ const environmentDescription = (environment: EnvironmentItem): string => {
 
 export const EnvironmentCards: FC<Props> = ({ environments, compareEnabled }: Props) => {
 	const contextApi = React.useContext(Context);
-	const hide = (env: EnvironmentItem) => {
-		return environments.some(ev => ev.id === `${environmentTeam(env)}-${environmentName(env)}` && ev !== env);
-	};
+	// const hide = (env: EnvironmentItem) => {
+	// 	return environments.some(ev => ev.id === `${environmentTeam(env)}-${environmentName(env)}` && ev !== env);
+	// };
 	return (
 		<div className="bottom-offset">
 			<div className="com-cards">
-				{environments.map((environment: EnvironmentItem, _i) =>
-					environment.labels?.failed_environment ? (
-						!hide(environment) && <FailedEnvironmentCard key={`card-${_i}`} environment={environment} />
-					) : (
+				{environments.map(
+					(environment: Environment, _i) => (
+						// environment.labels?.failed_environment ? (
+						// 	!hide(environment) && <FailedEnvironmentCard key={`card-${_i}`} environment={environment} />
+						// ) : (
 						<EnvironmentCard
 							key={`card-${_i}`}
 							environment={environment}
@@ -74,63 +75,59 @@ export const EnvironmentCards: FC<Props> = ({ environments, compareEnabled }: Pr
 							compareEnabled={compareEnabled}
 						/>
 					)
+					// )
 				)}
 			</div>
 		</div>
 	);
 };
 
-export const FailedEnvironmentCards: FC<Props> = ({ environments }: Props) => {
-	const contextApi = React.useContext(Context);
-	return (
-		<div className="bottom-offset" id="failed-environments">
-			<div className="com-cards">
-				{environments.map((environment: EnvironmentItem, _i) => (
-					<FailedEnvironmentCard key={`card-${_i}`} environment={environment} />
-				))}
-			</div>
-		</div>
-	);
-};
+// export const FailedEnvironmentCards: FC<Props> = ({ environments }: Props) => {
+// 	const contextApi = React.useContext(Context);
+// 	return (
+// 		<div className="bottom-offset" id="failed-environments">
+// 			<div className="com-cards">
+// 				{environments.map((environment: EnvironmentItem, _i) => (
+// 					<FailedEnvironmentCard key={`card-${_i}`} environment={environment} />
+// 				))}
+// 			</div>
+// 		</div>
+// 	);
+// };
 
 export const EnvironmentCard: FC<PropsEnvironmentItem> = ({
 	environment,
 	notificationManager,
 	compareEnabled,
 }: PropsEnvironmentItem) => {
+	const entityStore = useMemo(() => EntityStore.getInstance(), []);
 	const ref = React.createRef<any>();
-	const [env, setEnv] = useState<EnvironmentItem>(environment);
+	const [env, setEnv] = useState<Environment>(environment);
 	const [gridItems, setGridItems] = useState<ListItem[]>([]);
 	const [syncStarted, setSyncStarted] = useState<boolean>(false);
 	const [watcherStatus, setWatcherStatus] = useState<OperationPhase | undefined>();
 	const [environmentCondition, setEnvironmentCondition] = useState<any>(null);
 	const [selected, setSelected] = useState<boolean>(false);
+	const reconciling = [
+		ZEnvSyncStatus.Provisioning,
+		ZEnvSyncStatus.Destroying,
+		ZEnvSyncStatus.Initializing,
+	].includes(environment?.status as ZEnvSyncStatus) || syncStarted;
 
 	useEffect(() => {
-		if (environment.id) {
-			setEnv(environment);
-			const sub = subscriber.subscribe(response => {
-				if (response?.application && response?.application.metadata.name === environment.id) {
-					const item = ArgoMapper.parseEnvironment(response.application);
-					if (item) {
-						setEnv(item);
-					}
-				}
-			});
-			return () => sub.unsubscribe();
-		}
-	}, [environment.id]);
+		setEnv(environment);
+	}, [environment]);
 
 	useEffect(() => {
 		const gi = mapGridItems(env);
 		setGridItems(gi);
 	}, [env]);
 
-	const mapGridItems = (environment: EnvironmentItem): ListItem[] => {
+	const mapGridItems = (environment: Environment): ListItem[] => {
 		const gridItems = [
 			{
 				label: 'Team',
-				value: environmentTeam(environment),
+				value: entityStore.getTeam(env.teamId)?.name,
 			},
 			{
 				label: 'Name',
@@ -138,7 +135,7 @@ export const EnvironmentCard: FC<PropsEnvironmentItem> = ({
 			},
 			{
 				label: 'Cost',
-				value: renderCost(environment.labels?.project_id, environment.labels?.env_name),
+				value: <CostRenderer data={environment.estimatedCost} />,
 			},
 			{
 				label: 'Cloud',
@@ -146,16 +143,16 @@ export const EnvironmentCard: FC<PropsEnvironmentItem> = ({
 			},
 		];
 
-		if (environment.labels?.env_status) {
+		if (environment.status) {
 			gridItems.splice(2, 0, {
 				label: 'Status',
 				value: (
 					<>
 						{renderEnvSyncedStatus(
-							environment.labels.env_status as ZSyncStatus,
+							environment.status as ZSyncStatus,
 							'',
 							'',
-							env.syncFinishedAt
+							env.lastReconcileDatetime.toString()
 						)}
 					</>
 				),
@@ -164,36 +161,30 @@ export const EnvironmentCard: FC<PropsEnvironmentItem> = ({
 
 		return gridItems;
 	};
-	const getRoutePath = (environment: EnvironmentItem) => {
+	const getRoutePath = (environment: Environment) => {
 		const state: any = history.location.state;
 		if (state && 'type' in state) {
-			return `/${environmentTeam(environment)}/${environment.id}/${state.type}`;
+			return `/${EntityStore.getInstance().getTeam(environment.teamId)?.name}/${environment.name}/${state.type}`;
 		}
-		return `/${environmentTeam(environment)}/${environment.id}`;
+		return `/${EntityStore.getInstance().getTeam(environment.teamId)?.name}/${environment.name}`;
 	};
 
-	const getSyncIconClass = (environment: EnvironmentItem) => {
-		if (environment.syncStatus === ESyncStatus.OutOfSync) {
-			return '--out-of-sync';
-		} else if (environment.syncStatus === ESyncStatus.Synced) {
-			return '--in-sync';
-		} else {
-			return '--unknown';
-		}
-	};
+	// TODO: Sync Status
+	
 
-	useEffect(() => {
-		const watcherSub = subscriberWatcher.subscribe(e => {
-			if (e?.application?.metadata?.name?.replace('-team-watcher', '') === environment?.labels?.project_id) {
-				const status = e?.application?.status?.operationState?.phase;
-				setWatcherStatus(status);
-			}
-		});
-		if (environment.conditions?.length > 0) {
-			setEnvironmentCondition(getEnvironmentErrorCondition(environment.conditions));
-		}
-		return () => watcherSub.unsubscribe();
-	}, [environment]);
+	// TODO: Watcher for environemts
+	// useEffect(() => {
+	// 	const watcherSub = subscriberWatcher.subscribe(e => {
+	// 		if (e?.application?.metadata?.name?.replace('-team-watcher', '') === environment?.labels?.project_id) {
+	// 			const status = e?.application?.status?.operationState?.phase;
+	// 			setWatcherStatus(status);
+	// 		}
+	// 	});
+	// 	if (environment.conditions?.length > 0) {
+	// 		setEnvironmentCondition(getEnvironmentErrorCondition(environment.conditions));
+	// 	}
+	// 	return () => watcherSub.unsubscribe();
+	// }, [environment]);
 
 	useEffect(() => {
 		if (!syncStarted) {
@@ -212,7 +203,9 @@ export const EnvironmentCard: FC<PropsEnvironmentItem> = ({
 	return (
 		<div
 			ref={ref}
-			className={`environment-card com-card com-card--with-header environment-card--${env.labels?.env_status}`}
+			className={`environment-card com-card com-card--with-header environment-card--${
+				'Unkown'// TODO: env status env.labels?.env_status
+			}`}
 			onClick={(e): void => {
 				history.push(getRoutePath(env));
 			}}>
@@ -220,31 +213,13 @@ export const EnvironmentCard: FC<PropsEnvironmentItem> = ({
 				<div className="com-card__header__title">
 					<div>
 						<h4>
-							{environmentTeam(env)}: {environmentName(env)}
+							{EntityStore.getInstance().getTeam(environment.teamId)?.name}: {env.name}
 						</h4>
 					</div>
 				</div>
 				<div className="large-health-icon-container">
 					{
-						<SyncIcon
-							className={`large-health-icon-container__sync-button large-health-icon-container__sync-button${getSyncIconClass(
-								env
-							)} large-health-icon-container__sync-button${
-								env.healthStatus === 'Progressing' || syncStarted ? '--in-progress' : ''
-							}`}
-							title={environmentCondition || 'Reconcile Environment'}
-							onClick={async e => {
-								e.stopPropagation();
-								if (env.healthStatus !== 'Progressing')
-									await syncMe(
-										env,
-										syncStarted,
-										setSyncStarted,
-										notificationManager as NotificationsApi,
-										watcherStatus
-									);
-							}}
-						/>
+						environment && <Reconciler environment={environment} template={EnvCardReconcile}/>
 					}
 					{featureToggled(FeatureKeys.DIFF_CHECKER, true) && (
 						<input
@@ -272,82 +247,82 @@ export const EnvironmentCard: FC<PropsEnvironmentItem> = ({
 	);
 };
 
-export const FailedEnvironmentCard: FC<PropsEnvironmentItem> = ({ environment }: PropsEnvironmentItem) => {
-	const ref = React.createRef<any>();
-	const [env, setEnv] = useState<EnvironmentItem>(environment);
-	const [gridItems, setGridItems] = useState<ListItem[]>([]);
-	const [sidePanel, setSidePanel] = useState<boolean>(false);
+// export const FailedEnvironmentCard: FC<PropsEnvironmentItem> = ({ environment }: PropsEnvironmentItem) => {
+// 	const ref = React.createRef<any>();
+// 	const [env, setEnv] = useState<EnvironmentItem>(environment);
+// 	const [gridItems, setGridItems] = useState<ListItem[]>([]);
+// 	const [sidePanel, setSidePanel] = useState<boolean>(false);
 
-	useEffect(() => {
-		const gi = mapGridItems(env);
-		setGridItems(gi);
-	}, [env]);
+// 	useEffect(() => {
+// 		const gi = mapGridItems(env);
+// 		setGridItems(gi);
+// 	}, [env]);
 
-	const mapGridItems = (environment: EnvironmentItem): ListItem[] => {
-		const gridItems = [
-			{
-				label: 'Team',
-				value: environmentTeam(env),
-			},
-			{
-				label: 'Name',
-				value: env.name,
-			},
-			{
-				label: 'Cost',
-				value: 'N/A',
-			},
-			{
-				label: 'Cloud',
-				value: <>{<AWSIcon />}</>,
-			},
-		];
+// 	const mapGridItems = (environment: EnvironmentItem): ListItem[] => {
+// 		const gridItems = [
+// 			{
+// 				label: 'Team',
+// 				value: environmentTeam(env),
+// 			},
+// 			{
+// 				label: 'Name',
+// 				value: env.name,
+// 			},
+// 			{
+// 				label: 'Cost',
+// 				value: 'N/A',
+// 			},
+// 			{
+// 				label: 'Cloud',
+// 				value: <>{<AWSIcon />}</>,
+// 			},
+// 		];
 
-		gridItems.splice(2, 0, {
-			label: 'Status',
-			value: <>{renderEnvSyncedStatus(ZSyncStatus.ProvisionFailed, '', '', env.syncFinishedAt)}</>,
-		});
+// 		gridItems.splice(2, 0, {
+// 			label: 'Status',
+// 			value: <>{renderEnvSyncedStatus(ZSyncStatus.ProvisionFailed, '', '', env.syncFinishedAt)}</>,
+// 		});
 
-		return gridItems;
-	};
+// 		return gridItems;
+// 	};
 
-	const getErrorTitle = () => {
-		return `${environmentTeam(env) + ':'}${environmentName(env)}`;
-	};
+// 	const getErrorTitle = () => {
+// 		return `${environmentTeam(env) + ':'}${environmentName(env)}`;
+// 	};
 
-	return (
-		<>
-			<ZSidePanel
-				isShown={sidePanel}
-				onClose={() => {
-					setSidePanel(false);
-				}}>
-				<ErrorView
-					id={env.name}
-					columns={eventErrorColumns}
-					dataRows={ErrorStateService.getInstance().errorsInEnvironment(env.labels?.env_name || '')}
-				/>
-			</ZSidePanel>
-			<div
-				ref={ref}
-				className={`environment-card com-card com-card--with-header environment-card`}
-				onClick={(e): void => {
-					setSidePanel(true);
-				}}>
-				<div className="environment-card__header com-card__header">
-					<div className="com-card__header__title">
-						<div>
-							<h4>
-								{environmentTeam(env)}: {environmentName(env)}
-							</h4>
-						</div>
-					</div>
-					<div className="large-health-icon-container"></div>
-				</div>
-				<div className="com-card__body">
-					<ZGridDisplayListWithLabel items={gridItems} />
-				</div>
-			</div>
-		</>
-	);
-};
+// 	return (
+// 		<>
+// 			<ZSidePanel
+// 				isShown={sidePanel}
+// 				onClose={() => {
+// 					setSidePanel(false);
+// 				}}>
+// 				<ErrorView
+// 					id={env.name}
+// 					columns={eventErrorColumns}
+// 					dataRows={ErrorStateService.getInstance().errorsInEnvironment(env.labels?.env_name || '')}
+// 				/>
+// 			</ZSidePanel>
+// 			<div
+// 				ref={ref}
+// 				className={`environment-card com-card com-card--with-header environment-card`}
+// 				onClick={(e): void => {
+// 					setSidePanel(true);
+// 				}}>
+// 				<div className="environment-card__header com-card__header">
+// 					<div className="com-card__header__title">
+// 						<div>
+// 							<h4>
+// 								{environmentTeam(env)}: {environmentName(env)}
+// 							</h4>
+// 						</div>
+// 					</div>
+// 					<div className="large-health-icon-container"></div>
+// 				</div>
+// 				<div className="com-card__body">
+// 					<ZGridDisplayListWithLabel items={gridItems} />
+// 				</div>
+// 			</div>
+// 		</>
+// 	);
+// };

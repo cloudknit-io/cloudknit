@@ -13,7 +13,7 @@ import { ReactComponent as Expand } from 'assets/images/icons/expand.svg';
 
 import Tree from './TreeView';
 import { ESyncStatus, HealthStatuses, OperationPhase, ZSyncStatus } from 'models/argo.models';
-import { getEnvironmentErrorCondition, syncMe } from 'pages/authorized/environments/helpers';
+import { getEnvironmentErrorCondition } from 'pages/authorized/environments/helpers';
 import { Context } from 'context/argo/ArgoUi';
 import { subscriberResourceTree, subscriberWatcher } from 'utils/apiClient/EventClient';
 import { breadcrumbObservable, pageHeaderObservable } from 'pages/authorized/contexts/EnvironmentHeaderContext';

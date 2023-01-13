@@ -1,5 +1,6 @@
+import { ApplicationWatchEvent } from 'models/argo.models';
 import { WorkflowPayload } from 'services/argo/ArgoWorkflows.service';
-import { EventClientCD, EventClientCDResourceTree, EventClientCDWatcher, EventClientCost, EventClientParallelWF, EventClientWF } from 'utils/apiClient/EventClient';
+import { EventClient, EventClientCD, EventClientCDResourceTree, EventClientCDWatcher, EventClientCost, EventClientParallelWF, EventClientWF } from 'utils/apiClient/EventClient';
 
 export class ArgoStreamService {
 	static stream(resourceVersion: string): void {
@@ -12,8 +13,8 @@ export class ArgoStreamService {
 		).listen();
 	}
 
-	static streamEnvironment(environmentId: string): void {
-		new EventClientCD(`/cd/api/v1/stream/environments/${environmentId}`).listen();
+	static streamEnvironment(environmentId: string): EventClient<ApplicationWatchEvent> {
+		return new EventClient<ApplicationWatchEvent>(`/cd/api/v1/stream/environments/${environmentId}`);
 	}
 
 	static streamWatcher(teamName: string): void {

@@ -102,18 +102,7 @@ func generateAndSaveEnvironmentComponents(
 	e *stablev1.Environment,
 	tfcfg *secret.TerraformStateConfig,
 ) error {
-	ecDirectory := il.EnvironmentComponentsDirectoryAbsolutePath(ilService.ZLILTempDir, e.Spec.TeamName, e.Spec.EnvName)
-
-	if err := fileService.CleanDir(ecDirectory, []string{".git"}); err != nil {
-		return errors.Wrap(err, fmt.Sprintf("could not clean environment-component directory %s", ecDirectory))
-	}
-
 	for _, ec := range e.Spec.Components {
-		application := argocd2.GenerateEnvironmentComponentApps(e, ec)
-		if err := fileService.SaveYamlFile(*application, ecDirectory, fmt.Sprintf("%s.yaml", ec.Name)); err != nil {
-			return zerrors.NewEnvironmentComponentError(ec.Name, errors.Wrap(err, "error saving yaml file"))
-		}
-
 		gitReconcilerKey := kClient.ObjectKey{Name: e.Name, Namespace: e.Namespace}
 
 		switch ec.Type {

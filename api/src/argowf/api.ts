@@ -2,6 +2,7 @@ import * as https from 'https';
 import axios from 'axios';
 import { get } from 'src/config';
 import { WinstonLogger } from 'src/logger';
+import { Organization } from 'src/typeorm';
 
 const logger = new WinstonLogger();
 
@@ -29,6 +30,43 @@ export function generateParams(parameters: object): Array<string> {
   }
 
   return params;
+}
+
+export async function ApproveWorkflow(org: Organization, workflowRunId: string) {
+  const config = get();
+  
+  if (config.isLocal === true) {
+    logger.log({ message: 'Running in local mode. Skipping ApproveWorkflow'});
+    return;
+  }
+
+  const url = `${config.argo.wf.orgUrl(org.name)}/api/v1/workflows/${org.name}-executor/${workflowRunId}/resume`;
+
+  const httpsAgent = new https.Agent({
+    requestCert: true,
+    rejectUnauthorized: false,
+  });
+
+  const data = {
+    name: workflowRunId,
+    namespace: `${org.name}-executor`,
+  };
+
+  logger.debug({message: 'approving workflow', url, data});
+
+  try {
+    const resp = await axios.put(url, data, {
+      httpsAgent: url.startsWith('https') ? httpsAgent : null
+    });
+  
+    logger.log({message: `approved workflow which generated ${resp.data.metadata.name}`, resp: resp.data });
+  } catch (error) {
+    if (error.response) {
+      logger.error({ message: 'error approving workflow', error: error.response.data, data, url })
+    }
+    
+    throw error;
+  }
 }
 
 async function SubmitWorkflow(resourceName: string, entryPoint: string, parameters: object) {

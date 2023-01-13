@@ -1,15 +1,12 @@
-export interface ComponentAudit {
-    reconcileId: number;
+import { IsNotEmpty, IsString } from "class-validator";
+import { ComponentReconcile } from "src/typeorm";
+
+export interface ComponentReconcileWrap extends ComponentReconcile {
     duration: number;
-    status: string;
-    startDateTime: string;
-    approvedBy?: string;
 }
 
-export interface ApprovedByDto {
-    email?: string;
-    compName: string;
-    envName: string;
-    teamName: string;
-    rid: number;
+export class ApprovedByDto {
+    @IsString()
+    @IsNotEmpty()
+    email: string;
 }

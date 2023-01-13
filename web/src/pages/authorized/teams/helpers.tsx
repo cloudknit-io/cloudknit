@@ -20,17 +20,3 @@ export const teamTableColumns: TableColumn[] = [
 		name: 'Repo Url',
 	}
 ];
-
-export const renderCost = (teamId?: string) => {
-	if (!teamId) {
-		return <></>;
-	}
-
-	return (
-		<ZStreamRenderer
-			subject={CostingService.getInstance().getTeamCostStream(teamId)}
-			defaultValue={CostingService.getInstance().getCachedValue(teamId)}
-			Component={CostRenderer}
-		/>
-	);
-};

@@ -230,10 +230,16 @@ export class EventClientLogs {
 
 export class EventClient<T> {
 	private publisher: Subject<T> = new Subject<T>();
-	private eventSource: EventSource;
+	private eventSource: any;
+	private listenerTypes: string[] = [];
+	private handler = (event: MessageEvent): any => {
+		if (event.data == '{}') return;
+		this.publisher.next(JSON.parse(event.data) as T);
+	};
 	
-	constructor(url: string) {
+	constructor(url: string, listenerTypes: string[] = []) {
 		this.eventSource = new EventSource(baseUrl + url, { withCredentials: true });
+		this.listenerTypes = listenerTypes;
 	}
 	
 
@@ -241,11 +247,17 @@ export class EventClient<T> {
 		this.eventSource.onopen = (): void => {
 			return;
 		};
-		this.eventSource.onmessage = (event: MessageEvent): void => {
-			this.publisher.next(JSON.parse(event.data) as T);
-		};
-		this.eventSource.onerror = (err): void => {
-			console.log(err);
+		
+		if (this.listenerTypes.length) {
+			this.listenerTypes.forEach(listenerType => {
+				this.eventSource.addEventListener(listenerType, this.handler); 
+			});
+		} else {
+			this.eventSource.onmessage = this.handler;
+		}
+		
+		this.eventSource.onerror = (ev: any): void => {
+			console.log('EventSource error', this.eventSource.url, ev);
 			return;
 		};
 
@@ -254,6 +266,7 @@ export class EventClient<T> {
 
 	close(): void {
 		this.eventSource.close();
+		this.listenerTypes.length > 0 && this.listenerTypes.forEach(listenerType => this.eventSource.removeEventListener(listenerType, this.handler));
 		this.publisher.unsubscribe();
 	}
 }

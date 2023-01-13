@@ -21,6 +21,7 @@ import {
   EVENT_MAPPINGS,
   USERS_MAPPINGS,
   OPERATION_MAPPINGS,
+  API_MAPPINGS,
 } from "./pathMappings";
 import { getUser } from '../auth/auth';
 
@@ -358,6 +359,26 @@ export function orgRoutes(router: express.Router) {
         cookieDomainRewrite: "",
         onProxyRes: enableCors,
         pathRewrite: pathRewrite("/", SECRET_MAPPINGS, { orgId: org.id }),
+      }) as any
+    )(req, res, next);
+  });
+
+  router.use("/api", async (req: BFFRequest, res, next) => {
+    const org = await helper.orgFromReq(req);
+
+    if (!org) {
+      helper.handleNoOrg(res);
+      return;
+    }
+
+    return (
+      createProxy(org, "/api", {
+        target: process.env.ZLIFECYCLE_API_URL,
+        changeOrigin: true,
+        secure: true,
+        cookieDomainRewrite: "",
+        onProxyRes: enableCors,
+        pathRewrite: pathRewrite("/", API_MAPPINGS, { orgId: org.id }),
       }) as any
     )(req, res, next);
   });

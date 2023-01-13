@@ -148,7 +148,7 @@ const Tree: FC<Props> = ({
 				if (tooltip) {
 					tooltip.innerHTML = '';
 					const id = containerDiv.id;
-					const renderData = data.find((e: any) => e.componentName === id);
+					const renderData = data.find((e: any) => e.name === id);
 					if (renderData) {
 						tooltip.innerHTML = ReactDOMServer.renderToString(renderSyncStatus(renderData));
 					} else {
