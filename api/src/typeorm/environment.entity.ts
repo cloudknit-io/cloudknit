@@ -1,4 +1,15 @@
-import { AfterInsert, Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, RelationId, UpdateDateColumn } from "typeorm";
+import {
+  AfterInsert,
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  RelationId,
+  UpdateDateColumn,
+} from "typeorm";
 import { Organization } from "./Organization.entity";
 import { Component } from "./component.entity";
 import { Team } from "./team.entity";
@@ -8,10 +19,10 @@ import { ColumnNumericTransformer } from "./helper";
 @Entity({
   name: "environment",
 })
-@Index(['organization', 'team', 'name'], { unique: true })
+@Index(["organization", "team", "name"], { unique: true })
 export class Environment {
   @PrimaryGeneratedColumn()
-  id: number
+  id: number;
 
   @Column()
   @Index()
@@ -23,13 +34,13 @@ export class Environment {
   lastReconcileDatetime: string;
 
   @Column({
-    default: -1
+    default: -1,
   })
   duration: number;
 
   @Column({
-    name: 'status',
-    default: null
+    name: "status",
+    default: "initializing",
   })
   status: string;
 
@@ -37,45 +48,45 @@ export class Environment {
   components: Component[];
 
   @Column({
-    name: 'estimated_cost',
-    type: 'decimal',
+    name: "estimated_cost",
+    type: "decimal",
     precision: 10,
     scale: 3,
     default: 0,
-    transformer: new ColumnNumericTransformer()
+    transformer: new ColumnNumericTransformer(),
   })
   estimatedCost: number;
 
   @Column({
-    type: 'json',
-    default: null
+    type: "json",
+    default: null,
   })
   dag: EnvSpecComponentDto[];
 
   @Column({
-    default: false
+    default: false,
   })
   isDeleted: boolean;
 
   @ManyToOne(() => Team, (team) => team.id, {
-    onDelete: "CASCADE"
+    onDelete: "CASCADE",
   })
   @JoinColumn({
-    referencedColumnName: 'id'
+    referencedColumnName: "id",
   })
   team: Team;
 
   @ManyToOne(() => Organization, (org) => org.id, {
-    onDelete: "CASCADE"
+    onDelete: "CASCADE",
   })
   @JoinColumn({
-    referencedColumnName: 'id'
+    referencedColumnName: "id",
   })
   organization: Organization;
 
   @RelationId((env: Environment) => env.team)
-  teamId: number
+  teamId: number;
 
   @RelationId((env: Environment) => env.organization)
-  orgId: number
+  orgId: number;
 }
