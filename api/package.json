@@ -1,8 +1,8 @@
 {
-  "name": "test-api",
-  "version": "0.0.1",
+  "name": "cloudknit-api",
+  "version": "0.1.0",
   "description": "",
-  "author": "",
+  "author": "CloudKnit Inc",
   "private": true,
   "license": "Apache License 2.0",
   "scripts": {
