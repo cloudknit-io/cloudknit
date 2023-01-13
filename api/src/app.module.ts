@@ -17,6 +17,8 @@ import { TeamModule } from './team/team.module';
 import { EnvironmentModule } from './environment/environment.module';
 import { ComponentModule } from './component/component.module';
 import { StreamModule } from './stream/stream.module';
+import { CachingService } from './caching/caching.service';
+import { CachingModule } from './caching/caching.module';
 
 const config = get();
 
@@ -29,7 +31,7 @@ const typeOrmModuleOptions: TypeOrmModuleOptions = {
   database: config.TypeORM.database,
   entities,
   migrations: [],
-  synchronize: true,
+  synchronize: get().isLocal === true,
 };
 
 @Module({
@@ -49,10 +51,11 @@ const typeOrmModuleOptions: TypeOrmModuleOptions = {
     TeamModule,
     EnvironmentModule,
     ComponentModule,
-    StreamModule
+    StreamModule,
+    CachingModule
   ],
   controllers: [],
-  providers: [],
+  providers: [CachingService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
