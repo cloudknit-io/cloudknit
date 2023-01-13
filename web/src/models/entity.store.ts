@@ -95,11 +95,11 @@ export class EntityStore {
 		this.entityService.streamAudit().subscribe((data: CompAuditData | EnvAuditData) => {
 			if ((data as CompAuditData).compId) {
 				const compData = data as CompAuditData;
-				this.componentAuditListeners.has(compData.compId) && this.emitterCompAudit.next(compData);
+				this.emitterCompAudit.next(compData);
 			}
 			if ((data as EnvAuditData).envId) {
 				const envData = data as EnvAuditData;
-				this.environmentAuditListeners.has(envData.envId) && this.emitterEnvAudit.next(envData);
+				this.emitterEnvAudit.next(envData);
 			}
 		});
 	}
