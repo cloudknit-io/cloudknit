@@ -5,7 +5,7 @@ describe('Generate Params', () => {
 
   it('should return formatted string', () => {
     const obj = {
-      orgName: 'brad-org-2'
+      orgName: 'brad-org-2',
     };
 
     const resp = generateParams(obj);
@@ -19,7 +19,7 @@ describe('Generate Params', () => {
     const obj = {
       orgName: 'brad-org-2',
       orgId: 1,
-      orgMeta: 'brad-meta'
+      orgMeta: 'brad-meta',
     };
 
     const resp = generateParams(obj);

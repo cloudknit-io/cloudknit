@@ -1,16 +1,14 @@
-import { BadRequestException, Injectable, Logger } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Organization, User} from "src/typeorm";
-import { CreateUserDto } from "src/users/User.dto";
-import { Repository } from "typeorm";
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Organization, User } from 'src/typeorm';
+import { CreateUserDto } from 'src/users/User.dto';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
 
-  constructor(
-    @InjectRepository(User) private readonly userRepo: Repository<User>
-  ) {}
+  constructor(@InjectRepository(User) private readonly userRepo: Repository<User>) {}
 
   // public async getUser(username: string) {
   //   return this.userRepo.createQueryBuilder('user')
@@ -20,16 +18,21 @@ export class AuthService {
   // }
 
   public async getOrgUser(org: Organization, username: string) {
-    return this.userRepo.createQueryBuilder('user')
+    return this.userRepo
+      .createQueryBuilder('user')
       .leftJoinAndSelect('user.organizations', 'organization')
-      .where('organization.id = :orgId and user.username = :username', { orgId: org.id, username })
+      .where('organization.id = :orgId and user.username = :username', {
+        orgId: org.id,
+        username,
+      })
       .getOne();
   }
 
   public async getOrgUserList(org: Organization) {
-    return this.userRepo.createQueryBuilder('user')
+    return this.userRepo
+      .createQueryBuilder('user')
       .leftJoinAndSelect('user.organizations', 'organization')
-      .where('organization.id = :orgId', {orgId: org.id})
+      .where('organization.id = :orgId', { orgId: org.id })
       .getMany();
   }
 
@@ -39,13 +42,13 @@ export class AuthService {
     // will always give empty result and creating a new user would throw an error.
     const currentUser = await this.userRepo.findOne({
       where: {
-        username: user.username
+        username: user.username,
       },
       relations: {
-        organizations: true
-      }
+        organizations: true,
+      },
     });
-    
+
     if (currentUser) {
       // adds existing user to org
       for (let userOrg of currentUser.organizations) {
@@ -55,9 +58,9 @@ export class AuthService {
       }
 
       currentUser.organizations = [...currentUser.organizations, org];
-      
+
       this.logger.log(`adding user ${currentUser.username} to ${org.name}`);
-      
+
       return this.userRepo.save(currentUser);
     }
 
@@ -68,7 +71,7 @@ export class AuthService {
     newUser.username = user.username;
     newUser.role = user.role;
     newUser.organizations = [org];
-    
+
     return this.userRepo.save(newUser);
   }
 
@@ -76,19 +79,19 @@ export class AuthService {
   public async deleteUser(org: Organization, username: string) {
     const user = await this.userRepo.findOne({
       where: {
-        username: username
+        username: username,
       },
       relations: {
-        organizations: true
-      }
+        organizations: true,
+      },
     });
 
     if (!user) {
-      throw new BadRequestException("user does not exist");
+      throw new BadRequestException('user does not exist');
     }
 
     const userOrgs = user.organizations;
-    let newOrgs = []
+    let newOrgs = [];
 
     for (let userOrg of userOrgs) {
       if (userOrg.id === org.id) {

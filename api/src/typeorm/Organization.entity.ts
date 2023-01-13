@@ -8,10 +8,10 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-} from "typeorm";
-import { User } from "./User.entity";
+} from 'typeorm';
+import { User } from './User.entity';
 
-@Entity({ name: "organization" })
+@Entity({ name: 'organization' })
 export class Organization {
   @PrimaryGeneratedColumn()
   id: number;
@@ -21,30 +21,30 @@ export class Organization {
   name: string;
 
   @Column({
-    name: "github_repo",
-    default: null
+    name: 'github_repo',
+    default: null,
   })
   githubRepo: string;
 
   @Column({
-    name: "github_org_name",
+    name: 'github_org_name',
     default: null,
-    unique: true
+    unique: true,
   })
   githubOrgName: string;
 
-  @OneToOne(() => User, (user) => user.id)
+  @OneToOne(() => User, user => user.id)
   @Column({
-    default: null
+    default: null,
   })
   termsAgreedUserId: number;
 
-  @ManyToMany(() => User, (user) => user.organizations)
+  @ManyToMany(() => User, user => user.organizations)
   @JoinTable()
   users: User[];
 
   @Column({
-    default: false
+    default: false,
   })
   provisioned: boolean;
 

@@ -1,4 +1,4 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
 export class DagDto {
   @ApiProperty()
@@ -8,7 +8,7 @@ export class DagDto {
 export class DagItemDto {
   @ApiProperty()
   componentName: string;
-  
+
   @ApiProperty()
   parentComponentNames: string[];
 }

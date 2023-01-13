@@ -1,37 +1,37 @@
-import { ApiProperty } from '@nestjs/swagger'
+import { ApiProperty } from '@nestjs/swagger';
 
 export class EvnironmentReconcileDto {
   @ApiProperty()
   reconcileId?: string;
   @ApiProperty()
-  name: string
+  name: string;
   @ApiProperty()
-  teamName: string
+  teamName: string;
   @ApiProperty()
-  status: string
+  status: string;
   @ApiProperty()
-  startDateTime: string
+  startDateTime: string;
   @ApiProperty()
-  endDateTime?: string
+  endDateTime?: string;
   @ApiProperty({
     type: () => [ComponentReconcileDto],
   })
-  componentReconciles?: ComponentReconcileDto[]
+  componentReconciles?: ComponentReconcileDto[];
 }
 
 export class ComponentReconcileDto {
   @ApiProperty()
   reconcileId: string;
   @ApiProperty()
-  name: string
+  name: string;
   @ApiProperty()
-  teamName: string
+  teamName: string;
   @ApiProperty()
-  environmentName: string
+  environmentName: string;
   @ApiProperty()
-  status: string
+  status: string;
   @ApiProperty()
-  startDateTime: string
+  startDateTime: string;
   @ApiProperty()
-  endDateTime?: string
+  endDateTime?: string;
 }

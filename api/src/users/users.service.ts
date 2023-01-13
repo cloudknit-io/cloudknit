@@ -1,8 +1,8 @@
-import { BadRequestException, Injectable, Logger } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/typeorm';
-import { Repository } from "typeorm";
-import { CreateUserDto } from "./User.dto";
+import { Repository } from 'typeorm';
+import { CreateUserDto } from './User.dto';
 
 @Injectable()
 export class UsersService {
@@ -11,30 +11,30 @@ export class UsersService {
   constructor(@InjectRepository(User) private userRepo: Repository<User>) {}
 
   async getUser(username: string): Promise<User> {
-    return this.userRepo.findOne({ 
-      where : { username },
+    return this.userRepo.findOne({
+      where: { username },
       relations: {
-        organizations: true
-      }
+        organizations: true,
+      },
     });
   }
 
   async getUserById(userId: number): Promise<User> {
-    return this.userRepo.findOne({ 
-      where : { id: userId },
+    return this.userRepo.findOne({
+      where: { id: userId },
       relations: {
-        organizations: true
-      }
+        organizations: true,
+      },
     });
   }
 
   async create(userDto: CreateUserDto) {
     // User should not exist
     const userExists = await this.getUser(userDto.username);
-    
+
     if (userExists) {
       throw new BadRequestException({
-        message: "User with Github Id already exists",
+        message: 'User with Github Id already exists',
       });
     }
 
@@ -46,9 +46,9 @@ export class UsersService {
     newUser.organizations = [];
 
     const user = await this.userRepo.save(newUser);
-    
-    this.logger.log('created user', { user: userDto })
-    
+
+    this.logger.log('created user', { user: userDto });
+
     return user;
   }
 }

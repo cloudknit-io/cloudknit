@@ -1,16 +1,13 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
-import { ComponentReconcile } from "src/typeorm";
-import { Connection, EntitySubscriberInterface, InsertEvent, RemoveEvent, UpdateEvent } from "typeorm";
-import { StreamService } from "./stream.service";
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { ComponentReconcile } from 'src/typeorm';
+import { Connection, EntitySubscriberInterface, InsertEvent, RemoveEvent, UpdateEvent } from 'typeorm';
+import { StreamService } from './stream.service';
 
 @Injectable()
 export class StreamComponentReconcileService implements EntitySubscriberInterface<ComponentReconcile> {
-  private readonly logger = new Logger(StreamComponentReconcileService.name); 
+  private readonly logger = new Logger(StreamComponentReconcileService.name);
 
-  constructor(
-    @Inject(Connection) conn: Connection,
-    private readonly sseSvc: StreamService,
-  ) {
+  constructor(@Inject(Connection) conn: Connection, private readonly sseSvc: StreamService) {
     conn.subscribers.push(this);
   }
 
@@ -36,6 +33,10 @@ export class StreamComponentReconcileService implements EntitySubscriberInterfac
       return;
     }
 
-    this.logger.error({message: 'component stream object has no organization', comp: compRecon, operation}); 
+    this.logger.error({
+      message: 'component stream object has no organization',
+      comp: compRecon,
+      operation,
+    });
   }
 }

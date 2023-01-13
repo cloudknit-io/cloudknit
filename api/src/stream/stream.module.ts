@@ -13,7 +13,7 @@ import { StreamComponentReconcileService } from './stream.comp-reconcile.service
     StreamEnvironmentService,
     StreamComponentService,
     StreamEnvironmentReconcileService,
-    StreamComponentReconcileService
-  ]
+    StreamComponentReconcileService,
+  ],
 })
 export class StreamModule {}

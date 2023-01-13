@@ -1,28 +1,28 @@
-import { ApiProperty } from "@nestjs/swagger"
-import { Type } from "class-transformer"
-import { IsNotEmpty, IsString, ValidateNested } from "class-validator"
+import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { IsNotEmpty, IsString, ValidateNested } from 'class-validator';
 
 export class TeamConfigRepoDto {
-  @ApiProperty({required: true})
+  @ApiProperty({ required: true })
   @IsString()
   @IsNotEmpty()
-  source: string
+  source: string;
 
-  @ApiProperty({required: true})
+  @ApiProperty({ required: true })
   @IsString()
   @IsNotEmpty()
-  path: string
+  path: string;
 }
 
 export class TeamSpecDto {
-  @ApiProperty({required: true})
+  @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
-  teamName: string
+  teamName: string;
 
-  @ApiProperty({required: true})
+  @ApiProperty({ required: true })
   @IsNotEmpty()
   @ValidateNested()
   @Type(() => TeamConfigRepoDto)
-  configRepo: TeamConfigRepoDto
+  configRepo: TeamConfigRepoDto;
 }

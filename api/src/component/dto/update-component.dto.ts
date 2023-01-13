@@ -5,52 +5,52 @@ import { CreateComponentDto } from './create-component.dto';
 
 export class CostComponent {
   @ApiProperty()
-  name: string
+  name: string;
   @ApiProperty()
-  price: string
+  price: string;
   @ApiProperty()
-  unit: string
+  unit: string;
   @ApiPropertyOptional()
-  hourlyCost?: string
+  hourlyCost?: string;
   @ApiPropertyOptional()
-  hourlyQuantity?: string
+  hourlyQuantity?: string;
   @ApiPropertyOptional()
-  monthlyCost?: string
+  monthlyCost?: string;
   @ApiPropertyOptional()
-  monthlyQuantity?: string
+  monthlyQuantity?: string;
 }
 
 export class CostResource {
   @ApiProperty()
   @IsString()
-  name: string
+  name: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  hourlyCost?: string
+  hourlyCost?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  monthlyCost?: string
+  monthlyCost?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @ValidateNested()
   @Type(() => CostResource)
-  subresources?: CostResource[]
+  subresources?: CostResource[];
 
   @ApiPropertyOptional({ type: [CostComponent] })
   @IsOptional()
   @ValidateNested()
   @Type(() => CostComponent)
-  costComponents?: CostComponent[]
+  costComponents?: CostComponent[];
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsObject()
-  metadata?: object
+  metadata?: object;
 }
 export class UpdateComponentDto extends PartialType(CreateComponentDto) {
   @ApiPropertyOptional()
@@ -61,7 +61,7 @@ export class UpdateComponentDto extends PartialType(CreateComponentDto) {
   @ApiPropertyOptional()
   @IsOptional()
   @IsNumber({
-    maxDecimalPlaces: 0
+    maxDecimalPlaces: 0,
   })
   duration?: number;
 
@@ -73,7 +73,7 @@ export class UpdateComponentDto extends PartialType(CreateComponentDto) {
   @ApiPropertyOptional()
   @IsOptional()
   @IsNumber({
-    maxDecimalPlaces: 5
+    maxDecimalPlaces: 5,
   })
   estimatedCost?: number;
 

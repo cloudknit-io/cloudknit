@@ -1,29 +1,29 @@
-import { Logger } from "@nestjs/common";
+import { Logger } from '@nestjs/common';
 
 export type ApiConfig = {
   TypeORM: {
-    host: string,
-    port: number,
-    username: string,
-    password: string,
-    database: string,
-  },
-  port: number,
+    host: string;
+    port: number;
+    username: string;
+    password: string;
+    database: string;
+  };
+  port: number;
   AWS: {
-    accessKeyId: string,
-    secretAccessKey: string
-  },
-  environment: string,
-  isLocal: boolean,
+    accessKeyId: string;
+    secretAccessKey: string;
+  };
+  environment: string;
+  isLocal: boolean;
   argo: {
     wf: {
-      skipProvision: boolean,
-      url: string,
-      orgUrl: Function,
-      namespace: string
-    }
-  }
-}
+      skipProvision: boolean;
+      url: string;
+      orgUrl: Function;
+      namespace: string;
+    };
+  };
+};
 
 let config: ApiConfig;
 
@@ -68,16 +68,16 @@ export function init() {
         url: getEnvVarOrFail('CK_ARGO_WF_URL'),
         orgUrl: (orgName: string) => getEnvVarOrFail('CK_ARGO_WF_ORG_URL').replaceAll(':org', orgName),
         namespace: getEnvVarOrFail('CK_ARGO_WF_NAMESPACE'),
-      }
+      },
     },
     environment: getEnvVarOrFail('CK_ENVIRONMENT'),
     isLocal: getEnvVarOrDefault('IS_LOCAL', 'false') === 'true',
   };
-  
+
   logger.log('successfully configured');
 }
 
-export function get() : ApiConfig {
+export function get(): ApiConfig {
   if (!config) {
     init();
   }

@@ -9,28 +9,15 @@ import { ReconciliationService } from 'src/reconciliation/reconciliation.service
 import { ComponentService } from 'src/component/component.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      Environment,
-      Team,
-      Component,
-      EnvironmentReconcile,
-      ComponentReconcile
-    ])
-  ],
+  imports: [TypeOrmModule.forFeature([Environment, Team, Component, EnvironmentReconcile, ComponentReconcile])],
   controllers: [EnvironmentController],
-  providers: [
-    ComponentService,
-    EnvironmentService,
-    TeamService,
-    ReconciliationService
-  ]
+  providers: [ComponentService, EnvironmentService, TeamService, ReconciliationService],
 })
 export class EnvironmentModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(EnvironmentMiddleware).forRoutes({
       path: '*/environments/:environmentId*',
-      method: RequestMethod.ALL
+      method: RequestMethod.ALL,
     });
   }
 }

@@ -15,8 +15,6 @@ import { CachingService } from './caching.service';
     // ]),
   ],
   controllers: [],
-  providers: [
-    CachingService,
-  ]
+  providers: [CachingService],
 })
 export class CachingModule {}

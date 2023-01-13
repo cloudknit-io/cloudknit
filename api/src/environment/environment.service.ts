@@ -1,22 +1,22 @@
-import { Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Environment, Organization, Team } from "src/typeorm";
-import { Equal, Repository } from "typeorm";
-import { CreateEnvironmentDto } from "./dto/create-environment.dto";
-import { UpdateEnvironmentDto } from "./dto/update-environment.dto";
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Environment, Organization, Team } from 'src/typeorm';
+import { Equal, Repository } from 'typeorm';
+import { CreateEnvironmentDto } from './dto/create-environment.dto';
+import { UpdateEnvironmentDto } from './dto/update-environment.dto';
 
 @Injectable()
 export class EnvironmentService {
   constructor(
     @InjectRepository(Environment)
     private readonly envRepo: Repository<Environment>
-  ) { }
+  ) {}
 
   async create(org: Organization, team: Team, createEnvDto: CreateEnvironmentDto) {
     return this.envRepo.save({
       organization: org,
       team,
-      ...createEnvDto
+      ...createEnvDto,
     });
   }
 
@@ -24,13 +24,13 @@ export class EnvironmentService {
     return this.envRepo.find({
       where: {
         team: {
-          id: team.id
+          id: team.id,
         },
         organization: {
-          id: org.id
-        }
-      }
-    })
+          id: org.id,
+        },
+      },
+    });
   }
 
   async updateById(org: Organization, id: number, updateEnvDto: UpdateEnvironmentDto): Promise<Environment> {
@@ -39,24 +39,34 @@ export class EnvironmentService {
     return this.envRepo.save(env);
   }
 
-  async updateByName(org: Organization, team: Team, name: string, updateEnvDto: UpdateEnvironmentDto): Promise<Environment> {
+  async updateByName(
+    org: Organization,
+    team: Team,
+    name: string,
+    updateEnvDto: UpdateEnvironmentDto
+  ): Promise<Environment> {
     const env = await this.findByName(org, team, name);
     this.envRepo.merge(env, updateEnvDto);
     return this.envRepo.save(env);
   }
 
-  async findById(org: Organization, id: number, withTeam: boolean = false, withComps: boolean = false): Promise<Environment> {
-  return this.envRepo.findOne({
+  async findById(
+    org: Organization,
+    id: number,
+    withTeam: boolean = false,
+    withComps: boolean = false
+  ): Promise<Environment> {
+    return this.envRepo.findOne({
       where: {
         id: Equal(id),
         organization: {
-          id: Equal(org.id)
+          id: Equal(org.id),
         },
       },
       relations: {
         team: withTeam,
-        components: withComps
-      }
+        components: withComps,
+      },
     });
   }
 
@@ -65,16 +75,16 @@ export class EnvironmentService {
       where: {
         name: Equal(name),
         organization: {
-          id: org.id
+          id: org.id,
         },
         team: {
-          id: team.id
-        }
+          id: team.id,
+        },
       },
       relations: {
         team: withTeam,
-        components: withComps
-      }
+        components: withComps,
+      },
     });
   }
 

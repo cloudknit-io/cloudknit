@@ -1,32 +1,31 @@
-import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator'
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateOrganizationDto {
   @IsNotEmpty()
   @IsString()
   @ApiProperty()
-  name: string
-  
+  name: string;
+
   @IsNotEmpty()
   @IsString()
   @ApiProperty()
-  githubRepo: string
+  githubRepo: string;
 
   @IsOptional()
   @IsNumber()
   @ApiProperty()
-  termsAgreedUserId?: number
+  termsAgreedUserId?: number;
 
   @IsOptional()
   @IsString()
-  githubOrgName?: string
+  githubOrgName?: string;
 }
 
-
 export class PatchOrganizationDto {
-    @ApiProperty()
-    githubRepo?: string
+  @ApiProperty()
+  githubRepo?: string;
 
-    @ApiProperty()
-    provisioned?: boolean
+  @ApiProperty()
+  provisioned?: boolean;
 }

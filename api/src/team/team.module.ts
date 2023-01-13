@@ -7,24 +7,15 @@ import { EnvironmentService } from 'src/environment/environment.service';
 import { TeamMiddleware } from 'src/middleware/team.middle';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      Team,
-      Component,
-      Environment,
-    ])
-  ],
+  imports: [TypeOrmModule.forFeature([Team, Component, Environment])],
   controllers: [TeamController],
-  providers: [
-    TeamService,
-    EnvironmentService
-  ]
+  providers: [TeamService, EnvironmentService],
 })
 export class TeamModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(TeamMiddleware).forRoutes({
       path: '*/teams/:teamId*',
-      method: RequestMethod.ALL
+      method: RequestMethod.ALL,
     });
   }
 }

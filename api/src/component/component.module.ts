@@ -8,21 +8,8 @@ import { TeamService } from 'src/team/team.service';
 import { EnvironmentService } from 'src/environment/environment.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      Component,
-      Environment,
-      EnvironmentReconcile,
-      ComponentReconcile,
-      Team
-    ])
-  ],
+  imports: [TypeOrmModule.forFeature([Component, Environment, EnvironmentReconcile, ComponentReconcile, Team])],
   controllers: [ComponentController],
-  providers: [
-    ComponentService,
-    ReconciliationService,
-    EnvironmentService,
-    TeamService
-  ]
+  providers: [ComponentService, ReconciliationService, EnvironmentService, TeamService],
 })
 export class ComponentModule {}

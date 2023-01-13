@@ -1,9 +1,9 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsIn, IsOptional, IsString } from "class-validator";
-import { Component } from "src/typeorm";
+import { ApiProperty } from '@nestjs/swagger';
+import { IsIn, IsOptional, IsString } from 'class-validator';
+import { Component } from 'src/typeorm';
 
 export class ComponentQueryParams {
-  @ApiProperty({required: false, type: 'boolean'})
+  @ApiProperty({ required: false, type: 'boolean' })
   @IsString()
   @IsIn(['true', 'false'])
   @IsOptional()
@@ -11,5 +11,5 @@ export class ComponentQueryParams {
 }
 
 export class ComponentWrap extends Component {
-  lastAuditStatus?: string
+  lastAuditStatus?: string;
 }

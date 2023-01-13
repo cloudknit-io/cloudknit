@@ -1,39 +1,32 @@
-import { ApiProperty } from "@nestjs/swagger";
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  ManyToMany,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from "typeorm";
-import { Organization } from "./Organization.entity";
+import { ApiProperty } from '@nestjs/swagger';
+import { Column, CreateDateColumn, Entity, ManyToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Organization } from './Organization.entity';
 
-@Entity({ name: "users" })
+@Entity({ name: 'users' })
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
   @ApiProperty()
   @Column({
-    unique: true
+    unique: true,
   })
   username: string;
 
   @ApiProperty()
   @Column({
-    unique: true
+    unique: true,
   })
   email: string;
 
   @ApiProperty()
   @Column({
-    default: null
+    default: null,
   })
   name: string;
 
   @Column({
-    default: "User",
+    default: 'User',
   })
   role: string;
 
@@ -42,8 +35,8 @@ export class User {
   })
   archived: boolean;
 
-  @ManyToMany(() => Organization, (org) => org.users)
-  organizations: Organization[]
+  @ManyToMany(() => Organization, org => org.users)
+  organizations: Organization[];
 
   @CreateDateColumn()
   created: Date;

@@ -1,5 +1,4 @@
 import {
-  AfterInsert,
   Column,
   Entity,
   Index,
@@ -9,17 +8,17 @@ import {
   PrimaryGeneratedColumn,
   RelationId,
   UpdateDateColumn,
-} from "typeorm";
-import { Organization } from "./Organization.entity";
-import { Component } from "./component.entity";
-import { Team } from "./team.entity";
-import { EnvSpecComponentDto } from "src/environment/dto/env-spec.dto";
-import { ColumnNumericTransformer } from "./helper";
+} from 'typeorm';
+import { Organization } from './Organization.entity';
+import { Component } from './component.entity';
+import { Team } from './team.entity';
+import { EnvSpecComponentDto } from 'src/environment/dto/env-spec.dto';
+import { ColumnNumericTransformer } from './helper';
 
 @Entity({
-  name: "environment",
+  name: 'environment',
 })
-@Index(["organization", "team", "name"], { unique: true })
+@Index(['organization', 'team', 'name'], { unique: true })
 export class Environment {
   @PrimaryGeneratedColumn()
   id: number;
@@ -29,7 +28,7 @@ export class Environment {
   name: string;
 
   @UpdateDateColumn({
-    name: "last_reconcile_datetime",
+    name: 'last_reconcile_datetime',
   })
   lastReconcileDatetime: string;
 
@@ -39,8 +38,8 @@ export class Environment {
   duration: number;
 
   @Column({
-    name: "status",
-    default: "initializing",
+    name: 'status',
+    default: 'initializing',
   })
   status: string;
 
@@ -48,8 +47,8 @@ export class Environment {
   components: Component[];
 
   @Column({
-    name: "estimated_cost",
-    type: "decimal",
+    name: 'estimated_cost',
+    type: 'decimal',
     precision: 10,
     scale: 3,
     default: 0,
@@ -58,7 +57,7 @@ export class Environment {
   estimatedCost: number;
 
   @Column({
-    type: "json",
+    type: 'json',
     default: null,
   })
   dag: EnvSpecComponentDto[];
@@ -69,18 +68,18 @@ export class Environment {
   isDeleted: boolean;
 
   @ManyToOne(() => Team, (team) => team.id, {
-    onDelete: "CASCADE",
+    onDelete: 'CASCADE',
   })
   @JoinColumn({
-    referencedColumnName: "id",
+    referencedColumnName: 'id',
   })
   team: Team;
 
   @ManyToOne(() => Organization, (org) => org.id, {
-    onDelete: "CASCADE",
+    onDelete: 'CASCADE',
   })
   @JoinColumn({
-    referencedColumnName: "id",
+    referencedColumnName: 'id',
   })
   organization: Organization;
 

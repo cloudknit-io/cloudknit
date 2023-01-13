@@ -8,19 +8,19 @@ import {
   Post,
   Logger,
   InternalServerErrorException,
-} from "@nestjs/common";
-import { EnvironmentService } from "./environment.service";
-import { UpdateEnvironmentDto } from "./dto/update-environment.dto";
-import { APIRequest, EnvironmentApiParam, TeamApiParam } from "src/types";
-import { handleSqlErrors } from "src/utilities/errorHandler";
-import { ComponentService } from "src/component/component.service";
-import { EnvSpecComponentDto, EnvSpecDto } from "./dto/env-spec.dto";
-import { Component, Environment, Organization, Team } from "src/typeorm";
-import { CreateEnvironmentDto } from "./dto/create-environment.dto";
-import { ReconciliationService } from "src/reconciliation/reconciliation.service";
+} from '@nestjs/common';
+import { EnvironmentService } from './environment.service';
+import { UpdateEnvironmentDto } from './dto/update-environment.dto';
+import { APIRequest, EnvironmentApiParam, TeamApiParam } from 'src/types';
+import { handleSqlErrors } from 'src/utilities/errorHandler';
+import { ComponentService } from 'src/component/component.service';
+import { EnvSpecComponentDto, EnvSpecDto } from './dto/env-spec.dto';
+import { Component, Environment, Organization, Team } from 'src/typeorm';
+import { CreateEnvironmentDto } from './dto/create-environment.dto';
+import { ReconciliationService } from 'src/reconciliation/reconciliation.service';
 
 @Controller({
-  version: "1",
+  version: '1',
 })
 export class EnvironmentController {
   private readonly logger = new Logger(EnvironmentController.name);
@@ -105,14 +105,14 @@ export class EnvironmentController {
       env = await this.envSvc.create(org, team, createEnv);
       this.logger.log({ message: `created new environment`, env });
     } catch (err) {
-      handleSqlErrors(err, "environment already exists");
+      handleSqlErrors(err, 'environment already exists');
 
       this.logger.error({
-        message: "could not create environment",
+        message: 'could not create environment',
         createEnv,
         err,
       });
-      throw new InternalServerErrorException("could not create environment");
+      throw new InternalServerErrorException('could not create environment');
     }
 
     if (!createEnv.dag || createEnv.dag.length == 0) {
@@ -145,14 +145,14 @@ export class EnvironmentController {
         env,
       });
     } catch (err) {
-      handleSqlErrors(err, "component already exists");
+      handleSqlErrors(err, 'component already exists');
 
       this.logger.error({
         message:
-          "could not batch create components during environment creation",
+          'could not batch create components during environment creation',
         err,
       });
-      throw new InternalServerErrorException("could not create components");
+      throw new InternalServerErrorException('could not create components');
     }
   }
 
@@ -173,14 +173,14 @@ export class EnvironmentController {
 
       this.logger.error({
         message:
-          "could not batch delete components during environment spec reconciliation",
+          'could not batch delete components during environment spec reconciliation',
         err,
       });
-      throw new InternalServerErrorException("could not delete components");
+      throw new InternalServerErrorException('could not delete components');
     }
   }
 
-  @Get("/:environmentId")
+  @Get('/:environmentId')
   @EnvironmentApiParam()
   async findOne(@Request() req: APIRequest) {
     const { org, team, env } = req;
@@ -188,7 +188,7 @@ export class EnvironmentController {
     return this.envSvc.findById(org, env.id);
   }
 
-  @Get("/:environmentId/dag")
+  @Get('/:environmentId/dag')
   @EnvironmentApiParam()
   async getDag(@Request() req: APIRequest) {
     const { env } = req;
@@ -196,7 +196,7 @@ export class EnvironmentController {
     return env.dag;
   }
 
-  @Patch("/:environmentId")
+  @Patch('/:environmentId')
   @EnvironmentApiParam()
   async update(
     @Request() req: APIRequest,
@@ -207,7 +207,7 @@ export class EnvironmentController {
     return this.envSvc.updateById(org, env.id, updateEnvDto);
   }
 
-  @Delete("/:environmentId")
+  @Delete('/:environmentId')
   @EnvironmentApiParam()
   remove(@Request() req: APIRequest) {
     const { org, env } = req;
@@ -215,7 +215,7 @@ export class EnvironmentController {
     return this.envSvc.remove(org, env.id);
   }
 
-  @Get("/:environmentId/audit")
+  @Get('/:environmentId/audit')
   @EnvironmentApiParam()
   async getAudits(@Request() req: APIRequest) {
     const { org, env } = req;

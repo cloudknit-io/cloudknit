@@ -1,4 +1,16 @@
-import { Controller, Get, Body, Patch, Param, Delete, Request, Query, Logger, Post, BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Body,
+  Patch,
+  Delete,
+  Request,
+  Query,
+  Logger,
+  Post,
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { TeamService } from './team.service';
 import { UpdateTeamDto } from './dto/update-team.dto';
 import { APIRequest, OrgApiParam, TeamApiParam } from 'src/types';
@@ -10,18 +22,15 @@ import { TeamQueryParams } from './team.dto';
 import { TeamWrapDto } from './dto/team-cost.dto';
 import { calculateTeamCost } from './team.helper';
 import { Team } from 'src/typeorm';
-import { ApiQuery } from '@nestjs/swagger';
 
 @Controller({
-  version: '1'
+  version: '1',
 })
 export class TeamController {
   private readonly logger = new Logger(TeamController.name);
   private TeamNameRegex = /^[a-zA-Z]+[a-zA-Z0-9]*(-[a-zA-Z0-9]+)*$/;
 
-  constructor(
-    private readonly teamSvc: TeamService
-    ) {}
+  constructor(private readonly teamSvc: TeamService) {}
 
   @Post()
   @OrgApiParam()
@@ -35,20 +44,27 @@ export class TeamController {
         name: spec.teamName,
         organization: org,
         repo: spec.configRepo.source,
-        repo_path: spec.configRepo.path
+        repo_path: spec.configRepo.path,
       });
     } else {
       return this.teamSvc.update(org, team.id, {
         name: spec.teamName,
         repo: spec.configRepo.source,
-        repo_path: spec.configRepo.path
+        repo_path: spec.configRepo.path,
       });
     }
   }
 
-  async createTeam(@Request() req: APIRequest, @Body() createTeam: CreateTeamDto) {
-    if (!createTeam.name || !this.TeamNameRegex.test(createTeam.name) || createTeam.name.length > 63) {
-      throw new BadRequestException("team name is invalid");
+  async createTeam(
+    @Request() req: APIRequest,
+    @Body() createTeam: CreateTeamDto
+  ) {
+    if (
+      !createTeam.name ||
+      !this.TeamNameRegex.test(createTeam.name) ||
+      createTeam.name.length > 63
+    ) {
+      throw new BadRequestException('team name is invalid');
     }
 
     // validate git repo
@@ -64,7 +80,7 @@ export class TeamController {
       return await this.teamSvc.create(createTeam);
     } catch (err) {
       handleSqlErrors(err, 'team already exists');
-      
+
       this.logger.error({ message: 'could not create team', createTeam, err });
       throw new InternalServerErrorException('could not create team');
     }
@@ -72,11 +88,14 @@ export class TeamController {
 
   @Get()
   @OrgApiParam()
-  async findAll(@Request() req: APIRequest, @Query() qParams: TeamQueryParams): Promise<TeamWrapDto[]> {
+  async findAll(
+    @Request() req: APIRequest,
+    @Query() qParams: TeamQueryParams
+  ): Promise<TeamWrapDto[]> {
     const org = req.org;
     const withCost = qParams.withCost.toLowerCase() === 'true';
     const withEnv = qParams.withEnvironments.toLowerCase() === 'true';
-    const getEnvs = withCost || withEnv
+    const getEnvs = withCost || withEnv;
 
     const teams = await this.teamSvc.findAll(org, getEnvs);
 
@@ -87,13 +106,13 @@ export class TeamController {
     const teamsWrap: TeamWrapDto[] = teams.map((teamEntity: Team) => {
       const team: TeamWrapDto = teamEntity;
       team.estimatedCost = calculateTeamCost(teamEntity);
-      
+
       if (!withEnv) {
         delete team.environments;
       }
 
       return team;
-    });   
+    });
 
     return teamsWrap;
   }
@@ -108,15 +127,18 @@ export class TeamController {
   @TeamApiParam()
   async getTeamCost(@Request() req: APIRequest) {
     const { org, team } = req;
-    
+
     // TODO : Add get cost by team
-    
+
     return team;
   }
 
   @Patch('/:teamId')
   @TeamApiParam()
-  async update(@Request() req: APIRequest, @Body() updateTeamDto: UpdateTeamDto) {
+  async update(
+    @Request() req: APIRequest,
+    @Body() updateTeamDto: UpdateTeamDto
+  ) {
     const { org, team } = req;
 
     return this.teamSvc.update(org, team.id, updateTeamDto);
@@ -124,7 +146,7 @@ export class TeamController {
 
   @Delete('/:teamId')
   @TeamApiParam()
-  remove(@Request() req: APIRequest, ) {
+  remove(@Request() req: APIRequest) {
     const { org, team } = req;
 
     return this.teamSvc.remove(org, team.id);
