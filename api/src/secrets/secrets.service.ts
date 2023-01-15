@@ -1,6 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AWSError } from 'aws-sdk';
-import { GetParameterRequest, GetParametersByPathRequest, Parameter } from 'aws-sdk/clients/ssm';
+import {
+  GetParameterRequest,
+  GetParametersByPathRequest,
+  Parameter,
+} from 'aws-sdk/clients/ssm';
 import { Organization } from 'src/typeorm';
 import { AwsSecretDto } from './dtos/aws-secret.dto';
 import { AWSSSMHandler } from './utilities/awsSsmHandler';
@@ -67,12 +71,12 @@ export class SecretsService {
   public async ssmSecretsExists(org: Organization, pathNames: string[]) {
     try {
       const awsRes = await this.ssm.getParameters({
-        Names: pathNames.map(path => this.getPath(org, path)),
+        Names: pathNames.map((path) => this.getPath(org, path)),
       });
       const resp = [];
 
       resp.push(
-        ...awsRes.Parameters.map(e => ({
+        ...awsRes.Parameters.map((e) => ({
           key: e.Name.split('/').slice(-1)[0],
           exists: true,
           lastModifiedDate: e.LastModifiedDate,
@@ -80,7 +84,7 @@ export class SecretsService {
       );
 
       resp.push(
-        ...awsRes.InvalidParameters.map(e => ({
+        ...awsRes.InvalidParameters.map((e) => ({
           key: e.split('/').slice(-1)[0],
           exists: false,
         }))
@@ -127,7 +131,9 @@ export class SecretsService {
 
       const awsRes = await this.ssm.getParametersByPath(req);
 
-      return awsRes.Parameters.filter(e => !this.isConstKey(e.Name)).map(e => this.mapToKeyValue(e));
+      return awsRes.Parameters.filter((e) => !this.isConstKey(e.Name)).map(
+        (e) => this.mapToKeyValue(e)
+      );
     } catch (err) {
       const e = err as AWSError;
       if (e.code === 'ParameterNotFound') {
@@ -154,7 +160,7 @@ export class SecretsService {
 
       const awsRes = await this.ssm.getParametersByPath(req);
 
-      awsRes.Parameters.forEach(e => {
+      awsRes.Parameters.forEach((e) => {
         const env = this.mapToEnvironments(e);
         if (env) {
           environments.set(env[0], env[1]);
@@ -179,11 +185,13 @@ export class SecretsService {
   }
 
   public async putSsmSecrets(org: Organization, awsSecrets: AwsSecretDto[]) {
-    const awsCalls = awsSecrets.map(secret => this.putSsmSecret(org, secret.path, secret.value, 'SecureString'));
+    const awsCalls = awsSecrets.map((secret) =>
+      this.putSsmSecret(org, secret.path, secret.value, 'SecureString')
+    );
 
     const responses = await Promise.all(awsCalls);
 
-    return !responses.some(response => response === false);
+    return !responses.some((response) => response === false);
   }
 
   public async putSsmSecret(

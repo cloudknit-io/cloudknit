@@ -7,7 +7,10 @@ import { OperationsService } from './operations.service';
   version: '1',
 })
 export class OperationsController {
-  constructor(private readonly opsService: OperationsService, private readonly orgService: OrganizationService) {}
+  constructor(
+    private readonly opsService: OperationsService,
+    private readonly orgService: OrganizationService
+  ) {}
 
   @Get('/is-provisioned')
   @OrgApiParam()

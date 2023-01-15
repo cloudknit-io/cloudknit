@@ -19,7 +19,7 @@ export class Component {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Environment, environment => environment.components)
+  @ManyToOne(() => Environment, (environment) => environment.components)
   environment: Environment;
 
   @Column({
@@ -77,7 +77,7 @@ export class Component {
   })
   costResources: CostResource[];
 
-  @ManyToOne(() => Organization, org => org.id, {
+  @ManyToOne(() => Organization, (org) => org.id, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({

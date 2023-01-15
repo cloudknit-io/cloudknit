@@ -14,7 +14,14 @@ import { ApproveWorkflow as ResumeWorkflow } from 'src/argowf/api';
 import { ComponentService } from 'src/component/component.service';
 import { EnvironmentService } from 'src/environment/environment.service';
 import { TeamService } from 'src/team/team.service';
-import { Component, ComponentReconcile, Environment, EnvironmentReconcile, Organization, Team } from 'src/typeorm';
+import {
+  Component,
+  ComponentReconcile,
+  Environment,
+  EnvironmentReconcile,
+  Organization,
+  Team,
+} from 'src/typeorm';
 import { APIRequest, OrgApiParam } from 'src/types';
 import { handleSqlErrors } from 'src/utilities/errorHandler';
 import { ApprovedByDto } from './dtos/componentAudit.dto';
@@ -41,7 +48,10 @@ export class ReconciliationController {
 
   @Post('environment')
   @OrgApiParam()
-  async newEnvironmentReconciliation(@Req() req: APIRequest, @Body() body: CreateEnvironmentReconciliationDto) {
+  async newEnvironmentReconciliation(
+    @Req() req: APIRequest,
+    @Body() body: CreateEnvironmentReconciliationDto
+  ) {
     const { org } = req;
 
     const team = await this.teamSvc.findByName(org, body.teamName);
@@ -74,12 +84,22 @@ export class ReconciliationController {
         body,
         err,
       });
-      throw new InternalServerErrorException('could not create environment reconciliation');
+      throw new InternalServerErrorException(
+        'could not create environment reconciliation'
+      );
     }
 
     try {
-      const skippedEntries = await this.reconSvc.getSkippedEnvironments(org, team, env, [envReconEntry.reconcileId]);
-      await this.reconSvc.bulkUpdateEnvironmentEntries(skippedEntries, 'skipped_reconcile');
+      const skippedEntries = await this.reconSvc.getSkippedEnvironments(
+        org,
+        team,
+        env,
+        [envReconEntry.reconcileId]
+      );
+      await this.reconSvc.bulkUpdateEnvironmentEntries(
+        skippedEntries,
+        'skipped_reconcile'
+      );
     } catch (err) {
       this.logger.error('could not update skipped environment reconciles', err);
       throw new InternalServerErrorException();
@@ -97,13 +117,19 @@ export class ReconciliationController {
   ) {
     const { org } = req;
 
-    const existingEntry = await this.reconSvc.getEnvReconByReconcileId(org, reconcileId, false);
+    const existingEntry = await this.reconSvc.getEnvReconByReconcileId(
+      org,
+      reconcileId,
+      false
+    );
     if (!existingEntry) {
       this.logger.error({
         message: 'could not find environment reconcile entry',
         reconcileId,
       });
-      throw new BadRequestException('could not find environment reconcile entry');
+      throw new BadRequestException(
+        'could not find environment reconcile entry'
+      );
     }
 
     let envRecon: EnvironmentReconcile;
@@ -119,7 +145,9 @@ export class ReconciliationController {
         existingEntry,
         body,
       });
-      throw new InternalServerErrorException('could not update environment reconcile');
+      throw new InternalServerErrorException(
+        'could not update environment reconcile'
+      );
     }
 
     return envRecon;
@@ -133,33 +161,56 @@ export class ReconciliationController {
   ): Promise<number> {
     const { org } = req;
 
-    const envRecon = await this.reconSvc.getEnvReconByReconcileId(org, body.envReconcileId, true);
+    const envRecon = await this.reconSvc.getEnvReconByReconcileId(
+      org,
+      body.envReconcileId,
+      true
+    );
     if (!envRecon) {
       this.logger.error({
-        message: 'could not find environment-reconcile in newComponentReconciliation',
+        message:
+          'could not find environment-reconcile in newComponentReconciliation',
         body,
       });
       throw new BadRequestException('could not find environment-reconcile');
     }
 
-    const comp = await this.compSvc.findByName(org, envRecon.environment, body.name);
+    const comp = await this.compSvc.findByName(
+      org,
+      envRecon.environment,
+      body.name
+    );
     let compRecon: ComponentReconcile;
 
     try {
-      compRecon = await this.reconSvc.createCompRecon(org, envRecon, comp, body);
+      compRecon = await this.reconSvc.createCompRecon(
+        org,
+        envRecon,
+        comp,
+        body
+      );
     } catch (err) {
       handleSqlErrors(err);
 
       this.logger.error({
-        message: 'could not save component-reconcile in newComponentReconciliation',
+        message:
+          'could not save component-reconcile in newComponentReconciliation',
         body,
       });
       throw new BadRequestException('could not save component-reconcile');
     }
 
     try {
-      const skippedEntries = await this.reconSvc.getSkippedComponents(org, envRecon, comp, [compRecon.reconcileId]);
-      await this.reconSvc.bulkUpdateComponentEntries(skippedEntries, 'skipped_reconcile');
+      const skippedEntries = await this.reconSvc.getSkippedComponents(
+        org,
+        envRecon,
+        comp,
+        [compRecon.reconcileId]
+      );
+      await this.reconSvc.bulkUpdateComponentEntries(
+        skippedEntries,
+        'skipped_reconcile'
+      );
     } catch (err) {
       this.logger.error('could not update skipped component reconciles', err);
       throw new InternalServerErrorException();
@@ -177,16 +228,24 @@ export class ReconciliationController {
   ) {
     const { org } = req;
 
-    const compRecon: ComponentReconcile = await this.reconSvc.findCompReconById(org, compReconcileId, true);
+    const compRecon: ComponentReconcile = await this.reconSvc.findCompReconById(
+      org,
+      compReconcileId,
+      true
+    );
     if (!compRecon) {
       this.logger.error({
-        message: 'could not find component-reconcile in updateComponentReconciliation',
+        message:
+          'could not find component-reconcile in updateComponentReconciliation',
         body,
       });
       throw new BadRequestException('could not find component-reconcile');
     }
 
-    const updatedCompRecon = await this.reconSvc.updateCompRecon(compRecon, body);
+    const updatedCompRecon = await this.reconSvc.updateCompRecon(
+      compRecon,
+      body
+    );
     delete updatedCompRecon.environmentReconcile;
     this.logger.log({
       message: 'updated component reconcile entry',
@@ -274,7 +333,13 @@ export class ReconciliationController {
   ) {
     const { org } = req;
 
-    const comp = await this.compSvc.findByNameWithTeamName(org, teamName, envName, compName, true);
+    const comp = await this.compSvc.findByNameWithTeamName(
+      org,
+      teamName,
+      envName,
+      compName,
+      true
+    );
     if (!comp) {
       this.logger.error({
         message: 'could not find logs',
@@ -286,7 +351,13 @@ export class ReconciliationController {
       throw new BadRequestException('could not find logs');
     }
 
-    return await this.reconSvc.getLogs(req.org, teamName, comp.environment, comp, id);
+    return await this.reconSvc.getLogs(
+      req.org,
+      teamName,
+      comp.environment,
+      comp,
+      id
+    );
   }
 
   @Get('component/state-file/:team/:environment/:component')
@@ -297,7 +368,12 @@ export class ReconciliationController {
     @Param('environment') environment: string,
     @Param('component') component: string
   ) {
-    return await this.reconSvc.getStateFile(req.org, team, environment, component);
+    return await this.reconSvc.getStateFile(
+      req.org,
+      team,
+      environment,
+      component
+    );
   }
 
   @Get('component/plan/logs/:team/:environment/:component/:id/:latest')
@@ -312,7 +388,13 @@ export class ReconciliationController {
   ) {
     const { org } = req;
 
-    const comp = await this.compSvc.findByNameWithTeamName(org, teamName, envName, compName, true);
+    const comp = await this.compSvc.findByNameWithTeamName(
+      org,
+      teamName,
+      envName,
+      compName,
+      true
+    );
     if (!comp) {
       this.logger.error({
         message: 'could not find plan logs',
@@ -325,7 +407,15 @@ export class ReconciliationController {
       throw new BadRequestException('could not find logs');
     }
 
-    return this.getTfLogs(org, teamName, comp.environment, comp, id, latest === 'true', 'plan_output');
+    return this.getTfLogs(
+      org,
+      teamName,
+      comp.environment,
+      comp,
+      id,
+      latest === 'true',
+      'plan_output'
+    );
   }
 
   @Get('component/apply/logs/:team/:environment/:component/:id/:latest')
@@ -340,7 +430,13 @@ export class ReconciliationController {
   ) {
     const { org } = req;
 
-    const comp = await this.compSvc.findByNameWithTeamName(org, teamName, envName, compName, true);
+    const comp = await this.compSvc.findByNameWithTeamName(
+      org,
+      teamName,
+      envName,
+      compName,
+      true
+    );
     if (!comp) {
       this.logger.error({
         message: 'could not find apply logs',
@@ -353,7 +449,15 @@ export class ReconciliationController {
       throw new BadRequestException('could not find logs');
     }
 
-    return this.getTfLogs(org, teamName, comp.environment, comp, id, latest === 'true', 'apply_output');
+    return this.getTfLogs(
+      org,
+      teamName,
+      comp.environment,
+      comp,
+      id,
+      latest === 'true',
+      'apply_output'
+    );
   }
 
   @OrgApiParam()
@@ -376,7 +480,7 @@ export class ReconciliationController {
     }
 
     if (Array.isArray(logs)) {
-      return logs.filter(e => e.key.includes(logType));
+      return logs.filter((e) => e.key.includes(logType));
     }
 
     return logs;

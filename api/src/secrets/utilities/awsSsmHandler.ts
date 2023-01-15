@@ -21,7 +21,9 @@ export class AWSSSMHandler {
     return AWSSSMHandler._instance;
   }
 
-  async getParameter(request: SSM.GetParameterRequest): Promise<SSM.GetParameterResult> {
+  async getParameter(
+    request: SSM.GetParameterRequest
+  ): Promise<SSM.GetParameterResult> {
     return new Promise<SSM.GetParameterResult>((done, error) => {
       this.ssm.getParameter(request, (err, data) => {
         if (err) {
@@ -32,7 +34,9 @@ export class AWSSSMHandler {
     });
   }
 
-  async getParameters(request: SSM.GetParametersRequest): Promise<SSM.GetParametersResult> {
+  async getParameters(
+    request: SSM.GetParametersRequest
+  ): Promise<SSM.GetParametersResult> {
     return new Promise<SSM.GetParametersResult>((done, error) => {
       this.ssm.getParameters(request, (err, data) => {
         if (err) {
@@ -43,7 +47,9 @@ export class AWSSSMHandler {
     });
   }
 
-  async getParametersByPath(request: SSM.GetParametersByPathRequest): Promise<SSM.GetParametersByPathResult> {
+  async getParametersByPath(
+    request: SSM.GetParametersByPathRequest
+  ): Promise<SSM.GetParametersByPathResult> {
     return new Promise<SSM.GetParametersByPathResult>((done, error) => {
       this.ssm.getParametersByPath(request, (err, data) => {
         if (err) {
@@ -54,7 +60,9 @@ export class AWSSSMHandler {
     });
   }
 
-  async putParameter(request: SSM.PutParameterRequest): Promise<SSM.PutParameterResult> {
+  async putParameter(
+    request: SSM.PutParameterRequest
+  ): Promise<SSM.PutParameterResult> {
     return new Promise<SSM.PutParameterResult>((done, error) => {
       this.ssm.putParameter(request, (err, data) => {
         if (err) {

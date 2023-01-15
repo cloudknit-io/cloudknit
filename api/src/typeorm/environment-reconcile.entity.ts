@@ -36,21 +36,25 @@ export class EnvironmentReconcile {
   })
   endDateTime?: string;
 
-  @OneToMany(() => ComponentReconcile, component => component.environmentReconcile, {
-    eager: true,
-    cascade: true,
-  })
+  @OneToMany(
+    () => ComponentReconcile,
+    (component) => component.environmentReconcile,
+    {
+      eager: true,
+      cascade: true,
+    }
+  )
   componentReconciles?: ComponentReconcile[];
 
-  @ManyToOne(() => Environment, environment => environment.id, {
+  @ManyToOne(() => Environment, (environment) => environment.id, {
     eager: true,
   })
   environment: Environment;
 
-  @ManyToOne(() => Team, team => team.id)
+  @ManyToOne(() => Team, (team) => team.id)
   team: Team;
 
-  @ManyToOne(() => Organization, org => org.id, {
+  @ManyToOne(() => Organization, (org) => org.id, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({

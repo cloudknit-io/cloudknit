@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, Logger, NotFoundException, Param, Patch, Post, Request } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Logger,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+  Request,
+} from '@nestjs/common';
 import { OrgApiParam } from 'src/types';
 import { CreateUserDto, PatchUserDto } from 'src/users/User.dto';
 import { AuthService } from './auth.service';

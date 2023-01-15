@@ -27,7 +27,9 @@ async function bootstrap() {
 
   const openApiDoc = new DocumentBuilder()
     .setTitle('CloudKnit API')
-    .setDescription('Internal API to manage organizations, users, secrets, and interactions with Argo Cd and Argo WF')
+    .setDescription(
+      'Internal API to manage organizations, users, secrets, and interactions with Argo Cd and Argo WF'
+    )
     .setVersion('0.1.0')
     .setContact('Contact', 'cloudknit.io', 'contact@cloudknit.io')
     .addServer('http://localhost:3001', 'local development')

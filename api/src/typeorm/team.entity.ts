@@ -1,4 +1,12 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Organization } from './Organization.entity';
 import { Environment } from './environment.entity';
 
@@ -24,10 +32,10 @@ export class Team {
   })
   isDeleted: boolean;
 
-  @OneToMany(() => Environment, env => env.team)
+  @OneToMany(() => Environment, (env) => env.team)
   environments: Environment[];
 
-  @ManyToOne(() => Organization, org => org.id, {
+  @ManyToOne(() => Organization, (org) => org.id, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({

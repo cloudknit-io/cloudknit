@@ -1,7 +1,10 @@
 import { BadRequestException } from '@nestjs/common';
 import { SqlErrorCodes } from 'src/types';
 
-export function handleSqlErrors(err: any, dupEntryMsg: string = 'entry already exists') {
+export function handleSqlErrors(
+  err: any,
+  dupEntryMsg: string = 'entry already exists'
+) {
   if (!err || !err.code) {
     return;
   }

@@ -1,4 +1,11 @@
-import { BadRequestException, Controller, Get, Logger, NotFoundException, Query } from '@nestjs/common';
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  Logger,
+  NotFoundException,
+  Query,
+} from '@nestjs/common';
 import { SystemService } from './system.service';
 
 @Controller({

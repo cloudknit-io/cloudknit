@@ -2,7 +2,10 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Organization, User } from 'src/typeorm';
-import { CreateOrganizationDto, PatchOrganizationDto } from './organization.dto';
+import {
+  CreateOrganizationDto,
+  PatchOrganizationDto,
+} from './organization.dto';
 import { patchCompany } from 'src/k8s/patch-company';
 import { getGithubOrgFromRepoUrl } from './utilities';
 import { UsersService } from 'src/users/users.service';

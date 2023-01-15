@@ -53,7 +53,11 @@ export class TeamService {
     });
   }
 
-  async update(org: Organization, id: number, updateTeamDto: UpdateTeamDto): Promise<Team> {
+  async update(
+    org: Organization,
+    id: number,
+    updateTeamDto: UpdateTeamDto
+  ): Promise<Team> {
     const team = await this.findById(org, id);
 
     this.teamRepo.merge(team, updateTeamDto);

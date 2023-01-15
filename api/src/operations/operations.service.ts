@@ -19,7 +19,10 @@ export class OperationsService {
 
   async isOrgProvisioned(org: Organization) {
     // gets provisioned object in s3
-    const resp = await this.s3h.getObjectList(`cloudknit-${this.ckEnvironment}-system`, `provisioned-orgs/${org.name}`);
+    const resp = await this.s3h.getObjectList(
+      `cloudknit-${this.ckEnvironment}-system`,
+      `provisioned-orgs/${org.name}`
+    );
 
     // we should loop through all entries in case there are similarly named companies
     //

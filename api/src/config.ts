@@ -64,9 +64,11 @@ export function init() {
     },
     argo: {
       wf: {
-        skipProvision: getEnvVarOrDefault('CK_ARGO_WF_SKIP_PROVISION', 'true') === 'true',
+        skipProvision:
+          getEnvVarOrDefault('CK_ARGO_WF_SKIP_PROVISION', 'true') === 'true',
         url: getEnvVarOrFail('CK_ARGO_WF_URL'),
-        orgUrl: (orgName: string) => getEnvVarOrFail('CK_ARGO_WF_ORG_URL').replaceAll(':org', orgName),
+        orgUrl: (orgName: string) =>
+          getEnvVarOrFail('CK_ARGO_WF_ORG_URL').replaceAll(':org', orgName),
         namespace: getEnvVarOrFail('CK_ARGO_WF_NAMESPACE'),
       },
     },

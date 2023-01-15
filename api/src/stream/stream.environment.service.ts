@@ -1,13 +1,24 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Environment } from 'src/typeorm/environment.entity';
-import { Connection, EntitySubscriberInterface, InsertEvent, RemoveEvent, UpdateEvent } from 'typeorm';
+import {
+  Connection,
+  EntitySubscriberInterface,
+  InsertEvent,
+  RemoveEvent,
+  UpdateEvent,
+} from 'typeorm';
 import { StreamService } from './stream.service';
 
 @Injectable()
-export class StreamEnvironmentService implements EntitySubscriberInterface<Environment> {
+export class StreamEnvironmentService
+  implements EntitySubscriberInterface<Environment>
+{
   private readonly logger = new Logger(StreamEnvironmentService.name);
 
-  constructor(@Inject(Connection) conn: Connection, private readonly sseSvc: StreamService) {
+  constructor(
+    @Inject(Connection) conn: Connection,
+    private readonly sseSvc: StreamService
+  ) {
     conn.subscribers.push(this);
   }
 

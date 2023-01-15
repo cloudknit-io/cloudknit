@@ -33,13 +33,13 @@ export class Organization {
   })
   githubOrgName: string;
 
-  @OneToOne(() => User, user => user.id)
+  @OneToOne(() => User, (user) => user.id)
   @Column({
     default: null,
   })
   termsAgreedUserId: number;
 
-  @ManyToMany(() => User, user => user.organizations)
+  @ManyToMany(() => User, (user) => user.organizations)
   @JoinTable()
   users: User[];
 

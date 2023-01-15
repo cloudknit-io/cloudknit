@@ -12,7 +12,11 @@ export class EnvironmentService {
     private readonly envRepo: Repository<Environment>
   ) {}
 
-  async create(org: Organization, team: Team, createEnvDto: CreateEnvironmentDto) {
+  async create(
+    org: Organization,
+    team: Team,
+    createEnvDto: CreateEnvironmentDto
+  ) {
     return this.envRepo.save({
       organization: org,
       team,
@@ -33,7 +37,11 @@ export class EnvironmentService {
     });
   }
 
-  async updateById(org: Organization, id: number, updateEnvDto: UpdateEnvironmentDto): Promise<Environment> {
+  async updateById(
+    org: Organization,
+    id: number,
+    updateEnvDto: UpdateEnvironmentDto
+  ): Promise<Environment> {
     const env = await this.findById(org, id);
     this.envRepo.merge(env, updateEnvDto);
     return this.envRepo.save(env);
@@ -70,7 +78,13 @@ export class EnvironmentService {
     });
   }
 
-  async findByName(org: Organization, team: Team, name: string, withTeam: boolean = false, withComps: boolean = false) {
+  async findByName(
+    org: Organization,
+    team: Team,
+    name: string,
+    withTeam: boolean = false,
+    withComps: boolean = false
+  ) {
     return this.envRepo.findOne({
       where: {
         name: Equal(name),

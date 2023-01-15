@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, CreateDateColumn, Entity, ManyToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Organization } from './Organization.entity';
 
 @Entity({ name: 'users' })
@@ -35,7 +42,7 @@ export class User {
   })
   archived: boolean;
 
-  @ManyToMany(() => Organization, org => org.users)
+  @ManyToMany(() => Organization, (org) => org.users)
   organizations: Organization[];
 
   @CreateDateColumn()

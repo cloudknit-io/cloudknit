@@ -3,7 +3,12 @@ import { Subject } from 'rxjs';
 import { ComponentReconcileWrap } from 'src/reconciliation/dtos/componentAudit.dto';
 import { EnvironmentReconcileWrap } from 'src/reconciliation/dtos/environmentAudit.dto';
 import { Mapper } from 'src/reconciliation/mapper';
-import { Component, ComponentReconcile, EnvironmentReconcile, Team } from 'src/typeorm';
+import {
+  Component,
+  ComponentReconcile,
+  EnvironmentReconcile,
+  Team,
+} from 'src/typeorm';
 import { Environment } from 'src/typeorm/environment.entity';
 
 @Injectable()
@@ -23,7 +28,9 @@ export class StreamService {
     }, 10000);
   }
 
-  normalizeOrg(obj: Environment | Component | ComponentReconcile | EnvironmentReconcile) {
+  normalizeOrg(
+    obj: Environment | Component | ComponentReconcile | EnvironmentReconcile
+  ) {
     if (obj && obj.orgId) {
       delete obj.organization;
 
@@ -61,7 +68,9 @@ export class StreamService {
   }
 
   sendCompReconcile(compRecon: ComponentReconcile) {
-    const data = Mapper.wrapComponentRecon(this.normalizeOrg(compRecon) as ComponentReconcile);
+    const data = Mapper.wrapComponentRecon(
+      this.normalizeOrg(compRecon) as ComponentReconcile
+    );
 
     if (data.environmentReconcile) {
       data.envReconId = data.environmentReconcile.reconcileId;
@@ -79,7 +88,9 @@ export class StreamService {
   }
 
   sendEnvReconcile(envRecon: EnvironmentReconcile) {
-    const data = Mapper.wrapEnvironmentRecon(this.normalizeOrg(envRecon) as EnvironmentReconcile);
+    const data = Mapper.wrapEnvironmentRecon(
+      this.normalizeOrg(envRecon) as EnvironmentReconcile
+    );
 
     if (data.environment) {
       data.envId = data.environment.id;
