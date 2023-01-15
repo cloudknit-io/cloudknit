@@ -1,30 +1,15 @@
-import { ReactComponent as ArrowUp } from 'assets/images/icons/chevron-right.svg';
-import { ReactComponent as ComputeIcon } from 'assets/images/icons/DAG-View/config.svg';
-import { ReactComponent as LongArrow } from 'assets/images/icons/DAG/long-arrow-down.svg';
-import { ReactComponent as LayersIcon } from 'assets/images/icons/DAG-View/environment-icon.svg';
-import { ReactComponent as AppIcon } from 'assets/images/icons/DAG-View/Layers.svg';
-import { getHealthStatusIcon, getSyncStatusIcon } from 'components/molecules/cards/renderFunctions';
-import { useApi } from 'hooks/use-api/useApi';
-import { EnvironmentComponentItem, EnvironmentItem } from 'models/projects.models';
+import { getSyncStatusIcon } from 'components/molecules/cards/renderFunctions';
+import { EnvironmentItem } from 'models/projects.models';
 import React, { FC, useEffect, useState } from 'react';
-import { ArgoEnvironmentsService } from 'services/argo/ArgoEnvironments.service';
-import { ReactComponent as SyncIcon } from 'assets/images/icons/sync-icon.svg';
-import { ReactComponent as Expand } from 'assets/images/icons/expand.svg';
 
-import Tree from './TreeView';
-import { ESyncStatus, HealthStatuses, OperationPhase, ZSyncStatus } from 'models/argo.models';
-import { getEnvironmentErrorCondition } from 'pages/authorized/environments/helpers';
-import { Context } from 'context/argo/ArgoUi';
-import { subscriberResourceTree, subscriberWatcher } from 'utils/apiClient/EventClient';
-import { breadcrumbObservable, pageHeaderObservable } from 'pages/authorized/contexts/EnvironmentHeaderContext';
-import { LocalStorageKey } from 'models/localStorage';
-import { ArgoComponentsService } from 'services/argo/ArgoComponents.service';
-import { useParams } from 'react-router-dom';
-import { ArgoStreamService } from 'services/argo/ArgoStream.service';
-import ApiClient from 'utils/apiClient';
-import { ZSidePanel } from 'components/molecules/side-panel/SidePanel';
 import { ZLoaderCover } from 'components/atoms/loader/LoaderCover';
-import { ConfigWorkflowViewApplication } from 'pages/authorized/environment-components/config-workflow-view/ConfigWorkflowViewApplication';
+import { ZSidePanel } from 'components/molecules/side-panel/SidePanel';
+import { Context } from 'context/argo/ArgoUi';
+import { ESyncStatus } from 'models/argo.models';
+import { breadcrumbObservable, pageHeaderObservable } from 'pages/authorized/contexts/EnvironmentHeaderContext';
+import { useParams } from 'react-router-dom';
+import { subscriberResourceTree } from 'utils/apiClient/EventClient';
+import Tree from './TreeView';
 
 const curveTypes = [
 	{ value: '0', title: 'Curve Basis' },
@@ -81,8 +66,6 @@ export const ComponentResourceTree: FC = () => {
 	let zoomOut: () => void = () => {};
 	let reset: () => void = () => {};
 	const nm = React.useContext(Context)?.notifications;
-	const syncEnvironment = useApi(ArgoEnvironmentsService.syncEnvironment);
-	const deleteEnvironment = useApi(ArgoEnvironmentsService.deleteEnvironment);
 
 	const initZoomEventHandlers = (zoomInHandler: () => void, zoomOutHandler: () => void, resetHandler: () => void) => {
 		zoomIn = zoomInHandler;
@@ -92,51 +75,6 @@ export const ComponentResourceTree: FC = () => {
 
 	const getResourceTreeData = () => {
 		console.log(componentId);
-		ArgoComponentsService.getApplicationResourceTree(componentId)
-			.then(({ data }) => {
-				const generatedNodes = data.nodes.map((e: any) => {
-					return {
-						id: e.uid,
-						name: e.name,
-						dependsOn: e.parentRefs ? e.parentRefs.map((p: any) => p.uid) : ['root'],
-						syncFinishedAt: e.createdAt,
-						shape: getShape(''),
-						icon: <AppIcon height={128} width={128} y="3" />,
-						syncStatusIcon: getSyncStatusIcon(ZSyncStatus.InSync),
-						healthStatusIcon: e.health?.status ? getHealthStatusIcon(e.health?.status) : null,
-						expandIcon: e.kind === 'Application' ? <Expand title="expand" /> : '',
-						labels: {
-							component_type: 'argocd',
-						},
-						kind: e.kind,
-					};
-				});
-
-				console.log(data.nodes);
-				generatedNodes.push({
-					projectId: componentId,
-					name: componentId, // TODO check what name here goes from metadata
-					id: 'root',
-					shape: getShape('root'),
-					icon: <LayersIcon />,
-					status: 'Synced',
-					syncStatusIcon: getSyncStatusIcon(ZSyncStatus.InSync),
-					healthStatusIcon: getHealthStatusIcon('Healthy'),
-					syncFinishedAt: new Date(Date.now()).toISOString(),
-					labels: {
-						component_type: 'argocd',
-					},
-				});
-				setData(generatedNodes);
-				return generatedNodes;
-			})
-			.then(nodes => {
-				ApiClient.get<any>(`/cd/api/v1/component/${componentId}`).then(({ data }) => {
-					if (data) {
-						updateStatus(data, nodes);
-					}
-				});
-			});
 	};
 
 	const initializeResourceStream = () => {
@@ -145,7 +83,6 @@ export const ComponentResourceTree: FC = () => {
 				updateStatus(appData.application, data);
 			}
 		});
-		ArgoStreamService.streamResourceTree(componentId);
 	};
 
 	const updateStatus = (appData: any, data: any) => {
@@ -211,7 +148,7 @@ export const ComponentResourceTree: FC = () => {
 				rankDir={'LR'}
 				onNodeClick={(configName: string, visualizationHandler?: Promise<any>) => {
 					const node = data.find(e => e.id === configName);
-					setSelectedNode({ ...node, id : node.name });
+					setSelectedNode({ ...node, id: node.name });
 					setShowRightPanel(true);
 				}}
 				zoomEventHandlers={initZoomEventHandlers}
@@ -219,14 +156,7 @@ export const ComponentResourceTree: FC = () => {
 			/>
 			{selectedNode && (
 				<ZSidePanel isShown={showRightPanel} onClose={(): void => setShowRightPanel(false)}>
-					<ZLoaderCover loading={false}>
-						<ConfigWorkflowViewApplication
-							key={selectedNode.id}
-							projectId={data.find(e => e.id === 'root').labels.project_id}
-							environmentId={data.find(e => e.id === 'root').labels.environment_id}
-							config={selectedNode}
-						/>
-					</ZLoaderCover>
+					<ZLoaderCover loading={false}></ZLoaderCover>
 				</ZSidePanel>
 			)}
 		</div>

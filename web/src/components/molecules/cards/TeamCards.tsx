@@ -1,21 +1,14 @@
 import './style.scss';
 
+import { Loader } from 'components/atoms/loader/Loader';
 import { ZText } from 'components/atoms/text/Text';
 import { renderEnvSyncedStatus } from 'components/molecules/cards/renderFunctions';
 import { ZGridDisplayListWithLabel } from 'components/molecules/grid-display-list/GridDisplayList';
+import { ZSyncStatus } from 'models/argo.models';
+import { Environment, Team } from 'models/entity.store';
 import { ListItem } from 'models/general.models';
-import { EnvironmentItem, EnvironmentsList, TeamItem, TeamsList } from 'models/projects.models';
 import React, { FC, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { subscriber } from 'utils/apiClient/EventClient';
-import { useApi } from 'hooks/use-api/useApi';
-import { ArgoEnvironmentsService } from 'services/argo/ArgoEnvironments.service';
-import { ApplicationWatchEvent, ZSyncStatus } from 'models/argo.models';
-import { streamMapper } from 'helpers/streamMapper';
-import { ArgoMapper } from 'services/argo/ArgoMapper';
-import { Loader } from 'components/atoms/loader/Loader';
-import AuthStore from 'auth/AuthStore';
-import { EntityStore, Environment, Team } from 'models/entity.store';
 
 type Props = {
 	teams: Team[];

@@ -1,52 +1,34 @@
-import { NotificationType } from 'components/argo-core';
 import { ZLoaderCover } from 'components/atoms/loader/LoaderCover';
-import { ZTable } from 'components/atoms/table/Table';
-import { environmentName } from 'components/molecules/cards/EnvironmentCards';
 import { EnvironmentComponentCards } from 'components/molecules/cards/EnvironmentComponentCards';
 import { ZSidePanel } from 'components/molecules/side-panel/SidePanel';
+import { ZTablControl } from 'components/molecules/tab-control/TabControl';
 import { AuditView } from 'components/organisms/audit_view/AuditView';
+import { ErrorView } from 'components/organisms/error-view/ErrorView';
 import { TreeComponent } from 'components/organisms/tree-view/TreeComponent';
 import { Context } from 'context/argo/ArgoUi';
-import { streamMapper, streamMapperWF } from 'helpers/streamMapper';
+import { streamMapperWF } from 'helpers/streamMapper';
 import { useApi } from 'hooks/use-api/useApi';
-import { ApplicationWatchEvent, HealthStatusCode, ZComponentSyncStatus, ZSyncStatus } from 'models/argo.models';
+import { ApplicationWatchEvent, ZComponentSyncStatus, ZSyncStatus } from 'models/argo.models';
+import { CompAuditData, Component, EntityStore, EnvAuditData, Environment } from 'models/entity.store';
+import { eventErrorColumns } from 'models/error.model';
 import { LocalStorageKey } from 'models/localStorage';
 import {
-	EnvironmentComponentItem,
-	EnvironmentComponentsList,
-	EnvironmentItem,
-	EnvironmentsList,
+	EnvironmentComponentItem, EnvironmentItem
 } from 'models/projects.models';
 import { ConfigWorkflowView } from 'pages/authorized/environment-components/config-workflow-view/ConfigWorkflowView';
 import {
 	auditColumns,
-	ConfigParamsSet,
-	configTableColumns,
-	getSeparatedConfigId,
-	getWorkflowLogs,
+	ConfigParamsSet, getWorkflowLogs
 } from 'pages/authorized/environment-components/helpers';
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Subscription } from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
-import { ArgoComponentsService } from 'services/argo/ArgoComponents.service';
-import { ArgoEnvironmentsService } from 'services/argo/ArgoEnvironments.service';
-import { ArgoMapper } from 'services/argo/ArgoMapper';
 import { ArgoStreamService } from 'services/argo/ArgoStream.service';
 import { ArgoWorkflowsService } from 'services/argo/ArgoWorkflows.service';
 import { AuditService } from 'services/audit/audit.service';
-import { subscriber, subscriberWF } from 'utils/apiClient/EventClient';
+import { subscriberWF } from 'utils/apiClient/EventClient';
 import { usePageHeader } from '../contexts/EnvironmentHeaderContext';
 import { getCheckBoxFilters, renderSyncStatusItems } from '../environments/helpers';
-import { toast } from 'react-toastify';
-import { Loader } from 'components/atoms/loader/Loader';
-import { ConfigWorkflowViewApplication } from './config-workflow-view/ConfigWorkflowViewApplication';
-import { ErrorView } from 'components/organisms/error-view/ErrorView';
-import { ZTablControl } from 'components/molecules/tab-control/TabControl';
-import { ErrorStateService } from 'services/error/error-state.service';
-import { eventErrorColumns } from 'models/error.model';
-import { CostingService } from 'services/costing/costing.service';
-import { CompAuditData, Component, EntityStore, EnvAuditData, Environment } from 'models/entity.store';
 
 const envTabs = [
 	{
@@ -67,8 +49,6 @@ export const EnvironmentComponents: React.FC = () => {
 	// End Streaming whenever we change the environment or URL changes [ this would decrease load on web ]
 	// Alter the data store
 	const entityStore = useMemo(() => EntityStore.getInstance(), []);
-	const { fetch } = useApi(ArgoComponentsService.getComponents);
-	const fetchEnvironments = useApi(ArgoEnvironmentsService.getEnvironments).fetch;
 	const { fetch: fetchWorkflowData } = useApi(ArgoWorkflowsService.getConfigWorkflow);
 	const [syncStatusFilter, setSyncStatusFilter] = useState<Set<ZSyncStatus>>(new Set<ZSyncStatus>());
 	const [filterDropDownOpen, toggleFilterDropDown] = useState(false);
@@ -85,14 +65,12 @@ export const EnvironmentComponents: React.FC = () => {
 	const [loading, setLoading] = useState<boolean>(true);
 	const [components, setComponents] = useState<Component[]>([]);
 	const [workflowData, setWorkflowData] = useState<any>();
-	const [streamData, setStreamData] = useState<ApplicationWatchEvent | null>(null);
 	const [streamData2, setStreamData2] = useState<ApplicationWatchEvent | null>(null);
 	const [logs, setLogs] = useState<string | null>(null);
 	const [plans, setPlans] = useState<string | null>(null);
 	const [workflowId, setWorkflowId] = useState<string>('');
 	const [viewType, setViewType] = useState<string>(showAll ? '' : 'DAG');
 	const [isEnvironmentNodeSelected, setEnvironmentNodeSelected] = useState<boolean>(false);
-	const [envErrors, setEnvErrors] = useState<any[]>();
 	const [envAuditList, setEnvAuditList] = useState<EnvAuditData[]>([]);
 	const [compAuditList, setCompAuditList] = useState<CompAuditData[]>([]);
 	const componentArrayRef = useRef<Component[]>([]);
@@ -153,7 +131,7 @@ export const EnvironmentComponents: React.FC = () => {
 	}, [filterItems, filterDropDownOpen, filterDropDownOpen]);
 
 	useEffect(() => {
-		const headerTabs = entityStore.getAllEnvironmentsByTeamName(projectId).map(environment => {
+		const headerTabs = showAll ? [] : entityStore.getAllEnvironmentsByTeamName(projectId).map(environment => {
 			const name: string = environment.name;
 			return {
 				active: environmentName === environment.name,
@@ -174,13 +152,15 @@ export const EnvironmentComponents: React.FC = () => {
 			checkBoxFilters: viewType !== 'DAG' ? checkBoxFilters : null,
 		});
 		breadcrumbObservable.next({
-			[LocalStorageKey.ENVIRONMENTS]: !showAll ? headerTabs : [],
+			[LocalStorageKey.ENVIRONMENTS]: headerTabs,
 		});
 	}, [checkBoxFilters, viewType, environment]);
 
 	useEffect(() => {
 		if (!projectId || !environmentName || showAll) return;
+
 		resetRefs();
+
 		const subs: any[] = [];
 		subs.push(
 			entityStore.emitter.subscribe(async data => {
@@ -203,7 +183,7 @@ export const EnvironmentComponents: React.FC = () => {
 	}, [projectId, environmentName]);
 
 	useEffect(() => {
-		if (!environment?.id) return;
+		if (!environment?.id || showAll) return;
 		let subEnvAudit: Subscription | null = null;
 		AuditService.getInstance()
 			.getEnvironment(environment.id, environment.teamId)
@@ -278,8 +258,8 @@ export const EnvironmentComponents: React.FC = () => {
 
 		return () => sub.unsubscribe();
 	}, []);
-
-	useEffect(() => {
+	
+  useEffect(() => {
 		const newWf: any = streamMapperWF(streamData2);
 		if (newWf && workflowData) {
 			setWorkflowData({
@@ -289,98 +269,7 @@ export const EnvironmentComponents: React.FC = () => {
 		}
 	}, [streamData2]);
 
-	// useEffect(() => {
-	// 	let subs: Subscription[] = [];
-	// 	setLoading(true);
-	// 	const fetchs = [
-	// 		CostingService.getInstance().getEnvironmentInfo(projectId, environmentId.replace(projectId + '-', '')),
-	// 		fetch(projectId, environmentId),
-	// 	];
-	// 	Promise.allSettled(fetchs).then(resps => {
-	// 		const { data0, data1 } = resolveFetchs(resps);
-	// 		if (data1) {
-	// 			componentArrayRef.current = data1;
-	// 			subs = setUpComponentStreams(data1);
-	// 		}
-	// 		if (data0) {
-	// 			const newItems = componentArrayRef.current.map(nc => {
-	// 				const newItem = data0.find((c: any) => c.id === nc.displayValue);
-	// 				if (newItem) {
-	// 					nc.componentCost = newItem.estimatedCost;
-	// 					nc.componentStatus = newItem.status;
-	// 					nc.costResources = newItem.costResources;
-	// 					nc.syncFinishedAt = newItem.lastReconcileDatetime;
-	// 					nc.isDestroy = newItem.isDestroyed;
-	// 				}
-	// 				return nc;
-	// 			});
-	// 			componentArrayRef.current = newItems;
-	// 		}
-	// 		setComponents(componentArrayRef.current);
-	// 		setLoading(false);
-	// 	});
-	// 	return () => {
-	// 		subs.forEach(s => s.unsubscribe());
-	// 	};
-	// }, ['projectId', environmentId]);
-
-	// useEffect(() => {
-	// 	if (showSidePanel === false) {
-	// 		setLogs(null);
-	// 		setPlans(null);
-	// 		setIsLoadingWorkflow(false);
-	// 		setWorkflowData(null);
-	// 		setWorkflowId('');
-	// 		workflowIdRef.current = '';
-	// 		setSelectedConfig(undefined);
-	// 	}
-	// }, [showSidePanel]);
-
-	// useEffect(() => {
-	// 	resetSelectedConfig(componentArrayRef.current);
-	// }, [components]);
-
-	// const setUpComponentStreams = (newComponents: EnvironmentComponentsList) => {
-	// 	return newComponents.map(e => {
-	// 		const { team, component, environment } = getSeparatedConfigId(e);
-	// 		return CostingService.getInstance()
-	// 			.getComponentCostStream(team || '', environment || '', component || '')
-	// 			.subscribe(d => {
-	// 				const newItems = componentArrayRef.current.map(nc => {
-	// 					if (nc.displayValue === d.id) {
-	// 						nc.componentCost = d.estimatedCost;
-	// 						nc.componentStatus = d.status;
-	// 						nc.costResources = d.costResources;
-	// 						nc.syncFinishedAt = d.lastReconcileDatetime;
-	// 						nc.isDestroy = d.isDestroyed;
-	// 					}
-	// 					return nc;
-	// 				});
-	// 				componentArrayRef.current = newItems;
-	// 				setComponents(newItems);
-	// 			});
-	// 	});
-	// };
-
-	// const resolveFetchs = (fetchResps: PromiseSettledResult<any>[]) => {
-	// 	const [data0, data1] = fetchResps;
-	// 	const respData: any = {
-	// 		data0: null,
-	// 		data1: null,
-	// 	};
-	// 	if (data1.status === 'fulfilled' && data1.value && 'data' in data1.value) {
-	// 		const { data } = data1.value;
-	// 		respData.data1 = data;
-	// 	}
-	// 	if (data0.status === 'fulfilled' && data0.value && 'data' in data0.value) {
-	// 		const { data } = data0.value;
-	// 		if ('components' in data) {
-	// 			respData.data0 = data.components;
-	// 		}
-	// 	}
-	// 	return respData;
-	// };
-
+	
 	const syncStatusMatch = (item: EnvironmentComponentItem): boolean => {
 		return syncStatusFilter.has(item.componentStatus);
 	};
@@ -390,12 +279,6 @@ export const EnvironmentComponents: React.FC = () => {
 	};
 	
 	const onNodeClick = (configName: string, visualizationHandler?: boolean): void => {
-		// if (visualizationHandler) {
-		// 	const v = handleVisualizationFlow(configName);
-		// 	if (v !== -1) {
-		// 		return;
-		// 	}
-		// }
 		if (configName === 'root') {
 			// const rootEnv = environments.find(e => e.name === environmentName);
 			// const failedEnv = ErrorStateService.getInstance().errorsInEnvironment(rootEnv?.labels?.env_name || '');
@@ -496,12 +379,6 @@ export const EnvironmentComponents: React.FC = () => {
 
 	const renderItems = (): any => {
 		switch (viewType) {
-			case 'list':
-				return (
-					<div className="zlifecycle-table">
-						<ZTable table={{ columns: configTableColumns, rows: getFilteredData() }} />
-					</div>
-				);
 			case 'DAG':
 				return components.length > 0 ? (
 					<TreeComponent
@@ -552,10 +429,10 @@ export const EnvironmentComponents: React.FC = () => {
 								<div className="ztab-control__tabs">
 									<ZTablControl
 										className="container__tabs-control"
-										selected={envErrors?.length ? 'Errors' : 'Audit'}
-										tabs={envTabs.filter(t => t.show(() => Boolean(envErrors?.length)))}>
+										selected={[].length ? 'Errors' : 'Audit'}
+										tabs={envTabs.filter(t => t.show(() => Boolean([].length)))}>
 										<div id="Errors">
-											<ErrorView columns={eventErrorColumns} dataRows={envErrors} />
+											<ErrorView columns={eventErrorColumns} dataRows={[]} />
 										</div>
 										<div id="Audit">
 											<AuditView

@@ -61,7 +61,7 @@ export const CircularClusterPacking: FC<any> = (props: Cluster) => {
 				'class',
 				(d: any): any =>
 					'wedge' +
-					getClassName(d.data.componentStatus || d.data.syncStatus) +
+					getClassName(d.data.status) +
 					(d.data.componentStatus === ZSyncStatus.NotProvisioned ? ' striped' : '')
 			)
 			.attr('stroke', '#888')
@@ -72,7 +72,7 @@ export const CircularClusterPacking: FC<any> = (props: Cluster) => {
 					classNames: 'tooltip',
 				};
 				setTooltipData({
-					card: <span className='tooltip-text'>{d?.data?.displayValue || ''}</span>,
+					card: <span className='tooltip-text'>{d?.data?.name || ''}</span>,
 						...tooltipData,
 				})
 			})
@@ -104,7 +104,7 @@ export const CircularClusterPacking: FC<any> = (props: Cluster) => {
 					});
 				} else if (data?.data?.labels?.type === 'config') {
 					setCardData({
-						card: <ConfigCard showAll={false} config={data.data} onClick={() => {}} />,
+						card: <ConfigCard config={data.data} onClick={() => {}} />,
 						...cardData,
 					});
 				}
@@ -123,7 +123,7 @@ export const CircularClusterPacking: FC<any> = (props: Cluster) => {
 			.style('font-family', 'DM Sans')
 			.style('display', d => (d.parent === root ? 'inline' : 'none'))
 			.style('fill', '#222')
-			.text((d: any) => d.data.componentName || d.data.displayValue);
+			.text((d: any) => d.name);
 
 		zoomTo([root.x, root.y, root.r * 2]);
 

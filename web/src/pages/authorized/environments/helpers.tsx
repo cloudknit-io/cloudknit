@@ -1,26 +1,19 @@
 import { ReactComponent as AWSIcon } from 'assets/images/icons/AWS.svg';
 import { ReactComponent as ChevronRight } from 'assets/images/icons/chevron-right.svg';
 import { ReactComponent as MoreOptionsIcon } from 'assets/images/icons/more-options.svg';
-import { NotificationsApi, NotificationType } from 'components/argo-core';
+import { ReactComponent as SyncIcon } from 'assets/images/icons/sync-icon.svg';
 import { Checkbox } from 'components/argo-core/checkbox';
 import { TableColumn } from 'components/atoms/table/Table';
 import {
-	CostRenderer,
 	renderHealthStatus,
 	renderLabels,
-	renderSyncedStatus,
+	renderSyncedStatus
 } from 'components/molecules/cards/renderFunctions';
 import { MenuItem, ZDropdownMenuJSX } from 'components/molecules/dropdown-menu/DropdownMenu';
-import { ZStreamRenderer } from 'components/molecules/zasync-renderer/ZStreamRenderer';
-import { ApplicationCondition, HealthStatuses, OperationPhase, OperationPhases, ZEnvSyncStatus } from 'models/argo.models';
-import { EntityStore, Environment } from 'models/entity.store';
-import { EnvironmentItem } from 'models/projects.models';
+import { ApplicationCondition, HealthStatuses, ZEnvSyncStatus } from 'models/argo.models';
+import { Environment } from 'models/entity.store';
 import React, { ReactElement } from 'react';
-import { ArgoComponentsService } from 'services/argo/ArgoComponents.service';
-import { ArgoEnvironmentsService } from 'services/argo/ArgoEnvironments.service';
 import { ArgoTeamsService } from 'services/argo/ArgoProjects.service';
-import { CostingService } from 'services/costing/costing.service';
-import { ReactComponent as SyncIcon } from 'assets/images/icons/sync-icon.svg';
 
 export const mockOriginalYaml = `
 apiVersion: stable.compuzest.com/v1
