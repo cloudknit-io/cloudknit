@@ -20,7 +20,7 @@ import {
 	auditColumns,
 	ConfigParamsSet, getWorkflowLogs
 } from 'pages/authorized/environment-components/helpers';
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Subscription } from 'rxjs';
 import { ArgoStreamService } from 'services/argo/ArgoStream.service';
@@ -57,7 +57,6 @@ export const EnvironmentComponents: React.FC = () => {
 	const { projectId, environmentName } = useParams<any>();
 	const [isLoadingWorkflow, setIsLoadingWorkflow] = useState<boolean>();
 	const showAll = environmentName === 'all' && projectId === 'all';
-	const notificationManager = React.useContext(Context)?.notifications;
 	const [environment, setEnvironment] = useState<Environment>();
 	const { pageHeaderObservable, breadcrumbObservable } = usePageHeader();
 	const [query, setQuery] = useState<string>('');
@@ -79,6 +78,19 @@ export const EnvironmentComponents: React.FC = () => {
 	const compAuditRef = useRef<CompAuditData[]>([]);
 	const envAuditRef = useRef<EnvAuditData[]>([]);
 	const workflowIdRef = useRef<string>();
+	const resetRefs = useCallback(() => {
+		setLoading(true);
+		componentArrayRef.current = [];
+		selectedComponentRef.current = undefined;
+		compAuditRef.current = []; 
+		envAuditRef.current = [];
+		workflowIdRef.current = '';
+		setComponents(componentArrayRef.current);
+		setSelectedConfig(selectedComponentRef.current);
+		setCompAuditList(compAuditRef.current);
+		setEnvAuditList(envAuditRef.current);
+		setWorkflowId(workflowIdRef.current);
+	}, []);
 
 	const breadcrumbItems = [
 		{
@@ -146,6 +158,9 @@ export const EnvironmentComponents: React.FC = () => {
 
 	useEffect(() => {
 		if (!projectId || !environmentName || showAll) return;
+
+		resetRefs();
+
 		const subs: any[] = [];
 		subs.push(
 			entityStore.emitter.subscribe(async data => {
@@ -242,8 +257,9 @@ export const EnvironmentComponents: React.FC = () => {
 		});
 
 		return () => sub.unsubscribe();
-	}, [])
-	useEffect(() => {
+	}, []);
+	
+  useEffect(() => {
 		const newWf: any = streamMapperWF(streamData2);
 		if (newWf && workflowData) {
 			setWorkflowData({
@@ -261,7 +277,6 @@ export const EnvironmentComponents: React.FC = () => {
 	const setToggleFilterDropDownValue = (val: boolean) => {
 		toggleFilterDropDown(val);
 	};
-
 	
 	const onNodeClick = (configName: string, visualizationHandler?: boolean): void => {
 		if (configName === 'root') {
