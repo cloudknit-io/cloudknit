@@ -1,37 +1,37 @@
-import { Injectable, Logger } from "@nestjs/common";
-import { AWSError } from "aws-sdk";
-import { GetParameterRequest, GetParametersByPathRequest, Parameter } from "aws-sdk/clients/ssm";
-import { Organization } from "src/typeorm";
-import { AwsSecretDto } from "./dtos/aws-secret.dto";
-import { AWSSSMHandler } from "./utilities/awsSsmHandler";
+import { Injectable, Logger } from '@nestjs/common';
+import { AWSError } from 'aws-sdk';
+import { GetParameterRequest, GetParametersByPathRequest, Parameter } from 'aws-sdk/clients/ssm';
+import { Organization } from 'src/typeorm';
+import { AwsSecretDto } from './dtos/aws-secret.dto';
+import { AWSSSMHandler } from './utilities/awsSsmHandler';
 @Injectable()
 export class SecretsService {
   private readonly logger = new Logger(SecretsService.name);
 
-  awsSecretSeparator = "[compuzest-shared]";
+  awsSecretSeparator = '[compuzest-shared]';
   ssm: AWSSSMHandler = null;
   constKeys = new Set([
-    "aws_access_key_id",
-    "aws_secret_access_key",
-    "aws_session_token",
-    "state_aws_access_key_id",
-    "state_aws_secret_access_key",
-    "state_bucket",
-    "state_lock_table"
-  ]);  
+    'aws_access_key_id',
+    'aws_secret_access_key',
+    'aws_session_token',
+    'state_aws_access_key_id',
+    'state_aws_secret_access_key',
+    'state_bucket',
+    'state_lock_table',
+  ]);
 
   constructor() {
     this.ssm = AWSSSMHandler.instance();
   }
 
   private isConstKey(name: string) {
-    const lastToken = name.split("/").slice(-1);
+    const lastToken = name.split('/').slice(-1);
     return this.constKeys.has(lastToken[0]);
   }
 
   private getPath(org: Organization, path: string) {
     if (path) {
-      if (path[0] === "/") {
+      if (path[0] === '/') {
         path = path.slice(1);
       }
 
@@ -43,21 +43,21 @@ export class SecretsService {
 
   private mapToKeyValue(data: Parameter) {
     const { Name, LastModifiedDate } = data;
-    
-    let tokens = Name.split("/");
+
+    let tokens = Name.split('/');
     tokens = tokens.slice(2); // removes org and preceding empty str
     const value = tokens.pop();
 
     return {
       key: tokens.join(':'),
       value,
-      lastModifiedDate: LastModifiedDate
+      lastModifiedDate: LastModifiedDate,
     };
   }
 
   private mapToEnvironments(data: any) {
     const { Name } = data;
-    const tokens = Name.split("/");
+    const tokens = Name.split('/');
     if (tokens.length === 5) {
       return [tokens[3], tokens[2]];
     }
@@ -67,21 +67,21 @@ export class SecretsService {
   public async ssmSecretsExists(org: Organization, pathNames: string[]) {
     try {
       const awsRes = await this.ssm.getParameters({
-        Names: pathNames.map((path) => this.getPath(org, path)),
+        Names: pathNames.map(path => this.getPath(org, path)),
       });
       const resp = [];
 
       resp.push(
-        ...awsRes.Parameters.map((e) => ({
-          key: e.Name.split("/").slice(-1)[0],
+        ...awsRes.Parameters.map(e => ({
+          key: e.Name.split('/').slice(-1)[0],
           exists: true,
-          lastModifiedDate: e.LastModifiedDate
+          lastModifiedDate: e.LastModifiedDate,
         }))
       );
 
       resp.push(
-        ...awsRes.InvalidParameters.map((e) => ({
-          key: e.split("/").slice(-1)[0],
+        ...awsRes.InvalidParameters.map(e => ({
+          key: e.split('/').slice(-1)[0],
           exists: false,
         }))
       );
@@ -89,7 +89,7 @@ export class SecretsService {
       return resp;
     } catch (err) {
       const e = err as AWSError;
-      if (e.code === "ParameterNotFound") {
+      if (e.code === 'ParameterNotFound') {
         return false;
       } else {
         throw err;
@@ -97,7 +97,7 @@ export class SecretsService {
     }
   }
 
-  public async getSsmSecret(org: Organization, path: string) : Promise<string> {
+  public async getSsmSecret(org: Organization, path: string): Promise<string> {
     try {
       const req: GetParameterRequest = {
         Name: this.getPath(org, path),
@@ -109,7 +109,7 @@ export class SecretsService {
       return awsRes.Parameter.Value;
     } catch (err) {
       const e = err as AWSError;
-      if (e.code === "ParameterNotFound") {
+      if (e.code === 'ParameterNotFound') {
         return null;
       } else {
         throw err;
@@ -127,12 +127,10 @@ export class SecretsService {
 
       const awsRes = await this.ssm.getParametersByPath(req);
 
-      return awsRes.Parameters.filter((e) => !this.isConstKey(e.Name)).map(
-        (e) => this.mapToKeyValue(e)
-      );
+      return awsRes.Parameters.filter(e => !this.isConstKey(e.Name)).map(e => this.mapToKeyValue(e));
     } catch (err) {
       const e = err as AWSError;
-      if (e.code === "ParameterNotFound") {
+      if (e.code === 'ParameterNotFound') {
         return false;
       } else {
         throw err;
@@ -155,8 +153,8 @@ export class SecretsService {
       };
 
       const awsRes = await this.ssm.getParametersByPath(req);
-      
-      awsRes.Parameters.forEach((e) => {
+
+      awsRes.Parameters.forEach(e => {
         const env = this.mapToEnvironments(e);
         if (env) {
           environments.set(env[0], env[1]);
@@ -171,8 +169,8 @@ export class SecretsService {
       return [...environments.entries()];
     } catch (err) {
       const e = err as AWSError;
-      
-      if (e.code === "ParameterNotFound") {
+
+      if (e.code === 'ParameterNotFound') {
         return false;
       } else {
         throw err;
@@ -181,20 +179,18 @@ export class SecretsService {
   }
 
   public async putSsmSecrets(org: Organization, awsSecrets: AwsSecretDto[]) {
-    const awsCalls = awsSecrets.map((secret) =>
-      this.putSsmSecret(org, secret.path, secret.value, "SecureString")
-    );
+    const awsCalls = awsSecrets.map(secret => this.putSsmSecret(org, secret.path, secret.value, 'SecureString'));
 
     const responses = await Promise.all(awsCalls);
 
-    return !responses.some((response) => response === false);
+    return !responses.some(response => response === false);
   }
 
   public async putSsmSecret(
     org: Organization,
     pathName: string,
     value: string,
-    type: "SecureString" | "StringList" | "String"
+    type: 'SecureString' | 'StringList' | 'String'
   ): Promise<boolean> {
     try {
       const awsRes = await this.ssm.putParameter({
@@ -206,7 +202,7 @@ export class SecretsService {
       return true;
     } catch (err) {
       const e = err as AWSError;
-      if (e.code === "ParameterNotFound") {
+      if (e.code === 'ParameterNotFound') {
         return false;
       } else {
         throw err;
@@ -222,7 +218,7 @@ export class SecretsService {
       return dp;
     } catch (err) {
       const e = err as AWSError;
-      if (e.code === "ParameterNotFound") {
+      if (e.code === 'ParameterNotFound') {
         return false;
       } else {
         throw err;

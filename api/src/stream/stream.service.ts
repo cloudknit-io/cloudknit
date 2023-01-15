@@ -1,10 +1,10 @@
-import { Injectable } from "@nestjs/common";
-import { Subject } from "rxjs";
-import { ComponentReconcileWrap } from "src/reconciliation/dtos/componentAudit.dto";
-import { EnvironmentReconcileWrap } from "src/reconciliation/dtos/environmentAudit.dto";
-import { Mapper } from "src/reconciliation/mapper";
-import { Component, ComponentReconcile, EnvironmentReconcile, Team } from "src/typeorm";
-import { Environment } from "src/typeorm/environment.entity";
+import { Injectable } from '@nestjs/common';
+import { Subject } from 'rxjs';
+import { ComponentReconcileWrap } from 'src/reconciliation/dtos/componentAudit.dto';
+import { EnvironmentReconcileWrap } from 'src/reconciliation/dtos/environmentAudit.dto';
+import { Mapper } from 'src/reconciliation/mapper';
+import { Component, ComponentReconcile, EnvironmentReconcile, Team } from 'src/typeorm';
+import { Environment } from 'src/typeorm/environment.entity';
 
 @Injectable()
 export class StreamService {
@@ -18,12 +18,12 @@ export class StreamService {
       this.compStream.next({} as Component);
       this.reconcileStream.next({
         data: {},
-        type: 'ComponentReconcile'
+        type: 'ComponentReconcile',
       } as AuditWrapper);
     }, 10000);
   }
 
-  normalizeOrg(obj: Environment|Component|ComponentReconcile|EnvironmentReconcile) {
+  normalizeOrg(obj: Environment | Component | ComponentReconcile | EnvironmentReconcile) {
     if (obj && obj.orgId) {
       delete obj.organization;
 
@@ -75,7 +75,7 @@ export class StreamService {
       delete data.component;
     }
 
-    this.reconcileStream.next({data, type: 'ComponentReconcile'});
+    this.reconcileStream.next({ data, type: 'ComponentReconcile' });
   }
 
   sendEnvReconcile(envRecon: EnvironmentReconcile) {
@@ -93,11 +93,11 @@ export class StreamService {
       delete data.team;
     }
 
-    this.reconcileStream.next({data, type: 'EnvironmentReconcile'});
+    this.reconcileStream.next({ data, type: 'EnvironmentReconcile' });
   }
 }
 
 export class AuditWrapper {
-  data: EnvironmentReconcileWrap|ComponentReconcileWrap;
-  type: 'EnvironmentReconcile'|'ComponentReconcile';
+  data: EnvironmentReconcileWrap | ComponentReconcileWrap;
+  type: 'EnvironmentReconcile' | 'ComponentReconcile';
 }

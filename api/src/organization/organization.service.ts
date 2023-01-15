@@ -1,13 +1,13 @@
-import { BadRequestException, Injectable, Logger } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
-import { Organization, User } from "src/typeorm";
-import { CreateOrganizationDto, PatchOrganizationDto } from "./organization.dto";
-import { patchCompany } from "src/k8s/patch-company";
-import { getGithubOrgFromRepoUrl } from "./utilities";
-import { UsersService } from "src/users/users.service";
-import { SubmitProvisionOrg } from "src/argowf/api";
-import { get } from "src/config";
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Organization, User } from 'src/typeorm';
+import { CreateOrganizationDto, PatchOrganizationDto } from './organization.dto';
+import { patchCompany } from 'src/k8s/patch-company';
+import { getGithubOrgFromRepoUrl } from './utilities';
+import { UsersService } from 'src/users/users.service';
+import { SubmitProvisionOrg } from 'src/argowf/api';
+import { get } from 'src/config';
 
 @Injectable()
 export class OrganizationService {
@@ -26,8 +26,8 @@ export class OrganizationService {
   async getOrgByGithubOrg(ghOrgName: string) {
     return this.orgRepo.findOne({
       where: {
-        githubOrgName: ghOrgName
-      }
+        githubOrgName: ghOrgName,
+      },
     });
   }
 
@@ -44,7 +44,7 @@ export class OrganizationService {
 
     if (newOrg.githubRepo) {
       const orgName = getGithubOrgFromRepoUrl(newOrg.githubRepo);
-      
+
       if (!orgName) {
         throw new BadRequestException('bad github repo url');
       }
@@ -56,13 +56,13 @@ export class OrganizationService {
       name: newOrg.name.toLowerCase(),
       githubRepo: newOrg.githubRepo,
       githubOrgName: newOrg.githubOrgName,
-      termsAgreedUserId: user ? user.id : null
+      termsAgreedUserId: user ? user.id : null,
     });
 
-    this.logger.log({ message: 'created organization', org, user })
+    this.logger.log({ message: 'created organization', org, user });
 
     if (user) {
-      user.organizations = [ ...user.organizations, org ];
+      user.organizations = [...user.organizations, org];
       user = await this.userRepo.save(user);
     }
 
@@ -74,7 +74,10 @@ export class OrganizationService {
     try {
       await SubmitProvisionOrg({ orgName: org.name, orgId: org.id });
     } catch (error) {
-      this.logger.error({message: `could not submit provision-org workflow for ${org.name}`, error: error.message });
+      this.logger.error({
+        message: `could not submit provision-org workflow for ${org.name}`,
+        error: error.message,
+      });
     }
 
     return org;
@@ -83,8 +86,8 @@ export class OrganizationService {
   async getOrganization(id: number) {
     return this.orgRepo.findOne({
       where: {
-        id
-      }
+        id,
+      },
     });
   }
 
@@ -107,7 +110,7 @@ export class OrganizationService {
 
     if (payload.githubRepo) {
       const orgName = getGithubOrgFromRepoUrl(payload.githubRepo);
-      
+
       if (!orgName) {
         throw new BadRequestException('bad github repo url');
       }
@@ -115,24 +118,25 @@ export class OrganizationService {
       updates.githubOrgName = orgName;
     }
 
-    await this.orgRepo.createQueryBuilder()
+    await this.orgRepo
+      .createQueryBuilder()
       .update(Organization)
       .set(updates)
-      .where("id = :id", { id: org.id })
+      .where('id = :id', { id: org.id })
       .execute();
 
     if (payload.githubRepo) {
       try {
         await patchCompany(org, payload.githubRepo);
       } catch (error) {
-        this.logger.log('Company CR was not updated', { org })
+        this.logger.log('Company CR was not updated', { org });
       }
     }
 
-    this.logger.log({message: 'updated org', org, updates });
+    this.logger.log({ message: 'updated org', org, updates });
 
     return await this.orgRepo.findOneBy({
-      id: org.id
+      id: org.id,
     });
   }
 }

@@ -1,21 +1,19 @@
-import { Body, Controller, Get, Logger, NotFoundException, Param, Post } from "@nestjs/common";
-import { AuthController } from "src/auth/auth.controller";
-import { User } from "src/typeorm/User.entity";
-import { CreateUserDto } from "./User.dto";
-import { UsersService } from "./users.service";
+import { Body, Controller, Get, Logger, NotFoundException, Param, Post } from '@nestjs/common';
+import { AuthController } from 'src/auth/auth.controller';
+import { User } from 'src/typeorm/User.entity';
+import { CreateUserDto } from './User.dto';
+import { UsersService } from './users.service';
 
 @Controller({
-  version: '1'
+  version: '1',
 })
 export class UsersController {
   private readonly logger = new Logger(AuthController.name);
 
-  constructor(
-      private readonly userService: UsersService
-  ){}
+  constructor(private readonly userService: UsersService) {}
 
   @Get('/:username')
-  public async getUser(@Param("username") username: string): Promise<User> {
+  public async getUser(@Param('username') username: string): Promise<User> {
     const user = await this.userService.getUser(username);
 
     if (!user) {

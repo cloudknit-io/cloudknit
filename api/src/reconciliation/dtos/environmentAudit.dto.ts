@@ -1,5 +1,5 @@
-import { EnvironmentReconcile } from "src/typeorm";
+import { EnvironmentReconcile } from 'src/typeorm';
 
 export interface EnvironmentReconcileWrap extends EnvironmentReconcile {
-    duration: number;
+  duration: number;
 }

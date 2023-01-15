@@ -1,62 +1,62 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, RelationId } from 'typeorm'
-import { Organization } from './Organization.entity'
-import { EnvironmentReconcile } from './environment-reconcile.entity'
-import { Component } from './component.entity'
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, RelationId } from 'typeorm';
+import { Organization } from './Organization.entity';
+import { EnvironmentReconcile } from './environment-reconcile.entity';
+import { Component } from './component.entity';
 
 @Entity({
   name: 'component_reconcile',
 })
 export class ComponentReconcile {
   @PrimaryGeneratedColumn({
-    name: 'id'
+    name: 'id',
   })
-  reconcileId: number
+  reconcileId: number;
 
   @ManyToOne(() => EnvironmentReconcile, environmentReconcile => environmentReconcile.componentReconciles, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({
-      referencedColumnName: 'reconcileId',
+    referencedColumnName: 'reconcileId',
   })
-  environmentReconcile: EnvironmentReconcile
+  environmentReconcile: EnvironmentReconcile;
 
-  @ManyToOne(() => Component, (component) => component.id, {
-    eager: true
+  @ManyToOne(() => Component, component => component.id, {
+    eager: true,
   })
-  component: Component
+  component: Component;
 
   @Column()
-  status: string
+  status: string;
 
   @Column({
-    nullable: true
+    nullable: true,
   })
   approvedBy?: string;
 
   @Column({
-      type: 'datetime'
+    type: 'datetime',
   })
   startDateTime: string;
 
   @Column({
-      nullable: true
+    nullable: true,
   })
   endDateTime?: string;
 
-  @ManyToOne(() => Organization, (org) => org.id, {
-    onDelete: "CASCADE",
+  @ManyToOne(() => Organization, org => org.id, {
+    onDelete: 'CASCADE',
   })
   @JoinColumn({
     referencedColumnName: 'id',
   })
-  organization: Organization
+  organization: Organization;
 
   @RelationId((compRecon: ComponentReconcile) => compRecon.component)
-  compId: number
+  compId: number;
 
   @RelationId((compRecon: ComponentReconcile) => compRecon.environmentReconcile)
-  envReconId: number
+  envReconId: number;
 
   @RelationId((compRecon: ComponentReconcile) => compRecon.organization)
-  orgId: number
+  orgId: number;
 }

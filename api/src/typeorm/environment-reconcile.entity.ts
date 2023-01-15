@@ -1,60 +1,69 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumn, PrimaryGeneratedColumn, RelationId } from 'typeorm'
-import { Organization } from './Organization.entity'
-import { ComponentReconcile } from './component-reconcile.entity'
-import { Environment } from './environment.entity'
-import { Team } from './team.entity'
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryColumn,
+  PrimaryGeneratedColumn,
+  RelationId,
+} from 'typeorm';
+import { Organization } from './Organization.entity';
+import { ComponentReconcile } from './component-reconcile.entity';
+import { Environment } from './environment.entity';
+import { Team } from './team.entity';
 
 @Entity({
   name: 'environment_reconcile',
 })
 export class EnvironmentReconcile {
   @PrimaryGeneratedColumn({
-    name: 'id'
+    name: 'id',
   })
-  reconcileId: number
+  reconcileId: number;
 
   @Column()
-  status: string
-
-  @Column({
-      type: 'datetime'
-  })
-  startDateTime: string
+  status: string;
 
   @Column({
     type: 'datetime',
-    nullable: true
   })
-  endDateTime?: string
+  startDateTime: string;
 
-  @OneToMany(() => ComponentReconcile, (component) => component.environmentReconcile, {
+  @Column({
+    type: 'datetime',
+    nullable: true,
+  })
+  endDateTime?: string;
+
+  @OneToMany(() => ComponentReconcile, component => component.environmentReconcile, {
     eager: true,
     cascade: true,
   })
-  componentReconciles?: ComponentReconcile[]
+  componentReconciles?: ComponentReconcile[];
 
-  @ManyToOne(() => Environment, (environment) => environment.id, {
-    eager: true
+  @ManyToOne(() => Environment, environment => environment.id, {
+    eager: true,
   })
   environment: Environment;
 
-  @ManyToOne(() => Team, (team) => team.id)
+  @ManyToOne(() => Team, team => team.id)
   team: Team;
 
-  @ManyToOne(() => Organization, (org) => org.id, {
-    onDelete: "CASCADE"
+  @ManyToOne(() => Organization, org => org.id, {
+    onDelete: 'CASCADE',
   })
   @JoinColumn({
-    referencedColumnName: 'id'
+    referencedColumnName: 'id',
   })
-  organization: Organization
+  organization: Organization;
 
   @RelationId((envRecon: EnvironmentReconcile) => envRecon.environment)
-  envId: number
+  envId: number;
 
   @RelationId((envRecon: EnvironmentReconcile) => envRecon.organization)
-  orgId: number
+  orgId: number;
 
   @RelationId((envRecon: EnvironmentReconcile) => envRecon.team)
-  teamId: number
+  teamId: number;
 }

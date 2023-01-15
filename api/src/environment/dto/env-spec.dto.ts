@@ -1,26 +1,26 @@
-import { Type } from "class-transformer"
-import { IsNotEmpty, IsOptional, IsString, ValidateNested } from "class-validator"
+import { Type } from 'class-transformer';
+import { IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
 
 export class EnvSpecDto {
   @IsNotEmpty()
   @IsString()
-  envName: string
+  envName: string;
 
   @IsNotEmpty()
   @ValidateNested({ each: true })
   @Type(() => EnvSpecComponentDto)
-  components: EnvSpecComponentDto[]
+  components: EnvSpecComponentDto[];
 }
 
 export class EnvSpecComponentDto {
   @IsNotEmpty()
   @IsString()
-  name: string
-  
+  name: string;
+
   @IsNotEmpty()
   @IsString()
-  type: string
+  type: string;
 
   @IsOptional()
-  dependsOn: string[]
+  dependsOn: string[];
 }

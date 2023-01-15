@@ -1,9 +1,9 @@
-import { getGithubOrgFromRepoUrl } from "./utilities";
+import { getGithubOrgFromRepoUrl } from './utilities';
 
 describe('Organization Service', () => {
   const orgName = 'some-random-org';
 
-  beforeEach(async () => { });
+  beforeEach(async () => {});
 
   describe('getGithubOrgFromRepoUrl ssh', () => {
     const repoUrl = `git@github.com:${orgName}/hello-world.git`;
@@ -15,7 +15,7 @@ describe('Organization Service', () => {
     });
 
     it('should be null', async () => {
-      expect(getGithubOrgFromRepoUrl(null)).toBeNull()
+      expect(getGithubOrgFromRepoUrl(null)).toBeNull();
     });
 
     it('should be null', async () => {

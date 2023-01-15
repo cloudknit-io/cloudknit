@@ -9,6 +9,6 @@ import { OperationsService } from './operations.service';
 @Module({
   imports: [TypeOrmModule.forFeature([Organization, User])],
   controllers: [OperationsController],
-  providers: [OperationsService, OrganizationService, UsersService]
+  providers: [OperationsService, OrganizationService, UsersService],
 })
 export class OperationsModule {}

@@ -6,12 +6,7 @@ import { User } from 'src/typeorm';
 import { Organization } from 'src/typeorm/Organization.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      User,
-      Organization
-    ])
-  ],
+  imports: [TypeOrmModule.forFeature([User, Organization])],
   controllers: [AuthController],
   providers: [AuthService],
 })

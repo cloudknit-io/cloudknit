@@ -7,8 +7,8 @@ import { Organization } from 'src/typeorm';
 const logger = new WinstonLogger();
 
 export type ProvisionOrgWf = {
-  orgName: string,
-  orgId: number
+  orgName: string;
+  orgId: number;
 };
 
 /**
@@ -16,7 +16,7 @@ export type ProvisionOrgWf = {
  * {
  *  orgName: 'some-org'
  * }
- * 
+ *
  * Turns into string:
  * orgName=some-org
  * @param parameters Object
@@ -34,9 +34,9 @@ export function generateParams(parameters: object): Array<string> {
 
 export async function ApproveWorkflow(org: Organization, workflowRunId: string) {
   const config = get();
-  
+
   if (config.isLocal === true) {
-    logger.log({ message: 'Running in local mode. Skipping ApproveWorkflow'});
+    logger.log({ message: 'Running in local mode. Skipping ApproveWorkflow' });
     return;
   }
 
@@ -52,19 +52,27 @@ export async function ApproveWorkflow(org: Organization, workflowRunId: string) 
     namespace: `${org.name}-executor`,
   };
 
-  logger.debug({message: 'approving workflow', url, data});
+  logger.debug({ message: 'approving workflow', url, data });
 
   try {
     const resp = await axios.put(url, data, {
-      httpsAgent: url.startsWith('https') ? httpsAgent : null
+      httpsAgent: url.startsWith('https') ? httpsAgent : null,
     });
-  
-    logger.log({message: `approved workflow which generated ${resp.data.metadata.name}`, resp: resp.data });
+
+    logger.log({
+      message: `approved workflow which generated ${resp.data.metadata.name}`,
+      resp: resp.data,
+    });
   } catch (error) {
     if (error.response) {
-      logger.error({ message: 'error approving workflow', error: error.response.data, data, url })
+      logger.error({
+        message: 'error approving workflow',
+        error: error.response.data,
+        data,
+        url,
+      });
     }
-    
+
     throw error;
   }
 }
@@ -79,28 +87,33 @@ async function SubmitWorkflow(resourceName: string, entryPoint: string, paramete
   });
 
   const data = {
-    "namespace": config.argo.wf.namespace,
+    namespace: config.argo.wf.namespace,
     resourceName,
-    "resourceKind": "WorkflowTemplate",
-    "submitOptions": {
+    resourceKind: 'WorkflowTemplate',
+    submitOptions: {
       entryPoint,
-      parameters: generateParams(parameters)
-    }
+      parameters: generateParams(parameters),
+    },
   };
 
-  logger.debug({message: 'Submitting provision-org workflow', url, data});
+  logger.debug({ message: 'Submitting provision-org workflow', url, data });
 
   try {
     const resp = await axios.post(url, data, {
-      httpsAgent: url.startsWith('https') ? httpsAgent : null
+      httpsAgent: url.startsWith('https') ? httpsAgent : null,
     });
-  
-    logger.log(`submitted ${resourceName} workflow which generated ${resp.data.metadata.name}`)
+
+    logger.log(`submitted ${resourceName} workflow which generated ${resp.data.metadata.name}`);
   } catch (error) {
     if (error.response) {
-      logger.error({ message: 'error submitting workflow', error: error.response.data, data, url })
+      logger.error({
+        message: 'error submitting workflow',
+        error: error.response.data,
+        data,
+        url,
+      });
     }
-    
+
     throw error;
   }
 }

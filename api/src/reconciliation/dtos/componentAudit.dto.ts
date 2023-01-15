@@ -1,12 +1,12 @@
-import { IsNotEmpty, IsString } from "class-validator";
-import { ComponentReconcile } from "src/typeorm";
+import { IsNotEmpty, IsString } from 'class-validator';
+import { ComponentReconcile } from 'src/typeorm';
 
 export interface ComponentReconcileWrap extends ComponentReconcile {
-    duration: number;
+  duration: number;
 }
 
 export class ApprovedByDto {
-    @IsString()
-    @IsNotEmpty()
-    email: string;
+  @IsString()
+  @IsNotEmpty()
+  email: string;
 }

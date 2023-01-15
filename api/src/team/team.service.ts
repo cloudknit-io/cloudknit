@@ -22,13 +22,13 @@ export class TeamService {
     return this.teamRepo.find({
       where: {
         organization: {
-          id: org.id
-        }
+          id: org.id,
+        },
       },
       relations: {
-        environments: withEnv
-      }
-    })
+        environments: withEnv,
+      },
+    });
   }
 
   async findByName(org: Organization, name: string): Promise<Team> {
@@ -36,10 +36,10 @@ export class TeamService {
       where: {
         name: Equal(name),
         organization: {
-          id: Equal(org.id)
-        }
-      }
-    })
+          id: Equal(org.id),
+        },
+      },
+    });
   }
 
   async findById(org: Organization, id: number): Promise<Team> {
@@ -47,10 +47,10 @@ export class TeamService {
       where: {
         id: Equal(id),
         organization: {
-          id: Equal(org.id)
-        }
-      }
-    })
+          id: Equal(org.id),
+        },
+      },
+    });
   }
 
   async update(org: Organization, id: number, updateTeamDto: UpdateTeamDto): Promise<Team> {
@@ -67,5 +67,5 @@ export class TeamService {
     team.isDeleted = true;
 
     return this.teamRepo.save(team);
-  }  
+  }
 }

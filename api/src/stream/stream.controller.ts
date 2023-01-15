@@ -5,12 +5,12 @@ import { Component, Environment } from 'src/typeorm';
 import { OrgApiParam } from 'src/types';
 
 @Controller({
-  version: '1'
+  version: '1',
 })
 export class StreamController {
   constructor(private readonly sseSvc: StreamService) {}
 
-  @Sse("component")
+  @Sse('component')
   @OrgApiParam()
   components(@Request() req): Observable<MessageEvent> {
     const { org } = req;
@@ -20,19 +20,19 @@ export class StreamController {
         if (!comp || comp.orgId !== org.id) {
           return {
             data: {},
-            type: 'Component'
-          }
+            type: 'Component',
+          };
         }
 
         return {
           data: comp,
-          type: 'Component'
-        }
+          type: 'Component',
+        };
       })
     );
   }
 
-  @Sse("audit")
+  @Sse('audit')
   @OrgApiParam()
   componentReconcile(@Request() req): Observable<MessageEvent> {
     const { org } = req;
@@ -44,19 +44,19 @@ export class StreamController {
         if (!data || data.orgId !== org.id) {
           return {
             data,
-            type: item.type
-          }
+            type: item.type,
+          };
         }
 
         return {
           data,
-          type: item.type
-        }
+          type: item.type,
+        };
       })
     );
   }
 
-  @Sse("environment")
+  @Sse('environment')
   @OrgApiParam()
   environments(@Request() req): Observable<MessageEvent> {
     const { org } = req;
@@ -66,16 +66,16 @@ export class StreamController {
         if (!env || env.orgId !== org.id) {
           return {
             data: {},
-            type: 'Environment'
-          }
+            type: 'Environment',
+          };
         }
 
         delete env.team;
 
         return {
           data: env,
-          type: 'Environment'
-        }
+          type: 'Environment',
+        };
       })
     );
   }

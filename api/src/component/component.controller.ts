@@ -8,10 +8,10 @@ import { ComponentService } from './component.service';
 import { UpdateComponentDto } from './dto/update-component.dto';
 
 @Controller({
-  version: '1'
+  version: '1',
 })
 export class ComponentController {
-  private readonly logger = new Logger(ComponentController.name); 
+  private readonly logger = new Logger(ComponentController.name);
 
   constructor(
     private readonly compSvc: ComponentService,
@@ -22,7 +22,7 @@ export class ComponentController {
   @Get()
   @EnvironmentApiParam()
   async findAll(@Request() req: APIRequest, @Query() params: ComponentQueryParams): Promise<ComponentWrap[]> {
-    const {org, env} = req;
+    const { org, env } = req;
     const withLastReconcile = params.withLastAuditStatus === 'true';
 
     if (!withLastReconcile) {
@@ -35,15 +35,19 @@ export class ComponentController {
   @Get('/:componentId')
   @EnvironmentApiParam()
   async findOne(@Request() req: APIRequest, @Param('componentId') id: string): Promise<Component> {
-    const {org, env} = req;
+    const { org, env } = req;
 
     return this.getCompFromRequest(org, env, id);
   }
 
   @Put('/:componentId')
   @EnvironmentApiParam()
-  async updateComponent(@Request() req: APIRequest, @Param('componentId') id: string, @Body() body: UpdateComponentDto): Promise<Component> {
-    const {org, env} = req;
+  async updateComponent(
+    @Request() req: APIRequest,
+    @Param('componentId') id: string,
+    @Body() body: UpdateComponentDto
+  ): Promise<Component> {
+    const { org, env } = req;
 
     const comp = await this.getCompFromRequest(org, env, id);
 
@@ -53,7 +57,10 @@ export class ComponentController {
       try {
         this.envSvc.updateCost(org, env);
       } catch (err) {
-        this.logger.error({ message: 'could not update environment cost', env })
+        this.logger.error({
+          message: 'could not update environment cost',
+          env,
+        });
       }
     }
 
@@ -66,9 +73,9 @@ export class ComponentController {
     try {
       numId = parseInt(id, 10);
     } catch (e) {}
-    
+
     if (isNaN(numId)) {
-      comp = await this.compSvc.findByName(org, env, id)
+      comp = await this.compSvc.findByName(org, env, id);
     } else {
       comp = await this.compSvc.findById(org, numId);
     }

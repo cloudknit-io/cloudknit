@@ -1,5 +1,5 @@
-import { SSM } from "aws-sdk";
-import { get } from "src/config";
+import { SSM } from 'aws-sdk';
+import { get } from 'src/config';
 
 export class AWSSSMHandler {
   private static _instance: AWSSSMHandler = null;
@@ -10,7 +10,7 @@ export class AWSSSMHandler {
     this.ssm = new SSM({
       accessKeyId: this.config.AWS.accessKeyId,
       secretAccessKey: this.config.AWS.secretAccessKey,
-      region: "us-east-1",
+      region: 'us-east-1',
     });
   }
 
@@ -21,9 +21,7 @@ export class AWSSSMHandler {
     return AWSSSMHandler._instance;
   }
 
-  async getParameter(
-    request: SSM.GetParameterRequest
-  ): Promise<SSM.GetParameterResult> {
+  async getParameter(request: SSM.GetParameterRequest): Promise<SSM.GetParameterResult> {
     return new Promise<SSM.GetParameterResult>((done, error) => {
       this.ssm.getParameter(request, (err, data) => {
         if (err) {
@@ -34,10 +32,7 @@ export class AWSSSMHandler {
     });
   }
 
-
-  async getParameters(
-    request: SSM.GetParametersRequest
-  ): Promise<SSM.GetParametersResult> {
+  async getParameters(request: SSM.GetParametersRequest): Promise<SSM.GetParametersResult> {
     return new Promise<SSM.GetParametersResult>((done, error) => {
       this.ssm.getParameters(request, (err, data) => {
         if (err) {
@@ -48,9 +43,7 @@ export class AWSSSMHandler {
     });
   }
 
-  async getParametersByPath(
-    request: SSM.GetParametersByPathRequest
-  ): Promise<SSM.GetParametersByPathResult> {
+  async getParametersByPath(request: SSM.GetParametersByPathRequest): Promise<SSM.GetParametersByPathResult> {
     return new Promise<SSM.GetParametersByPathResult>((done, error) => {
       this.ssm.getParametersByPath(request, (err, data) => {
         if (err) {
@@ -61,9 +54,7 @@ export class AWSSSMHandler {
     });
   }
 
-  async putParameter(
-    request: SSM.PutParameterRequest
-  ): Promise<SSM.PutParameterResult> {
+  async putParameter(request: SSM.PutParameterRequest): Promise<SSM.PutParameterResult> {
     return new Promise<SSM.PutParameterResult>((done, error) => {
       this.ssm.putParameter(request, (err, data) => {
         if (err) {

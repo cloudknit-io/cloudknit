@@ -10,17 +10,19 @@ async function bootstrap() {
 
   const config = get();
   const app = await NestFactory.create(AppModule, {
-    logger: new WinstonLogger()
+    logger: new WinstonLogger(),
   });
 
-  app.useGlobalPipes(new ValidationPipe({
+  app.useGlobalPipes(
+    new ValidationPipe({
       forbidUnknownValues: false,
       skipMissingProperties: false,
-      enableDebugMessages: true
-    }));
+      enableDebugMessages: true,
+    })
+  );
 
   app.enableVersioning({
-    type: VersioningType.URI
+    type: VersioningType.URI,
   });
 
   const openApiDoc = new DocumentBuilder()
@@ -30,7 +32,7 @@ async function bootstrap() {
     .setContact('Contact', 'cloudknit.io', 'contact@cloudknit.io')
     .addServer('http://localhost:3001', 'local development')
     .build();
-  
+
   const document = SwaggerModule.createDocument(app, openApiDoc);
   SwaggerModule.setup('api', app, document);
 

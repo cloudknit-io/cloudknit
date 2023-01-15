@@ -17,23 +17,17 @@ services:
     volumes: 
       - cloudknit-db-config:/etc/mysql
       - cloudknit-db-data:/var/lib/mysql
-
-  event-service:
-    build:
-      context: ./event-service
-      dockerfile: ./Dockerfile.local
+  
+  redis:
+    image: redis:7.0.7-alpine
     restart: on-failure
-    environment:
-      - DB_HOST=mysqldb
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 2
     ports:
-      - "8081:8081"
-      - "8082:8082"
-    volumes:
-      - type: bind
-        source: ./event-service
-        target: /app
-    depends_on:
-      - mysqldb
+      - "6379:6379"
   
   api:
     build:
@@ -51,7 +45,9 @@ services:
       - TYPEORM_PASSWORD=password
       - TYPEORM_PORT=3306
       - TYPEORM_DATABASE=zlifecycle
+      - CK_REDIS_HOST=redis:6379
       - CK_ARGO_WF_URL=http://localhost:2746
+      - CK_ARGO_WF_ORG_URL=http://argo-workflow-server.:org-executor.svc.cluster.local:2746
       - CK_ARGO_WF_NAMESPACE=zlifecycle-executor
     ports:
       - "3001:3001"

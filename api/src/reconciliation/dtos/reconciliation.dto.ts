@@ -1,10 +1,10 @@
-import { IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateEnvironmentReconciliationDto {
   @IsString()
   @IsNotEmpty()
   name: string;
-  
+
   @IsString()
   @IsNotEmpty()
   teamName: string;
