@@ -110,7 +110,7 @@ export class EnvironmentService {
     return this.envRepo.save(env);
   }
 
-  async updateCost(org: Organization, env: Environment) {
+  async updateCost(org: Organization, env: Environment): Promise<void> {
     env = await this.findById(org, env.id, false, true);
 
     let estimatedCost = 0.0;
