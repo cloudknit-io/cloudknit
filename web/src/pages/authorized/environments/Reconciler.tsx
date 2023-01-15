@@ -32,6 +32,8 @@ export const Reconciler: FC<ReconcilerProps> = ({ environment, template }) => {
 		if (!environment) {
 			return;
 		}
+        setReconciling(false);
+        setSyncStarted(false);
 		const ecd = ArgoStreamService.streamEnvironment(environment.argoId);
 		const watcherSub = ecd.listen().subscribe((e: any) => {
             const healthStatus = e?.result?.application?.status?.health?.status;
@@ -74,7 +76,7 @@ export const Reconciler: FC<ReconcilerProps> = ({ environment, template }) => {
 			// }
 			// console.log(err);
 		}
-	}, [environment, watcherStatus]);
+	}, [environment]);
 
 	return template(environment, reconciling || syncStarted, syncMe);
 };

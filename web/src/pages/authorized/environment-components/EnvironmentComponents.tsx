@@ -25,7 +25,7 @@ import {
 	getSeparatedConfigId,
 	getWorkflowLogs,
 } from 'pages/authorized/environment-components/helpers';
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
@@ -77,7 +77,6 @@ export const EnvironmentComponents: React.FC = () => {
 	const { projectId, environmentName } = useParams<any>();
 	const [isLoadingWorkflow, setIsLoadingWorkflow] = useState<boolean>();
 	const showAll = environmentName === 'all' && projectId === 'all';
-	const notificationManager = React.useContext(Context)?.notifications;
 	const [environment, setEnvironment] = useState<Environment>();
 	const { pageHeaderObservable, breadcrumbObservable } = usePageHeader();
 	const [query, setQuery] = useState<string>('');
@@ -101,7 +100,19 @@ export const EnvironmentComponents: React.FC = () => {
 	const compAuditRef = useRef<CompAuditData[]>([]);
 	const envAuditRef = useRef<EnvAuditData[]>([]);
 	const workflowIdRef = useRef<string>();
-	const ctx = useContext(Context);
+	const resetRefs = useCallback(() => {
+		setLoading(true);
+		componentArrayRef.current = [];
+		selectedComponentRef.current = undefined;
+		compAuditRef.current = []; 
+		envAuditRef.current = [];
+		workflowIdRef.current = '';
+		setComponents(componentArrayRef.current);
+		setSelectedConfig(selectedComponentRef.current);
+		setCompAuditList(compAuditRef.current);
+		setEnvAuditList(envAuditRef.current);
+		setWorkflowId(workflowIdRef.current);
+	}, []);
 
 	const breadcrumbItems = [
 		{
@@ -168,7 +179,8 @@ export const EnvironmentComponents: React.FC = () => {
 	}, [checkBoxFilters, viewType, environment]);
 
 	useEffect(() => {
-		if (!projectId || !environmentName) return;
+		if (!projectId || !environmentName || showAll) return;
+		resetRefs();
 		const subs: any[] = [];
 		subs.push(
 			entityStore.emitter.subscribe(async data => {
@@ -265,60 +277,7 @@ export const EnvironmentComponents: React.FC = () => {
 		});
 
 		return () => sub.unsubscribe();
-	}, [])
-
-	// useEffect(() => {
-	// 	const newEnvironments = streamMapper<EnvironmentItem>(
-	// 		streamData,
-	// 		environments,
-	// 		ArgoMapper.parseEnvironment,
-	// 		'environment',
-	// 		{
-	// 			projectId,
-	// 		}
-	// 	);
-	// 	checkForFailedEnvironments(newEnvironments);
-	// 	setEnvironments(newEnvironments);
-
-	// 	const newComponents = streamMapper<EnvironmentComponentItem>(
-	// 		streamData,
-	// 		components,
-	// 		ArgoMapper.parseComponent,
-	// 		'config',
-	// 		{
-	// 			projectId,
-	// 			environmentId,
-	// 		}
-	// 	);
-	// 	setComponents(newComponents);
-	// 	componentArrayRef.current = newComponents;
-	// }, [streamData]);
-
-	// useEffect(() => {
-	// 	if (environments.length === 0 || !environmentId) return;
-	// 	const env = environments.find(e => e.id === environmentId);
-	// 	if (!env) return;
-	// 	const sub = ctx?.failedEnvironments.subscribe(res => {
-	// 		const errors = [...res.values()].filter(e => e.labels.env_name === env.labels?.env_name);
-	// 		console.log(errors);
-	// 	});
-
-	// 	return () => sub?.unsubscribe();
-	// }, [environmentId, environments]);
-
-	// useEffect(() => {
-	// 	const $subscription: Subscription = subscriber.subscribe((response: any) => {
-	// 		setStreamData(response);
-	// 	});
-	// 	const $subscription2: Subscription = subscriberWF.subscribe((response: any) => {
-	// 		setStreamData2(response);
-	// 	});
-
-	// 	return (): void => {
-	// 		$subscription.unsubscribe();
-	// 		$subscription2.unsubscribe();
-	// 	};
-	// }, []);
+	}, []);
 
 	useEffect(() => {
 		const newWf: any = streamMapperWF(streamData2);
@@ -429,57 +388,7 @@ export const EnvironmentComponents: React.FC = () => {
 	const setToggleFilterDropDownValue = (val: boolean) => {
 		toggleFilterDropDown(val);
 	};
-
-	// const handleVisualizationFlow = (configName: string) => {
-	// 	if (!configName.includes('eks') && !configName.includes('networking') && !configName.includes('ec2')) return -1;
-
-	// 	const toastId = `visualization_call_for_${configName}`;
-	// 	notificationManager?.show({
-	// 		content: (
-	// 			<div style={{ display: 'flex', alignItems: 'center' }}>
-	// 				<Loader height={16} width={16} color="white" />
-	// 				<span style={{ marginLeft: 10 }}>Loading visualization for {configName}...</span>
-	// 			</div>
-	// 		),
-	// 		type: NotificationType.Warning,
-	// 		toastOptions: {
-	// 			progress: 0,
-	// 			toastId,
-	// 			autoClose: false,
-	// 			draggable: false,
-	// 		},
-	// 	});
-	// 	toast.update(toastId, {
-	// 		progress: 0.5,
-	// 	});
-	// MOCKING THE CALL
-	// 	setTimeout(() => {
-	// 		AuditService.getInstance()
-	// 			.getVisualizationSVGDemo({
-	// 				team: projectId,
-	// 				environment: environmentId.replace(projectId + '-', ''),
-	// 				component: configName,
-	// 			})
-	// 			.then(response => {
-	// 				toast.update(toastId, {
-	// 					progress: 0.75,
-	// 				});
-	// 				if (response?.data?.includes('</svg>')) {
-	// 					toast.done(toastId);
-	// 					return;
-	// 				}
-	// 				throw 'No visualization found';
-	// 			})
-	// 			.catch(err => {
-	// 				toast.dismiss(toastId);
-	// 				notificationManager?.show({
-	// 					content: 'Failed to load visualization. Please contact admin.',
-	// 					type: NotificationType.Error,
-	// 				});
-	// 			});
-	// 	}, 1000);
-	// };
-
+	
 	const onNodeClick = (configName: string, visualizationHandler?: boolean): void => {
 		// if (visualizationHandler) {
 		// 	const v = handleVisualizationFlow(configName);
