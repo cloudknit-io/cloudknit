@@ -3,15 +3,11 @@ import { NavigationManager, Notifications, NotificationsManager } from 'componen
 import { ZLoaderCover } from 'components/atoms/loader/LoaderCover';
 import { Provider } from 'context/argo/ArgoUi';
 import { createBrowserHistory } from 'history';
-import { useApi } from 'hooks/use-api/useApi';
 import { TeamItem } from 'models/projects.models';
 import React, { Suspense, useEffect, useState } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { from } from 'rxjs';
-import { ArgoTeamsService } from 'services/argo/ArgoProjects.service';
-import { ArgoStreamService } from 'services/argo/ArgoStream.service';
-import { BehaviorSubject } from 'rxjs';
-import { ErrorStateService } from 'services/error/error-state.service';
+import { BehaviorSubject, from } from 'rxjs';
+import { EntityService } from 'services/entity/entity.service';
 const Routes = React.lazy(() => import('router/Routes'));
 
 const FailedEnvironments = new BehaviorSubject<Map<string, any>>(new Map());
@@ -23,7 +19,6 @@ const App: React.FC = () => {
 	const base = bases.length > 0 ? bases[0].getAttribute('href') || '/' : '/';
 	const history = createBrowserHistory({ basename: base });
 	const notificationsManager: NotificationsManager = new NotificationsManager();
-	const { fetch } = useApi(ArgoTeamsService.getProjects);
 
 	useEffect(() => {
 		const $subscription = from(AuthStore.refresh()).subscribe(profile => {
@@ -31,6 +26,7 @@ const App: React.FC = () => {
 			if (!profile.selectedOrg) {
 				return;
 			}
+			EntityService.getInstance();
 		});
 
 		return () => $subscription.unsubscribe();

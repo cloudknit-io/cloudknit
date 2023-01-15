@@ -10,11 +10,6 @@ export interface WorkflowPayload {
 }
 
 export class ArgoWorkflowsService {
-	// static streamConfigs(projectId: string, environmentId: string, configId: string, workflowId: string): void {
-	// 	return new EventClient(
-	// 		`/projects/${projectId}/environments/${environmentId}/config/${configId}/${workflowId}`
-	// 	).listen();
-	// }
 
 	static getConfigWorkflow({
 		projectId,

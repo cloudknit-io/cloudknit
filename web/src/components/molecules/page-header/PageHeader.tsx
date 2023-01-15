@@ -231,10 +231,6 @@ export const ZPageHeader: FC<Props> = ({
 					<div className="zlifecycle-page-header__right">
 						{showBtn && <Button onClick={onClickButton}>{buttonText}</Button>}
 						<div className="zlifecycle-page-header__right__options">
-							<ListViewIcon
-								className={classNames({ inactive: viewType !== 'list' })}
-								onClick={() => handleOnViewChange('list')}
-							/>
 							<GridViewIcon
 								className={classNames({ inactive: viewType !== 'grid' })}
 								onClick={() => handleOnViewChange('grid')}
