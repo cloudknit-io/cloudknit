@@ -1,4 +1,11 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, RelationId } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  RelationId,
+} from 'typeorm';
 import { Organization } from './Organization.entity';
 import { EnvironmentReconcile } from './environment-reconcile.entity';
 import { Component } from './component.entity';
@@ -12,15 +19,19 @@ export class ComponentReconcile {
   })
   reconcileId: number;
 
-  @ManyToOne(() => EnvironmentReconcile, environmentReconcile => environmentReconcile.componentReconciles, {
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne(
+    () => EnvironmentReconcile,
+    (environmentReconcile) => environmentReconcile.componentReconciles,
+    {
+      onDelete: 'CASCADE',
+    }
+  )
   @JoinColumn({
     referencedColumnName: 'reconcileId',
   })
   environmentReconcile: EnvironmentReconcile;
 
-  @ManyToOne(() => Component, component => component.id, {
+  @ManyToOne(() => Component, (component) => component.id, {
     eager: true,
   })
   component: Component;
@@ -43,7 +54,7 @@ export class ComponentReconcile {
   })
   endDateTime?: string;
 
-  @ManyToOne(() => Organization, org => org.id, {
+  @ManyToOne(() => Organization, (org) => org.id, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({

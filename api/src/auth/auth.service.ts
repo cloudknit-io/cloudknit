@@ -8,7 +8,9 @@ import { Repository } from 'typeorm';
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
 
-  constructor(@InjectRepository(User) private readonly userRepo: Repository<User>) {}
+  constructor(
+    @InjectRepository(User) private readonly userRepo: Repository<User>
+  ) {}
 
   // public async getUser(username: string) {
   //   return this.userRepo.createQueryBuilder('user')
@@ -53,7 +55,9 @@ export class AuthService {
       // adds existing user to org
       for (let userOrg of currentUser.organizations) {
         if (userOrg.id == org.id) {
-          throw new BadRequestException(`${currentUser.username} is already a member of ${org.name}`);
+          throw new BadRequestException(
+            `${currentUser.username} is already a member of ${org.name}`
+          );
         }
       }
 

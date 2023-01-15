@@ -32,7 +32,10 @@ export function generateParams(parameters: object): Array<string> {
   return params;
 }
 
-export async function ApproveWorkflow(org: Organization, workflowRunId: string) {
+export async function ApproveWorkflow(
+  org: Organization,
+  workflowRunId: string
+) {
   const config = get();
 
   if (config.isLocal === true) {
@@ -40,7 +43,9 @@ export async function ApproveWorkflow(org: Organization, workflowRunId: string) 
     return;
   }
 
-  const url = `${config.argo.wf.orgUrl(org.name)}/api/v1/workflows/${org.name}-executor/${workflowRunId}/resume`;
+  const url = `${config.argo.wf.orgUrl(org.name)}/api/v1/workflows/${
+    org.name
+  }-executor/${workflowRunId}/resume`;
 
   const httpsAgent = new https.Agent({
     requestCert: true,
@@ -77,7 +82,11 @@ export async function ApproveWorkflow(org: Organization, workflowRunId: string) 
   }
 }
 
-async function SubmitWorkflow(resourceName: string, entryPoint: string, parameters: object) {
+async function SubmitWorkflow(
+  resourceName: string,
+  entryPoint: string,
+  parameters: object
+) {
   const config = get();
   const url = `${config.argo.wf.url}/api/v1/workflows/${config.argo.wf.namespace}/submit`;
 
@@ -103,7 +112,9 @@ async function SubmitWorkflow(resourceName: string, entryPoint: string, paramete
       httpsAgent: url.startsWith('https') ? httpsAgent : null,
     });
 
-    logger.log(`submitted ${resourceName} workflow which generated ${resp.data.metadata.name}`);
+    logger.log(
+      `submitted ${resourceName} workflow which generated ${resp.data.metadata.name}`
+    );
   } catch (error) {
     if (error.response) {
       logger.error({

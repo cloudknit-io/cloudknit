@@ -1,4 +1,8 @@
-import { applyDecorators, createParamDecorator, InternalServerErrorException } from '@nestjs/common';
+import {
+  applyDecorators,
+  createParamDecorator,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { ApiParam, ApiParamOptions } from '@nestjs/swagger';
 import { Request } from 'express';
 import { Environment, Team } from './typeorm';
@@ -23,9 +27,15 @@ export function OrgApiParam(): MethodDecorator {
 }
 
 export function TeamApiParam(): MethodDecorator {
-  return applyDecorators(OrgApiParam(), ApiParam({ name: 'teamId', required: true }));
+  return applyDecorators(
+    OrgApiParam(),
+    ApiParam({ name: 'teamId', required: true })
+  );
 }
 
 export function EnvironmentApiParam(): MethodDecorator {
-  return applyDecorators(TeamApiParam(), ApiParam({ name: 'environmentId', required: true }));
+  return applyDecorators(
+    TeamApiParam(),
+    ApiParam({ name: 'environmentId', required: true })
+  );
 }

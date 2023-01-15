@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, Logger, Param, Post, Query, Request } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Logger,
+  Param,
+  Post,
+  Query,
+  Request,
+} from '@nestjs/common';
 import { OrgApiParam } from 'src/types';
 import { SecretsService } from './secrets.service';
 

@@ -1,4 +1,15 @@
-import { BadRequestException, Body, Controller, Get, Logger, Param, Post, Put, Query, Request } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Logger,
+  Param,
+  Post,
+  Put,
+  Query,
+  Request,
+} from '@nestjs/common';
 import { EnvironmentService } from 'src/environment/environment.service';
 import { ReconciliationService } from 'src/reconciliation/reconciliation.service';
 import { Component, Environment, Organization } from 'src/typeorm';
@@ -21,7 +32,10 @@ export class ComponentController {
 
   @Get()
   @EnvironmentApiParam()
-  async findAll(@Request() req: APIRequest, @Query() params: ComponentQueryParams): Promise<ComponentWrap[]> {
+  async findAll(
+    @Request() req: APIRequest,
+    @Query() params: ComponentQueryParams
+  ): Promise<ComponentWrap[]> {
     const { org, env } = req;
     const withLastReconcile = params.withLastAuditStatus === 'true';
 
@@ -34,7 +48,10 @@ export class ComponentController {
 
   @Get('/:componentId')
   @EnvironmentApiParam()
-  async findOne(@Request() req: APIRequest, @Param('componentId') id: string): Promise<Component> {
+  async findOne(
+    @Request() req: APIRequest,
+    @Param('componentId') id: string
+  ): Promise<Component> {
     const { org, env } = req;
 
     return this.getCompFromRequest(org, env, id);
@@ -67,7 +84,11 @@ export class ComponentController {
     return updatedComp;
   }
 
-  async getCompFromRequest(org: Organization, env: Environment, id: any): Promise<Component> {
+  async getCompFromRequest(
+    org: Organization,
+    env: Environment,
+    id: any
+  ): Promise<Component> {
     let numId, comp;
 
     try {
@@ -90,7 +111,10 @@ export class ComponentController {
 
   @Get('/:componentId/audit')
   @EnvironmentApiParam()
-  async getAudits(@Request() req: APIRequest, @Param('componentId') id: string) {
+  async getAudits(
+    @Request() req: APIRequest,
+    @Param('componentId') id: string
+  ) {
     const { org, env } = req;
     const comp = await this.getCompFromRequest(org, env, id);
 

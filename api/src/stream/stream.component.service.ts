@@ -1,13 +1,24 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Component } from 'src/typeorm';
-import { Connection, EntitySubscriberInterface, InsertEvent, RemoveEvent, UpdateEvent } from 'typeorm';
+import {
+  Connection,
+  EntitySubscriberInterface,
+  InsertEvent,
+  RemoveEvent,
+  UpdateEvent,
+} from 'typeorm';
 import { StreamService } from './stream.service';
 
 @Injectable()
-export class StreamComponentService implements EntitySubscriberInterface<Component> {
+export class StreamComponentService
+  implements EntitySubscriberInterface<Component>
+{
   private readonly logger = new Logger(StreamComponentService.name);
 
-  constructor(@Inject(Connection) conn: Connection, private readonly sseSvc: StreamService) {
+  constructor(
+    @Inject(Connection) conn: Connection,
+    private readonly sseSvc: StreamService
+  ) {
     conn.subscribers.push(this);
   }
 

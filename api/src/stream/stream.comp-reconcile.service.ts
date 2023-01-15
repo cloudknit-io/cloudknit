@@ -1,13 +1,24 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ComponentReconcile } from 'src/typeorm';
-import { Connection, EntitySubscriberInterface, InsertEvent, RemoveEvent, UpdateEvent } from 'typeorm';
+import {
+  Connection,
+  EntitySubscriberInterface,
+  InsertEvent,
+  RemoveEvent,
+  UpdateEvent,
+} from 'typeorm';
 import { StreamService } from './stream.service';
 
 @Injectable()
-export class StreamComponentReconcileService implements EntitySubscriberInterface<ComponentReconcile> {
+export class StreamComponentReconcileService
+  implements EntitySubscriberInterface<ComponentReconcile>
+{
   private readonly logger = new Logger(StreamComponentReconcileService.name);
 
-  constructor(@Inject(Connection) conn: Connection, private readonly sseSvc: StreamService) {
+  constructor(
+    @Inject(Connection) conn: Connection,
+    private readonly sseSvc: StreamService
+  ) {
     conn.subscribers.push(this);
   }
 
@@ -19,7 +30,9 @@ export class StreamComponentReconcileService implements EntitySubscriberInterfac
     this.validateAndSend(event.entity, 'afterInsert');
   }
 
-  afterUpdate(event: UpdateEvent<ComponentReconcile>): void | Promise<ComponentReconcile> {
+  afterUpdate(
+    event: UpdateEvent<ComponentReconcile>
+  ): void | Promise<ComponentReconcile> {
     this.validateAndSend(event.entity as ComponentReconcile, 'afterUpdate');
   }
 

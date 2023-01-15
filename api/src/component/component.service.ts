@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Component, ComponentReconcile, Environment, Organization } from 'src/typeorm';
+import {
+  Component,
+  ComponentReconcile,
+  Environment,
+  Organization,
+} from 'src/typeorm';
 import { UpdateComponentDto } from './dto/update-component.dto';
 import { Equal, In, Repository } from 'typeorm';
 
@@ -18,7 +23,7 @@ export class ComponentService {
       .insert()
       .into(Component)
       .values(
-        names.map(name => {
+        names.map((name) => {
           return {
             name,
             environment: env,
@@ -31,7 +36,7 @@ export class ComponentService {
 
   async batchDelete(org: Organization, env: Environment, comps: Component[]) {
     return this.compRepo.delete({
-      id: In(comps.map(c => c.id)),
+      id: In(comps.map((c) => c.id)),
       organization: {
         id: org.id,
       },
@@ -41,7 +46,11 @@ export class ComponentService {
     });
   }
 
-  async create(org: Organization, env: Environment, name: string): Promise<Component> {
+  async create(
+    org: Organization,
+    env: Environment,
+    name: string
+  ): Promise<Component> {
     return this.compRepo.save({
       name,
       environment: env,
@@ -49,7 +58,11 @@ export class ComponentService {
     });
   }
 
-  async getAllForEnvironmentById(org: Organization, env: Environment, withEnv: boolean = false): Promise<Component[]> {
+  async getAllForEnvironmentById(
+    org: Organization,
+    env: Environment,
+    withEnv: boolean = false
+  ): Promise<Component[]> {
     return this.compRepo.find({
       where: {
         organization: {
@@ -65,7 +78,10 @@ export class ComponentService {
     });
   }
 
-  async getAll(org: Organization, withEnv: boolean = false): Promise<Component[]> {
+  async getAll(
+    org: Organization,
+    withEnv: boolean = false
+  ): Promise<Component[]> {
     const components = await this.compRepo.find({
       where: {
         organization: {
@@ -80,7 +96,11 @@ export class ComponentService {
     return components;
   }
 
-  async findById(org: Organization, id: number, withEnv: boolean = false): Promise<Component> {
+  async findById(
+    org: Organization,
+    id: number,
+    withEnv: boolean = false
+  ): Promise<Component> {
     return await this.compRepo.findOne({
       where: {
         id,
@@ -94,7 +114,12 @@ export class ComponentService {
     });
   }
 
-  async findByName(org: Organization, env: Environment, name: string, withEnv: boolean = false): Promise<Component> {
+  async findByName(
+    org: Organization,
+    env: Environment,
+    name: string,
+    withEnv: boolean = false
+  ): Promise<Component> {
     return await this.compRepo.findOne({
       where: {
         name,
@@ -157,7 +182,7 @@ export class ComponentService {
     return this.compRepo
       .createQueryBuilder('c')
       .select('c.*')
-      .addSelect(subQuery => {
+      .addSelect((subQuery) => {
         return subQuery
           .select('cr.status')
           .from(ComponentReconcile, 'cr')
@@ -175,7 +200,10 @@ export class ComponentService {
       .execute();
   }
 
-  async update(comp: Component, mergeComp: UpdateComponentDto): Promise<Component> {
+  async update(
+    comp: Component,
+    mergeComp: UpdateComponentDto
+  ): Promise<Component> {
     this.compRepo.merge(comp, mergeComp);
 
     return this.compRepo.save(comp);

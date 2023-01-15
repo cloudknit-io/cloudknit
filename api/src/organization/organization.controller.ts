@@ -1,7 +1,21 @@
-import { BadRequestException, Body, Controller, Get, Logger, Param, Patch, Post, Query, Request } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Logger,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Request,
+} from '@nestjs/common';
 import { APIRequest } from 'src/types';
 import { handleSqlErrors } from 'src/utilities/errorHandler';
-import { CreateOrganizationDto, PatchOrganizationDto } from './organization.dto';
+import {
+  CreateOrganizationDto,
+  PatchOrganizationDto,
+} from './organization.dto';
 import { OrganizationService } from './organization.service';
 
 @Controller({
@@ -25,7 +39,11 @@ export class OrganizationController {
 
   @Post()
   public async create(@Body() body: CreateOrganizationDto) {
-    if (!body.name || !this.OrganizationNameRegex.test(body.name) || body.name.length > 63) {
+    if (
+      !body.name ||
+      !this.OrganizationNameRegex.test(body.name) ||
+      body.name.length > 63
+    ) {
       throw new BadRequestException('Organization name is invalid');
     }
 
@@ -34,14 +52,20 @@ export class OrganizationController {
     } catch (error) {
       handleSqlErrors(error, 'organization already exists');
 
-      this.logger.error({ message: 'error creating organization', body }, error.stack);
+      this.logger.error(
+        { message: 'error creating organization', body },
+        error.stack
+      );
 
       throw error;
     }
   }
 
   @Get('/:orgId')
-  public async getOrg(@Request() req: APIRequest, @Param('orgId') forOpenApi: string) {
+  public async getOrg(
+    @Request() req: APIRequest,
+    @Param('orgId') forOpenApi: string
+  ) {
     return req.org;
   }
 

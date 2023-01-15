@@ -19,11 +19,15 @@ describe('Organization Service', () => {
     });
 
     it('should be null', async () => {
-      expect(getGithubOrgFromRepoUrl('git@github.comsome-random-org/hello-world.git')).toBeNull();
+      expect(
+        getGithubOrgFromRepoUrl('git@github.comsome-random-org/hello-world.git')
+      ).toBeNull();
     });
 
     it('should be null', async () => {
-      expect(getGithubOrgFromRepoUrl('git@github.com:some-random-org/hello-world')).toBeNull();
+      expect(
+        getGithubOrgFromRepoUrl('git@github.com:some-random-org/hello-world')
+      ).toBeNull();
     });
   });
 
@@ -37,7 +41,11 @@ describe('Organization Service', () => {
     });
 
     it('should be null', async () => {
-      expect(getGithubOrgFromRepoUrl('https://github.com/some-random-orghello-world.git')).toBeNull();
+      expect(
+        getGithubOrgFromRepoUrl(
+          'https://github.com/some-random-orghello-world.git'
+        )
+      ).toBeNull();
     });
   });
 });

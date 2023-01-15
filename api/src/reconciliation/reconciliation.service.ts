@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { get } from 'src/config';
 import { S3Handler } from 'src/utilities/s3Handler';
@@ -57,7 +61,11 @@ export class ReconciliationService {
     return this.envReconRepo.save(envRecon);
   }
 
-  async getEnvReconByReconcileId(org: Organization, reconcileId: number, withEnv: boolean = false) {
+  async getEnvReconByReconcileId(
+    org: Organization,
+    reconcileId: number,
+    withEnv: boolean = false
+  ) {
     return this.envReconRepo.findOne({
       where: {
         reconcileId,
@@ -87,7 +95,12 @@ export class ReconciliationService {
     });
   }
 
-  async getSkippedEnvironments(org: Organization, team: Team, env: Environment, ignoreReconcileIds: number[]) {
+  async getSkippedEnvironments(
+    org: Organization,
+    team: Team,
+    env: Environment,
+    ignoreReconcileIds: number[]
+  ) {
     return this.envReconRepo.find({
       where: {
         endDateTime: IsNull(),
@@ -106,9 +119,12 @@ export class ReconciliationService {
     });
   }
 
-  async bulkUpdateEnvironmentEntries(entries: EnvironmentReconcile[], status: string) {
+  async bulkUpdateEnvironmentEntries(
+    entries: EnvironmentReconcile[],
+    status: string
+  ) {
     if (entries.length > 0) {
-      const newEntries = entries.map(entry => ({
+      const newEntries = entries.map((entry) => ({
         ...entry,
         status,
       })) as any;
@@ -164,7 +180,10 @@ export class ReconciliationService {
     });
   }
 
-  async getCompReconByComponent(org: Organization, comp: Component): Promise<ComponentReconcile> {
+  async getCompReconByComponent(
+    org: Organization,
+    comp: Component
+  ): Promise<ComponentReconcile> {
     return this.compReconRepo.findOne({
       where: {
         component: {
@@ -204,9 +223,12 @@ export class ReconciliationService {
     });
   }
 
-  async bulkUpdateComponentEntries(entries: ComponentReconcile[], status: string) {
+  async bulkUpdateComponentEntries(
+    entries: ComponentReconcile[],
+    status: string
+  ) {
     if (entries.length > 0) {
-      const newEntries = entries.map(entry => ({
+      const newEntries = entries.map((entry) => ({
         ...entry,
         status,
       })) as any;
@@ -215,7 +237,10 @@ export class ReconciliationService {
     }
   }
 
-  async getComponentAuditList(org: Organization, comp: Component): Promise<ComponentReconcileWrap[]> {
+  async getComponentAuditList(
+    org: Organization,
+    comp: Component
+  ): Promise<ComponentReconcileWrap[]> {
     const components = await this.compReconRepo.find({
       where: {
         component: {
@@ -233,7 +258,10 @@ export class ReconciliationService {
     return Mapper.getComponentAuditList(components);
   }
 
-  async getEnvironmentAuditList(org: Organization, env: Environment): Promise<EnvironmentReconcileWrap[]> {
+  async getEnvironmentAuditList(
+    org: Organization,
+    env: Environment
+  ): Promise<EnvironmentReconcileWrap[]> {
     const environments = await this.envReconRepo.find({
       where: {
         environment: {
@@ -248,26 +276,43 @@ export class ReconciliationService {
     return Mapper.getEnvironmentAuditList(environments);
   }
 
-  async getLogs(org: Organization, team: string, environment: Environment, component: Component, id: number) {
+  async getLogs(
+    org: Organization,
+    team: string,
+    environment: Environment,
+    component: Component,
+    id: number
+  ) {
     const prefix = `${team}/${environment.name}/${component.name}/${id}/`;
     const bucket = `zlifecycle-${this.ckEnvironment}-tfplan-${org.name}`;
 
     try {
       const objects = await this.s3h.getObjects(bucket, prefix);
 
-      return objects.map(o => ({
+      return objects.map((o) => ({
         key: o.key,
         body: o.data.Body.toString(),
       }));
     } catch (err) {
-      this.logger.error({ message: 'error getting S3 terraform logs', prefix, bucket }, err);
+      this.logger.error(
+        { message: 'error getting S3 terraform logs', prefix, bucket },
+        err
+      );
       throw new InternalServerErrorException('could not get logs');
     }
   }
 
-  async getStateFile(org: Organization, team: string, environment: string, component: string) {
+  async getStateFile(
+    org: Organization,
+    team: string,
+    environment: string,
+    component: string
+  ) {
     const prefix = `${team}/${environment}/${component}/terraform.tfstate`;
-    const resp = await this.s3h.getObject(`zlifecycle-${this.ckEnvironment}-tfstate-${org.name}`, prefix);
+    const resp = await this.s3h.getObject(
+      `zlifecycle-${this.ckEnvironment}-tfstate-${org.name}`,
+      prefix
+    );
 
     return {
       ...resp,
@@ -275,7 +320,10 @@ export class ReconciliationService {
     };
   }
 
-  async getLatestCompReconcile(org: Organization, comp: Component): Promise<ComponentReconcile> {
+  async getLatestCompReconcile(
+    org: Organization,
+    comp: Component
+  ): Promise<ComponentReconcile> {
     return await this.compReconRepo.findOne({
       where: {
         component: {
@@ -299,6 +347,12 @@ export class ReconciliationService {
     component: Component,
     latestCompRecon: ComponentReconcile
   ) {
-    return await this.getLogs(org, team, environment, component, latestCompRecon.reconcileId);
+    return await this.getLogs(
+      org,
+      team,
+      environment,
+      component,
+      latestCompRecon.reconcileId
+    );
   }
 }

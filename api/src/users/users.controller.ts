@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Logger, NotFoundException, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Logger,
+  NotFoundException,
+  Param,
+  Post,
+} from '@nestjs/common';
 import { AuthController } from 'src/auth/auth.controller';
 import { User } from 'src/typeorm/User.entity';
 import { CreateUserDto } from './User.dto';

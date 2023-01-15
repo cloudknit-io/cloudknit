@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Injectable, Logger, NestMiddleware } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
+  NestMiddleware,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Organization } from 'src/typeorm';

@@ -56,7 +56,10 @@ export class S3Handler {
 
   async getObjects(bucket: string, prefix: string): Promise<FileInfo[]> {
     try {
-      const fileContents: S3.ObjectList = await this.getObjectList(bucket, prefix);
+      const fileContents: S3.ObjectList = await this.getObjectList(
+        bucket,
+        prefix
+      );
 
       if (!fileContents || fileContents.length === 0) {
         throw '';
@@ -93,7 +96,11 @@ export class S3Handler {
     });
   }
 
-  public async copyToS3(bucket: string, path: string, contents: Express.Multer.File) {
+  public async copyToS3(
+    bucket: string,
+    path: string,
+    contents: Express.Multer.File
+  ) {
     const uploadProcess = this.s3.upload({
       Bucket: bucket,
       Body: contents.buffer,

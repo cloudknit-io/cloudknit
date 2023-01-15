@@ -1,4 +1,11 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable, Logger, NestMiddleware } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
+  NestMiddleware,
+} from '@nestjs/common';
 import { Response, NextFunction } from 'express';
 import { EnvironmentService } from 'src/environment/environment.service';
 import { APIRequest } from 'src/types';
