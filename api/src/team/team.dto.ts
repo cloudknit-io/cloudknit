@@ -13,4 +13,10 @@ export class TeamQueryParams {
   @IsIn(['true', 'false'])
   @IsOptional()
   withEnvironments: string = 'false';
+
+  @ApiProperty({ required: false, type: 'boolean' })
+  @IsString()
+  @IsIn(['true', 'false'])
+  @IsOptional()
+  withComponents: string = 'false';
 }

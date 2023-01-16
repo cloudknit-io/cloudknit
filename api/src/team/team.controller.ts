@@ -95,9 +95,14 @@ export class TeamController {
     const org = req.org;
     const withCost = qParams.withCost.toLowerCase() === 'true';
     const withEnv = qParams.withEnvironments.toLowerCase() === 'true';
+    const withComps = qParams.withComponents.toLowerCase() === 'true';
     const getEnvs = withCost || withEnv;
 
-    const teams = await this.teamSvc.findAll(org, getEnvs);
+    const teams = await this.teamSvc.findAll(
+      org,
+      getEnvs,
+      withEnv && withComps
+    );
 
     if (!withCost) {
       return teams;
