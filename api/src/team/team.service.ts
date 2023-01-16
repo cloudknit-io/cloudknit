@@ -22,7 +22,7 @@ export class TeamService {
     return this.teamRepo.find({
       where: {
         organization: {
-          id: org.id,
+          id: Equal(org.id),
         },
       },
       relations: {
