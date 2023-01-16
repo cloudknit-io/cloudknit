@@ -14,15 +14,6 @@ import { StreamItem, StreamTypeEnum } from './dto/stream-item.dto';
 export class StreamService {
   readonly webStream: Subject<StreamItem> = new Subject<StreamItem>();
 
-  // constructor() {
-  //   setInterval(() => {
-  //     this.webStream.next({
-  //       data: {},
-  //       type: StreamTypeEnum.Empty,
-  //     } as StreamItem);
-  //   }, 10000);
-  // }
-
   normalizeOrg(
     obj:
       | Team
