@@ -1,15 +1,16 @@
 import { ReactComponent as AWSIcon } from 'assets/images/icons/AWS.svg';
 import { ReactComponent as MoreOptionsIcon } from 'assets/images/icons/more-options.svg';
 import { TableColumn } from 'components/atoms/table/Table';
-import { CostRenderer, currency, renderHealthStatus, renderSyncedStatus } from 'components/molecules/cards/renderFunctions';
-import { ZStreamRenderer } from 'components/molecules/zasync-renderer/ZStreamRenderer';
+import {
+	renderHealthStatus,
+	renderSyncedStatus
+} from 'components/molecules/cards/renderFunctions';
 import { AuditStatus, ZSyncStatus } from 'models/argo.models';
-import { Component, EntityStore, Environment, Team } from 'models/entity.store';
-import { EnvironmentComponentItem } from 'models/projects.models';
+import { EntityStore } from 'models/entity.store';
+import { Component, Environment, Team } from 'models/entity.type';
 import moment from 'moment';
 import React from 'react';
 import { ArgoWorkflowsService } from 'services/argo/ArgoWorkflows.service';
-import { CostingService } from 'services/costing/costing.service';
 import { FeatureKeys, VisibleFeatures } from '../feature_toggle';
 
 const ViewTypeMap: { [key: string]: number } = {
@@ -42,9 +43,7 @@ export const renderSync = (data: any) => (
 );
 
 export const renderSyncStatus = (data: Component) => (
-	<div className="d-flex">
-		{renderSyncedStatus(data.status as ZSyncStatus, '', '', '', data)}
-	</div>
+	<div className="d-flex">{renderSyncedStatus(data.status as ZSyncStatus, '', '', '', data)}</div>
 );
 
 const renderServices = () => <AWSIcon />;

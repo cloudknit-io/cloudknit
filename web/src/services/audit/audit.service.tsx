@@ -8,8 +8,8 @@ import { ReactComponent as EC2 } from 'assets/visualization-demo/platform-ec2.sv
 import { ReactComponent as Networking } from 'assets/visualization-demo/networking.svg';
 import ReactDOMServer from 'react-dom/server';
 import React from 'react';
-import { CompAuditData } from 'models/entity.store';
 import AuthStore from 'auth/AuthStore';
+import { CompAuditData } from 'models/entity.type';
 
 export class AuditService extends BaseService {
 	private static instance: AuditService | null = null;
