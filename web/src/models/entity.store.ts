@@ -12,6 +12,7 @@ export class EntityStore {
 	public emitter = new BehaviorSubject<Update>({
 		teams: [],
 		environments: [],
+		components: []
 	});
 	public emitterComp = new Subject<Component[]>();
 	public emitterCompAudit = new Subject<CompAuditData>();
@@ -25,6 +26,10 @@ export class EntityStore {
 
 	public get Environments() {
 		return [...this.envMap.values()];
+	}
+
+	public get Components() {
+		return [...this.compMap.values()];
 	}
 
 	private constructor() {
@@ -44,24 +49,31 @@ export class EntityStore {
 		this.emitter.next({
 			teams: this.Teams,
 			environments: this.Environments,
+			components: this.Components,
 		});
 	}
 
-	private async getTeams() {
-		const teams = await this.entityService.getTeams();
-		teams.forEach(e => this.teamMap.set(e.id, e));
-		await this.getEnvironments();
-	}
-
-	private async getEnvironments() {
-		const envCalls = this.Teams.map(team => this.entityService.getEnvironments(team.id));
-		const resps = await Promise.all(envCalls);
-		resps.flat().forEach(e =>
-			this.envMap.set(e.id, {
-				...e,
-				argoId: `${this.getTeam(e.teamId)?.name}-${e.name}`,
-			})
-		);
+	public async getTeams(withComponents: boolean = false) {
+		const teams = await this.entityService.getTeams(withComponents);
+		teams.forEach(e => {
+			this.teamMap.set(e.id, e);
+			e.environments.forEach(env => {
+				this.envMap.set(env.id, {
+					...env,
+					argoId: `${e.name}-${env.name}`,
+				});
+				env.components?.forEach(c => {
+					const compDag = env.dag.find(d => d.name === c.name);
+					this.compMap.set(c.id, {
+						...(this.compMap.has(c.id) ? this.compMap.get(c.id) : {}),
+						...c,
+						argoId: `${e.name}-${env.name}-${c.name}`,
+						dependsOn: compDag?.dependsOn || [],
+						teamId: e.id
+					});
+				})
+			});
+		});
 		this.emit();
 	}
 
@@ -207,6 +219,7 @@ export type Environment = {
 	status: string;
 	isDeleted: boolean;
 	estimatedCost: number;
+	components: Component[];
 };
 
 export type DAG = {
@@ -237,6 +250,7 @@ export type Component = {
 export type Update = {
 	teams: Team[];
 	environments: Environment[];
+	components: Component[]
 };
 
 export type AuditData = {

@@ -12,21 +12,23 @@ export const Overview: React.FC = () => {
 		entityStore.emitter.subscribe((val: Update) => {
 			const envs = val.environments;
 			const teams = val.teams;
+			const components = val.components;
 			const data = teams.map(t => ({
 				name: t.name,
 				data: t,
 				children: envs.filter(e => e.teamId === t.id).map(e => ({
 					name: e.argoId,
 					data: e,
-					children: e.dag.map(d => ({
-						name: `${e.argoId}-${d.name}`,
-						// asyncData: PromisentityStore.getComponents
+					children: components.filter(c => c.envId === e.id).map(c => ({
+						name: c.argoId,
+						data: c,
 						value: 1
 					}))
 				}))
 			}))
 			setHierarchicalData(data);
-		})
+		});
+		Promise.resolve(entityStore.getTeams(true));
 	}, []);
 
     useEffect(() => {

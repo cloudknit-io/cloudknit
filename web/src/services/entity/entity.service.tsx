@@ -18,8 +18,8 @@ export class EntityService extends BaseService {
 		return EntityService.instance;
 	}
 
-	async getTeams(): Promise<Team[]> {
-		const url = this.constructUri(EntitytUriType.teams());
+	async getTeams(withComps: boolean = false): Promise<Team[]> {
+		const url = this.constructUri(EntitytUriType.teams(withComps));
 		try {
 			const resp = await ApiClient.get<Team[]>(url);
 			return resp.data;
@@ -68,7 +68,7 @@ export class EntityService extends BaseService {
 }
 
 class EntitytUriType {
-	static teams = () => `teams?withCost=true&withEnvironments=true`;
+	static teams = (withComps: boolean) => `teams?withCost=true&withEnvironments=true&withComponents=${withComps}`;
 	static environments = (teamId: number) => `teams/${teamId}/environments`;
 	static components = (teamId: number, envId: number, withLastAuditStatus: boolean) => `teams/${teamId}/environments/${envId}/components?withLastAuditStatus=${withLastAuditStatus}`;
 	static streamEnvironments = () => `stream/environment`;
