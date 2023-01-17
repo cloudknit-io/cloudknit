@@ -1,9 +1,11 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { EnvironmentService } from 'src/environment/environment.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Component } from 'src/typeorm';
+import { InternalEventType, ComponentCostUpdateEvent } from 'src/types';
 import {
   Connection,
   EntitySubscriberInterface,
+  EventSubscriber,
   InsertEvent,
   RemoveEvent,
   UpdateEvent,
@@ -11,6 +13,7 @@ import {
 import { StreamService } from './stream.service';
 
 @Injectable()
+@EventSubscriber()
 export class StreamComponentService
   implements EntitySubscriberInterface<Component>
 {
@@ -19,7 +22,7 @@ export class StreamComponentService
   constructor(
     @Inject(Connection) conn: Connection,
     private readonly sseSvc: StreamService,
-    private readonly envSvc: EnvironmentService
+    private evtEmitter: EventEmitter2
   ) {
     conn.subscribers.push(this);
   }
@@ -31,19 +34,19 @@ export class StreamComponentService
   afterInsert(event: InsertEvent<Component>) {
     const comp = event.entity as Component;
 
-    this.envSvc.updateCost(comp.organization, comp.environment);
-
     this.validateAndSend(event.entity, 'afterInsert');
   }
 
-  afterUpdate(event: UpdateEvent<Component>): void | Promise<Component> {
+  async afterUpdate(event: UpdateEvent<Component>): Promise<void> {
     const comp = event.entity as Component;
 
-    for (const col of event.updatedColumns) {
-      if (col.propertyName === 'estimatedCost') {
-        this.envSvc.updateCost(comp.organization, comp.environment);
-        break;
-      }
+    if (
+      event.updatedColumns.find((col) => col.propertyName === 'estimatedCost')
+    ) {
+      this.evtEmitter.emit(
+        InternalEventType.ComponentCostUpdate,
+        new ComponentCostUpdateEvent({ ...comp })
+      );
     }
 
     this.validateAndSend(comp, 'afterUpdate');

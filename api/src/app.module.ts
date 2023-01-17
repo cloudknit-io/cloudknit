@@ -18,12 +18,14 @@ import { StreamModule } from './stream/stream.module';
 import { CachingService } from './caching/caching.service';
 import { CachingModule } from './caching/caching.module';
 import { dbConfig } from './typeorm';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       envFilePath: '.env.dev',
     }),
+    EventEmitterModule.forRoot(),
     RouterModule.register(appRoutes),
     TypeOrmModule.forRoot(dbConfig as TypeOrmModuleOptions),
     UsersModule,

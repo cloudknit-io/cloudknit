@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { ApiParam, ApiParamOptions } from '@nestjs/swagger';
 import { Request } from 'express';
-import { Environment, Team } from './typeorm';
+import { Component, Environment, Team } from './typeorm';
 import { Organization } from './typeorm/Organization.entity';
 
 export type APIRequest = Request & {
@@ -38,4 +38,34 @@ export function EnvironmentApiParam(): MethodDecorator {
     TeamApiParam(),
     ApiParam({ name: 'environmentId', required: true })
   );
+}
+
+export enum InternalEventType {
+  ComponentCostUpdate = 'ComponentEntity.update.cost',
+  EnvironmentCostUpdate = 'EnvironmentEntity.update.cost',
+}
+
+export interface InternalEvent {
+  type: InternalEventType;
+  payload: any;
+}
+
+export class ComponentCostUpdateEvent implements InternalEvent {
+  type: InternalEventType;
+  payload: Component;
+
+  constructor(p: Component) {
+    this.type = InternalEventType.ComponentCostUpdate;
+    this.payload = p;
+  }
+}
+
+export class EnvironmentCostUpdateEvent implements InternalEvent {
+  type: InternalEventType;
+  payload: Environment;
+
+  constructor(p: Environment) {
+    this.type = InternalEventType.EnvironmentCostUpdate;
+    this.payload = p;
+  }
 }

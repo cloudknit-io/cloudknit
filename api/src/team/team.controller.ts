@@ -13,13 +13,20 @@ import {
 } from '@nestjs/common';
 import { TeamService } from './team.service';
 import { UpdateTeamDto } from './dto/update-team.dto';
-import { APIRequest, OrgApiParam, TeamApiParam } from 'src/types';
+import {
+  APIRequest,
+  EnvironmentCostUpdateEvent,
+  InternalEventType,
+  OrgApiParam,
+  TeamApiParam,
+} from 'src/types';
 import { TeamSpecDto } from './dto/team-spec.dto';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { getGithubOrgFromRepoUrl } from 'src/organization/utilities';
 import { handleSqlErrors } from 'src/utilities/errorHandler';
 import { TeamQueryParams } from './team.dto';
 import { Team } from 'src/typeorm';
+import { OnEvent } from '@nestjs/event-emitter';
 
 @Controller({
   version: '1',
@@ -130,5 +137,17 @@ export class TeamController {
     const { org, team } = req;
 
     return this.teamSvc.remove(org, team.id);
+  }
+
+  @OnEvent(InternalEventType.EnvironmentCostUpdate, { async: true })
+  async environmentCostUpdateListener(evt: EnvironmentCostUpdateEvent) {
+    const env = evt.payload;
+    let team = env.team;
+
+    if (!team) {
+      team = await this.teamSvc.findById(env.organization, env.teamId);
+    }
+
+    await this.teamSvc.updateCost(env.organization, team.id);
   }
 }
