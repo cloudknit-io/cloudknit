@@ -30,6 +30,15 @@ export class StreamEnvironmentService
   }
 
   afterInsert(event: InsertEvent<Environment>) {
+    const env = event.entity as Environment;
+
+    if (env.estimatedCost > 0) {
+      this.evtEmitter.emit(
+        InternalEventType.EnvironmentCostUpdate,
+        new EnvironmentCostUpdateEvent({ ...env })
+      );
+    }
+
     this.validateAndSend(event.entity, 'afterInsert');
   }
 
