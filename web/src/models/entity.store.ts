@@ -135,32 +135,12 @@ export class EntityStore {
 		const currEnv = this.getEnvironmentById(envId);
 
 		if (components.length > 0 && currEnv) {
-			components.forEach((c: any) => {
-				const compDag = currEnv.dag.find(d => d.name === c['component_name']);
-				const rd: Component = {
-					costResources: c['cost_resources'],
-					name: c['component_name'],
-					duration: c['duration'],
-					envId: c['environmentId'],
-					estimatedCost: c['estimated_cost'],
-					isDestroyed: c['isDestroyed'],
-					lastReconcileDatetime: c['last_reconcile_datetime'],
-					status: c['status'],
-					id: c['id'],
-					lastWorkflowRunId: c['lastWorkflowRunId'],
-					lastAuditStatus: c['lastAuditStatus'],
-					dependsOn: compDag?.dependsOn || [],
-					argoId: `${currEnv.argoId}-${c.component_name}`,
-					teamId: currEnv.teamId,
-					changeId: Symbol(),
-					type: c['type'],
-				};
-
-				// c.dependsOn = compDag?.dependsOn || [];
-				// c.argoId = `${currEnv.argoId}-${rd.name}`;
-				// c.teamId = currEnv.teamId;
-
-				this.compMap.set(c.id, rd);
+			components.forEach((c: Component) => {
+				const compDag = currEnv.dag.find(d => d.name === c.name);
+				c.dependsOn = compDag?.dependsOn || [];
+				c.argoId = `${currEnv.argoId}-${c.name}`;
+				c.teamId = currEnv.teamId;
+				this.compMap.set(c.id, c);
 			});
 		}
 
