@@ -34,7 +34,14 @@ export class StreamComponentService
   afterInsert(event: InsertEvent<Component>) {
     const comp = event.entity as Component;
 
-    this.validateAndSend(event.entity, 'afterInsert');
+    if (comp.estimatedCost > 0) {
+      this.evtEmitter.emit(
+        InternalEventType.ComponentCostUpdate,
+        new ComponentCostUpdateEvent({ ...comp })
+      );
+    }
+
+    this.validateAndSend(comp, 'afterInsert');
   }
 
   async afterUpdate(event: UpdateEvent<Component>): Promise<void> {

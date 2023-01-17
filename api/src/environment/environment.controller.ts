@@ -235,8 +235,6 @@ export class EnvironmentController {
     const comp = evt.payload;
     let env = comp.environment;
 
-    console.log('compCostUpdateListener', comp.id);
-
     if (!env) {
       env = await this.envSvc.findById(comp.organization, comp.envId);
     }
