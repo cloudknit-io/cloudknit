@@ -199,6 +199,22 @@ export class ReconciliationService {
     });
   }
 
+  async getLatestCompReconByComponentIds(compIds: number[]) {
+    const latestCompRecon = this.compReconRepo
+      .createQueryBuilder('ccr')
+      .select('MAX(ccr.startDateTime)')
+      .where('ccr.componentId = cr.componentId');
+
+    return this.compReconRepo
+      .createQueryBuilder('cr')
+      .select('cr.componentId as id, cr.status as status')
+      .where(
+        `cr.componentId IN (:compIds) and cr.startDateTime = (${latestCompRecon.getQuery()})`
+      )
+      .setParameter('compIds', compIds)
+      .execute();
+  }
+
   async getSkippedComponents(
     org: Organization,
     envRecon: EnvironmentReconcile,

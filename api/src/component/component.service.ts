@@ -1,19 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ReconciliationService } from 'src/reconciliation/reconciliation.service';
 import {
-  Component,
-  ComponentReconcile,
-  Environment,
-  Organization,
+  Component, Environment,
+  Organization
 } from 'src/typeorm';
-import { UpdateComponentDto } from './dto/update-component.dto';
 import { Equal, In, Repository } from 'typeorm';
+import { ComponentWrap } from './component.dto';
+import { UpdateComponentDto } from './dto/update-component.dto';
 
 @Injectable()
 export class ComponentService {
   constructor(
     @InjectRepository(Component)
-    private compRepo: Repository<Component>
+    private compRepo: Repository<Component>,
+    private recSvc: ReconciliationService
   ) {}
 
   async batchCreate(org: Organization, env: Environment, names: string[]) {
@@ -179,25 +180,22 @@ export class ComponentService {
   }
 
   async findAllWithLastCompRecon(org: Organization, env: Environment) {
-    return this.compRepo
-      .createQueryBuilder('c')
-      .select('c.*')
-      .addSelect((subQuery) => {
-        return subQuery
-          .select('cr.status')
-          .from(ComponentReconcile, 'cr')
-          .where('c.organizationId = cr.organizationId')
-          .andWhere('c.id = cr.componentId')
-          .orderBy('cr.startDateTime', 'DESC')
-          .limit(1);
-      }, 'lastAuditStatus')
-      .where('c.organizationId = :orgId')
-      .andWhere('c.environmentId = :envId')
-      .setParameters({
-        orgId: org.id,
-        envId: env.id,
-      })
-      .execute();
+    type compReconType = {
+      id: number;
+      status: string;
+    };
+    const components = await this.findAll(org, env);
+    const compRecons: compReconType[] =
+      await this.recSvc.getLatestCompReconByComponentIds(
+        components.map((c) => c.id)
+      );
+    return components.map((c) => {
+      const cw: ComponentWrap = {
+        ...c,
+        lastAuditStatus: compRecons.find((e) => e.id === c.id)?.status,
+      };
+      return cw;
+    });
   }
 
   async update(
