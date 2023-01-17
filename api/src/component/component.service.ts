@@ -1,10 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ReconciliationService } from 'src/reconciliation/reconciliation.service';
-import {
-  Component, Environment,
-  Organization
-} from 'src/typeorm';
+import { Component, Environment, Organization } from 'src/typeorm';
 import { Equal, In, Repository } from 'typeorm';
 import { ComponentWrap } from './component.dto';
 import { UpdateComponentDto } from './dto/update-component.dto';
@@ -180,20 +177,15 @@ export class ComponentService {
   }
 
   async findAllWithLastCompRecon(org: Organization, env: Environment) {
-    type compReconType = {
-      id: number;
-      status: string;
-    };
     const components = await this.findAll(org, env);
-    const compRecons: compReconType[] =
-      await this.recSvc.getLatestCompReconByComponentIds(
-        org,
-        components.map((c) => c.id)
-      );
+    const compRecons = await this.recSvc.getLatestCompReconByComponentIds(
+      org,
+      components.map((c) => c.id)
+    );
     return components.map((c) => {
       const cw: ComponentWrap = {
         ...c,
-        lastAuditStatus: compRecons.find((e) => e.id === c.id)?.status,
+        lastAuditStatus: compRecons.find((e) => e.compId === c.id)?.status,
       };
       return cw;
     });
