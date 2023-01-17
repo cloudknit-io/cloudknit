@@ -290,7 +290,7 @@ export class ReconciliationController {
     }
 
     try {
-      await this.compSvc.update(compRecon.component, {
+      await this.compSvc.update(org, compRecon.component, {
         status: 'initializing_apply',
       });
     } catch (err) {
