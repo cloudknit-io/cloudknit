@@ -187,6 +187,7 @@ export class ComponentService {
     const components = await this.findAll(org, env);
     const compRecons: compReconType[] =
       await this.recSvc.getLatestCompReconByComponentIds(
+        org,
         components.map((c) => c.id)
       );
     return components.map((c) => {

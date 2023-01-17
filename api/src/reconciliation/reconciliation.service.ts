@@ -199,7 +199,7 @@ export class ReconciliationService {
     });
   }
 
-  async getLatestCompReconByComponentIds(compIds: number[]) {
+  async getLatestCompReconByComponentIds(org: Organization, compIds: number[]) {
     const latestCompRecon = this.compReconRepo
       .createQueryBuilder('ccr')
       .select('MAX(ccr.startDateTime)')
@@ -209,9 +209,12 @@ export class ReconciliationService {
       .createQueryBuilder('cr')
       .select('cr.componentId as id, cr.status as status')
       .where(
-        `cr.componentId IN (:compIds) and cr.startDateTime = (${latestCompRecon.getQuery()})`
+        `cr.organizationId = :orgId and cr.componentId IN (:compIds) and cr.startDateTime = (${latestCompRecon.getQuery()})`
       )
-      .setParameter('compIds', compIds)
+      .setParameters({
+        'orgId': org.id,
+        'compIds': compIds
+      })
       .execute();
   }
 
