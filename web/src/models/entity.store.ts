@@ -135,8 +135,8 @@ export class EntityStore {
 		const currEnv = this.getEnvironmentById(envId);
 
 		if (components.length > 0 && currEnv) {
-			components.forEach((c: any) => {
-				const compDag = currEnv.dag.find(d => d.name === c['component_name']);
+			components.forEach((c: Component) => {
+				const compDag = currEnv.dag.find(d => d.name === c.name);
 				c.dependsOn = compDag?.dependsOn || [];
 				c.argoId = `${currEnv.argoId}-${c.name}`;
 				c.teamId = currEnv.teamId;
