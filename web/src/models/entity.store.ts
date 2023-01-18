@@ -113,31 +113,33 @@ export class EntityStore {
 	}
 
 	private streamTeam(team: Team) {
-		const present = this.teamMap.has(team.id);
-
-		if (present) {
+		if (this.teamMap.has(team.id)) {
 			const currTeam = this.teamMap.get(team.id);
 			this.teamMap.set(team.id, {
 				...currTeam,
 				...team,
 			});
-
-			this.emit();
+		} else {
+			this.teamMap.set(team.id, team);
 		}
+		this.emit();
 	}
 
 	private streamEnvironment(environment: Environment) {
-		const present = this.envMap.has(environment.id);
-
-		if (present) {
+		if (this.envMap.has(environment.id)) {
 			const currEnv = this.envMap.get(environment.id);
 			this.envMap.set(environment.id, {
 				...currEnv,
 				...environment,
 			});
-
-			this.emit();
+		} else {
+			this.envMap.set(environment.id, {
+				...environment,
+				argoId: `${this.getTeam(environment.teamId)?.name}-${environment.name}`,
+			})
 		}
+
+		this.emit();
 	}
 
 	private streamComponent(component: Component) {
@@ -148,8 +150,10 @@ export class EntityStore {
 				...currComp,
 				...component,
 			});
-			this.emitterComp.next(this.getComponentsByEnvId(component.envId));
+		} else {
+			this.compMap.set(component.id, this.mapComponent(component));
 		}
+		this.emitterComp.next(this.getComponentsByEnvId(component.envId));
 	}
 
 	private streamAudit(data: CompAuditData | EnvAuditData) {
@@ -161,6 +165,17 @@ export class EntityStore {
 			const envData = data as EnvAuditData;
 			this.emitterEnvAudit.next(envData);
 		}
+	}
+
+	private mapComponent(component: Component) {
+		const currEnv = this.getEnvironmentById(component.envId);
+		if (currEnv) {
+			const compDag = currEnv.dag.find(d => d.name === component.name);
+			component.dependsOn = compDag?.dependsOn || [];
+			component.argoId = `${currEnv.argoId}-${component.name}`;
+			component.teamId = currEnv.teamId;
+		}
+		return component;
 	}
 
 	public getTeam(id: number) {
@@ -190,16 +205,18 @@ export class EntityStore {
 	}
 
 	public async getComponents(teamId: number, envId: number) {
+		const cachedComps = this.getComponentsByEnvId(envId);
+		if (cachedComps.length > 0) {
+			return cachedComps;
+		}
+
 		const components: any = await this.entityService.getComponents(teamId, envId, true);
 		const currEnv = this.getEnvironmentById(envId);
 
 		if (components.length > 0 && currEnv) {
 			components.forEach((c: Component) => {
-				const compDag = currEnv.dag.find(d => d.name === c.name);
-				c.dependsOn = compDag?.dependsOn || [];
-				c.argoId = `${currEnv.argoId}-${c.name}`;
-				c.teamId = currEnv.teamId;
-				this.compMap.set(c.id, c);
+				const component = this.mapComponent(c);
+				this.compMap.set(component.id, component);
 			});
 		}
 
