@@ -181,7 +181,7 @@ export const EnvironmentCard: FC<PropsEnvironmentItem> = ({
 				</div>
 				<div className="large-health-icon-container">
 					{
-						environment && <Reconciler environment={environment} template={EnvCardReconcile}/>
+						environment && <Reconciler key={environment.argoId} environment={environment} template={EnvCardReconcile}/>
 					}
 					{featureToggled(FeatureKeys.DIFF_CHECKER, true) && (
 						<input
