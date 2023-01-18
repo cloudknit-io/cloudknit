@@ -23,7 +23,6 @@ export class TeamService {
     withEnv: boolean = false,
     withComponents: boolean = false
   ) {
-    console.log(withComponents);
     let relation: FindOptionsRelations<Team> = {
       environments: withEnv,
     };
