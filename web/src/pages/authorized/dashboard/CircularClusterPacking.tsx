@@ -61,8 +61,8 @@ export const CircularClusterPacking: FC<any> = (props: Cluster) => {
 				'class',
 				(d: any): any =>
 					'wedge' +
-					getClassName(d.data.status) +
-					(d.data.componentStatus === ZSyncStatus.NotProvisioned ? ' striped' : '')
+					getClassName(d.data.data.status) +
+					(d.data.data.status === ZSyncStatus.NotProvisioned ? ' striped' : '')
 			)
 			.attr('stroke', '#888')
 			.on('mouseenter', (e, d: any) => {
@@ -92,19 +92,20 @@ export const CircularClusterPacking: FC<any> = (props: Cluster) => {
 					classNames: 'com-cards tooltip-d3 teams tooltip',
 					...tooltipData
 				};
-				if (data?.data?.labels?.type === 'project') {
+				const renderData = data?.data?.data;
+				if (renderData?.repo) {
 					setCardData({
-						card: <TeamCard team={data.data} />,
+						card: <TeamCard team={data.data.data} />,
 						...teamCardData,
 					});
-				} else if (data?.data?.labels?.type === 'environment') {
+				} else if (renderData?.teamId && !renderData.envId) {
 					setCardData({
-						card: <EnvironmentCard environment={data.data} />,
+						card: <EnvironmentCard environment={data.data.data} />,
 						...cardData,
 					});
-				} else if (data?.data?.labels?.type === 'config') {
+				} else if (renderData?.envId) {
 					setCardData({
-						card: <ConfigCard config={data.data} onClick={() => {}} />,
+						card: <ConfigCard config={data.data.data} onClick={() => {}} />,
 						...cardData,
 					});
 				}

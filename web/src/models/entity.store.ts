@@ -1,6 +1,5 @@
 import { EntityService } from 'services/entity/entity.service';
 import { BehaviorSubject, Subject, Subscription } from 'rxjs';
-import { AuditStatus } from './argo.models';
 import { ErrorStateService } from 'services/error/error-state.service';
 import { CompAuditData, Component, EnvAuditData, Environment, StreamTypeEnum, Team, Update } from './entity.type';
 
@@ -13,6 +12,7 @@ export class EntityStore {
 	public emitter = new BehaviorSubject<Update>({
 		teams: [],
 		environments: [],
+		components: []
 	});
 	public emitterComp = new Subject<Component[]>();
 	public emitterCompAudit = new Subject<CompAuditData>();
@@ -20,6 +20,7 @@ export class EntityStore {
 	private emitterMap = new Map<StreamTypeEnum, Function>();
 	private componentAuditListeners = new Set<number>();
 	private environmentAuditListeners = new Set<number>();
+	private allDataFetched = false;
 
 	public get Teams() {
 		return [...this.teamMap.values()];
@@ -27,6 +28,14 @@ export class EntityStore {
 
 	public get Environments() {
 		return [...this.envMap.values()];
+	}
+
+	public get Components() {
+		return [...this.compMap.values()];
+	}
+
+	public get AllDataFetched() {
+		return this.allDataFetched;
 	}
 
 	private constructor() {
@@ -55,24 +64,34 @@ export class EntityStore {
 		this.emitter.next({
 			teams: this.Teams,
 			environments: this.Environments,
+			components: this.Components,
 		});
 	}
 
-	private async getTeams() {
-		const teams = await this.entityService.getTeams();
-		teams.forEach(e => this.teamMap.set(e.id, e));
-		await this.getEnvironments();
-	}
-
-	private async getEnvironments() {
-		const envCalls = this.Teams.map(team => this.entityService.getEnvironments(team.id));
-		const resps = await Promise.all(envCalls);
-		resps.flat().forEach(e =>
-			this.envMap.set(e.id, {
-				...e,
-				argoId: `${this.getTeam(e.teamId)?.name}-${e.name}`,
-			})
-		);
+	public async getTeams(withComponents: boolean = false) {
+		if (!this.allDataFetched) {
+			const teams = await this.entityService.getTeams(withComponents);
+			teams.forEach(e => {
+				this.teamMap.set(e.id, e);
+				e.environments.forEach(env => {
+					this.envMap.set(env.id, {
+						...env,
+						argoId: `${e.name}-${env.name}`,
+					});
+					env.components?.forEach(c => {
+						const compDag = env.dag.find(d => d.name === c.name);
+						this.compMap.set(c.id, {
+							...(this.compMap.has(c.id) ? this.compMap.get(c.id) : {}),
+							...c,
+							argoId: `${e.name}-${env.name}-${c.name}`,
+							dependsOn: compDag?.dependsOn || [],
+							teamId: e.id
+						});
+					})
+				});
+			});
+		}
+		this.allDataFetched = true;
 		this.emit();
 	}
 
@@ -208,4 +227,3 @@ export class EntityStore {
 		sub.unsubscribe();
 	}
 }
-

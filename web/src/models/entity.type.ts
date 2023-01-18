@@ -18,6 +18,7 @@ export type Environment = {
 	status: string;
 	isDeleted: boolean;
 	estimatedCost: number;
+	components: Component[];
 };
 
 export type DAG = {
@@ -48,6 +49,7 @@ export type Component = {
 export type Update = {
 	teams: Team[];
 	environments: Environment[];
+	components: Component[];
 };
 
 export type AuditData = {
