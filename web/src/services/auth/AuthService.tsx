@@ -29,7 +29,6 @@ export class AuthService {
 	static addOrganization(orgName: string) {
 		return ApiClient.post<Organization>(`/registration/orgs`, {
 			name: orgName,
-			githubRepo: '',
 		});
 	}
 

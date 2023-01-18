@@ -7,10 +7,10 @@ export class CreateOrganizationDto {
   @ApiProperty()
   name: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   @ApiProperty()
-  githubRepo: string;
+  githubRepo?: string;
 
   @IsOptional()
   @IsNumber()

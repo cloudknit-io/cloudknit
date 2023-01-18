@@ -199,6 +199,24 @@ export class ReconciliationService {
     });
   }
 
+  async getLatestCompReconByComponentIds(org: Organization, compIds: number[]): Promise<ComponentReconcile[]> {
+    const latestCompRecon = this.compReconRepo
+      .createQueryBuilder('ccr')
+      .select('MAX(ccr.startDateTime)')
+      .where('ccr.componentId = cr.componentId');
+    return this.compReconRepo
+      .createQueryBuilder('cr')
+      .select("cr.id as reconcileId, cr.componentId as compId, cr.environmentReconcileReconcileId as envReconId, cr.*")
+      .where(
+        `cr.organizationId = :orgId and cr.componentId IN (:compIds) and cr.startDateTime = (${latestCompRecon.getQuery()})`
+      )
+      .setParameters({
+        'orgId': org.id,
+        'compIds': compIds
+      })
+      .execute();
+  }
+
   async getSkippedComponents(
     org: Organization,
     envRecon: EnvironmentReconcile,
