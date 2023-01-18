@@ -21,6 +21,7 @@ type Props = {
 type EnvironmentComponentItemProps = {
 	config: Component;
 	onClick: Function;
+	showFullName?: boolean | undefined;
 };
 
 const getFullName = (teamId = '', environmentId = '', componentName = '') => {
@@ -97,6 +98,7 @@ export const EnvironmentComponentCards: FC<Props> = ({
 						key={config.argoId}
 						config={config}
 						onClick={onClick}
+						showFullName={showAll}
 					/>
 				))}
 			</div>
@@ -107,6 +109,7 @@ export const EnvironmentComponentCards: FC<Props> = ({
 export const ConfigCard: FC<EnvironmentComponentItemProps> = ({
 	config,
 	onClick,
+	showFullName = false,
 }: EnvironmentComponentItemProps) => {
 	const env = EntityStore.getInstance().getEnvironmentById(config.envId);
 	const team = EntityStore.getInstance().getTeam(env?.teamId || -1)
@@ -116,12 +119,12 @@ export const ConfigCard: FC<EnvironmentComponentItemProps> = ({
 			classNames={`component-card ${
 				config.status === ZSyncStatus.Destroyed ? 'destroyed' : ''
 			}`}
-			key={config.name}
+			key={config.argoId}
 			model="Environment Component"
 			teamName={team?.name || ''}
 			envName={env?.name || ''}
 			estimatedCost={<CostRenderer data={config.estimatedCost} />}
-			title={config.name}
+			title={showFullName ? config.argoId : config.name}
 			items={mapGridItems(config)}
 			labels={getLabels(config)}
 			onClick={(): void => onClick(config)}

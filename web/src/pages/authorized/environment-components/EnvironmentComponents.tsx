@@ -122,7 +122,7 @@ export const EnvironmentComponents: React.FC = () => {
 		setFilterItems([
 			renderSyncStatusItems
 				.bind(null, ZComponentSyncStatus, syncStatusFilter, setSyncStatusFilter, 'Component Status')
-				.bind(null, (status: string) => components.filter(e => 'e.componentStatus' === status).length),
+				.bind(null, (status: string) => components.filter(e => e.status === status).length),
 		]);
 	}, [components, syncStatusFilter]);
 
@@ -157,17 +157,23 @@ export const EnvironmentComponents: React.FC = () => {
 	}, [checkBoxFilters, viewType, environment]);
 
 	useEffect(() => {
-		if (!projectId || !environmentName || showAll) return;
+		if (!projectId || !environmentName) return;
 
 		resetRefs();
 
 		const subs: any[] = [];
 		subs.push(
-			entityStore.emitter.subscribe(async data => {
-				if (data.environments.length === 0) return;
-				const env = entityStore.getEnvironmentByName(projectId, environmentName);
-				if (!env) return;
-				setEnvironment(env);
+			entityStore.emitter.subscribe(data => {
+				if (showAll) {
+					entityStore.AllDataFetched && setComponents([...data.components]);
+					componentArrayRef.current = data.components;
+					setLoading(false);
+				} else {
+					if (data.environments.length === 0) return;
+					const env = entityStore.getEnvironmentByName(projectId, environmentName);
+					if (!env) return;
+					setEnvironment(env);
+				}
 			})
 		);
 
@@ -176,6 +182,10 @@ export const EnvironmentComponents: React.FC = () => {
 				setStreamData2(response);
 			})
 		);
+
+		if (showAll) {
+			Promise.resolve(entityStore.getTeams(true));
+		}
 
 		return () => {
 			subs.forEach(sub => sub.unsubscribe());
@@ -270,8 +280,8 @@ export const EnvironmentComponents: React.FC = () => {
 	}, [streamData2]);
 
 	
-	const syncStatusMatch = (item: EnvironmentComponentItem): boolean => {
-		return syncStatusFilter.has(item.componentStatus);
+	const syncStatusMatch = (item: Component): boolean => {
+		return syncStatusFilter.has(item.status as ZSyncStatus);
 	};
 
 	const setToggleFilterDropDownValue = (val: boolean) => {
@@ -316,16 +326,15 @@ export const EnvironmentComponents: React.FC = () => {
 		return Object.values(labels).some(val => val.includes(query));
 	};
 
-	const getFilteredData = (): EnvironmentComponentItem[] => {
-		return [];
-		// let filteredItems = [...components];
-		// if (syncStatusFilter.size > 0) {
-		// 	filteredItems = [...filteredItems.filter(syncStatusMatch)];
-		// }
+	const getFilteredData = (): Component[] => {
+		let filteredItems = [...componentArrayRef.current];
+		if (syncStatusFilter.size > 0) {
+			filteredItems = [...filteredItems.filter(syncStatusMatch)];
+		}
 
-		// return filteredItems.filter(item => {
-		// 	return item.name.toLowerCase().includes(query) || labelsMatch(item.labels, query);
-		// });
+		return filteredItems.filter(item => {
+			return item.argoId.toLowerCase().includes(query);
+		});
 	};
 
 	const resetSelectedConfig = (components: Component[]) => {
@@ -394,7 +403,7 @@ export const EnvironmentComponents: React.FC = () => {
 				return (
 					<EnvironmentComponentCards
 						showAll={showAll}
-						components={components || []}
+						components={getFilteredData() || []}
 						projectId={projectId}
 						env={environment}
 						selectedConfig={selectedConfig}
