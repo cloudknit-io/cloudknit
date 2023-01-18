@@ -1,9 +1,7 @@
-import { filterLabels } from 'components/molecules/cards/EnvironmentComponentCards';
 import { CostRenderer, renderLabels, renderSyncedStatus } from 'components/molecules/cards/renderFunctions';
 import { ZSyncStatus } from 'models/argo.models';
-import { Component } from 'models/entity.store';
-import { EnvironmentComponentItem } from 'models/projects.models';
-import React, { ReactNode, useEffect, useState } from 'react';
+import { Component } from 'models/entity.type';
+import React, { useEffect, useState } from 'react';
 import { getSeparatedConfigId } from '../helpers';
 
 export type Props = {

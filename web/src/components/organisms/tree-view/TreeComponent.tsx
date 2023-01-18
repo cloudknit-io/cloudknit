@@ -6,11 +6,12 @@ import React, { FC, useEffect, useMemo, useState } from 'react';
 
 
 import { AuditStatus } from 'models/argo.models';
-import { Component, EntityStore, Environment } from 'models/entity.store';
+import { EntityStore } from 'models/entity.store';
 import { TreeReconcile } from 'pages/authorized/environments/helpers';
 import { Reconciler } from 'pages/authorized/environments/Reconciler';
 import { cleanDagNodeCache } from './node-figure-helper';
 import Tree from './TreeView';
+import { Component, Environment } from 'models/entity.type';
 
 const curveTypes = [
 	{ value: '0', title: 'Curve Basis' },

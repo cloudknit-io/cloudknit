@@ -1,9 +1,12 @@
+import { DiffEditor } from '@monaco-editor/react';
 import { NotificationType } from 'components/argo-core';
 import { ZLoaderCover } from 'components/atoms/loader/LoaderCover';
 import { ZTable } from 'components/atoms/table/Table';
 import { EnvironmentCards } from 'components/molecules/cards/EnvironmentCards';
 import { Context } from 'context/argo/ArgoUi';
-import { ZEnvSyncStatus} from 'models/argo.models';
+import { ZEnvSyncStatus } from 'models/argo.models';
+import { EntityStore } from 'models/entity.store';
+import { Environment } from 'models/entity.type';
 import { LocalStorageKey } from 'models/localStorage';
 import { EnvironmentItem, PageHeaderTabs } from 'models/projects.models';
 import {
@@ -11,15 +14,13 @@ import {
 	getCheckBoxFilters,
 	mockModifiedYaml,
 	mockOriginalYaml,
-	renderSyncStatusItems,
+	renderSyncStatusItems
 } from 'pages/authorized/environments/helpers';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Subscription } from 'rxjs';
-import { usePageHeader } from '../contexts/EnvironmentHeaderContext';
-import { DiffEditor } from '@monaco-editor/react';
 import { ErrorStateService } from 'services/error/error-state.service';
-import { EntityStore, Environment } from 'models/entity.store';
+import { usePageHeader } from '../contexts/EnvironmentHeaderContext';
 
 type CompareEnv = {
 	env: EnvironmentItem | null;
@@ -93,11 +94,7 @@ export const Environments: React.FC = () => {
 		setFilterItems([
 			renderSyncStatusItems
 				.bind(null, ZEnvSyncStatus, syncStatusFilter, setSyncStatusFilter, 'Environment Status')
-				.bind(
-					null,
-					(status: string) =>
-						[...environments].filter(e => e.status === status).length
-				),
+				.bind(null, (status: string) => [...environments].filter(e => e.status === status).length),
 		]);
 	}, [query, environments, syncStatusFilter]);
 

@@ -4,21 +4,17 @@ import { ZEditor } from 'components/molecules/editor/Editor';
 import { AuditView } from 'components/organisms/audit_view/AuditView';
 import { HierarchicalView } from 'components/organisms/hierarchical-view/hierarchical-view';
 import { ZWorkflowDiagram } from 'components/organisms/workflow-diagram/WorkflowDiagram';
-import { Context } from 'context/argo/ArgoUi';
-import { useApi } from 'hooks/use-api/useApi';
 import { ZSyncStatus } from 'models/argo.models';
-import { OptionItem } from 'models/general.models';
 import { ZFeedbackModal } from 'pages/authorized/environment-components/config-workflow-view/FeedbackModal';
-import React, { FC, useContext, useEffect, useState } from 'react';
-import { ArgoWorkflowsService } from 'services/argo/ArgoWorkflows.service';
+import React, { FC, useEffect, useState } from 'react';
 import { AuditService } from 'services/audit/audit.service';
 
 import { StateFileView } from 'components/organisms/state-file-view/StateFileView';
-import { CompAuditData, Component } from 'models/entity.store';
 import { useRef } from 'react';
 import { EventClientLogs } from 'utils/apiClient/EventClient';
 import { auditColumns, getSeparatedConfigId, ViewType, ViewTypeTabName } from '../helpers';
 import { ConfigWorkflowLeftView } from './ConfigWorkflowLeftView';
+import { CompAuditData, Component } from 'models/entity.type';
 
 type Props = {
 	projectId: string;
@@ -112,7 +108,7 @@ export const ConfigWorkflowView: FC<Props> = (props: Props) => {
 
 		return () => {
 			[...nodesRef.current.values()].forEach(e => e.close());
-		}
+		};
 	}, [workflowData]);
 
 	const getComponentStatus = (config: Component) => {
@@ -137,8 +133,7 @@ export const ConfigWorkflowView: FC<Props> = (props: Props) => {
 					const latestId = auditData.sort((d1, d2) => d2.reconcileId - d1.reconcileId)[0].reconcileId;
 					await AuditService.getInstance().approve(latestId);
 				}}
-				onDecline={() => {
-				}}
+				onDecline={() => {}}
 			/>
 		);
 	};
