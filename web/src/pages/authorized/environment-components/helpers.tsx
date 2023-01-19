@@ -1,15 +1,12 @@
 import { ReactComponent as AWSIcon } from 'assets/images/icons/AWS.svg';
 import { ReactComponent as MoreOptionsIcon } from 'assets/images/icons/more-options.svg';
 import { TableColumn } from 'components/atoms/table/Table';
-import { CostRenderer, currency, renderHealthStatus, renderSyncedStatus } from 'components/molecules/cards/renderFunctions';
-import { ZStreamRenderer } from 'components/molecules/zasync-renderer/ZStreamRenderer';
+import { renderHealthStatus, renderSyncedStatus } from 'components/molecules/cards/renderFunctions';
 import { AuditStatus, ZSyncStatus } from 'models/argo.models';
 import { Component, EntityStore, Environment, Team } from 'models/entity.store';
-import { EnvironmentComponentItem } from 'models/projects.models';
 import moment from 'moment';
 import React from 'react';
 import { ArgoWorkflowsService } from 'services/argo/ArgoWorkflows.service';
-import { CostingService } from 'services/costing/costing.service';
 import { FeatureKeys, VisibleFeatures } from '../feature_toggle';
 
 const ViewTypeMap: { [key: string]: number } = {
@@ -261,11 +258,6 @@ export const getWorkflowLogs = async (
 	const { planItems, logItems } = await parse({ ...workflowDataSet });
 	setPlans(planItems || '//');
 	setLogs(logItems || '//');
-};
-
-export const getNodeLogs = async (configParamsSet: ConfigParamsSet, nodeId: string) => {
-	const { data } = await ArgoWorkflowsService.getNodeLog({ ...configParamsSet, nodeId });
-	return processNodeLogs(data);
 };
 
 export const processNodeLogs = (data: any) => {

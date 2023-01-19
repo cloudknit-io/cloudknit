@@ -1,11 +1,8 @@
 import './styles.scss';
 
 import { CostRenderer, currency } from 'components/molecules/cards/renderFunctions';
-import { ZStreamRenderer } from 'components/molecules/zasync-renderer/ZStreamRenderer';
-import React from 'react';
-import { FC } from 'react';
-import { CostingService } from 'services/costing/costing.service';
 import { Component } from 'models/entity.store';
+import React, { FC } from 'react';
 
 type ResourceProps = {
 	resource: Resource;

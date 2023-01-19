@@ -22,44 +22,6 @@ export class ArgoWorkflowsService {
 		);
 	}
 
-	static approveConfigWorkflow({
-		projectId,
-		environmentId,
-		configId,
-		workflowId,
-		data,
-	}: {
-		projectId: string;
-		environmentId: string;
-		configId: string;
-		workflowId: string;
-		data: WorkflowFeedbackPayload;
-	}): Promise<Response<any>> {
-		return ApiClient.put<any>(
-			`/wf/api/v1/projects/${projectId}/environments/${environmentId}/config/${configId}/${workflowId}/approve`,
-			data
-		);
-	}
-
-	static declineConfigWorkflow({
-		projectId,
-		environmentId,
-		configId,
-		workflowId,
-		data,
-	}: {
-		projectId: string;
-		environmentId: string;
-		configId: string;
-		workflowId: string;
-		data: WorkflowFeedbackPayload;
-	}): Promise<Response<any>> {
-		return ApiClient.put<any>(
-			`/wf/api/v1/projects/${projectId}/environments/${environmentId}/config/${configId}/${workflowId}/decline`,
-			data
-		);
-	}
-
 	static getConfigWorkflowLog({
 		projectId,
 		environmentId,
@@ -73,24 +35,6 @@ export class ArgoWorkflowsService {
 	}): Promise<Response<any>> {
 		return ApiClient.get(
 			`/wf/api/v1/projects/${projectId}/environments/${environmentId}/config/${configId}/${workflowId}/log`
-		);
-	}
-
-	static getNodeLog({
-		projectId,
-		environmentId,
-		configId,
-		workflowId,
-		nodeId,
-	}: {
-		projectId: string;
-		environmentId: string;
-		configId?: string;
-		workflowId?: string;
-		nodeId?: string;
-	}): Promise<Response<any>> {
-		return ApiClient.get(
-			`/wf/api/v1/projects/${projectId}/environments/${environmentId}/config/${configId}/${workflowId}/log/${nodeId}`
 		);
 	}
 }

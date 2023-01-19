@@ -1,15 +1,12 @@
 import AuthStore from 'auth/AuthStore';
 import { Layout, TopBar } from 'components/argo-core';
 import { EntityStore } from 'models/entity.store';
-import React, { ReactElement, useState } from 'react';
-import { useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
-import { CostingService } from 'services/costing/costing.service';
+import React, { ReactElement, useEffect } from 'react';
 
 import {
 	breadcrumbObservable,
 	EnvironmentPageHeaderCtx,
-	pageHeaderObservable,
+	pageHeaderObservable
 } from './contexts/EnvironmentHeaderContext';
 import { EnvironmentHeader } from './environments/EnvironmentHeader';
 

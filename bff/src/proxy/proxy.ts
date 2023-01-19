@@ -12,7 +12,6 @@ import {
   WF_MAPPINGS,
   CD_MAPPINGS,
   PathMapping,
-  COSTING_MAPPINGS,
   AUDIT_MAPPINGS,
   SECRET_MAPPINGS,
   TERRAFORM_MAPPINGS,
@@ -298,26 +297,6 @@ export function orgRoutes(router: express.Router) {
         cookieDomainRewrite: "",
         onProxyRes: enableCors,
         pathRewrite: pathRewrite("/cd", CD_MAPPINGS, { orgId: org.id, orgName: org.name }),
-      }) as any
-    )(req, res, next);
-  });
-
-  router.use("/costing", async (req: BFFRequest, res, next) => {
-    const org = await helper.orgFromReq(req);
-
-    if (!org) {
-      helper.handleNoOrg(res);
-      return;
-    }
-
-    return (
-      createProxy(org, "/costing", {
-        target: process.env.ZLIFECYCLE_API_URL,
-        changeOrigin: true,
-        secure: true,
-        cookieDomainRewrite: "",
-        onProxyRes: enableCors,
-        pathRewrite: pathRewrite("/costing", COSTING_MAPPINGS, { orgId: org.id }),
       }) as any
     )(req, res, next);
   });

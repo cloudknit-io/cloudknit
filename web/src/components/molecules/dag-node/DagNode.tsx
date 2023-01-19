@@ -1,18 +1,14 @@
-import React, { FC, useEffect, useState } from 'react';
-import { CostRenderer, getSyncStatusIcon } from '../cards/renderFunctions';
-import { CostingService } from 'services/costing/costing.service';
-import ReactDOMServer from 'react-dom/server';
-import { FeatureKeys, featureToggled } from 'pages/authorized/feature_toggle';
 import {
-	getClassName,
-	getEnvironment,
-	getLastReconcileTime,
-	getTextWidth,
-	getTime,
+	getClassName, getTextWidth,
+	getTime
 } from 'components/organisms/tree-view/node-figure-helper';
 import { ZSyncStatus } from 'models/argo.models';
-import { Subject, Subscription, pipe } from 'rxjs';
+import { FeatureKeys, featureToggled } from 'pages/authorized/feature_toggle';
+import React, { FC, useEffect, useState } from 'react';
+import ReactDOMServer from 'react-dom/server';
+import { Subject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
+import { CostRenderer, getSyncStatusIcon } from '../cards/renderFunctions';
 
 export type DagNodeProps = {
 	id: string;
