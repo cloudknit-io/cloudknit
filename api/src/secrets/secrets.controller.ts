@@ -9,12 +9,14 @@ import {
   Query,
   Request,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { OrgApiParam } from 'src/types';
 import { SecretsService } from './secrets.service';
 
 @Controller({
   version: '1',
 })
+@ApiTags('secrets')
 export class SecretsController {
   private readonly logger = new Logger(SecretsController.name);
 

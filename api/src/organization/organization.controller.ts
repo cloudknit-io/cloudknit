@@ -10,6 +10,7 @@ import {
   Query,
   Request,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { APIRequest } from 'src/types';
 import { handleSqlErrors } from 'src/utilities/errorHandler';
 import {
@@ -21,6 +22,7 @@ import { OrganizationService } from './organization.service';
 @Controller({
   version: '1',
 })
+@ApiTags('organizations')
 export class OrganizationController {
   private readonly logger = new Logger(OrganizationController.name);
 

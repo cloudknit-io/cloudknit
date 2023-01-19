@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsNotEmpty,
@@ -6,26 +7,31 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-export class EnvSpecDto {
-  @IsNotEmpty()
-  @IsString()
-  envName: string;
-
-  @IsNotEmpty()
-  @ValidateNested({ each: true })
-  @Type(() => EnvSpecComponentDto)
-  components: EnvSpecComponentDto[];
-}
-
 export class EnvSpecComponentDto {
+  @ApiProperty()
   @IsNotEmpty()
   @IsString()
   name: string;
 
+  @ApiProperty()
   @IsNotEmpty()
   @IsString()
   type: string;
 
+  @ApiProperty()
   @IsOptional()
   dependsOn: string[];
+}
+
+export class EnvSpecDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  envName: string;
+
+  @ApiProperty({ type: EnvSpecComponentDto, isArray: true })
+  @IsNotEmpty()
+  @ValidateNested({ each: true })
+  @Type(() => EnvSpecComponentDto)
+  components: EnvSpecComponentDto[];
 }

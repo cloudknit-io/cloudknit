@@ -18,10 +18,12 @@ import { EnvSpecComponentDto, EnvSpecDto } from './dto/env-spec.dto';
 import { Component, Environment, Organization, Team } from 'src/typeorm';
 import { CreateEnvironmentDto } from './dto/create-environment.dto';
 import { ReconciliationService } from 'src/reconciliation/reconciliation.service';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller({
   version: '1',
 })
+@ApiTags('environments')
 export class EnvironmentController {
   private readonly logger = new Logger(EnvironmentController.name);
 

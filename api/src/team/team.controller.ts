@@ -22,10 +22,12 @@ import { TeamQueryParams } from './team.dto';
 import { TeamWrapDto } from './dto/team-cost.dto';
 import { calculateTeamCost } from './team.helper';
 import { Team } from 'src/typeorm';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller({
   version: '1',
 })
+@ApiTags('teams')
 export class TeamController {
   private readonly logger = new Logger(TeamController.name);
   private TeamNameRegex = /^[a-zA-Z]+[a-zA-Z0-9]*(-[a-zA-Z0-9]+)*$/;

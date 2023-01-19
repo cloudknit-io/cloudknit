@@ -3,10 +3,12 @@ import { AuditWrapper, StreamService } from './stream.service';
 import { from, map, Observable } from 'rxjs';
 import { Component, Environment } from 'src/typeorm';
 import { OrgApiParam } from 'src/types';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller({
   version: '1',
 })
+@ApiTags('stream')
 export class StreamController {
   constructor(private readonly sseSvc: StreamService) {}
 

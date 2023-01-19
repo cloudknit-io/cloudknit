@@ -10,6 +10,7 @@ import {
   Req,
   Request,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { ApproveWorkflow as ResumeWorkflow } from 'src/argowf/api';
 import { ComponentService } from 'src/component/component.service';
 import { EnvironmentService } from 'src/environment/environment.service';
@@ -36,6 +37,7 @@ import { ReconciliationService } from './reconciliation.service';
 @Controller({
   version: '1',
 })
+@ApiTags('reconciliation')
 export class ReconciliationController {
   private readonly logger = new Logger(ReconciliationController.name);
 
