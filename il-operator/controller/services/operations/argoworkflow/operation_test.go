@@ -10,12 +10,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGenerateLegacyWorkflowOfWorkflows(t *testing.T) {
+func TestGenerateWorkflowOfWorkflows(t *testing.T) {
 	t.Parallel()
 
 	env := mocks.GetMockEnv1(false)
 
-	wow := workflow.GenerateLegacyWorkflowOfWorkflows(&env, nil)
+	wow := workflow.GenerateWorkflowOfWorkflows(&env, nil)
 
 	assert.Equal(t, wow.DeletionTimestamp.IsZero(), true)
 
@@ -52,12 +52,12 @@ func TestGenerateLegacyWorkflowOfWorkflows(t *testing.T) {
 	assert.Equal(t, autoApproveFlag3.Value, workflow.AnyStringPointer("true"))
 }
 
-func TestGenerateLegacyWorkflowOfWorkflowsDeletedEnvironment(t *testing.T) {
+func TestGenerateWorkflowOfWorkflowsDeletedEnvironment(t *testing.T) {
 	t.Parallel()
 
 	env := mocks.GetMockEnv1(true)
 
-	wow := workflow.GenerateLegacyWorkflowOfWorkflows(&env, nil)
+	wow := workflow.GenerateWorkflowOfWorkflows(&env, nil)
 
 	assert.Equal(t, wow.DeletionTimestamp.IsZero(), true)
 

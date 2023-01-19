@@ -72,14 +72,9 @@ func generateAndSaveWorkflowOfWorkflows(
 	environment *stablev1.Environment,
 	tfcfg *secret.TerraformStateConfig,
 ) error {
-	// WIP, below command is for testing
-	// experimentalworkflow := argoWorkflow.GenerateWorkflowOfWorkflows(*environment)
-	// if err := fileAPI.SaveYamlFile(*experimentalworkflow, envComponentDirectory, "/experimental_wofw.yaml"); err != nil {
-	// 	return err
-	// }
 	ilEnvComponentDirectory := il.EnvironmentComponentsDirectoryAbsolutePath(ilService.ZLILTempDir, environment.Spec.TeamName, environment.Spec.EnvName)
 
-	wrkflw := workflow.GenerateLegacyWorkflowOfWorkflows(environment, tfcfg)
+	wrkflw := workflow.GenerateWorkflowOfWorkflows(environment, tfcfg)
 	return fileAPI.SaveYamlFile(*wrkflw, ilEnvComponentDirectory, "/wofw.yaml")
 }
 
