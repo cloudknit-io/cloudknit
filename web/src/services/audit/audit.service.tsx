@@ -3,6 +3,11 @@ import { CompAuditData } from 'models/entity.store';
 import { BaseService } from 'services/base/base.service';
 import ApiClient from 'utils/apiClient';
 import { ENVIRONMENT_VARIABLES } from 'utils/environmentVariables';
+import { ReactComponent as EKS } from 'assets/visualization-demo/platform-eks.svg';
+import { ReactComponent as EC2 } from 'assets/visualization-demo/platform-ec2.svg';
+import { ReactComponent as Networking } from 'assets/visualization-demo/networking.svg';
+import React from 'react';
+import ReactDOMServer from 'react-dom/server';
 
 export class AuditService extends BaseService {
 	private static instance: AuditService | null = null;
@@ -109,6 +114,17 @@ export class AuditService extends BaseService {
 		return ApiClient.post(this.constructUri(AuditUriType.approve(configReconcileId)), {
 			email: AuthStore.getUser()?.email
 		});
+	}
+
+	async getVisualizationSVGDemo({ team, environment, component }: any) {
+		if (component.includes('eks')) {
+			return { data: ReactDOMServer.renderToString(<EKS />) };
+		} else if (component.includes('networking')) {
+			return { data: ReactDOMServer.renderToString(<Networking />) };
+		} else if (component.includes('ec2')) {
+			return { data: ReactDOMServer.renderToString(<EC2 />) };
+		}
+		return null;
 	}
 
 	setAuditCache(key: string, value: any) {
