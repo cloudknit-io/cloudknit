@@ -36,7 +36,7 @@ export const Reconciler: FC<ReconcilerProps> = ({ environment, template }) => {
         setSyncStarted(false);
 		const ecd = ArgoStreamService.streamEnvironment(environment.argoId);
 		const watcherSub = ecd.listen().subscribe((e: any) => {
-            const healthStatus = e?.result?.application?.status?.health?.status;
+            const healthStatus = e?.data?.result?.application?.status?.health?.status;
             setReconciling(healthStatus === 'Progressing')
 			// if (e?.application?.metadata?.name?.replace('-team-watcher', '') === environment.argoId) {
 			// 	const status = e?.application?.status?.operationState?.phase;
