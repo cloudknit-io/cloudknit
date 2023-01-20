@@ -69,7 +69,7 @@ func generateWorkflow(environment *stablev1.Environment, tasks []workflow.DAGTas
 			Kind:       "Workflow",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      fmt.Sprintf("%s-%s-%s", env.Config.CompanyName, environment.Spec.TeamName, environment.Spec.EnvName),
+			Name:      fmt.Sprintf("%s-%s", environment.Spec.TeamName, environment.Spec.EnvName),
 			Namespace: env.Config.ArgoWorkflowsWorkflowNamespace,
 			Labels: map[string]string{
 				"terraform/sync":       "true",
