@@ -17,7 +17,7 @@ import { ZAccordion, ZAccordionItem } from '../accordion/ZAccordion';
 import { AuditStatus, ZSyncStatus } from 'models/argo.models';
 import { SmallText } from '../workflow-diagram/WorkflowDiagram';
 import { EnvironmentComponentItem } from 'models/projects.models';
-import { CompAuditData, Component, EnvAuditData } from 'models/entity.store';
+import { CompAuditData, Component, EnvAuditData } from 'models/entity.type';
 
 type AuditData = EnvAuditData | CompAuditData;
 

@@ -4,14 +4,10 @@ import { ReactComponent as MoreOptionsIcon } from 'assets/images/icons/more-opti
 import { ReactComponent as SyncIcon } from 'assets/images/icons/sync-icon.svg';
 import { Checkbox } from 'components/argo-core/checkbox';
 import { TableColumn } from 'components/atoms/table/Table';
-import {
-	renderHealthStatus,
-	renderLabels,
-	renderSyncedStatus
-} from 'components/molecules/cards/renderFunctions';
+import { renderHealthStatus, renderLabels, renderSyncedStatus } from 'components/molecules/cards/renderFunctions';
 import { MenuItem, ZDropdownMenuJSX } from 'components/molecules/dropdown-menu/DropdownMenu';
 import { ApplicationCondition, HealthStatuses, ZEnvSyncStatus } from 'models/argo.models';
-import { Environment } from 'models/entity.store';
+import { Environment } from 'models/entity.type';
 import React, { ReactElement } from 'react';
 import { ArgoTeamsService } from 'services/argo/ArgoProjects.service';
 
@@ -196,14 +192,17 @@ export const hardSync = async (projectId: string, envName: string) => {
 	} catch (err) {}
 };
 
-export const TreeReconcile = (env: Environment, reconciling: boolean, triggerSync: () => Promise<any>): ReactElement => {
+export const TreeReconcile = (
+	env: Environment,
+	reconciling: boolean,
+	triggerSync: () => Promise<any>
+): ReactElement => {
 	return (
 		<button
 			className="dag-controls-reconcile"
 			onClick={async (e: any) => {
 				e.stopPropagation();
-				if (!reconciling)
-					await triggerSync();
+				if (!reconciling) await triggerSync();
 			}}>
 			<span
 				className={`tooltip ${
@@ -229,15 +228,12 @@ export const EnvCardReconcile = (env: Environment, reconciling: boolean, trigger
 		<SyncIcon
 			className={`large-health-icon-container__sync-button large-health-icon-container__sync-button${getSyncIconClass(
 				env
-			)} large-health-icon-container__sync-button${
-				reconciling ? '--in-progress' : ''
-			}`}
+			)} large-health-icon-container__sync-button${reconciling ? '--in-progress' : ''}`}
 			title={'Reconcile Environment'}
 			onClick={async e => {
 				e.stopPropagation();
 				//TODO: Syncing env
-				if (!reconciling)
-					await triggerSync();
+				if (!reconciling) await triggerSync();
 			}}
 		/>
 	);

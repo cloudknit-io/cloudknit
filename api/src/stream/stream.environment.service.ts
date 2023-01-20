@@ -1,5 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Environment } from 'src/typeorm/environment.entity';
+import { EnvironmentCostUpdateEvent, InternalEventType } from 'src/types';
 import {
   Connection,
   EntitySubscriberInterface,
@@ -17,7 +19,8 @@ export class StreamEnvironmentService
 
   constructor(
     @Inject(Connection) conn: Connection,
-    private readonly sseSvc: StreamService
+    private readonly sseSvc: StreamService,
+    private evtEmitter: EventEmitter2
   ) {
     conn.subscribers.push(this);
   }
@@ -27,11 +30,33 @@ export class StreamEnvironmentService
   }
 
   afterInsert(event: InsertEvent<Environment>) {
+    const env = event.entity as Environment;
+
+    if (env.estimatedCost > 0) {
+      this.evtEmitter.emit(
+        InternalEventType.EnvironmentCostUpdate,
+        new EnvironmentCostUpdateEvent({ ...env })
+      );
+    }
+
     this.validateAndSend(event.entity, 'afterInsert');
   }
 
-  afterUpdate(event: UpdateEvent<Environment>): void | Promise<Environment> {
-    this.validateAndSend(event.entity as Environment, 'afterUpdate');
+  async afterUpdate(
+    event: UpdateEvent<Environment>
+  ): Promise<Environment | void> {
+    const env = event.entity as Environment;
+
+    if (
+      event.updatedColumns.find((col) => col.propertyName === 'estimatedCost')
+    ) {
+      this.evtEmitter.emit(
+        InternalEventType.EnvironmentCostUpdate,
+        new EnvironmentCostUpdateEvent({ ...env })
+      );
+    }
+
+    this.validateAndSend(env, 'afterUpdate');
   }
 
   afterRemove(event: RemoveEvent<Environment>): void | Promise<any> {

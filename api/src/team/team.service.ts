@@ -37,14 +37,18 @@ export class TeamService {
     return this.teamRepo.find({
       where: {
         organization: {
-          id: org.id,
+          id: Equal(org.id),
         },
       },
       relations: relation,
     });
   }
 
-  async findByName(org: Organization, name: string): Promise<Team> {
+  async findByName(
+    org: Organization,
+    name: string,
+    withEnv: boolean = false
+  ): Promise<Team> {
     return this.teamRepo.findOne({
       where: {
         name: Equal(name),
@@ -52,16 +56,26 @@ export class TeamService {
           id: Equal(org.id),
         },
       },
+      relations: {
+        environments: withEnv,
+      },
     });
   }
 
-  async findById(org: Organization, id: number): Promise<Team> {
+  async findById(
+    org: Organization,
+    id: number,
+    withEnv: boolean = false
+  ): Promise<Team> {
     return this.teamRepo.findOne({
       where: {
         id: Equal(id),
         organization: {
           id: Equal(org.id),
         },
+      },
+      relations: {
+        environments: withEnv,
       },
     });
   }
@@ -84,5 +98,19 @@ export class TeamService {
     team.isDeleted = true;
 
     return this.teamRepo.save(team);
+  }
+
+  async updateCost(org: Organization, id: number): Promise<void> {
+    const team = await this.findById(org, id, true);
+
+    let estimatedCost = 0.0;
+
+    for (const env of team.environments) {
+      if (env.estimatedCost > 0) {
+        estimatedCost += env.estimatedCost;
+      }
+    }
+
+    await this.update(org, team.id, { estimatedCost });
   }
 }

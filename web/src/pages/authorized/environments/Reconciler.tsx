@@ -1,11 +1,11 @@
 import { NotificationType } from 'components/argo-core/notifications/notifications';
 import { Context } from 'context/argo/ArgoUi';
 import { OperationPhase, OperationPhases } from 'models/argo.models';
-import { EntityStore, Environment, Team } from 'models/entity.store';
+import { EntityStore } from 'models/entity.store';
+import { Environment } from 'models/entity.type';
 import React, { FC, useCallback, useEffect, useState } from 'react';
 import { ArgoEnvironmentsService } from 'services/argo/ArgoEnvironments.service';
 import { ArgoStreamService } from 'services/argo/ArgoStream.service';
-import { subscriberWatcher } from 'utils/apiClient/EventClient';
 import { hardSync } from './helpers';
 
 export type ReconcilerProps = {
@@ -36,7 +36,7 @@ export const Reconciler: FC<ReconcilerProps> = ({ environment, template }) => {
         setSyncStarted(false);
 		const ecd = ArgoStreamService.streamEnvironment(environment.argoId);
 		const watcherSub = ecd.listen().subscribe((e: any) => {
-            const healthStatus = e?.result?.application?.status?.health?.status;
+            const healthStatus = e?.data?.result?.application?.status?.health?.status;
             setReconciling(healthStatus === 'Progressing')
 			// if (e?.application?.metadata?.name?.replace('-team-watcher', '') === environment.argoId) {
 			// 	const status = e?.application?.status?.operationState?.phase;

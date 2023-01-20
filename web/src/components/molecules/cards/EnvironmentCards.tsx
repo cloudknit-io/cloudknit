@@ -14,8 +14,9 @@ import { useHistory } from 'react-router-dom';
 import { Context } from 'context/argo/ArgoUi';
 import { NotificationsApi } from 'components/argo-core/notifications/notification-manager';
 import { FeatureKeys, featureToggled } from 'pages/authorized/feature_toggle';
-import { EntityStore, Environment } from 'models/entity.store';
+import { EntityStore } from 'models/entity.store';
 import { Reconciler } from 'pages/authorized/environments/Reconciler';
+import { Environment } from 'models/entity.type';
 
 type Props = {
 	environments: Environment[];
@@ -180,7 +181,7 @@ export const EnvironmentCard: FC<PropsEnvironmentItem> = ({
 				</div>
 				<div className="large-health-icon-container">
 					{
-						environment && <Reconciler environment={environment} template={EnvCardReconcile}/>
+						environment && <Reconciler key={environment.argoId} environment={environment} template={EnvCardReconcile}/>
 					}
 					{featureToggled(FeatureKeys.DIFF_CHECKER, true) && (
 						<input
