@@ -1,4 +1,5 @@
 import { Controller, Get, Request } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { OrganizationService } from 'src/organization/organization.service';
 import { OrgApiParam } from 'src/types';
 import { OperationsService } from './operations.service';
@@ -6,6 +7,7 @@ import { OperationsService } from './operations.service';
 @Controller({
   version: '1',
 })
+@ApiTags('operations')
 export class OperationsController {
   constructor(
     private readonly opsService: OperationsService,

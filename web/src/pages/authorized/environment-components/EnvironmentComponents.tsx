@@ -5,11 +5,11 @@ import { ZTablControl } from 'components/molecules/tab-control/TabControl';
 import { AuditView } from 'components/organisms/audit_view/AuditView';
 import { ErrorView } from 'components/organisms/error-view/ErrorView';
 import { TreeComponent } from 'components/organisms/tree-view/TreeComponent';
-import { Context } from 'context/argo/ArgoUi';
 import { streamMapperWF } from 'helpers/streamMapper';
 import { useApi } from 'hooks/use-api/useApi';
 import { ApplicationWatchEvent, ZComponentSyncStatus, ZSyncStatus } from 'models/argo.models';
-import { CompAuditData, Component, EntityStore, EnvAuditData, Environment } from 'models/entity.store';
+import { EntityStore } from 'models/entity.store';
+import { CompAuditData, Component, EnvAuditData, Environment } from 'models/entity.type';
 import { eventErrorColumns } from 'models/error.model';
 import { LocalStorageKey } from 'models/localStorage';
 import {
@@ -20,7 +20,7 @@ import {
 	auditColumns,
 	ConfigParamsSet, getWorkflowLogs
 } from 'pages/authorized/environment-components/helpers';
-import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Subscription } from 'rxjs';
 import { ArgoStreamService } from 'services/argo/ArgoStream.service';

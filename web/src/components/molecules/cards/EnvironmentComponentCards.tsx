@@ -6,7 +6,8 @@ import { CostRenderer, renderHealthStatus, renderLabels, renderSyncedStatus } fr
 import { ZSyncStatus } from 'models/argo.models';
 import { EnvironmentComponentItem, EnvironmentComponentsList } from 'models/projects.models';
 import React, { FC, useEffect, useState } from 'react';
-import { Component, EntityStore, Environment } from 'models/entity.store';
+import { EntityStore } from 'models/entity.store';
+import { Component, Environment } from 'models/entity.type';
 
 type Props = {
 	components: Component[];

@@ -1,8 +1,9 @@
 import './styles.scss';
 
 import { CostRenderer, currency } from 'components/molecules/cards/renderFunctions';
-import { Component } from 'models/entity.store';
-import React, { FC } from 'react';
+import React from 'react';
+import { FC } from 'react';
+import { Component } from 'models/entity.type';
 
 type ResourceProps = {
 	resource: Resource;

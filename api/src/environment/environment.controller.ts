@@ -11,17 +11,26 @@ import {
 } from '@nestjs/common';
 import { EnvironmentService } from './environment.service';
 import { UpdateEnvironmentDto } from './dto/update-environment.dto';
-import { APIRequest, EnvironmentApiParam, TeamApiParam } from 'src/types';
+import {
+  APIRequest,
+  ComponentCostUpdateEvent,
+  EnvironmentApiParam,
+  InternalEventType,
+  TeamApiParam,
+} from 'src/types';
 import { handleSqlErrors } from 'src/utilities/errorHandler';
 import { ComponentService } from 'src/component/component.service';
 import { EnvSpecComponentDto, EnvSpecDto } from './dto/env-spec.dto';
 import { Component, Environment, Organization, Team } from 'src/typeorm';
 import { CreateEnvironmentDto } from './dto/create-environment.dto';
 import { ReconciliationService } from 'src/reconciliation/reconciliation.service';
+import { ApiTags } from '@nestjs/swagger';
+import { OnEvent } from '@nestjs/event-emitter';
 
 @Controller({
   version: '1',
 })
+@ApiTags('environments')
 export class EnvironmentController {
   private readonly logger = new Logger(EnvironmentController.name);
 
@@ -221,5 +230,17 @@ export class EnvironmentController {
     const { org, env } = req;
 
     return this.reconSvc.getEnvironmentAuditList(org, env);
+  }
+
+  @OnEvent(InternalEventType.ComponentCostUpdate, { async: true })
+  async compCostUpdateListener(evt: ComponentCostUpdateEvent) {
+    const comp = evt.payload;
+    let env = comp.environment;
+
+    if (!env) {
+      env = await this.envSvc.findById(comp.organization, comp.envId);
+    }
+
+    await this.envSvc.updateCost(comp.organization, env);
   }
 }

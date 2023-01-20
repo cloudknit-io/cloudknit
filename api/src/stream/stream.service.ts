@@ -1,35 +1,26 @@
 import { Injectable } from '@nestjs/common';
 import { Subject } from 'rxjs';
-import { ComponentReconcileWrap } from 'src/reconciliation/dtos/componentAudit.dto';
-import { EnvironmentReconcileWrap } from 'src/reconciliation/dtos/environmentAudit.dto';
 import { Mapper } from 'src/reconciliation/mapper';
 import {
   Component,
   ComponentReconcile,
+  Environment,
   EnvironmentReconcile,
   Team,
 } from 'src/typeorm';
-import { Environment } from 'src/typeorm/environment.entity';
+import { StreamItem, StreamTypeEnum } from './dto/stream-item.dto';
 
 @Injectable()
 export class StreamService {
-  readonly envStream: Subject<Environment> = new Subject<Environment>();
-  readonly compStream: Subject<Component> = new Subject<Component>();
-  readonly reconcileStream: Subject<AuditWrapper> = new Subject<AuditWrapper>();
-
-  constructor() {
-    setInterval(() => {
-      this.envStream.next({} as Environment);
-      this.compStream.next({} as Component);
-      this.reconcileStream.next({
-        data: {},
-        type: 'ComponentReconcile',
-      } as AuditWrapper);
-    }, 10000);
-  }
+  readonly webStream: Subject<StreamItem> = new Subject<StreamItem>();
 
   normalizeOrg(
-    obj: Environment | Component | ComponentReconcile | EnvironmentReconcile
+    obj:
+      | Team
+      | Environment
+      | Component
+      | ComponentReconcile
+      | EnvironmentReconcile
   ) {
     if (obj && obj.orgId) {
       delete obj.organization;
@@ -54,7 +45,21 @@ export class StreamService {
       delete env.team;
     }
 
-    this.envStream.next(this.normalizeOrg(env) as Environment);
+    const payload = {
+      data: this.normalizeOrg(env) as Environment,
+      type: StreamTypeEnum.Environment,
+    };
+
+    this.webStream.next(payload);
+  }
+
+  sendTeam(team: Team) {
+    const payload = {
+      data: this.normalizeOrg(team) as Team,
+      type: StreamTypeEnum.Team,
+    };
+
+    this.webStream.next(payload);
   }
 
   sendComponent(comp: Component) {
@@ -64,7 +69,12 @@ export class StreamService {
       delete comp.environment;
     }
 
-    this.compStream.next(this.normalizeOrg(comp) as Component);
+    const payload = {
+      data: this.normalizeOrg(comp) as Component,
+      type: StreamTypeEnum.Component,
+    };
+
+    this.webStream.next(payload);
   }
 
   sendCompReconcile(compRecon: ComponentReconcile) {
@@ -84,7 +94,12 @@ export class StreamService {
       delete data.component;
     }
 
-    this.reconcileStream.next({ data, type: 'ComponentReconcile' });
+    const payload = {
+      data,
+      type: StreamTypeEnum.ComponentReconcile,
+    };
+
+    this.webStream.next(payload);
   }
 
   sendEnvReconcile(envRecon: EnvironmentReconcile) {
@@ -104,11 +119,11 @@ export class StreamService {
       delete data.team;
     }
 
-    this.reconcileStream.next({ data, type: 'EnvironmentReconcile' });
-  }
-}
+    const payload = {
+      data,
+      type: StreamTypeEnum.EnvironmentReconcile,
+    };
 
-export class AuditWrapper {
-  data: EnvironmentReconcileWrap | ComponentReconcileWrap;
-  type: 'EnvironmentReconcile' | 'ComponentReconcile';
+    this.webStream.next(payload);
+  }
 }

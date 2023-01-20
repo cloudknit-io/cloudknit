@@ -192,25 +192,9 @@ const API_PATH_MAPPINGS = [
     newPath: (params: any) => `v1/orgs/${params.orgId}/teams/${params.teamId}/environments/${params.envId}/components`,
   },
   {
-    path: "/api/stream/component",
-    newPath: (params: any) => `v1/orgs/${params.orgId}/stream/component`,
-  },
-  {
-    path: "/api/stream/environment",
-    newPath: (params: any) => `v1/orgs/${params.orgId}/stream/environment`,
-  },
-  {
-    path: "/api/stream/component",
-    newPath: (params: any) => `v1/orgs/${params.orgId}/stream/component`,
-  },
-  {
-    path: "/api/stream/environment",
-    newPath: (params: any) => `v1/orgs/${params.orgId}/stream/environment`,
-  },
-  {
-    path: "/api/stream/audit",
+    path: "/api/stream",
     newPath: (params: any) =>
-      `v1/orgs/${params.orgId}/stream/audit`,
+      `v1/orgs/${params.orgId}/stream`,
   },
 ]
 

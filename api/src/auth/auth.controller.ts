@@ -10,6 +10,7 @@ import {
   Post,
   Request,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { OrgApiParam } from 'src/types';
 import { CreateUserDto, PatchUserDto } from 'src/users/User.dto';
 import { AuthService } from './auth.service';
@@ -17,6 +18,7 @@ import { AuthService } from './auth.service';
 @Controller({
   version: '1',
 })
+@ApiTags('auth')
 export class AuthController {
   private readonly logger = new Logger(AuthController.name);
 

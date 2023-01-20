@@ -5,11 +5,11 @@ import {
   Get,
   Logger,
   Param,
-  Post,
   Put,
   Query,
   Request,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { EnvironmentService } from 'src/environment/environment.service';
 import { ReconciliationService } from 'src/reconciliation/reconciliation.service';
 import { Component, Environment, Organization } from 'src/typeorm';
@@ -21,6 +21,7 @@ import { UpdateComponentDto } from './dto/update-component.dto';
 @Controller({
   version: '1',
 })
+@ApiTags('components')
 export class ComponentController {
   private readonly logger = new Logger(ComponentController.name);
 
@@ -67,19 +68,7 @@ export class ComponentController {
     const { org, env } = req;
 
     const comp = await this.getCompFromRequest(org, env, id);
-
-    const updatedComp = await this.compSvc.update(comp, body);
-
-    if (!isNaN(body.estimatedCost)) {
-      try {
-        this.envSvc.updateCost(org, env);
-      } catch (err) {
-        this.logger.error({
-          message: 'could not update environment cost',
-          env,
-        });
-      }
-    }
+    const updatedComp = await this.compSvc.update(org, comp, body);
 
     return updatedComp;
   }

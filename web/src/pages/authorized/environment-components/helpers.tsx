@@ -1,9 +1,14 @@
 import { ReactComponent as AWSIcon } from 'assets/images/icons/AWS.svg';
 import { ReactComponent as MoreOptionsIcon } from 'assets/images/icons/more-options.svg';
 import { TableColumn } from 'components/atoms/table/Table';
-import { renderHealthStatus, renderSyncedStatus } from 'components/molecules/cards/renderFunctions';
+import {
+	renderHealthStatus,
+	renderSyncedStatus
+} from 'components/molecules/cards/renderFunctions';
 import { AuditStatus, ZSyncStatus } from 'models/argo.models';
-import { Component, EntityStore, Environment, Team } from 'models/entity.store';
+import { EntityStore } from 'models/entity.store';
+import { Component, Environment, Team } from 'models/entity.type';
+
 import moment from 'moment';
 import React from 'react';
 import { ArgoWorkflowsService } from 'services/argo/ArgoWorkflows.service';
@@ -39,9 +44,7 @@ export const renderSync = (data: any) => (
 );
 
 export const renderSyncStatus = (data: Component) => (
-	<div className="d-flex">
-		{renderSyncedStatus(data.status as ZSyncStatus, '', '', '', data)}
-	</div>
+	<div className="d-flex">{renderSyncedStatus(data.status as ZSyncStatus, '', '', '', data)}</div>
 );
 
 const renderServices = () => <AWSIcon />;

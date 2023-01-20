@@ -13,19 +13,26 @@ import {
 } from '@nestjs/common';
 import { TeamService } from './team.service';
 import { UpdateTeamDto } from './dto/update-team.dto';
-import { APIRequest, OrgApiParam, TeamApiParam } from 'src/types';
+import {
+  APIRequest,
+  EnvironmentCostUpdateEvent,
+  InternalEventType,
+  OrgApiParam,
+  TeamApiParam,
+} from 'src/types';
 import { TeamSpecDto } from './dto/team-spec.dto';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { getGithubOrgFromRepoUrl } from 'src/organization/utilities';
 import { handleSqlErrors } from 'src/utilities/errorHandler';
 import { TeamQueryParams } from './team.dto';
-import { TeamWrapDto } from './dto/team-cost.dto';
-import { calculateTeamCost } from './team.helper';
 import { Team } from 'src/typeorm';
+import { ApiTags } from '@nestjs/swagger';
+import { OnEvent } from '@nestjs/event-emitter';
 
 @Controller({
   version: '1',
 })
+@ApiTags('teams')
 export class TeamController {
   private readonly logger = new Logger(TeamController.name);
   private TeamNameRegex = /^[a-zA-Z]+[a-zA-Z0-9]*(-[a-zA-Z0-9]+)*$/;
@@ -91,35 +98,12 @@ export class TeamController {
   async findAll(
     @Request() req: APIRequest,
     @Query() qParams: TeamQueryParams
-  ): Promise<TeamWrapDto[]> {
+  ): Promise<Team[]> {
     const org = req.org;
-    const withCost = qParams.withCost.toLowerCase() === 'true';
     const withEnv = qParams.withEnvironments.toLowerCase() === 'true';
-    const withComps = qParams.withComponents.toLowerCase() === 'true';
-    const getEnvs = withCost || withEnv;
+    const getEnvs = withEnv;
 
-    const teams = await this.teamSvc.findAll(
-      org,
-      getEnvs,
-      withEnv && withComps
-    );
-
-    if (!withCost) {
-      return teams;
-    }
-
-    const teamsWrap: TeamWrapDto[] = teams.map((teamEntity: Team) => {
-      const team: TeamWrapDto = teamEntity;
-      team.estimatedCost = calculateTeamCost(teamEntity);
-
-      if (!withEnv) {
-        delete team.environments;
-      }
-
-      return team;
-    });
-
-    return teamsWrap;
+    return this.teamSvc.findAll(org, getEnvs);
   }
 
   @Get('/:teamId')
@@ -155,5 +139,17 @@ export class TeamController {
     const { org, team } = req;
 
     return this.teamSvc.remove(org, team.id);
+  }
+
+  @OnEvent(InternalEventType.EnvironmentCostUpdate, { async: true })
+  async environmentCostUpdateListener(evt: EnvironmentCostUpdateEvent) {
+    const env = evt.payload;
+    let team = env.team;
+
+    if (!team) {
+      team = await this.teamSvc.findById(env.organization, env.teamId);
+    }
+
+    await this.teamSvc.updateCost(env.organization, team.id);
   }
 }

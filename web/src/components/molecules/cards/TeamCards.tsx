@@ -5,10 +5,10 @@ import { ZText } from 'components/atoms/text/Text';
 import { renderEnvSyncedStatus } from 'components/molecules/cards/renderFunctions';
 import { ZGridDisplayListWithLabel } from 'components/molecules/grid-display-list/GridDisplayList';
 import { ZSyncStatus } from 'models/argo.models';
-import { Environment, Team } from 'models/entity.store';
 import { ListItem } from 'models/general.models';
 import React, { FC, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
+import { Environment, Team } from 'models/entity.type';
 
 type Props = {
 	teams: Team[];

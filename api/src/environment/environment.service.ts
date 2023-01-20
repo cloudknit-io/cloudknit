@@ -44,6 +44,7 @@ export class EnvironmentService {
   ): Promise<Environment> {
     const env = await this.findById(org, id);
     this.envRepo.merge(env, updateEnvDto);
+    env.organization = org;
     return this.envRepo.save(env);
   }
 
@@ -55,6 +56,7 @@ export class EnvironmentService {
   ): Promise<Environment> {
     const env = await this.findByName(org, team, name);
     this.envRepo.merge(env, updateEnvDto);
+    env.organization = org;
     return this.envRepo.save(env);
   }
 
@@ -110,7 +112,7 @@ export class EnvironmentService {
     return this.envRepo.save(env);
   }
 
-  async updateCost(org: Organization, env: Environment) {
+  async updateCost(org: Organization, env: Environment): Promise<void> {
     env = await this.findById(org, env.id, false, true);
 
     let estimatedCost = 0.0;
