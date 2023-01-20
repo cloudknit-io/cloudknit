@@ -51,7 +51,7 @@ const CD_PATH_MAPPINGS = [
       `/api/v1/applications?selector=type=config,project_id=${params.projectId},environment_id=${params.environmentId}&projects=${params.orgName}`,
   },
   {
-    path: "/cd/api/v1/config",
+    path: '/cd/api/v1/config',
     newPath: (params: any) => `/api/v1/applications?selector=type=config&projects=${params.orgName}`,
   },
   {
