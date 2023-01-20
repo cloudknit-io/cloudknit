@@ -7,10 +7,8 @@ import { OrganizationModule } from './organization/organization.module';
 import { ReconciliationModule } from './reconciliation/reconciliation.module';
 import { appRoutes } from './routes';
 import { SecretsModule } from './secrets/secrets.module';
-import { entities } from './typeorm';
 import { UsersModule } from './users/users.module';
 import { SystemModule } from './system/system.module';
-import { get } from './config';
 import { OperationsModule } from './operations/operations.module';
 import { AppLoggerMiddleware } from './middleware/logger.middle';
 import { TeamModule } from './team/team.module';
@@ -19,28 +17,17 @@ import { ComponentModule } from './component/component.module';
 import { StreamModule } from './stream/stream.module';
 import { CachingService } from './caching/caching.service';
 import { CachingModule } from './caching/caching.module';
-
-const config = get();
-
-const typeOrmModuleOptions: TypeOrmModuleOptions = {
-  type: 'mysql',
-  host: config.TypeORM.host,
-  port: config.TypeORM.port,
-  username: config.TypeORM.username,
-  password: config.TypeORM.password,
-  database: config.TypeORM.database,
-  entities,
-  migrations: [],
-  synchronize: get().isLocal === true,
-};
+import { dbConfig } from './typeorm';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       envFilePath: '.env.dev',
     }),
+    EventEmitterModule.forRoot(),
     RouterModule.register(appRoutes),
-    TypeOrmModule.forRoot(typeOrmModuleOptions),
+    TypeOrmModule.forRoot(dbConfig as TypeOrmModuleOptions),
     UsersModule,
     SystemModule,
     OrganizationModule,

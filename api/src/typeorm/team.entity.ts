@@ -6,9 +6,11 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  RelationId,
 } from 'typeorm';
 import { Organization } from './Organization.entity';
 import { Environment } from './environment.entity';
+import { ColumnNumericTransformer } from './helper';
 
 @Entity({
   name: 'team',
@@ -32,6 +34,16 @@ export class Team {
   })
   isDeleted: boolean;
 
+  @Column({
+    name: 'estimated_cost',
+    type: 'decimal',
+    precision: 10,
+    scale: 3,
+    default: 0,
+    transformer: new ColumnNumericTransformer(),
+  })
+  estimatedCost: number;
+
   @OneToMany(() => Environment, (env) => env.team)
   environments: Environment[];
 
@@ -42,4 +54,7 @@ export class Team {
     referencedColumnName: 'id',
   })
   organization: Organization;
+
+  @RelationId((team: Team) => team.organization)
+  orgId: number;
 }

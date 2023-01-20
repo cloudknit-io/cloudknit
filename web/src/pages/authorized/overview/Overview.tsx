@@ -1,5 +1,6 @@
 import { ZLoaderCover } from 'components/atoms/loader/LoaderCover';
-import { EntityStore, Update } from 'models/entity.store';
+import { EntityStore } from 'models/entity.store';
+import { Update } from 'models/entity.type';
 import React, { useEffect, useMemo, useState } from 'react';
 import { breadcrumbObservable, pageHeaderObservable } from '../contexts/EnvironmentHeaderContext';
 import { CircularClusterPacking } from '../dashboard/CircularClusterPacking';

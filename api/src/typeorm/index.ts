@@ -5,6 +5,7 @@ import { ComponentReconcile } from './component-reconcile.entity';
 import { EnvironmentReconcile } from './environment-reconcile.entity';
 import { Environment } from './environment.entity';
 import { Team } from './team.entity';
+import { get } from 'src/config';
 
 export const entities = [
   User,
@@ -16,7 +17,21 @@ export const entities = [
   Team,
 ];
 
+const dbConfig = {
+  type: 'mysql',
+  host: get().TypeORM.host,
+  port: get().TypeORM.port,
+  username: get().TypeORM.username,
+  password: get().TypeORM.password,
+  database: get().TypeORM.database,
+  entities,
+  migrations: ['src/typeorm/migrations/*.js'],
+  migrationsRun: true,
+  synchronize: false,
+};
+
 export {
+  dbConfig,
   User,
   Organization,
   Component,
