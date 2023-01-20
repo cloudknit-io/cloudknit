@@ -8,6 +8,7 @@ import {
 import { AuditStatus, ZSyncStatus } from 'models/argo.models';
 import { EntityStore } from 'models/entity.store';
 import { Component, Environment, Team } from 'models/entity.type';
+
 import moment from 'moment';
 import React from 'react';
 import { ArgoWorkflowsService } from 'services/argo/ArgoWorkflows.service';
@@ -260,11 +261,6 @@ export const getWorkflowLogs = async (
 	const { planItems, logItems } = await parse({ ...workflowDataSet });
 	setPlans(planItems || '//');
 	setLogs(logItems || '//');
-};
-
-export const getNodeLogs = async (configParamsSet: ConfigParamsSet, nodeId: string) => {
-	const { data } = await ArgoWorkflowsService.getNodeLog({ ...configParamsSet, nodeId });
-	return processNodeLogs(data);
 };
 
 export const processNodeLogs = (data: any) => {

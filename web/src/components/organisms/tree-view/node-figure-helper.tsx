@@ -56,26 +56,6 @@ export const getTextWidth = (name: string): number => {
 	return width;
 };
 
-export const getEnvironment = async (envName: string, teamName: string) => {
-	return await AuditService.getInstance().getEnvironmentInfo(envName, teamName);
-};
-
-export const getLastReconcileTime = async (id: string, envName: string, teamName: string, defaultValue: string) => {
-	try {
-		const info = await AuditService.getInstance().getComponentInfo(
-			id,
-			envName,
-			teamName
-		);
-		if (!info) {
-			return defaultValue;
-		}
-		return info['lastReconcileDatetime'];
-	} catch {
-		return defaultValue;
-	}
-};
-
 export const getTime = (time: string): string => {
 	return moment(time, moment.ISO_8601).fromNow();
 };

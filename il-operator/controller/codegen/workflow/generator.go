@@ -17,77 +17,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// GenerateWorkflowOfWorkflows create WoW.
-func GenerateWorkflowOfWorkflows(environment *stablev1.Environment) *workflow.Workflow {
-	workflowTemplate := "terraform-provision-template"
-
-	var tasks []workflow.DAGTask
-
-	for _, environmentComponent := range environment.Spec.Components {
-		tfPath := il.EnvironmentComponentTerraformDirectoryPath(environment.Spec.TeamName, environment.Spec.EnvName, environmentComponent.Name)
-		task := workflow.DAGTask{
-			Name: environmentComponent.Name,
-			TemplateRef: &workflow.TemplateRef{
-				Name:     "provisioner-trigger-template",
-				Template: "run",
-			},
-			Dependencies: append(environmentComponent.DependsOn, "trigger-audit"),
-			Arguments: workflow.Arguments{
-				Parameters: []workflow.Parameter{
-					{
-						Name:  "workflowtemplate",
-						Value: AnyStringPointer(workflowTemplate),
-					},
-					{
-						Name:  "terraform_version",
-						Value: AnyStringPointer(env.Config.TerraformDefaultVersion),
-					},
-					{
-						Name:  "terraform_il_path",
-						Value: AnyStringPointer(tfPath),
-					},
-					{
-						// TODO: to be replaced with reference to il.RepoURL(owner, companyName) once company can be extrapolated here
-						Name:  "il_repo",
-						Value: AnyStringPointer(env.Config.ILTerraformRepositoryURL),
-					},
-				},
-			},
-		}
-
-		tasks = append(tasks, task)
-	}
-
-	return &workflow.Workflow{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "argoproj.io/v1alpha1",
-			Kind:       "Workflow",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "experimental-" + environment.Spec.TeamName + "-" + environment.Spec.EnvName,
-			Namespace: env.ExecutorNamespace(),
-			Labels: map[string]string{
-				"terraform/sync":       "true",
-				"zlifecycle.com/model": "environment-sync-flow",
-			},
-		},
-		Spec: workflow.WorkflowSpec{
-			Entrypoint: "main",
-			OnExit:     "exit-handler",
-			Templates: []workflow.Template{
-				{
-					Name: "main",
-					DAG: &workflow.DAGTemplate{
-						Tasks: tasks,
-					},
-				},
-				exitHandler(environment),
-			},
-		},
-	}
-}
-
-func GenerateLegacyWorkflowOfWorkflows(environment *stablev1.Environment, tfcfg *secret.TerraformStateConfig) *workflow.Workflow {
+func GenerateWorkflowOfWorkflows(environment *stablev1.Environment, tfcfg *secret.TerraformStateConfig) *workflow.Workflow {
 	workflowTemplate := "terraform-sync-template"
 
 	var tasks []workflow.DAGTask
@@ -139,7 +69,7 @@ func generateWorkflow(environment *stablev1.Environment, tasks []workflow.DAGTas
 			Kind:       "Workflow",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      fmt.Sprintf("%s-%s", environment.Spec.TeamName, environment.Spec.EnvName),
+			Name:      fmt.Sprintf("%s-%s-%s", env.Config.CompanyName, environment.Spec.TeamName, environment.Spec.EnvName),
 			Namespace: env.Config.ArgoWorkflowsWorkflowNamespace,
 			Labels: map[string]string{
 				"terraform/sync":       "true",
