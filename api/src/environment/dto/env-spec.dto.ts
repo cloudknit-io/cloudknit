@@ -29,7 +29,7 @@ export class EnvSpecDto {
   @IsString()
   envName: string;
 
-  @ApiProperty({ type: [EnvSpecComponentDto] })
+  @ApiProperty({ type: EnvSpecComponentDto, isArray: true })
   @IsNotEmpty()
   @ValidateNested({ each: true })
   @Type(() => EnvSpecComponentDto)

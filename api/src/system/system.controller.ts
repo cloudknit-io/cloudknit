@@ -6,11 +6,13 @@ import {
   NotFoundException,
   Query,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { SystemService } from './system.service';
 
 @Controller({
   version: '1',
 })
+@ApiTags('system')
 export class SystemController {
   private readonly logger = new Logger(SystemController.name);
 

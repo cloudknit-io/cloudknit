@@ -33,6 +33,7 @@ export class ComponentReconcile {
 
   @ManyToOne(() => Component, (component) => component.id, {
     eager: true,
+    onDelete: 'CASCADE',
   })
   component: Component;
 

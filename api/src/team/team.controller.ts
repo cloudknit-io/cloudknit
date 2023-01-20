@@ -26,11 +26,13 @@ import { getGithubOrgFromRepoUrl } from 'src/organization/utilities';
 import { handleSqlErrors } from 'src/utilities/errorHandler';
 import { TeamQueryParams } from './team.dto';
 import { Team } from 'src/typeorm';
+import { ApiTags } from '@nestjs/swagger';
 import { OnEvent } from '@nestjs/event-emitter';
 
 @Controller({
   version: '1',
 })
+@ApiTags('teams')
 export class TeamController {
   private readonly logger = new Logger(TeamController.name);
   private TeamNameRegex = /^[a-zA-Z]+[a-zA-Z0-9]*(-[a-zA-Z0-9]+)*$/;

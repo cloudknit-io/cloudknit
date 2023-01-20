@@ -7,6 +7,7 @@ import {
   Param,
   Post,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { AuthController } from 'src/auth/auth.controller';
 import { User } from 'src/typeorm/User.entity';
 import { CreateUserDto } from './User.dto';
@@ -15,6 +16,7 @@ import { UsersService } from './users.service';
 @Controller({
   version: '1',
 })
+@ApiTags('users')
 export class UsersController {
   private readonly logger = new Logger(AuthController.name);
 
