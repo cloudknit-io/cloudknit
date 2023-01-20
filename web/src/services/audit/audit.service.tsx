@@ -1,5 +1,5 @@
 import AuthStore from 'auth/AuthStore';
-import { CompAuditData } from 'models/entity.store';
+import { CompAuditData } from 'models/entity.type';
 import { BaseService } from 'services/base/base.service';
 import ApiClient from 'utils/apiClient';
 import { ENVIRONMENT_VARIABLES } from 'utils/environmentVariables';
