@@ -297,7 +297,7 @@ func (r *EnvironmentReconciler) doReconcile(
 		r.LogV2.Infof("No git changes in ZL il to commit for environment %s, no-op reconciliation.", interpolated.Spec.EnvName)
 	}
 
-	// push zl il changes
+	// push tf il changes
 	tfPushed, err := ilService.TFILGitAPI.CommitAndPush(&commitInfo)
 	if err != nil {
 		return errors.Wrapf(err, "error pushing to terraform IL repo [%s]", env.Config.ILTerraformRepositoryURL)
@@ -408,7 +408,7 @@ func delayEnvironmentReconcileOnInitialRun(log *logrus.Entry, seconds int64) {
 func (r *EnvironmentReconciler) handleDirtyILState(argoworkflowAPI argoworkflowapi.API, e *stablev1.Environment) error {
 	r.LogV2.Infof("Committed new changes to IL repo(s) for environment %s", e.Spec.EnvName)
 	r.LogV2.Infof("Re-syncing Workflow of Workflows for environment %s", e.Spec.EnvName)
-	wow := fmt.Sprintf("%s-%s", e.Spec.TeamName, e.Spec.EnvName)
+	wow := fmt.Sprintf("%s-%s-%s", env.Config.CompanyName, e.Spec.TeamName, e.Spec.EnvName)
 	if err := argoworkflow.DeleteWorkflow(wow, env.Config.ArgoWorkflowsWorkflowNamespace, argoworkflowAPI); err != nil {
 		return err
 	}
