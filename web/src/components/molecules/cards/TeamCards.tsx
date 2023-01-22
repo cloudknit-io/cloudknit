@@ -2,7 +2,7 @@ import './style.scss';
 
 import { Loader } from 'components/atoms/loader/Loader';
 import { ZText } from 'components/atoms/text/Text';
-import { renderEnvSyncedStatus } from 'components/molecules/cards/renderFunctions';
+import { CostRenderer, renderEnvSyncedStatus } from 'components/molecules/cards/renderFunctions';
 import { ZGridDisplayListWithLabel } from 'components/molecules/grid-display-list/GridDisplayList';
 import { ZSyncStatus } from 'models/argo.models';
 import { ListItem } from 'models/general.models';
@@ -59,7 +59,7 @@ const items = (team: Team): ListItem[] => {
 	return [
 		{
 			label: 'Cost',
-			value: `$${team.estimatedCost}` || '$__.__',
+			value: <CostRenderer data={team.estimatedCost} />,
 		},
 		{
 			label: `Envs (${team.environments.length})`,
