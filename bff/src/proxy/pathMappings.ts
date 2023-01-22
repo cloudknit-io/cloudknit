@@ -46,6 +46,11 @@ const WF_PATH_MAPPINGS = [
     newPath: (params: any) =>
       `/api/v1/workflow-events/${params.orgName}-executor?listOptions.fieldSelector=metadata.name=${params.workflowId}`,
   },
+  {
+    path: "/wf/api/v1/stream/projects/:projectId/environments/:environmentId/config/:configId/:workflowId/log/:nodeId",
+    newPath: (params: any) =>
+      `/api/v1/workflows/${params.orgName}-executor/${params.workflowId}/log?logOptions.container=main&logOptions.follow=true&podName=${params.nodeId}`,
+  },
 ];
 
 const AUDIT_PATH_MAPPINGS = [
