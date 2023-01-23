@@ -447,7 +447,6 @@ export const EnvironmentComponents: React.FC = () => {
 											<AuditView
 												auditData={envAuditList}
 												auditColumns={auditColumns}
-												auditId={environmentName}
 											/>
 										</div>
 									</ZTablControl>
