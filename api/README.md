@@ -49,4 +49,4 @@ You'll need a working `.env`:
    * You can find that configuration [here](src/typeorm/index.ts)
 * Dev / Prod
    1. connect to VPN
-   1. `npm run typeorm:[dev|prod] migrate:run`
+   1. `npm run typeorm:[dev|prod] migration:run`
