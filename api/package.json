@@ -16,7 +16,9 @@
     "test": "ts-node test/e2e.ts",
     "test:step": "STEPCI_DISABLE_ANALYTICS=true stepci run stepci.yml --env startTime=$(node --eval=\"console.log(new Date(Date.now()))\") --env endTime=$(node --eval=\"console.log(new Date(Date.now() + 86400))\")",
     "test:step-one": "STEPCI_DISABLE_ANALYTICS=true stepci run step-1org.yml --env startTime=$(node --eval=\"console.log(new Date(Date.now()))\") --env endTime=$(node --eval=\"console.log(new Date(Date.now() + 86400))\")",
-    "typeorm": "ts-node-dev -r tsconfig-paths/register -r dotenv/config ./node_modules/typeorm/cli.js -d ./src/typeorm/data-source.ts"
+    "typeorm": "ts-node-dev -r tsconfig-paths/register -r dotenv/config ./node_modules/typeorm/cli.js -d ./src/typeorm/data-source.ts",
+    "typeorm:dev": "DOTENV_CONFIG_PATH=.env.dev ts-node-dev -r tsconfig-paths/register -r dotenv/config ./node_modules/typeorm/cli.js -d ./src/typeorm/data-source.ts",
+    "typeorm:prod": "DOTENV_CONFIG_PATH=.env.prod ts-node-dev -r tsconfig-paths/register -r dotenv/config ./node_modules/typeorm/cli.js -d ./src/typeorm/data-source.ts"
   },
   "dependencies": {
     "@kubernetes/client-node": "^0.18.0",

@@ -36,6 +36,17 @@ $ npm install
 
 ### Applying Migrations
 
-We've configured TypeORM to automatically apply outstanding migrations on API start. You can find that configuration [here](src/typeorm/index.ts). Look for `dbConfig` declaration.
+You'll need a working `.env`:
 
-Oustanding migrations will be applied automatically on deployment.
+1. `cp .env.example .env` - local
+1. `cp .env.example .env.dev` - dev
+1. `cp .env.example .env.prod` - prod
+
+> Note: Look in AWS, 1Password, k9s for values
+
+* Locally
+   * migrations are applied automatically when running on your machine
+   * You can find that configuration [here](src/typeorm/index.ts)
+* Dev / Prod
+   1. connect to VPN
+   1. `npm run typeorm:[dev|prod] migrate:run`
