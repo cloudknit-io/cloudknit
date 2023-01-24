@@ -50,3 +50,4 @@ You'll need a working `.env`:
 * Dev / Prod
    1. connect to VPN
    1. `npm run typeorm:[dev|prod] migration:run`
+   1. `typeorm` will tell you the last migration it ran, how many new migrations are about to run, and if they run successfully or not.
