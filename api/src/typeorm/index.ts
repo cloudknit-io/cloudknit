@@ -28,6 +28,7 @@ const dbConfig = {
   migrations: ['src/typeorm/migrations/*.js'],
   migrationsRun: true,
   synchronize: false,
+  logging: ['error', 'schema'],
 };
 
 export {
