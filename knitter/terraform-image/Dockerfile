@@ -9,7 +9,7 @@ RUN curl -o /tmp/aws-iam-authenticator https://amazon-eks.s3-us-west-2.amazonaws
 
 RUN apk del .build-deps && rm /tmp/*
 
-FROM hashicorp/terraform:1.0.9
+FROM hashicorp/terraform:1.3.7
 
 ARG INFRACOST_API_KEY
 ARG ZLI_TAG
