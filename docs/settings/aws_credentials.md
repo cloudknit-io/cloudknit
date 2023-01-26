@@ -14,4 +14,4 @@ AWS secrets that need to be set:
 * `Secret Access Key`
 * `Session Token` [Optional]
 
-There are 3 scopes to which these secrets can be added, `company`, `team`, `environment`. By default, **{{ company_name }}** tries to find secrets at environment level, then at team level and lastly at company level.
+There are 3 scopes to which these secrets can be added, `org`, `team`, `environment`. By default, **{{ company_name }}** tries to find secrets at environment level, then at team level and lastly at org level.
