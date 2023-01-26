@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Environment, Organization, Team } from 'src/typeorm';
 import { Equal, Repository } from 'typeorm';
@@ -100,6 +100,23 @@ export class EnvironmentService {
       relations: {
         team: withTeam,
         components: withComps,
+      },
+    });
+  }
+
+  async findByTokenAndSHA(
+    org: Organization,
+    token: string,
+    name: string,
+  ) {
+    //Validate SHA and token
+    if ("1" !== token) throw new BadRequestException("Bad token provided");
+    return this.envRepo.findOne({
+      where: {
+        name: Equal(name),
+        organization: {
+          id: org.id,
+        },
       },
     });
   }

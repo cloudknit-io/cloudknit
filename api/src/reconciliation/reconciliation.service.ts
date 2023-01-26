@@ -95,6 +95,12 @@ export class ReconciliationService {
     });
   }
 
+  async getEnvReconStatusByEnv(org: Organization, env: Environment) {
+    const recon = await this.getEnvReconByEnv(org, env);
+    if (!recon) throw new InternalServerErrorException(`No recon found for env id ${env.id}`);
+    return { status : recon.status };
+  }
+
   async getSkippedEnvironments(
     org: Organization,
     team: Team,

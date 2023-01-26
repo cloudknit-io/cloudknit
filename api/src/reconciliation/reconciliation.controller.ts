@@ -487,4 +487,24 @@ export class ReconciliationController {
 
     return logs;
   }
+
+  @Get('/token/:token/environment/:id')
+  @OrgApiParam()
+  async getAuditStatus(
+    @Req() req: APIRequest,
+    @Param('token') token: string,
+    @Param('id') id: string,
+  ) {
+    const { org } = req;
+
+    const env = await this.envSvc.findByTokenAndSHA(org, token, id);
+    if (!env) {
+      this.logger.error({
+        message: 'could not find environment while getting env audit status',
+      });
+      throw new BadRequestException('could not find environment');
+    }
+
+    return this.reconSvc.getEnvReconStatusByEnv(org, env);
+  }
 }

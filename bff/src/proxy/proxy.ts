@@ -181,6 +181,32 @@ export function handlePublicRoutes(router: express.Router) : express.Router {
     res.status(200).send();
   });
 
+  // Get latest audit status for blueprint-env
+  router.get('audit/:org/:id/:token', express.json(), async (req: BFFRequest, res: express.Response, next) => {
+    try {
+      const { org, id, token } = req.params;
+      
+      if (!org || !token || !id) {
+        logger.info(`no "org" or "token" or "id" param on audit req`);
+        res.status(200).send();
+        return;
+      }
+
+      const auditUrl = `${config.API_URL}/orgs/${org}/reconciliation/token/${token}/environment/${id}`;
+      return await axios.get(auditUrl);
+    } catch (error) {
+      if (error.response) {
+        const { data, status, headers } = error.response
+        logger.error('GitHub webhook ArgoCD sync call error', { error: { data, status, headers } });
+      } else {
+        logger.error('GitHub webhook ArgoCD sync call error', error);
+      }
+
+      res.status(500).send();
+      return;
+    }
+  });
+
   return router;
 }
 
