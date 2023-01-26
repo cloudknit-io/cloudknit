@@ -197,9 +197,9 @@ export function handlePublicRoutes(router: express.Router) : express.Router {
     } catch (error) {
       if (error.response) {
         const { data, status, headers } = error.response
-        logger.error('GitHub webhook ArgoCD sync call error', { error: { data, status, headers } });
+        logger.error('latest audit status request', { error: { data, status, headers } });
       } else {
-        logger.error('GitHub webhook ArgoCD sync call error', error);
+        logger.error('latest audit status request', error);
       }
 
       res.status(500).send();
