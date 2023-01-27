@@ -496,15 +496,7 @@ export class ReconciliationController {
     @Param('id') id: string,
   ) {
     const { org } = req;
-
-    const env = await this.envSvc.findByTokenAndSHA(org, token, id);
-    if (!env) {
-      this.logger.error({
-        message: 'could not find environment while getting env audit status',
-      });
-      throw new BadRequestException('could not find environment');
-    }
-
-    return this.reconSvc.getEnvReconStatusByEnv(org, env);
+    if ("1" !== token) throw new BadRequestException("Bad token provided");
+    return this.reconSvc.getEnvReconStatusBySHA(org, id);
   }
 }

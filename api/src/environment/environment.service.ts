@@ -104,23 +104,6 @@ export class EnvironmentService {
     });
   }
 
-  async findByTokenAndSHA(
-    org: Organization,
-    token: string,
-    name: string,
-  ) {
-    //Validate SHA and token
-    if ("1" !== token) throw new BadRequestException("Bad token provided");
-    return this.envRepo.findOne({
-      where: {
-        name: Equal(name),
-        organization: {
-          id: org.id,
-        },
-      },
-    });
-  }
-
   async remove(org: Organization, id: number): Promise<Environment> {
     const env = await this.findById(org, id);
 

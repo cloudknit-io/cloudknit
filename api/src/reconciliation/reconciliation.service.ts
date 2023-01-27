@@ -95,8 +95,15 @@ export class ReconciliationService {
     });
   }
 
-  async getEnvReconStatusByEnv(org: Organization, env: Environment) {
-    const recon = await this.getEnvReconByEnv(org, env);
+  async getEnvReconStatusBySHA(org: Organization, gitSha: string) {
+    const recon = await this.envReconRepo.findOne({
+      where: {
+        gitSha : Equal(gitSha),
+        organization: {
+          id : Equal(org.id)
+        }
+      }
+    });
     if (!recon) throw new InternalServerErrorException(`No recon found for env id ${env.id}`);
     return { status : recon.status };
   }
