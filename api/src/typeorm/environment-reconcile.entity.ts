@@ -25,6 +25,9 @@ export class EnvironmentReconcile {
   @Column()
   status: string;
 
+  @Column()
+  gitSha: string;
+
   @Column({
     type: 'datetime',
   })
