@@ -10,7 +10,12 @@ import {
   Req,
   Request,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiCreatedResponse,
+  ApiInternalServerErrorResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ApproveWorkflow as ResumeWorkflow } from 'src/argowf/api';
 import { ComponentService } from 'src/component/component.service';
 import { EnvironmentService } from 'src/environment/environment.service';
@@ -23,11 +28,12 @@ import {
   Organization,
   Team,
 } from 'src/typeorm';
-import { APIRequest, OrgApiParam } from 'src/types';
+import { ApiHttpException, APIRequest, OrgApiParam } from 'src/types';
 import { handleSqlErrors } from 'src/utilities/errorHandler';
 import { ApprovedByDto } from './dtos/componentAudit.dto';
 import {
   CreateComponentReconciliationDto,
+  CreatedEnvironmentReconcile,
   CreateEnvironmentReconciliationDto,
   UpdateComponentReconciliationDto,
   UpdateEnvironmentReconciliationDto,
@@ -50,10 +56,13 @@ export class ReconciliationController {
 
   @Post('environment')
   @OrgApiParam()
+  @ApiCreatedResponse({ type: CreatedEnvironmentReconcile })
+  @ApiBadRequestResponse({ type: ApiHttpException })
+  @ApiInternalServerErrorResponse({ type: ApiHttpException })
   async newEnvironmentReconciliation(
     @Req() req: APIRequest,
     @Body() body: CreateEnvironmentReconciliationDto
-  ) {
+  ): Promise<CreatedEnvironmentReconcile> {
     const { org } = req;
 
     const team = await this.teamSvc.findByName(org, body.teamName);
@@ -107,7 +116,9 @@ export class ReconciliationController {
       throw new InternalServerErrorException();
     }
 
-    return envReconEntry.reconcileId;
+    return {
+      reconcileId: envReconEntry.reconcileId,
+    };
   }
 
   @Post('environment/:reconcileId')
