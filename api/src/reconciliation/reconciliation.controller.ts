@@ -7,6 +7,7 @@ import {
   Logger,
   Param,
   Post,
+  Query,
   Req,
   Request,
 } from '@nestjs/common';
@@ -31,6 +32,7 @@ import {
 import { ApiHttpException, APIRequest, OrgApiParam } from 'src/types';
 import { handleSqlErrors } from 'src/utilities/errorHandler';
 import { ApprovedByDto } from './dtos/componentAudit.dto';
+import { EnvShaParams } from './dtos/environmentAudit.dto';
 import {
   CreateComponentReconciliationDto,
   CreatedEnvironmentReconcile,
@@ -499,15 +501,18 @@ export class ReconciliationController {
     return logs;
   }
 
-  @Get('/token/:token/environment/:id')
+  @Get('environment')
   @OrgApiParam()
   async getAuditStatus(
     @Req() req: APIRequest,
-    @Param('token') token: string,
-    @Param('id') id: string,
+    @Query() gitSha: EnvShaParams,
   ) {
     const { org } = req;
-    if ("1" !== token) throw new BadRequestException("Bad token provided");
-    return this.reconSvc.getEnvReconStatusBySHA(org, id);
+    if (!gitSha.sha) {
+      throw new BadRequestException(`No sha provided`);
+    }
+    const recon = await this.reconSvc.getEnvReconStatusBySHA(org, gitSha.sha);
+    if (!recon) throw new InternalServerErrorException(`No recon found for sha ${gitSha}`);
+    return { status : recon.status };
   }
 }

@@ -182,17 +182,20 @@ export function handlePublicRoutes(router: express.Router) : express.Router {
   });
 
   // Get latest audit status for blueprint-env
-  router.get('audit/:org/:id/:token', express.json(), async (req: BFFRequest, res: express.Response, next) => {
+  router.get('/audit', express.json(), async (req: BFFRequest, res: express.Response, next) => {
     try {
-      const { org, id, token } = req.params;
+      const { envSha, authToken } = req.query;
       
-      if (!org || !token || !id) {
+      if (!authToken || !envSha) {
         logger.info(`no "org" or "token" or "id" param on audit req`);
         res.status(200).send();
         return;
       }
 
-      const auditUrl = `${config.API_URL}/orgs/${org}/reconciliation/token/${token}/environment/${id}`;
+      // Authenticate via token and populate org
+      const org = '';
+
+      const auditUrl = `${config.API_URL}/orgs/${org}/reconciliation/environment/${envSha}`;
       return await axios.get(auditUrl);
     } catch (error) {
       if (error.response) {

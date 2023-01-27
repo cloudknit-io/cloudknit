@@ -97,7 +97,7 @@ export class ReconciliationService {
   }
 
   async getEnvReconStatusBySHA(org: Organization, gitSha: string) {
-    const recon = await this.envReconRepo.findOne({
+    return this.envReconRepo.findOne({
       where: {
         gitSha : Equal(gitSha),
         organization: {
@@ -105,8 +105,6 @@ export class ReconciliationService {
         }
       }
     });
-    if (!recon) throw new InternalServerErrorException(`No recon found for sha ${gitSha}`);
-    return { status : recon.status };
   }
 
   async getSkippedEnvironments(
