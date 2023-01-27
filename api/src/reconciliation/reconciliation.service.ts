@@ -105,7 +105,7 @@ export class ReconciliationService {
         }
       }
     });
-    if (!recon) throw new InternalServerErrorException(`No recon found for env id ${env.id}`);
+    if (!recon) throw new InternalServerErrorException(`No recon found for sha ${gitSha}`);
     return { status : recon.status };
   }
 
