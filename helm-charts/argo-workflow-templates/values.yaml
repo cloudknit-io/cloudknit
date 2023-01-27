@@ -1,5 +1,5 @@
 ckEnvironment:
-configRepo: git@github.com:zl-compuzest-tech/zl-environment-dev-config.git
+configRepo: git@github.com:zl-compuzest-tech/dev-config.git
 terraformImageTag: latest
 provisionOrgImage:
 tfModuleVersion:
