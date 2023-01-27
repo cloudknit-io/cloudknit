@@ -1,13 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 import { EnvironmentReconcile } from 'src/typeorm';
 
 export interface EnvironmentReconcileWrap extends EnvironmentReconcile {
   duration: number;
 }
 
-export class EnvShaParams {
-  @ApiProperty({ required: true, type: 'string' })
+export class GetEnvReconStatusQueryParams {
+  @ApiProperty()
   @IsString()
+  @IsNotEmpty()
   sha: string;
 }

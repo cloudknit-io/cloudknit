@@ -81,3 +81,10 @@ export class CreatedEnvironmentReconcile {
   @IsNotEmpty()
   reconcileId: number;
 }
+
+export class RespGetEnvReconStatus {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  status: string;
+}

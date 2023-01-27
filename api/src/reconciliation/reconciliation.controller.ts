@@ -15,6 +15,7 @@ import {
   ApiBadRequestResponse,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse,
+  ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { ApproveWorkflow as ResumeWorkflow } from 'src/argowf/api';
@@ -32,11 +33,12 @@ import {
 import { ApiHttpException, APIRequest, OrgApiParam } from 'src/types';
 import { handleSqlErrors } from 'src/utilities/errorHandler';
 import { ApprovedByDto } from './dtos/componentAudit.dto';
-import { EnvShaParams } from './dtos/environmentAudit.dto';
+import { GetEnvReconStatusQueryParams } from './dtos/environmentAudit.dto';
 import {
   CreateComponentReconciliationDto,
   CreatedEnvironmentReconcile,
   CreateEnvironmentReconciliationDto,
+  RespGetEnvReconStatus,
   UpdateComponentReconciliationDto,
   UpdateEnvironmentReconciliationDto,
 } from './dtos/reconciliation.dto';
@@ -501,18 +503,35 @@ export class ReconciliationController {
     return logs;
   }
 
-  @Get('environment')
+  @Get('environment/status')
   @OrgApiParam()
-  async getAuditStatus(
+  @ApiOkResponse({ type: RespGetEnvReconStatus })
+  @ApiBadRequestResponse({ type: ApiHttpException })
+  @ApiInternalServerErrorResponse({ type: ApiHttpException })
+  async getReconcileStatus(
     @Req() req: APIRequest,
-    @Query() gitSha: EnvShaParams,
-  ) {
+    @Query() queryParams: GetEnvReconStatusQueryParams
+  ): Promise<RespGetEnvReconStatus> {
     const { org } = req;
-    if (!gitSha.sha) {
-      throw new BadRequestException(`No sha provided`);
+
+    let recon: EnvironmentReconcile;
+
+    try {
+      recon = await this.reconSvc.getEnvReconStatusBySHA(org, queryParams.sha);
+    } catch (err) {
+      this.logger.error({
+        message: 'error retrieving environment reconcile status',
+        queryParams,
+        org,
+      });
+
+      throw new InternalServerErrorException('');
     }
-    const recon = await this.reconSvc.getEnvReconStatusBySHA(org, gitSha.sha);
-    if (!recon) throw new InternalServerErrorException(`No recon found for sha ${gitSha}`);
-    return { status : recon.status };
+
+    if (!recon) {
+      throw new BadRequestException(`could not find environment reconcile`);
+    }
+
+    return { status: recon.status };
   }
 }
