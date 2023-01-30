@@ -19,6 +19,11 @@ export class CreateEnvironmentReconciliationDto {
   teamName: string;
 
   @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  gitSha: string;
+
+  @ApiProperty()
   @IsDateString()
   @IsNotEmpty()
   startDateTime: string;
@@ -68,4 +73,18 @@ export class UpdateComponentReconciliationDto {
   @IsString()
   @IsOptional()
   approvedBy?: string;
+}
+
+export class CreatedEnvironmentReconcile {
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  reconcileId: number;
+}
+
+export class RespGetEnvReconStatus {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  status: string;
 }

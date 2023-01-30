@@ -27,12 +27,18 @@ ingressPaths:
   - "/public"
   - "/ops"
   - "/api"
+  - "/ext"
 protocol:
 auth0:
-  baseUrl:
-  clientId:
   issuerBaseUrl:
-  secret:
+  web:
+    baseUrl:
+    clientId:
+    secret:
+  api:
+    clientId:
+    secret:
+    audience:
 argocd:
   urlWithProtocol: http://argocd-server.argocd.svc.cluster.local
 argoWorkflowApiUrl: http://argo-workflow-server.argocd.svc.cluster.local:2746
