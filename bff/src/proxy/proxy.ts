@@ -187,7 +187,7 @@ export function handlePublicRoutes(router: express.Router) : express.Router {
       const { envSha, authToken } = req.query;
       
       if (!authToken || !envSha) {
-        logger.info(`no "org" or "token" or "id" param on audit req`);
+        logger.info(`no "org" or "token" param on audit req`);
         res.status(200).send();
         return;
       }
