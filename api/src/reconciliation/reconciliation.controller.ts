@@ -7,10 +7,17 @@ import {
   Logger,
   Param,
   Post,
+  Query,
   Req,
   Request,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiCreatedResponse,
+  ApiInternalServerErrorResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ApproveWorkflow as ResumeWorkflow } from 'src/argowf/api';
 import { ComponentService } from 'src/component/component.service';
 import { EnvironmentService } from 'src/environment/environment.service';
@@ -23,12 +30,15 @@ import {
   Organization,
   Team,
 } from 'src/typeorm';
-import { APIRequest, OrgApiParam } from 'src/types';
+import { ApiHttpException, APIRequest, OrgApiParam } from 'src/types';
 import { handleSqlErrors } from 'src/utilities/errorHandler';
 import { ApprovedByDto } from './dtos/componentAudit.dto';
+import { GetEnvReconStatusQueryParams } from './dtos/environmentAudit.dto';
 import {
   CreateComponentReconciliationDto,
+  CreatedEnvironmentReconcile,
   CreateEnvironmentReconciliationDto,
+  RespGetEnvReconStatus,
   UpdateComponentReconciliationDto,
   UpdateEnvironmentReconciliationDto,
 } from './dtos/reconciliation.dto';
@@ -50,10 +60,13 @@ export class ReconciliationController {
 
   @Post('environment')
   @OrgApiParam()
+  @ApiCreatedResponse({ type: CreatedEnvironmentReconcile })
+  @ApiBadRequestResponse({ type: ApiHttpException })
+  @ApiInternalServerErrorResponse({ type: ApiHttpException })
   async newEnvironmentReconciliation(
     @Req() req: APIRequest,
     @Body() body: CreateEnvironmentReconciliationDto
-  ) {
+  ): Promise<CreatedEnvironmentReconcile> {
     const { org } = req;
 
     const team = await this.teamSvc.findByName(org, body.teamName);
@@ -107,7 +120,9 @@ export class ReconciliationController {
       throw new InternalServerErrorException();
     }
 
-    return envReconEntry.reconcileId;
+    return {
+      reconcileId: envReconEntry.reconcileId,
+    };
   }
 
   @Post('environment/:reconcileId')
@@ -486,5 +501,37 @@ export class ReconciliationController {
     }
 
     return logs;
+  }
+
+  @Get('environment/status')
+  @OrgApiParam()
+  @ApiOkResponse({ type: RespGetEnvReconStatus })
+  @ApiBadRequestResponse({ type: ApiHttpException })
+  @ApiInternalServerErrorResponse({ type: ApiHttpException })
+  async getReconcileStatus(
+    @Req() req: APIRequest,
+    @Query() queryParams: GetEnvReconStatusQueryParams
+  ): Promise<RespGetEnvReconStatus> {
+    const { org } = req;
+
+    let recon: EnvironmentReconcile;
+
+    try {
+      recon = await this.reconSvc.getEnvReconStatusBySHA(org, queryParams.sha);
+    } catch (err) {
+      this.logger.error({
+        message: 'error retrieving environment reconcile status',
+        queryParams,
+        org,
+      });
+
+      throw new InternalServerErrorException('');
+    }
+
+    if (!recon) {
+      throw new BadRequestException(`could not find environment reconcile`);
+    }
+
+    return { status: recon.status };
   }
 }
