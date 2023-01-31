@@ -166,7 +166,7 @@ export function apiAuthMw() {
         .href,
     }),
     audience: ckConfig.AUTH0_API_AUDIENCE,
-    issuer: ckConfig.AUTH0_ISSUER_BASE_URL,
+    issuer: new URL("/", ckConfig.AUTH0_ISSUER_BASE_URL).href,
     algorithms: ["RS256"],
   });
 }
