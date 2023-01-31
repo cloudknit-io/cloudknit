@@ -45,6 +45,7 @@ app.get("/", (req: any, res) => {
 });
 
 app.use("/public", handlePublicRoutes(publicRouter));
+externalRouter.use(AuthRequestLogger);
 app.use("/ext/api", apiAuthMw(), externalApiRoutes(externalRouter));
 
 // auth0 router attaches /auth/login, /logout, and /callback routes to the baseURL

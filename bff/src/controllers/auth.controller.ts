@@ -82,7 +82,7 @@ export default function createRoutes(router: express.Router): express.Router {
 
       res.send(resp.data);
     } catch (err) {
-      logger.error("could not create access token", err);
+      logger.error("could not create access token", err.response.data);
       res.status(500).send({ error: "could not create access token" });
     }
   });
