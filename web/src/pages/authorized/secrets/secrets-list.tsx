@@ -48,10 +48,9 @@ export const SecretList: React.FC<Props> = ({ heading, secretKey, newSecret, ref
 			path = secretKey.replaceAll(':', '/');
 		}
 
-		secretsService.getSsmSecrets(false, path).then(({ data }) => {			
+		secretsService.getSsmSecrets(false, path).then(({ data }) => {
 			const resp = data as any;
 			existingSecrets.clear();
-			
 			if (resp?.length > 0) {
 				(resp as any).forEach((d: SecretResponseType) => {
 					if (!existingSecrets.has(d.key)) {
@@ -131,17 +130,15 @@ export const SecretList: React.FC<Props> = ({ heading, secretKey, newSecret, ref
 								closeCallback();
 							}
 						}}>
-						<div className="secret-container">
-							{
-								<AWSSSMSecret
-									secretScope={selectedSSMSecret}
-									secretKey={selectedSecretKey}
-									saveCallback={saveCallback}
-									closeCallback={closeCallback}
-									scopeEditable={newSecret}
-								/>
-							}
-						</div>
+						{
+							<AWSSSMSecret
+								secretScope={selectedSSMSecret}
+								secretKey={selectedSecretKey}
+								saveCallback={saveCallback}
+								closeCallback={closeCallback}
+								scopeEditable={newSecret}
+							/>
+						}
 					</div>
 				</>
 			)}

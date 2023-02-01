@@ -212,12 +212,26 @@
 				margin-top: 10px;
 			}
 
+			&__dummy-value {
+				max-width: 600px;
+				overflow: auto;
+				max-height: 100px;
+				word-break: break-all;
+				line-break: anywhere;
+				&--with-border {
+					border-bottom: 1px solid lightgray;
+				}
+			}
+
 			&__name {
 				font-weight: bold;
 				font-size: 0.9em;
 				display: flex;
 				align-items: center;
 				justify-content: space-between;
+				&__warning {
+					color: orange;
+				}
 			}
 
 			&__input {
