@@ -73,9 +73,9 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentCreate(ctx context.Context
 	headCommitHash, err := v.gc.HeadCommitHash()
 
 	if err != nil {
-
+		v.l.Errorf("error fetching HeadCommitHash for environment [%s]: %v", e.Spec.EnvName, err)
 	}
-	v.l.Infof("HeadCommitHash [%s] for environment [%s]", headCommitHash, e.Name)
+	v.l.Infof("HeadCommitHash [%s] for environment [%s]", headCommitHash, e.Spec.EnvName)
 
 	if err := v.init(ctx); err != nil {
 		v.l.Errorf(errInitEnvironmentValidator+": %v", err)
@@ -128,9 +128,9 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentUpdate(ctx context.Context
 	headCommitHash, err := v.gc.HeadCommitHash()
 
 	if err != nil {
-
+		v.l.Errorf("error fetching HeadCommitHash for environment [%s]: %v", e.Spec.EnvName, err)
 	}
-	v.l.Infof("HeadCommitHash [%s] for environment [%s]", headCommitHash, e.Name)
+	v.l.Infof("HeadCommitHash [%s] for environment [%s]", headCommitHash, e.Spec.EnvName)
 
 	if err := v.init(ctx); err != nil {
 		v.l.Errorf(errInitEnvironmentValidator+": %v", err)
