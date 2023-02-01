@@ -232,5 +232,5 @@ export const AWSSSMSecret: React.FC<Props> = ({
 		);
 	};
 
-	return <>{addSecretForm()}</>;
+	return <div className="secret-container">{addSecretForm()}</div>;
 };

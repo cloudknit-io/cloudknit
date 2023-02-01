@@ -1,12 +1,11 @@
-import { useApi } from 'hooks/use-api/useApi';
-import React, { useEffect, useMemo, useState } from 'react';
-import { ArgoTeamsService } from 'services/argo/ArgoProjects.service';
-import { ReactComponent as DropdownArrow } from 'assets/images/icons/chevron-right.svg';
 import { ReactComponent as Add } from 'assets/images/icons/add.svg';
-import { SecretsService } from 'services/secrets/secrets.service';
-import { Subject } from 'rxjs';
+import { ReactComponent as DropdownArrow } from 'assets/images/icons/chevron-right.svg';
 import AuthStore from 'auth/AuthStore';
 import { EntityStore } from 'models/entity.store';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Subject } from 'rxjs';
+import { AddUser } from '../addUser/AddUser';
+import { AccessToken } from './access-token';
 
 export type Hierarchy = {
 	id: string;
@@ -17,12 +16,36 @@ export type Hierarchy = {
 	type: 'SECRET' | 'TAB';
 	updateCallback?: () => void;
 	_par?: Hierarchy;
+	order: number;
+	render?: JSX.Element;
 };
 
 export type Props = {
 	hierarchyChanged: (h: Hierarchy) => boolean;
 	refreshView: Subject<string>;
 };
+
+const getHierarchy = (
+	id: string,
+	children: Hierarchy[],
+	name: string | JSX.Element,
+	selectable?: boolean,
+	updateCallback?: () => void,
+	_par?: Hierarchy,
+	type?: 'SECRET' | 'TAB',
+	order = Number.MAX_SAFE_INTEGER,
+	render?: JSX.Element
+): Hierarchy => ({
+	id,
+	children,
+	name,
+	selectable,
+	updateCallback,
+	_par,
+	type: type || 'SECRET',
+	order,
+	render,
+});
 
 export const HierachicalLeftView: React.FC<Props> = ({ hierarchyChanged, refreshView }) => {
 	const entityStore = useMemo(() => EntityStore.getInstance(), []);
@@ -34,24 +57,63 @@ export const HierachicalLeftView: React.FC<Props> = ({ hierarchyChanged, refresh
 		const selected = hierarchyChanged(h);
 		setSelectedHierarchy(h);
 	};
-
-	const getHierarchy = (
-		id: string,
-		children: Hierarchy[],
-		name: string | JSX.Element,
-		selectable?: boolean,
-		updateCallback?: () => void,
-		_par?: Hierarchy,
-		type?: 'SECRET' | 'TAB'
-	): Hierarchy => ({
-		id,
-		children,
-		name,
-		selectable,
-		updateCallback,
-		_par,
-		type: type || 'SECRET',
-	});
+	const teamEnvHierarchy = useCallback(() => {
+		if (!org) return null;
+		return getHierarchy(
+			'Teams',
+			[...environmentsMap.keys()].map(e => {
+				const team = getHierarchy(`${org.name || ''}:${e}`, [], e, true, () => {});
+				team.children = [
+					getHierarchy(
+						`${org.name || ''}:${e}:`,
+						[],
+						<span className="d-flex align-center">
+							New <Add style={{ marginLeft: '5px' }} />
+						</span>,
+						true,
+						() => {},
+						team
+					),
+					...(environmentsMap.get(e) || [])
+						.sort()
+						.map(r =>
+							getHierarchy(
+								`${org.name || ''}:${e}:${r.replace(e + '-', '')}`,
+								[],
+								r.replace(e + '-', ''),
+								true,
+								() => {},
+								team
+							)
+						),
+				];
+				return team;
+			}),
+			'Teams',
+			false,
+			() => {},
+			undefined,
+			undefined,
+			1
+		);
+	}, [environmentsMap, org]);
+	const defaultHierarchies = useMemo(() => {
+		return [
+			getHierarchy(org?.name || '', [], 'Global Secrets', true, () => {}, undefined, undefined, 0),
+			getHierarchy('add_users', [], 'Users', true, () => {}, undefined, 'TAB', 2, <AddUser />),
+			getHierarchy(
+				'access_token',
+				[],
+				'Access Token',
+				true,
+				() => {},
+				undefined,
+				'TAB',
+				3,
+				<AccessToken />
+			),
+		];
+	}, [org]);
 
 	useEffect(() => {
 		if (!refreshView) return;
@@ -88,7 +150,7 @@ export const HierachicalLeftView: React.FC<Props> = ({ hierarchyChanged, refresh
 					envs.filter(env => env.teamId === e.id).map(env => env.name)
 				)
 			);
-			setEnvironmentsMap(map)
+			setEnvironmentsMap(map);
 		});
 
 		return () => {
@@ -100,46 +162,11 @@ export const HierachicalLeftView: React.FC<Props> = ({ hierarchyChanged, refresh
 		if (!org) {
 			return;
 		}
-		const hierarchy: Hierarchy[] = [getHierarchy(org.name || '', [], 'Global Secrets', true, () => {})];
+		const teamEnv = teamEnvHierarchy();
+		if (!teamEnv) return;
 
-		hierarchy.push(
-			getHierarchy(
-				'Teams',
-				[...environmentsMap.keys()].map(e => {
-					const team = getHierarchy(`${org.name || ''}:${e}`, [], e, true, () => {});
-					team.children = [
-						getHierarchy(
-							`${org.name || ''}:${e}:`,
-							[],
-							<span className="d-flex align-center">
-								New <Add style={{ marginLeft: '5px' }} />
-							</span>,
-							true,
-							() => {},
-							team
-						),
-						...(environmentsMap.get(e) || [])
-							.sort()
-							.map(r =>
-								getHierarchy(
-									`${org.name || ''}:${e}:${r.replace(e + '-', '')}`,
-									[],
-									r.replace(e + '-', ''),
-									true,
-									() => {},
-									team
-								)
-							),
-					];
-					return team;
-				}),
-				'Teams',
-				false,
-				() => {}
-			)
-		);
-		hierarchy.push(getHierarchy('add_users', [], 'Users', true, () => {}, undefined, 'TAB'));
-		setHeirarchy(hierarchy);
+		const hierarchy: Hierarchy[] = [teamEnv, ...defaultHierarchies];
+		setHeirarchy(hierarchy.sort((h1, h2) => h1.order - h2.order));
 	}, [environmentsMap, org]);
 
 	useEffect(() => {
