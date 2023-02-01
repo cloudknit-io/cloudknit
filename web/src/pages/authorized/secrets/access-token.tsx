@@ -1,5 +1,5 @@
 import AuthStore from 'auth/AuthStore';
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import ApiClient from 'utils/apiClient';
 
 import { ReactComponent as Copy } from 'assets/images/icons/copy.svg';
@@ -17,8 +17,10 @@ export const AccessToken: React.FC = () => {
 	const org = useMemo(() => AuthStore.getOrganization(), []);
 	const nm = useContext(Context)?.notifications;
 	const [accessToken, setAccessToken] = useState<string | null | undefined>(undefined);
-	useEffect(() => {
-		if (!org) return;
+    const [wait, setWait] = useState<boolean>(false);
+
+	const generateToken = useCallback(() => {
+        setWait(true);
 		ApiClient.get<AccessToken>('/auth/access-token')
 			.then(resp => {
 				setAccessToken(resp.data.access_token);
@@ -33,25 +35,30 @@ export const AccessToken: React.FC = () => {
 				});
 				console.error(e);
 				setAccessToken(null);
-			});
-	}, [org]);
+			}).finally(() => {
+                setWait(false);
+            });
+	}, []);
 
 	const renderUI = () => {
 		if (!org) return <></>;
-		if (accessToken === undefined)
+		if (!accessToken)
 			return (
-				<>
-					<Loader height={16} />
-					Retrieving access token...
-				</>
+				<div className="secret-pair">
+					<label className="secret-pair__name">Generate an access token for personal access.</label>
+					<button disabled={wait} className="secret-pair__button secret-pair__save shadowy-input" onClick={generateToken}>
+						{wait ? <Loader height={16} /> : 'Generate Token'}
+					</button>
+				</div>
 			);
-		if (accessToken === null) return 'Failed to retrieve access token';
 
 		return (
 			<>
 				<div className="secret-pair">
-					<label className="secret-pair__name">Access Token</label>
-					<span className="secret-pair__dummy-value">******</span>
+					<label className="secret-pair__name secret-pair__name__warning">
+						Please copy this token, right away! You will not be able to see it again
+					</label>
+					<span className="secret-pair__dummy-value secret-pair__dummy-value--with-border">{accessToken}</span>
 				</div>
 				<button
 					className="copy-to-clipboard"
