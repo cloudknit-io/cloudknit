@@ -69,6 +69,10 @@ func (v *EnvironmentValidatorImpl) init(ctx context.Context) error {
 var _ api.EnvironmentValidator = (*EnvironmentValidatorImpl)(nil)
 
 func (v *EnvironmentValidatorImpl) ValidateEnvironmentCreate(ctx context.Context, e *v1.Environment) error {
+
+	headCommitHash, nil := v.gc.HeadCommitHash()
+	v.l.Infof("HeadCommitHash [%s] for environment [%s]", headCommitHash, e.Name)
+
 	if err := v.init(ctx); err != nil {
 		v.l.Errorf(errInitEnvironmentValidator+": %v", err)
 		return apierrors.NewInternalError(errors.Wrap(err, errInitEnvironmentValidator))
@@ -116,6 +120,10 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentCreate(ctx context.Context
 }
 
 func (v *EnvironmentValidatorImpl) ValidateEnvironmentUpdate(ctx context.Context, e *v1.Environment) error {
+
+	headCommitHash, nil := v.gc.HeadCommitHash()
+	v.l.Infof("HeadCommitHash [%s] for environment [%s]", headCommitHash, e.Name)
+
 	if err := v.init(ctx); err != nil {
 		v.l.Errorf(errInitEnvironmentValidator+": %v", err)
 		return apierrors.NewInternalError(errors.Wrap(err, errInitEnvironmentValidator))
