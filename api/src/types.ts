@@ -1,9 +1,6 @@
-import {
-  applyDecorators,
-  createParamDecorator,
-  InternalServerErrorException,
-} from '@nestjs/common';
-import { ApiParam, ApiParamOptions } from '@nestjs/swagger';
+import { applyDecorators, HttpException } from '@nestjs/common';
+import { ApiParam, ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { Request } from 'express';
 import { Component, Environment, Team } from './typeorm';
 import { Organization } from './typeorm/Organization.entity';
@@ -68,4 +65,16 @@ export class EnvironmentCostUpdateEvent implements InternalEvent {
     this.type = InternalEventType.EnvironmentCostUpdate;
     this.payload = p;
   }
+}
+
+export class ApiHttpException {
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  statusCode: number;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  message: string;
 }

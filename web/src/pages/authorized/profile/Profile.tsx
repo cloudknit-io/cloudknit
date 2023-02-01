@@ -1,18 +1,16 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect } from 'react';
 import './styles.scss';
 
-import { usePageHeader } from '../contexts/EnvironmentHeaderContext';
-import { useState } from 'react';
-import { AWSSecret } from '../secrets/aws-secrets';
 import { ZLoaderCover } from 'components/atoms/loader/LoaderCover';
-import { ENVIRONMENT_VARIABLES } from 'utils/environmentVariables';
-import { SecretList } from '../secrets/secrets-list';
 import { ZTablControl } from 'components/molecules/tab-control/TabControl';
-import { HierachicalLeftView, Hierarchy } from '../secrets/hierarchical-left-view';
-import { AWSSSMSecret } from '../secrets/aws-ssm-secrets';
+import { useState } from 'react';
 import { Subject } from 'rxjs';
+import { usePageHeader } from '../contexts/EnvironmentHeaderContext';
+import { AWSSecret } from '../secrets/aws-secrets';
+import { AWSSSMSecret } from '../secrets/aws-ssm-secrets';
+import { HierachicalLeftView, Hierarchy } from '../secrets/hierarchical-left-view';
 import { Secrets } from '../secrets/secrets';
-import { AddUser } from '../addUser/AddUser';
+import { SecretList } from '../secrets/secrets-list';
 
 const refresher = new Subject<string>();
 
@@ -105,17 +103,15 @@ export const Profile: React.FC = () => {
 									<div className="aws-secrets">
 										{selectedSecret.endsWith('/') ? (
 											<div className="secret-info secret-info-ssm">
-												<div className="secret-container">
-													<AWSSSMSecret
-														secretScope={selectedSecret}
-														secretKey={null}
-														saveCallback={(id: string) => {
-															refresher.next(id);
-														}}
-														closeCallback={() => {}}
-														scopeEditable={true}
-													/>
-												</div>
+												<AWSSSMSecret
+													secretScope={selectedSecret}
+													secretKey={null}
+													saveCallback={(id: string) => {
+														refresher.next(id);
+													}}
+													closeCallback={() => {}}
+													scopeEditable={true}
+												/>
 											</div>
 										) : (
 											<SecretList heading={''} secretKey={selectedSecret?.replaceAll('/', ':')} />
@@ -169,8 +165,10 @@ export const Profile: React.FC = () => {
 							</ZTablControl>
 						</div>
 					</div>
+				) : selectedHierarchy?.render ? (
+					selectedHierarchy.render
 				) : (
-					<AddUser />
+					<></>
 				)}
 			</div>
 		</ZLoaderCover>
