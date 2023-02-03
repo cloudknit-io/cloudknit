@@ -192,7 +192,7 @@ const Tree: FC<Props> = ({
 				});
 			});
 		}
-	}, [arrowType, ranker, data]);
+	}, [arrowType, ranker, data, dagGraph]);
 
 	useEffect(() => {
 		if (dagGraph) {
