@@ -157,9 +157,7 @@ export const ConfigWorkflowView: FC<Props> = (props: Props) => {
 			case ViewType.Audit_View:
 				return (
 					<AuditView
-						auditId={config.id}
 						auditColumns={auditColumns}
-						config={config}
 						auditData={auditData}
 						fetchLogs={AuditService.getInstance().fetchLogs.bind(
 							AuditService.getInstance(),
@@ -167,6 +165,7 @@ export const ConfigWorkflowView: FC<Props> = (props: Props) => {
 							separatedConfigId?.environment || '',
 							separatedConfigId?.component || ''
 						)}
+						resetView={() => setViewType(ViewType.Concise_Logs)}
 					/>
 				);
 			case ViewType.State_File:
