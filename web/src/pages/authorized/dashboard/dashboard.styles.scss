@@ -161,7 +161,7 @@ div.graph-container {
 			circle {
 				transition: all 0.3s;
 				&:hover {
-					filter: drop-shadow( 0px 0px 20px #bbb);
+					// filter: drop-shadow( 0px 0px 20px #bbb);
 					stroke-width: 5px;
 					stroke: black;
 				}
