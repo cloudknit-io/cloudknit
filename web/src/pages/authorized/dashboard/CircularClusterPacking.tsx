@@ -6,6 +6,7 @@ import * as d3 from 'd3';
 import { ZSyncStatus } from 'models/argo.models';
 import React, { FC, useEffect, useRef, useState } from 'react';
 
+import './dashboard.styles.scss';
 import { TooltipD3 } from './TooltipD3';
 
 export interface Cluster {
@@ -23,7 +24,13 @@ export const CircularClusterPacking: FC<any> = (props: Cluster) => {
 	const color = (i: number) => ['#47C9A7', '#252625', '#47C9A7', '#252625'][i]; //temp.range(['hsl(152,80%,80%)', 'hsl(228,30%,40%)']).interpolate(d3.interpolateHcl);
 
 	const pack = (data: any) =>
-		d3.pack().size([width, height]).padding(10)(
+		d3
+			.pack()
+			.size([width, height])
+			.padding(10)
+			.radius(node => {
+				return node.r || 100;
+			})(
 			d3
 				.hierarchy(data)
 				.sum(d => d.value)
@@ -72,9 +79,9 @@ export const CircularClusterPacking: FC<any> = (props: Cluster) => {
 					classNames: 'tooltip',
 				};
 				setTooltipData({
-					card: <span className='tooltip-text'>{d?.data?.name || ''}</span>,
-						...tooltipData,
-				})
+					card: <span className="tooltip-text">{d?.data?.name || ''}</span>,
+					...tooltipData,
+				});
 			})
 			.on('click', (e, data: any) => {
 				document.querySelectorAll('circle').forEach(n => n.classList.remove('selected'));
@@ -86,11 +93,11 @@ export const CircularClusterPacking: FC<any> = (props: Cluster) => {
 				};
 				const teamCardData = {
 					classNames: 'com-cards tooltip-d3 team tooltip',
-					...tooltipData
+					...tooltipData,
 				};
 				const cardData = {
 					classNames: 'com-cards tooltip-d3 teams tooltip',
-					...tooltipData
+					...tooltipData,
 				};
 				const renderData = data?.data?.data;
 				if (renderData?.repo) {
@@ -180,7 +187,7 @@ export const CircularClusterPacking: FC<any> = (props: Cluster) => {
 					classNames: 'tooltip hide',
 				});
 			}
-		}		
+		};
 		window.addEventListener('keydown', listener);
 		const pack = initializeD3CirclePack({
 			name: 'root',
@@ -194,13 +201,13 @@ export const CircularClusterPacking: FC<any> = (props: Cluster) => {
 		}
 		return () => {
 			window.removeEventListener('keydown', listener);
-		}
+		};
 	}, [data]);
 
 	return (
-		<>
+		<div className='graph-container'>
 			<div
-				className='pack-container'
+				className="pack-container"
 				ref={packContainer}
 				onMouseLeave={() => {
 					(packContainer.current?.parentElement?.style as any).zIndex = 0;
@@ -208,9 +215,8 @@ export const CircularClusterPacking: FC<any> = (props: Cluster) => {
 						...tooltipData,
 						classNames: 'tooltip hide',
 					});
-
 				}}
-				onClick={(e)=>{
+				onClick={e => {
 					if (e.target !== packContainer.current && (e.target as HTMLElement).tagName !== 'svg') return;
 					(packContainer.current?.parentElement?.style as any).zIndex = 0;
 					setCardData({
@@ -218,7 +224,7 @@ export const CircularClusterPacking: FC<any> = (props: Cluster) => {
 						classNames: 'tooltip hide',
 					});
 				}}
-				onKeyPress={(e)=>{
+				onKeyPress={e => {
 					if (e.key == 'Escape') {
 						(packContainer.current?.parentElement?.style as any).zIndex = 0;
 						setCardData({
@@ -226,11 +232,9 @@ export const CircularClusterPacking: FC<any> = (props: Cluster) => {
 							classNames: 'tooltip hide',
 						});
 					}
-				}}
-				>
-			</div>
+				}}></div>
 			<TooltipD3 data={cardData} />
 			<TooltipD3 data={tooltipData} />
-		</>
+		</div>
 	);
 };
