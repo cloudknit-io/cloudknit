@@ -5,32 +5,24 @@ import { Loader } from 'components/atoms/loader/Loader';
 import { ZTable } from 'components/atoms/table/Table';
 import { NodeIcon, NodeStatus, ZDiagramNode } from 'components/molecules/diagram-node/DiagramNode';
 import { ZEditor } from 'components/molecules/editor/Editor';
-import { isArray } from 'lodash';
-import React from 'react';
-import { useState } from 'react';
-import { useEffect } from 'react';
-import { FC } from 'react';
-import { Subject } from 'rxjs';
+import React, { FC, useEffect, useState } from 'react';
 import { AuditService } from 'services/audit/audit.service';
 
-import { ZAccordion, ZAccordionItem } from '../accordion/ZAccordion';
-import { AuditStatus, ZSyncStatus } from 'models/argo.models';
-import { SmallText } from '../workflow-diagram/WorkflowDiagram';
-import { EnvironmentComponentItem } from 'models/projects.models';
+import { AuditStatus } from 'models/argo.models';
 import { CompAuditData, Component, EnvAuditData } from 'models/entity.type';
+import { ZAccordion, ZAccordionItem } from '../accordion/ZAccordion';
+import { SmallText } from '../workflow-diagram/WorkflowDiagram';
 
 type AuditData = EnvAuditData | CompAuditData;
 
 type Props = {
-	auditId: number;
 	auditData: EnvAuditData[] | CompAuditData[];
 	auditColumns: any[];
 	fetchLogs?: (auditId: number) => Promise<any>;
-	config?: Component;
+	resetView?: () => any;
 };
 
-export const AuditView: FC<Props> = ({ auditId, auditData, auditColumns, fetchLogs, config }: Props) => {
-	const auditServiceInstance = AuditService.getInstance();
+export const AuditView: FC<Props> = ({ auditData, auditColumns, fetchLogs, resetView }: Props) => {
 	const [selectedLog, setSelectedLog] = useState<AuditData | null>(null);
 	const [logs, setLogs] = useState<ZAccordionItem[] | null>();
 	const nodeOrder = ['plan', 'apply'];
@@ -201,6 +193,11 @@ export const AuditView: FC<Props> = ({ auditId, auditData, auditColumns, fetchLo
 								AuditStatus.SkippedProvision,
 							].includes(rowData.status.toLowerCase() as AuditStatus)
 						) {
+							return;
+						}
+
+						if (rowData.reconcileId === latestReconcileId) {
+							resetView?.call(null);
 							return;
 						}
 
