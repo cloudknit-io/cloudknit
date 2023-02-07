@@ -83,18 +83,18 @@
 #sunburst, #cluster {
 	.wedge {
 		&--successful {
-			fill: rgb(135, 230, 135); //$dag-successful;
+			fill: rgba(135, 230, 135, 0.5); //$dag-successful;
 		}
 
 		&--failed {
-			fill: rgb(249, 212, 218); // $dag-failed;
+			fill: rgba(249, 212, 218, 0.5); // $dag-failed;
 		}
 
 		&--pending {
 			fill: $dag-waiting;
 		}
 		&--unknown {
-			fill: rgb(194, 148, 135);//$dag-waiting-for-parent;
+			fill: rgba(194, 148, 135, 0.5);//$dag-waiting-for-parent;
 		}
 		&--waiting {
 			fill: $dag-reconciling;
@@ -103,7 +103,7 @@
 			fill: $dag-running;
 		}
 		&--destroyed {
-			fill: rgb(182, 182, 182);
+			fill: rgba(182, 182, 182, 0.7);
 		}
 	}
 }
