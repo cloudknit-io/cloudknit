@@ -153,7 +153,7 @@ else # component recon
     fi
 fi
 
-reconcileId=$(jq -r '.reconcileId' <<< "$result")
+reconcileId=$(echo $result | jq -r '.reconcileId')
 
 echo "AUDIT RECONCILE_ID: $reconcileId"
 echo $reconcileId > /tmp/reconcile_id.txt
