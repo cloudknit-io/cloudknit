@@ -504,6 +504,8 @@ export class ReconciliationController {
     return logs;
   }
 
+  // TODO: We need to refactor this to use reconciliation service rather than
+  // using environment and team svc
   @Get('environment/status')
   @OrgApiParam()
   @ApiOkResponse({ type: RespGetEnvReconStatus })
