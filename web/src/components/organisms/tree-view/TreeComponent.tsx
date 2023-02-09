@@ -2,8 +2,7 @@ import { ReactComponent as ArrowUp } from 'assets/images/icons/chevron-right.svg
 import { ReactComponent as ComputeIcon } from 'assets/images/icons/DAG-View/config.svg';
 import { ReactComponent as LayersIcon } from 'assets/images/icons/DAG-View/environment-icon.svg';
 import { Select } from 'components/argo-core';
-import React, { FC, useEffect, useMemo, useState } from 'react';
-
+import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { AuditStatus } from 'models/argo.models';
 import { EntityStore } from 'models/entity.store';
@@ -67,12 +66,29 @@ export const TreeComponent: FC<Props> = ({ environmentId, nodes, onNodeClick, en
 	let zoomIn: () => void = () => {};
 	let zoomOut: () => void = () => {};
 	let reset: () => void = () => {};
-
 	const initZoomEventHandlers = (zoomInHandler: () => void, zoomOutHandler: () => void, resetHandler: () => void) => {
 		zoomIn = zoomInHandler;
 		zoomOut = zoomOutHandler;
 		reset = resetHandler;
 	};
+	const renderTree = useCallback(() => {
+		if (data.length === 0) return <></>;
+		return (
+			<Tree
+				environmentId={environmentId}
+				arrowType={option}
+				data={data}
+				nodeSep={nodeSep}
+				rankSep={rankSep}
+				ranker={ranker}
+				onNodeClick={onNodeClick}
+				zoomEventHandlers={initZoomEventHandlers}
+				rankDir=""
+				deploymentType=""
+			/>
+		);
+	}, [data, option, nodeSep, rankSep, ranker, onNodeClick]);
+	
 
 	const generateNodes = () => {
 		const projectId = entityStore.getTeam((environmentItem as Environment).teamId)?.name;
@@ -130,9 +146,7 @@ export const TreeComponent: FC<Props> = ({ environmentId, nodes, onNodeClick, en
 			<p className="node__title m-0 cursor-pointer">
 				<span>* Costs are monthly estimates calculated at the time of last reconciliation</span>
 				<div className="dag-controls">
-					{environmentItem && (
-						<Reconciler environment={environmentItem} template={TreeReconcile} />
-					)}
+					{environmentItem && <Reconciler environment={environmentItem} template={TreeReconcile} />}
 					<button className="dag-controls-zoom-button" onClick={() => zoomIn()}>
 						<span className={`tooltip`}>Zoom In</span>+
 					</button>
@@ -202,18 +216,7 @@ export const TreeComponent: FC<Props> = ({ environmentId, nodes, onNodeClick, en
 					</button>
 				</div>
 			</p>
-			<Tree
-				environmentId={environmentId}
-				arrowType={option}
-				data={data}
-				nodeSep={nodeSep}
-				rankSep={rankSep}
-				ranker={ranker}
-				onNodeClick={onNodeClick}
-				zoomEventHandlers={initZoomEventHandlers}
-				rankDir=""
-				deploymentType=""
-			/>
+			{renderTree()}
 		</div>
 	);
 };
