@@ -101,9 +101,10 @@ export class TeamController {
   ): Promise<Team[]> {
     const org = req.org;
     const withEnv = qParams.withEnvironments.toLowerCase() === 'true';
+    const withComps = qParams.withComponents.toLowerCase() === 'true';
     const getEnvs = withEnv;
 
-    return this.teamSvc.findAll(org, getEnvs);
+    return this.teamSvc.findAll(org, getEnvs, withComps);
   }
 
   @Get('/:teamId')

@@ -91,7 +91,7 @@ export class EntityStore {
 				});
 			});
 		}
-		this.allDataFetched = true;
+		this.allDataFetched = this.allDataFetched || withComponents;
 		this.emit();
 	}
 

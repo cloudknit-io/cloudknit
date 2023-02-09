@@ -1,4 +1,5 @@
 import { ZLoaderCover } from 'components/atoms/loader/LoaderCover';
+import { ZText } from 'components/atoms/text/Text';
 import { EntityStore } from 'models/entity.store';
 import { Update } from 'models/entity.type';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -57,10 +58,15 @@ export const Overview: React.FC = () => {
 	}, [breadcrumbObservable]);
 
 	return (
-		<div id="cluster" className="graph-container">
-			<ZLoaderCover loading={loading}>
-				<CircularClusterPacking data={hierarchicalData} />
-			</ZLoaderCover>
-		</div>
+		<>
+			<ZText.Body className="page-offset" size="36" weight="bold">
+				Environments Overview
+			</ZText.Body>
+			<div id="cluster" className="graph-container">
+				<ZLoaderCover loading={loading}>
+					<CircularClusterPacking data={hierarchicalData} />
+				</ZLoaderCover>
+			</div>
+		</>
 	);
 };
