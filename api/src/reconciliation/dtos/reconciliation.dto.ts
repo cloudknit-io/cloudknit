@@ -77,6 +77,13 @@ export class CreatedEnvironmentReconcile {
   reconcileId: number;
 }
 
+export class CreatedComponentReconcile {
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  reconcileId: number;
+}
+
 export class RespGetEnvReconStatus {
   @ApiProperty()
   @IsString()
