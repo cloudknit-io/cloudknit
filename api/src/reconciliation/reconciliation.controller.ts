@@ -515,10 +515,12 @@ export class ReconciliationController {
   ): Promise<RespGetEnvReconStatus> {
     const { org } = req;
 
-    let recon: EnvironmentReconcile;
+    let env: Environment;
 
     try {
-      recon = await this.reconSvc.getEnvReconStatusByName(org, queryParams.teamName, queryParams.envName);
+      const team = await this.teamSvc.findByName(org, queryParams.teamName);
+      if (!team) throw `Team ${queryParams.teamName} not found`
+      env = await this.envSvc.findByName(org, team, queryParams.envName);
     } catch (err) {
       this.logger.error({
         message: 'error retrieving environment reconcile status',
@@ -529,10 +531,10 @@ export class ReconciliationController {
       throw new InternalServerErrorException('');
     }
 
-    if (!recon) {
-      throw new BadRequestException(`could not find environment reconcile`);
+    if (!env) {
+      throw new BadRequestException(`could not find environment`);
     }
 
-    return { status: recon.status };
+    return { status: env.status };
   }
 }
