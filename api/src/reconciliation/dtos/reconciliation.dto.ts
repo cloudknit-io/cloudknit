@@ -19,11 +19,6 @@ export class CreateEnvironmentReconciliationDto {
   teamName: string;
 
   @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  gitSha: string;
-
-  @ApiProperty()
   @IsDateString()
   @IsNotEmpty()
   startDateTime: string;

@@ -46,7 +46,7 @@ export class ReconciliationService {
     return this.envReconRepo.save({
       startDateTime: createEnv.startDateTime,
       environment: env,
-      gitSha: createEnv.gitSha,
+      // gitSha: createEnv.gitSha,
       team,
       status: 'initializing',
       organization: org,
