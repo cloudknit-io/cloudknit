@@ -107,6 +107,22 @@ export class ReconciliationService {
     });
   }
 
+  async getEnvReconStatusByName(org: Organization, teamName: string, envName: string) {
+    return this.envReconRepo.findOne({
+      where: {
+        organization: {
+          id : Equal(org.id)
+        },
+        team: {
+          name: teamName
+        },
+        environment: {
+          name: envName
+        }
+      }
+    });
+  }
+
   async getSkippedEnvironments(
     org: Organization,
     team: Team,

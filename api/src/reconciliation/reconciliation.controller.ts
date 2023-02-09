@@ -517,7 +517,7 @@ export class ReconciliationController {
     let recon: EnvironmentReconcile;
 
     try {
-      recon = await this.reconSvc.getEnvReconStatusBySHA(org, queryParams.sha);
+      recon = await this.reconSvc.getEnvReconStatusByName(org, queryParams.teamName, queryParams.envName);
     } catch (err) {
       this.logger.error({
         message: 'error retrieving environment reconcile status',

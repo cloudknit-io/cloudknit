@@ -10,5 +10,10 @@ export class GetEnvReconStatusQueryParams {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  sha: string;
+  teamName: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  envName: string;
 }
