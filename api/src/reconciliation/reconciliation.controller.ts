@@ -36,6 +36,7 @@ import { ApprovedByDto } from './dtos/componentAudit.dto';
 import { GetEnvReconStatusQueryParams } from './dtos/environmentAudit.dto';
 import {
   CreateComponentReconciliationDto,
+  CreatedComponentReconcile,
   CreatedEnvironmentReconcile,
   CreateEnvironmentReconciliationDto,
   RespGetEnvReconStatus,
@@ -175,7 +176,7 @@ export class ReconciliationController {
   async newComponentReconciliation(
     @Req() req: APIRequest,
     @Body() body: CreateComponentReconciliationDto
-  ): Promise<number> {
+  ): Promise<CreatedComponentReconcile> {
     const { org } = req;
 
     const envRecon = await this.reconSvc.getEnvReconByReconcileId(
@@ -233,7 +234,7 @@ export class ReconciliationController {
       throw new InternalServerErrorException();
     }
 
-    return compRecon.reconcileId;
+    return { reconcileId: compRecon.reconcileId };
   }
 
   @Post('component/:reconcileId')
