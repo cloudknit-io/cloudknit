@@ -46,7 +46,7 @@ export class ReconciliationService {
     return this.envReconRepo.save({
       startDateTime: createEnv.startDateTime,
       environment: env,
-      gitSha: createEnv.gitSha,
+      // gitSha: createEnv.gitSha,
       team,
       status: 'initializing',
       organization: org,
@@ -102,6 +102,22 @@ export class ReconciliationService {
         gitSha : Equal(gitSha),
         organization: {
           id : Equal(org.id)
+        }
+      }
+    });
+  }
+
+  async getEnvReconStatusByName(org: Organization, teamName: string, envName: string) {
+    return this.envReconRepo.findOne({
+      where: {
+        organization: {
+          id : Equal(org.id)
+        },
+        team: {
+          name: teamName
+        },
+        environment: {
+          name: envName
         }
       }
     });

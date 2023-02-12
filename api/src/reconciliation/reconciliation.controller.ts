@@ -36,6 +36,7 @@ import { ApprovedByDto } from './dtos/componentAudit.dto';
 import { GetEnvReconStatusQueryParams } from './dtos/environmentAudit.dto';
 import {
   CreateComponentReconciliationDto,
+  CreatedComponentReconcile,
   CreatedEnvironmentReconcile,
   CreateEnvironmentReconciliationDto,
   RespGetEnvReconStatus,
@@ -175,7 +176,7 @@ export class ReconciliationController {
   async newComponentReconciliation(
     @Req() req: APIRequest,
     @Body() body: CreateComponentReconciliationDto
-  ): Promise<number> {
+  ): Promise<CreatedComponentReconcile> {
     const { org } = req;
 
     const envRecon = await this.reconSvc.getEnvReconByReconcileId(
@@ -233,7 +234,7 @@ export class ReconciliationController {
       throw new InternalServerErrorException();
     }
 
-    return compRecon.reconcileId;
+    return { reconcileId: compRecon.reconcileId };
   }
 
   @Post('component/:reconcileId')
@@ -503,6 +504,8 @@ export class ReconciliationController {
     return logs;
   }
 
+  // TODO: We need to refactor this to use reconciliation service rather than
+  // using environment and team svc
   @Get('environment/status')
   @OrgApiParam()
   @ApiOkResponse({ type: RespGetEnvReconStatus })
@@ -514,10 +517,12 @@ export class ReconciliationController {
   ): Promise<RespGetEnvReconStatus> {
     const { org } = req;
 
-    let recon: EnvironmentReconcile;
+    let env: Environment;
 
     try {
-      recon = await this.reconSvc.getEnvReconStatusBySHA(org, queryParams.sha);
+      const team = await this.teamSvc.findByName(org, queryParams.teamName);
+      if (!team) throw `Team ${queryParams.teamName} not found`
+      env = await this.envSvc.findByName(org, team, queryParams.envName);
     } catch (err) {
       this.logger.error({
         message: 'error retrieving environment reconcile status',
@@ -528,10 +533,10 @@ export class ReconciliationController {
       throw new InternalServerErrorException('');
     }
 
-    if (!recon) {
-      throw new BadRequestException(`could not find environment reconcile`);
+    if (!env) {
+      throw new BadRequestException(`could not find environment`);
     }
 
-    return { status: recon.status };
+    return { status: env.status };
   }
 }
