@@ -7,6 +7,39 @@ import { breadcrumbObservable, pageHeaderObservable } from '../contexts/Environm
 import { CircularClusterPacking } from '../dashboard/CircularClusterPacking';
 import '../dashboard/dashboard.styles.scss';
 
+// @ts-ignore
+import css_vars from '../dashboard/dashboard.styles.scss';
+
+
+
+const colorLegend = [
+	{
+		key: 'Succeeded',
+		value: css_vars.successful,
+		order: 5,
+	},
+	{
+		key: 'Failed',
+		value: css_vars.failed,
+		order: 6,
+	},
+	{
+		key: 'Waiting for approval',
+		value: css_vars.pending,
+		order: 2,
+	},
+	{
+		key: 'In Progress',
+		value: css_vars.initializing,
+		order: 0,
+	},
+	{
+		key: 'Destroyed/Not Provisioned',
+		value: css_vars.destroyed,
+		order: 5,
+	},
+];
+
 export const Overview: React.FC = () => {
 	const entityStore = useMemo(() => EntityStore.getInstance(), []);
 	const [hierarchicalData, setHierarchicalData] = useState<any>([]);
@@ -64,6 +97,21 @@ export const Overview: React.FC = () => {
 			</ZText.Body>
 			<div id="cluster" className="graph-container">
 				<ZLoaderCover loading={loading}>
+				<div className={`modifier color-legend color-legend-show`}>
+					<div className="color-legend_status">
+						<div>
+							<label>Status:</label>
+							{colorLegend
+								.sort((a, b) => a.order - b.order)
+								.map(color => (
+									<span className="color-legend_value" key={color.key}>
+										<label style={{ background: color.value }}></label>
+										<label>{color.key}</label>
+									</span>
+								))}
+						</div>
+					</div>
+					</div>
 					<CircularClusterPacking data={hierarchicalData} />
 				</ZLoaderCover>
 			</div>

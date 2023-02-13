@@ -45,7 +45,7 @@ export const AccessToken: React.FC = () => {
 		if (!accessToken)
 			return (
 				<div className="secret-pair">
-					<label className="secret-pair__name">Generate an access token for personal access.</label>
+					<label className="secret-pair__name">Generate an Access Token to use our external APIs.</label>
 					<button disabled={wait} className="secret-pair__button secret-pair__save shadowy-input" onClick={generateToken}>
 						{wait ? <Loader height={16} /> : 'Generate Token'}
 					</button>
