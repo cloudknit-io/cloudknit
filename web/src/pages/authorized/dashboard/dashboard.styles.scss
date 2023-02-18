@@ -28,7 +28,6 @@
 	}
 	> div.d3-graph {
 		transform: scale(0.9);
-		box-shadow: 0 0 10px #eee;
 		background: #fff;
 		border-radius: 10px;
 		display: flex;
@@ -109,7 +108,6 @@
 }
 
 div.graph-container {
-	box-shadow: 0 0 10px #eee;
 	background: #fff;
 	border-radius: 10px;
 	display: flex;
@@ -132,7 +130,6 @@ div.graph-container {
 			background-color: black;
 			color: $ck-green;
 			border-radius: 5px;
-			box-shadow: 0 0 10px #333;
 		}
 	}
 	> .pack-container {
@@ -175,4 +172,82 @@ div.graph-container {
 			}
 		}
 	}
+}
+
+.color-legend {
+	// background: white;
+	position: fixed;
+	bottom: 50px;
+	right: 90px;
+	transition: all 0.3s;
+	font-size: 0.8em;
+
+	&-show {
+		transform: translateY(0%);
+	}
+
+	&-hide {
+		transform: translateY(calc(100% + 50px));
+		.color-legend_toggler button {
+			transform: rotate(-90deg);
+		}
+	}
+
+	&_toggler button {
+		position: absolute;
+		right: 0px;
+		top: -40px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 50%;
+		height: 30px;
+		width: 30px;
+		// background: $brand-color-dark-gray;
+		cursor: pointer;
+		transition: all 0.3s;
+		transform: rotate(90deg);
+		cursor: pointer;
+		svg {
+			transform-origin: center center;
+			path {
+				fill: white;
+			}
+		}
+	}
+
+	&_status {
+		display: flex;
+		font-size: 0.8em;
+		font-style: italic;
+		font-family: 'DM Sans';
+	}
+
+	&_value {
+		margin: 5px 0;
+		display: flex;
+		label:first-child {
+			height: 20px;
+			width: 60px;
+		}
+		label:last-child {
+			margin: 0 5px;
+		}
+	}
+}
+
+:export {
+	successful: rgba(135, 230, 135, 0.5);
+	failed: rgba(249, 212, 218, 0.5);
+	pending: $dag-waiting;
+	unknown: rgba(194, 148, 135, 0.5);
+	waiting: $dag-reconciling;
+	running: $dag-running;
+	destroyed: rgba(182, 182, 182, 0.7);;
+	initializing: $dag-in-progress;
+	env_provisioned: $dag-successful;
+	env_destroyed: rgba(182, 182, 182, 0.7);
+	skipped_teardown: rgba(182, 182, 182, 0.7);
+	skipped_reconcile: rgba(182, 182, 182, 0.7);
+	skipped: repeating-linear-gradient(-55deg, transparent, transparent 2px, #999 2px, #999 4px);
 }
