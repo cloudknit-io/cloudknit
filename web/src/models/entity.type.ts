@@ -19,6 +19,8 @@ export type Environment = {
 	isDeleted: boolean;
 	estimatedCost: number;
 	components: Component[];
+	errorMessage: string[];
+	errorType: string;
 };
 
 export type DAG = {
