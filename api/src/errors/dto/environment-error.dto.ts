@@ -22,4 +22,9 @@ export class EnvironmentErrorSpecDto extends EnvSpecDto {
   @IsNotEmpty()
   @IsArray()
   errorMessage: string[];
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  status: string;
 }

@@ -31,7 +31,8 @@ export class ErrorsController {
       dag: [],
       name: env.name,
       errorType: body.errorType,
-      errorMessage: body.errorMessage
+      errorMessage: body.errorMessage,
+      status: body.status
     });
   }
 
