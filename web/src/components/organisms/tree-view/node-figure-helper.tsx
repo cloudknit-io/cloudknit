@@ -133,7 +133,6 @@ function createNodeFigure({
 	isDestroyed,
 	argoId
 }: any) {
-	const nodeId = id === 'root' ? name : displayValue;
 	const isApp = false; //labels?.component_type !== 'terraform';
 	const groupNode = getSVGNode(
 		{

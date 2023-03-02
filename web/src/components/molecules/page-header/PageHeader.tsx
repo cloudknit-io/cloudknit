@@ -19,6 +19,7 @@ import { ErrorView } from 'components/organisms/error-view/ErrorView';
 import { ErrorStateService } from 'services/error/error-state.service';
 import { eventErrorColumns, EventMessage } from 'models/error.model';
 import AuthStore from 'auth/AuthStore';
+import { EntityStore } from 'models/entity.store';
 
 type Props = {
 	breadcrumbs: {
@@ -58,7 +59,8 @@ export const ZPageHeader: FC<Props> = ({
 	const [viewType, setViewType] = useState<string>(view);
 	const [errors, setErrors] = useState<EventMessage[]>([]);
 	const [showErrors, toggleShowErrors] = useState<boolean>(false);
-	const { projectId } = useParams() as any;
+	const { projectId, environmentName } = useParams() as any;
+	const env = EntityStore.getInstance().getEnvironmentByName(projectId, environmentName);
 	const noViewType = ['Environment Builder', 'Settings', 'Resource View', null];
 	const handleOnViewChange = (type: string) => {
 		setViewType(type);
@@ -82,16 +84,32 @@ export const ZPageHeader: FC<Props> = ({
 		if (!AuthStore.getOrganization()) {
 			return;
 		}
-		const sub = ErrorStateService.getInstance().updates.subscribe(() => {
-			const errors = ErrorStateService.getInstance().Errors;
-			if (projectId) {
-				setErrors(errors.filter(e => e.team === projectId));
-			} else {
-				setErrors(errors);
-			}
-		});
+		let sub: any = null;
+		if (env) {
+			setErrors(
+				(env?.errorMessage || []).map(msg => {
+					return {
+						company: AuthStore.getOrganization()?.name || '',
+						team: projectId || '',
+						environment: env?.name || '',
+						message: msg || '',
+						timestamp: env.lastReconcileDatetime.toString(),
+					};
+				})
+			);
+		} else {
+			sub = ErrorStateService.getInstance().updates.subscribe(() => {
+				const errors = ErrorStateService.getInstance().Errors;
+				if (projectId) {
+					setErrors(errors.filter(e => e.team === projectId));
+				} else {
+					setErrors(errors);
+				}
+			});
+		}
+
 		return () => sub?.unsubscribe();
-	}, [projectId]);
+	}, [projectId, env]);
 
 	const renderDiffChecker = () => {
 		return (
@@ -154,10 +172,7 @@ export const ZPageHeader: FC<Props> = ({
 				onClose={() => {
 					toggleShowErrors(false);
 				}}>
-				<ErrorView
-					columns={eventErrorColumns}
-					dataRows={errors}
-				/>
+				<ErrorView columns={eventErrorColumns} dataRows={errors} />
 			</ZSidePanel>
 			<div className="zlifecycle-page-header__search-filter">
 				<div className="zlifecycle-page-header__left">

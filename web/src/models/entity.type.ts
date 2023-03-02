@@ -20,7 +20,6 @@ export type Environment = {
 	estimatedCost: number;
 	components: Component[];
 	errorMessage: string[];
-	errorType: string;
 };
 
 export type DAG = {

@@ -42,7 +42,7 @@ export const EnvironmentCards: FC<Props> = ({ environments, compareEnabled }: Pr
 		<div className="bottom-offset">
 			<div className="com-cards">
 				{environments.map((environment: Environment, _i) =>
-					environment.errorType ? (
+					environment.errorMessage && environment.dag.length === 0 ? (
 						<FailedEnvironmentCard key={`card-${_i}`} environment={environment} />
 					) : (
 						<EnvironmentCard

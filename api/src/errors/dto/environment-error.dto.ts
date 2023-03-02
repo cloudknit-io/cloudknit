@@ -7,7 +7,12 @@ export class EnvironmentErrorDto extends CreateEnvironmentDto {
   errorMessage: string[];
 }
 
-export class EnvironmentErrorSpecDto extends EnvSpecDto {
+export class EnvironmentErrorSpecDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  envName: string;
+
   @ApiProperty()
   @IsNotEmpty()
   @IsArray()

@@ -12,14 +12,10 @@ import { EntityStore } from 'models/entity.store';
 import { CompAuditData, Component, EnvAuditData, Environment } from 'models/entity.type';
 import { eventErrorColumns } from 'models/error.model';
 import { LocalStorageKey } from 'models/localStorage';
-import {
-	EnvironmentComponentItem, EnvironmentItem
-} from 'models/projects.models';
+import { EnvironmentItem } from 'models/projects.models';
+import moment from 'moment';
 import { ConfigWorkflowView } from 'pages/authorized/environment-components/config-workflow-view/ConfigWorkflowView';
-import {
-	auditColumns,
-	ConfigParamsSet, getWorkflowLogs
-} from 'pages/authorized/environment-components/helpers';
+import { auditColumns, ConfigParamsSet, getWorkflowLogs } from 'pages/authorized/environment-components/helpers';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Subscription } from 'rxjs';
@@ -82,7 +78,7 @@ export const EnvironmentComponents: React.FC = () => {
 		setLoading(true);
 		componentArrayRef.current = [];
 		selectedComponentRef.current = undefined;
-		compAuditRef.current = []; 
+		compAuditRef.current = [];
 		envAuditRef.current = [];
 		workflowIdRef.current = '';
 		setComponents(componentArrayRef.current);
@@ -131,14 +127,16 @@ export const EnvironmentComponents: React.FC = () => {
 	}, [filterItems, filterDropDownOpen, filterDropDownOpen]);
 
 	useEffect(() => {
-		const headerTabs = showAll ? [] : entityStore.getAllEnvironmentsByTeamName(projectId).map(environment => {
-			const name: string = environment.name;
-			return {
-				active: environmentName === environment.name,
-				name: name.charAt(0).toUpperCase() + name.slice(1),
-				path: `/${projectId}/${environment.name}`,
-			};
-		});
+		const headerTabs = showAll
+			? []
+			: entityStore.getAllEnvironmentsByTeamName(projectId).map(environment => {
+					const name: string = environment.name;
+					return {
+						active: environmentName === environment.name,
+						name: name.charAt(0).toUpperCase() + name.slice(1),
+						path: `/${projectId}/${environment.name}`,
+					};
+			  });
 
 		pageHeaderObservable.next({
 			breadcrumbs: breadcrumbItems,
@@ -268,8 +266,8 @@ export const EnvironmentComponents: React.FC = () => {
 
 		return () => sub.unsubscribe();
 	}, []);
-	
-  useEffect(() => {
+
+	useEffect(() => {
 		const newWf: any = streamMapperWF(streamData2);
 		if (newWf && workflowData) {
 			setWorkflowData({
@@ -279,7 +277,6 @@ export const EnvironmentComponents: React.FC = () => {
 		}
 	}, [streamData2]);
 
-	
 	const syncStatusMatch = (item: Component): boolean => {
 		return syncStatusFilter.has(item.status as ZSyncStatus);
 	};
@@ -287,16 +284,9 @@ export const EnvironmentComponents: React.FC = () => {
 	const setToggleFilterDropDownValue = (val: boolean) => {
 		toggleFilterDropDown(val);
 	};
-	
+
 	const onNodeClick = (configName: string, visualizationHandler?: boolean): void => {
 		if (configName === 'root') {
-			// const rootEnv = environments.find(e => e.name === environmentName);
-			// const failedEnv = ErrorStateService.getInstance().errorsInEnvironment(rootEnv?.labels?.env_name || '');
-
-			// if (failedEnv?.length > 0) {
-			// 	setEnvErrors(failedEnv);
-			// }
-
 			setEnvironmentNodeSelected(true);
 			setShowSidePanel(true);
 			return;
@@ -439,15 +429,26 @@ export const EnvironmentComponents: React.FC = () => {
 									<ZTablControl
 										className="container__tabs-control"
 										selected={[].length ? 'Errors' : 'Audit'}
-										tabs={envTabs.filter(t => t.show(() => Boolean([].length)))}>
+										tabs={envTabs.filter(t => t.show(() => Boolean(environment?.errorMessage.length)))}>
 										<div id="Errors">
-											<ErrorView columns={eventErrorColumns} dataRows={[]} />
+											{environment?.errorMessage && (
+												<ErrorView
+													columns={eventErrorColumns}
+													dataRows={environment.errorMessage.map(e => ({
+														team: EntityStore.getInstance().getTeam(environment.teamId)
+															?.name,
+														environment: environment.name,
+														message: e,
+														timestamp: moment(
+															environment.lastReconcileDatetime.toString(),
+															moment.ISO_8601
+														).fromNow(),
+													}))}
+												/>
+											)}
 										</div>
 										<div id="Audit">
-											<AuditView
-												auditData={envAuditList}
-												auditColumns={auditColumns}
-											/>
+											<AuditView auditData={envAuditList} auditColumns={auditColumns} />
 										</div>
 									</ZTablControl>
 								</div>
