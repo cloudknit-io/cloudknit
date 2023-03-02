@@ -242,6 +242,7 @@ export const EnvironmentComponents: React.FC = () => {
 					subCompAudit = entityStore
 						.setComponentAuditLister(selectedConfig.id)
 						.subscribe((response: CompAuditData) => {
+							if (response.compId !== selectedConfig.id) return;
 							const idx = compAuditRef.current.findIndex(e => e.reconcileId === response.reconcileId);
 							if (idx !== -1) {
 								compAuditRef.current[idx] = response;
