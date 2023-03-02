@@ -73,12 +73,6 @@ export class Environment {
   })
   errorMessage: string[];
 
-  @Column({
-    default: null,
-    type: 'int',
-  })
-  errorType: number;
-
   @ManyToOne(() => Team, (team) => team.id, {
     onDelete: 'CASCADE',
   })
