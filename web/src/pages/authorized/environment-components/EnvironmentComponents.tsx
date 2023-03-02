@@ -129,7 +129,7 @@ export const EnvironmentComponents: React.FC = () => {
 	useEffect(() => {
 		const headerTabs = showAll
 			? []
-			: entityStore.getAllEnvironmentsByTeamName(projectId).map(environment => {
+			: entityStore.getAllEnvironmentsByTeamName(projectId).filter(e => e.dag.length > 0).map(environment => {
 					const name: string = environment.name;
 					return {
 						active: environmentName === environment.name,
