@@ -28,9 +28,7 @@ export class ErrorsController {
     }
 
     return await this.envSvc.updateById(org, env.id, {
-      dag: [],
       name: env.name,
-      errorType: body.errorType,
       errorMessage: body.errorMessage,
       status: body.status
     });

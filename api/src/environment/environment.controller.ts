@@ -84,6 +84,7 @@ export class EnvironmentController {
       name: env.name,
       duration: env.duration,
       isDeleted: env.isDeleted,
+      errorMessage: null
     });
 
     // create new components
