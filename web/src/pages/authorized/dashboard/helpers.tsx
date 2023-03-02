@@ -156,6 +156,7 @@ export const getClassName = (status: string): string => {
 		case ZSyncStatus.PlanFailed:
 		case ZSyncStatus.ApplyFailed:
 		case ZSyncStatus.ProvisionFailed:
+		case ZSyncStatus.ValidationFailed:
 		case ZSyncStatus.DestroyFailed:
 		case ZSyncStatus.OutOfSync:
 		case ESyncStatus.OutOfSync:
