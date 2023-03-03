@@ -429,7 +429,7 @@ export const EnvironmentComponents: React.FC = () => {
 									<ZTablControl
 										className="container__tabs-control"
 										selected={[].length ? 'Errors' : 'Audit'}
-										tabs={envTabs.filter(t => t.show(() => Boolean(environment?.errorMessage.length)))}>
+										tabs={envTabs.filter(t => t.show(() => Boolean(environment?.errorMessage?.length)))}>
 										<div id="Errors">
 											{environment?.errorMessage && (
 												<ErrorView
