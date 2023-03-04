@@ -17,7 +17,7 @@ export const ZEditor: FC<Props> = (props: Props) => {
 	return (
 		<>
 			<Editor
-				wrapperClassName="zlifecycle-editor"
+				className='zlifecycle-editor'
 				height={height || '64vh'}
 				defaultLanguage={language || 'yaml'}
 				defaultValue={''}

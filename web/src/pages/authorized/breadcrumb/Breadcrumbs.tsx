@@ -19,7 +19,7 @@ export const Breadcrumbs: FC = () => {
 	const [breadcrumbInfo, setBreadcrumbInfo] = useState<BreadcrumbInfo[]>([]);
 	const { breadcrumbObservable } = usePageHeader();
 	const history = useHistory();
-	const { projectId, environmentId } = useParams();
+	const { projectId, environmentId } = useParams() as any;
 	const currentPath = history.location.pathname;
 
 	const getFilter = (filterRegion: FilterRegion): BreadcrumbFilter[] => {

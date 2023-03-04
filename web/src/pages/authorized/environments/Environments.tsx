@@ -32,7 +32,7 @@ type CompareEnvs = {
 };
 
 export const Environments: React.FC = () => {
-	const { projectId } = useParams();
+	const { projectId } = useParams() as any;
 	const entityStore = useMemo(() => EntityStore.getInstance(), []);
 	const [filterDropDownOpen, toggleFilterDropDown] = useState(false);
 	const [query, setQuery] = useState<string>('');
@@ -213,7 +213,7 @@ export const Environments: React.FC = () => {
 				<section className="dashboard-content">
 					{viewType === 'list' ? (
 						<div className="zlifecycle-table">
-							<ZTable table={{ columns: environmentTableColumns, rows: getFilteredData() }} />
+							{/* <ZTable table={{ columns: environmentTableColumns, rows: getFilteredData() }} /> */}
 						</div>
 					) : (
 						<EnvironmentCards

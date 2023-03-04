@@ -29,6 +29,7 @@ import { AuditService } from 'services/audit/audit.service';
 import { subscriberWF } from 'utils/apiClient/EventClient';
 import { usePageHeader } from '../contexts/EnvironmentHeaderContext';
 import { getCheckBoxFilters, renderSyncStatusItems } from '../environments/helpers';
+import { TVN } from './TreeViewNew';
 
 const envTabs = [
 	{
@@ -390,12 +391,13 @@ export const EnvironmentComponents: React.FC = () => {
 		switch (viewType) {
 			case 'DAG':
 				return components.length > 0 ? (
-					<TreeComponent
-						environmentId={environmentName}
-						nodes={components}
-						environmentItem={environment}
-						onNodeClick={onNodeClick}
-					/>
+					<TVN />
+					// <TreeComponent
+					// 	environmentId={environmentName}
+					// 	nodes={components}
+					// 	environmentItem={environment}
+					// 	onNodeClick={onNodeClick}
+					// />
 				) : (
 					<></>
 				);

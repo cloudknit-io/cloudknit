@@ -1,17 +1,17 @@
 import './styles.scss';
 
-import { ReactComponent as ArrowUp } from 'assets/images/icons/chevron-right.svg';
 import * as d3 from 'd3';
-import dagreD3, { GraphLabel } from 'dagre-d3';
+import dagreD3 from 'dagre-d3';
 import { renderSyncStatus } from 'pages/authorized/environment-components/helpers';
-import React, { FC, useEffect, useRef, useState } from 'react';
+import { FC, useEffect, useRef, useState } from 'react';
 import ReactDOMServer from 'react-dom/server';
 
 import { getCurveType } from './curve-helper';
 import { getShapeLabel, updateShapeLabel } from './shape-helper';
+
+import { cleanDagNodeCache } from './node-figure-helper';
 // @ts-ignore
 import css_vars from './styles.scss';
-import { cleanDagNodeCache } from './node-figure-helper';
 
 interface Props {
 	arrowType: any;

@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "baseUrl": "src", // support importing modules using absolute paths
+    "baseUrl": "src",
     "target": "ES6",
     "lib": [
       "dom",
@@ -19,7 +19,9 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react"
+    "skipDefaultLibCheck": true,
+    "jsx": "react-jsx",
+    "noFallthroughCasesInSwitch": true
   },
   "include": [
     "src"

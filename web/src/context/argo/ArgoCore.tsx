@@ -1,4 +1,4 @@
-import { NotificationsApi, PopupApi } from 'components/argo-core';
+import { NotificationsApi } from 'components/argo-core';
 import * as H from 'history';
 
 export interface AppContext {
@@ -9,7 +9,6 @@ export interface AppContext {
 		};
 	};
 	apis: {
-		popup: PopupApi;
 		notifications: NotificationsApi;
 	};
 	history: H.History;

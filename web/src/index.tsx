@@ -4,8 +4,7 @@ import * as Sentry from '@sentry/react';
 import { Integrations } from '@sentry/tracing';
 import App from 'App';
 import { AuthProvider } from 'context/auth-provider/AuthProvider';
-import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 import * as serviceWorker from './serviceWorker';
 
@@ -19,11 +18,11 @@ if (process.env.REACT_APP_SENTRY_DSN) {
 	});
 }
 
-ReactDOM.render(
+const root = document.getElementById('root') as HTMLElement;
+createRoot(root).render(
 	<AuthProvider>
 		<App />
-	</AuthProvider>,
-	document.getElementById('root')
+	</AuthProvider>
 );
 
 // If you want your app to work offline and load faster, you can change

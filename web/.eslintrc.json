@@ -27,14 +27,14 @@
 		},
 		"import/resolver": {
 			"node": {
-				"paths": ["src"]
+				"paths": [""]
 			}
 		}
 	},
 	"parser": "@typescript-eslint/parser",
 	"overrides": [
 		{
-			"files": ["**/*.tsx"],
+			"files": [""],
 			"rules": {
 				"react/prop-types": "off"
 			}
