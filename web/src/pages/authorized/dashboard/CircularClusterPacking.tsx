@@ -2,7 +2,7 @@ import { EnvironmentCard } from 'components/molecules/cards/EnvironmentCards';
 import { ConfigCard } from 'components/molecules/cards/EnvironmentComponentCards';
 import { TeamCard } from 'components/molecules/cards/TeamCards';
 import { getClassName } from 'components/organisms/treeview/tree-view.helper';
-import * as d3 from 'd3';
+import d3 from 'd3';
 import { ZSyncStatus } from 'models/argo.models';
 import { FC, useEffect, useRef, useState } from 'react';
 
