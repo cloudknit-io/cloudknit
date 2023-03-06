@@ -1,0 +1,187 @@
+@import '../../../assets/styles/colors';
+@import '../../../assets/styles/config.scss';
+
+.color-legend {
+	background: white;
+	position: fixed;
+	bottom: 50px;
+	right: 90px;
+	transition: all 0.3s;
+}
+
+.react-flow__viewport {
+	transition: opacity 0.3s;
+	opacity: 0;
+}
+
+
+iframe {
+	display: none !important;
+}
+
+.dag-node {
+	width: max-content;
+    font-family: 'DM Sans';
+	display: flex;
+	flex-direction: row;
+	border-radius: 10px;
+	padding: 5px 10px;
+	align-items: center;
+	cursor: pointer;
+
+	&__icon {
+		display: flex;
+		align-items: center;
+		svg {
+			height: 50px;
+			width: 45px;
+		}
+	}
+	&__info {
+        margin-left: 5px;
+        font-size: 1.1em;
+        text-align: left;
+		display: inline-flex;
+		flex-direction: column;
+		&--status {
+			display: inline-flex;
+			flex-direction: row;
+		}
+	}
+}
+
+.dag-node.pod {
+	cursor: pointer;
+
+	&.striped {
+		mask: url(#mask-stripe);
+	}
+
+	&--successful {
+		background: $dag-successful;
+	}
+
+	&--failed {
+		background: $dag-failed;
+	}
+
+	&--pending {
+		background: $dag-waiting;
+	}
+
+	&--initializing {
+		background: $dag-initializing;
+	}
+
+	&--unknown {
+		background: $dag-waiting-for-parent;
+	}
+	&--waiting {
+		background: $dag-reconciling;
+	}
+	&--running {
+		background: $dag-running;
+	}
+	&--destroyed {
+		background: #ddd;
+	}
+	&--skipped {
+		background: repeating-linear-gradient(-55deg, transparent, transparent 2px, #aaa 4px, #aaa 4px);
+
+	}
+	&--skipped-reconcile {
+		background: repeating-linear-gradient(-55deg, transparent, transparent 2px, #aaa 4px, #aaa 4px);
+	}
+}
+
+.react-flow__handle {
+	opacity: 0;
+}
+
+.node__title {
+	display: flex;
+	justify-content: space-between;
+	.dag-controls {
+		display: flex;
+		position: relative;
+		button {
+			background-color: $argo-color-teal-7;
+			&:hover {
+				.tooltip {
+					display: block;
+					&.error {
+						display: flex;
+					}
+				}
+			}
+			.tooltip {
+				font-size: 0.7em;
+				color: white;
+				position: absolute;
+				transform: translate(-20%, 40px);
+				display: none;
+				white-space: nowrap;
+				background: #888;
+				box-shadow: 0 0 10px #aaa;
+				padding: 10px;
+				font-style: italic;
+				font-family: Helvetica;
+				font-weight: lighter;
+				border-radius: 20px;
+				&.error {
+					transform: translate(-45%, 40px);
+					font-size: 1em;
+					width: 250px;
+					white-space: normal;
+					background: #fff;
+					color: red;
+				}
+			}
+		}
+
+		
+		&-reconcile {
+			font-family: 'DM Sans';
+			display: flex;
+			align-items: center;
+			height: 30px;
+			padding: 0 10px 0 5px;
+			cursor: pointer;
+			box-shadow: 0 0 10px #ccc;
+			margin-right: 15px;
+			border-radius: 20px;
+			position: relative;
+			color: white;
+			path {
+				fill: white !important;
+			}
+		}
+	}
+}
+
+.color-legend-control {
+	background: white;
+	position: fixed;
+	bottom: 50px;
+	right: 90px;
+	transition: all 0.3s;
+
+	&_status {
+		display: flex;
+		font-size: 0.9em;
+		font-style: italic;
+		font-family: 'DM Sans';
+	}
+
+	&_value {
+		margin: 5px 0;
+		display: flex;
+		label:first-child {
+			height: 20px;
+			width: 60px;
+		}
+		label:last-child {
+			margin: 0 5px;
+		}
+	}
+}

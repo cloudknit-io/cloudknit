@@ -4,7 +4,6 @@ import { ZSidePanel } from 'components/molecules/side-panel/SidePanel';
 import { ZTablControl } from 'components/molecules/tab-control/TabControl';
 import { AuditView } from 'components/organisms/audit_view/AuditView';
 import { ErrorView } from 'components/organisms/error-view/ErrorView';
-import { TreeComponent } from 'components/organisms/tree-view/TreeComponent';
 import { streamMapperWF } from 'helpers/streamMapper';
 import { useApi } from 'hooks/use-api/useApi';
 import { ApplicationWatchEvent, ZComponentSyncStatus, ZSyncStatus } from 'models/argo.models';
@@ -12,14 +11,9 @@ import { EntityStore } from 'models/entity.store';
 import { CompAuditData, Component, EnvAuditData, Environment } from 'models/entity.type';
 import { eventErrorColumns } from 'models/error.model';
 import { LocalStorageKey } from 'models/localStorage';
-import {
-	EnvironmentComponentItem, EnvironmentItem
-} from 'models/projects.models';
+import { EnvironmentItem } from 'models/projects.models';
 import { ConfigWorkflowView } from 'pages/authorized/environment-components/config-workflow-view/ConfigWorkflowView';
-import {
-	auditColumns,
-	ConfigParamsSet, getWorkflowLogs
-} from 'pages/authorized/environment-components/helpers';
+import { auditColumns, ConfigParamsSet, getWorkflowLogs } from 'pages/authorized/environment-components/helpers';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Subscription } from 'rxjs';
@@ -27,9 +21,9 @@ import { ArgoStreamService } from 'services/argo/ArgoStream.service';
 import { ArgoWorkflowsService } from 'services/argo/ArgoWorkflows.service';
 import { AuditService } from 'services/audit/audit.service';
 import { subscriberWF } from 'utils/apiClient/EventClient';
+import { TreeView } from '../../../components/organisms/treeview/TreeViewNew';
 import { usePageHeader } from '../contexts/EnvironmentHeaderContext';
 import { getCheckBoxFilters, renderSyncStatusItems } from '../environments/helpers';
-import { TVN } from './TreeViewNew';
 
 const envTabs = [
 	{
@@ -83,7 +77,7 @@ export const EnvironmentComponents: React.FC = () => {
 		setLoading(true);
 		componentArrayRef.current = [];
 		selectedComponentRef.current = undefined;
-		compAuditRef.current = []; 
+		compAuditRef.current = [];
 		envAuditRef.current = [];
 		workflowIdRef.current = '';
 		setComponents(componentArrayRef.current);
@@ -132,14 +126,16 @@ export const EnvironmentComponents: React.FC = () => {
 	}, [filterItems, filterDropDownOpen, filterDropDownOpen]);
 
 	useEffect(() => {
-		const headerTabs = showAll ? [] : entityStore.getAllEnvironmentsByTeamName(projectId).map(environment => {
-			const name: string = environment.name;
-			return {
-				active: environmentName === environment.name,
-				name: name.charAt(0).toUpperCase() + name.slice(1),
-				path: `/${projectId}/${environment.name}`,
-			};
-		});
+		const headerTabs = showAll
+			? []
+			: entityStore.getAllEnvironmentsByTeamName(projectId).map(environment => {
+					const name: string = environment.name;
+					return {
+						active: environmentName === environment.name,
+						name: name.charAt(0).toUpperCase() + name.slice(1),
+						path: `/${projectId}/${environment.name}`,
+					};
+			  });
 
 		pageHeaderObservable.next({
 			breadcrumbs: breadcrumbItems,
@@ -269,8 +265,8 @@ export const EnvironmentComponents: React.FC = () => {
 
 		return () => sub.unsubscribe();
 	}, []);
-	
-  useEffect(() => {
+
+	useEffect(() => {
 		const newWf: any = streamMapperWF(streamData2);
 		if (newWf && workflowData) {
 			setWorkflowData({
@@ -280,7 +276,6 @@ export const EnvironmentComponents: React.FC = () => {
 		}
 	}, [streamData2]);
 
-	
 	const syncStatusMatch = (item: Component): boolean => {
 		return syncStatusFilter.has(item.status as ZSyncStatus);
 	};
@@ -288,37 +283,31 @@ export const EnvironmentComponents: React.FC = () => {
 	const setToggleFilterDropDownValue = (val: boolean) => {
 		toggleFilterDropDown(val);
 	};
-	
-	const onNodeClick = (configName: string, visualizationHandler?: boolean): void => {
-		if (configName === 'root') {
-			// const rootEnv = environments.find(e => e.name === environmentName);
-			// const failedEnv = ErrorStateService.getInstance().errorsInEnvironment(rootEnv?.labels?.env_name || '');
 
-			// if (failedEnv?.length > 0) {
-			// 	setEnvErrors(failedEnv);
-			// }
-
+	const onNodeClick = (nodeId: string): void => {
+		if (nodeId === environment?.argoId) {
 			setEnvironmentNodeSelected(true);
 			setShowSidePanel(true);
 			return;
-		}
-		setEnvironmentNodeSelected(false);
-		const selectedConfig = componentArrayRef.current.find(c => c.name === configName);
-		if (selectedConfig) {
-			let _workflowId = selectedConfig.lastWorkflowRunId;
-			if (!_workflowId) {
-				_workflowId = 'initializing';
-			}
-			selectedComponentRef.current = selectedConfig;
-			setSelectedConfig(selectedConfig);
-			setShowSidePanel(true);
-			if (workflowIdRef.current !== _workflowId) {
-				workflowIdRef.current = _workflowId;
-				setWorkflowId(_workflowId);
-				setLogs(null);
-				setPlans(null);
-				setIsLoadingWorkflow(false);
-				setWorkflowData(null);
+		} else {
+			setEnvironmentNodeSelected(false);
+			const selectedConfig = componentArrayRef.current.find(c => c.argoId === nodeId);
+			if (selectedConfig) {
+				let _workflowId = selectedConfig.lastWorkflowRunId;
+				if (!_workflowId) {
+					_workflowId = 'initializing';
+				}
+				selectedComponentRef.current = selectedConfig;
+				setSelectedConfig(selectedConfig);
+				setShowSidePanel(true);
+				if (workflowIdRef.current !== _workflowId) {
+					workflowIdRef.current = _workflowId;
+					setWorkflowId(_workflowId);
+					setLogs(null);
+					setPlans(null);
+					setIsLoadingWorkflow(false);
+					setWorkflowData(null);
+				}
 			}
 		}
 	};
@@ -390,17 +379,7 @@ export const EnvironmentComponents: React.FC = () => {
 	const renderItems = (): any => {
 		switch (viewType) {
 			case 'DAG':
-				return components.length > 0 ? (
-					<TVN />
-					// <TreeComponent
-					// 	environmentId={environmentName}
-					// 	nodes={components}
-					// 	environmentItem={environment}
-					// 	onNodeClick={onNodeClick}
-					// />
-				) : (
-					<></>
-				);
+				return components.length > 0 ? <TreeView environmentItem={environment} onNodeClick={onNodeClick} /> : <></>;
 			default:
 				return (
 					<EnvironmentComponentCards
@@ -417,17 +396,6 @@ export const EnvironmentComponents: React.FC = () => {
 				);
 		}
 	};
-
-	// const checkForFailedEnvironments = (envs: EnvironmentsList) => {
-	// 	if (!envs?.length) {
-	// 		return;
-	// 	}
-	// 	const currentEnv = (envs as any).find((e: any) => e.id === environmentName);
-	// 	const failedEnv = ErrorStateService.getInstance().errorsInEnvironment(currentEnv.labels?.env_name);
-	// 	if (failedEnv?.length && currentEnv.labels?.env_status) {
-	// 		currentEnv.labels.env_status = ZSyncStatus.ProvisionFailed;
-	// 	}
-	// };
 
 	return (
 		<div className="zlifecycle-page">
@@ -446,10 +414,7 @@ export const EnvironmentComponents: React.FC = () => {
 											<ErrorView columns={eventErrorColumns} dataRows={[]} />
 										</div>
 										<div id="Audit">
-											<AuditView
-												auditData={envAuditList}
-												auditColumns={auditColumns}
-											/>
+											<AuditView auditData={envAuditList} auditColumns={auditColumns} />
 										</div>
 									</ZTablControl>
 								</div>
@@ -458,13 +423,6 @@ export const EnvironmentComponents: React.FC = () => {
 						<ZLoaderCover loading={isLoadingWorkflow}>
 							{
 								selectedConfig && !isEnvironmentNodeSelected && (
-									// (selectedConfig.labels?.component_type === 'argocd' ? (
-									// 	<ConfigWorkflowViewApplication
-									// 		projectId={projectId}
-									// 		environmentId={environmentName}
-									// 		config={selectedConfig}
-									// 	/>
-									// ) : (
 									<ConfigWorkflowView
 										projectId={projectId}
 										environmentId={environmentName}
@@ -475,7 +433,6 @@ export const EnvironmentComponents: React.FC = () => {
 										auditData={compAuditList}
 									/>
 								)
-								// ))
 							}
 						</ZLoaderCover>
 					</ZSidePanel>

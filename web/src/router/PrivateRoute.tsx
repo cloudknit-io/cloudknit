@@ -1,5 +1,4 @@
 import AuthStore from 'auth/AuthStore';
-import { cleanDagNodeCache } from 'components/organisms/tree-view/node-figure-helper';
 import { LOGIN_URL } from 'pages/anonymous/anonymousRouteNames';
 import { NotFound } from 'pages/anonymous/not-found/NotFound';
 import { QUICK_START_URL } from 'pages/authorized/authorizedRouteNames';
@@ -13,12 +12,6 @@ interface PrivateRouteProps extends Omit<RouteProps, 'component'> {
 }
 
 const PrivateRoute: FC<PrivateRouteProps> = ({ component: Component, ...rest }: PrivateRouteProps) => {
-	useEffect(() => {
-		if (rest.location?.pathname) {
-			cleanDagNodeCache('temp');
-		}
-	}, [rest.location?.pathname]);
-
 	return (
 		// Show the component only when the user is logged in
 		// Otherwise, redirect the user to /login page

@@ -1,14 +1,15 @@
 import React from 'react';
 // import { Dashboard } from './dashboard/Dashboard';
 // import { EnvironmentBuilder } from './environment-builder/EnvironmentBuilder';
+import { QuickStart } from 'pages/authorized/quick-start/QuickStart';
+import { Dashboard } from './dashboard/Dashboard';
+import { EnvironmentBuilder } from './environment-builder/EnvironmentBuilder';
 import { EnvironmentComponents } from './environment-components/EnvironmentComponents';
 import { Environments } from './environments/Environments';
+import { FeatureRoutes } from './feature_toggle';
+import { Overview } from './overview/Overview';
 import { Profile } from './profile/Profile';
 import { Teams } from './teams/Teams';
-import { FeatureRoutes } from './feature_toggle';
-import { ComponentResourceTree } from 'components/organisms/tree-view/ComponentResourceTree';
-import { QuickStart } from 'pages/authorized/quick-start/QuickStart';
-import { Overview } from './overview/Overview';
 import { TermsAndConditions } from './terms-and-conditions/TermsAndConditons';
 
 export const PROJECTS_URL = '/dashboard';
@@ -56,14 +57,13 @@ Reflect.ownKeys(FeatureRoutes).forEach(key => {
 export const routes = urls;
 export const privateRouteMap: { [key: string]: React.FC } = {
 	QUICK_START_URL: QuickStart,
-	// ENVIRONMENT_BUILDER_URL: EnvironmentBuilder,
+	ENVIRONMENT_BUILDER_URL: EnvironmentBuilder,
 	TEAMS_URL: Teams,
 	PROFILE_URL: Profile,
-	// DASHBOARD_URL: Dashboard,
+	DASHBOARD_URL: Dashboard,
 	PROJECTS_URL: Environments,
 	ENVIRONMENTS_URL: Environments,
 	INFRA_URL: EnvironmentComponents,
-	RESOURCE_VIEW_URL: ComponentResourceTree,
 	OVERVIEW_URL: Overview,
 	ORG_REGISTRATION: TermsAndConditions,
 };

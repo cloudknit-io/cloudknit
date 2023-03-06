@@ -178,7 +178,7 @@ export const AuditView: FC<Props> = ({ auditData, auditColumns, fetchLogs, reset
 
 		return (
 			<div className="zlifecycle-audit-table">
-				{/* <ZTable
+				<ZTable
 					table={{
 						columns: auditColumns,
 						rows: auditData.sort((a: AuditData, b: AuditData) => b.reconcileId - a.reconcileId),
@@ -290,7 +290,7 @@ export const AuditView: FC<Props> = ({ auditData, auditColumns, fetchLogs, reset
 						}
 						return '';
 					}}
-				/> */}
+				/>
 			</div>
 		);
 	};
