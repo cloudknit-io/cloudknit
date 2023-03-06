@@ -46,9 +46,6 @@ zlifecycleApiUrl: http://zlifecycle-api.zlifecycle-ui.svc.cluster.local
 zlifecycleStateManagerUrl: http://zlifecycle-state-manager.zlifecycle-il-operator-system.svc.cluster.local
 zlifecycleEventApiUrl: http://event-service.:org-system.svc.cluster.local
 resources:
-  limits:
+  requests:
     cpu: 300m
     memory: 450Mi
-  requests:
-    cpu: 100m
-    memory: 150Mi

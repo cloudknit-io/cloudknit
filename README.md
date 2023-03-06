@@ -21,10 +21,10 @@ Environment as Code (EaC) is an abstraction over cloud-native tools that provide
 
 ## Why we built CloudKnit
 
-There are tools today that allow us to manage cloud environments but as the environments become more complex and teams look for advanced use cases, existing tools can fall short. This causes some teams to build and maintain in-house solutions. 
+There are tools today that allow us to manage cloud environments but as the environments become more complex and teams look for advanced use cases, existing tools fall short. This causes some teams to build and maintain in-house solutions.
 
-We want to make it easy for DevOps and Platform Engineering teams to manage complex environments.  Existing cloud-native tools like Terraform, Pulumi, Helm, ArgoCD, etc. on their own can be great at managing individual components within an environment or automating simple environments.
-However an environment like the one below (Diagram 2) with Infrastructure resources and cloud-native applications requires a different solution. Currently you have two main approaches:
+CloudKnit makes it easy for DevOps and Platform Engineering teams to manage complex environments and enables advanced usecases like environment blueprints, cloning environments, promoting changes across environments and more. Existing cloud-native tools like Terraform, Pulumi, Helm, ArgoCD, etc. on their own can be great at managing individual components within an environment or automating simple environments.
+However an environment like the one below (Diagram 2) with Infrastructure resources and cloud-native applications requires a lot of work using existing tools. Currently there are two main approaches:
 
 ### Option 1: Monolith Infrastructure as Code & Application Deployment
 
