@@ -1,5 +1,5 @@
 # Target base: installs dependencies
-FROM node:14.15.4-alpine AS base
+FROM node:18.14.2-alpine AS base
 
 WORKDIR /var/www
 
@@ -8,7 +8,7 @@ COPY package-lock.json package-lock.json
 
 ENV NODE_ENV production
 # RUN npm ci --only=production // want to use this, but some types are in devDeps
-RUN npm ci --production=false
+RUN npm ci --production=false -f
 
 FROM base as copy-app-stage
 
@@ -27,7 +27,7 @@ RUN CI=true npm run test
 # Target build-stage: builds app
 FROM test-stage AS build-stage
 
-RUN npm run build
+RUN npm run build:production
 
 # TODO: Look at nginx.conf more closely
 # TODO: Get rid of bash dependency; convert to shell
