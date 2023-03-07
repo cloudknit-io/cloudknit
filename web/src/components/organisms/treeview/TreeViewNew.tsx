@@ -16,7 +16,8 @@ export const TreeView: React.FC<Props> = ({ onNodeClick, environmentItem }) => {
 	const [dagNodes, setDagNodes, onNodesChange] = useNodesState([]);
 	const [dagEdges, setDagEdges, onEdgesChange] = useEdgesState([]);
 	const [render, setRender] = useState<Symbol | null>(null);
-	
+	const reactFlowInstance = useReactFlow();
+
 	const getLayoutedElements = useMemo(() => {
 		const { getLayoutedElements } = initializeLayout();
 		return getLayoutedElements;
@@ -28,21 +29,20 @@ export const TreeView: React.FC<Props> = ({ onNodeClick, environmentItem }) => {
 			if (components.length === 0 || components[0].envId !== environmentItem.id) return;
 			setRender(Symbol('render'));
 		});
-		setRender(Symbol('render'));
-		setTimeout(() => {
-			const vp = document.querySelector('.react-flow__viewport') as HTMLElement;
-			if (vp) {
-				const tf = window.getComputedStyle(vp).transform;
-				if (tf) {
-					const matrix = tf.split(',');
-					matrix[matrix.length - 1] = '0)';
-					vp.style.transform = matrix.join(',');
-					vp.style.opacity = '1';
-				}
-			}
-		}, 300);
+		setRender(Symbol(1));
 		return () => sub.unsubscribe();
 	}, [environmentItem]);
+
+	useEffect(() => {
+		if (dagNodes.length > 0 && render?.description === '1') {
+			const vp = reactFlowInstance.getViewport();
+			reactFlowInstance.setViewport({
+				x: vp.x,
+				y: 0,
+				zoom: 1,
+			});
+		}
+	}, [dagNodes, render]);
 
 	useEffect(() => {
 		if (!render || !environmentItem) return;
@@ -70,9 +70,7 @@ export const TreeView: React.FC<Props> = ({ onNodeClick, environmentItem }) => {
 	return (
 		<>
 			<TreeViewControls environment={environmentItem} />
-			<div
-				className="layoutflow"
-				style={{ height: '80vh' }}>
+			<div className="layoutflow" style={{ height: '80vh' }}>
 				<ReactFlow
 					nodes={dagNodes}
 					edges={dagEdges}
@@ -81,9 +79,8 @@ export const TreeView: React.FC<Props> = ({ onNodeClick, environmentItem }) => {
 					onConnect={onConnect}
 					connectionLineType={ConnectionLineType.SmoothStep}
 					onNodeClick={e => onNodeClick(e.currentTarget.getAttribute('data-id'))}
-					maxZoom={1}
 					fitView
-					
+					maxZoom={1.5}
 				/>
 				{/* <div className="controls">
 				<button onClick={() => onLayout('TB')}>vertical layout</button>

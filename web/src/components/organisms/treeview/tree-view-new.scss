@@ -9,25 +9,34 @@
 	transition: all 0.3s;
 }
 
-.react-flow__viewport {
-	transition: opacity 0.3s;
-	opacity: 0;
-}
-
-
 iframe {
 	display: none !important;
 }
 
 .dag-node {
 	width: max-content;
-    font-family: 'DM Sans';
+	font-family: 'DM Sans';
 	display: flex;
 	flex-direction: row;
 	border-radius: 10px;
 	padding: 5px 10px;
 	align-items: center;
 	cursor: pointer;
+
+	&:hover > &__tooltip {
+		display: block;
+	}
+
+	&__tooltip {
+		position: absolute;
+		display: none;
+		bottom: -20px;
+		right: -20px;
+		background-color: white;
+		box-shadow: 0 0 10px #ccc;
+		padding: 5px 10px;
+		border-radius: 5px;
+	}
 
 	&__icon {
 		display: flex;
@@ -38,9 +47,9 @@ iframe {
 		}
 	}
 	&__info {
-        margin-left: 5px;
-        font-size: 1.1em;
-        text-align: left;
+		margin-left: 5px;
+		font-size: 1.1em;
+		text-align: left;
 		display: inline-flex;
 		flex-direction: column;
 		&--status {
@@ -87,7 +96,6 @@ iframe {
 	}
 	&--skipped {
 		background: repeating-linear-gradient(-55deg, transparent, transparent 2px, #aaa 4px, #aaa 4px);
-
 	}
 	&--skipped-reconcile {
 		background: repeating-linear-gradient(-55deg, transparent, transparent 2px, #aaa 4px, #aaa 4px);
@@ -139,7 +147,6 @@ iframe {
 			}
 		}
 
-		
 		&-reconcile {
 			font-family: 'DM Sans';
 			display: flex;
@@ -154,6 +161,36 @@ iframe {
 			color: white;
 			path {
 				fill: white !important;
+			}
+		}
+
+		.large-health-icon-container {
+			display: flex;
+			align-items: center;
+			&__sync-button {
+				&--in-progress {
+					animation: sync-rotate-button 2s linear infinite;
+				}
+				transition: transform 0.3s;
+				cursor: pointer;
+				&:hover {
+					transform: rotate(180deg);
+				}
+				&--in-sync {
+					path {
+						fill: green;
+					}
+				}
+				&--out-of-sync {
+					path {
+						fill: #aaa;
+					}
+				}
+				&--unknown {
+					path {
+						fill: red;
+					}
+				}
 			}
 		}
 	}
@@ -183,5 +220,14 @@ iframe {
 		label:last-child {
 			margin: 0 5px;
 		}
+	}
+}
+
+@keyframes sync-rotate-button {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(-360deg);
 	}
 }

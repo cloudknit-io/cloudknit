@@ -61,7 +61,6 @@ export const initializeLayout = () => {
 		nodes.forEach((node: any) => {
 			dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
 		});
-
 		edges.forEach((edge: any) => {
 			dagreGraph.setEdge(edge.source, edge.target);
 		});
@@ -125,12 +124,14 @@ export const generateNodesAndEdges = (environment: Environment) => {
 
 	const components = EntityStore.getInstance().getComponentsByEnvId(environment.id);
 
-	environment.dag.forEach((e: DAG) => {
+	for (let e of environment.dag) {
 		const item = components.find(c => c.name === e.name) as Component;
-		
-        nodes.push(getNode(item.argoId.toString(), generateComponentNode(item)));
-		
-        if (!e.dependsOn?.length) {
+		if (!item) continue;
+
+
+		nodes.push(getNode(item.argoId.toString(), generateComponentNode(item)));
+
+		if (!e.dependsOn?.length) {
 			edges.push(
 				getEdge(`e${environment.argoId}-${item.argoId}`, environment.argoId.toString(), item.argoId.toString())
 			);
@@ -142,7 +143,7 @@ export const generateNodesAndEdges = (environment: Environment) => {
 				}
 			});
 		}
-	});
+	}
 
 	return {
 		nodes,

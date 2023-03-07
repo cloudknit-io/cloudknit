@@ -1,4 +1,4 @@
-import { CostRenderer, getSyncStatusIcon } from 'components/molecules/cards/renderFunctions';
+import { CostRenderer, getSyncStatusIcon, renderSyncedStatus } from 'components/molecules/cards/renderFunctions';
 import { ZSyncStatus } from 'models/argo.models';
 import { getTime } from 'pages/authorized/environment-components/helpers';
 import './tree-view-new.scss';
@@ -27,6 +27,9 @@ export const DagNode: React.FC<DagProps> = ({ data }) => {
 					<div className="dag-node__info--status--icon">{getSyncStatusIcon(status, operation)}</div>
 					<div className="dag-node__info--status--timestamp">&nbsp;|&nbsp;{getTime(timestamp.toString())}</div>
 				</div>
+			</div>
+			<div className='dag-node__tooltip'>
+				{renderSyncedStatus(status)}
 			</div>
 		</div>
 	);

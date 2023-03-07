@@ -16,6 +16,7 @@ import { ConfigWorkflowView } from 'pages/authorized/environment-components/conf
 import { auditColumns, ConfigParamsSet, getWorkflowLogs } from 'pages/authorized/environment-components/helpers';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { ReactFlowProvider } from 'reactflow';
 import { Subscription } from 'rxjs';
 import { ArgoStreamService } from 'services/argo/ArgoStream.service';
 import { ArgoWorkflowsService } from 'services/argo/ArgoWorkflows.service';
@@ -380,7 +381,13 @@ export const EnvironmentComponents: React.FC = () => {
 	const renderItems = (): any => {
 		switch (viewType) {
 			case 'DAG':
-				return components.length > 0 ? <TreeView environmentItem={environment} onNodeClick={onNodeClick} /> : <></>;
+				return components.length > 0 ? (
+					<ReactFlowProvider>
+						<TreeView environmentItem={environment} onNodeClick={onNodeClick} />
+					</ReactFlowProvider>
+				) : (
+					<></>
+				);
 			default:
 				return (
 					<EnvironmentComponentCards
@@ -422,19 +429,17 @@ export const EnvironmentComponents: React.FC = () => {
 							</div>
 						)}
 						<ZLoaderCover loading={isLoadingWorkflow}>
-							{
-								selectedConfig && !isEnvironmentNodeSelected && (
-									<ConfigWorkflowView
-										projectId={projectId}
-										environmentId={environmentName}
-										config={selectedConfig}
-										logs={logs}
-										plans={plans}
-										workflowData={workflowData}
-										auditData={compAuditList}
-									/>
-								)
-							}
+							{selectedConfig && !isEnvironmentNodeSelected && (
+								<ConfigWorkflowView
+									projectId={projectId}
+									environmentId={environmentName}
+									config={selectedConfig}
+									logs={logs}
+									plans={plans}
+									workflowData={workflowData}
+									auditData={compAuditList}
+								/>
+							)}
 						</ZLoaderCover>
 					</ZSidePanel>
 				</section>
