@@ -1,4 +1,5 @@
 ckEnvironment:
+ckDomain:
 configRepo: git@github.com:zl-compuzest-tech/dev-config.git
 terraformImageTag: latest
 provisionOrgImage:
