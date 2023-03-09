@@ -30,7 +30,6 @@ export class ErrorsController {
     return await this.envSvc.updateById(org, env.id, {
       name: env.name,
       errorMessage: body.errorMessage,
-      status: body.status
     });
   }
 

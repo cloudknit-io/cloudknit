@@ -14,12 +14,5 @@ export class EnvironmentErrorSpecDto {
   envName: string;
 
   @ApiProperty()
-  @IsNotEmpty()
-  @IsArray()
-  errorMessage: string[];
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsString()
-  status: string;
+  errorMessage?: string[];
 }

@@ -1,25 +1,25 @@
 import './style.scss';
 
+import { ReactComponent as OutOfSyncIcon } from 'assets/images/icons/card-status/sync/Not Sync.svg';
+import { ReactComponent as Compare } from 'assets/images/icons/compare.svg';
 import { ReactComponent as DAGViewIcon } from 'assets/images/icons/DAG-view.svg';
 import { ReactComponent as ClearInputIcon } from 'assets/images/icons/field/Backspace.svg';
 import { ReactComponent as GridViewIcon } from 'assets/images/icons/grid-view-solid.svg';
-import { ReactComponent as ListViewIcon } from 'assets/images/icons/list-view-solid.svg';
 import { ReactComponent as SearchIcon } from 'assets/images/icons/search.svg';
-import { ReactComponent as OutOfSyncIcon } from 'assets/images/icons/card-status/sync/Not Sync.svg';
+import AuthStore from 'auth/AuthStore';
 import classNames from 'classnames';
 import { Button } from 'components/atoms/button/Button';
 import { ZText } from 'components/atoms/text/Text';
-import { PageHeaderTabs } from 'models/projects.models';
-import React, { ChangeEvent, FC, useEffect, useState } from 'react';
-import { useHistory, useParams } from 'react-router-dom';
-import { ReactComponent as Compare } from 'assets/images/icons/compare.svg';
-import { BradAdarshFeatureVisible, FeatureKeys, featureToggled } from 'pages/authorized/feature_toggle';
-import { ZSidePanel } from '../side-panel/SidePanel';
 import { ErrorView } from 'components/organisms/error-view/ErrorView';
-import { ErrorStateService } from 'services/error/error-state.service';
-import { eventErrorColumns, EventMessage } from 'models/error.model';
-import AuthStore from 'auth/AuthStore';
 import { EntityStore } from 'models/entity.store';
+import { Update } from 'models/entity.type';
+import { eventErrorColumns, EventMessage } from 'models/error.model';
+import { PageHeaderTabs } from 'models/projects.models';
+import { parseErrorMessages } from 'pages/authorized/environments/helpers';
+import { BradAdarshFeatureVisible } from 'pages/authorized/feature_toggle';
+import React, { ChangeEvent, FC, useEffect, useMemo, useState } from 'react';
+import { useHistory, useParams } from 'react-router-dom';
+import { ZSidePanel } from '../side-panel/SidePanel';
 
 type Props = {
 	breadcrumbs: {
@@ -60,7 +60,9 @@ export const ZPageHeader: FC<Props> = ({
 	const [errors, setErrors] = useState<EventMessage[]>([]);
 	const [showErrors, toggleShowErrors] = useState<boolean>(false);
 	const { projectId, environmentName } = useParams() as any;
-	const env = EntityStore.getInstance().getEnvironmentByName(projectId, environmentName);
+	const env = useMemo(() => {
+		return EntityStore.getInstance().getEnvironmentByName(projectId, environmentName);
+	}, [projectId, environmentName]);
 	const noViewType = ['Environment Builder', 'Settings', 'Resource View', null];
 	const handleOnViewChange = (type: string) => {
 		setViewType(type);
@@ -86,30 +88,16 @@ export const ZPageHeader: FC<Props> = ({
 		}
 		let sub: any = null;
 		if (env) {
-			setErrors(
-				(env?.errorMessage || []).map(msg => {
-					return {
-						company: AuthStore.getOrganization()?.name || '',
-						team: projectId || '',
-						environment: env?.name || '',
-						message: msg || '',
-						timestamp: env.lastReconcileDatetime.toString(),
-					};
-				})
-			);
+			setErrors(parseErrorMessages(env));
 		} else {
-			sub = ErrorStateService.getInstance().updates.subscribe(() => {
-				const errors = ErrorStateService.getInstance().Errors;
-				if (projectId) {
-					setErrors(errors.filter(e => e.team === projectId));
-				} else {
-					setErrors(errors);
-				}
+			sub = EntityStore.getInstance().emitter.subscribe((data: Update) => {
+				const envs = data.environments;
+				setErrors(envs.map(env => parseErrorMessages(env)).flat());
 			});
 		}
 
 		return () => sub?.unsubscribe();
-	}, [projectId, env]);
+	}, [env]);
 
 	const renderDiffChecker = () => {
 		return (
