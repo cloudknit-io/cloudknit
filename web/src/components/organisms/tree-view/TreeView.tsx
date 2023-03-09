@@ -124,52 +124,76 @@ const Tree: FC<Props> = ({
 		if (!dagGraph || data.length === 0) {
 			return;
 		}
-		const g = dagGraph;
-		const curve = getCurveType(arrowType);
-		const svg = d3.select(`#deployment-type-${deploymentType} .tree-node`);
 		const render = new dagreD3.render();
-		const inner: any = svg.select('g');
-		removeOldNodes(g, data);
-		data.forEach((item: any) => {
-			const exists = updateShapeLabel({ ...item });
-			if (!exists) {
-				setNewNode(item, g, curve);
-			}
-		});
+		let g = dagGraph;
+		let svg = d3.select(`#deployment-type-${deploymentType} .tree-node`);
+		let inner: any = svg.select('g');
 
-		inner.on('mouseover', (event: any) => {
-			const containerDiv = (event.target as Element)?.closest('.roundedCorners');
-			if (containerDiv) {
-				if (containerDiv.id === 'root') {
-					return;
+		const preRenderProcess = () => {
+			g = dagGraph;
+			const curve = getCurveType(arrowType);
+			svg = d3.select(`#deployment-type-${deploymentType} .tree-node`);
+			inner = svg.select('g');
+			removeOldNodes(g, data);
+			data.forEach((item: any) => {
+				const exists = updateShapeLabel({ ...item });
+				if (!exists) {
+					setNewNode(item, g, curve);
 				}
-				const { top, right } = { right: event.layerX, top: event.layerY };
-				const tooltip = containerRef.current?.querySelector('.node_tooltip') as HTMLElement;
-				if (tooltip) {
-					tooltip.innerHTML = '';
-					const id = containerDiv.id;
-					const renderData = data.find((e: any) => e.name === id);
-					if (renderData) {
-						tooltip.innerHTML = ReactDOMServer.renderToString(renderSyncStatus(renderData));
-					} else {
+			});
+
+			inner.on('mouseover', (event: any) => {
+				const containerDiv = (event.target as Element)?.closest('.roundedCorners');
+				if (containerDiv) {
+					if (containerDiv.id === 'root') {
 						return;
 					}
-					tooltip.style.top = top + 20 + 'px';
-					tooltip.style.left = right + 20 + 'px';
-					tooltip.style.transform = 'scale(1)';
-					tooltip.style.opacity = '1';
+					const { top, right } = { right: event.layerX, top: event.layerY };
+					const tooltip = containerRef.current?.querySelector('.node_tooltip') as HTMLElement;
+					if (tooltip) {
+						tooltip.innerHTML = '';
+						const id = containerDiv.id;
+						const renderData = data.find((e: any) => e.name === id);
+						if (renderData) {
+							tooltip.innerHTML = ReactDOMServer.renderToString(renderSyncStatus(renderData));
+						} else {
+							return;
+						}
+						tooltip.style.top = top + 20 + 'px';
+						tooltip.style.left = right + 20 + 'px';
+						tooltip.style.transform = 'scale(1)';
+						tooltip.style.opacity = '1';
+					}
 				}
-			}
-		});
+			});
 
-		inner.on('mouseout', (event: MouseEvent) => {
-			const tooltip = containerRef.current?.querySelector('.node_tooltip') as HTMLElement;
-			if (tooltip) {
-				tooltip.style.transform = 'scale(0)';
-			}
-		});
+			inner.on('mouseout', (event: MouseEvent) => {
+				const tooltip = containerRef.current?.querySelector('.node_tooltip') as HTMLElement;
+				if (tooltip) {
+					tooltip.style.transform = 'scale(0)';
+				}
+			});
+		};
 
-		render(inner, g);
+		try {
+			preRenderProcess();
+			g.nodes().forEach(function(v: any) {
+				var node = g.node(v);
+				console.log('----> id and node: ', v, node);
+			});
+			console.warn('Graph in context ', g);
+			render(inner, g);
+		} catch (err) {
+			g.nodes().forEach(function(v: any) {
+				var node = g.node(v);
+				console.log('----> id and node: ', v, node);
+			});
+			console.error(err);
+			console.error('Graph in context ', g);
+			// console.warn(JSON.stringify(g));
+			preRenderProcess();
+			render(inner, g);
+		}
 
 		if (!isPositionSet) {
 			const zoom: any = d3.zoom().on('zoom', function (e) {
@@ -245,7 +269,7 @@ const Tree: FC<Props> = ({
 	useEffect(() => {
 		if (dagGraph) {
 			const curve = getCurveType(arrowType);
-			dagGraph.edges().forEach(({v, w}: any) => {
+			dagGraph.edges().forEach(({ v, w }: any) => {
 				dagGraph.setEdge(v, w, {
 					curve,
 					style: 'stroke: blue; fill:none; stroke-width: 1px; stroke-dasharray: 5, 5;',

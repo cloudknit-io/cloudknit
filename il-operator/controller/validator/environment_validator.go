@@ -8,7 +8,7 @@ import (
 	"github.com/compuzest/zlifecycle-il-operator/controller/services/webhooks/api"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/file"
-	"github.com/compuzest/zlifecycle-il-operator/controller/common/eventservice"
+	"github.com/compuzest/zlifecycle-il-operator/controller/common/cloudknitservice"
 	gitapi "github.com/compuzest/zlifecycle-il-operator/controller/common/git"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/log"
 
@@ -23,6 +23,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -32,12 +33,12 @@ type EnvironmentValidatorImpl struct {
 	kc kClient.Client
 	gc gitapi.API
 	fs file.API
-	es eventservice.API
+	ck cloudknitservice.API
 	l  *logrus.Entry
 }
 
-func NewEnvironmentValidatorImpl(kc kClient.Client, fs file.API, es eventservice.API) *EnvironmentValidatorImpl {
-	return &EnvironmentValidatorImpl{kc: kc, fs: fs, es: es, l: log.NewLogger().WithFields(logrus.Fields{"name": "controllers.EnvironmentValidator"})}
+func NewEnvironmentValidatorImpl(kc kClient.Client, fs file.API, ck cloudknitservice.API) *EnvironmentValidatorImpl {
+	return &EnvironmentValidatorImpl{kc: kc, fs: fs, ck: ck, l: log.NewLogger().WithFields(logrus.Fields{"name": "controllers.EnvironmentValidator"})}
 }
 
 func (v *EnvironmentValidatorImpl) init(ctx context.Context) error {
@@ -89,7 +90,7 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentCreate(ctx context.Context
 	}
 
 	if env.Config.EnableErrorNotifier == "true" {
-		if err := v.sendEvent(ctx, e.Name, env.Config.CompanyName, e.Spec.TeamName, e.Spec.EnvName, allErrs, v.l); err != nil {
+		if err := v.postErrors(ctx, env.Config.CompanyName, e, allErrs, v.l); err != nil {
 			v.l.Errorf(
 				"error sending validation event for environment create action for company [%s], team [%s] and environment [%s]: %v",
 				env.Config.CompanyName, e.Spec.TeamName, e.Spec.EnvName, err,
@@ -131,7 +132,7 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentUpdate(ctx context.Context
 	}
 
 	if env.Config.EnableErrorNotifier == "true" {
-		if err := v.sendEvent(ctx, e.Name, env.Config.CompanyName, e.Spec.TeamName, e.Spec.EnvName, allErrs, v.l); err != nil {
+		if err := v.postErrors(ctx, env.Config.CompanyName, e, allErrs, v.l); err != nil {
 			v.l.Errorf("error sending validation event for company [%s], team [%s] and environment [%s]: %v", env.Config.CompanyName, e.Spec.TeamName, e.Spec.EnvName, err)
 		}
 	}
@@ -154,29 +155,17 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentUpdate(ctx context.Context
 	)
 }
 
-func (v *EnvironmentValidatorImpl) sendEvent(ctx context.Context, object, company, team, environment string, validationErrors field.ErrorList, logger *logrus.Entry) error {
-	eventType := eventservice.EnvironmentValidationSuccess
+func (v *EnvironmentValidatorImpl) postErrors(ctx context.Context, company string, environment *stablev1.Environment, validationErrors field.ErrorList, logger *logrus.Entry) error {
+	var errMsgs []string
 	if len(validationErrors) > 0 {
-		eventType = eventservice.EnvironmentValidationError
+		errMsgs := make([]string, 0, len(validationErrors))
+		for _, err := range validationErrors {
+			errMsgs = append(errMsgs, err.Error())
+		}
 	}
-	logger.Infof("Sending [%s] event to event service for company [%s], team [%s] and environment [%s]", eventType, company, team, environment)
-	errMsgs := make([]string, 0, len(validationErrors))
-	for _, err := range validationErrors {
-		errMsgs = append(errMsgs, err.Error())
-	}
-	event := &eventservice.Event{
-		Scope:  string(eventservice.ScopeEnvironment),
-		Object: object,
-		Meta: &eventservice.Meta{
-			Company:     company,
-			Team:        team,
-			Environment: environment,
-		},
-		EventType: string(eventType),
-		Payload:   errMsgs,
-	}
-	if err := v.es.Record(ctx, event, logger); err != nil {
-		return errors.Wrapf(err, "error pushing [%s] event to event service", eventType)
+
+	if err := v.ck.PostError(ctx, company, environment, errMsgs, logger); err != nil {
+		return errors.Wrapf(err, "error posting error for environment [%s]", environment.Spec.EnvName)
 	}
 
 	return nil

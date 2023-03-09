@@ -12,6 +12,7 @@ import (
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/file"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/apm"
+	"github.com/compuzest/zlifecycle-il-operator/controller/common/cloudknitservice"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/eventservice"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/log"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
@@ -170,7 +171,7 @@ func main() {
 }
 
 func registerWebhooks(mgr manager.Manager) {
-	environmentValidator := validator.NewEnvironmentValidatorImpl(mgr.GetClient(), file.NewOSFileService(), eventservice.NewService(env.Config.ZLifecycleEventServiceURL))
+	environmentValidator := validator.NewEnvironmentValidatorImpl(mgr.GetClient(), file.NewOSFileService(), cloudknitservice.NewService(env.Config.ZLifecycleAPIURL))
 	teamValidator := validator.NewTeamValidatorImpl(mgr.GetClient(), file.NewOSFileService(), eventservice.NewService(env.Config.ZLifecycleEventServiceURL))
 
 	hs := mgr.GetWebhookServer()
