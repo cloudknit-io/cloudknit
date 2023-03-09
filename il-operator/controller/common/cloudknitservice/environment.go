@@ -89,7 +89,6 @@ func (s *Service) PostError(ctx context.Context, organizationName string,
 	jsonBody, err := util.ToJSON(PostError{
 		EnvName:      environment.Spec.EnvName,
 		ErrorMessage: allErrs,
-		Status:       "validation_failed",
 	})
 
 	log.Infof(

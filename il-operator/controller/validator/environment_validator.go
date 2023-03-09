@@ -156,14 +156,16 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentUpdate(ctx context.Context
 }
 
 func (v *EnvironmentValidatorImpl) postErrors(ctx context.Context, company string, environment *stablev1.Environment, validationErrors field.ErrorList, logger *logrus.Entry) error {
+	var errMsgs []string
 	if len(validationErrors) > 0 {
 		errMsgs := make([]string, 0, len(validationErrors))
 		for _, err := range validationErrors {
 			errMsgs = append(errMsgs, err.Error())
 		}
-		if err := v.ck.PostError(ctx, company, environment, errMsgs, logger); err != nil {
-			return errors.Wrapf(err, "error posting error for environment [%s]", environment.Spec.EnvName)
-		}
+	}
+
+	if err := v.ck.PostError(ctx, company, environment, errMsgs, logger); err != nil {
+		return errors.Wrapf(err, "error posting error for environment [%s]", environment.Spec.EnvName)
 	}
 
 	return nil
