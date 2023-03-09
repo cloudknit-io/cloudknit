@@ -4,7 +4,7 @@ import { DagNode, DagProps } from './DagNode';
 import { ReactComponent as ComputeIcon } from 'assets/images/icons/DAG-View/config.svg';
 import { ReactComponent as LayersIcon } from 'assets/images/icons/DAG-View/environment-icon.svg';
 import dagre from 'dagre';
-import { ConnectionLineType, Edge, MarkerType, Node } from 'reactflow';
+import { ConnectionLineType, Edge, Handle, MarkerType, Node, Position } from 'reactflow';
 import { EntityStore } from 'models/entity.store';
 
 export const generateRootNode = (environment: Environment) => {
@@ -13,17 +13,37 @@ export const generateRootNode = (environment: Environment) => {
 		...environment,
 	};
 	return (
-		<DagNode
-			data={{
-				cost: data.estimatedCost,
-				name: data.name,
-				icon: data.icon,
-				status: data.status as ZSyncStatus,
-				timestamp: data.lastReconcileDatetime,
-				operation: 'Provision',
-				isSkipped: false
-			}}
-		/>
+		<>
+			<Handle
+				id="a"
+				className="targetHandle"
+				style={{ zIndex: 2, top: 0 }}
+				position={Position.Top}
+				type="source"
+				isConnectable={true}
+			/>
+			<Handle
+				id="b"
+				className="targetHandle"
+				style={{
+					top: 0,
+				}}
+				position={Position.Top}
+				type="target"
+				isConnectable={true}
+			/>
+			<DagNode
+				data={{
+					cost: data.estimatedCost,
+					name: data.name,
+					icon: data.icon,
+					status: data.status as ZSyncStatus,
+					timestamp: data.lastReconcileDatetime,
+					operation: 'Provision',
+					isSkipped: false,
+				}}
+			/>
+		</>
 	);
 };
 
@@ -35,17 +55,35 @@ export const generateComponentNode = (component: Component) => {
 	};
 
 	return (
-		<DagNode
-			data={{
-				cost: data.estimatedCost,
-				name: data.name,
-				icon: data.icon,
-				status: data.status as ZSyncStatus,
-				timestamp: data.lastReconcileDatetime,
-				operation: data.isDestroyed ? 'Destroy' : 'Provision',
-				isSkipped: data.isSkipped
-			}}
-		/>
+		<>
+			<Handle
+				id="a"
+				className="targetHandle"
+				style={{ zIndex: 2, top: 0 }}
+				position={Position.Top}
+				type="source"
+				isConnectable={true}
+			/>
+			<Handle
+				id="b"
+				className="targetHandle"
+				style={{ top: 0 }}
+				position={Position.Top}
+				type="target"
+				isConnectable={true}
+			/>
+			<DagNode
+				data={{
+					cost: data.estimatedCost,
+					name: data.name,
+					icon: data.icon,
+					status: data.status as ZSyncStatus,
+					timestamp: data.lastReconcileDatetime,
+					operation: data.isDestroyed ? 'Destroy' : 'Provision',
+					isSkipped: data.isSkipped,
+				}}
+			/>
+		</>
 	);
 };
 
@@ -114,6 +152,8 @@ const getEdge = (id: string, source: string, target: string): Edge => {
 			strokeWidth: 1,
 			stroke: '#333',
 		},
+		sourceHandle: 'a',
+		targetHandle: 'b',
 	};
 };
 
@@ -129,7 +169,6 @@ export const generateNodesAndEdges = (environment: Environment) => {
 	for (let e of environment.dag) {
 		const item = components.find(c => c.name === e.name) as Component;
 		if (!item) continue;
-
 
 		nodes.push(getNode(item.argoId.toString(), generateComponentNode(item)));
 
