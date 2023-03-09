@@ -11,14 +11,15 @@ export type DagProps = {
 		cost: number;
 		status: ZSyncStatus;
 		timestamp: Date;
-		operation: 'Provision' | 'Destroy'
+		operation: 'Provision' | 'Destroy',
+		isSkipped: boolean;
 	};
 };
 
 export const DagNode: React.FC<DagProps> = ({ data }) => {
-	const { icon, name, cost, status, timestamp, operation } = data;
+	const { icon, name, cost, status, timestamp, operation, isSkipped } = data;
 	return (
-	<div className={`dag-node pod${getClassName(status || '')}`}>
+	<div className={`dag-node pod${getClassName(status || '')} ${isSkipped ? 'striped' : ''}`}>
 			<div className="dag-node__icon">{icon}</div>
 			<div className="dag-node__info">
 				<div className="dag-node__info--name">{name}</div>

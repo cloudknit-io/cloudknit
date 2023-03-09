@@ -21,6 +21,7 @@ export const generateRootNode = (environment: Environment) => {
 				status: data.status as ZSyncStatus,
 				timestamp: data.lastReconcileDatetime,
 				operation: 'Provision',
+				isSkipped: false
 			}}
 		/>
 	);
@@ -42,6 +43,7 @@ export const generateComponentNode = (component: Component) => {
 				status: data.status as ZSyncStatus,
 				timestamp: data.lastReconcileDatetime,
 				operation: data.isDestroyed ? 'Destroy' : 'Provision',
+				isSkipped: data.isSkipped
 			}}
 		/>
 	);

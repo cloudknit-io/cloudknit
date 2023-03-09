@@ -59,46 +59,43 @@ iframe {
 	}
 }
 
+@mixin striped($color) {
+	background: $color;
+	&.striped {
+		background: repeating-linear-gradient(-55deg, transparent 2px, transparent 2px, $color 8px);
+	}
+}
+
 .dag-node.pod {
 	cursor: pointer;
-
-	&.striped {
-		mask: url(#mask-stripe);
-	}
-
+	
 	&--successful {
-		background: $dag-successful;
+		@include striped($dag-successful);
 	}
 
 	&--failed {
-		background: $dag-failed;
+		@include striped($dag-failed);
 	}
 
 	&--pending {
-		background: $dag-waiting;
+		@include striped($dag-waiting);
 	}
 
 	&--initializing {
-		background: $dag-initializing;
+		@include striped($dag-initializing);
 	}
 
 	&--unknown {
-		background: $dag-waiting-for-parent;
+		@include striped($dag-waiting-for-parent);
 	}
 	&--waiting {
-		background: $dag-reconciling;
+		@include striped($dag-reconciling);
 	}
 	&--running {
-		background: $dag-running;
+		@include striped($dag-running);
 	}
 	&--destroyed {
-		background: #ddd;
-	}
-	&--skipped {
-		background: repeating-linear-gradient(-55deg, transparent, transparent 2px, #aaa 4px, #aaa 4px);
-	}
-	&--skipped-reconcile {
-		background: repeating-linear-gradient(-55deg, transparent, transparent 2px, #aaa 4px, #aaa 4px);
+		@include striped(#ddd);
 	}
 }
 
