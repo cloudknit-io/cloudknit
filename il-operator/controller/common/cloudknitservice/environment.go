@@ -18,6 +18,7 @@ import (
 type PostError struct {
 	EnvName      string   `json:"envName"`
 	ErrorMessage []string `json:"errorMessage"`
+	Status       string   `json:"status"`
 }
 
 func (s *Service) PostEnvironment(ctx context.Context, organizationName string,
@@ -88,7 +89,13 @@ func (s *Service) PostError(ctx context.Context, organizationName string,
 	jsonBody, err := util.ToJSON(PostError{
 		EnvName:      environment.Spec.EnvName,
 		ErrorMessage: allErrs,
+		Status:       "validation_failed",
 	})
+
+	log.Infof(
+		"Error Post Call via CloudKnitService jsonBody: %s",
+		jsonBody,
+	)
 
 	if err != nil {
 		return errors.Wrap(err, "error marshaling Errors body")
