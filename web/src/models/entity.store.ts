@@ -2,6 +2,7 @@ import { EntityService } from 'services/entity/entity.service';
 import { BehaviorSubject, Subject, Subscription } from 'rxjs';
 import { ErrorStateService } from 'services/error/error-state.service';
 import { CompAuditData, Component, EnvAuditData, Environment, StreamTypeEnum, Team, Update } from './entity.type';
+import { ZSyncStatus } from './argo.models';
 
 export class EntityStore {
 	private static instance: EntityStore;
@@ -12,7 +13,7 @@ export class EntityStore {
 	public emitter = new BehaviorSubject<Update>({
 		teams: [],
 		environments: [],
-		components: []
+		components: [],
 	});
 	public emitterComp = new Subject<Component[]>();
 	public emitterCompAudit = new Subject<CompAuditData>();
@@ -27,7 +28,12 @@ export class EntityStore {
 	}
 
 	public get Environments() {
-		return [...this.envMap.values()];
+		return [...this.envMap.values()].map(e => {
+			if (e.errorMessage) {
+				e.status = ZSyncStatus.ValidationFailed;
+			}
+			return e;
+		});
 	}
 
 	public get Components() {
@@ -85,9 +91,9 @@ export class EntityStore {
 							...c,
 							argoId: `${e.name}-${env.name}-${c.name}`,
 							dependsOn: compDag?.dependsOn || [],
-							teamId: e.id
+							teamId: e.id,
 						});
-					})
+					});
 				});
 			});
 		}
@@ -105,7 +111,7 @@ export class EntityStore {
 				StreamTypeEnum.EnvironmentReconcile,
 				StreamTypeEnum.Team,
 			])
-			.subscribe(({data, type}) => {
+			.subscribe(({ data, type }) => {
 				if (this.emitterMap.has(type)) {
 					this.emitterMap.get(type)?.call(this, data);
 				}
@@ -136,7 +142,7 @@ export class EntityStore {
 			this.envMap.set(environment.id, {
 				...environment,
 				argoId: `${this.getTeam(environment.teamId)?.name}-${environment.name}`,
-			})
+			});
 		}
 
 		this.emit();
