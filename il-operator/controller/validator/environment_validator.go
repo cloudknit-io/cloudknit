@@ -156,9 +156,9 @@ func (v *EnvironmentValidatorImpl) ValidateEnvironmentUpdate(ctx context.Context
 }
 
 func (v *EnvironmentValidatorImpl) postErrors(ctx context.Context, company string, environment *stablev1.Environment, validationErrors field.ErrorList, logger *logrus.Entry) error {
-	var errMsgs []string
+	var errMsgs []string = nil
 	if len(validationErrors) > 0 {
-		errMsgs := make([]string, 0, len(validationErrors))
+		errMsgs = make([]string, 0, len(validationErrors))
 		for _, err := range validationErrors {
 			errMsgs = append(errMsgs, err.Error())
 		}
