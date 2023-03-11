@@ -67,6 +67,12 @@ export class Environment {
   })
   isDeleted: boolean;
 
+  @Column({
+    default: null,
+    type: 'json',
+  })
+  errorMessage: string[];
+
   @ManyToOne(() => Team, (team) => team.id, {
     onDelete: 'CASCADE',
   })

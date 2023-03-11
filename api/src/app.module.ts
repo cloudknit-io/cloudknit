@@ -19,6 +19,7 @@ import { CachingService } from './caching/caching.service';
 import { CachingModule } from './caching/caching.module';
 import { dbConfig } from './typeorm';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ErrorsModule } from './errors/errors.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     ComponentModule,
     StreamModule,
     CachingModule,
+    ErrorsModule,
   ],
   controllers: [],
   providers: [CachingService],

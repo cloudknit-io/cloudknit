@@ -35,6 +35,7 @@ export const getClassName = (status: string): string => {
 		case ZSyncStatus.PlanFailed:
 		case ZSyncStatus.ApplyFailed:
 		case ZSyncStatus.ProvisionFailed:
+		case ZSyncStatus.ValidationFailed:
 		case ZSyncStatus.DestroyFailed:
 		case ZSyncStatus.OutOfSync:
 		case ESyncStatus.OutOfSync:
@@ -133,7 +134,6 @@ function createNodeFigure({
 	isDestroyed,
 	argoId
 }: any) {
-	const nodeId = id === 'root' ? name : displayValue;
 	const isApp = false; //labels?.component_type !== 'terraform';
 	const groupNode = getSVGNode(
 		{
