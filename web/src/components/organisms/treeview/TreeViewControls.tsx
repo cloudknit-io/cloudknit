@@ -2,6 +2,7 @@ import { Environment } from 'models/entity.type';
 import { TreeReconcile } from 'pages/authorized/environments/helpers';
 import { Reconciler } from 'pages/authorized/environments/Reconciler';
 import React from 'react';
+import { SmallText } from '../workflow-diagram/WorkflowDiagram';
 import { colorLegend } from './tree-view.helper';
 
 export type TreeViewControlProps = {
@@ -11,11 +12,11 @@ export type TreeViewControlProps = {
 export const TreeViewControls: React.FC<TreeViewControlProps> = ({ environment }) => {
 	return (
 		<div className="node__title">
-            <div></div>
+			<div></div>
 			<div className="dag-controls">
 				{environment && <Reconciler environment={environment} template={TreeReconcile} />}
 			</div>
-			<div className='color-legend-control'>
+			<div className="color-legend-control">
 				<div className="color-legend-control_status">
 					<div>
 						<label>Status:</label>
@@ -29,6 +30,7 @@ export const TreeViewControls: React.FC<TreeViewControlProps> = ({ environment }
 							))}
 					</div>
 				</div>
+				<SmallText data={'* Costs are monthly estimates calculated at the time of last reconciliation'}/>
 			</div>
 		</div>
 	);
