@@ -2,11 +2,13 @@ import { ReactComponent as AWSIcon } from 'assets/images/icons/AWS.svg';
 import { ReactComponent as ChevronRight } from 'assets/images/icons/chevron-right.svg';
 import { ReactComponent as MoreOptionsIcon } from 'assets/images/icons/more-options.svg';
 import { ReactComponent as SyncIcon } from 'assets/images/icons/sync-icon.svg';
+import AuthStore from 'auth/AuthStore';
 import { Checkbox } from 'components/argo-core/checkbox';
 import { TableColumn } from 'components/atoms/table/Table';
 import { renderHealthStatus, renderLabels, renderSyncedStatus } from 'components/molecules/cards/renderFunctions';
 import { MenuItem, ZDropdownMenuJSX } from 'components/molecules/dropdown-menu/DropdownMenu';
 import { ApplicationCondition, HealthStatuses, ZEnvSyncStatus } from 'models/argo.models';
+import { EntityStore } from 'models/entity.store';
 import { Environment } from 'models/entity.type';
 import React, { ReactElement } from 'react';
 import { ArgoTeamsService } from 'services/argo/ArgoProjects.service';
@@ -407,4 +409,18 @@ export const setStatusValue = (
 		statusFilter.delete(value);
 	}
 	setStatusFilter(new Set(statusFilter));
+};
+
+export const parseErrorMessages = (env: Environment) => {
+	if (!env.errorMessage) {
+		return [];
+	}
+	const teamName = EntityStore.getInstance().getTeam(env.teamId)?.name;
+	return env.errorMessage.map(msg => ({
+		company: AuthStore.getOrganization()?.name || '',
+		team: teamName || '',
+		environment: env?.name || '',
+		message: msg || '',
+		timestamp: env.lastReconcileDatetime.toString(),
+	}));
 };

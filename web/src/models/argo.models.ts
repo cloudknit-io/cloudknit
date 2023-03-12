@@ -274,6 +274,7 @@ export enum ZSyncStatus {
 	Provisioning = 'provisioning',
 	Provisioned = 'provisioned',
 	ProvisionFailed = 'provision_failed',
+	ValidationFailed = 'validation_failed',
 	Destroying = 'destroying',
 	Destroyed = 'destroyed',
 	DestroyFailed = 'destroy_failed',

@@ -27,6 +27,10 @@ spec:
             value: {{.Values.ckEnvironment}}
           - name: CK_CONFIG_REPO
             value: {{.Values.configRepo}}
+          - name: CK_DOMAIN
+            value: {{.Values.ckDomain}}
+          - name: CK_TERRAFORM_IMAGE_TAG
+            value: "{{ .Values.terraformImageTag }}"
           - name: CK_TF_MODULE_VERSION
             value: {{.Values.tfModuleVersion}}
           - name: CK_OPERATOR_TAG

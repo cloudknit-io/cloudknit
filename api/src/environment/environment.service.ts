@@ -1,5 +1,6 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { EnvironmentErrorDto } from 'src/errors/dto/environment-error.dto';
 import { Environment, Organization, Team } from 'src/typeorm';
 import { Equal, Repository } from 'typeorm';
 import { CreateEnvironmentDto } from './dto/create-environment.dto';
@@ -40,7 +41,7 @@ export class EnvironmentService {
   async updateById(
     org: Organization,
     id: number,
-    updateEnvDto: UpdateEnvironmentDto
+    updateEnvDto: UpdateEnvironmentDto | EnvironmentErrorDto
   ): Promise<Environment> {
     const env = await this.findById(org, id);
     this.envRepo.merge(env, updateEnvDto);

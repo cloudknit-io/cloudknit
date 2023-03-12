@@ -10,6 +10,7 @@ import { TeamModule } from './team/team.module';
 import { EnvironmentModule } from './environment/environment.module';
 import { ComponentModule } from './component/component.module';
 import { StreamModule } from './stream/stream.module';
+import { ErrorsModule } from './errors/errors.module';
 
 export const appRoutes: Routes = [
   {
@@ -57,7 +58,10 @@ export const appRoutes: Routes = [
                 module: ComponentModule,
               },
             ],
-          },
+          }, {
+            path: '/:teamId/errors',
+            module: ErrorsModule
+          }
         ],
       },
     ],

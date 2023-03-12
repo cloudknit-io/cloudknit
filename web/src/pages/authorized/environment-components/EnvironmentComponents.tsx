@@ -12,6 +12,7 @@ import { CompAuditData, Component, EnvAuditData, Environment } from 'models/enti
 import { eventErrorColumns } from 'models/error.model';
 import { LocalStorageKey } from 'models/localStorage';
 import { EnvironmentItem } from 'models/projects.models';
+import moment from 'moment';
 import { ConfigWorkflowView } from 'pages/authorized/environment-components/config-workflow-view/ConfigWorkflowView';
 import { auditColumns, ConfigParamsSet, getWorkflowLogs } from 'pages/authorized/environment-components/helpers';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -129,7 +130,7 @@ export const EnvironmentComponents: React.FC = () => {
 	useEffect(() => {
 		const headerTabs = showAll
 			? []
-			: entityStore.getAllEnvironmentsByTeamName(projectId).map(environment => {
+			: entityStore.getAllEnvironmentsByTeamName(projectId).filter(e => e.dag.length > 0).map(environment => {
 					const name: string = environment.name;
 					return {
 						active: environmentName === environment.name,
@@ -314,10 +315,6 @@ export const EnvironmentComponents: React.FC = () => {
 		}
 	};
 
-	const labelsMatch = (labels: EnvironmentItem['labels'] = {}, query: string): boolean => {
-		return Object.values(labels).some(val => val.includes(query));
-	};
-
 	const getFilteredData = (): Component[] => {
 		let filteredItems = [...componentArrayRef.current];
 		if (syncStatusFilter.size > 0) {
@@ -417,9 +414,23 @@ export const EnvironmentComponents: React.FC = () => {
 									<ZTablControl
 										className="container__tabs-control"
 										selected={[].length ? 'Errors' : 'Audit'}
-										tabs={envTabs.filter(t => t.show(() => Boolean([].length)))}>
+										tabs={envTabs.filter(t => t.show(() => Boolean(environment?.errorMessage?.length)))}>
 										<div id="Errors">
-											<ErrorView columns={eventErrorColumns} dataRows={[]} />
+											{environment?.errorMessage && (
+												<ErrorView
+													columns={eventErrorColumns}
+													dataRows={environment.errorMessage.map(e => ({
+														team: EntityStore.getInstance().getTeam(environment.teamId)
+															?.name,
+														environment: environment.name,
+														message: e,
+														timestamp: moment(
+															environment.lastReconcileDatetime.toString(),
+															moment.ISO_8601
+														).fromNow(),
+													}))}
+												/>
+											)}
 										</div>
 										<div id="Audit">
 											<AuditView auditData={envAuditList} auditColumns={auditColumns} />
