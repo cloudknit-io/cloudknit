@@ -53,6 +53,7 @@
     }
   },
   "dependencies": {
+    "@cfaester/enzyme-adapter-react-18": "^0.7.0",
     "@date-io/moment": "1.0.3",
     "@monaco-editor/react": "^4.4.6",
     "@sentry/react": "^6.11.0",
@@ -73,7 +74,6 @@
     "codemirror": "^5.59.1",
     "d3": "^7.8.2",
     "dagre-d3": "^0.6.4",
-    "enzyme-adapter-react-16": "^1.15.7",
     "eslint": "^7.32.0",
     "formik": "2.1.5",
     "foundation-sites": "^6.4.3",
@@ -113,8 +113,8 @@
     "@types/react-dom": "^18.0.11",
     "@types/react-router-dom": "^5.1.5",
     "@types/yup": "0.28.0",
-    "@typescript-eslint/eslint-plugin": "^2.28.0",
-    "@typescript-eslint/parser": "^2.28.0",
+    "@typescript-eslint/eslint-plugin": "^5.54.1",
+    "@typescript-eslint/parser": "^5.54.1",
     "cypress": "^8.3.1",
     "env-cmd": "^10.1.0",
     "enzyme": "^3.11.0",
