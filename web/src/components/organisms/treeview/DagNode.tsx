@@ -1,6 +1,7 @@
 import { CostRenderer, getSyncStatusIcon, renderSyncedStatus } from 'components/molecules/cards/renderFunctions';
 import { ZSyncStatus } from 'models/argo.models';
 import { getTime } from 'pages/authorized/environment-components/helpers';
+import React from 'react';
 import './tree-view-new.scss';
 import { getClassName } from './tree-view.helper';
 

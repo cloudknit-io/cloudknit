@@ -1,6 +1,7 @@
 import { Environment } from 'models/entity.type';
 import { TreeReconcile } from 'pages/authorized/environments/helpers';
 import { Reconciler } from 'pages/authorized/environments/Reconciler';
+import React from 'react';
 import { colorLegend } from './tree-view.helper';
 
 export type TreeViewControlProps = {

@@ -1,11 +1,12 @@
-import { AuditStatus, ESyncStatus, ZSyncStatus } from 'models/argo.models';
-import { Component, DAG, Environment } from 'models/entity.type';
-import { DagNode, DagProps } from './DagNode';
 import { ReactComponent as ComputeIcon } from 'assets/images/icons/DAG-View/config.svg';
 import { ReactComponent as LayersIcon } from 'assets/images/icons/DAG-View/environment-icon.svg';
 import dagre from 'dagre';
-import { ConnectionLineType, Edge, Handle, MarkerType, Node, Position } from 'reactflow';
+import { AuditStatus, ESyncStatus, ZSyncStatus } from 'models/argo.models';
 import { EntityStore } from 'models/entity.store';
+import { Component, Environment } from 'models/entity.type';
+import React from 'react';
+import { ConnectionLineType, Edge, Handle, MarkerType, Node, Position } from 'reactflow';
+import { DagNode } from './DagNode';
 
 export const generateRootNode = (environment: Environment) => {
 	const data = {
@@ -245,6 +246,7 @@ export const getClassName = (status: string): string => {
 		case ZSyncStatus.SkippedReconcile:
 			return '--skipped-reconcile';
 		case ZSyncStatus.PlanFailed:
+		case ZSyncStatus.ValidationFailed:
 		case ZSyncStatus.ApplyFailed:
 		case ZSyncStatus.ProvisionFailed:
 		case ZSyncStatus.DestroyFailed:
