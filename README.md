@@ -15,6 +15,7 @@ Environment as Code (EaC) is an abstraction over cloud-native tools that provide
 
 * [Why we built CloudKnit](#why-we-built-cloudknit)
 * [Other Challenges](#other-challenges)
+* [Demo](#demo)
 * [How does CloudKnit work?](#how-does-cloudknit-work)
 * [Environment Visibility & Workflow](#environment-visibility--workflow)
 * [Conclusion](#conclusion)
@@ -48,6 +49,12 @@ There are other challenges that teams face as their environments become more com
 * Not easy to Visualize/Understand Environments
 * Drift Detection for the entire environment is difficult
 * Not straightforward to Promote changes across environments
+
+## Demo
+
+Please see CloudKnit demo below:
+
+[<img src="/assets/images/ck-demo.png" width="100%">](https://www.youtube.com/watch?v=BkTCCmf581s "CloudKnit Demo: 55")
 
 ## How does CloudKnit work?
 
