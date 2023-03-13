@@ -54,7 +54,7 @@ There are other challenges that teams face as their environments become more com
 
 Please see CloudKnit demo below:
 
-[![CloudKnit Demo: 55] (/assests/images/ck_demo.png)](https://www.youtube.com/watch?v=BkTCCmf581s "CloudKnit Demo: 55")
+[<img src="/assets/images/ck_demo.png" width="50%">](https://www.youtube.com/watch?v=BkTCCmf581s "CloudKnit Demo: 55")
 
 ## How does CloudKnit work?
 
