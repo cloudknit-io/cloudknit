@@ -27,51 +27,13 @@ export class Environment {
   @Index()
   name: string;
 
-  @UpdateDateColumn({
-    name: 'last_reconcile_datetime',
-  })
-  lastReconcileDatetime: string;
-
-  @Column({
-    default: -1,
-  })
-  duration: number;
-
-  @Column({
-    name: 'status',
-    default: 'initializing',
-  })
-  status: string;
-
   @OneToMany(() => Component, (component) => component.environment)
   components: Component[];
-
-  @Column({
-    name: 'estimated_cost',
-    type: 'decimal',
-    precision: 10,
-    scale: 3,
-    default: 0,
-    transformer: new ColumnNumericTransformer(),
-  })
-  estimatedCost: number;
-
-  @Column({
-    type: 'json',
-    default: null,
-  })
-  dag: EnvSpecComponentDto[];
 
   @Column({
     default: false,
   })
   isDeleted: boolean;
-
-  @Column({
-    default: null,
-    type: 'json',
-  })
-  errorMessage: string[];
 
   @ManyToOne(() => Team, (team) => team.id, {
     onDelete: 'CASCADE',
