@@ -1,44 +1,12 @@
 import { ZLoaderCover } from 'components/atoms/loader/LoaderCover';
 import { ZText } from 'components/atoms/text/Text';
+import { colorLegend } from 'components/organisms/treeview/tree-view.helper';
 import { EntityStore } from 'models/entity.store';
 import { Update } from 'models/entity.type';
 import React, { useEffect, useMemo, useState } from 'react';
 import { breadcrumbObservable, pageHeaderObservable } from '../contexts/EnvironmentHeaderContext';
 import { CircularClusterPacking } from '../dashboard/CircularClusterPacking';
 import '../dashboard/dashboard.styles.scss';
-
-// @ts-ignore
-import css_vars from '../dashboard/dashboard.styles.scss';
-
-
-
-const colorLegend = [
-	{
-		key: 'Succeeded',
-		value: css_vars.successful,
-		order: 5,
-	},
-	{
-		key: 'Failed',
-		value: css_vars.failed,
-		order: 6,
-	},
-	{
-		key: 'Waiting for approval',
-		value: css_vars.pending,
-		order: 2,
-	},
-	{
-		key: 'In Progress',
-		value: css_vars.initializing,
-		order: 0,
-	},
-	{
-		key: 'Destroyed/Not Provisioned',
-		value: css_vars.destroyed,
-		order: 5,
-	},
-];
 
 export const Overview: React.FC = () => {
 	const entityStore = useMemo(() => EntityStore.getInstance(), []);

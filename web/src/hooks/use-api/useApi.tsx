@@ -44,6 +44,7 @@ export const useApi = <T extends unknown>(
 				})
 				.catch((errorLoc: ResponseError) => {
 					const errorMessage = errorLoc ? errorLoc?.data?.message : errorLoc || '';
+					//@ts-ignore
 					setState({ isLoading: false, error: errorMessage, response: undefined });
 					return new Promise<T>(resolve => resolve({ error: errorMessage } as T));
 				});

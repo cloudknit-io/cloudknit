@@ -102,7 +102,7 @@ export const Teams: React.FC = () => {
 			case 'list':
 				return (
 					<div className="zlifecycle-table">
-						<ZTable table={{ columns: teamTableColumns, rows: getFilteredData() }} />
+						{/* <ZTable table={{ columns: teamTableColumns, rows: getFilteredData() }} /> */}
 					</div>
 				);
 			default:

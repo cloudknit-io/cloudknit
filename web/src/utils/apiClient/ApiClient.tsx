@@ -59,7 +59,7 @@ class ApiClient {
 		return ApiClient.client.patch<unknown, Response<T>>(url, data, config);
 	}
 
-	static download(url: string): Promise<Response<void>> {
+	static download(url: string): Promise<void> {
 		return new Promise(resolve => {
 			window.open(ApiClient.client.defaults.baseURL + url);
 			return resolve();

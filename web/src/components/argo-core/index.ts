@@ -8,8 +8,6 @@ export { TopBar } from 'components/argo-core/top-bar/top-bar';
 export { Duration } from 'components/argo-core/duration';
 export * from 'components/argo-core/notifications/notifications';
 export * from 'components/argo-core/notifications/notification-manager';
-export * from 'components/argo-core/popup/popup';
-export * from 'components/argo-core/popup/popup-manager';
 export { Select } from 'components/argo-core/select/select';
 export * from 'components/argo-core/ticker';
 export * from 'components/argo-core/error-notification';

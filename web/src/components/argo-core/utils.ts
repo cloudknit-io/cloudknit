@@ -48,6 +48,7 @@ export const Utils = {
 	// TODO validate this part for functionality (added null) (V.T.)
 	toObservable<T>(val: T | Observable<T> | Promise<T>): Observable<T> | null {
 		const observable = val as Observable<T>;
+		//@ts-ignore
 		if (observable && observable.subscribe) {
 			return observable as Observable<T>;
 		}

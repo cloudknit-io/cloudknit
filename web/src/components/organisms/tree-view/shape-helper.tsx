@@ -1,4 +1,3 @@
-import createNodeFigure, { updateNodeFigure } from './node-figure-helper';
 
 export const getSVGNode = (
 	attributes: { [key: string]: string },
@@ -18,24 +17,4 @@ export const getSVGNode = (
 		}
 	}
 	return svgNode;
-};
-
-export const getShapeLabel = (item: any) => {
-	const label = createNodeFigure({
-		...item
-	});
-
-	return {
-		label,
-		labelType: 'svg',
-		style: 'fill: transparent;',
-		paddingX: 0,
-		paddingY: 0,
-	};
-};
-
-export const updateShapeLabel = (item: any) => {
-	return updateNodeFigure({
-		...item
-	});
 };

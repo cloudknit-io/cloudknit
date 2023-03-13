@@ -91,7 +91,7 @@ export const Profile: React.FC = () => {
 														newEnvironmentField={selectedSecret?.endsWith('/')}
 														secretScope={selectedSecret}
 														closeCallback={(secret?: string) => {
-															selectedSecret?.endsWith('/') && refresher.next(secret);
+															selectedSecret?.endsWith('/') && refresher.next(secret as string);
 														}}
 													/>
 												}
@@ -133,7 +133,7 @@ export const Profile: React.FC = () => {
 														newEnvironmentField={selectedSecret?.endsWith('/')}
 														secretScope={selectedSecret}
 														closeCallback={(secret?: string) => {
-															selectedSecret?.endsWith('/') && refresher.next(secret);
+															selectedSecret?.endsWith('/') && refresher.next(secret as string);
 														}}
 														secretModels={[
 															{

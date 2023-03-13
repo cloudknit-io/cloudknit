@@ -4,7 +4,6 @@ import { ZSidePanel } from 'components/molecules/side-panel/SidePanel';
 import { ZTablControl } from 'components/molecules/tab-control/TabControl';
 import { AuditView } from 'components/organisms/audit_view/AuditView';
 import { ErrorView } from 'components/organisms/error-view/ErrorView';
-import { TreeComponent } from 'components/organisms/tree-view/TreeComponent';
 import { streamMapperWF } from 'helpers/streamMapper';
 import { useApi } from 'hooks/use-api/useApi';
 import { ApplicationWatchEvent, ZComponentSyncStatus, ZSyncStatus } from 'models/argo.models';
@@ -18,11 +17,13 @@ import { ConfigWorkflowView } from 'pages/authorized/environment-components/conf
 import { auditColumns, ConfigParamsSet, getWorkflowLogs } from 'pages/authorized/environment-components/helpers';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { ReactFlowProvider } from 'reactflow';
 import { Subscription } from 'rxjs';
 import { ArgoStreamService } from 'services/argo/ArgoStream.service';
 import { ArgoWorkflowsService } from 'services/argo/ArgoWorkflows.service';
 import { AuditService } from 'services/audit/audit.service';
 import { subscriberWF } from 'utils/apiClient/EventClient';
+import { TreeView } from '../../../components/organisms/treeview/TreeViewNew';
 import { usePageHeader } from '../contexts/EnvironmentHeaderContext';
 import { getCheckBoxFilters, renderSyncStatusItems } from '../environments/helpers';
 
@@ -286,35 +287,32 @@ export const EnvironmentComponents: React.FC = () => {
 		toggleFilterDropDown(val);
 	};
 
-	const onNodeClick = (configName: string, visualizationHandler?: boolean): void => {
-		if (configName === 'root') {
+	const onNodeClick = (nodeId: string): void => {
+		if (nodeId === environment?.argoId) {
 			setEnvironmentNodeSelected(true);
 			setShowSidePanel(true);
 			return;
-		}
-		setEnvironmentNodeSelected(false);
-		const selectedConfig = componentArrayRef.current.find(c => c.name === configName);
-		if (selectedConfig) {
-			let _workflowId = selectedConfig.lastWorkflowRunId;
-			if (!_workflowId) {
-				_workflowId = 'initializing';
+		} else {
+			setEnvironmentNodeSelected(false);
+			const selectedConfig = componentArrayRef.current.find(c => c.argoId === nodeId);
+			if (selectedConfig) {
+				let _workflowId = selectedConfig.lastWorkflowRunId;
+				if (!_workflowId) {
+					_workflowId = 'initializing';
+				}
+				selectedComponentRef.current = selectedConfig;
+				setSelectedConfig(selectedConfig);
+				setShowSidePanel(true);
+				if (workflowIdRef.current !== _workflowId) {
+					workflowIdRef.current = _workflowId;
+					setWorkflowId(_workflowId);
+					setLogs(null);
+					setPlans(null);
+					setIsLoadingWorkflow(false);
+					setWorkflowData(null);
+				}
 			}
-			selectedComponentRef.current = selectedConfig;
-			setSelectedConfig(selectedConfig);
-			setShowSidePanel(true);
-			if (workflowIdRef.current !== _workflowId) {
-				workflowIdRef.current = _workflowId;
-				setWorkflowId(_workflowId);
-				setLogs(null);
-				setPlans(null);
-				setIsLoadingWorkflow(false);
-				setWorkflowData(null);
-			}
 		}
-	};
-
-	const labelsMatch = (labels: EnvironmentItem['labels'] = {}, query: string): boolean => {
-		return Object.values(labels).some(val => val.includes(query));
 	};
 
 	const getFilteredData = (): Component[] => {
@@ -381,12 +379,9 @@ export const EnvironmentComponents: React.FC = () => {
 		switch (viewType) {
 			case 'DAG':
 				return components.length > 0 ? (
-					<TreeComponent
-						environmentId={environmentName}
-						nodes={components}
-						environmentItem={environment}
-						onNodeClick={onNodeClick}
-					/>
+					<ReactFlowProvider>
+						<TreeView environmentItem={environment} onNodeClick={onNodeClick} />
+					</ReactFlowProvider>
 				) : (
 					<></>
 				);
@@ -406,17 +401,6 @@ export const EnvironmentComponents: React.FC = () => {
 				);
 		}
 	};
-
-	// const checkForFailedEnvironments = (envs: EnvironmentsList) => {
-	// 	if (!envs?.length) {
-	// 		return;
-	// 	}
-	// 	const currentEnv = (envs as any).find((e: any) => e.id === environmentName);
-	// 	const failedEnv = ErrorStateService.getInstance().errorsInEnvironment(currentEnv.labels?.env_name);
-	// 	if (failedEnv?.length && currentEnv.labels?.env_status) {
-	// 		currentEnv.labels.env_status = ZSyncStatus.ProvisionFailed;
-	// 	}
-	// };
 
 	return (
 		<div className="zlifecycle-page">
@@ -456,27 +440,17 @@ export const EnvironmentComponents: React.FC = () => {
 							</div>
 						)}
 						<ZLoaderCover loading={isLoadingWorkflow}>
-							{
-								selectedConfig && !isEnvironmentNodeSelected && (
-									// (selectedConfig.labels?.component_type === 'argocd' ? (
-									// 	<ConfigWorkflowViewApplication
-									// 		projectId={projectId}
-									// 		environmentId={environmentName}
-									// 		config={selectedConfig}
-									// 	/>
-									// ) : (
-									<ConfigWorkflowView
-										projectId={projectId}
-										environmentId={environmentName}
-										config={selectedConfig}
-										logs={logs}
-										plans={plans}
-										workflowData={workflowData}
-										auditData={compAuditList}
-									/>
-								)
-								// ))
-							}
+							{selectedConfig && !isEnvironmentNodeSelected && (
+								<ConfigWorkflowView
+									projectId={projectId}
+									environmentId={environmentName}
+									config={selectedConfig}
+									logs={logs}
+									plans={plans}
+									workflowData={workflowData}
+									auditData={compAuditList}
+								/>
+							)}
 						</ZLoaderCover>
 					</ZSidePanel>
 				</section>

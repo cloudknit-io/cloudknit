@@ -66,7 +66,6 @@ export class ComponentController {
     @Body() body: UpdateComponentDto
   ): Promise<Component> {
     const { org, env } = req;
-    this.logger.log(`Updating component ${id} with status as ${body.status}`);
     const comp = await this.getCompFromRequest(org, env, id);
     const updatedComp = await this.compSvc.update(org, comp, body);
 

@@ -1,0 +1,230 @@
+@import '../../../assets/styles/colors';
+@import '../../../assets/styles/config.scss';
+
+.color-legend {
+	background: white;
+	position: fixed;
+	bottom: 50px;
+	right: 90px;
+	transition: all 0.3s;
+}
+
+iframe {
+	display: none !important;
+}
+
+.dag-node {
+	width: max-content;
+	font-family: 'DM Sans';
+	display: flex;
+	flex-direction: row;
+	border-radius: 10px;
+	padding: 5px 10px;
+	align-items: center;
+	cursor: pointer;
+
+	&:hover > &__tooltip {
+		display: block;
+	}
+
+	&__tooltip {
+		position: absolute;
+		display: none;
+		bottom: -20px;
+		right: -20px;
+		background-color: white;
+		box-shadow: 0 0 10px #ccc;
+		padding: 5px 10px;
+		border-radius: 5px;
+	}
+
+	&__icon {
+		display: flex;
+		align-items: center;
+		svg {
+			height: 50px;
+			width: 45px;
+		}
+	}
+	&__info {
+		margin-left: 5px;
+		font-size: 1.1em;
+		text-align: left;
+		display: inline-flex;
+		flex-direction: column;
+		&--status {
+			display: inline-flex;
+			flex-direction: row;
+		}
+	}
+}
+
+@mixin striped($color) {
+	background: $color;
+	&.striped {
+		background: repeating-linear-gradient(-55deg, transparent 2px, transparent 2px, $color 8px);
+	}
+}
+
+.dag-node.pod {
+	cursor: pointer;
+	
+	&--successful {
+		@include striped($dag-successful);
+	}
+
+	&--failed {
+		@include striped($dag-failed);
+	}
+
+	&--pending {
+		@include striped($dag-waiting);
+	}
+
+	&--initializing {
+		@include striped($dag-initializing);
+	}
+
+	&--unknown {
+		@include striped($dag-waiting-for-parent);
+	}
+	&--waiting {
+		@include striped($dag-reconciling);
+	}
+	&--running {
+		@include striped($dag-running);
+	}
+	&--destroyed {
+		@include striped(#ddd);
+	}
+}
+
+.react-flow__handle {
+	opacity: 0;
+}
+
+.node__title {
+	display: flex;
+	justify-content: space-between;
+	.dag-controls {
+		display: flex;
+		position: relative;
+		button {
+			background-color: $argo-color-teal-7;
+			&:hover {
+				.tooltip {
+					display: block;
+					&.error {
+						display: flex;
+					}
+				}
+			}
+			.tooltip {
+				font-size: 0.7em;
+				color: white;
+				position: absolute;
+				transform: translate(-20%, 40px);
+				display: none;
+				white-space: nowrap;
+				background: #888;
+				box-shadow: 0 0 10px #aaa;
+				padding: 10px;
+				font-style: italic;
+				font-family: Helvetica;
+				font-weight: lighter;
+				border-radius: 20px;
+				&.error {
+					transform: translate(-45%, 40px);
+					font-size: 1em;
+					width: 250px;
+					white-space: normal;
+					background: #fff;
+					color: red;
+				}
+			}
+		}
+
+		&-reconcile {
+			font-family: 'DM Sans';
+			display: flex;
+			align-items: center;
+			height: 30px;
+			padding: 0 10px 0 5px;
+			cursor: pointer;
+			box-shadow: 0 0 10px #ccc;
+			margin-right: 15px;
+			border-radius: 20px;
+			position: relative;
+			color: white;
+			path {
+				fill: white !important;
+			}
+		}
+
+		.large-health-icon-container {
+			display: flex;
+			align-items: center;
+			&__sync-button {
+				&--in-progress {
+					animation: sync-rotate-button 2s linear infinite;
+				}
+				transition: transform 0.3s;
+				cursor: pointer;
+				&:hover {
+					transform: rotate(180deg);
+				}
+				&--in-sync {
+					path {
+						fill: green;
+					}
+				}
+				&--out-of-sync {
+					path {
+						fill: #aaa;
+					}
+				}
+				&--unknown {
+					path {
+						fill: red;
+					}
+				}
+			}
+		}
+	}
+}
+
+.color-legend-control {
+	background: white;
+	position: fixed;
+	bottom: 50px;
+	right: 90px;
+	transition: all 0.3s;
+
+	&_status {
+		display: flex;
+		font-size: 0.9em;
+		font-style: italic;
+		font-family: 'DM Sans';
+	}
+
+	&_value {
+		margin: 5px 0;
+		display: flex;
+		label:first-child {
+			height: 20px;
+			width: 60px;
+		}
+		label:last-child {
+			margin: 0 5px;
+		}
+	}
+}
+
+@keyframes sync-rotate-button {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(-360deg);
+	}
+}
