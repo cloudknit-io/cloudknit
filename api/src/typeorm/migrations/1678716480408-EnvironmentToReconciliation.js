@@ -1,4 +1,4 @@
-module.exports = class EnvironmentToReconciliation1678716480410 {
+module.exports = class EnvironmentToReconciliation1678716480411 {
 
     async up(queryRunner) {
         await queryRunner.query(
@@ -8,7 +8,11 @@ module.exports = class EnvironmentToReconciliation1678716480410 {
                 'DROP COLUMN `duration`,' +
                 'DROP COLUMN `status`,' +
                 'DROP COLUMN `estimated_cost`,' +
-                'DROP COLUMN `dag`;'
+                'DROP COLUMN `dag`' + 
+                'ADD COLUMN `latest_env_recon_id` int DEFAULT NULL;'
+          );
+          await queryRunner.query(
+            'ALTER TABLE \`environment\` ADD CONSTRAINT \`FK_latest_env_recon\` FOREIGN KEY (\`latest_env_recon_id\`) REFERENCES \`environment_reconcile\`(\`id\`) ON DELETE CASCADE ON UPDATE NO ACTION'
           );
           await queryRunner.query(
             'ALTER TABLE `environment_reconcile` '+

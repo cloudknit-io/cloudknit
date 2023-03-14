@@ -5,6 +5,7 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   RelationId,
   UpdateDateColumn,
@@ -14,6 +15,7 @@ import { Component } from './component.entity';
 import { Team } from './team.entity';
 import { EnvSpecComponentDto } from 'src/environment/dto/env-spec.dto';
 import { ColumnNumericTransformer } from './helper';
+import { EnvironmentReconcile } from './environment-reconcile.entity';
 
 @Entity({
   name: 'environment',
@@ -26,6 +28,9 @@ export class Environment {
   @Column()
   @Index()
   name: string;
+
+  @OneToOne(() => EnvironmentReconcile, (envRecon) => envRecon.environment)
+  latestEnvRecon: EnvironmentReconcile
 
   @OneToMany(() => Component, (component) => component.environment)
   components: Component[];
