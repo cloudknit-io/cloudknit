@@ -82,7 +82,9 @@ export class EntityStore {
 				e.environments.forEach(env => {
 					this.envMap.set(env.id, {
 						...env,
+						...this.mergeEnvReconToEnv(env, env.latestEnvRecon),
 						argoId: `${e.name}-${env.name}`,
+
 					});
 					env.components?.forEach(c => {
 						const compDag = env.dag.find(d => d.name === c.name);
@@ -137,10 +139,12 @@ export class EntityStore {
 			this.envMap.set(environment.id, {
 				...currEnv,
 				...environment,
+				...this.mergeEnvReconToEnv(environment, environment.latestEnvRecon)
 			});
 		} else {
 			this.envMap.set(environment.id, {
 				...environment,
+				...this.mergeEnvReconToEnv(environment, environment.latestEnvRecon),
 				argoId: `${this.getTeam(environment.teamId)?.name}-${environment.name}`,
 			});
 		}
@@ -182,6 +186,15 @@ export class EntityStore {
 			component.teamId = currEnv.teamId;
 		}
 		return component;
+	}
+
+	private mergeEnvReconToEnv(env: Environment, envRecon: EnvAuditData): Environment {
+		env.estimatedCost = envRecon.estimatedCost;
+		env.dag = envRecon.dag;
+		env.errorMessage = envRecon.errorMessage;
+		env.lastReconcileDatetime = envRecon.startDateTime;
+		env.status = envRecon.status;
+		return env;
 	}
 
 	public getTeam(id: number) {

@@ -29,7 +29,9 @@ export class Environment {
   @Index()
   name: string;
 
-  @OneToOne(() => EnvironmentReconcile, (envRecon) => envRecon.environment)
+  @OneToOne(() => EnvironmentReconcile, (envRecon) => envRecon.environment, {
+    eager: true
+  })
   latestEnvRecon: EnvironmentReconcile
 
   @OneToMany(() => Component, (component) => component.environment)

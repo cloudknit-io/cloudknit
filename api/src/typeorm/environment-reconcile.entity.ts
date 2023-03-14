@@ -71,9 +71,7 @@ export class EnvironmentReconcile {
   )
   componentReconciles?: ComponentReconcile[];
 
-  @ManyToOne(() => Environment, (environment) => environment.id, {
-    eager: true,
-  })
+  @ManyToOne(() => Environment, (environment) => environment.id)
   environment: Environment;
 
   @ManyToOne(() => Team, (team) => team.id)
