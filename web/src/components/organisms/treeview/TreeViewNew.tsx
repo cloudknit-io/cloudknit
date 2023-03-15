@@ -4,13 +4,17 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import ReactFlow, { addEdge, ConnectionLineType, useEdgesState, useNodesState, useReactFlow } from 'reactflow';
 import 'reactflow/dist/style.css';
 import './tree-view-new.scss';
-import { generateNodesAndEdges, initializeLayout } from './tree-view.helper';
+import { FloatingEdge, generateNodesAndEdges, initializeLayout } from './tree-view.helper';
 import { TreeViewControls } from './TreeViewControls';
 
 interface Props {
 	onNodeClick: any;
 	environmentItem?: Environment;
 }
+
+const edgeTypes = {
+	smart: FloatingEdge,
+};
 
 export const TreeView: React.FC<Props> = ({ onNodeClick, environmentItem }) => {
 	const [dagNodes, setDagNodes, onNodesChange] = useNodesState([]);
@@ -81,6 +85,7 @@ export const TreeView: React.FC<Props> = ({ onNodeClick, environmentItem }) => {
 					onNodeClick={e => onNodeClick(e.currentTarget.getAttribute('data-id'))}
 					fitView
 					maxZoom={1.5}
+					edgeTypes={edgeTypes}
 				/>
 				{/* <div className="controls">
 				<button onClick={() => onLayout('TB')}>vertical layout</button>
