@@ -32,7 +32,7 @@ function PatchError() {
   # argocd app patch $team_env_name --patch $data --type merge > null
 
   UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "${component_error_status}"
-  UpdateEnvironmentStatus "${team_name}" "${env_name}" "${status}"
+  UpdateEnvironmentReconcileStatus "${team_name}" "${env_name}" "1"
 
   sh /audit.sh $team_name $env_name $config_name "Failed" $component_error_status $reconcile_id $config_reconcile_id $is_destroy 0 "noSkip" $customer_id
 }
@@ -182,20 +182,71 @@ function UpdateComponentCost() {
   curl -X 'PUT' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/teams/${teamName}/environments/${envName}/components/${compName}" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_comp_cost.json
 }
 
-# Saves or updates a component
+# Gets the latest env reconcile entry
 #   Args:
 #     $1 - team name (required)
 #     $2 - env name (required)
-#     $3 - env status (required)
-function UpdateEnvironmentStatus() {
+latestEnvReconcileId=null;
+function GetLatestEnvReconId() {
   local teamName="${1}"
   local envName="${2}"
-  local status="${3}"
-
-  local payload='{"status": "'${status}'"}'
   
-  echo "Running UpdateEnvironmentStatus ${status} : ${payload}"
-  echo $payload >temp_env_status_payload.json
+  echo "Running GetLatestEnvReconId"
+  local response=$(curl -X 'GET' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/teams/${teamName}/environments/${envName}/audit/latest" -H 'accept: */*')
+  latestEnvReconcileId=$(echo $response | jq -r '.reconcileId')
+}
 
-  curl -X 'PATCH' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/teams/${teamName}/environments/${envName}" -H 'accept: */*' -H 'Content-Type: application/json' -d @temp_env_status_payload.json
+function UpdateEnvironmentReconcileStatus() {
+  local teamName="${1}"
+  local envName="${2}"
+  local failed="${3}"
+
+  GetLatestEnvReconId "${teamName}" "${envName}"
+  
+  local status='0'
+
+  echo "Patching environment"
+
+  echo "phase is: "$phase;
+
+  if [ $failed = '1']
+  then
+    if [ $is_destroy = true ]
+    then
+        status="destroy_failed"
+    else
+        status="provision_failed"
+    fi
+  else
+    if [ $phase = '0' ]
+    then
+        if [ $is_destroy = true ]
+        then
+            status="destroying"
+        else
+            status="provisioning"
+        fi  
+    fi
+
+    if [ $phase = '1' ]
+    then
+        if [ $is_destroy = true ]
+        then
+            status="destroyed"
+        else
+            status="provisioned"
+        fi    
+    fi
+  fi
+
+  echo "status is: "$status
+
+  if [ $status != '0' ]
+  then
+    payload='{"status": "'${status}'", "teamName": "'${team_name}'", "endDateTime": "'${end_date}'"}'
+    echo ${payload} >tmp_update_env_recon.json
+
+    echo "PAYLOAD: $payload"
+    result=$(curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/environment/${latestEnvReconcileId}" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_update_env_recon.json)
+  fi
 }

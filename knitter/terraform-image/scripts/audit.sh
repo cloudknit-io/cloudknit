@@ -112,48 +112,28 @@ fi
 # there is no config so must be an environment?
 if [ $config_name -eq 0 ]; then
     component_payload=[]
-    echo "calling patch environment script"
-    . /patch_environment.sh
-fi
-
-result=""
-
-if [ $config_name -eq 0 ]; then # environment recon
-    if [ $reconcile_id = null ]; then # create env reconcile
-        payload='{"name": "'${env_name}'", "teamName": "'${team_name}'", "startDateTime": "'${start_date}'"}'
-        echo ${payload} >tmp_new_env_recon.json
-
-	echo "PAYLOAD: $payload"
-        result=$(curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/environment" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_new_env_recon.json)
-    else # update env reconcile
-        if [[ $is_destroy = true ]]; then
-            status="destroy_ended"
-        else
-            status="provision_ended"
-        fi
-        payload='{"status": "'${status}'", "teamName": "'${team_name}'", "endDateTime": "'${end_date}'"}'
-        echo ${payload} >tmp_update_env_recon.json
-
-	echo "PAYLOAD: $payload"
-        result=$(curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/environment/${reconcile_id}" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_update_env_recon.json)
-    fi
-else # component recon
+    echo "Updating environment reconcile status"
+    UpdateEnvironmentReconcileStatus "${team_name}" "${env_name}"
+    reconcileId=$latestEnvReconcileId
+else
+    result=""
     if [ $config_reconcile_id = null ]; then # create comp reconcile
         payload='{"name": "'${config_name}'", "startDateTime": "'${start_date}'", "envReconcileId": '${reconcile_id}'}'
         echo ${payload} >tmp_new_comp_recon.json
 
-	echo "PAYLOAD: $payload"
+    echo "PAYLOAD: $payload"
         result=$(curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/component" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_new_comp_recon.json)
     else # update comp reconcile
         payload='{"status": "'${config_status}'", "endDateTime": "'${end_date}'"}'
         echo ${payload} >tmp_update_comp_recon.json
 
-	echo "PAYLOAD: $payload"
+    echo "PAYLOAD: $payload"
         result=$(curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/component/${config_reconcile_id}" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_update_comp_recon.json)
     fi
+    reconcileId=$(echo $result | jq -r '.reconcileId')
 fi
 
-reconcileId=$(echo $result | jq -r '.reconcileId')
+
 
 echo "AUDIT RECONCILE_ID: $reconcileId"
 echo $reconcileId > /tmp/reconcile_id.txt
