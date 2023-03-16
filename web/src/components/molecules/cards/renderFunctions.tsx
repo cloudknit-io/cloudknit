@@ -1,16 +1,16 @@
 import './style.scss';
 
 import { ReactComponent as HealthDegradedIcon } from 'assets/images/icons/card-status/health/Degraded.svg';
-import { ReactComponent as Skipped } from 'assets/images/icons/skipped.svg';
 import { ReactComponent as HealthyIcon } from 'assets/images/icons/card-status/health/Healthy.svg';
 import { ReactComponent as HealthUnknownIcon } from 'assets/images/icons/card-status/health/Unknown health.svg';
 import { ReactComponent as DeleteIcon } from 'assets/images/icons/card-status/sync/delete.svg';
+import { ReactComponent as LoaderDestroy } from 'assets/images/icons/card-status/sync/loader-destroy.svg';
 import { ReactComponent as CalculatingCost } from 'assets/images/icons/card-status/sync/monetization_on.svg';
 import { ReactComponent as OutOfSyncIcon } from 'assets/images/icons/card-status/sync/Not Sync.svg';
 import { ReactComponent as SyncedIcon } from 'assets/images/icons/card-status/sync/Sync.svg';
 import { ReactComponent as Waiting } from 'assets/images/icons/card-status/sync/timer.svg';
 import { ReactComponent as Hourglass } from 'assets/images/icons/hourglass.svg';
-import { ReactComponent as LoaderDestroy } from 'assets/images/icons/card-status/sync/loader-destroy.svg';
+import { ReactComponent as Skipped } from 'assets/images/icons/skipped.svg';
 import { LabelColors, ZCardLabel } from 'components/atoms/card-label/CardLabel';
 import { Loader } from 'components/atoms/loader/Loader';
 import { ZText } from 'components/atoms/text/Text';
@@ -18,14 +18,12 @@ import { isNumber } from 'lodash';
 import {
 	AuditStatus,
 	ESyncStatus,
-	HealthStatusCode,
-	OperationPhase,
-	SyncStatusCode,
-	ZSyncStatus,
+	HealthStatusCode, SyncStatusCode,
+	ZEnvSyncStatus,
+	ZSyncStatus
 } from 'models/argo.models';
 import moment from 'moment';
-import React, { FC, ReactNode } from 'react';
-import { useState } from 'react';
+import { FC, ReactNode, useState } from 'react';
 
 const BACKEND_LABELS: string[] = [
 	'zlifecycle.com/model',
@@ -246,7 +244,7 @@ export const renderEnvSyncedStatus = (
 
 
 export const renderSyncedStatus = (
-	componentStatus: ZSyncStatus | SyncStatusCode | AuditStatus,
+	componentStatus: ZSyncStatus | SyncStatusCode | AuditStatus | ZEnvSyncStatus,
 	operationPhase?: any,
 	runningStatus?: string,
 	syncFinishedAt?: string,
@@ -349,6 +347,8 @@ export const renderSyncedStatus = (
 					time={syncFinishedAt}
 				/>
 			);
+		case ZEnvSyncStatus.DestroyFailed:
+		case ZEnvSyncStatus.ProvisionFailed:
 		case AuditStatus.Failed:
 			return <StatusDisplay text={'Failed'} icon={<OutOfSyncIcon />} />;
 		case ZSyncStatus.PlanFailed:

@@ -15,6 +15,8 @@ import {
   APIRequest,
   ComponentCostUpdateEvent,
   EnvironmentApiParam,
+  EnvironmentReconCostUpdateEvent,
+  EnvironmentReconEnvUpdateEvent,
   InternalEventType,
   TeamApiParam,
 } from 'src/types';
@@ -79,12 +81,17 @@ export class EnvironmentController {
       .concat(existingComponents)
       .concat(newComponents);
 
-    env = await this.envSvc.updateById(org, env.id, {
+    const envRecon = await this.createEnvRecon(org, team, env, {
       dag,
       name: env.name,
-      duration: env.duration,
+    });
+
+    envRecon.environment = null;
+
+    env = await this.envSvc.updateById(org, env.id, {
+      name: env.name,
       isDeleted: env.isDeleted,
-      errorMessage: null
+      latestEnvRecon: envRecon
     });
 
     // create new components
@@ -114,6 +121,24 @@ export class EnvironmentController {
     try {
       env = await this.envSvc.create(org, team, createEnv);
       this.logger.log({ message: `created new environment`, env });
+
+      const envRecon = await this.createEnvRecon(org, team, env, createEnv);
+
+      this.logger.log({
+        message: `created new environment_reconcile`,
+        envRecon,
+      });
+
+      envRecon.environment = null;
+
+      env = await this.envSvc.mergeAndSaveEnv(org, env, {
+        latestEnvRecon: envRecon
+      });
+
+      this.logger.log({
+        message: `updated env with new environment_reconcile`,
+        env,
+      });
     } catch (err) {
       handleSqlErrors(err, 'environment already exists');
 
@@ -133,6 +158,20 @@ export class EnvironmentController {
     await this.batchCreateComponents(org, env, createEnv.dag);
 
     return env;
+  }
+
+  async createEnvRecon(
+    org: Organization,
+    team: Team,
+    env: Environment,
+    createEnv: CreateEnvironmentDto
+  ) {
+    return this.reconSvc.createEnvRecon(org, team, env, {
+      components: createEnv.dag,
+      name: env.name,
+      startDateTime: new Date().toISOString(),
+      teamName: team.name,
+    });
   }
 
   async batchCreateComponents(
@@ -203,7 +242,15 @@ export class EnvironmentController {
   async getDag(@Request() req: APIRequest) {
     const { env } = req;
 
-    return env.dag;
+    return env.latestEnvRecon.dag;
+  }
+
+  @Get('/:environmentId/audit/latest')
+  @EnvironmentApiParam()
+  async getLatestRecon(@Request() req: APIRequest) {
+    const { env } = req;
+
+    return { reconcileId: env.latestEnvRecon.reconcileId };
   }
 
   @Patch('/:environmentId')
@@ -239,9 +286,42 @@ export class EnvironmentController {
     let env = comp.environment;
 
     if (!env) {
-      env = await this.envSvc.findById(comp.organization, comp.envId);
+      env = await this.envSvc.findById(
+        comp.organization,
+        comp.envId,
+        false,
+        true
+      );
     }
 
-    await this.envSvc.updateCost(comp.organization, env);
+    await this.reconSvc.updateCost(env);
+  }
+
+  @OnEvent(InternalEventType.EnvironmentReconCostUpdate, { async: true })
+  async envReconCostUpdateListener(evt: EnvironmentReconCostUpdateEvent) {
+    const envRecon = evt.payload;
+
+    const env = await this.envSvc.findById(
+      envRecon.organization,
+      envRecon.envId
+    );
+
+    await this.envSvc.mergeAndSaveEnv(envRecon.organization, env, {
+      lastReconcileDatetime: new Date().toISOString(),
+    });
+  }
+
+  @OnEvent(InternalEventType.EnvironmentReconEnvUpdate, { async: true })
+  async envReconEnvUpdateListener(evt: EnvironmentReconEnvUpdateEvent) {
+    const envRecon = evt.payload;
+
+    const env = await this.envSvc.findById(
+      envRecon.organization,
+      envRecon.envId
+    );
+
+    await this.envSvc.mergeAndSaveEnv(envRecon.organization, env, {
+      lastReconcileDatetime: new Date().toISOString(),
+    });
   }
 }

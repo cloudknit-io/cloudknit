@@ -7,15 +7,12 @@ import {
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
-  RelationId,
-  UpdateDateColumn,
+  RelationId
 } from 'typeorm';
-import { Organization } from './Organization.entity';
 import { Component } from './component.entity';
-import { Team } from './team.entity';
-import { EnvSpecComponentDto } from 'src/environment/dto/env-spec.dto';
-import { ColumnNumericTransformer } from './helper';
 import { EnvironmentReconcile } from './environment-reconcile.entity';
+import { Organization } from './Organization.entity';
+import { Team } from './team.entity';
 
 @Entity({
   name: 'environment',
@@ -29,8 +26,18 @@ export class Environment {
   @Index()
   name: string;
 
+  @Column({
+    name: 'last_reconcile_datetime',
+    type: 'datetime',
+  })
+  lastReconcileDatetime: string;
+
   @OneToOne(() => EnvironmentReconcile, (envRecon) => envRecon.environment, {
     eager: true
+  })
+  @JoinColumn({
+    referencedColumnName: 'reconcileId',
+    name: 'latest_env_recon_id'
   })
   latestEnvRecon: EnvironmentReconcile
 

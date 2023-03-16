@@ -79,6 +79,7 @@ export class EnvironmentReconcile {
 
   @ManyToOne(() => Organization, (org) => org.id, {
     onDelete: 'CASCADE',
+    eager: true
   })
   @JoinColumn({
     referencedColumnName: 'id',

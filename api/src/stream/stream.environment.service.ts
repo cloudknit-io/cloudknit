@@ -30,15 +30,6 @@ export class StreamEnvironmentService
   }
 
   afterInsert(event: InsertEvent<Environment>) {
-    const env = event.entity as Environment;
-
-    if (env.estimatedCost > 0) {
-      this.evtEmitter.emit(
-        InternalEventType.EnvironmentCostUpdate,
-        new EnvironmentCostUpdateEvent({ ...env })
-      );
-    }
-
     this.validateAndSend(event.entity, 'afterInsert');
   }
 
@@ -46,7 +37,6 @@ export class StreamEnvironmentService
     event: UpdateEvent<Environment>
   ): Promise<Environment | void> {
     const env = event.entity as Environment;
-
     if (
       event.updatedColumns.find((col) => col.propertyName === 'estimatedCost')
     ) {

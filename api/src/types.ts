@@ -1,8 +1,8 @@
-import { applyDecorators, HttpException } from '@nestjs/common';
+import { applyDecorators } from '@nestjs/common';
 import { ApiParam, ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { Request } from 'express';
-import { Component, Environment, Team } from './typeorm';
+import { Component, Environment, EnvironmentReconcile, Team } from './typeorm';
 import { Organization } from './typeorm/Organization.entity';
 
 export type APIRequest = Request & {
@@ -40,6 +40,8 @@ export function EnvironmentApiParam(): MethodDecorator {
 export enum InternalEventType {
   ComponentCostUpdate = 'ComponentEntity.update.cost',
   EnvironmentCostUpdate = 'EnvironmentEntity.update.cost',
+  EnvironmentReconCostUpdate = 'EnvironmentRecon.update.cost',
+  EnvironmentReconEnvUpdate = 'EnvironmentRecon.update.env',
 }
 
 export interface InternalEvent {
@@ -53,6 +55,26 @@ export class ComponentCostUpdateEvent implements InternalEvent {
 
   constructor(p: Component) {
     this.type = InternalEventType.ComponentCostUpdate;
+    this.payload = p;
+  }
+}
+
+export class EnvironmentReconCostUpdateEvent implements InternalEvent {
+  type: InternalEventType;
+  payload: EnvironmentReconcile;
+
+  constructor(p: EnvironmentReconcile) {
+    this.type = InternalEventType.EnvironmentReconCostUpdate;
+    this.payload = p;
+  }
+}
+
+export class EnvironmentReconEnvUpdateEvent implements InternalEvent {
+  type: InternalEventType;
+  payload: EnvironmentReconcile;
+
+  constructor(p: EnvironmentReconcile) {
+    this.type = InternalEventType.EnvironmentReconEnvUpdate;
     this.payload = p;
   }
 }

@@ -1,10 +1,9 @@
 import { PartialType } from '@nestjs/swagger';
+import { EnvironmentReconcile } from 'src/typeorm';
 import { CreateEnvironmentDto } from './create-environment.dto';
-import { EnvSpecComponentDto } from './env-spec.dto';
 
 export class UpdateEnvironmentDto extends PartialType(CreateEnvironmentDto) {
-  status?: string;
-  duration?: number;
   isDeleted?: boolean;
-  estimatedCost?: number;
+  latestEnvRecon?: EnvironmentReconcile;
+  lastReconcileDatetime?: string;
 }

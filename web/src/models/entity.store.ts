@@ -189,6 +189,7 @@ export class EntityStore {
 	}
 
 	private mergeEnvReconToEnv(env: Environment, envRecon: EnvAuditData): Environment {
+		if (!envRecon) return env;
 		env.estimatedCost = envRecon.estimatedCost;
 		env.dag = envRecon.dag;
 		env.errorMessage = envRecon.errorMessage;

@@ -1,33 +1,22 @@
 import {
-  Controller,
-  Get,
-  Body,
-  Patch,
-  Delete,
-  Request,
-  Query,
-  Logger,
-  Post,
-  BadRequestException,
-  InternalServerErrorException,
+  BadRequestException, Body, Controller, Delete, Get, InternalServerErrorException, Logger, Patch, Post, Query, Request
 } from '@nestjs/common';
-import { TeamService } from './team.service';
-import { UpdateTeamDto } from './dto/update-team.dto';
+import { OnEvent } from '@nestjs/event-emitter';
+import { ApiTags } from '@nestjs/swagger';
+import { getGithubOrgFromRepoUrl } from 'src/organization/utilities';
+import { Team } from 'src/typeorm';
 import {
-  APIRequest,
-  EnvironmentCostUpdateEvent,
+  APIRequest, EnvironmentReconCostUpdateEvent,
   InternalEventType,
   OrgApiParam,
-  TeamApiParam,
+  TeamApiParam
 } from 'src/types';
-import { TeamSpecDto } from './dto/team-spec.dto';
-import { CreateTeamDto } from './dto/create-team.dto';
-import { getGithubOrgFromRepoUrl } from 'src/organization/utilities';
 import { handleSqlErrors } from 'src/utilities/errorHandler';
+import { CreateTeamDto } from './dto/create-team.dto';
+import { TeamSpecDto } from './dto/team-spec.dto';
+import { UpdateTeamDto } from './dto/update-team.dto';
 import { TeamQueryParams } from './team.dto';
-import { Team } from 'src/typeorm';
-import { ApiTags } from '@nestjs/swagger';
-import { OnEvent } from '@nestjs/event-emitter';
+import { TeamService } from './team.service';
 
 @Controller({
   version: '1',
@@ -142,15 +131,10 @@ export class TeamController {
     return this.teamSvc.remove(org, team.id);
   }
 
-  @OnEvent(InternalEventType.EnvironmentCostUpdate, { async: true })
-  async environmentCostUpdateListener(evt: EnvironmentCostUpdateEvent) {
-    const env = evt.payload;
-    let team = env.team;
+  @OnEvent(InternalEventType.EnvironmentReconCostUpdate, { async: true })
+  async environmentCostUpdateListener(evt: EnvironmentReconCostUpdateEvent) {
+    const envRecon = evt.payload;
 
-    if (!team) {
-      team = await this.teamSvc.findById(env.organization, env.teamId);
-    }
-
-    await this.teamSvc.updateCost(env.organization, team.id);
+    await this.teamSvc.updateCost(envRecon.organization, envRecon.teamId);
   }
 }

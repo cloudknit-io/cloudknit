@@ -537,6 +537,6 @@ export class ReconciliationController {
       throw new BadRequestException(`could not find environment`);
     }
 
-    return { status: env.status };
+    return { status: env.latestEnvRecon.status };
   }
 }
