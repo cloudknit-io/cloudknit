@@ -202,8 +202,9 @@ function UpdateEnvironmentReconcileStatus() {
   local failed="${3}"
 
   GetLatestEnvReconId "${teamName}" "${envName}"
-  
+  end_date=$(date '+%Y-%m-%d %H:%M:%S')
   local status='0'
+  local payload='';
 
   echo "Patching environment"
 
@@ -217,6 +218,7 @@ function UpdateEnvironmentReconcileStatus() {
     else
         status="provision_failed"
     fi
+    payload='{"status": "'${status}'", "teamName": "'${team_name}'", "endDateTime": "'${end_date}'"}'
   else
     if [ $phase = '0' ]
     then
@@ -227,7 +229,7 @@ function UpdateEnvironmentReconcileStatus() {
             status="provisioning"
         fi  
     fi
-
+    payload='{"status": "'${status}'", "teamName": "'${team_name}'"}'
     if [ $phase = '1' ]
     then
         if [ $is_destroy = true ]
@@ -235,7 +237,8 @@ function UpdateEnvironmentReconcileStatus() {
             status="destroyed"
         else
             status="provisioned"
-        fi    
+        fi
+        payload='{"status": "'${status}'", "teamName": "'${team_name}'", "endDateTime": "'${end_date}'"}'
     fi
   fi
 
@@ -243,7 +246,7 @@ function UpdateEnvironmentReconcileStatus() {
 
   if [ $status != '0' ]
   then
-    payload='{"status": "'${status}'", "teamName": "'${team_name}'", "endDateTime": "'${end_date}'"}'
+    
     echo ${payload} >tmp_update_env_recon.json
 
     echo "PAYLOAD: $payload"
