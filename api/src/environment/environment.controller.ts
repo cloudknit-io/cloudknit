@@ -1,16 +1,11 @@
 import {
-  Controller,
-  Get,
-  Body,
-  Patch,
-  Delete,
-  Request,
-  Post,
-  Logger,
-  InternalServerErrorException,
+  Body, Controller, Delete, Get, InternalServerErrorException, Logger, Patch, Post, Request
 } from '@nestjs/common';
-import { EnvironmentService } from './environment.service';
-import { UpdateEnvironmentDto } from './dto/update-environment.dto';
+import { OnEvent } from '@nestjs/event-emitter';
+import { ApiTags } from '@nestjs/swagger';
+import { ComponentService } from 'src/component/component.service';
+import { ReconciliationService } from 'src/reconciliation/reconciliation.service';
+import { Component, Environment, Organization, Team } from 'src/typeorm';
 import {
   APIRequest,
   ComponentCostUpdateEvent,
@@ -18,16 +13,13 @@ import {
   EnvironmentReconCostUpdateEvent,
   EnvironmentReconEnvUpdateEvent,
   InternalEventType,
-  TeamApiParam,
+  TeamApiParam
 } from 'src/types';
 import { handleSqlErrors } from 'src/utilities/errorHandler';
-import { ComponentService } from 'src/component/component.service';
-import { EnvSpecComponentDto, EnvSpecDto } from './dto/env-spec.dto';
-import { Component, Environment, Organization, Team } from 'src/typeorm';
 import { CreateEnvironmentDto } from './dto/create-environment.dto';
-import { ReconciliationService } from 'src/reconciliation/reconciliation.service';
-import { ApiTags } from '@nestjs/swagger';
-import { OnEvent } from '@nestjs/event-emitter';
+import { EnvSpecComponentDto, EnvSpecDto } from './dto/env-spec.dto';
+import { UpdateEnvironmentDto } from './dto/update-environment.dto';
+import { EnvironmentService } from './environment.service';
 
 @Controller({
   version: '1',
@@ -81,17 +73,10 @@ export class EnvironmentController {
       .concat(existingComponents)
       .concat(newComponents);
 
-    const envRecon = await this.createEnvRecon(org, team, env, {
+    env = await this.envSvc.updateById(org, env.id, {
       dag,
       name: env.name,
-    });
-
-    envRecon.environment = null;
-
-    env = await this.envSvc.updateById(org, env.id, {
-      name: env.name,
       isDeleted: env.isDeleted,
-      latestEnvRecon: envRecon
     });
 
     // create new components
@@ -101,6 +86,25 @@ export class EnvironmentController {
     await this.batchDeleteComponents(org, env, missingComponents);
 
     return env;
+  }
+
+  @Patch('/:environmentId/reconcile')
+  @EnvironmentApiParam()
+  async Update(@Request() req: APIRequest) {
+    const { org, team, env } = req;
+
+    const envRecon = await this.createEnvRecon(org, team, env, {
+      dag: env.dag,
+      name: env.name,
+    });
+
+    envRecon.environment = null;
+
+    const newEnv = await this.envSvc.updateById(org, env.id, {
+      latestEnvRecon: envRecon,
+    });
+
+    return newEnv;
   }
 
   @Get()
@@ -121,24 +125,6 @@ export class EnvironmentController {
     try {
       env = await this.envSvc.create(org, team, createEnv);
       this.logger.log({ message: `created new environment`, env });
-
-      const envRecon = await this.createEnvRecon(org, team, env, createEnv);
-
-      this.logger.log({
-        message: `created new environment_reconcile`,
-        envRecon,
-      });
-
-      envRecon.environment = null;
-
-      env = await this.envSvc.mergeAndSaveEnv(org, env, {
-        latestEnvRecon: envRecon
-      });
-
-      this.logger.log({
-        message: `updated env with new environment_reconcile`,
-        env,
-      });
     } catch (err) {
       handleSqlErrors(err, 'environment already exists');
 

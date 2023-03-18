@@ -6,7 +6,6 @@ module.exports = class EnvironmentToReconciliation1678716480412 {
         'DROP COLUMN `duration`,' +
         'DROP COLUMN `status`,' +
         'DROP COLUMN `estimated_cost`,' +
-        'DROP COLUMN `dag`' +
         'ADD COLUMN `latest_env_recon_id` int DEFAULT NULL;'
     );
     await queryRunner.query(

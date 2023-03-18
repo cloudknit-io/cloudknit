@@ -20,8 +20,8 @@ export class EnvironmentService {
     return await this.envRepo.save({
       organization: org,
       team,
-      name: createEnvDto.name,
-      lastReconcileDatetime: new Date().toISOString()
+      lastReconcileDatetime: new Date().toISOString(),
+      ...createEnvDto
     });
   }
 

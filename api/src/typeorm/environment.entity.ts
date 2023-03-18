@@ -1,3 +1,4 @@
+import { EnvSpecComponentDto } from 'src/environment/dto/env-spec.dto';
 import {
   Column,
   Entity,
@@ -48,6 +49,12 @@ export class Environment {
     default: false,
   })
   isDeleted: boolean;
+
+  @Column({
+    type: 'json',
+    default: null,
+  })
+  dag: EnvSpecComponentDto[];
 
   @ManyToOne(() => Team, (team) => team.id, {
     onDelete: 'CASCADE',
