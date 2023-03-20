@@ -43,7 +43,7 @@ export const TreeView: React.FC<Props> = ({ onNodeClick, environmentItem }) => {
 			reactFlowInstance.setViewport({
 				x: vp.x,
 				y: 0,
-				zoom: 1,
+				zoom: vp.zoom < 1 ? vp.zoom : 1,
 			});
 		}
 	}, [dagNodes, render]);
