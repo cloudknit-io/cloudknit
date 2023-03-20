@@ -61,7 +61,7 @@ export const ZPageHeader: FC<Props> = ({
 	const [showErrors, toggleShowErrors] = useState<boolean>(false);
 	const { projectId, environmentName } = useParams() as any;
 	const env = useMemo(() => {
-		return EntityStore.getInstance().getEnvironmentByName(projectId, environmentName);
+			return EntityStore.getInstance().getEnvironmentByName(projectId, environmentName);
 	}, [projectId, environmentName]);
 	const noViewType = ['Environment Builder', 'Settings', 'Resource View', null];
 	const handleOnViewChange = (type: string) => {
@@ -83,9 +83,6 @@ export const ZPageHeader: FC<Props> = ({
 	const [query, setQuery] = useState<string>('');
 
 	useEffect(() => {
-		if (!AuthStore.getOrganization()) {
-			return;
-		}
 		let sub: any = null;
 		if (env) {
 			setErrors(parseErrorMessages(env));
