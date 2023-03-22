@@ -9,6 +9,9 @@ export type APIRequest = Request & {
   org: Organization;
   team: Team;
   env?: Environment;
+  argoCDAuthHeader?: {
+    authorization: string
+  };
 };
 
 export const SqlErrorCodes = {

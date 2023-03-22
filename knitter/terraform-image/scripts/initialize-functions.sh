@@ -192,8 +192,8 @@ function GetLatestEnvReconId() {
   local envName="${2}"
   
   echo "Running GetLatestEnvReconId"
-  local response=$(curl -X 'GET' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/teams/${teamName}/environments/${envName}/audit/latest" -H 'accept: */*')
-  latestEnvReconcileId=$(echo $response | jq -r '.reconcileId')
+  local response=$(curl -X 'GET' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/teams/${teamName}/environments/${envName}" -H 'accept: */*')
+  latestEnvReconcileId=$(echo $response | jq -r '.latestEnvRecon.reconcileId')
 }
 
 function UpdateEnvironmentReconcileStatus() {

@@ -16,6 +16,8 @@ awsCredentials:
 argowf:
   url:
   namespace:
+argocd:
+  url:
 org:
   argoWf:
     url: ""

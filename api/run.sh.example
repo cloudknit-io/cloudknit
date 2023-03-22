@@ -10,6 +10,7 @@ CK_ENVIRONMENT=dev \
 CK_ARGO_WF_ORG_URL=http://argo-workflow-server.:org-executor.svc.cluster.local:2746 \
 CK_ARGO_WF_URL=http://localhost:2746 \
 CK_ARGO_WF_NAMESPACE=default \
+CK_ARGO_CD_URL=http://argocd-zlifecycle.zlifecycle-system.svc.cluster.local \
 CK_ARGO_WF_SKIP_PROVISION=true \
 APP_PORT=3001 \
 TYPEORM_HOST=localhost \

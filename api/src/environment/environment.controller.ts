@@ -1,8 +1,18 @@
 import {
-  Body, Controller, Delete, Get, InternalServerErrorException, Logger, Patch, Post, Request
+  Body,
+  Controller,
+  Delete,
+  Get,
+  InternalServerErrorException,
+  Logger,
+  Patch,
+  Post,
+  Query,
+  Request,
 } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { ApiTags } from '@nestjs/swagger';
+import { reconcileCD } from 'src/argowf/api';
 import { ComponentService } from 'src/component/component.service';
 import { ReconciliationService } from 'src/reconciliation/reconciliation.service';
 import { Component, Environment, Organization, Team } from 'src/typeorm';
@@ -13,12 +23,15 @@ import {
   EnvironmentReconCostUpdateEvent,
   EnvironmentReconEnvUpdateEvent,
   InternalEventType,
-  TeamApiParam
+  TeamApiParam,
 } from 'src/types';
 import { handleSqlErrors } from 'src/utilities/errorHandler';
 import { CreateEnvironmentDto } from './dto/create-environment.dto';
 import { EnvSpecComponentDto, EnvSpecDto } from './dto/env-spec.dto';
-import { UpdateEnvironmentDto } from './dto/update-environment.dto';
+import {
+  PatchEnvQueryParams,
+  UpdateEnvironmentDto,
+} from './dto/update-environment.dto';
 import { EnvironmentService } from './environment.service';
 
 @Controller({
@@ -86,25 +99,6 @@ export class EnvironmentController {
     await this.batchDeleteComponents(org, env, missingComponents);
 
     return env;
-  }
-
-  @Patch('/:environmentId/reconcile')
-  @EnvironmentApiParam()
-  async Update(@Request() req: APIRequest) {
-    const { org, team, env } = req;
-
-    const envRecon = await this.createEnvRecon(org, team, env, {
-      dag: env.dag,
-      name: env.name,
-    });
-
-    envRecon.environment = null;
-
-    const newEnv = await this.envSvc.updateById(org, env.id, {
-      latestEnvRecon: envRecon,
-    });
-
-    return newEnv;
   }
 
   @Get()
@@ -231,23 +225,38 @@ export class EnvironmentController {
     return env.latestEnvRecon.dag;
   }
 
-  @Get('/:environmentId/audit/latest')
-  @EnvironmentApiParam()
-  async getLatestRecon(@Request() req: APIRequest) {
-    const { env } = req;
-
-    return { reconcileId: env.latestEnvRecon.reconcileId };
-  }
-
   @Patch('/:environmentId')
   @EnvironmentApiParam()
   async update(
     @Request() req: APIRequest,
-    @Body() updateEnvDto: UpdateEnvironmentDto
+    @Body() updateEnvDto: UpdateEnvironmentDto,
+    @Query() params: PatchEnvQueryParams
   ) {
-    const { org, env } = req;
+    const { org, env, team, argoCDAuthHeader } = req;
 
-    return this.envSvc.updateById(org, env.id, updateEnvDto);
+    if (params.reconcile) {
+      const envRecon = await this.createEnvRecon(org, team, env, {
+        dag: env.dag,
+        name: env.name,
+      });
+
+      envRecon.environment = null;
+
+      updateEnvDto.latestEnvRecon = envRecon;
+    }
+
+    const updatedEnv = await this.envSvc.updateById(org, env.id, updateEnvDto);
+
+    if (params.reconcile) {
+      updatedEnv.team = team;
+      await reconcileCD(
+        org,
+        `${team.name}-${updatedEnv.name}`,
+        argoCDAuthHeader
+      );
+    }
+
+    return updatedEnv;
   }
 
   @Delete('/:environmentId')

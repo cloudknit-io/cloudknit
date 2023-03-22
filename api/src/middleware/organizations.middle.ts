@@ -52,6 +52,7 @@ export class OrganizationMiddleware implements NestMiddleware {
     }
 
     req.org = org;
+    req.argoCDAuthHeader = req.headers["argo_cd_auth_header"] as any;
 
     next();
   }
