@@ -13,6 +13,32 @@ iframe {
 	display: none !important;
 }
 
+.react-flow__edge-path {
+	transition: all 0.3s;
+}
+
+.react-flow__animate-edge {
+	animation: animate-edge 0.3s linear infinite;
+	stroke-dasharray: 0 4 0;
+	stroke: red !important;
+	stroke-width: 1 !important;
+	animation: animate-edge 0.3s linear infinite;
+}
+
+.react-flow__blur-node {
+	z-index: -1 !important;
+
+}
+
+@keyframes animate-edge {
+	from {
+		stroke-dashoffset: 0;
+	}
+	to {
+		stroke-dashoffset: 2000;
+	}
+}
+
 .dag-node {
 	width: max-content;
 	font-family: 'DM Sans';
