@@ -12,6 +12,7 @@ database:
 awsCredentials:
   accessKeyId:
   secretAccessKey:
+  sessionToken:
   region:
 argowf:
   url:
