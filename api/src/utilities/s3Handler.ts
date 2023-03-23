@@ -14,8 +14,11 @@ export class S3Handler {
 
   private constructor() {
     this._s3 = new S3({
-      accessKeyId: this.config.AWS.accessKeyId,
-      secretAccessKey: this.config.AWS.secretAccessKey,
+      credentials: {
+        accessKeyId: this.config.AWS.accessKeyId,
+        secretAccessKey: this.config.AWS.secretAccessKey,
+        sessionToken: this.config.AWS.sessionToken
+      },
       region: 'us-east-1',
     });
   }
