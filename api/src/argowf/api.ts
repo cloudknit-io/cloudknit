@@ -153,7 +153,8 @@ async function syncEnvironment(
     authorization: string;
   }
 ): Promise<any> {
-  let url = `/api/v1/applications/${org.name}-${environmentId}/sync`;
+  const config = get();
+  let url = `${config.argo.cd.url}/api/v1/applications/${org.name}-${environmentId}/sync`;
   return axios.post(
     url,
     {},
@@ -172,7 +173,8 @@ async function deleteEnvironment(
     authorization: string;
   }
 ): Promise<any> {
-  let url = `/api/v1/applications/${org.name}-${environmentId}/resource?name=${org.name}-${environmentId}&namespace=${org.name}-executor&resourceName=${org.name}-${environmentId}&version=v1alpha1&kind=Workflow&group=argoproj.io&force=true&orphan=false`;
+  const config = get();
+  let url = `${config.argo.cd.url}/api/v1/applications/${org.name}-${environmentId}/resource?name=${org.name}-${environmentId}&namespace=${org.name}-executor&resourceName=${org.name}-${environmentId}&version=v1alpha1&kind=Workflow&group=argoproj.io&force=true&orphan=false`;
   return axios.delete(url, {
     headers: {
       authorization: argoCDAuthHeader.authorization,

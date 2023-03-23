@@ -21,7 +21,10 @@ export type ApiConfig = {
       url: string;
       orgUrl: Function;
       namespace: string;
-    };
+    },
+    cd: {
+      url: string
+    }
   };
 };
 
@@ -71,6 +74,9 @@ export function init() {
           getEnvVarOrFail('CK_ARGO_WF_ORG_URL').replaceAll(':org', orgName),
         namespace: getEnvVarOrFail('CK_ARGO_WF_NAMESPACE'),
       },
+      cd: {
+        url: getEnvVarOrFail('CK_ARGO_CD_URL'),
+      }
     },
     environment: getEnvVarOrFail('CK_ENVIRONMENT'),
     isLocal: getEnvVarOrDefault('IS_LOCAL', 'false') === 'true',
