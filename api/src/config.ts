@@ -12,6 +12,7 @@ export type ApiConfig = {
   AWS: {
     accessKeyId: string;
     secretAccessKey: string;
+    sessionToken: string;
   };
   environment: string;
   isLocal: boolean;
@@ -61,6 +62,7 @@ export function init() {
     AWS: {
       accessKeyId: getEnvVarOrFail('AWS_ACCESS_KEY_ID'),
       secretAccessKey: getEnvVarOrFail('AWS_SECRET_ACCESS_KEY'),
+      sessionToken: getEnvVarOrDefault('AWS_SESSION_TOKEN', null)
     },
     argo: {
       wf: {
