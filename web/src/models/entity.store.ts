@@ -212,7 +212,7 @@ export class EntityStore {
 
 	public async getComponents(teamId: number, envId: number) {
 		const cachedComps = this.getComponentsByEnvId(envId);
-		if (cachedComps.length > 0) {
+		if (cachedComps.length === this.getEnvironmentById(envId)?.dag?.length) {
 			this.emitterComp.next(this.getComponentsByEnvId(envId));
 			return cachedComps;
 		}
