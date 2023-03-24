@@ -8,9 +8,11 @@ export class AWSSSMHandler {
 
   constructor() {
     this.ssm = new SSM({
-      accessKeyId: this.config.AWS.accessKeyId,
-      secretAccessKey: this.config.AWS.secretAccessKey,
-      sessionToken: this.config.AWS.sessionToken,
+      credentials: {
+        accessKeyId: this.config.AWS.accessKeyId,
+        secretAccessKey: this.config.AWS.secretAccessKey,
+        sessionToken: this.config.AWS.sessionToken,
+      },
       region: 'us-east-1',
     });
   }
