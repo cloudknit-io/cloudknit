@@ -5,7 +5,7 @@ import { AuditStatus, ESyncStatus, ZSyncStatus } from 'models/argo.models';
 import { EntityStore } from 'models/entity.store';
 import { Component, Environment } from 'models/entity.type';
 import { useCallback } from 'react';
-import { Edge, getSimpleBezierPath, Handle, MarkerType, Node, Position, useStore } from 'reactflow';
+import { Edge, Handle, MarkerType, Node, Position, useStore } from 'reactflow';
 import { DagNode } from './DagNode';
 
 export const generateRootNode = (environment: Environment) => {
@@ -365,14 +365,51 @@ export function FloatingEdge({ id, source, target, markerEnd, style }: any) {
 
 	const { sx, sy, tx, ty, sourcePos, targetPos } = getEdgeParams(sourceNode, targetNode);
 
-	const [edgePath] = getSimpleBezierPath({
+	const gB = ({ sourceX, sourceY, sourcePosition = Position.Bottom, targetX, targetY, targetPosition = Position.Top, curvature = 0.25, }: any) =>{
+		const [sourceControlX, sourceControlY]: any = getControlWithCurvature({
+			pos: sourcePosition,
+			x1: sourceX,
+			y1: sourceY,
+			x2: targetX,
+			y2: targetY,
+			c: curvature,
+		});
+
+		return [
+			`M${sourceX},${sourceY} Q${sourceControlX},${sourceControlY} ${targetX},${targetY}`,
+		];
+	}
+    
+
+	const [edgePath] = gB({
 		sourceX: sx,
 		sourceY: sy,
 		sourcePosition: sourcePos,
 		targetPosition: targetPos,
 		targetX: tx,
 		targetY: ty,
+		curvature: 0
 	});
 
 	return <path id={id} className="react-flow__edge-path" d={edgePath} markerEnd={markerEnd} style={style} />;
+}
+
+function getControlWithCurvature({ pos, x1, y1, x2, y2, c }: any) {
+    switch (pos) {
+        case Position.Left:
+            return [x1 - calculateControlOffset(x1 - x2, c), y1];
+        case Position.Right:
+            return [x1 + calculateControlOffset(x2 - x1, c), y1];
+        case Position.Top:
+            return [x1, y1 - calculateControlOffset(y1 - y2, c)];
+        case Position.Bottom:
+            return [x2, y1 + calculateControlOffset(y2 - y1, c)];
+    }
+}
+
+function calculateControlOffset(distance: any, curvature: any) {
+    if (distance >= 0) {
+        return 0.5 * distance;
+    }
+    return curvature * 25 * Math.sqrt(-distance);
 }

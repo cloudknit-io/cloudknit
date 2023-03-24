@@ -10,6 +10,7 @@ export class AWSSSMHandler {
     this.ssm = new SSM({
       accessKeyId: this.config.AWS.accessKeyId,
       secretAccessKey: this.config.AWS.secretAccessKey,
+      sessionToken: this.config.AWS.sessionToken,
       region: 'us-east-1',
     });
   }

@@ -42,6 +42,8 @@ spec:
               value: {{ .Values.awsCredentials.accessKeyId}}
             - name: AWS_SECRET_ACCESS_KEY
               value: {{ .Values.awsCredentials.secretAccessKey}}
+            - name: AWS_SESSION_TOKEN
+              value: {{ .Values.awsCredentials.sessionToken}}
             - name: AWS_REGION
               value: {{ .Values.awsCredentials.region}}
           image: {{ .Values.image.repository }}/{{ .Values.image.name }}:{{ .Values.image.tag }}

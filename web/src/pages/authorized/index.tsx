@@ -6,7 +6,7 @@ import React, { ReactElement, useEffect } from 'react';
 import {
 	breadcrumbObservable,
 	EnvironmentPageHeaderCtx,
-	pageHeaderObservable
+	pageHeaderObservable,
 } from './contexts/EnvironmentHeaderContext';
 import { EnvironmentHeader } from './environments/EnvironmentHeader';
 
@@ -30,7 +30,7 @@ const Authorized: React.FC = ({ children }) => {
 							breadcrumbObservable,
 							pageHeaderObservable,
 						}}>
-						<EnvironmentHeader />
+						{AuthStore.getOrganization() && <EnvironmentHeader />}
 						{children}
 					</EnvironmentPageHeaderCtx.Provider>
 				</div>

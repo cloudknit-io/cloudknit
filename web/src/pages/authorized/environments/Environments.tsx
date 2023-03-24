@@ -1,7 +1,6 @@
 import { DiffEditor } from '@monaco-editor/react';
 import { NotificationType } from 'components/argo-core';
 import { ZLoaderCover } from 'components/atoms/loader/LoaderCover';
-import { ZTable } from 'components/atoms/table/Table';
 import { EnvironmentCards } from 'components/molecules/cards/EnvironmentCards';
 import { Context } from 'context/argo/ArgoUi';
 import { ZEnvSyncStatus } from 'models/argo.models';
@@ -10,7 +9,6 @@ import { Environment } from 'models/entity.type';
 import { LocalStorageKey } from 'models/localStorage';
 import { EnvironmentItem, PageHeaderTabs } from 'models/projects.models';
 import {
-	environmentTableColumns,
 	getCheckBoxFilters,
 	mockModifiedYaml,
 	mockOriginalYaml,
@@ -19,7 +17,6 @@ import {
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Subscription } from 'rxjs';
-import { ErrorStateService } from 'services/error/error-state.service';
 import { usePageHeader } from '../contexts/EnvironmentHeaderContext';
 
 type CompareEnv = {
@@ -44,7 +41,6 @@ export const Environments: React.FC = () => {
 	const [filterItems, setFilterItems] = useState<Array<() => JSX.Element>>([]);
 	const { pageHeaderObservable, breadcrumbObservable } = usePageHeader();
 	const ctx = React.useContext(Context);
-	const errorStateService = ErrorStateService.getInstance();
 	const [compareMode, setCompareMode] = useState<boolean>(false);
 	const [compareEnvs, setCompareEnvs] = useState<CompareEnvs>({
 		a: null,
