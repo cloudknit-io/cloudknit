@@ -30,6 +30,11 @@ iframe {
 
 }
 
+.react-flow__node {
+	width: auto !important;
+	border-radius: 10px !important;
+}
+
 @keyframes animate-edge {
 	from {
 		stroke-dashoffset: 0;
@@ -127,6 +132,15 @@ iframe {
 
 .react-flow__handle {
 	opacity: 0;
+}
+
+.react-flow {
+	z-index: 999 !important;
+	overflow: visible !important;
+}
+
+.react-flow__attribution {
+	display: none;
 }
 
 .node__title {

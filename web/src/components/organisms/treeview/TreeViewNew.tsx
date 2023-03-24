@@ -40,11 +40,7 @@ export const TreeView: React.FC<Props> = ({ onNodeClick, environmentItem }) => {
 	useEffect(() => {
 		if (dagNodes.length > 0 && render?.description === '1') {
 			const vp = reactFlowInstance.getViewport();
-			reactFlowInstance.setViewport({
-				x: vp.x,
-				y: 0,
-				zoom: vp.zoom < 1 ? vp.zoom : 1,
-			});
+			reactFlowInstance.zoomTo(vp.zoom < 1 ? vp.zoom : 1);
 		}
 	}, [dagNodes, render]);
 
@@ -74,7 +70,7 @@ export const TreeView: React.FC<Props> = ({ onNodeClick, environmentItem }) => {
 	return (
 		<>
 			<TreeViewControls environment={environmentItem} />
-			<div className="layoutflow" style={{ height: '80vh' }}>
+			<div className="layoutflow" style={{ height: '70vh', width: '100vw', position: 'absolute', left: '-7.5vw' }}>
 				<ReactFlow
 					nodes={dagNodes}
 					edges={dagEdges}
