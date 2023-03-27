@@ -30,7 +30,8 @@ export const TreeViewControls: React.FC<TreeViewControlProps> = ({ environment }
 							))}
 					</div>
 				</div>
-				<SmallText data={'* Costs are monthly estimates calculated at the time of last reconciliation'}/>
+				<SmallText data={'* Costs are monthly estimates calculated'}/><br/>
+				<SmallText data={'at the time of last reconciliation'} />
 			</div>
 		</div>
 	);
