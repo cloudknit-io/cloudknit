@@ -70,7 +70,7 @@ export const TreeView: React.FC<Props> = ({ onNodeClick, environmentItem }) => {
 	return (
 		<>
 			<TreeViewControls environment={environmentItem} />
-			<div className="layoutflow" style={{ height: '60vh', width: '100vw', position: 'absolute', left: '-7.5vw', zIndex: 1 }}>
+			<div className="layoutflow" style={{ height: '60vh', width: '100vw', position: 'absolute', left: '-7.5vw', zIndex: 1, top: '30px' }}>
 				<ReactFlow
 					nodes={dagNodes}
 					edges={dagEdges}
