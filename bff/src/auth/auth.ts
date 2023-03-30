@@ -178,8 +178,8 @@ export function apiAuthMw() {
 function getOktaAuthMW() {
   const oidc = new ExpressOIDC({
     issuer: ckConfig.AUTH0_ISSUER_BASE_URL,
-    client_id: ckConfig.AUTH0_API_CLIENT_ID,
-    client_secret: ckConfig.AUTH0_API_SECRET,
+    client_id: ckConfig.AUTH0_WEB_CLIENT_ID,
+    client_secret: ckConfig.AUTH0_WEB_SECRET,
     appBaseUrl: ckConfig.AUTH0_WEB_BASE_URL,
     scope: "openid profile email",
     routes: {
@@ -286,7 +286,9 @@ export function setUpAuth(app: express.Express, authRouter: express.Router) {
         saveUninitialized: false,
       })
     );
+
     app.use(getOktaAuthMW());
+
     authRouter.get("/auth/logout", (req: any, res: any, next: any) => {
       req.logout(function (err) {
         if (err) {
