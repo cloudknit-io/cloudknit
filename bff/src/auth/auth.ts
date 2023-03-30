@@ -278,7 +278,7 @@ function getOktaAuthMW() {
 }
 
 export function setUpAuth(app: express.Express, authRouter: express.Router) {
-  if (ckConfig.OKTA_BASED_AUTH) {
+  if (helper.isOktaAuth()) {
     app.use(
       session({
         secret: ckConfig.AUTH0_WEB_SECRET,

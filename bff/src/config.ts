@@ -10,7 +10,6 @@ const config = {
   WEB_URL: process.env.SITE_URL,
   API_URL: `${process.env.ZLIFECYCLE_API_URL}/v1`,
   ARGOCD_URL: process.env.ARGO_CD_API_URL,
-  OKTA_BASED_AUTH: Boolean(process.env.OKTA_BASED_AUTH == "1"),
   argoWFUrl: (orgName: string) =>
     process.env.ARGO_WORKFLOW_API_URL.replaceAll(":org", orgName),
   stateMgrUrl: (orgName: string) =>
