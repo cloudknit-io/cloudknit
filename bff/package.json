@@ -37,6 +37,7 @@
     "http-proxy-middleware": "^2.0.6",
     "jose": "^4.8.3",
     "jwks-rsa": "^3.0.1",
+    "memorystore": "^1.6.7",
     "path-to-regexp": "^6.2.1",
     "swagger-ui-express": "^4.4.0",
     "ts-node": "^10.8.2",

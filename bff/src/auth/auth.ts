@@ -13,6 +13,7 @@ import * as express from "express";
 import { auth, requiresAuth } from "express-openid-connect";
 import * as session from "express-session";
 import { ExpressOIDC } from "@okta/oidc-middleware";
+import * as crypto from 'crypto';
 
 export async function getUser(username: string): Promise<User> {
   try {
@@ -185,7 +186,7 @@ function getOktaAuthMW() {
     routes: {
       login: {
         // handled by this module
-        path: "/authorize",
+        path: "/auth/login",
       },
       loginCallback: {
         // handled by this module
@@ -263,14 +264,6 @@ function getOktaAuthMW() {
         // handled by your application
         afterCallback: "/",
       },
-      logout: {
-        // handled by this module
-        path: "/auth/logout",
-      },
-      logoutCallback: {
-        // handled by your application
-        path: "/auth/login",
-      },
     },
   });
 
@@ -279,11 +272,16 @@ function getOktaAuthMW() {
 
 export function setUpAuth(app: express.Express, authRouter: express.Router) {
   if (helper.isOktaAuth()) {
+    const MemoryStore = require("memorystore")(session);
     app.use(
       session({
-        secret: ckConfig.AUTH0_WEB_SECRET,
-        resave: true,
+        secret: crypto.randomUUID(),
+        resave: false,
         saveUninitialized: false,
+        cookie: { maxAge: 86400000 },
+        store: new MemoryStore({
+          checkPeriod: 86400000,
+        }),
       })
     );
 
