@@ -1,11 +1,12 @@
 import config from "../config";
 import * as express from 'express';
 import { Organization, User } from "../models/user.interface";
-import { BFFRequest } from "../types";
+import { AppSession, BFFRequest } from "../types";
 import { getUser } from "../auth/auth";
 import axios from "axios";
 import logger from '../utils/logger';
 import { getArgoCDAuthHeader } from "../auth/argo";
+import ckConfig from "../config";
 
 const orgFromReq = async (req: BFFRequest) : Promise<Organization> => {
   if (!req.cookies[config.SELECTED_ORG_HEADER]) {
@@ -13,7 +14,7 @@ const orgFromReq = async (req: BFFRequest) : Promise<Organization> => {
   }
 
   const orgName = req.cookies[config.SELECTED_ORG_HEADER];
-  let org = req.appSession.organizations.find((org) => org.name === orgName);
+  let org = appSession(req).organizations.find((org) => org.name === orgName);
 
   if (org) {
     return org;
@@ -34,11 +35,29 @@ const orgFromReq = async (req: BFFRequest) : Promise<Organization> => {
 };
 
 const userFromReq = (req: BFFRequest) : User => {
-  if (!req.appSession) {
+  if (!appSession(req)) {
       return;
   }
 
-  return req.appSession.user
+  return appSession(req).user
+};
+
+const appSessionFromReq = (req: BFFRequest) : AppSession => {
+  if (!req.session) {
+      return;
+  }
+
+  const appSession: AppSession = {
+    access_token: req.session.passport.user.tokens.access_token,
+    id_token: req.session.passport.user.tokens.id_token,
+    token_type: req.session.passport.user.tokens.token_type,
+    expires_at: req.session.passport.user.tokens.expires_at.toString(),
+    organizations: [],
+    user: null,
+    refresh_token: ''
+  }
+
+  return appSession;
 };
 
 const handleNoOrg = (res: express.Response) => {
@@ -90,6 +109,7 @@ const getOrg = async (orgName: string) : Promise<Organization> => {
     return null;
   }
 }
+
 const syncWatcher = async (orgName: string, teamName: string) => {
   try {
   const {authorization} = await getArgoCDAuthHeader(orgName);
@@ -107,6 +127,20 @@ const syncWatcher = async (orgName: string, teamName: string) => {
   }
 };
 
+export const appSession = (req: BFFRequest): any => {
+  if (ckConfig.OKTA_BASED_AUTH) {
+    return req.session.appSession;
+  }
+  return req.appSession;
+}
+
+export const oidcUser = (req: BFFRequest) => {
+  if (ckConfig.OKTA_BASED_AUTH) {
+    return req.session.passport.user;
+  }
+  return req.oidc.user;
+}
+
 export default {
   orgFromReq,
   userFromReq,
@@ -115,4 +149,6 @@ export default {
   getSSMSecret,
   getOrg,
   syncWatcher,
+  appSessionFromReq,
+
 };

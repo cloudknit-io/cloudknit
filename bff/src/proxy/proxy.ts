@@ -4,7 +4,7 @@ import { ClientRequest, IncomingMessage, ServerResponse } from "http";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import { getArgoCDAuthHeader } from "../auth/argo";
 import config from "../config";
-import helper from "../utils/helper";
+import helper, { appSession } from "../utils/helper";
 import { Organization, User } from "../models/user.interface";
 import { BFFRequest, ExternalAPIRequest } from "../types";
 import logger from "../utils/logger";
@@ -328,7 +328,7 @@ export function noOrgRoutes(router: express.Router) {
           .json({ message: `${newOrgSelection} could not be selected` })
           .send();
         logger.error(`${newOrgSelection} could not be selected`, {
-          orgs: req.appSession.organizations,
+          orgs: appSession(req).organizations,
         });
         return;
       }

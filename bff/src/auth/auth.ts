@@ -9,6 +9,10 @@ import { BFFRequest } from "../types";
 import helper from "../utils/helper";
 import * as jwt from "express-jwt";
 import * as jwks from "jwks-rsa";
+import * as express from "express";
+import { auth, requiresAuth } from "express-openid-connect";
+import * as session from "express-session";
+import { ExpressOIDC } from "@okta/oidc-middleware";
 
 export async function getUser(username: string): Promise<User> {
   try {
@@ -169,4 +173,132 @@ export function apiAuthMw() {
     issuer: new URL("/", ckConfig.AUTH0_ISSUER_BASE_URL).href,
     algorithms: ["RS256"],
   });
+}
+
+function getOktaAuthMW() {
+  const oidc = new ExpressOIDC({
+    issuer: ckConfig.AUTH0_ISSUER_BASE_URL,
+    client_id: ckConfig.AUTH0_API_CLIENT_ID,
+    client_secret: ckConfig.AUTH0_API_SECRET,
+    appBaseUrl: ckConfig.AUTH0_WEB_BASE_URL,
+    scope: "openid profile email",
+    routes: {
+      login: {
+        // handled by this module
+        path: "/authorize",
+      },
+      loginCallback: {
+        // handled by this module
+        path: "/auth/callback",
+        handler: async (req: BFFRequest, res: any, next: any) => {
+          const session = req.session;
+          const userInfo = session.passport.user.userinfo;
+
+          if (!userInfo.email_verified) {
+            logger.error(`email is not verified for user ${userInfo.email}`, {
+              data: userInfo,
+            });
+            throw new createError.Unauthorized();
+          }
+
+          // @ts-ignore
+          let user = await getUser(userInfo.preferred_username);
+
+          if (!user) {
+            try {
+              user = await createUser(
+                // @ts-ignore
+                userInfo.preferred_username,
+                userInfo.email,
+                "Admin",
+                userInfo.name
+              );
+
+              if (!user) {
+                throw new createError.Unauthorized();
+              }
+
+              logger.info(`create user ${user.username}`, { user });
+
+              req.session.appSession = {
+                ...helper.appSessionFromReq(req),
+                user,
+                organizations: [],
+              };
+              next();
+            } catch (err) {
+              logger.error(
+                `could not create user ${userInfo.preferred_username}`,
+                {
+                  error: err.message,
+                }
+              );
+              throw new createError.Unauthorized();
+            }
+          }
+
+          if (!user.organizations || user.organizations.length == 0) {
+            logger.info(
+              `user ${userInfo.preferred_username} does not have any organizations`
+            );
+
+            req.session.appSession = {
+              ...helper.appSessionFromReq(req),
+              user,
+              organizations: [],
+            };
+            next();
+            return;
+          }
+
+          req.session.appSession = {
+            ...helper.appSessionFromReq(req),
+            user,
+            organizations: user.organizations,
+          };
+
+          next();
+          return;
+        },
+        // handled by your application
+        afterCallback: "/",
+      },
+      logout: {
+        // handled by this module
+        path: "/auth/logout",
+      },
+      logoutCallback: {
+        // handled by your application
+        path: "/auth/login",
+      },
+    },
+  });
+
+  return oidc.router;
+}
+
+export function setUpAuth(app: express.Express, authRouter: express.Router) {
+  if (ckConfig.OKTA_BASED_AUTH) {
+    app.use(
+      session({
+        secret: ckConfig.AUTH0_WEB_SECRET,
+        resave: true,
+        saveUninitialized: false,
+      })
+    );
+    app.use(getOktaAuthMW());
+    authRouter.get("/auth/logout", (req: any, res: any, next: any) => {
+      req.logout(function (err) {
+        if (err) {
+          return next(err);
+        }
+        res.redirect("/");
+      });
+    });
+  } else {
+    // auth0 router attaches /auth/login, /logout, and /callback routes to the baseURL
+    app.use(auth(getAuth0Config()));
+
+    authRouter.use(requiresAuth());
+  }
 }
