@@ -14,6 +14,10 @@ const orgFromReq = async (req: BFFRequest) : Promise<Organization> => {
   }
 
   const orgName = req.cookies[config.SELECTED_ORG_HEADER];
+  const session = appSession(req);
+  if (!session) {
+    return null;
+  }
   let org = appSession(req).organizations.find((org) => org.name === orgName);
 
   if (org) {
