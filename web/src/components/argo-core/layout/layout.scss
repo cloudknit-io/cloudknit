@@ -23,6 +23,7 @@
 	.zlifecycle-main-content {
 		grid-area: main;
 		overflow-y: scroll;
+		overflow-x: hidden;
 
 		.dark-overlay {
 			position: fixed;
