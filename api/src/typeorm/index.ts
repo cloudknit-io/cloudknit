@@ -27,7 +27,7 @@ const dbConfig = {
   entities,
   migrations: ['src/typeorm/migrations/*.js'],
   migrationsRun: true,
-  synchronize: false,
+  synchronize: true,
   logging: ['error', 'schema'],
 };
 
