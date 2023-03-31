@@ -1,22 +1,22 @@
 import * as express from "express";
 import axios from "axios";
 import logger from "../utils/logger";
-import helper from "../utils/helper";
+import helper, { appSession, oidcUser } from "../utils/helper";
 import config from "../config";
 import { getArgoCDAuthHeader } from "../auth/argo";
 
 export default function createRoutes(router: express.Router): express.Router {
   router.get("/profile", async (req: any, res) => {
     const user = {
-      ...req.appSession.user,
-      oidc: req.oidc.user,
+      ...appSession(req).user,
+      oidc: oidcUser(req),
     };
 
     res.json(user);
   });
 
   router.get("/me", async (req: any, res) => {
-    const { user } = req.appSession;
+    const { user } = appSession(req);
 
     try {
       const org = user.organizations[0].name;

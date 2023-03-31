@@ -1,23 +1,17 @@
 import "./configuration";
 
+import * as cookieParser from "cookie-parser";
+import * as cors from "cors";
 import * as express from "express";
 import * as correlator from "express-correlation-id";
-import * as cors from "cors";
-import * as cookieParser from "cookie-parser";
-import { AuthRequestLogger, ErrorLogger } from "./utils/logger";
-import logger from "./utils/logger";
-import { apiAuthMw, getUser } from "./auth/auth";
+import { apiAuthMw, getUser, organizationMW, setUpAuth } from "./auth/auth";
 import zlConfig from "./config";
-import {
-  orgRoutes,
-  noOrgRoutes,
-  handlePublicRoutes,
-  externalApiRoutes,
-} from "./proxy/proxy";
-import { auth, requiresAuth } from "express-openid-connect";
 import AuthRoutes from "./controllers/auth.controller";
-import { getAuth0Config, organizationMW } from "./auth/auth";
-import helper from "./utils/helper";
+import {
+  externalApiRoutes, handlePublicRoutes, noOrgRoutes, orgRoutes
+} from "./proxy/proxy";
+import helper, { oidcUser } from "./utils/helper";
+import logger, { AuthRequestLogger, ErrorLogger } from "./utils/logger";
 
 const app = express();
 const publicRouter = express.Router();
@@ -48,18 +42,23 @@ app.use("/public", handlePublicRoutes(publicRouter));
 externalRouter.use(AuthRequestLogger);
 app.use("/ext/api", apiAuthMw(), externalApiRoutes(externalRouter));
 
-// auth0 router attaches /auth/login, /logout, and /callback routes to the baseURL
-app.use(auth(getAuth0Config()));
 
-authRouter.use(requiresAuth());
+
+setUpAuth(app, authRouter);
+
+
 
 authRouter.get("/session", async (req: any, res) => {
   const reqUser = helper.userFromReq(req);
+  if (!reqUser) {
+    res.json(null);
+    return;
+  }
   const dbUser = await getUser(reqUser.username);
 
   const user = {
     ...dbUser,
-    picture: req.oidc.user.picture,
+    picture: oidcUser(req).picture,
   };
 
   res.json(user);
