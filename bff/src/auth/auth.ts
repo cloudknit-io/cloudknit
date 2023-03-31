@@ -204,7 +204,6 @@ function getOktaAuthMW() {
 
           // @ts-ignore
           let user = await getUser(userInfo.preferred_username);
-
           if (!user) {
             try {
               user = await createUser(
@@ -220,13 +219,6 @@ function getOktaAuthMW() {
               }
 
               logger.info(`create user ${user.username}`, { user });
-
-              req.session.appSession = {
-                ...helper.appSessionFromReq(req),
-                user,
-                organizations: [],
-              };
-              next();
             } catch (err) {
               logger.error(
                 `could not create user ${userInfo.preferred_username}`,
@@ -242,24 +234,14 @@ function getOktaAuthMW() {
             logger.info(
               `user ${userInfo.preferred_username} does not have any organizations`
             );
-
-            req.session.appSession = {
-              ...helper.appSessionFromReq(req),
-              user,
-              organizations: [],
-            };
-            next();
-            return;
           }
 
           req.session.appSession = {
             ...helper.appSessionFromReq(req),
             user,
-            organizations: user.organizations,
+            organizations: user.organizations || [],
           };
-
           next();
-          return;
         },
         // handled by your application
         afterCallback: "/",
