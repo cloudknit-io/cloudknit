@@ -4,8 +4,8 @@ import { OperationPhase, OperationPhases } from 'models/argo.models';
 import { EntityStore } from 'models/entity.store';
 import { Environment } from 'models/entity.type';
 import React, { FC, useCallback, useEffect, useState } from 'react';
-import { ArgoEnvironmentsService } from 'services/argo/ArgoEnvironments.service';
 import { ArgoStreamService } from 'services/argo/ArgoStream.service';
+import { EntityService } from 'services/entity/entity.service';
 import { hardSync } from './helpers';
 
 export type ReconcilerProps = {
@@ -19,7 +19,7 @@ export const Reconciler: FC<ReconcilerProps> = ({ environment, template }) => {
 	const [reconciling, setReconciling] = useState<boolean>(false);
 	const [syncStarted, setSyncStarted] = useState<boolean>(false);
 
-    useEffect(() => {
+	useEffect(() => {
 		if (!syncStarted) {
 			return;
 		}
@@ -32,12 +32,12 @@ export const Reconciler: FC<ReconcilerProps> = ({ environment, template }) => {
 		if (!environment) {
 			return;
 		}
-        setReconciling(false);
-        setSyncStarted(false);
+		setReconciling(false);
+		setSyncStarted(false);
 		const ecd = ArgoStreamService.streamEnvironment(environment.argoId);
 		const watcherSub = ecd.listen().subscribe((e: any) => {
-            const healthStatus = e?.data?.result?.application?.status?.health?.status;
-            setReconciling(healthStatus === 'Progressing')
+			const healthStatus = e?.data?.result?.application?.status?.health?.status;
+			setReconciling(healthStatus === 'Progressing');
 			// if (e?.application?.metadata?.name?.replace('-team-watcher', '') === environment.argoId) {
 			// 	const status = e?.application?.status?.operationState?.phase;
 			// 	setWatcherStatus(status);
@@ -66,10 +66,8 @@ export const Reconciler: FC<ReconcilerProps> = ({ environment, template }) => {
 				);
 				return;
 			}
-			await ArgoEnvironmentsService.deleteEnvironment(environment.argoId as string);
-			setTimeout(async () => {
-				await ArgoEnvironmentsService.syncEnvironment(environment.argoId as string);
-			}, 1500);
+
+			await EntityService.getInstance().syncEnvironment(environment.teamId, environment.id);
 		} catch (err) {
 			// if ((err as any)?.message?.includes('not found') && environment.syncStatus === 'OutOfSync') {
 			//     await ArgoEnvironmentsService.syncEnvironment(environment.id as string);
