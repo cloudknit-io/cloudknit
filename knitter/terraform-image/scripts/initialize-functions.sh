@@ -182,26 +182,12 @@ function UpdateComponentCost() {
   curl -X 'PUT' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/teams/${teamName}/environments/${envName}/components/${compName}" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_comp_cost.json
 }
 
-# Gets the latest env reconcile entry
-#   Args:
-#     $1 - team name (required)
-#     $2 - env name (required)
-latestEnvReconcileId=null;
-function GetLatestEnvReconId() {
-  local teamName="${1}"
-  local envName="${2}"
-  
-  echo "Running GetLatestEnvReconId"
-  local response=$(curl -X 'GET' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/teams/${teamName}/environments/${envName}" -H 'accept: */*')
-  latestEnvReconcileId=$(echo $response | jq -r '.latestEnvRecon.reconcileId')
-}
-
 function UpdateEnvironmentReconcileStatus() {
   local teamName="${1}"
   local envName="${2}"
   local failed="${3}"
+  local latestEnvReconcileId="${4}"
 
-  GetLatestEnvReconId "${teamName}" "${envName}"
   end_date=$(date '+%Y-%m-%d %H:%M:%S')
   local status='0'
   local payload='';
