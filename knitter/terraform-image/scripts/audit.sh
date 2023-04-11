@@ -113,10 +113,7 @@ fi
 if [ $config_name -eq 0 ]; then
     component_payload=[]
     echo "Updating environment reconcile status"
-    echo "Running GetLatestEnvReconId"
-    local response=$(curl -X 'GET' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/teams/${teamName}/environments/${envName}" -H 'accept: */*')
-    latestEnvReconcileId=$(echo $response | jq -r '.latestEnvRecon.reconcileId')
-    UpdateEnvironmentReconcileStatus "${team_name}" "${env_name}" "0" "{latestEnvReconcileId}"
+    UpdateEnvironmentReconcileStatus "${team_name}" "${env_name}"
     reconcileId=$latestEnvReconcileId
 else
     result=""
