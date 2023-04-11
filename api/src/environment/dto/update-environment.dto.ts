@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import { IsBoolean } from 'class-validator';
 import { EnvironmentReconcile } from 'src/typeorm';
 import { CreateEnvironmentDto } from './create-environment.dto';
@@ -13,6 +14,6 @@ export class UpdateEnvironmentDto extends PartialType(CreateEnvironmentDto) {
 export class PatchEnvQueryParams {
   @ApiProperty()
   @IsBoolean()
-  @ApiPropertyOptional()
-  reconcile: boolean = false;
+  @Transform(({ value} ) => value === 'true')
+  reconcile: boolean;
 }
