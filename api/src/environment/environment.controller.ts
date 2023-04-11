@@ -6,9 +6,7 @@ import {
   InternalServerErrorException,
   Logger,
   Patch,
-  Post,
-  Query,
-  Request,
+  Post, Request
 } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { ApiTags } from '@nestjs/swagger';
@@ -23,14 +21,13 @@ import {
   EnvironmentReconCostUpdateEvent,
   EnvironmentReconEnvUpdateEvent,
   InternalEventType,
-  TeamApiParam,
+  TeamApiParam
 } from 'src/types';
 import { handleSqlErrors } from 'src/utilities/errorHandler';
 import { CreateEnvironmentDto } from './dto/create-environment.dto';
 import { EnvSpecComponentDto, EnvSpecDto } from './dto/env-spec.dto';
 import {
-  PatchEnvQueryParams,
-  UpdateEnvironmentDto,
+  UpdateEnvironmentDto
 } from './dto/update-environment.dto';
 import { EnvironmentService } from './environment.service';
 
@@ -230,11 +227,10 @@ export class EnvironmentController {
   async update(
     @Request() req: APIRequest,
     @Body() updateEnvDto: UpdateEnvironmentDto,
-    @Query() params: PatchEnvQueryParams
   ) {
     const { org, env, team, argoCDAuthHeader } = req;
 
-    if (params.reconcile) {
+    if (updateEnvDto.isReconcile) {
       const envRecon = await this.createEnvRecon(org, team, env, {
         dag: env.dag,
         name: env.name,
@@ -247,8 +243,11 @@ export class EnvironmentController {
 
     const updatedEnv = await this.envSvc.updateById(org, env.id, updateEnvDto);
 
-    if (params.reconcile) {
+    if (updateEnvDto.isReconcile) {
       updatedEnv.team = team;
+      this.logger.debug('starting reconciliation via argo cd', {
+        authHeader: argoCDAuthHeader,
+      });
       await reconcileCD(
         org,
         `${team.name}-${updatedEnv.name}`,

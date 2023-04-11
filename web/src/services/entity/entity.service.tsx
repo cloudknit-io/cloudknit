@@ -41,9 +41,11 @@ export class EntityService extends BaseService {
 	}
 
 	async syncEnvironment(teamId: number, envId: number): Promise<Environment[]> {
-		const url = this.constructUri(EntitytUriType.reconcile(teamId, envId));
+		const url = this.constructUri(EntitytUriType.environment(teamId, envId));
 		try {
-			const { data } = await ApiClient.patch<Environment[]>(url, {});
+			const { data } = await ApiClient.patch<Environment[]>(url, {
+				isReconcile: true
+			});
 			return data;
 		} catch (err) {
 			console.error(err);
@@ -72,7 +74,6 @@ class EntitytUriType {
 	static teams = (withComps: boolean) => `teams?withCost=true&withEnvironments=true&withComponents=${withComps}`;
 	static environments = (teamId: number) => `teams/${teamId}/environments`;
 	static environment = (teamId: number, envId: number) => `teams/${teamId}/environments/${envId}`;
-	static reconcile = (teamId: number, envId: number) => `${EntitytUriType.environment(teamId, envId)}?reconcile=true`
 	static components = (teamId: number, envId: number, withLastAuditStatus: boolean) =>
 		`teams/${teamId}/environments/${envId}/components?withLastAuditStatus=${withLastAuditStatus}`;
 	static stream = () => `stream`;
