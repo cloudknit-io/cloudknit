@@ -137,9 +137,7 @@ export async function SubmitProvisionOrg(params: ProvisionOrgWf) {
 export async function reconcileCD(
   org: Organization,
   environmentId: string,
-  argoCDAuthHeader: {
-    authorization: string;
-  }
+  argoCDAuthHeader: string
 ) {
   await deleteEnvironment(org, environmentId, argoCDAuthHeader);
   await MiscUtils.wait(1000);
@@ -149,9 +147,7 @@ export async function reconcileCD(
 async function syncEnvironment(
   org: Organization,
   environmentId: string,
-  argoCDAuthHeader: {
-    authorization: string;
-  }
+  argoCDAuthHeader: string
 ): Promise<any> {
   const config = get();
   let url = `${config.argo.cd.url}/api/v1/applications/${org.name}-${environmentId}/sync`;
@@ -160,7 +156,7 @@ async function syncEnvironment(
     {},
     {
       headers: {
-        authorization: argoCDAuthHeader.authorization,
+        authorization: argoCDAuthHeader,
       },
     }
   );
@@ -169,15 +165,13 @@ async function syncEnvironment(
 async function deleteEnvironment(
   org: Organization,
   environmentId: string,
-  argoCDAuthHeader: {
-    authorization: string;
-  }
+  argoCDAuthHeader: string
 ): Promise<any> {
   const config = get();
   let url = `${config.argo.cd.url}/api/v1/applications/${org.name}-${environmentId}/resource?name=${org.name}-${environmentId}&namespace=${org.name}-executor&resourceName=${org.name}-${environmentId}&version=v1alpha1&kind=Workflow&group=argoproj.io&force=true&orphan=false`;
   return axios.delete(url, {
     headers: {
-      authorization: argoCDAuthHeader.authorization,
+      authorization: argoCDAuthHeader,
     },
   });
 }

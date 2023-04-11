@@ -468,8 +468,10 @@ export function orgRoutes(router: express.Router) {
       return;
     }
 
-    req.headers["argo_cd_auth_header"] = await getArgoCDAuthHeader(org.name);
-    
+    const { authorization } = await getArgoCDAuthHeader(org.name);
+    console.log(authorization);
+    req.headers["argo_cd_auth_header"] = authorization;
+
     return (
       createProxy(org, "/api", {
         target: process.env.ZLIFECYCLE_API_URL,
