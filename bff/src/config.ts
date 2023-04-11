@@ -17,5 +17,4 @@ const config = {
   isProd: (): boolean => process.env.NODE_ENV === "PRODUCTION",
   isDebug: (): boolean => process.env.LOG_LEVEL === "debug",
 };
-
 export default config;
