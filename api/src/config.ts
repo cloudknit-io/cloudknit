@@ -77,7 +77,7 @@ export function init() {
         namespace: getEnvVarOrFail('CK_ARGO_WF_NAMESPACE'),
       },
       cd: {
-        url: getEnvVarOrDefault('CK_ARGO_CD_URL', 'http://argocd-zlifecycle.zlifecycle-system.svc.cluster.local'),
+        url: getEnvVarOrDefault('CK_ARGO_CD_URL', 'http://argocd-zlifecycle-server.zlifecycle-system.svc.cluster.local'),
       }
     },
     environment: getEnvVarOrFail('CK_ENVIRONMENT'),
