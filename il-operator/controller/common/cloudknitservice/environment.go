@@ -76,7 +76,7 @@ func (s *Service) PatchEnvironment(ctx context.Context, organizationName string,
 	environment stablev1.Environment, log *logrus.Entry) error {
 	endpoint := fmt.Sprintf("%s/%s/%s/%s/%s/%s/%s", s.host,
 		"v1/orgs", organizationName, "teams",
-		environment.Spec.TeamName, "environments", environment.Name)
+		environment.Spec.TeamName, "environments", environment.Spec.EnvName)
 
 	log.
 		Infof(
@@ -86,7 +86,7 @@ func (s *Service) PatchEnvironment(ctx context.Context, organizationName string,
 
 	log.
 		Infof(
-			"Environment PAtch Call via CloudKnitService for Env: %s",
+			"Environment Patch Call via CloudKnitService for Env: %s",
 			environment.Spec.EnvName,
 		)
 
