@@ -175,3 +175,23 @@ async function deleteEnvironment(
     },
   });
 }
+
+export async function argoCdLogin(username: string, password: string): Promise<any> {
+  const config = get();
+  const url = `${config.argo.cd.url}/api/v1/session`;
+
+  try {
+    const resp = await axios.post(url, {
+      username,
+      password
+    });
+  
+    const { token } = resp.data;
+  
+    return token;
+  } catch (err) {
+    this.logger.error('could not login to argocd', { error: err.message });
+  }
+
+  return null;
+}

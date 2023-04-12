@@ -18,6 +18,7 @@ import {
 import { EnvironmentMiddleware } from 'src/middleware/environment.middle';
 import { ReconciliationService } from 'src/reconciliation/reconciliation.service';
 import { ComponentService } from 'src/component/component.service';
+import { SystemService } from 'src/system/system.service';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { ComponentService } from 'src/component/component.service';
     EnvironmentService,
     TeamService,
     ReconciliationService,
+    SystemService
   ],
 })
 export class EnvironmentModule implements NestModule {

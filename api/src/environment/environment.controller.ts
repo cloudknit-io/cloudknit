@@ -6,13 +6,15 @@ import {
   InternalServerErrorException,
   Logger,
   Patch,
-  Post, Request
+  Post,
+  Request,
 } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { ApiTags } from '@nestjs/swagger';
-import { reconcileCD } from 'src/argowf/api';
+import { argoCdLogin, reconcileCD } from 'src/argowf/api';
 import { ComponentService } from 'src/component/component.service';
 import { ReconciliationService } from 'src/reconciliation/reconciliation.service';
+import { SystemService } from 'src/system/system.service';
 import { Component, Environment, Organization, Team } from 'src/typeorm';
 import {
   APIRequest,
@@ -21,14 +23,12 @@ import {
   EnvironmentReconCostUpdateEvent,
   EnvironmentReconEnvUpdateEvent,
   InternalEventType,
-  TeamApiParam
+  TeamApiParam,
 } from 'src/types';
 import { handleSqlErrors } from 'src/utilities/errorHandler';
 import { CreateEnvironmentDto } from './dto/create-environment.dto';
 import { EnvSpecComponentDto, EnvSpecDto } from './dto/env-spec.dto';
-import {
-  UpdateEnvironmentDto
-} from './dto/update-environment.dto';
+import { UpdateEnvironmentDto } from './dto/update-environment.dto';
 import { EnvironmentService } from './environment.service';
 
 @Controller({
@@ -41,7 +41,8 @@ export class EnvironmentController {
   constructor(
     private readonly envSvc: EnvironmentService,
     private readonly reconSvc: ReconciliationService,
-    private readonly compSvc: ComponentService
+    private readonly compSvc: ComponentService,
+    private readonly systemSvc: SystemService
   ) {}
 
   @Post()
@@ -226,9 +227,10 @@ export class EnvironmentController {
   @EnvironmentApiParam()
   async update(
     @Request() req: APIRequest,
-    @Body() updateEnvDto: UpdateEnvironmentDto,
+    @Body() updateEnvDto: UpdateEnvironmentDto
   ) {
-    const { org, env, team, argoCDAuthHeader } = req;
+    const { org, env, team } = req;
+    let { argoCDAuthHeader } = req;
 
     if (updateEnvDto.isReconcile) {
       const envRecon = await this.createEnvRecon(org, team, env, {
@@ -248,6 +250,10 @@ export class EnvironmentController {
       this.logger.debug('starting reconciliation via argo cd', {
         authHeader: argoCDAuthHeader,
       });
+      if (!argoCDAuthHeader) {
+        const pwd = await this.systemSvc.getSsmSecret('/argocd/zlapi/password');
+        argoCDAuthHeader = `Bearer ${await argoCdLogin('zlapi', pwd)}`;
+      }
       await reconcileCD(
         org,
         `${team.name}-${updatedEnv.name}`,
