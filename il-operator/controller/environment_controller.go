@@ -16,7 +16,6 @@ import (
 	secretapi "github.com/compuzest/zlifecycle-il-operator/controller/common/secret"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/statemanager"
 	argocd2 "github.com/compuzest/zlifecycle-il-operator/controller/services/operations/argocd"
-	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/argoworkflow"
 	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/secret"
 	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/zlstate"
 
@@ -308,7 +307,7 @@ func (r *EnvironmentReconciler) doReconcile(
 	}
 
 	if zlPushed || tfPushed {
-		if err := r.handleDirtyILState(argoworkflowClient, interpolated); err != nil {
+		if err := r.handleDirtyILState(ctx, interpolated); err != nil {
 			return errors.Wrap(err, "error handling dirty IL state")
 		}
 	}
@@ -405,11 +404,12 @@ func delayEnvironmentReconcileOnInitialRun(log *logrus.Entry, seconds int64) {
 	}
 }
 
-func (r *EnvironmentReconciler) handleDirtyILState(argoworkflowAPI argoworkflowapi.API, e *stablev1.Environment) error {
+func (r *EnvironmentReconciler) handleDirtyILState(ctx context.Context, e *stablev1.Environment) error {
 	r.LogV2.Infof("Committed new changes to IL repo(s) for environment %s", e.Spec.EnvName)
-	r.LogV2.Infof("Re-syncing Workflow of Workflows for environment %s", e.Spec.EnvName)
-	wow := fmt.Sprintf("%s-%s-%s", env.Config.CompanyName, e.Spec.TeamName, e.Spec.EnvName)
-	if err := argoworkflow.DeleteWorkflow(wow, env.Config.ArgoWorkflowsWorkflowNamespace, argoworkflowAPI); err != nil {
+	r.LogV2.Infof("Calling Patch Environment for environment %s", e.Spec.EnvName)
+
+	cloudKnitServiceClient := cloudknitservice.NewService(env.Config.ZLifecycleAPIURL)
+	if err := cloudKnitServiceClient.PatchEnvironment(ctx, env.Config.CompanyName, *e, r.LogV2); err != nil {
 		return err
 	}
 
