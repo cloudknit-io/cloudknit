@@ -75,7 +75,9 @@ export class TeamService {
         },
       },
       relations: {
-        environments: withEnv,
+        environments: {
+          latestEnvRecon: withEnv
+        },
       },
     });
   }
