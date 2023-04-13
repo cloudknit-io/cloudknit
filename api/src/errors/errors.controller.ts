@@ -39,7 +39,7 @@ export class ErrorsController {
           dag: [],
         });
       }
-      if (body.errorMessage === env.latestEnvRecon?.errorMessage) {
+      if (body.errorMessage == env.latestEnvRecon?.errorMessage) {
         return;
       }
 
