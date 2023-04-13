@@ -48,7 +48,7 @@ export class StreamEnvironmentReconcileService
     const updateEnv = event.updatedColumns.some((col) =>
       ['status', 'endDateTime', 'errorMessage'].includes(col.propertyName)
     );
-    console.log(envRecon);
+
     if (costUpdated) {
       this.evtEmitter.emit(
         InternalEventType.EnvironmentReconCostUpdate,
@@ -62,7 +62,7 @@ export class StreamEnvironmentReconcileService
         new EnvironmentReconEnvUpdateEvent({ ...envRecon })
       );
     }
-    console.log(envRecon);
+    
     this.validateAndSend(envRecon, 'afterUpdate');
   }
 
