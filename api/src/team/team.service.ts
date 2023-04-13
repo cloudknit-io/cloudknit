@@ -104,6 +104,7 @@ export class TeamService {
 
   async updateCost(org: Organization, id: number): Promise<void> {
     const team = await this.findById(org, id, true);
+    console.log(team);
 
     let estimatedCost = 0.0;
 
