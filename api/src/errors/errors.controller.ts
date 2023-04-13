@@ -39,12 +39,15 @@ export class ErrorsController {
           dag: [],
         });
       }
+      if (body.errorMessage === env.latestEnvRecon?.errorMessage) {
+        return;
+      }
 
       const envRecon = await this.reconSvc.createEnvRecon(org, team, env, {
         name: env.name,
         startDateTime: new Date().toISOString(),
         errorMessage: body.errorMessage,
-        components: [],
+        components: env.dag,
         teamName: team.name
       });
 
