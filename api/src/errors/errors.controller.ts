@@ -48,7 +48,12 @@ export class ErrorsController {
         startDateTime: new Date().toISOString(),
         errorMessage: body.errorMessage,
         components: env.dag,
-        teamName: team.name
+        teamName: team.name,
+      });
+
+      await this.reconSvc.updateEnvRecon(envRecon, {
+        status: 'Failed',
+        endDateTime: new Date().toISOString(),
       });
 
       envRecon.environment = null;
