@@ -40,7 +40,7 @@ export class ErrorsController {
           dag: [],
         });
       }
-      if (JSON.stringify(body.errorMessage) == JSON.stringify(env.latestEnvRecon?.errorMessage)) {
+      if (body.errorMessage && JSON.stringify(body.errorMessage) == JSON.stringify(env.latestEnvRecon?.errorMessage)) {
         return;
       }
 
