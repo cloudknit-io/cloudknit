@@ -50,7 +50,8 @@ export class ReconciliationService {
       status: 'initializing',
       organization: org,
       dag: createEnv.components,
-      gitSha: ""
+      gitSha: "",
+      errorMessage: createEnv.errorMessage || null
     });
   }
 
