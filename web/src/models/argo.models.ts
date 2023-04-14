@@ -310,6 +310,7 @@ export enum ZEnvSyncStatus {
 	Destroyed = 'destroyed',
 	ProvisionFailed = 'provision_failed',
 	DestroyFailed = 'destroy_failed',
+	ValidationFailed = 'validation_failed',
 }
 
 export enum ESyncStatus {
@@ -340,7 +341,8 @@ export enum AuditStatus {
 	Skipped = 'skipped',
 	SkippedDestroy = 'skipped_destroy',
 	SkippedProvision = 'skipped_provision',
-	SkippedReconcile = 'skipped_reconcile'
+	SkippedReconcile = 'skipped_reconcile',
+	ValidationFailed = 'validation_failed',
 }
 
 export type SyncStatusCode =
