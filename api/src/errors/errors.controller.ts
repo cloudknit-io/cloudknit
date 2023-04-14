@@ -32,6 +32,7 @@ export class ErrorsController {
   ) {
     try {
       const { org, team } = req;
+      console.log('body: ', body);
       let env = await this.envSvc.findByName(org, team, body.envName);
       if (!env) {
         env = await this.envSvc.create(org, team, {
@@ -39,7 +40,7 @@ export class ErrorsController {
           dag: [],
         });
       }
-      if (body.errorMessage == env.latestEnvRecon?.errorMessage) {
+      if (JSON.stringify(body.errorMessage) == JSON.stringify(env.latestEnvRecon?.errorMessage)) {
         return;
       }
 
