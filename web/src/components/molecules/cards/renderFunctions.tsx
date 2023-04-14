@@ -18,9 +18,10 @@ import { isNumber } from 'lodash';
 import {
 	AuditStatus,
 	ESyncStatus,
-	HealthStatusCode, SyncStatusCode,
+	HealthStatusCode,
+	SyncStatusCode,
 	ZEnvSyncStatus,
-	ZSyncStatus
+	ZSyncStatus,
 } from 'models/argo.models';
 import moment from 'moment';
 import { FC, ReactNode, useState } from 'react';
@@ -165,11 +166,7 @@ export const renderEnvSyncedStatus = (
 			);
 		case ZSyncStatus.RunningDestroyPlan:
 			return (
-				<StatusDisplay
-					text={'Running Plan'}
-					icon={<Loader height={20} width={20} />}
-					time={syncFinishedAt}
-				/>
+				<StatusDisplay text={'Running Plan'} icon={<Loader height={20} width={20} />} time={syncFinishedAt} />
 			);
 		case ZSyncStatus.CalculatingCost:
 			return (
@@ -242,7 +239,6 @@ export const renderEnvSyncedStatus = (
 	}
 };
 
-
 export const renderSyncedStatus = (
 	componentStatus: ZSyncStatus | SyncStatusCode | AuditStatus | ZEnvSyncStatus,
 	operationPhase?: any,
@@ -254,9 +250,17 @@ export const renderSyncedStatus = (
 	// console.log(syncFinishedAt);
 	switch (componentStatus) {
 		case ZSyncStatus.Initializing:
-			return <StatusDisplay text={'Initializing'} icon={<Loader height={20} width={20} />} time={syncFinishedAt} />
+			return (
+				<StatusDisplay text={'Initializing'} icon={<Loader height={20} width={20} />} time={syncFinishedAt} />
+			);
 		case ZSyncStatus.InitializingApply:
-			return <StatusDisplay text={'Initializing Apply'} icon={<Loader height={20} width={20} />} time={syncFinishedAt} />
+			return (
+				<StatusDisplay
+					text={'Initializing Apply'}
+					icon={<Loader height={20} width={20} />}
+					time={syncFinishedAt}
+				/>
+			);
 		case AuditStatus.Initializing:
 		case AuditStatus.Env_Destroying:
 		case AuditStatus.Env_Provisioning:
@@ -271,20 +275,14 @@ export const renderSyncedStatus = (
 		case AuditStatus.Ended:
 		case AuditStatus.Env_Destroy_Ended:
 		case AuditStatus.Env_Provision_Ended:
-			return (
-				<StatusDisplay text={'Succeeded'} icon={<SyncedIcon />} time={syncFinishedAt} />
-			);
+			return <StatusDisplay text={'Succeeded'} icon={<SyncedIcon />} time={syncFinishedAt} />;
 		case ZSyncStatus.RunningPlan:
 			return (
 				<StatusDisplay text={'Running Plan'} icon={<Loader height={20} width={20} />} time={syncFinishedAt} />
 			);
 		case ZSyncStatus.RunningDestroyPlan:
 			return (
-				<StatusDisplay
-					text={'Running Plan'}
-					icon={<Loader height={20} width={20} />}
-					time={syncFinishedAt}
-				/>
+				<StatusDisplay text={'Running Plan'} icon={<Loader height={20} width={20} />} time={syncFinishedAt} />
 			);
 		case ZSyncStatus.CalculatingCost:
 			return (
@@ -303,9 +301,7 @@ export const renderSyncedStatus = (
 				/>
 			);
 		case ZSyncStatus.Provisioning:
-			return (
-				<StatusDisplay text={'Applying'} icon={<Loader height={20} width={20} />} time={syncFinishedAt} />
-			);
+			return <StatusDisplay text={'Applying'} icon={<Loader height={20} width={20} />} time={syncFinishedAt} />;
 		case ZSyncStatus.Provisioned:
 			return <StatusDisplay text={'Succeeded'} icon={<SyncedIcon />} time={syncFinishedAt} />;
 		case ZSyncStatus.Destroying:
@@ -347,6 +343,8 @@ export const renderSyncedStatus = (
 					time={syncFinishedAt}
 				/>
 			);
+		case ZSyncStatus.ValidationFailed:
+			return <StatusDisplay text={'Validation Failed'} icon={<OutOfSyncIcon />} />;
 		case ZEnvSyncStatus.DestroyFailed:
 		case ZEnvSyncStatus.ProvisionFailed:
 		case AuditStatus.Failed:
@@ -411,13 +409,21 @@ export const getHealthStatusIcon = (healthStatus: any) => {
 export const getSyncStatusIcon = (syncStatus: any, operation?: 'Destroy' | 'Provision') => {
 	switch (syncStatus) {
 		case ZSyncStatus.Initializing:
-			return operation === 'Destroy' ? <LoaderDestroy height={16} width={16} title="Initializing" /> : <Loader height={16} width={16} title="Initializing" />;
+			return operation === 'Destroy' ? (
+				<LoaderDestroy height={16} width={16} title="Initializing" />
+			) : (
+				<Loader height={16} width={16} title="Initializing" />
+			);
 		case ZSyncStatus.InitializingApply:
-			return operation === 'Destroy' ? <LoaderDestroy height={16} width={16} title="Initializing Apply" /> : <Loader height={16} width={16} title="Initializing Apply" />;
+			return operation === 'Destroy' ? (
+				<LoaderDestroy height={16} width={16} title="Initializing Apply" />
+			) : (
+				<Loader height={16} width={16} title="Initializing Apply" />
+			);
 		case ZSyncStatus.RunningPlan:
 			return <Loader height={16} width={16} title="Running Plan" />;
 		case ZSyncStatus.RunningDestroyPlan:
-			return <LoaderDestroy height={16} width={16}  title="Running Destroy Plan" />;
+			return <LoaderDestroy height={16} width={16} title="Running Destroy Plan" />;
 		case ZSyncStatus.CalculatingCost:
 			return <CalculatingCost height={16} width={16} title="Calculating Cost" />;
 		case ZSyncStatus.WaitingForApproval:
