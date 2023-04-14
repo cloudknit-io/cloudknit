@@ -300,6 +300,7 @@ export class EnvironmentController {
   @OnEvent(InternalEventType.EnvironmentReconCostUpdate, { async: true })
   async envReconCostUpdateListener(evt: EnvironmentReconCostUpdateEvent) {
     const envRecon = evt.payload;
+    console.log(envRecon);
 
     const env = await this.envSvc.findById(
       envRecon.organization,
@@ -314,6 +315,8 @@ export class EnvironmentController {
   @OnEvent(InternalEventType.EnvironmentReconEnvUpdate, { async: true })
   async envReconEnvUpdateListener(evt: EnvironmentReconEnvUpdateEvent) {
     const envRecon = evt.payload;
+
+    console.log(envRecon);
 
     const env = await this.envSvc.findById(
       envRecon.organization,
