@@ -193,6 +193,10 @@ const API_PATH_MAPPINGS = [
     newPath: (params: any) => `v1/orgs/${params.orgId}/teams/${params.teamId}/environments`,
   },
   {
+    path: "/api/teams/:teamId/environments/:envId",
+    newPath: (params: any) => `v1/orgs/${params.orgId}/teams/${params.teamId}/environments/${params.envId}`,
+  },
+  {
     path: "/api/teams/:teamId/environments/:envId/components",
     newPath: (params: any) => `v1/orgs/${params.orgId}/teams/${params.teamId}/environments/${params.envId}/components`,
   },

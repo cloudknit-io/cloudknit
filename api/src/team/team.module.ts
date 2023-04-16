@@ -2,14 +2,14 @@ import {
   MiddlewareConsumer,
   Module,
   NestModule,
-  RequestMethod,
+  RequestMethod
 } from '@nestjs/common';
-import { TeamService } from './team.service';
-import { TeamController } from './team.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Component, Environment, Team } from 'src/typeorm';
 import { EnvironmentService } from 'src/environment/environment.service';
 import { TeamMiddleware } from 'src/middleware/team.middle';
+import { Component, Environment, Team } from 'src/typeorm';
+import { TeamController } from './team.controller';
+import { TeamService } from './team.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Team, Component, Environment])],

@@ -1,13 +1,12 @@
+import { ReactComponent as Networking } from 'assets/visualization-demo/networking.svg';
+import { ReactComponent as EC2 } from 'assets/visualization-demo/platform-ec2.svg';
+import { ReactComponent as EKS } from 'assets/visualization-demo/platform-eks.svg';
 import AuthStore from 'auth/AuthStore';
-import { CompAuditData } from 'models/entity.type';
+import { CompAuditData, EnvAuditData } from 'models/entity.type';
+import ReactDOMServer from 'react-dom/server';
 import { BaseService } from 'services/base/base.service';
 import ApiClient from 'utils/apiClient';
 import { ENVIRONMENT_VARIABLES } from 'utils/environmentVariables';
-import { ReactComponent as EKS } from 'assets/visualization-demo/platform-eks.svg';
-import { ReactComponent as EC2 } from 'assets/visualization-demo/platform-ec2.svg';
-import { ReactComponent as Networking } from 'assets/visualization-demo/networking.svg';
-import React from 'react';
-import ReactDOMServer from 'react-dom/server';
 
 export class AuditService extends BaseService {
 	private static instance: AuditService | null = null;
@@ -104,8 +103,8 @@ export class AuditService extends BaseService {
 		return data;
 	}
 
-	async getEnvironment(envId: number, teamId: number): Promise<CompAuditData> {
-		const { data } = await ApiClient.get<CompAuditData>(
+	async getEnvironment(envId: number, teamId: number): Promise<EnvAuditData> {
+		const { data } = await ApiClient.get<EnvAuditData>(
 			this.constructUri(AuditUriType.environment(envId, teamId)));
 		return data;
 	}

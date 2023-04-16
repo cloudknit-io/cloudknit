@@ -1,16 +1,16 @@
 import './style.scss';
 
 import { ReactComponent as HealthDegradedIcon } from 'assets/images/icons/card-status/health/Degraded.svg';
-import { ReactComponent as Skipped } from 'assets/images/icons/skipped.svg';
 import { ReactComponent as HealthyIcon } from 'assets/images/icons/card-status/health/Healthy.svg';
 import { ReactComponent as HealthUnknownIcon } from 'assets/images/icons/card-status/health/Unknown health.svg';
 import { ReactComponent as DeleteIcon } from 'assets/images/icons/card-status/sync/delete.svg';
+import { ReactComponent as LoaderDestroy } from 'assets/images/icons/card-status/sync/loader-destroy.svg';
 import { ReactComponent as CalculatingCost } from 'assets/images/icons/card-status/sync/monetization_on.svg';
 import { ReactComponent as OutOfSyncIcon } from 'assets/images/icons/card-status/sync/Not Sync.svg';
 import { ReactComponent as SyncedIcon } from 'assets/images/icons/card-status/sync/Sync.svg';
 import { ReactComponent as Waiting } from 'assets/images/icons/card-status/sync/timer.svg';
 import { ReactComponent as Hourglass } from 'assets/images/icons/hourglass.svg';
-import { ReactComponent as LoaderDestroy } from 'assets/images/icons/card-status/sync/loader-destroy.svg';
+import { ReactComponent as Skipped } from 'assets/images/icons/skipped.svg';
 import { LabelColors, ZCardLabel } from 'components/atoms/card-label/CardLabel';
 import { Loader } from 'components/atoms/loader/Loader';
 import { ZText } from 'components/atoms/text/Text';
@@ -19,13 +19,12 @@ import {
 	AuditStatus,
 	ESyncStatus,
 	HealthStatusCode,
-	OperationPhase,
 	SyncStatusCode,
+	ZEnvSyncStatus,
 	ZSyncStatus,
 } from 'models/argo.models';
 import moment from 'moment';
-import React, { FC, ReactNode } from 'react';
-import { useState } from 'react';
+import { FC, ReactNode, useState } from 'react';
 
 const BACKEND_LABELS: string[] = [
 	'zlifecycle.com/model',
@@ -167,11 +166,7 @@ export const renderEnvSyncedStatus = (
 			);
 		case ZSyncStatus.RunningDestroyPlan:
 			return (
-				<StatusDisplay
-					text={'Running Plan'}
-					icon={<Loader height={20} width={20} />}
-					time={syncFinishedAt}
-				/>
+				<StatusDisplay text={'Running Plan'} icon={<Loader height={20} width={20} />} time={syncFinishedAt} />
 			);
 		case ZSyncStatus.CalculatingCost:
 			return (
@@ -207,7 +202,7 @@ export const renderEnvSyncedStatus = (
 			return <StatusDisplay text={'Apply Failed'} icon={<OutOfSyncIcon />} time={syncFinishedAt} />;
 		case ZSyncStatus.ProvisionFailed:
 		case ZSyncStatus.ValidationFailed:
-			return <StatusDisplay text={'Provision Failed'} icon={<OutOfSyncIcon />} time={syncFinishedAt} />;
+			return <StatusDisplay text={'Validation Failed'} icon={<OutOfSyncIcon />} time={syncFinishedAt} />;
 		case ZSyncStatus.DestroyFailed:
 			return <StatusDisplay text={'Destroy Failed'} icon={<OutOfSyncIcon />} time={syncFinishedAt} />;
 		case ZSyncStatus.OutOfSync:
@@ -244,9 +239,8 @@ export const renderEnvSyncedStatus = (
 	}
 };
 
-
 export const renderSyncedStatus = (
-	componentStatus: ZSyncStatus | SyncStatusCode | AuditStatus,
+	componentStatus: ZSyncStatus | SyncStatusCode | AuditStatus | ZEnvSyncStatus,
 	operationPhase?: any,
 	runningStatus?: string,
 	syncFinishedAt?: string,
@@ -256,9 +250,17 @@ export const renderSyncedStatus = (
 	// console.log(syncFinishedAt);
 	switch (componentStatus) {
 		case ZSyncStatus.Initializing:
-			return <StatusDisplay text={'Initializing'} icon={<Loader height={20} width={20} />} time={syncFinishedAt} />
+			return (
+				<StatusDisplay text={'Initializing'} icon={<Loader height={20} width={20} />} time={syncFinishedAt} />
+			);
 		case ZSyncStatus.InitializingApply:
-			return <StatusDisplay text={'Initializing Apply'} icon={<Loader height={20} width={20} />} time={syncFinishedAt} />
+			return (
+				<StatusDisplay
+					text={'Initializing Apply'}
+					icon={<Loader height={20} width={20} />}
+					time={syncFinishedAt}
+				/>
+			);
 		case AuditStatus.Initializing:
 		case AuditStatus.Env_Destroying:
 		case AuditStatus.Env_Provisioning:
@@ -273,20 +275,14 @@ export const renderSyncedStatus = (
 		case AuditStatus.Ended:
 		case AuditStatus.Env_Destroy_Ended:
 		case AuditStatus.Env_Provision_Ended:
-			return (
-				<StatusDisplay text={'Succeeded'} icon={<SyncedIcon />} time={syncFinishedAt} />
-			);
+			return <StatusDisplay text={'Succeeded'} icon={<SyncedIcon />} time={syncFinishedAt} />;
 		case ZSyncStatus.RunningPlan:
 			return (
 				<StatusDisplay text={'Running Plan'} icon={<Loader height={20} width={20} />} time={syncFinishedAt} />
 			);
 		case ZSyncStatus.RunningDestroyPlan:
 			return (
-				<StatusDisplay
-					text={'Running Plan'}
-					icon={<Loader height={20} width={20} />}
-					time={syncFinishedAt}
-				/>
+				<StatusDisplay text={'Running Plan'} icon={<Loader height={20} width={20} />} time={syncFinishedAt} />
 			);
 		case ZSyncStatus.CalculatingCost:
 			return (
@@ -305,9 +301,7 @@ export const renderSyncedStatus = (
 				/>
 			);
 		case ZSyncStatus.Provisioning:
-			return (
-				<StatusDisplay text={'Applying'} icon={<Loader height={20} width={20} />} time={syncFinishedAt} />
-			);
+			return <StatusDisplay text={'Applying'} icon={<Loader height={20} width={20} />} time={syncFinishedAt} />;
 		case ZSyncStatus.Provisioned:
 			return <StatusDisplay text={'Succeeded'} icon={<SyncedIcon />} time={syncFinishedAt} />;
 		case ZSyncStatus.Destroying:
@@ -349,6 +343,10 @@ export const renderSyncedStatus = (
 					time={syncFinishedAt}
 				/>
 			);
+		case ZSyncStatus.ValidationFailed:
+			return <StatusDisplay text={'Validation Failed'} icon={<OutOfSyncIcon />} />;
+		case ZEnvSyncStatus.DestroyFailed:
+		case ZEnvSyncStatus.ProvisionFailed:
 		case AuditStatus.Failed:
 			return <StatusDisplay text={'Failed'} icon={<OutOfSyncIcon />} />;
 		case ZSyncStatus.PlanFailed:
@@ -411,13 +409,21 @@ export const getHealthStatusIcon = (healthStatus: any) => {
 export const getSyncStatusIcon = (syncStatus: any, operation?: 'Destroy' | 'Provision') => {
 	switch (syncStatus) {
 		case ZSyncStatus.Initializing:
-			return operation === 'Destroy' ? <LoaderDestroy height={16} width={16} title="Initializing" /> : <Loader height={16} width={16} title="Initializing" />;
+			return operation === 'Destroy' ? (
+				<LoaderDestroy height={16} width={16} title="Initializing" />
+			) : (
+				<Loader height={16} width={16} title="Initializing" />
+			);
 		case ZSyncStatus.InitializingApply:
-			return operation === 'Destroy' ? <LoaderDestroy height={16} width={16} title="Initializing Apply" /> : <Loader height={16} width={16} title="Initializing Apply" />;
+			return operation === 'Destroy' ? (
+				<LoaderDestroy height={16} width={16} title="Initializing Apply" />
+			) : (
+				<Loader height={16} width={16} title="Initializing Apply" />
+			);
 		case ZSyncStatus.RunningPlan:
 			return <Loader height={16} width={16} title="Running Plan" />;
 		case ZSyncStatus.RunningDestroyPlan:
-			return <LoaderDestroy height={16} width={16}  title="Running Destroy Plan" />;
+			return <LoaderDestroy height={16} width={16} title="Running Destroy Plan" />;
 		case ZSyncStatus.CalculatingCost:
 			return <CalculatingCost height={16} width={16} title="Calculating Cost" />;
 		case ZSyncStatus.WaitingForApproval:
@@ -440,7 +446,7 @@ export const getSyncStatusIcon = (syncStatus: any, operation?: 'Destroy' | 'Prov
 		case ZSyncStatus.ProvisionFailed:
 		case ZSyncStatus.DestroyFailed:
 		case ZSyncStatus.ValidationFailed:
-			return <OutOfSyncIcon title="Failed" />;
+			return <OutOfSyncIcon title="Validation Failed" />;
 		case ZSyncStatus.OutOfSync:
 		case ESyncStatus.OutOfSync:
 			return <OutOfSyncIcon title="Out of Sync" />;

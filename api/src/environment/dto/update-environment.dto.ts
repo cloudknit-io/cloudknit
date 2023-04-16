@@ -1,10 +1,15 @@
-import { PartialType } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
+import { IsBoolean, IsOptional } from 'class-validator';
+import { EnvironmentReconcile } from 'src/typeorm';
 import { CreateEnvironmentDto } from './create-environment.dto';
-import { EnvSpecComponentDto } from './env-spec.dto';
 
 export class UpdateEnvironmentDto extends PartialType(CreateEnvironmentDto) {
-  status?: string;
-  duration?: number;
   isDeleted?: boolean;
-  estimatedCost?: number;
+  latestEnvRecon?: EnvironmentReconcile;
+  lastReconcileDatetime?: string;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  isReconcile?: boolean;
 }

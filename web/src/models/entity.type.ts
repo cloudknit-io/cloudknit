@@ -13,6 +13,7 @@ export type Environment = {
 	name: string;
 	lastReconcileDatetime: Date;
 	duration: number;
+	latestEnvRecon: EnvAuditData;
 	dag: DAG[];
 	teamId: number;
 	status: string;
@@ -57,9 +58,12 @@ export type AuditData = {
 	reconcileId: number;
 	duration: number;
 	status: AuditStatus;
-	startDateTime: string;
+	startDateTime: Date;
 	operation?: string;
 	approvedBy?: string;
+	estimatedCost: number;
+	dag: DAG[];
+	errorMessage: [],
 };
 
 export type EnvAuditData = {

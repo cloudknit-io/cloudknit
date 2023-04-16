@@ -22,7 +22,10 @@ export type ApiConfig = {
       url: string;
       orgUrl: Function;
       namespace: string;
-    };
+    },
+    cd: {
+      url: string
+    }
   };
 };
 
@@ -73,6 +76,9 @@ export function init() {
           getEnvVarOrFail('CK_ARGO_WF_ORG_URL').replaceAll(':org', orgName),
         namespace: getEnvVarOrFail('CK_ARGO_WF_NAMESPACE'),
       },
+      cd: {
+        url: getEnvVarOrDefault('CK_ARGO_CD_URL', 'http://argocd-zlifecycle-server.zlifecycle-system.svc.cluster.local'),
+      }
     },
     environment: getEnvVarOrFail('CK_ENVIRONMENT'),
     isLocal: getEnvVarOrDefault('IS_LOCAL', 'false') === 'true',

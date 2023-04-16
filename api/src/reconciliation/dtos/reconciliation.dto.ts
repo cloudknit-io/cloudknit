@@ -1,13 +1,30 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
+  IsArray,
   IsDateString,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
+  ValidateNested,
 } from 'class-validator';
+import { EnvSpecComponentDto } from 'src/environment/dto/env-spec.dto';
 
-export class CreateEnvironmentReconciliationDto {
+
+export class CreateEnvironmentReconciliationBaseDto {
+  @ApiProperty({ type: EnvSpecComponentDto, isArray: true })
+  @IsNotEmpty()
+  @ValidateNested({ each: true })
+  @Type(() => EnvSpecComponentDto)
+  components: EnvSpecComponentDto[];
+
+  @ApiProperty()
+  @IsArray()
+  errorMessage?: string[];
+}
+
+export class CreateEnvironmentReconciliationDto extends CreateEnvironmentReconciliationBaseDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()

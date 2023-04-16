@@ -1,8 +1,14 @@
-import { Body, Controller, InternalServerErrorException, Logger, Post, Request } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  InternalServerErrorException,
+  Logger,
+  Post,
+  Request
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { CreateEnvironmentDto } from 'src/environment/dto/create-environment.dto';
 import { EnvironmentService } from 'src/environment/environment.service';
-import { Environment, Organization, Team } from 'src/typeorm';
+import { ReconciliationService } from 'src/reconciliation/reconciliation.service';
 import { APIRequest, TeamApiParam } from 'src/types';
 import { handleSqlErrors } from 'src/utilities/errorHandler';
 import { EnvironmentErrorSpecDto } from './dto/environment-error.dto';
@@ -13,47 +19,59 @@ import { EnvironmentErrorSpecDto } from './dto/environment-error.dto';
 @ApiTags('errors')
 export class ErrorsController {
   private readonly logger = new Logger(ErrorsController.name);
-  constructor(private readonly envSvc: EnvironmentService) {}
+  constructor(
+    private readonly envSvc: EnvironmentService,
+    private readonly reconSvc: ReconciliationService,
+  ) {}
 
   @Post()
   @TeamApiParam()
-  async saveOrUpdate(@Request() req: APIRequest, @Body() body: EnvironmentErrorSpecDto) {
-    const { org, team } = req;
-    let env = await this.envSvc.findByName(org, team, body.envName);
-    if (!env) {
-      env = await this.createEnv(org, team, {
-        name: body.envName,
-        dag: [],
-      });
-    }
-
-    return await this.envSvc.updateById(org, env.id, {
-      name: env.name,
-      errorMessage: body.errorMessage,
-    });
-  }
-
-  async createEnv(
-    org: Organization,
-    team: Team,
-    createEnv: CreateEnvironmentDto
-  ): Promise<Environment> {
-    let env: Environment;
-
+  async saveOrUpdate(
+    @Request() req: APIRequest,
+    @Body() body: EnvironmentErrorSpecDto
+  ) {
     try {
-      env = await this.envSvc.create(org, team, createEnv);
-      this.logger.log({ message: `created new environment`, env });
+      const { org, team } = req;
+      console.log('body: ', body);
+      let env = await this.envSvc.findByName(org, team, body.envName);
+      if (!env) {
+        env = await this.envSvc.create(org, team, {
+          name: body.envName,
+          dag: [],
+        });
+      }
+      if (body.errorMessage && JSON.stringify(body.errorMessage) == JSON.stringify(env.latestEnvRecon?.errorMessage)) {
+        return;
+      }
+
+      const envRecon = await this.reconSvc.createEnvRecon(org, team, env, {
+        name: env.name,
+        startDateTime: new Date().toISOString(),
+        errorMessage: body.errorMessage,
+        components: env.dag,
+        teamName: team.name,
+      });
+
+      await this.reconSvc.updateEnvRecon(envRecon, {
+        status: 'Failed',
+        endDateTime: new Date().toISOString(),
+      });
+
+      envRecon.environment = null;
+
+      await this.envSvc.mergeAndSaveEnv(org, env, {
+        latestEnvRecon: envRecon
+      });
+
     } catch (err) {
       handleSqlErrors(err, 'environment already exists');
 
       this.logger.error({
         message: 'could not create environment',
-        createEnv,
+        body,
         err,
       });
       throw new InternalServerErrorException('could not create environment');
     }
-
-    return env;
   }
 }

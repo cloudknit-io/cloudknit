@@ -1,3 +1,4 @@
+import { EnvSpecComponentDto } from 'src/environment/dto/env-spec.dto';
 import {
   Column,
   Entity,
@@ -5,15 +6,14 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
-  RelationId,
-  UpdateDateColumn,
+  RelationId
 } from 'typeorm';
-import { Organization } from './Organization.entity';
 import { Component } from './component.entity';
+import { EnvironmentReconcile } from './environment-reconcile.entity';
+import { Organization } from './Organization.entity';
 import { Team } from './team.entity';
-import { EnvSpecComponentDto } from 'src/environment/dto/env-spec.dto';
-import { ColumnNumericTransformer } from './helper';
 
 @Entity({
   name: 'environment',
@@ -27,40 +27,23 @@ export class Environment {
   @Index()
   name: string;
 
-  @UpdateDateColumn({
+  @Column({
     name: 'last_reconcile_datetime',
+    type: 'datetime',
   })
   lastReconcileDatetime: string;
 
-  @Column({
-    default: -1,
+  @OneToOne(() => EnvironmentReconcile, (envRecon) => envRecon.environment, {
+    eager: true
   })
-  duration: number;
-
-  @Column({
-    name: 'status',
-    default: 'initializing',
+  @JoinColumn({
+    referencedColumnName: 'reconcileId',
+    name: 'latest_env_recon_id'
   })
-  status: string;
+  latestEnvRecon: EnvironmentReconcile
 
   @OneToMany(() => Component, (component) => component.environment)
   components: Component[];
-
-  @Column({
-    name: 'estimated_cost',
-    type: 'decimal',
-    precision: 10,
-    scale: 3,
-    default: 0,
-    transformer: new ColumnNumericTransformer(),
-  })
-  estimatedCost: number;
-
-  @Column({
-    type: 'json',
-    default: null,
-  })
-  dag: EnvSpecComponentDto[];
 
   @Column({
     default: false,
@@ -68,10 +51,10 @@ export class Environment {
   isDeleted: boolean;
 
   @Column({
-    default: null,
     type: 'json',
+    default: null,
   })
-  errorMessage: string[];
+  dag: EnvSpecComponentDto[];
 
   @ManyToOne(() => Team, (team) => team.id, {
     onDelete: 'CASCADE',

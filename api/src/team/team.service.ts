@@ -75,7 +75,9 @@ export class TeamService {
         },
       },
       relations: {
-        environments: withEnv,
+        environments: {
+          latestEnvRecon: withEnv
+        },
       },
     });
   }
@@ -106,8 +108,8 @@ export class TeamService {
     let estimatedCost = 0.0;
 
     for (const env of team.environments) {
-      if (env.estimatedCost > 0) {
-        estimatedCost += env.estimatedCost;
+      if (env.latestEnvRecon?.estimatedCost > 0) {
+        estimatedCost += env.latestEnvRecon.estimatedCost;
       }
     }
 

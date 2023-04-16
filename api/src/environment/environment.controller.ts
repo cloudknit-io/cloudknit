@@ -1,31 +1,35 @@
 import {
-  Controller,
-  Get,
   Body,
-  Patch,
+  Controller,
   Delete,
-  Request,
-  Post,
-  Logger,
+  Get,
   InternalServerErrorException,
+  Logger,
+  Patch,
+  Post,
+  Request,
 } from '@nestjs/common';
-import { EnvironmentService } from './environment.service';
-import { UpdateEnvironmentDto } from './dto/update-environment.dto';
+import { OnEvent } from '@nestjs/event-emitter';
+import { ApiTags } from '@nestjs/swagger';
+import { argoCdLogin, reconcileCD } from 'src/argowf/api';
+import { ComponentService } from 'src/component/component.service';
+import { ReconciliationService } from 'src/reconciliation/reconciliation.service';
+import { SystemService } from 'src/system/system.service';
+import { Component, Environment, Organization, Team } from 'src/typeorm';
 import {
   APIRequest,
   ComponentCostUpdateEvent,
   EnvironmentApiParam,
+  EnvironmentReconCostUpdateEvent,
+  EnvironmentReconEnvUpdateEvent,
   InternalEventType,
   TeamApiParam,
 } from 'src/types';
 import { handleSqlErrors } from 'src/utilities/errorHandler';
-import { ComponentService } from 'src/component/component.service';
-import { EnvSpecComponentDto, EnvSpecDto } from './dto/env-spec.dto';
-import { Component, Environment, Organization, Team } from 'src/typeorm';
 import { CreateEnvironmentDto } from './dto/create-environment.dto';
-import { ReconciliationService } from 'src/reconciliation/reconciliation.service';
-import { ApiTags } from '@nestjs/swagger';
-import { OnEvent } from '@nestjs/event-emitter';
+import { EnvSpecComponentDto, EnvSpecDto } from './dto/env-spec.dto';
+import { UpdateEnvironmentDto } from './dto/update-environment.dto';
+import { EnvironmentService } from './environment.service';
 
 @Controller({
   version: '1',
@@ -37,7 +41,8 @@ export class EnvironmentController {
   constructor(
     private readonly envSvc: EnvironmentService,
     private readonly reconSvc: ReconciliationService,
-    private readonly compSvc: ComponentService
+    private readonly compSvc: ComponentService,
+    private readonly systemSvc: SystemService
   ) {}
 
   @Post()
@@ -82,9 +87,7 @@ export class EnvironmentController {
     env = await this.envSvc.updateById(org, env.id, {
       dag,
       name: env.name,
-      duration: env.duration,
       isDeleted: env.isDeleted,
-      errorMessage: null
     });
 
     // create new components
@@ -133,6 +136,20 @@ export class EnvironmentController {
     await this.batchCreateComponents(org, env, createEnv.dag);
 
     return env;
+  }
+
+  async createEnvRecon(
+    org: Organization,
+    team: Team,
+    env: Environment,
+    createEnv: CreateEnvironmentDto
+  ) {
+    return this.reconSvc.createEnvRecon(org, team, env, {
+      components: createEnv.dag,
+      name: env.name,
+      startDateTime: new Date().toISOString(),
+      teamName: team.name,
+    });
   }
 
   async batchCreateComponents(
@@ -203,7 +220,7 @@ export class EnvironmentController {
   async getDag(@Request() req: APIRequest) {
     const { env } = req;
 
-    return env.dag;
+    return env.latestEnvRecon.dag;
   }
 
   @Patch('/:environmentId')
@@ -212,9 +229,39 @@ export class EnvironmentController {
     @Request() req: APIRequest,
     @Body() updateEnvDto: UpdateEnvironmentDto
   ) {
-    const { org, env } = req;
+    const { org, env, team } = req;
+    let { argoCDAuthHeader } = req;
 
-    return this.envSvc.updateById(org, env.id, updateEnvDto);
+    if (updateEnvDto.isReconcile) {
+      const envRecon = await this.createEnvRecon(org, team, env, {
+        dag: env.dag,
+        name: env.name,
+      });
+
+      envRecon.environment = null;
+
+      updateEnvDto.latestEnvRecon = envRecon;
+    }
+
+    const updatedEnv = await this.envSvc.updateById(org, env.id, updateEnvDto);
+
+    if (updateEnvDto.isReconcile) {
+      updatedEnv.team = team;
+      this.logger.debug('starting reconciliation via argo cd', {
+        authHeader: argoCDAuthHeader,
+      });
+      if (!argoCDAuthHeader) {
+        const pwd = await this.systemSvc.getSsmSecret('/argocd/zlapi/password');
+        argoCDAuthHeader = `Bearer ${await argoCdLogin('zlapi', pwd)}`;
+      }
+      await reconcileCD(
+        org,
+        `${team.name}-${updatedEnv.name}`,
+        argoCDAuthHeader
+      );
+    }
+
+    return updatedEnv;
   }
 
   @Delete('/:environmentId')
@@ -239,9 +286,48 @@ export class EnvironmentController {
     let env = comp.environment;
 
     if (!env) {
-      env = await this.envSvc.findById(comp.organization, comp.envId);
+      env = await this.envSvc.findById(
+        comp.organization,
+        comp.envId,
+        false,
+        true
+      );
     }
 
-    await this.envSvc.updateCost(comp.organization, env);
+    await this.reconSvc.updateCost(env);
+  }
+
+  @OnEvent(InternalEventType.EnvironmentReconCostUpdate, { async: true })
+  async envReconCostUpdateListener(evt: EnvironmentReconCostUpdateEvent) {
+    const envRecon = evt.payload;
+
+    const env = await this.envSvc.findById(
+      {
+        id: envRecon.orgId,
+        ...envRecon.organization,
+      },
+      envRecon.envId
+    );
+
+    await this.envSvc.mergeAndSaveEnv(envRecon.organization, env, {
+      lastReconcileDatetime: new Date().toISOString(),
+    });
+  }
+
+  @OnEvent(InternalEventType.EnvironmentReconEnvUpdate, { async: true })
+  async envReconEnvUpdateListener(evt: EnvironmentReconEnvUpdateEvent) {
+    const envRecon = evt.payload;
+
+    const env = await this.envSvc.findById(
+      {
+        id: envRecon.orgId,
+        ...envRecon.organization,
+      },
+      envRecon.envId
+    );
+
+    await this.envSvc.mergeAndSaveEnv(envRecon.organization, env, {
+      lastReconcileDatetime: new Date().toISOString(),
+    });
   }
 }

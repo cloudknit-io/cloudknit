@@ -3,6 +3,7 @@ import axios from 'axios';
 import { get } from 'src/config';
 import { WinstonLogger } from 'src/logger';
 import { Organization } from 'src/typeorm';
+import { MiscUtils } from 'src/utilities/miscUtils';
 
 const logger = new WinstonLogger();
 
@@ -131,4 +132,66 @@ async function SubmitWorkflow(
 
 export async function SubmitProvisionOrg(params: ProvisionOrgWf) {
   return SubmitWorkflow('provision-org', 'provision-org', params);
+}
+
+export async function reconcileCD(
+  org: Organization,
+  environmentId: string,
+  argoCDAuthHeader: string
+) {
+  await deleteEnvironment(org, environmentId, argoCDAuthHeader);
+  await MiscUtils.wait(1000);
+  await syncEnvironment(org, environmentId, argoCDAuthHeader);
+}
+
+async function syncEnvironment(
+  org: Organization,
+  environmentId: string,
+  argoCDAuthHeader: string
+): Promise<any> {
+  const config = get();
+  let url = `${config.argo.cd.url}/api/v1/applications/${org.name}-${environmentId}/sync`;
+  return axios.post(
+    url,
+    {},
+    {
+      headers: {
+        authorization: argoCDAuthHeader,
+      },
+    }
+  );
+}
+
+async function deleteEnvironment(
+  org: Organization,
+  environmentId: string,
+  argoCDAuthHeader: string
+): Promise<any> {
+  const config = get();
+  let url = `${config.argo.cd.url}/api/v1/applications/${org.name}-${environmentId}/resource?name=${org.name}-${environmentId}&namespace=${org.name}-executor&resourceName=${org.name}-${environmentId}&version=v1alpha1&kind=Workflow&group=argoproj.io&force=true&orphan=false`;
+  return axios.delete(url, {
+    headers: {
+      authorization: argoCDAuthHeader,
+    },
+  });
+}
+
+export async function argoCdLogin(username: string, password: string): Promise<any> {
+  const config = get();
+  const url = `${config.argo.cd.url}/api/v1/session`;
+
+  try {
+    const resp = await axios.post(url, {
+      username,
+      password
+    });
+  
+    const { token } = resp.data;
+  
+    return token;
+  } catch (err) {
+    this.logger.error('could not login to argocd', { error: err.message });
+  }
+
+  return null;
 }

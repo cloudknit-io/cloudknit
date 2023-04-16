@@ -1,11 +1,17 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { EnvironmentReconcile } from 'src/typeorm';
+import {
+  EnvironmentReconCostUpdateEvent,
+  EnvironmentReconEnvUpdateEvent,
+  InternalEventType
+} from 'src/types';
 import {
   Connection,
   EntitySubscriberInterface,
   InsertEvent,
   RemoveEvent,
-  UpdateEvent,
+  UpdateEvent
 } from 'typeorm';
 import { StreamService } from './stream.service';
 
@@ -17,7 +23,8 @@ export class StreamEnvironmentReconcileService
 
   constructor(
     @Inject(Connection) conn: Connection,
-    private readonly sseSvc: StreamService
+    private readonly sseSvc: StreamService,
+    private evtEmitter: EventEmitter2
   ) {
     conn.subscribers.push(this);
   }
@@ -33,7 +40,30 @@ export class StreamEnvironmentReconcileService
   afterUpdate(
     event: UpdateEvent<EnvironmentReconcile>
   ): void | Promise<EnvironmentReconcile> {
-    this.validateAndSend(event.entity as EnvironmentReconcile, 'afterUpdate');
+    if (event.updatedColumns.length === 0) return;
+    const envRecon = event.entity as EnvironmentReconcile;
+    const costUpdated = event.updatedColumns.find(
+      (col) => col.propertyName === 'estimatedCost'
+    );
+    const updateEnv = event.updatedColumns.some((col) =>
+      ['status', 'endDateTime', 'errorMessage'].includes(col.propertyName)
+    );
+
+    if (costUpdated) {
+      this.evtEmitter.emit(
+        InternalEventType.EnvironmentReconCostUpdate,
+        new EnvironmentReconCostUpdateEvent({ ...envRecon })
+      );
+    }
+
+    if (updateEnv) {
+      this.evtEmitter.emit(
+        InternalEventType.EnvironmentReconEnvUpdate,
+        new EnvironmentReconEnvUpdateEvent({ ...envRecon })
+      );
+    }
+    
+    this.validateAndSend(envRecon, 'afterUpdate');
   }
 
   afterRemove(event: RemoveEvent<EnvironmentReconcile>): void | Promise<any> {

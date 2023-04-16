@@ -1,16 +1,16 @@
+import { EnvSpecComponentDto } from 'src/environment/dto/env-spec.dto';
 import {
   Column,
   Entity,
   JoinColumn,
   ManyToOne,
-  OneToMany,
-  PrimaryColumn,
-  PrimaryGeneratedColumn,
-  RelationId,
+  OneToMany, PrimaryGeneratedColumn,
+  RelationId
 } from 'typeorm';
-import { Organization } from './Organization.entity';
 import { ComponentReconcile } from './component-reconcile.entity';
 import { Environment } from './environment.entity';
+import { ColumnNumericTransformer } from './helper';
+import { Organization } from './Organization.entity';
 import { Team } from './team.entity';
 
 @Entity({
@@ -39,6 +39,28 @@ export class EnvironmentReconcile {
   })
   endDateTime?: string;
 
+  @Column({
+    name: 'estimated_cost',
+    type: 'decimal',
+    precision: 10,
+    scale: 3,
+    default: 0,
+    transformer: new ColumnNumericTransformer(),
+  })
+  estimatedCost: number;
+
+  @Column({
+    type: 'json',
+    default: null,
+  })
+  dag: EnvSpecComponentDto[];
+
+  @Column({
+    default: null,
+    type: 'json',
+  })
+  errorMessage: string[];
+
   @OneToMany(
     () => ComponentReconcile,
     (component) => component.environmentReconcile,
@@ -49,9 +71,7 @@ export class EnvironmentReconcile {
   )
   componentReconciles?: ComponentReconcile[];
 
-  @ManyToOne(() => Environment, (environment) => environment.id, {
-    eager: true,
-  })
+  @ManyToOne(() => Environment, (environment) => environment.id)
   environment: Environment;
 
   @ManyToOne(() => Team, (team) => team.id)
@@ -59,6 +79,7 @@ export class EnvironmentReconcile {
 
   @ManyToOne(() => Organization, (org) => org.id, {
     onDelete: 'CASCADE',
+    eager: true
   })
   @JoinColumn({
     referencedColumnName: 'id',

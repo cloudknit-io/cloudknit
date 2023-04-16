@@ -46,10 +46,12 @@ export class ReconciliationService {
     return this.envReconRepo.save({
       startDateTime: createEnv.startDateTime,
       environment: env,
-      // gitSha: createEnv.gitSha,
       team,
       status: 'initializing',
       organization: org,
+      dag: createEnv.components,
+      gitSha: "",
+      errorMessage: createEnv.errorMessage || null
     });
   }
 
@@ -99,27 +101,31 @@ export class ReconciliationService {
   async getEnvReconStatusBySHA(org: Organization, gitSha: string) {
     return this.envReconRepo.findOne({
       where: {
-        gitSha : Equal(gitSha),
+        gitSha: Equal(gitSha),
         organization: {
-          id : Equal(org.id)
-        }
-      }
+          id: Equal(org.id),
+        },
+      },
     });
   }
 
-  async getEnvReconStatusByName(org: Organization, teamName: string, envName: string) {
+  async getEnvReconStatusByName(
+    org: Organization,
+    teamName: string,
+    envName: string
+  ) {
     return this.envReconRepo.findOne({
       where: {
         organization: {
-          id : Equal(org.id)
+          id: Equal(org.id),
         },
         team: {
-          name: teamName
+          name: teamName,
         },
         environment: {
-          name: envName
-        }
-      }
+          name: envName,
+        },
+      },
     });
   }
 
@@ -405,5 +411,22 @@ export class ReconciliationService {
       component,
       latestCompRecon.reconcileId
     );
+  }
+
+  async updateCost(env: Environment) {
+    let estimatedCost = 0.0;
+    for (const comp of env.components) {
+      if (comp.estimatedCost > 0) {
+        estimatedCost += comp.estimatedCost;
+      }
+    }
+
+    const envRecon = env.latestEnvRecon;
+
+    await this.envReconRepo.merge(envRecon, {
+      estimatedCost,
+    });
+
+    await this.envReconRepo.save(envRecon);
   }
 }
