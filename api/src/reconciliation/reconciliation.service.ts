@@ -363,7 +363,7 @@ export class ReconciliationService {
         organization: {
           id: Equal(org.id),
         },
-        status: Not(Equal('validation_error')),
+        status: Not(Equal('validation_failed')),
       },
       order: {
         endDateTime: -1,
