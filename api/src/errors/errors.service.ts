@@ -7,7 +7,6 @@ import { Environment, Organization, Team } from 'src/typeorm';
 @Injectable()
 export class ErrorsService {
   constructor(
-    @InjectRepository(Environment)
     private readonly reconSvc: ReconciliationService,
     private readonly envSvc: EnvironmentService
   ) {}
@@ -38,7 +37,7 @@ export class ErrorsService {
 
     newRecon.environment = null;
 
-    return await this.envSvc.mergeAndSaveEnv(org, env, {
+    return this.envSvc.mergeAndSaveEnv(org, env, {
       latestEnvRecon: newRecon,
     });
   }
@@ -52,8 +51,6 @@ export class ErrorsService {
     // This means there is a validation_error in yaml
 
     // check if its the same and return
-    console.log(JSON.stringify(errorMessage));
-    console.log(JSON.stringify(env.latestEnvRecon?.errorMessage));
     if (
       JSON.stringify(errorMessage) ==
       JSON.stringify(env.latestEnvRecon?.errorMessage)

@@ -27,7 +27,7 @@ import { ErrorsService } from './errors.service';
         Team,
         Component,
         EnvironmentReconcile,
-        ComponentReconcile,
+        ComponentReconcile
       ]),
     ],
     controllers: [ErrorsController],
