@@ -33,7 +33,7 @@ rules:
     - list
     - watch
 - apiGroups:
-  - stable.compuzest.com
+  - stable.cloudknit.io
   resources:
   - companies
   verbs:
@@ -45,7 +45,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - stable.compuzest.com
+  - stable.cloudknit.io
   resources:
   - companies/status
   verbs:
@@ -53,7 +53,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - stable.compuzest.com
+  - stable.cloudknit.io
   resources:
   - environments
   verbs:
@@ -65,7 +65,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - stable.compuzest.com
+  - stable.cloudknit.io
   resources:
   - environments/status
   verbs:
@@ -73,7 +73,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - stable.compuzest.com
+  - stable.cloudknit.io
   resources:
   - teams
   verbs:
@@ -85,7 +85,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - stable.compuzest.com
+  - stable.cloudknit.io
   resources:
   - teams/status
   verbs:

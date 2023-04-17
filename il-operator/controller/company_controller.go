@@ -46,8 +46,8 @@ type CompanyReconciler struct {
 	APM    apm.APM
 }
 
-// +kubebuilder:rbac:groups=stable.compuzest.com,resources=companies,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=stable.compuzest.com,resources=companies/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=stable.cloudknit.io,resources=companies,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=stable.cloudknit.io,resources=companies/status,verbs=get;update;patch
 
 func (r *CompanyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	if shouldEndReconcile("company", r.LogV2) {

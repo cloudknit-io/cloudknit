@@ -177,19 +177,19 @@ func registerWebhooks(mgr manager.Manager) {
 	hs := mgr.GetWebhookServer()
 	es := eventservice.NewService(env.Config.ZLifecycleEventServiceURL)
 	hs.Register(
-		fmt.Sprintf("/%s/validate-stable-compuzest-com-v1-environment", env.Config.CompanyName),
+		fmt.Sprintf("/%s/validate-stable-cloudknit-io-v1-environment", env.Config.CompanyName),
 		&webhook.Admission{Handler: validating.NewEnvironmentValidatingWebhook(environmentValidator, es, setupLog.WithField("logger", "controllers.EnvironmentValidatingWebhook"))},
 	)
 	hs.Register(
-		fmt.Sprintf("/%s/validate-stable-compuzest-com-v1-team", env.Config.CompanyName),
+		fmt.Sprintf("/%s/validate-stable-cloudknit-io-v1-team", env.Config.CompanyName),
 		&webhook.Admission{Handler: validating.NewTeamValidatingWebhook(teamValidator, es, setupLog.WithField("logger", "controllers.TeamValidatingWebhook"))},
 	)
 	hs.Register(
-		fmt.Sprintf("/%s/mutate-stable-compuzest-com-v1-environment", env.Config.CompanyName),
+		fmt.Sprintf("/%s/mutate-stable-cloudknit-io-v1-environment", env.Config.CompanyName),
 		&webhook.Admission{Handler: mutating.NewEnvironmentMutatingWebhook(mgr.GetClient(), es, setupLog.WithField("logger", "controllers.EnvironmentMutatingWebhook"))},
 	)
 	hs.Register(
-		fmt.Sprintf("/%s/mutate-stable-compuzest-com-v1-team", env.Config.CompanyName),
+		fmt.Sprintf("/%s/mutate-stable-cloudknit-io-v1-team", env.Config.CompanyName),
 		&webhook.Admission{Handler: mutating.NewTeamMutatingWebhook(mgr.GetClient(), es, setupLog.WithField("logger", "controllers.TeamMutatingWebhook"))},
 	)
 }

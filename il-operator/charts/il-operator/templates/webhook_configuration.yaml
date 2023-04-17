@@ -12,7 +12,7 @@ webhooks:
       service:
         name: ingress-nginx-controller
         namespace: kube-system
-        path: /{{ .Values.company.config.name }}/validate-stable-compuzest-com-v1-environment
+        path: /{{ .Values.company.config.name }}/validate-stable-cloudknit-io-v1-environment
     namespaceSelector:
       matchExpressions:
         - key: "zlifecycle.com/validation"
@@ -22,7 +22,7 @@ webhooks:
     name: venvironment.kb.io
     rules:
       - apiGroups:
-          - stable.compuzest.com
+          - stable.cloudknit.io
         apiVersions:
           - v1
         operations:
@@ -38,7 +38,7 @@ webhooks:
       service:
         name: ingress-nginx-controller
         namespace: kube-system
-        path: /{{ .Values.company.config.name }}/validate-stable-compuzest-com-v1-team
+        path: /{{ .Values.company.config.name }}/validate-stable-cloudknit-io-v1-team
     namespaceSelector:
       matchExpressions:
         - key: "zlifecycle.com/validation"
@@ -48,7 +48,7 @@ webhooks:
     name: vteam.kb.io
     rules:
       - apiGroups:
-          - stable.compuzest.com
+          - stable.cloudknit.io
         apiVersions:
           - v1
         operations:
@@ -73,7 +73,7 @@ webhooks:
       service:
         name: ingress-nginx-controller
         namespace: kube-system
-        path: /{{ .Values.company.config.name }}/mutate-stable-compuzest-com-v1-environment
+        path: /{{ .Values.company.config.name }}/mutate-stable-cloudknit-io-v1-environment
     namespaceSelector:
       matchExpressions:
         - key: "zlifecycle.com/validation"
@@ -83,7 +83,7 @@ webhooks:
     name: venvironment.kb.io
     rules:
       - apiGroups:
-          - stable.compuzest.com
+          - stable.cloudknit.io
         apiVersions:
           - v1
         operations:
@@ -99,7 +99,7 @@ webhooks:
       service:
         name: ingress-nginx-controller
         namespace: kube-system
-        path: /{{ .Values.company.config.name }}/mutate-stable-compuzest-com-v1-team
+        path: /{{ .Values.company.config.name }}/mutate-stable-cloudknit-io-v1-team
     namespaceSelector:
       matchExpressions:
         - key: "zlifecycle.com/validation"
@@ -109,7 +109,7 @@ webhooks:
     name: vteams.kb.io
     rules:
       - apiGroups:
-          - stable.compuzest.com
+          - stable.cloudknit.io
         apiVersions:
           - v1
         operations:
