@@ -18,6 +18,7 @@ import {
   import { ComponentService } from 'src/component/component.service';
 import { EnvironmentService } from 'src/environment/environment.service';
 import { ErrorsController } from './errors.controller';
+import { ErrorsService } from './errors.service';
   
   @Module({
     imports: [
@@ -35,6 +36,7 @@ import { ErrorsController } from './errors.controller';
       EnvironmentService,
       TeamService,
       ReconciliationService,
+      ErrorsService
     ],
   })
   export class ErrorsModule implements NestModule {

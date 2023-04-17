@@ -11,7 +11,6 @@ import {
 } from 'class-validator';
 import { EnvSpecComponentDto } from 'src/environment/dto/env-spec.dto';
 
-
 export class CreateEnvironmentReconciliationBaseDto {
   @ApiProperty({ type: EnvSpecComponentDto, isArray: true })
   @IsNotEmpty()
@@ -41,6 +40,38 @@ export class CreateEnvironmentReconciliationDto extends CreateEnvironmentReconci
   startDateTime: string;
 }
 
+export class CreateErrorEnvironmentReconciliationDto extends CreateEnvironmentReconciliationBaseDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  teamName: string;
+
+  @ApiProperty()
+  @IsDateString()
+  @IsNotEmpty()
+  startDateTime: string;
+
+  @ApiProperty()
+  @IsDateString()
+  @IsNotEmpty()
+  endDateTime: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  status: string;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsOptional()
+  estimatedCost: number;
+}
+
 export class UpdateEnvironmentReconciliationDto {
   @ApiProperty()
   @IsString()
@@ -51,6 +82,11 @@ export class UpdateEnvironmentReconciliationDto {
   @IsDateString()
   @IsOptional()
   endDateTime?: string;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsOptional()
+  estimatedCost?: number;
 }
 
 export class CreateComponentReconciliationDto {
