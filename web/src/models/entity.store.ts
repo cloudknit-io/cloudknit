@@ -1,7 +1,8 @@
-import { BehaviorSubject, Subject, Subscription } from 'rxjs';
 import { EntityService } from 'services/entity/entity.service';
+import { BehaviorSubject, Subject, Subscription } from 'rxjs';
 import { ErrorStateService } from 'services/error/error-state.service';
 import { CompAuditData, Component, EnvAuditData, Environment, StreamTypeEnum, Team, Update } from './entity.type';
+import { ZSyncStatus } from './argo.models';
 
 export class EntityStore {
 	private static instance: EntityStore;
@@ -27,7 +28,12 @@ export class EntityStore {
 	}
 
 	public get Environments() {
-		return [...this.envMap.values()];
+		return [...this.envMap.values()].map(e => {
+			if (e.errorMessage) {
+				e.status = ZSyncStatus.ValidationFailed;
+			}
+			return e;
+		});
 	}
 
 	public get Components() {
@@ -78,6 +84,7 @@ export class EntityStore {
 						...env,
 						...this.mergeEnvReconToEnv(env, env.latestEnvRecon),
 						argoId: `${e.name}-${env.name}`,
+
 					});
 					env.components?.forEach(c => {
 						const compDag = env.dag.find(d => d.name === c.name);
@@ -132,7 +139,7 @@ export class EntityStore {
 			this.envMap.set(environment.id, {
 				...currEnv,
 				...environment,
-				...this.mergeEnvReconToEnv(environment, environment.latestEnvRecon),
+				...this.mergeEnvReconToEnv(environment, environment.latestEnvRecon)
 			});
 		} else {
 			this.envMap.set(environment.id, {
