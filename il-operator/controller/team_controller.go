@@ -45,8 +45,8 @@ type TeamReconciler struct {
 	APM    apm.APM
 }
 
-// +kubebuilder:rbac:groups=stable.compuzest.com,resources=teams,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=stable.compuzest.com,resources=teams/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=stable.cloudknit.io,resources=teams,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=stable.cloudknit.io,resources=teams/status,verbs=get;update;patch
 
 var (
 	initArgocdAdminRbacLock     sync.Once

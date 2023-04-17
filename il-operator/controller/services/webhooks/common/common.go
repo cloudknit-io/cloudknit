@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	EnvironmentCRDName = "environments.stable.compuzest.com"
-	TeamCRDName        = "teams.stable.compuzest.com"
+	EnvironmentCRDName = "environments.stable.cloudknit.io"
+	TeamCRDName        = "teams.stable.cloudknit.io"
 )
 
 func LogErrors(verrors []gojsonschema.ResultError, log *logrus.Entry) {

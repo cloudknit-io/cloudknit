@@ -56,8 +56,8 @@ type EnvironmentReconciler struct {
 	GitReconciler gitreconciler.API
 }
 
-// +kubebuilder:rbac:groups=stable.compuzest.com,resources=environments,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=stable.compuzest.com,resources=environments/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=stable.cloudknit.io,resources=environments,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=stable.cloudknit.io,resources=environments/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups="",resources=configmaps;secrets,verbs=get;list;watch;update;patch
 // +kubebuilder:rbac:groups=coordination.k8s.io,resources=leases,verbs=create;get;update
 

@@ -18,7 +18,7 @@ func GetMockEnv1(deleted bool) stablev1.Environment {
 	return stablev1.Environment{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Environment",
-			APIVersion: "stable.compuzest.com/v1",
+			APIVersion: "stable.cloudknit.io/v1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:              "development",
@@ -89,7 +89,7 @@ func GetMockEnv1(deleted bool) stablev1.Environment {
 //	return stablev1.Environment{
 //		TypeMeta: metav1.TypeMeta{
 //			Kind:       "Environment",
-//			APIVersion: "stable.compuzest.com/v1",
+//			APIVersion: "stable.cloudknit.io/v1",
 //		},
 //		ObjectMeta: metav1.ObjectMeta{
 //			Name:              "development",
@@ -141,7 +141,7 @@ func GetMockEnv1(deleted bool) stablev1.Environment {
 //	return stablev1.Environment{
 //		TypeMeta: metav1.TypeMeta{
 //			Kind:       "Environment",
-//			APIVersion: "stable.compuzest.com/v1",
+//			APIVersion: "stable.cloudknit.io/v1",
 //		},
 //		ObjectMeta: metav1.ObjectMeta{
 //			Name:              "development",

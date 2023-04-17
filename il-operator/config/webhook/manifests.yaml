@@ -11,12 +11,12 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
-      path: /mutate-stable-compuzest-com-v1-environment
+      path: /mutate-stable-cloudknit-io-v1-environment
   failurePolicy: Fail
   name: venvironment.kb.io
   rules:
   - apiGroups:
-    - stable.compuzest.com
+    - stable.cloudknit.io
     apiVersions:
     - v1
     operations:
@@ -38,12 +38,12 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
-      path: /validate-stable-compuzest-com-v1-environment
+      path: /validate-stable-cloudknit-io-v1-environment
   failurePolicy: Fail
   name: venvironment.kb.io
   rules:
   - apiGroups:
-    - stable.compuzest.com
+    - stable.cloudknit.io
     apiVersions:
     - v1
     operations:

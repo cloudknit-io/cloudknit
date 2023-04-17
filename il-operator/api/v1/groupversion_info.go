@@ -1,6 +1,6 @@
 // Package v1 contains API Schema definitions for the stable v1 API group
 // +kubebuilder:object:generate=true
-// +groupName=stable.compuzest.com
+// +groupName=stable.cloudknit.io
 package v1
 
 import (
@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	CRDGroup       = "stable.compuzest.com"
+	CRDGroup       = "stable.cloudknit.io"
 	CRDVersion     = "v1"
 	CRDEnvironment = "Environment"
 	CRDTeam        = "Team"

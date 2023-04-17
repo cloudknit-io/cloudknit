@@ -59,10 +59,10 @@ operator:
       - ingress-nginx-controller.kube-system.svc.cluster.local
       - ingress-nginx-controller.kube-system.svc
     routes:
-      - validate-stable-compuzest-com-v1-environment
-      - mutate-stable-compuzest-com-v1-environment
-      - validate-stable-compuzest-com-v1-team
-      - mutate-stable-compuzest-com-v1-team
+      - validate-stable-cloudknit-io-v1-environment
+      - mutate-stable-cloudknit-io-v1-environment
+      - validate-stable-cloudknit-io-v1-team
+      - mutate-stable-cloudknit-io-v1-team
     disabled: false
   watch:
     resources: "company,team,environment"
