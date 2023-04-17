@@ -17,11 +17,11 @@ awsCredentials:
 argowf:
   url:
   namespace:
-argocd:
-  url: ""
 org:
   argoWf:
     url: ""
+  argocd:
+    url: "http://argocd-zlifecycle-server.zlifecycle-system.svc.cluster.local"
 ckEnvironment:
 namespace: zlifecycle-system
 resources:
