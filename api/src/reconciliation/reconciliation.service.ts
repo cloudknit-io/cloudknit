@@ -5,21 +5,22 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { get } from 'src/config';
-import { S3Handler } from 'src/utilities/s3Handler';
 import { Organization, Team } from 'src/typeorm';
 import { ComponentReconcile } from 'src/typeorm/component-reconcile.entity';
 import { Component } from 'src/typeorm/component.entity';
 import { EnvironmentReconcile } from 'src/typeorm/environment-reconcile.entity';
 import { Environment } from 'src/typeorm/environment.entity';
+import { S3Handler } from 'src/utilities/s3Handler';
 import { Equal, In, IsNull, Like, Not } from 'typeorm';
 import { Repository } from 'typeorm/repository/Repository';
 import { ComponentReconcileWrap } from './dtos/componentAudit.dto';
 import { EnvironmentReconcileWrap } from './dtos/environmentAudit.dto';
 import {
-  CreateEnvironmentReconciliationDto,
-  UpdateEnvironmentReconciliationDto,
   CreateComponentReconciliationDto,
+  CreateEnvironmentReconciliationDto,
+  CreateErrorEnvironmentReconciliationDto,
   UpdateComponentReconciliationDto,
+  UpdateEnvironmentReconciliationDto,
 } from './dtos/reconciliation.dto';
 import { Mapper } from './mapper';
 
@@ -50,8 +51,28 @@ export class ReconciliationService {
       status: 'initializing',
       organization: org,
       dag: createEnv.components,
-      gitSha: "",
-      errorMessage: createEnv.errorMessage || null
+      gitSha: '',
+      errorMessage: createEnv.errorMessage || null,
+    });
+  }
+
+  async createErrorEnvRecon(
+    org: Organization,
+    team: Team,
+    env: Environment,
+    createEnv: CreateErrorEnvironmentReconciliationDto
+  ): Promise<EnvironmentReconcile> {
+    return this.envReconRepo.save({
+      startDateTime: createEnv.startDateTime,
+      environment: env,
+      team,
+      status: createEnv.status,
+      organization: org,
+      dag: createEnv.components,
+      gitSha: '',
+      errorMessage: createEnv.errorMessage || null,
+      endDateTime: createEnv.endDateTime,
+      estimatedCost: createEnv.estimatedCost,
     });
   }
 
@@ -331,6 +352,23 @@ export class ReconciliationService {
     });
 
     return Mapper.getEnvironmentAuditList(environments);
+  }
+
+  async getLatestNonValidationErrorRec(org: Organization, env: Environment) {
+    return this.envReconRepo.findOne({
+      where: {
+        environment: {
+          id: Equal(env.id),
+        },
+        organization: {
+          id: Equal(org.id),
+        },
+        status: Not(Equal('validation_error')),
+      },
+      order: {
+        endDateTime: -1,
+      },
+    });
   }
 
   async getLogs(
