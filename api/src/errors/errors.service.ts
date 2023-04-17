@@ -1,16 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UpdateEnvironmentDto } from 'src/environment/dto/update-environment.dto';
 import { EnvironmentService } from 'src/environment/environment.service';
 import { ReconciliationService } from 'src/reconciliation/reconciliation.service';
 import { Environment, Organization, Team } from 'src/typeorm';
-import { Repository } from 'typeorm';
 
 @Injectable()
 export class ErrorsService {
   constructor(
     @InjectRepository(Environment)
-    private readonly envRepo: Repository<Environment>,
     private readonly reconSvc: ReconciliationService,
     private readonly envSvc: EnvironmentService
   ) {}
