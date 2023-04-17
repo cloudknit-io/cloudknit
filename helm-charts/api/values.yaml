@@ -18,7 +18,7 @@ argowf:
   url:
   namespace:
 argocd:
-  url:
+  url: ""
 org:
   argoWf:
     url: ""
