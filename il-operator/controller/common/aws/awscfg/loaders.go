@@ -74,12 +74,13 @@ func getCredentialsFromSecret(ctx context.Context, secretName string, client kCl
 
 	accessKeyID := string(credsSecret.Data[util.AWSAccessKeyID])
 	secretAccessKey := string(credsSecret.Data[util.AWSSecretAccessKey])
+	sessionToken := string(credsSecret.Data[util.AWSSessionToken])
 
 	if accessKeyID == "" || secretAccessKey == "" {
 		return nil, errors.New("missing AWS Access Key ID and/or AWS Secret Access key in shared aws secret")
 	}
 
-	return &secret2.AWSCredentials{AccessKeyID: accessKeyID, SecretAccessKey: secretAccessKey}, nil
+	return &secret2.AWSCredentials{AccessKeyID: accessKeyID, SecretAccessKey: secretAccessKey, SessionToken: sessionToken}, nil
 }
 
 func NewK8sSecretCredentialsLoader(kc kClient.Client, k8sSecretName string) *K8sSecretCredentialsLoader {

@@ -69,7 +69,7 @@ func GetCustomerTerraformStateConfig(ctx context.Context, client secret2.API, me
 }
 
 func GetAWSCredentials(ctx context.Context, client secret2.API, meta *secret.Identifier, log *logrus.Entry) (*secret2.AWSCredentials, error) {
-	secretsToFetch := []string{util.AWSAccessKeyID, util.AWSSecretAccessKey}
+	secretsToFetch := []string{util.AWSAccessKeyID, util.AWSSecretAccessKey, util.AWSSessionToken}
 	log.Info("Checking for AWS credentials in environment scope")
 	scrts, err := client.GetSecrets(
 		ctx,
@@ -164,7 +164,7 @@ func checkForTerraformStateConfig(scrts []*secret2.Secret) (cfg *secret2.Terrafo
 }
 
 func checkForAWSCredentials(scrts []*secret2.Secret) (credentials *secret2.AWSCredentials, exist bool) {
-	var accessKeyID, secretAccessKey string
+	var accessKeyID, secretAccessKey, sessionToken string
 
 	for _, scrt := range scrts {
 		if strings.HasSuffix(scrt.Key, util.AWSAccessKeyID) && scrt.Exists {
@@ -173,12 +173,16 @@ func checkForAWSCredentials(scrts []*secret2.Secret) (credentials *secret2.AWSCr
 		if strings.HasSuffix(scrt.Key, util.AWSSecretAccessKey) && scrt.Exists {
 			secretAccessKey = *scrt.Value
 		}
+		if strings.HasSuffix(scrt.Key, util.AWSSessionToken) && scrt.Exists {
+			sessionToken = *scrt.Value
+		}
 	}
 
 	if accessKeyID != "" && secretAccessKey != "" {
 		return &secret2.AWSCredentials{
 			AccessKeyID:     accessKeyID,
 			SecretAccessKey: secretAccessKey,
+			SessionToken:    sessionToken,
 		}, true
 	}
 	return nil, false
