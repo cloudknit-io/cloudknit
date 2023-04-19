@@ -14,7 +14,7 @@ import React, { ReactElement } from 'react';
 import { ArgoTeamsService } from 'services/argo/ArgoProjects.service';
 
 export const mockOriginalYaml = `
-apiVersion: stable.compuzest.com/v1
+apiVersion: stable.cloudknit.io/v1
 kind: Environment
 metadata:
   name: dev-checkout-adprod
@@ -86,7 +86,7 @@ spec:
           value: data`;
 
 export const mockModifiedYaml = `
-apiVersion: stable.compuzest.com/v1
+apiVersion: stable.cloudknit.io/v1
 kind: Environment
 metadata:
   name: dev-checkout-prod

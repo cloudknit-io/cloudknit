@@ -17,7 +17,7 @@ The `autoApprove` flag can be configured for all components in an environment at
 **Sample YAML**
 
 ```yaml
-apiVersion: stable.compuzest.com/v1
+apiVersion: stable.cloudknit.io/v1
 kind: Environment
 metadata:
   name: dev-checkout-sandbox

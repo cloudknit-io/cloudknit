@@ -5,7 +5,7 @@
 1. **In your `cloudknit-config` repo** create a `teams` directory
 1. In the `teams` directory create the following yaml file. Name it `[[team-name]].yaml`:
     ```yaml
-    apiVersion: stable.compuzest.com/v1
+    apiVersion: stable.cloudknit.io/v1
     kind: Team
     metadata:
       name: [[teamname]]

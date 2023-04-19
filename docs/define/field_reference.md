@@ -12,7 +12,7 @@ Since Environment definition uses a Kubernetes Custom Resource the top section o
 
 | Field Name | Field Type | Description   |
 |:----------:|:----------:|---------------|
-|`apiVersion`|`string`| Custom Resource Header. Value needs to be `stable.compuzest.com/v1` |
+|`apiVersion`|`string`| Custom Resource Header. Value needs to be `stable.cloudknit.io/v1` |
 |`kind`|`string`| Custom Resource Header. Value needs to be `Environment` |
 |`metadata`|[`Metadata`](#Metadata)| Metadata about the Environment |
 |`spec`|[`spec`](#spec)| Details about the Environment  |
@@ -20,7 +20,7 @@ Since Environment definition uses a Kubernetes Custom Resource the top section o
 ## Custom Resource Header
 
 ```yaml
-apiVersion: stable.compuzest.com/v1
+apiVersion: stable.cloudknit.io/v1
 kind: Environment
 ```
 
