@@ -5,7 +5,7 @@ See below some examples of Environment YAML.
 <details>
   <summary>Environment YAML with tfvars file</summary>
 ```yaml
-apiVersion: stable.compuzest.com/v1
+apiVersion: stable.cloudknit.io/v1
 kind: Environment
 metadata:
   name: dev-zmart-checkout-staging

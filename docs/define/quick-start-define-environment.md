@@ -10,10 +10,10 @@ An environment YAML is the starting point when provisioning the environment, it 
 
 Our YAML file always starts with following yaml:
 
-with `kind` property being `environment`, and for now `apiVersion` is always `stable.compuzest.com/v1`
+with `kind` property being `environment`, and for now `apiVersion` is always `stable.cloudknit.io/v1`
 
 ```yaml
-apiVersion: stable.compuzest.com/v1
+apiVersion: stable.cloudknit.io/v1
 kind: Environment
 ```
 
@@ -555,7 +555,7 @@ dependsOn: [networking]
 - ##### Full Fledged Yaml
 
   ```yaml
-  apiVersion: stable.compuzest.com/v1
+  apiVersion: stable.cloudknit.io/v1
   kind: Environment
   metadata:
     name: org-tech-client-demo

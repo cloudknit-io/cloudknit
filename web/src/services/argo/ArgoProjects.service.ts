@@ -15,7 +15,7 @@ export class ArgoTeamsService {
 				},
 			},
 			resources: [{
-				group: 'stable.compuzest.com',
+				group: 'stable.cloudknit.io',
 				kind: 'Environment',
 				name: `${ENVIRONMENT_VARIABLES.REACT_APP_CUSTOMER_NAME}-${projectId}-${envName}`,
 				namespace: 'zlifecycle',

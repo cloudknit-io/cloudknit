@@ -370,7 +370,7 @@ export class YComponent {
 }
 
 export class YEnvironmentBuilder {
-	apiVersion = 'stable.compuzest.com/v1';
+	apiVersion = 'stable.cloudknit.io/v1';
 	kind = 'Environment';
 	metadata: YMetaData;
 	spec: YSpec;

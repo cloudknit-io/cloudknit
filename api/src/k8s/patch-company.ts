@@ -7,7 +7,7 @@ export async function patchCompany(org: Organization, githubRepo: string) {
   const options = {
     headers: { 'Content-type': k8s.PatchUtils.PATCH_FORMAT_JSON_PATCH },
   };
-  const group = 'stable.compuzest.com';
+  const group = 'stable.cloudknit.io';
   const version = 'v1';
   const plural = 'companies';
   const namespace = `${org.name}-config`;
