@@ -1,0 +1,1650 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://docs.cloudknit.io/define/field_reference/">
+      
+      
+        <link rel="prev" href="../define_environment/">
+      
+      
+        <link rel="next" href="../examples/">
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.1.6">
+    
+    
+      
+        <title>Field Reference - CloudKnit - Environment Managment Made Easy</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ded33207.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.a0c5b2b5.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#field-reference" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="CloudKnit - Environment Managment Made Easy" class="md-header__button md-logo" aria-label="CloudKnit - Environment Managment Made Easy" data-md-component="logo">
+      
+  <img src="../../assets/images/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CloudKnit - Environment Managment Made Easy
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Field Reference
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="CloudKnit - Environment Managment Made Easy" class="md-nav__button md-logo" aria-label="CloudKnit - Environment Managment Made Easy" data-md-component="logo">
+      
+  <img src="../../assets/images/logo.png" alt="logo">
+
+    </a>
+    CloudKnit - Environment Managment Made Easy
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/concepts/" class="md-nav__link">
+        Core Concepts
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/architectural_overview/" class="md-nav__link">
+        Architectural Overview
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          Getting Started
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Getting Started
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting_started/setup/" class="md-nav__link">
+        Getting Started
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting_started/onboard_team/" class="md-nav__link">
+        Onboard a New Team
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting_started/hello_world/" class="md-nav__link">
+        Hello, World! Environment
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting_started/install_github_app/" class="md-nav__link">
+        Configuring Github App
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+          Settings
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Settings
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../settings/aws_credentials/" class="md-nav__link">
+        AWS Credentials
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../settings/secrets/" class="md-nav__link">
+        Environment Secrets
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../settings/users/" class="md-nav__link">
+        Users
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+          Define
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+        <label class="md-nav__title" for="__nav_6">
+          <span class="md-nav__icon md-icon"></span>
+          Define
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../define_environment/" class="md-nav__link">
+        Define Environment
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Field Reference
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Field Reference
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#sections" class="md-nav__link">
+    Sections
+  </a>
+  
+    <nav class="md-nav" aria-label="Sections">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fields" class="md-nav__link">
+    Fields
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#custom-resource-header" class="md-nav__link">
+    Custom Resource Header
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#metadata" class="md-nav__link">
+    Metadata
+  </a>
+  
+    <nav class="md-nav" aria-label="Metadata">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fields_1" class="md-nav__link">
+    Fields
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#metadata-name-zmart-checkout-dev-namespace-zmart-config" class="md-nav__link">
+    metadata:
+  name: zmart-checkout-dev
+  namespace: zmart-config
+
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spec" class="md-nav__link">
+    Spec
+  </a>
+  
+    <nav class="md-nav" aria-label="Spec">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fields_2" class="md-nav__link">
+    Fields
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spec-teamname-checkout-envname-demo" class="md-nav__link">
+    spec:
+  teamName: checkout
+  envName: demo
+
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#components" class="md-nav__link">
+    Components
+  </a>
+  
+    <nav class="md-nav" aria-label="Components">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fields_3" class="md-nav__link">
+    Fields
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#selective-reconcile" class="md-nav__link">
+    Selective Reconcile
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aws" class="md-nav__link">
+    AWS
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#secrets" class="md-nav__link">
+    Secrets
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tags" class="md-nav__link">
+    Tags
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variables" class="md-nav__link">
+    Variables
+  </a>
+  
+    <nav class="md-nav" aria-label="Variables">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#inline-variables" class="md-nav__link">
+    Inline Variables
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variables-from-a-file" class="md-nav__link">
+    Variables from a file
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#module" class="md-nav__link">
+    Module
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#outputs" class="md-nav__link">
+    Outputs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#overlay-files" class="md-nav__link">
+    Overlay Files
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#overlay-data" class="md-nav__link">
+    Overlay Data
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        Example YAMLs
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+          Policies
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_7">
+          <span class="md-nav__icon md-icon"></span>
+          Policies
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../policies/approval/" class="md-nav__link">
+        Approval
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../policies/manual_approval/" class="md-nav__link">
+        How to Approve
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../policies/destroy/" class="md-nav__link">
+        Destroying Components
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../policies/selective_reconcile/" class="md-nav__link">
+        Selective Reconcile
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../policies/manual/" class="md-nav__link">
+        Manual Reconcile
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../policies/auto/" class="md-nav__link">
+        Auto Drift Detection & Reconcile
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../policies/teardown/" class="md-nav__link">
+        Teardown
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../policies/cost_estimates/" class="md-nav__link">
+        Cost Estimates
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../component_details_view/" class="md-nav__link">
+        Component Details View
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../errors/" class="md-nav__link">
+        Errors
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../support/supported_platforms/" class="md-nav__link">
+        Supported Platforms
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#sections" class="md-nav__link">
+    Sections
+  </a>
+  
+    <nav class="md-nav" aria-label="Sections">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fields" class="md-nav__link">
+    Fields
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#custom-resource-header" class="md-nav__link">
+    Custom Resource Header
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#metadata" class="md-nav__link">
+    Metadata
+  </a>
+  
+    <nav class="md-nav" aria-label="Metadata">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fields_1" class="md-nav__link">
+    Fields
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#metadata-name-zmart-checkout-dev-namespace-zmart-config" class="md-nav__link">
+    metadata:
+  name: zmart-checkout-dev
+  namespace: zmart-config
+
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spec" class="md-nav__link">
+    Spec
+  </a>
+  
+    <nav class="md-nav" aria-label="Spec">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fields_2" class="md-nav__link">
+    Fields
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spec-teamname-checkout-envname-demo" class="md-nav__link">
+    spec:
+  teamName: checkout
+  envName: demo
+
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#components" class="md-nav__link">
+    Components
+  </a>
+  
+    <nav class="md-nav" aria-label="Components">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fields_3" class="md-nav__link">
+    Fields
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#selective-reconcile" class="md-nav__link">
+    Selective Reconcile
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aws" class="md-nav__link">
+    AWS
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#secrets" class="md-nav__link">
+    Secrets
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tags" class="md-nav__link">
+    Tags
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variables" class="md-nav__link">
+    Variables
+  </a>
+  
+    <nav class="md-nav" aria-label="Variables">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#inline-variables" class="md-nav__link">
+    Inline Variables
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variables-from-a-file" class="md-nav__link">
+    Variables from a file
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#module" class="md-nav__link">
+    Module
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#outputs" class="md-nav__link">
+    Outputs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#overlay-files" class="md-nav__link">
+    Overlay Files
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#overlay-data" class="md-nav__link">
+    Overlay Data
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+<h1 id="field-reference">Field Reference<a class="headerlink" href="#field-reference" title="Permanent link">&para;</a></h1>
+<p>An environment YAML allows you to provide all the details of an environment.</p>
+<h2 id="sections">Sections<a class="headerlink" href="#sections" title="Permanent link">&para;</a></h2>
+<p>It has following main sections:</p>
+<h3 id="fields">Fields<a class="headerlink" href="#fields" title="Permanent link">&para;</a></h3>
+<p>Since Environment definition uses a Kubernetes Custom Resource the top section of the definition in YAML needs to follow its convention.</p>
+<table>
+<thead>
+<tr>
+<th align="center">Field Name</th>
+<th align="center">Field Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>apiVersion</code></td>
+<td align="center"><code>string</code></td>
+<td>Custom Resource Header. Value needs to be <code>stable.cloudknit.io/v1</code></td>
+</tr>
+<tr>
+<td align="center"><code>kind</code></td>
+<td align="center"><code>string</code></td>
+<td>Custom Resource Header. Value needs to be <code>Environment</code></td>
+</tr>
+<tr>
+<td align="center"><code>metadata</code></td>
+<td align="center"><a href="#Metadata"><code>Metadata</code></a></td>
+<td>Metadata about the Environment</td>
+</tr>
+<tr>
+<td align="center"><code>spec</code></td>
+<td align="center"><a href="#spec"><code>spec</code></a></td>
+<td>Details about the Environment</td>
+</tr>
+</tbody>
+</table>
+<h2 id="custom-resource-header">Custom Resource Header<a class="headerlink" href="#custom-resource-header" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">stable.cloudknit.io/v1</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Environment</span>
+</code></pre></div>
+<h2 id="metadata">Metadata<a class="headerlink" href="#metadata" title="Permanent link">&para;</a></h2>
+<h3 id="fields_1">Fields<a class="headerlink" href="#fields_1" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th align="center">Field Name</th>
+<th align="center">Field Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>name</code></td>
+<td align="center"><code>string</code></td>
+<td>The name should be unique for every environment. To ensure that we follow below naming convention:- </br> <code>{company}-{team}-{environment}</code> </br></br>  <strong>company</strong> is your company's name. <strong>team</strong> and <strong>environment</strong> are defined in the <a href="#spec">spec</a> section below</td>
+</tr>
+<tr>
+<td align="center"><code>namespace</code></td>
+<td align="center"><code>string</code></td>
+<td>Namespace should be <code>{company}-config</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<div style="background-color: #ccc; height: 1px"></div>
+
+<h4 id="metadata-example" style="font-weight: 200; letter-spacing: 2px;">
+  Example
+</h4>
+
+<h2 id="metadata-name-zmart-checkout-dev-namespace-zmart-config"><div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">metadata</span><span class="p">:</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">zmart-checkout-dev</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">zmart-config</span>
+</code></pre></div><a class="headerlink" href="#metadata-name-zmart-checkout-dev-namespace-zmart-config" title="Permanent link">&para;</a></h2>
+<h2 id="spec">Spec<a class="headerlink" href="#spec" title="Permanent link">&para;</a></h2>
+<p>Spec contains details of the environment to be provisioned.</p>
+<h3 id="fields_2">Fields<a class="headerlink" href="#fields_2" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th align="center">Field Name</th>
+<th align="center">Field Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>teamName</code></td>
+<td align="center"><code>string</code></td>
+<td>Name of the team to which this environment belongs</td>
+</tr>
+<tr>
+<td align="center"><code>envName</code></td>
+<td align="center"><code>string</code></td>
+<td>Name of the environment</td>
+</tr>
+<tr>
+<td align="center"><code>autoApprove</code></td>
+<td align="center"><code>boolean</code></td>
+<td>To skip the manual approval step of applying the changes to a workflow, set this flag to <code>true</code>. Default value is <code>false</code>. More info <a href="/policies/approval">here</a></td>
+</tr>
+<tr>
+<td align="center"><code>teardown</code></td>
+<td align="center"><code>boolean</code></td>
+<td>To teardown an environment, set this flag to <code>true</code>. Default value is <code>false</code>. More info <a href="/policies/teardown">here</a></td>
+</tr>
+<tr>
+<td align="center"><a href="#selective-reconcile"><code>selectiveReconcile</code></a></td>
+<td align="center"><code>array</code></td>
+<td>More info <a href="/define/selective_reconcile">here</a></td>
+</tr>
+<tr>
+<td align="center"><code>components</code></td>
+<td align="center"><code>array</code></td>
+<td>Array of environment components</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<div style="background-color: #ccc; height: 1px"></div>
+
+<h4 id="metadata-example" style="font-weight: 200; letter-spacing: 2px;">
+  Example
+</h4>
+
+<h2 id="spec-teamname-checkout-envname-demo"><div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">spec</span><span class="p">:</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">teamName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">checkout</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">envName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">demo</span>
+</code></pre></div><a class="headerlink" href="#spec-teamname-checkout-envname-demo" title="Permanent link">&para;</a></h2>
+<h2 id="components">Components<a class="headerlink" href="#components" title="Permanent link">&para;</a></h2>
+<p>Array of environment components.</p>
+<h3 id="fields_3">Fields<a class="headerlink" href="#fields_3" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th align="center">Field Name</th>
+<th align="center">Field Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>name</code></td>
+<td align="center"><code>string</code></td>
+<td>Name of the environment component</td>
+</tr>
+<tr>
+<td align="center"><code>type</code></td>
+<td align="center"><code>string</code></td>
+<td><code>terraform</code> is currently the only supported type</td>
+</tr>
+<tr>
+<td align="center"><code>destroy</code></td>
+<td align="center"><code>boolean</code></td>
+<td>Optional field. Flag for destroying a component. Default is <code>false</code>. More info <a href="../destroy.md">here</a></td>
+</tr>
+<tr>
+<td align="center"><code>destroyProtection</code></td>
+<td align="center"><code>boolean</code></td>
+<td>Optional field. If set to <code>true</code>, CloudKnit will not destroy this component (default is <code>false</code>)</td>
+</tr>
+<tr>
+<td align="center"><code>dependsOn</code></td>
+<td align="center"><code>array</code></td>
+<td>Optional field. Array of environment component names, which this module depends on</td>
+</tr>
+<tr>
+<td align="center"><a href="#secrets"><code>secrets</code></a></td>
+<td align="center"></td>
+<td>This section references the secret values which are input through the CloudKnit UI</td>
+</tr>
+<tr>
+<td align="center"><a href="#tags"><code>tags</code></a></td>
+<td align="center"></td>
+<td>Tags are labels attached to components for the purpose of identification. It is an <code>array</code> of <code>string</code></td>
+</tr>
+<tr>
+<td align="center"><a href="#inline-variables"><code>variables</code></a></td>
+<td align="center"></td>
+<td><strong>Inline</strong> variables, these will get injected into the terraform module when TF code is generated. <code>array</code> of <code>name -&gt; value</code> objects</td>
+</tr>
+<tr>
+<td align="center"><a href="#variables-from-a-file"><code>variablesFile</code></a></td>
+<td align="center"><code>string</code></td>
+<td>Variables can also be passed from an output defined in a previous module using <code>outputs</code> block, via a tfvars file</td>
+</tr>
+<tr>
+<td align="center"><a href="#module"><code>module</code></a></td>
+<td align="center"><code>string</code></td>
+<td>Modules are containers for multiple resources that are used together. You can either reference a public or private module.</td>
+</tr>
+<tr>
+<td align="center"><a href="#outputs"><code>outputs</code></a></td>
+<td align="center"><code>string</code></td>
+<td><em>Output values make information about your infrastructure available on the command line, and can expose information for other components to use</em>. Output values are similar to return values in programming languages. If the module supports outputs, name them here so they can be referenced in <code>variables</code> block using <code>valueFrom</code></td>
+</tr>
+<tr>
+<td align="center"><a href="#overlay-files"><code>overlayFiles</code></a></td>
+<td align="center"></td>
+<td>A file that contains additional information about the current items. By using an overlay file, the metadata of these items can be extended.</td>
+</tr>
+<tr>
+<td align="center"><a href="#overlay-data"><code>overlayData</code></a></td>
+<td align="center"></td>
+<td>Rather than have information pointing to the file with overlay information, you can also specify the data.</td>
+</tr>
+</tbody>
+</table>
+<div style="background-color: #ccc; height: 1px"></div>
+<div style="background-color: #ccc; height: 1px"></div>
+
+<h3 id="selective-reconcile">Selective Reconcile<a class="headerlink" href="#selective-reconcile" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th align="center">Field Name</th>
+<th align="center">Field Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>skipMode</code></td>
+<td align="center"><code>boolean</code></td>
+<td>Flag indicating if the tags mentioned for selective reconcile are to skip reconciliation. By default this is set to <code>false</code>. If you wish to skip reconciling some components, then set it to <code>true</code> and tag the components appropriately</td>
+</tr>
+<tr>
+<td align="center"><code>tagName</code></td>
+<td align="center"><code>string</code></td>
+<td>Required, if using <code>selectiveReconcile</code></td>
+</tr>
+<tr>
+<td align="center"><code>tagValues</code></td>
+<td align="center"><code>array</code> of <code>string</code></td>
+<td>Required, if using <code>selectiveReconcile</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="aws">AWS<a class="headerlink" href="#aws" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th align="center">Field Name</th>
+<th align="center">Field Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>aws</code></td>
+<td align="center"></td>
+<td>Optional field. Configuration block for AWS provider. More info coming soon</td>
+</tr>
+</tbody>
+</table>
+<h3 id="secrets">Secrets<a class="headerlink" href="#secrets" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th align="center">Field Name</th>
+<th align="center">Field Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>secrets</code></td>
+<td align="center"></td>
+<td>This section references the secret values which are input through the CloudKnit UI</td>
+</tr>
+<tr>
+<td align="center"><code>name</code></td>
+<td align="center"><code>string</code></td>
+<td>Name of the terraform module variable</td>
+</tr>
+<tr>
+<td align="center"><code>key</code></td>
+<td align="center"><code>string</code></td>
+<td>Secret name entered in CloudKnit UI settings page</td>
+</tr>
+<tr>
+<td align="center"><code>scope</code></td>
+<td align="center"><code>string</code></td>
+<td>Refers to what scope the secret is valid in. Valid scopes are <code>org</code>, <code>team</code> and <code>environment</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="tags">Tags<a class="headerlink" href="#tags" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th align="center">Field Name</th>
+<th align="center">Field Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>tags</code></td>
+<td align="center"></td>
+<td>Tags are labels attached to components for the purpose of identification. It is an <code>array</code> of <code>string</code></td>
+</tr>
+<tr>
+<td align="center"><code>name</code></td>
+<td align="center"><code>string</code></td>
+<td>Type of tag</td>
+</tr>
+<tr>
+<td align="center"><code>value</code></td>
+<td align="center"><code>string</code></td>
+<td>Identifying tags</td>
+</tr>
+</tbody>
+</table>
+<h3 id="variables">Variables<a class="headerlink" href="#variables" title="Permanent link">&para;</a></h3>
+<h4 id="inline-variables">Inline Variables<a class="headerlink" href="#inline-variables" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th align="center">Field Name</th>
+<th align="center">Field Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>variables</code></td>
+<td align="center"></td>
+<td><strong>Inline</strong> variables, these will get injected into the terraform module when TF code is generated. <code>array</code> of <code>name -&gt; value</code> objects</td>
+</tr>
+<tr>
+<td align="center"><code>name</code></td>
+<td align="center"><code>string</code></td>
+<td>Name of the variable</td>
+</tr>
+<tr>
+<td align="center"><code>value</code></td>
+<td align="center"><code>string</code></td>
+<td>Value of the variable</td>
+</tr>
+<tr>
+<td align="center"><code>valueFrom</code></td>
+<td align="center"><code>string</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="variables-from-a-file">Variables from a file<a class="headerlink" href="#variables-from-a-file" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th align="center">Field Name</th>
+<th align="center">Field Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>variablesFile</code></td>
+<td align="center"><code>string</code></td>
+<td>Variables can also be passed from an output defined in a previous module using <code>outputs</code> block, via a tfvars file</td>
+</tr>
+<tr>
+<td align="center"><code>path</code></td>
+<td align="center"><code>string</code></td>
+<td>Required field, if using <code>variablesFile</code>. Path to the file in the <code>source</code> repo.</td>
+</tr>
+<tr>
+<td align="center"><code>ref</code></td>
+<td align="center"><code>string</code></td>
+<td><em>No description available</em></td>
+</tr>
+<tr>
+<td align="center"><code>source</code></td>
+<td align="center"><code>string</code></td>
+<td>Required field, if using <code>variablesFile</code>. Repo where the variables file can be found.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="module">Module<a class="headerlink" href="#module" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th align="center">Field Name</th>
+<th align="center">Field Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>name</code></td>
+<td align="center"><code>string</code></td>
+<td>Public terraform modules can be referenced <a href="https://registry.terraform.io/modules/terraform-aws-modules/s3-bucket/aws/latest">here</a>. For private module, specify the full path</td>
+</tr>
+<tr>
+<td align="center"><code>path</code></td>
+<td align="center"><code>string</code></td>
+<td>If the module is in a subdirectory (monorepo with multiple terraform modules), use this to specify the <code>path</code></td>
+</tr>
+<tr>
+<td align="center"><code>source</code></td>
+<td align="center"><code>string</code></td>
+<td>Required field. Currently <code>aws</code> is the only supported type</td>
+</tr>
+<tr>
+<td align="center"><code>version</code></td>
+<td align="center"><code>string</code></td>
+<td><em>No description available</em></td>
+</tr>
+</tbody>
+</table>
+<h3 id="outputs">Outputs<a class="headerlink" href="#outputs" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th align="center">Field Name</th>
+<th align="center">Field Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>name</code></td>
+<td align="center"><code>string</code></td>
+<td>Required field, if using <code>outputs</code></td>
+</tr>
+<tr>
+<td align="center"><code>sensitive</code></td>
+<td align="center"><code>boolean</code></td>
+<td>Optional field. Flag to indicate if the <code>output</code> is of sensitive nature. By default the value is set to <code>false</code>. To not display it in plaintext, set it to <code>true</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="overlay-files">Overlay Files<a class="headerlink" href="#overlay-files" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th align="center">Field Name</th>
+<th align="center">Field Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>source</code></td>
+<td align="center"><code>array</code> of <code>string</code></td>
+<td>Required field, if using <code>overlayFiles</code>. Repo where the file is located</td>
+</tr>
+<tr>
+<td align="center"><code>path</code></td>
+<td align="center"><code>array</code> of <code>string</code></td>
+<td>Required field, if using <code>overlayFiles</code>. Path to the file in the <code>source</code> repo</td>
+</tr>
+<tr>
+<td align="center"><code>ref</code></td>
+<td align="center"></td>
+<td><em>No description available</em></td>
+</tr>
+</tbody>
+</table>
+<h3 id="overlay-data">Overlay Data<a class="headerlink" href="#overlay-data" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th align="center">Field Name</th>
+<th align="center">Field Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center"><code>data</code></td>
+<td align="center"><code>string</code></td>
+<td>Required field, if using <code>overlayData</code>. Content of the file (generally it is a multi-line string)</td>
+</tr>
+<tr>
+<td align="center"><code>name</code></td>
+<td align="center"><code>string</code></td>
+<td>Required field, if using <code>overlayData</code>. Name of the file, containing the afore specified data</td>
+</tr>
+</tbody>
+</table>
+<div style="background-color: #ccc; height: 1px"></div>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.51198bba.min.js"></script>
+      
+    
+  </body>
+</html>

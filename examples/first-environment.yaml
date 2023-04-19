@@ -1,0 +1,26 @@
+apiVersion: stable.cloudknit.io/v1
+kind: Environment
+metadata:
+  name: ${company}-${team}-${env}
+  namespace: ${company}-config
+spec:
+  teamName: ${team}
+  envName: ${env}
+  components:
+    - name: images
+      type: terraform
+      module:
+        source: aws
+        name: s3-bucket
+      variables:
+        - name: bucket
+          value: "${company}-${team}-${env}-images-abcde"
+    - name: videos
+      type: terraform
+      dependsOn: [images]
+      module:
+        source: aws
+        name: s3-bucket
+      variables:
+        - name: bucket
+          value: "${company}-${team}-${env}-videos-vwxyz"
