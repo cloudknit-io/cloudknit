@@ -204,49 +204,39 @@ function UpdateEnvironmentReconcileStatus() {
   GetLatestEnvReconId "${teamName}" "${envName}"
   end_date=$(date '+%Y-%m-%d %H:%M:%S')
   local status='0'
-  local payload='';
+  local payload=''
 
   echo "Patching environment"
 
-  echo "phase is: "$phase;
+  echo "phase is: "$phase
 
-  if [ $failed = '1']
-  then
-    if [ $is_destroy = true ]
-    then
-        status="destroy_failed"
+  if [ $failed = '1']; then
+    if [ $is_destroy = true ]; then
+      status="destroy_failed"
     else
-        status="provision_failed"
+      status="provision_failed"
     fi
     payload='{"status": "'${status}'", "teamName": "'${team_name}'", "endDateTime": "'${end_date}'"}'
-  else
-    if [ $phase = '0' ]
-    then
-        if [ $is_destroy = true ]
-        then
-            status="destroying"
-        else
-            status="provisioning"
-        fi  
+  elif [ $phase = '0' ]; then
+    if [ $is_destroy = true ]; then
+      status="destroying"
+    else
+      status="provisioning"
     fi
     payload='{"status": "'${status}'", "teamName": "'${team_name}'"}'
-    if [ $phase = '1' ]
-    then
-        if [ $is_destroy = true ]
-        then
-            status="destroyed"
-        else
-            status="provisioned"
-        fi
-        payload='{"status": "'${status}'", "teamName": "'${team_name}'", "endDateTime": "'${end_date}'"}'
+  elif [ $phase = '1' ]; then
+    if [ $is_destroy = true ]; then
+      status="destroyed"
+    else
+      status="provisioned"
     fi
+    payload='{"status": "'${status}'", "teamName": "'${team_name}'", "endDateTime": "'${end_date}'"}'
   fi
 
   echo "status is: "$status
 
-  if [ $status != '0' ]
-  then
-    
+  if [ $status != '0' ]; then
+
     echo ${payload} >tmp_update_env_recon.json
 
     echo "PAYLOAD: $payload"
