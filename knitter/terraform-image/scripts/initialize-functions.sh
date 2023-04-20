@@ -210,22 +210,22 @@ function UpdateEnvironmentReconcileStatus() {
 
   echo "phase is: "$phase
 
-  if [ $failed = '1']; then
-    if [ $is_destroy = true ]; then
+  if [[ "$failed" == "1" ]]; then
+    if [[ $is_destroy == true ]]; then
       status="destroy_failed"
     else
       status="provision_failed"
     fi
     payload='{"status": "'${status}'", "teamName": "'${team_name}'", "endDateTime": "'${end_date}'"}'
-  elif [ $phase = '0' ]; then
-    if [ $is_destroy = true ]; then
+  elif [[ "$phase" == "0" ]]; then
+    if [[ $is_destroy == true ]]; then
       status="destroying"
     else
       status="provisioning"
     fi
     payload='{"status": "'${status}'", "teamName": "'${team_name}'"}'
-  elif [ $phase = '1' ]; then
-    if [ $is_destroy = true ]; then
+  elif [[ "$phase" == "1" ]]; then
+    if [[ $is_destroy == true ]]; then
       status="destroyed"
     else
       status="provisioned"
@@ -235,7 +235,7 @@ function UpdateEnvironmentReconcileStatus() {
 
   echo "status is: "$status
 
-  if [ $status != '0' ]; then
+  if [[ "$status" != "0" ]]; then
 
     echo ${payload} >tmp_update_env_recon.json
 
