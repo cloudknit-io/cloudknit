@@ -1,5 +1,5 @@
 ---
-apiVersion: stable.compuzest.com/v1
+apiVersion: stable.cloudknit.io/v1
 kind: TerraformConfig
 metadata:
   name: "{{ .Values.team_name}}-{{ .Values.env_name}}-{{ .Values.config_name}}-terraformconfig"

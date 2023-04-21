@@ -5,9 +5,9 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
-  name: terraformconfigs.stable.compuzest.com
+  name: terraformconfigs.stable.cloudknit.io
 spec:
-  group: stable.compuzest.com
+  group: stable.cloudknit.io
   names:
     kind: TerraformConfig
     listKind: TerraformConfigList

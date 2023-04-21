@@ -37,7 +37,7 @@ For all yaml issues a **notification** is shown on the UI, telling you the **pro
 **Example**
 
 ```yaml
-apiVersion: stable.compuzest.com/v1
+apiVersion: stable.cloudknit.io/v1
 kind: Environment
 metadata:
   name: dev-checkout-sandbox

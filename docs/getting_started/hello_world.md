@@ -17,7 +17,7 @@ Make sure you've completed [configuring AWS Credentials](/settings/aws_credentia
   <details>
     <summary>Click to expand!</summary>
   ```yaml
-  apiVersion: stable.compuzest.com/v1
+  apiVersion: stable.cloudknit.io/v1
   kind: Environment
   metadata:
     name: company-hello-world
@@ -66,7 +66,7 @@ You can read more about `teardown` [here](/policies/teardown).
   <details>
     <summary>Click to expand!</summary>
   ```yaml
-  apiVersion: stable.compuzest.com/v1
+  apiVersion: stable.cloudknit.io/v1
   kind: Environment
   metadata:
     name: zmart-hello-world

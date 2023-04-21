@@ -26,7 +26,7 @@ export class SetupTeamYaml extends BaseGuide implements IGuide {
 		const [envName, setEnvName] = useState<string>(ctx?.envName || this.env_name);
 		const user = AuthStore.getUser();
 		const formRef = React.useRef<HTMLFormElement>(null);
-		const teamYaml = `apiVersion: stable.compuzest.com/v1
+		const teamYaml = `apiVersion: stable.cloudknit.io/v1
 kind: Team
 metadata:
   name: ${teamName}
@@ -39,7 +39,7 @@ spec:
 
 ---
 
-apiVersion: stable.compuzest.com/v1
+apiVersion: stable.cloudknit.io/v1
 kind: Environment
 metadata:
   name: ${user?.organizations[0].name}-hello-world

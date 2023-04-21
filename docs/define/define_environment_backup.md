@@ -440,7 +440,7 @@ dependsOn: [networking]
 - ##### Full Fledged Yaml
 
   ```yaml
-  apiVersion: stable.compuzest.com/v1
+  apiVersion: stable.cloudknit.io/v1
   kind: Environment
   metadata:
     name: org-tech-client-demo

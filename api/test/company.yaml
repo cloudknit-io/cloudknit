@@ -7,7 +7,7 @@ metadata:
 
 ---
 
-apiVersion: stable.compuzest.com/v1
+apiVersion: stable.cloudknit.io/v1
 kind: Company
 metadata:
   name: mytestorg
