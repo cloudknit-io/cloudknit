@@ -75,6 +75,11 @@ spec:
               secretKeyRef:
                 name: aws-creds
                 key: aws_secret_access_key
+          - name: CUSTOMER_AWS_SESSION_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: aws-creds
+                key: aws_session_token
           - name: SHARED_AWS_ACCESS_KEY_ID
             valueFrom:
               secretKeyRef:
