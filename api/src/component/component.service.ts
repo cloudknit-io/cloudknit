@@ -33,15 +33,20 @@ export class ComponentService {
   }
 
   async batchDelete(org: Organization, env: Environment, comps: Component[]) {
-    return this.compRepo.delete({
-      id: In(comps.map((c) => c.id)),
-      organization: {
-        id: org.id,
+    return this.compRepo.update(
+      {
+        id: In(comps.map((c) => c.id)),
+        organization: {
+          id: org.id,
+        },
+        environment: {
+          id: env.id,
+        },
       },
-      environment: {
-        id: env.id,
-      },
-    });
+      {
+        isDeleted: true,
+      }
+    );
   }
 
   async create(
@@ -172,12 +177,13 @@ export class ComponentService {
       },
       relations: {
         environment: withEnv,
+        latestCompRecon: true
       },
     });
   }
 
   async findAllWithLastCompRecon(org: Organization, env: Environment) {
-    const components = await this.findAll(org, env);
+    const components = await this.findAll(org, env,);
     const compRecons = await this.recSvc.getLatestCompReconByComponentIds(
       org,
       components.map((c) => c.id)
@@ -196,6 +202,18 @@ export class ComponentService {
     comp: Component,
     mergeComp: UpdateComponentDto
   ): Promise<Component> {
+    this.compRepo.merge(comp, mergeComp);
+    comp.organization = org;
+
+    return this.compRepo.save(comp);
+  }
+
+  async updateById(
+    org: Organization,
+    compId: number,
+    mergeComp: UpdateComponentDto
+  ): Promise<Component> {
+    const comp = await this.findById(org, compId);
     this.compRepo.merge(comp, mergeComp);
     comp.organization = org;
 

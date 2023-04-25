@@ -292,7 +292,7 @@ export class ReconciliationController {
       throw new BadRequestException('could not find component reconcile');
     }
 
-    const lastWorkflowRunId = compRecon.component.lastWorkflowRunId;
+    const lastWorkflowRunId = compRecon.lastWorkflowRunId;
 
     try {
       // Resume Argo Workflow run
@@ -308,32 +308,16 @@ export class ReconciliationController {
     }
 
     try {
-      await this.compSvc.update(org, compRecon.component, {
+      await this.reconSvc.updateCompRecon(compRecon, {
         status: 'initializing_apply',
-      });
-    } catch (err) {
-      handleSqlErrors(err);
-
-      this.logger.error({
-        message: 'could not update component status in approveWorkflow',
-        compRecon,
-        err,
-      });
-      throw new InternalServerErrorException('could not approve workflow');
-    }
-
-    // Set approved by on reconcile entry
-    try {
-      return this.reconSvc.updateCompRecon(compRecon, {
         approvedBy: body.email,
       });
     } catch (err) {
       handleSqlErrors(err);
 
       this.logger.error({
-        message: 'could not set approved by in approveWorkflow',
+        message: 'could not update component reconcile status in approveWorkflow',
         compRecon,
-        body,
         err,
       });
       throw new InternalServerErrorException('could not approve workflow');

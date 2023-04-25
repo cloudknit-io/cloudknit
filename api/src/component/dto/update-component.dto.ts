@@ -1,13 +1,12 @@
-import { PartialType, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
-  IsBoolean,
-  IsNumber,
   IsObject,
   IsOptional,
   IsString,
-  ValidateNested,
+  ValidateNested
 } from 'class-validator';
+import { ComponentReconcile } from 'src/typeorm';
 import { CreateComponentDto } from './create-component.dto';
 
 export class CostComponent {
@@ -60,38 +59,11 @@ export class CostResource {
   metadata?: object;
 }
 export class UpdateComponentDto extends PartialType(CreateComponentDto) {
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  status?: string;
+  @ApiProperty()
+  @Type(() => ComponentReconcile)
+  latestCompRecon?: ComponentReconcile;
 
-  @ApiPropertyOptional()
+  @ApiProperty()
   @IsOptional()
-  @IsNumber({
-    maxDecimalPlaces: 0,
-  })
-  duration?: number;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  lastWorkflowRunId?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsNumber({
-    maxDecimalPlaces: 5,
-  })
-  estimatedCost?: number;
-
-  @ApiPropertyOptional({ type: [CostResource] })
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => CostResource)
-  costResources?: CostResource[];
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsBoolean()
-  isDestroyed?: boolean;
+  lastReconcileDatetime?: string;
 }

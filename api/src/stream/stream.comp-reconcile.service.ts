@@ -8,16 +8,29 @@ import {
   UpdateEvent,
 } from 'typeorm';
 import { StreamService } from './stream.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import {
+  ComponentReconcileCostUpdateEvent,
+  ComponentReconcileEntityUpdateEvent,
+  InternalEventType,
+} from 'src/types';
 
 @Injectable()
 export class StreamComponentReconcileService
   implements EntitySubscriberInterface<ComponentReconcile>
 {
   private readonly logger = new Logger(StreamComponentReconcileService.name);
+  private readonly eventColumns = new Set([
+    'estimatedCost',
+    'status',
+    'costResources',
+    'isDestroyed',
+  ]);
 
   constructor(
     @Inject(Connection) conn: Connection,
-    private readonly sseSvc: StreamService
+    private readonly sseSvc: StreamService,
+    private evtEmitter: EventEmitter2
   ) {
     conn.subscribers.push(this);
   }
@@ -33,6 +46,28 @@ export class StreamComponentReconcileService
   afterUpdate(
     event: UpdateEvent<ComponentReconcile>
   ): void | Promise<ComponentReconcile> {
+    const compRecon = event.entity as ComponentReconcile;
+
+    if (
+      event.updatedColumns.find((col) =>
+        this.eventColumns.has(col.propertyName)
+      )
+    ) {
+      if (
+        event.updatedColumns.find((col) => col.propertyName === 'estimatedCost')
+      ) {
+        this.evtEmitter.emit(
+          InternalEventType.ComponentReconcileCostUpdate,
+          new ComponentReconcileCostUpdateEvent({ ...compRecon })
+        );
+      }
+      this.evtEmitter.emit(
+        InternalEventType.ComponentReconcileEntityUpdate,
+        new ComponentReconcileEntityUpdateEvent({
+          ...compRecon,
+        })
+      );
+    }
     this.validateAndSend(event.entity as ComponentReconcile, 'afterUpdate');
   }
 

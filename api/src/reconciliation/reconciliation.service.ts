@@ -201,7 +201,7 @@ export class ReconciliationService {
   ): Promise<ComponentReconcile> {
     return this.compReconRepo.save({
       component: comp,
-      status: 'initializing',
+      status: createComp.status || 'initializing',
       organization: org,
       startDateTime: createComp.startDateTime,
       environmentReconcile: envRecon,
@@ -454,8 +454,8 @@ export class ReconciliationService {
   async updateCost(env: Environment) {
     let estimatedCost = 0.0;
     for (const comp of env.components) {
-      if (comp.estimatedCost > 0) {
-        estimatedCost += comp.estimatedCost;
+      if (comp.latestCompRecon?.estimatedCost > 0) {
+        estimatedCost += comp.latestCompRecon.estimatedCost;
       }
     }
 

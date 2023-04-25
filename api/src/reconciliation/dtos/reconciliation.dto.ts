@@ -1,7 +1,8 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  IsBoolean,
   IsDateString,
   IsNotEmpty,
   IsNumber,
@@ -9,6 +10,7 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
+import { CostResource } from 'src/component/dto/update-component.dto';
 import { EnvSpecComponentDto } from 'src/environment/dto/env-spec.dto';
 
 export class CreateEnvironmentReconciliationBaseDto {
@@ -100,10 +102,13 @@ export class CreateComponentReconciliationDto {
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsDateString()
-  @IsNotEmpty()
-  startDateTime: string;
+  startDateTime?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  status?: string;
 }
 
 export class UpdateComponentReconciliationDto {
@@ -121,6 +126,36 @@ export class UpdateComponentReconciliationDto {
   @IsString()
   @IsOptional()
   approvedBy?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber({
+    maxDecimalPlaces: 0,
+  })
+  duration?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  lastWorkflowRunId?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber({
+    maxDecimalPlaces: 5,
+  })
+  estimatedCost?: number;
+
+  @ApiPropertyOptional({ type: [CostResource] })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CostResource)
+  costResources?: CostResource[];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  isDestroyed?: boolean;
 }
 
 export class CreatedEnvironmentReconcile {

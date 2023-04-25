@@ -18,7 +18,7 @@ import { SystemService } from 'src/system/system.service';
 import { Component, Environment, Organization, Team } from 'src/typeorm';
 import {
   APIRequest,
-  ComponentCostUpdateEvent,
+  ComponentReconcileCostUpdateEvent,
   EnvironmentApiParam,
   EnvironmentReconCostUpdateEvent,
   EnvironmentReconEnvUpdateEvent,
@@ -144,12 +144,37 @@ export class EnvironmentController {
     env: Environment,
     createEnv: CreateEnvironmentDto
   ) {
-    return this.reconSvc.createEnvRecon(org, team, env, {
+    const envRecon = await this.reconSvc.createEnvRecon(org, team, env, {
       components: createEnv.dag,
       name: env.name,
       startDateTime: new Date().toISOString(),
       teamName: team.name,
     });
+
+    const envWithComps = await this.envSvc.findById(org, env.id, false, true);
+
+    await Promise.allSettled(
+      envWithComps.components
+        .filter((c) => !c.isDeleted)
+        .map(async (c) => {
+          const compRecon = await this.reconSvc.createCompRecon(
+            org,
+            envRecon,
+            c,
+            {
+              status: 'waiting_for_parent',
+              name: c.name,
+              envReconcileId: envRecon.reconcileId,
+            }
+          );
+          compRecon.component = null;
+          return this.compSvc.update(org, c, {
+            latestCompRecon: compRecon,
+          });
+        })
+    );
+
+    return envRecon;
   }
 
   async batchCreateComponents(
@@ -280,15 +305,15 @@ export class EnvironmentController {
     return this.reconSvc.getEnvironmentAuditList(org, env);
   }
 
-  @OnEvent(InternalEventType.ComponentCostUpdate, { async: true })
-  async compCostUpdateListener(evt: ComponentCostUpdateEvent) {
-    const comp = evt.payload;
-    let env = comp.environment;
+  @OnEvent(InternalEventType.ComponentReconcileCostUpdate, { async: true })
+  async compCostUpdateListener(evt: ComponentReconcileCostUpdateEvent) {
+    const compRecon = evt.payload;
+    let env = null;
 
-    if (!env) {
+    if (compRecon.environmentReconcile) {
       env = await this.envSvc.findById(
-        comp.organization,
-        comp.envId,
+        compRecon.environmentReconcile.organization,
+        compRecon.environmentReconcile.envId,
         false,
         true
       );

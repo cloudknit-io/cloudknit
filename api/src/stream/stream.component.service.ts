@@ -1,7 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Component } from 'src/typeorm';
-import { InternalEventType, ComponentCostUpdateEvent } from 'src/types';
 import {
   Connection,
   EntitySubscriberInterface,
@@ -34,27 +33,11 @@ export class StreamComponentService
   afterInsert(event: InsertEvent<Component>) {
     const comp = event.entity as Component;
 
-    if (comp.estimatedCost > 0) {
-      this.evtEmitter.emit(
-        InternalEventType.ComponentCostUpdate,
-        new ComponentCostUpdateEvent({ ...comp })
-      );
-    }
-
     this.validateAndSend(comp, 'afterInsert');
   }
 
   async afterUpdate(event: UpdateEvent<Component>): Promise<void> {
     const comp = event.entity as Component;
-
-    if (
-      event.updatedColumns.find((col) => col.propertyName === 'estimatedCost')
-    ) {
-      this.evtEmitter.emit(
-        InternalEventType.ComponentCostUpdate,
-        new ComponentCostUpdateEvent({ ...comp })
-      );
-    }
 
     this.validateAndSend(comp, 'afterUpdate');
   }

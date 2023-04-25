@@ -9,6 +9,8 @@ import {
 import { Organization } from './Organization.entity';
 import { EnvironmentReconcile } from './environment-reconcile.entity';
 import { Component } from './component.entity';
+import { ColumnNumericTransformer } from './helper';
+import { CostResource } from 'src/component/dto/update-component.dto';
 
 @Entity({
   name: 'component_reconcile',
@@ -32,7 +34,6 @@ export class ComponentReconcile {
   environmentReconcile: EnvironmentReconcile;
 
   @ManyToOne(() => Component, (component) => component.id, {
-    eager: true,
     onDelete: 'CASCADE',
   })
   component: Component;
@@ -41,12 +42,42 @@ export class ComponentReconcile {
   status: string;
 
   @Column({
+    name: 'estimated_cost',
+    type: 'decimal',
+    precision: 10,
+    scale: 3,
+    default: 0,
+    transformer: new ColumnNumericTransformer(),
+  })
+  estimatedCost: number;
+
+  @Column({
+    default: null,
+    nullable: true,
+  })
+  lastWorkflowRunId: string;
+
+  @Column({
+    default: false,
+    type: 'boolean',
+  })
+  isDestroyed?: boolean;
+
+  @Column({
+    name: 'cost_resources',
+    default: null,
+    type: 'json',
+  })
+  costResources: CostResource[];
+
+  @Column({
     nullable: true,
   })
   approvedBy?: string;
 
   @Column({
     type: 'datetime',
+    default: null
   })
   startDateTime: string;
 
