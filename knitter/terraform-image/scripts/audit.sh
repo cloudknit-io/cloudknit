@@ -66,7 +66,7 @@ if [[ $config_name != 0 && $config_reconcile_id = null ]]; then
     echo "running validate environment component script: team $team_name, environment $env_name, component $config_name"
     comp_status=0
     if [[ $config_status == *"skipped"* ]]; then
-        # echo "getting environment component previous status"
+        echo "getting environment component previous status"
         # config_previous_status=$(curl "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/teams/${team_name}/environments/${env_name}/components/${config_name}" | jq -r ".status") || null
         # echo "config_prev_status: $config_previous_status"
         # if [[ $config_previous_status == null ]]; then
