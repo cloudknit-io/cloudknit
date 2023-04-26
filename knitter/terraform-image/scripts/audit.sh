@@ -77,7 +77,7 @@ if [[ $config_name != 0 && $config_reconcile_id = null ]]; then
         UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "lastWorkflowRunId" : "'${compStatus}'" }'
     fi
     if [[ $comp_status != 0 ]]; then
-        UpdateComponentReconcile UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "status" : "'${comp_status}'", "isDestroy" : "'${is_destroy}'" }'
+        UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "status" : "'${comp_status}'", "isDestroy" : "'${is_destroy}'" }'
     fi
 fi
 
