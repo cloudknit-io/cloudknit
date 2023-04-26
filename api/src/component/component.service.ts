@@ -137,6 +137,7 @@ export class ComponentService {
       },
       relations: {
         environment: withEnv,
+        latestCompRecon: true
       },
     });
   }
