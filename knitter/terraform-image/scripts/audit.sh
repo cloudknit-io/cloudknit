@@ -64,7 +64,9 @@ fi
 
 if [[ $config_name != 0 && $config_reconcile_id = null ]]; then
     echo "running validate environment component script: team $team_name, environment $env_name, component $config_name"
-    UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "startDateTime" : "'${start_date}'" }'
+    
+    UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "startDateTime" : "'"$start_date"'" }'
+    
     comp_status=0
     if [[ $config_status == *"skipped"* ]]; then
         echo "getting environment component previous status"
@@ -100,7 +102,7 @@ if [ $config_name -eq 0 ]; then
     reconcileId=$latestEnvReconcileId
 else
     if [[ $config_reconcile_id != null ]]; then
-        UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{"status": "'${config_status}'", "endDateTime": "'${end_date}'"}'
+        UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{"status": "'${config_status}'", "endDateTime": "'"$end_date"'"}'
     fi
     reconcileId=$latestCompReconcileId
 fi
