@@ -8,7 +8,7 @@ module.exports = class ComponentToReconciliation1682347329447 {
         'DROP COLUMN `duration`,' +
         'DROP COLUMN `status`,' +
         'DROP COLUMN `estimated_cost`,' +
-        'ADD COLUMN `is_deleted` boolean DEFAULT false' +
+        'ADD COLUMN `is_deleted` boolean DEFAULT false,' +
         'ADD COLUMN `latest_comp_recon_id` int DEFAULT NULL;'
     );
     await queryRunner.query(
@@ -16,7 +16,7 @@ module.exports = class ComponentToReconciliation1682347329447 {
     );
     await queryRunner.query(
       'ALTER TABLE `component_reconcile` ' +
-        'MODIFY `startDateTime` datetime DEFAULT null' +
+        'MODIFY `startDateTime` datetime DEFAULT null,' +
         'ADD COLUMN `lastWorkflowRunId` varchar(255) DEFAULT NULL,' +
         'ADD COLUMN `cost_resources` json DEFAULT NULL,' +
         "ADD COLUMN `estimated_cost` decimal(10,3) NOT NULL DEFAULT '0.000'," +
