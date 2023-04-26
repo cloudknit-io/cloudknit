@@ -38,9 +38,9 @@ if [ $config_reconcile_id -eq 0 ]; then
     fi
 else
     if [[ $config_status == "Success" ]]; then
-        config_status="Provisioned"
+        config_status="provisioned"
         if [[ $is_destroy = true ]]; then
-            config_status="Destroyed"
+            config_status="destroyed"
         fi
     fi
 
