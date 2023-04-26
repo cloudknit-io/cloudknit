@@ -287,7 +287,7 @@ export class ReconciliationController {
   ) {
     const { org } = req;
 
-    const compRecon = await this.reconSvc.findCompReconById(org, compReconId);
+    const compRecon = await this.reconSvc.findCompReconById(org, compReconId, true);
     if (!compRecon) {
       throw new BadRequestException('could not find component reconcile');
     }
