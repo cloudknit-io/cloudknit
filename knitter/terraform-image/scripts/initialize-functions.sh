@@ -31,7 +31,7 @@ function PatchError() {
 
   # argocd app patch $team_env_name --patch $data --type merge > null
 
-  UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "${component_error_status}"
+  UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "status" : "'${component_error_status}'" }' 
   UpdateEnvironmentReconcileStatus "${team_name}" "${env_name}" "1"
 
   sh /audit.sh $team_name $env_name $config_name "Failed" $component_error_status $reconcile_id $config_reconcile_id $is_destroy 0 "noSkip" $customer_id
@@ -99,87 +99,42 @@ function setAWSCreds() {
   return 0
 }
 
+
+# Gets latest component reconcile Id
+# Args: 
+#   envName
+#   teamName
+#   compName
+latestCompReconcileId=null;
+function getLatestCompReconId() {
+  local teamName="${1}"
+  local envName="${2}"
+  local compName="${3}"
+  
+
+  local response=$(curl -X 'GET' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/teams/${teamName}/environments/${envName}/components/${compName}" -H 'accept: */*')
+  latestCompReconcileId=$(echo $response | jq -r '.latestCompRecon.reconcileId')
+}
+
 # Saves Component Status
 #   Args:
 #     $1 - env name (required)
 #     $2 - team name (required)
-#     $3 - component name (required)
-#     $4 - component status (required)
-#     $5 - component isDestroyed (default: false)
-function UpdateComponentStatus() {
-  local envName="${1}"
-  local teamName="${2}"
-  local compName="${3}"
-  local compStatus="${4}"
 
-  local payload='{ "status" : "'${compStatus}'" }'
+function UpdateComponentReconcile() {
+  local teamName="${1}"
+  local envName="${2}"
+  local compName="${3}"
+  local payload="${4}"
+
+  if [[ $latestCompReconcileId == null ]]; then
+    getLatestCompReconId "${teamName}" "${envName}" "${compName}"
+  fi
   
-  echo "Running UpdateComponentStatus ${compStatus} : ${payload}"
+  echo "Running UpdateComponentRecon : ${payload}"
   echo $payload >tmp_comp_status.json
 
-  curl -X 'PUT' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/teams/${teamName}/environments/${envName}/components/${compName}" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_comp_status.json
-}
-
-# Saves Component isDestroyed
-#   Args:
-#     $1 - env name (required)
-#     $2 - team name (required)
-#     $3 - component name (required)
-#     $4 - component isDestroyed (required)
-function UpdateComponentDestroyed() {
-  local envName="${1}"
-  local teamName="${2}"
-  local compName="${3}"
-  local isDestroyed=${4}
-
-  local payload='{ "isDestroyed" : '${isDestroyed}' }'
-
-  echo "Running UpdateComponentDestroyed: ${payload}"
-  echo $payload >tmp_comp_status.json
-
-  curl -X 'PUT' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/teams/${teamName}/environments/${envName}/components/${compName}" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_comp_status.json
-}
-
-# Saves or updates a component
-#   Args:
-#     $1 - env name (required)
-#     $2 - team name (required)
-#     $3 - component name (required)
-#     $4 - workflow run id (required)
-function UpdateComponentWfRunId() {
-  local envName="${1}"
-  local teamName="${2}"
-  local compName="${3}"
-  local wfRunId="${4}"
-
-  local payload='{ "lastWorkflowRunId" : "'${wfRunId}'" }'
-  
-  echo "Running UpdateComponentWfRunId ${wfRunId} : ${payload}"
-  echo $payload >tmp_comp_wf_runid.json
-
-  curl -X 'PUT' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/teams/${teamName}/environments/${envName}/components/${compName}" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_comp_wf_runid.json
-}
-
-# Saves or updates a component
-#   Args:
-#     $1 - env name (required)
-#     $2 - team name (required)
-#     $3 - component name (required)
-#     $4 - cost (required)
-#     $5 - cost resources (required)
-function UpdateComponentCost() {
-  local envName="${1}"
-  local teamName="${2}"
-  local compName="${3}"
-  local estimatedCost="${4}"
-  local costResources="${5}"
-
-  local payload='{ "estimatedCost" : '${estimatedCost}', "costResources" : '${costResources}' }'
-  
-  echo "Running UpdateComponentCost : ${payload}"
-  echo $payload >tmp_comp_cost.json
-
-  curl -X 'PUT' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/teams/${teamName}/environments/${envName}/components/${compName}" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_comp_cost.json
+  curl -X 'PUT' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/component/${latestCompReconcileId}" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_comp_status.json
 }
 
 # Gets the latest env reconcile entry

@@ -1,5 +1,4 @@
-UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "destroying"
-UpdateComponentDestroyed "${env_name}" "${team_name}" "${config_name}" true
+UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "status" : "running_destroy_plan", "isDestroyed" : true }'
 
 echo $show_output_start
 echo "Executing terraform destroy..." 2>&1 | appendLogs "/tmp/apply_output.txt"
@@ -37,8 +36,7 @@ echo $show_output_end
 aws s3 cp /tmp/apply_output.txt s3://zlifecycle-$zl_env-tfplan-$customer_id/$team_name/$env_name/$config_name/$config_reconcile_id/apply_output --profile compuzest-shared
 
 if [ $result -eq 0 ]; then
-    UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "destroyed"
-    UpdateComponentDestroyed "${env_name}" "${team_name}" "${config_name}" true
+    UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "status" : "running_destroy_plan", "isDestroyed" : true }'
 else
     SaveAndExit "There is an issue with destroying"
 fi

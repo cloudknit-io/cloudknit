@@ -62,40 +62,22 @@ if [ "$skip_component" != "noSkip" ]; then
     fi
 fi
 
-#echo "running argocd login script"
-#sh /argocd/login.sh $customer_id
-
-# TODO: Look at this block to see if we need to replicate it
-#echo "current config status: $config_status"
-#if [[ $config_name != 0 ]]; then
-#    echo "Fetching component status via zlifecycle-internal-cli"
-    #. /component-state-zlifecycle-internal-cli.sh
-#fi
-
 if [[ $config_name != 0 && $config_reconcile_id = null ]]; then
     echo "running validate environment component script: team $team_name, environment $env_name, component $config_name"
-    # sh ./validate_env_component.sh $team_name $env_name $config_name $customer_id
     comp_status=0
     if [[ $config_status == *"skipped"* ]]; then
-        echo "getting environment component previous status"
-        config_previous_status=$(curl "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/teams/${team_name}/environments/${env_name}/components/${config_name}" | jq -r ".status") || null
-        echo "config_prev_status: $config_previous_status"
-        if [[ $config_previous_status == null ]]; then
-            comp_status="not_provisioned"
-            data='{"metadata":{"labels":{"is_skipped":"'$is_skipped'","component_status":"not_provisioned"}}}'
-        else
-            data='{"metadata":{"labels":{"is_skipped":"'$is_skipped'"}}}'
-        fi
+        # echo "getting environment component previous status"
+        # config_previous_status=$(curl "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/teams/${team_name}/environments/${env_name}/components/${config_name}" | jq -r ".status") || null
+        # echo "config_prev_status: $config_previous_status"
+        # if [[ $config_previous_status == null ]]; then
+        #     comp_status="not_provisioned"
+        # fi
     else
         comp_status="initializing"
-        UpdateComponentWfRunId "${env_name}" "${team_name}" "${config_name}" "initializing"
-        data='{"metadata":{"labels":{"is_skipped":"'$is_skipped'","audit_status":"initializing","last_workflow_run_id":"initializing"}}}'
+        UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "lastWorkflowRunId" : "'${compStatus}'" }'
     fi
-    # echo "patch argocd resource $team_env_config_name with data $data"
-    # argocd app patch $team_env_config_name --patch $data --type merge > null
     if [[ $comp_status != 0 ]]; then
-        UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "${comp_status}"
-        UpdateComponentDestroyed "${env_name}" "${team_name}" "${config_name}" ${is_destroy}
+        UpdateComponentReconcile UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "status" : "'${comp_status}'", "isDestroy" : "'${is_destroy}'" }'
     fi
 fi
 
@@ -116,21 +98,10 @@ if [ $config_name -eq 0 ]; then
     UpdateEnvironmentReconcileStatus "${team_name}" "${env_name}"
     reconcileId=$latestEnvReconcileId
 else
-    result=""
-    if [ $config_reconcile_id = null ]; then # create comp reconcile
-        payload='{"name": "'${config_name}'", "startDateTime": "'${start_date}'", "envReconcileId": '${reconcile_id}'}'
-        echo ${payload} >tmp_new_comp_recon.json
-
-    echo "PAYLOAD: $payload"
-        result=$(curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/component" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_new_comp_recon.json)
-    else # update comp reconcile
-        payload='{"status": "'${config_status}'", "endDateTime": "'${end_date}'"}'
-        echo ${payload} >tmp_update_comp_recon.json
-
-    echo "PAYLOAD: $payload"
-        result=$(curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/component/${config_reconcile_id}" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_update_comp_recon.json)
+    if [[ $config_reconcile_id != null ]]; then
+        UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{"status": "'${config_status}'", "endDateTime": "'${end_date}'"}'
     fi
-    reconcileId=$(echo $result | jq -r '.reconcileId')
+    reconcileId=$latestCompReconcileId
 fi
 
 
