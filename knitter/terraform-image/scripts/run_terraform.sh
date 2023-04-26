@@ -56,7 +56,7 @@ sh /argocd/login.sh $customer_id
 . /initialize-functions.sh
 
 
-UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "lastWorkflowRunId" : "'${compStatus}'" }'
+UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "lastWorkflowRunId" : "'${workflow_id}'" }'
 
 sh /client/setup_github.sh || SaveAndExit "Cannot setup github ssh key"
 
