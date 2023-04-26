@@ -12,7 +12,7 @@ module.exports = class ComponentToReconciliation1682347329447 {
         'ADD COLUMN `latest_comp_recon_id` int DEFAULT NULL;'
     );
     await queryRunner.query(
-      'ALTER TABLE `components` ADD CONSTRAINT `FK_latest_comp_recon` FOREIGN KEY (`latest_comp_recon_id`) REFERENCES `component_reconcile`(`id`) ON DELETE CASCADE ON UPDATE NO ACTION'
+      'ALTER TABLE `environment` DROP CONSTRAINT `FK_latest_env_recon`;'
     );
     await queryRunner.query(
       'ALTER TABLE `component_reconcile` ' +

@@ -93,6 +93,7 @@ export class ComponentService {
       },
       relations: {
         environment: withEnv,
+        latestCompRecon: true
       },
     });
 
@@ -113,6 +114,7 @@ export class ComponentService {
       },
       relations: {
         environment: withEnv,
+        latestCompRecon: true
       },
     });
   }
