@@ -282,12 +282,12 @@ export enum ZSyncStatus {
 	InSync = 'in_sync',
 	Skipped = 'skipped',
 	SkippedReconcile = 'skipped_reconcile',
-	WaitingForParent = 'unknown',
+	WaitingForParent = 'waiting_for_parent',
 }
 
 export enum ZComponentSyncStatus {
 	Initializing = 'initializing',
-	WaitingForParent = 'unknown',
+	WaitingForParent = 'waiting_for_parent',
 	RunningPlan = 'running_plan',
 	RunningDestroyPlan = 'running_destroy_plan',
 	CalculatingCost = 'calculating_cost',
