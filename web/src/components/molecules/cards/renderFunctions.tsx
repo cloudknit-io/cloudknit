@@ -358,25 +358,12 @@ export const renderSyncedStatus = (
 					time={syncFinishedAt}
 				/>
 			);
+		case ZSyncStatus.WaitingForParent:
+			return <StatusDisplay text={'Waiting For Parent'} icon={<Hourglass />} time={syncFinishedAt} />;
 		default:
-			const dependsOn = data?.dependsOn?.filter((d: any) => d !== 'root');
-			if (dependsOn?.length > 0 && !data.isDestroy) {
-				return (
-					<StatusDisplay
-						title={`${dependsOn.join(', ')}`}
-						text={'Waiting for Parent'}
-						icon={<Hourglass height={20} width={20} />}
-					/>
-				);
-			} else {
-				return (
-					<StatusDisplay
-						text={'Initializing'}
-						icon={<Loader height={20} width={20} />}
-						time={syncFinishedAt}
-					/>
-				);
-			}
+			return (
+				<StatusDisplay text={'Initializing'} icon={<Loader height={20} width={20} />} time={syncFinishedAt} />
+			);
 	}
 };
 
