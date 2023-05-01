@@ -7,6 +7,7 @@ export type ApiConfig = {
     username: string;
     password: string;
     database: string;
+    sync: boolean;
   };
   port: number;
   AWS: {
