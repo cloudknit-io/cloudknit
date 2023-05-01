@@ -246,7 +246,7 @@ export const AuditView: FC<Props> = ({ auditData, auditColumns, fetchLogs, reset
 								AuditStatus.Destroyed,
 								AuditStatus.Skipped,
 								AuditStatus.SkippedReconcile,
-							].includes(data?.status)
+							].includes(data?.status?.toLowerCase())
 						) {
 							return 'zlifecycle-audit-table-row zlifecycle-audit-table-row-success';
 						}
@@ -257,7 +257,7 @@ export const AuditView: FC<Props> = ({ auditData, auditColumns, fetchLogs, reset
 								AuditStatus.DestroyPlanFailed,
 								AuditStatus.ProvisionPlanFailed,
 								AuditStatus.ProvisionApplyFailed,
-							].includes(data?.status)
+							].includes(data?.status?.toLowerCase())
 						) {
 							return 'zlifecycle-audit-table-row zlifecycle-audit-table-row-failed';
 						}
