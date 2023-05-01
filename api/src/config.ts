@@ -61,6 +61,7 @@ export function init() {
       username: getEnvVarOrFail('TYPEORM_USERNAME'),
       password: getEnvVarOrFail('TYPEORM_PASSWORD'),
       database: getEnvVarOrFail('TYPEORM_DATABASE'),
+      sync: Boolean(getEnvVarOrFail('TYPEORM_SYNC'))
     },
     port: parseInt(process.env.APP_PORT) || 3000,
     AWS: {
