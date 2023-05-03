@@ -130,15 +130,30 @@ function UpdateComponentReconcile() {
   if [[ $latestCompReconcileId == null ]]; then
     getLatestCompReconId "${teamName}" "${envName}" "${compName}"
   fi
+  
+  echo "Running UpdateComponentRecon : ${payload}"
+  echo $payload >tmp_comp_status.json
 
-  echo "UpdateComponentReconcile payload: "
-  if [[ $payload == *.json ]]; then
-    echo $(cat $payload)
-    curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/component/${latestCompReconcileId}" -H 'accept: */*' -H 'Content-Type: application/json' -d @$payload
-  else
-    echo $payload>tmp_comp_status.json
-    curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/component/${latestCompReconcileId}" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_comp_status.json
+  curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/component/${latestCompReconcileId}" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_comp_status.json
+}
+
+function UpdateComponentReconcileCost() {
+  local teamName="${1}"
+  local envName="${2}"
+  local compName="${3}"
+  local estimatedCost="${4}"
+  local costResources="${5}"
+
+  if [[ $latestCompReconcileId == null ]]; then
+    getLatestCompReconId "${teamName}" "${envName}" "${compName}"
   fi
+  
+  local payload='{ "estimatedCost" : '${estimatedCost}', "costResources" : '${costResources}' }'
+  
+  echo "Running UpdateComponentCost : ${payload}"
+  echo $payload >tmp_comp_cost.json
+
+  curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/component/${latestCompReconcileId}" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_comp_status.json
 }
 
 # Gets the latest env reconcile entry
