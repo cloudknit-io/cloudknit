@@ -218,7 +218,7 @@ export const renderEnvSyncedStatus = (
 				/>
 			);
 		case ZSyncStatus.WaitingForParent:
-			return <StatusDisplay text={'Waiting For Parent'} icon={<Hourglass />} time={syncFinishedAt} />;
+			return <StatusDisplay text={'Waiting'} icon={<Hourglass />} time={syncFinishedAt} />;
 		default:
 			return (
 				<StatusDisplay text={'Initializing'} icon={<Loader height={20} width={20} />} time={syncFinishedAt} />
@@ -359,7 +359,7 @@ export const renderSyncedStatus = (
 				/>
 			);
 		case ZSyncStatus.WaitingForParent:
-			return <StatusDisplay text={'Waiting For Parent'} icon={<Hourglass />} time={syncFinishedAt} />;
+			return <StatusDisplay text={'Waiting'} icon={<Hourglass />} time={syncFinishedAt} />;
 		default:
 			return (
 				<StatusDisplay text={'Initializing'} icon={<Loader height={20} width={20} />} time={syncFinishedAt} />
@@ -430,8 +430,8 @@ export const getSyncStatusIcon = (syncStatus: any, operation?: 'Destroy' | 'Prov
 		case ESyncStatus.Synced:
 			return <SyncedIcon height={16} width={16} />;
 		case ZSyncStatus.WaitingForParent:
-			return <Hourglass height={16} width={16} title="Waiting For Parent" />;
+			return <Hourglass height={16} width={16} title="Waiting" />;
 		default:
-			return <Hourglass height={16} width={16} title="Waiting For Parent" />;
+			return <Hourglass height={16} width={16} title="Waiting" />;
 	}
 };
