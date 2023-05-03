@@ -153,7 +153,7 @@ function UpdateComponentReconcileCost() {
   echo "Running UpdateComponentCost : ${payload}"
   echo $payload >tmp_comp_cost.json
 
-  curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/component/${latestCompReconcileId}" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_comp_status.json
+  curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/component/${latestCompReconcileId}" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_comp_cost.json
 }
 
 # Gets the latest env reconcile entry
