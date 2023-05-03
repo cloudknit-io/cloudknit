@@ -130,9 +130,16 @@ function UpdateComponentReconcile() {
   if [[ $latestCompReconcileId == null ]]; then
     getLatestCompReconId "${teamName}" "${envName}" "${compName}"
   fi
+
+  if [[ $payload == *.json ]]; then
+    cp $payload tmp_comp_status.json 
+  else
+    echo $payload>tmp_comp_status.json 
+  fi
+
+  echo "UpdateComponentReconcile payload: "
+  echo $(cat tmp_comp_status.json)
   
-  echo "Running UpdateComponentRecon : ${payload}"
-  echo $payload >tmp_comp_status.json
 
   curl -X 'POST' "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/reconciliation/component/${latestCompReconcileId}" -H 'accept: */*' -H 'Content-Type: application/json' -d @tmp_comp_status.json
 }

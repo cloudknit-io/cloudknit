@@ -58,4 +58,6 @@ infracost breakdown --path terraform-plan --format json --log-level=warn >>outpu
 estimated_cost=$(cat output.json | jq -r ".projects[0].breakdown.totalMonthlyCost")
 costResources=$(cat output.json | jq -r ".projects[0].breakdown.resources")
 
-UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "estimatedCost" : '${estimated_cost}', "costResources" : "'"$costResources"'" }'
+payload='{ "estimatedCost" : '${estimated_cost}', "costResources" : "'"$costResources"'" }'
+echo $payload>estimated_cost_payload.json
+UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" "estimated_cost_payload.json"
