@@ -123,6 +123,11 @@ export class UpdateComponentReconciliationDto {
   endDateTime?: string;
 
   @ApiProperty()
+  @IsDateString()
+  @IsOptional()
+  startDateTime?: string;
+
+  @ApiProperty()
   @IsString()
   @IsOptional()
   approvedBy?: string;
