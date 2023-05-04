@@ -107,11 +107,7 @@ export class ComponentController {
     const { org, env } = req;
     const comp = await this.getCompFromRequest(org, env, id);
 
-    const compRecon = await this.reconSvc.getLatestCompReconcile(org, comp);
-
-    console.log(compRecon);
-
-    return null;
+    return this.reconSvc.getLatestCompReconcile(org, comp);
   }
 
   @OnEvent(InternalEventType.ComponentReconcileEntityUpdate, { async: true })
