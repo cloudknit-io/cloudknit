@@ -156,6 +156,11 @@ export class UpdateComponentReconciliationDto {
   @IsOptional()
   @IsBoolean()
   isDestroyed?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  isSkipped?: boolean;
 }
 
 export class CreatedEnvironmentReconcile {

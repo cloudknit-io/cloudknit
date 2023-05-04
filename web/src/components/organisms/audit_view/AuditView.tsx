@@ -165,6 +165,7 @@ export const AuditView: FC<Props> = ({ auditData, auditColumns, fetchLogs, reset
 								AuditStatus.Skipped,
 								AuditStatus.SkippedProvision,
 							].includes(rowData.status.toLowerCase() as AuditStatus)
+							|| (rowData as CompAuditData)?.isSkipped
 						) {
 							return;
 						}

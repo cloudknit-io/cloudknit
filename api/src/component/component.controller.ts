@@ -98,6 +98,22 @@ export class ComponentController {
     return this.reconSvc.getComponentAuditList(org, comp);
   }
 
+  @Get('/:componentId/audit/latest')
+  @EnvironmentApiParam()
+  async getPreviousAudit(
+    @Request() req: APIRequest,
+    @Param('componentId') id: string
+  ) {
+    const { org, env } = req;
+    const comp = await this.getCompFromRequest(org, env, id);
+
+    const compRecon = await this.reconSvc.getLatestCompReconcile(org, comp);
+
+    console.log(compRecon);
+
+    return null;
+  }
+
   @OnEvent(InternalEventType.ComponentReconcileEntityUpdate, { async: true })
   async compReconEnvUpdateListener(evt: ComponentReconcileEntityUpdateEvent) {
     const compRecon = evt.payload;

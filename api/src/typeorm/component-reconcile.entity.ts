@@ -64,6 +64,12 @@ export class ComponentReconcile {
   isDestroyed?: boolean;
 
   @Column({
+    default: false,
+    type: 'boolean',
+  })
+  isSkipped?: boolean;
+
+  @Column({
     name: 'cost_resources',
     default: null,
     type: 'json',

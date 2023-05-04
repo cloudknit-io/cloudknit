@@ -418,13 +418,14 @@ export class ReconciliationService {
   async getLatestCompReconcile(
     org: Organization,
     comp: Component
-  ): Promise<ComponentReconcile> {
+  ): Promise<ComponentReconcile> {``
     return await this.compReconRepo.findOne({
       where: {
         component: {
           id: comp.id,
         },
         status: Not(Like('skipped%')),
+        startDateTime: Not(null),
         organization: {
           id: org.id,
         },

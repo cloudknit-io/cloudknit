@@ -112,10 +112,8 @@ export const ConfigWorkflowView: FC<Props> = (props: Props) => {
 	}, [workflowData]);
 
 	const getComponentStatus = (config: Component) => {
-		if (config.status === ZSyncStatus.Skipped) {
-			return 'skipped destroy';
-		} else if (config.status === ZSyncStatus.SkippedReconcile) {
-			return 'skipped provision';
+		if (config.isSkipped) {
+			return `skipped ${config.status}`;
 		} else {
 			return config.isDestroyed ? 'destroy' : 'provision';
 		}

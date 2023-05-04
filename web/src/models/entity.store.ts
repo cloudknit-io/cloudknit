@@ -203,6 +203,7 @@ export class EntityStore {
 		comp.costResources = compRecon.costResources;
 		comp.isDestroyed = compRecon.isDestroyed;
 		comp.lastWorkflowRunId = compRecon.lastWorkflowRunId;
+		comp.isSkipped = compRecon.isSkipped;
 		return comp;
 	}
 
