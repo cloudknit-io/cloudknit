@@ -418,7 +418,7 @@ export class ReconciliationService {
   async getLatestCompReconcile(
     org: Organization,
     comp: Component
-  ): Promise<ComponentReconcile> {``
+  ): Promise<ComponentReconcile> {
     return await this.compReconRepo.findOne({
       where: {
         component: {
