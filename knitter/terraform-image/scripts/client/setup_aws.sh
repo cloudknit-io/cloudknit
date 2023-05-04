@@ -5,7 +5,7 @@ aws_access_key_id = ${CUSTOMER_AWS_ACCESS_KEY_ID}
 aws_secret_access_key = ${CUSTOMER_AWS_SECRET_ACCESS_KEY}
 EOT
 
-if [ ! -z "${CUSTOMER_AWS_SESSION_TOKEN}" ]
+if [ ! -z "${CUSTOMER_AWS_SESSION_TOKEN}" ]; then
 cat <<EOT >> ~/.aws/credentials
 aws_session_token = ${CUSTOMER_AWS_SESSION_TOKEN}
 EOT
@@ -17,7 +17,7 @@ aws_access_key_id = ${SHARED_AWS_ACCESS_KEY_ID}
 aws_secret_access_key = ${SHARED_AWS_SECRET_ACCESS_KEY}
 EOT
 
-if [ ! -z "${SHARED_AWS_SESSION_TOKEN}" ]
+if [ ! -z "${SHARED_AWS_SESSION_TOKEN}" ]; then
 cat <<EOT >> ~/.aws/credentials
 aws_session_token = ${SHARED_AWS_SESSION_TOKEN}
 EOT
