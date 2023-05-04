@@ -64,21 +64,25 @@ if [[ $config_name != 0 && $config_reconcile_id = null ]]; then
     UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "startDateTime" : "'"$start_date"'" }'
     
     comp_status=0
+    lastWorkflowRunId=null
     if [[ $is_skipped == true ]]; then
         echo "getting environment component previous status"
-        config_previous_status=$(curl "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/teams/${team_name}/environments/${env_name}/components/${config_name}/audit/latest" | jq -r ".status") || null
-        echo "config_prev_status: $config_previous_status"
-        if [[ $config_previous_status == null || $config_previous_status == "" ]]; then
+        comp_recon=$(curl "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/teams/${team_name}/environments/${env_name}/components/${config_name}/audit/latest") || null
+        echo "prev_comp_recon: $comp_recon"
+        config_previous_status=$(jq -n "$comp_recon" | jq -r ".status")
+        lastWorkflowRunId=$(jq -n "$comp_recon" | jq -r ".lastWorkflowRunId")
+        if [[ $config_previous_status == null ]]; then
             comp_status="not_provisioned"
         else
             comp_status=$config_previous_status
+            
         fi
     else
         comp_status="initializing"
-        UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "lastWorkflowRunId" : "'${comp_status}'" }'
+        lastWorkflowRunId="initiailizing"
     fi
     if [[ $comp_status != 0 ]]; then
-        UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "status" : "'${comp_status}'", "isDestroy" : "'${is_destroy}'", "isSkipped" : '${is_skipped}' }'
+        UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "status" : "'${comp_status}'", "isDestroy" : "'${is_destroy}'", "isSkipped" : '${is_skipped}', "lastWorkflowRunId" : "'${lastWorkflowRunId}'"  }'
     fi
 fi
 
