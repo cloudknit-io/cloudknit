@@ -425,6 +425,7 @@ export class ReconciliationService {
           id: comp.id,
         },
         status: And(Not(Like('skipped%')), Not('waiting_for_parent')),
+        isSkipped: In([false, IsNull()]),
         organization: {
           id: org.id,
         },
