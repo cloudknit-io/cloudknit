@@ -1,22 +1,25 @@
 import {
   BadRequestException,
-  Body,
   Controller,
   Get,
   Logger,
   Param,
-  Put,
   Query,
-  Request,
+  Request
 } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import { ApiTags } from '@nestjs/swagger';
 import { EnvironmentService } from 'src/environment/environment.service';
 import { ReconciliationService } from 'src/reconciliation/reconciliation.service';
 import { Component, Environment, Organization } from 'src/typeorm';
-import { APIRequest, EnvironmentApiParam } from 'src/types';
+import {
+  APIRequest,
+  ComponentReconcileEntityUpdateEvent,
+  EnvironmentApiParam,
+  InternalEventType,
+} from 'src/types';
 import { ComponentQueryParams, ComponentWrap } from './component.dto';
 import { ComponentService } from './component.service';
-import { UpdateComponentDto } from './dto/update-component.dto';
 
 @Controller({
   version: '1',
@@ -58,20 +61,6 @@ export class ComponentController {
     return this.getCompFromRequest(org, env, id);
   }
 
-  @Put('/:componentId')
-  @EnvironmentApiParam()
-  async updateComponent(
-    @Request() req: APIRequest,
-    @Param('componentId') id: string,
-    @Body() body: UpdateComponentDto
-  ): Promise<Component> {
-    const { org, env } = req;
-    const comp = await this.getCompFromRequest(org, env, id);
-    const updatedComp = await this.compSvc.update(org, comp, body);
-
-    return updatedComp;
-  }
-
   async getCompFromRequest(
     org: Organization,
     env: Environment,
@@ -107,5 +96,14 @@ export class ComponentController {
     const comp = await this.getCompFromRequest(org, env, id);
 
     return this.reconSvc.getComponentAuditList(org, comp);
+  }
+
+  @OnEvent(InternalEventType.ComponentReconcileEntityUpdate, { async: true })
+  async compReconEnvUpdateListener(evt: ComponentReconcileEntityUpdateEvent) {
+    const compRecon = evt.payload;
+
+    await this.compSvc.updateById(compRecon.environmentReconcile.organization, compRecon.compId, {
+      lastReconcileDatetime: new Date().toISOString(),
+    });
   }
 }

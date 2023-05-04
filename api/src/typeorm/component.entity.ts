@@ -4,14 +4,14 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   RelationId,
   UpdateDateColumn,
 } from 'typeorm';
 import { Organization } from './Organization.entity';
+import { ComponentReconcile } from './component-reconcile.entity';
 import { Environment } from './environment.entity';
-import { CostResource } from 'src/component/dto/update-component.dto';
-import { ColumnNumericTransformer } from './helper';
 
 @Entity({ name: 'components' })
 @Index(['organization', 'environment', 'name'], { unique: true })
@@ -32,50 +32,26 @@ export class Component {
   })
   type: string;
 
-  @Column({
-    name: 'status',
-    default: null,
-  })
-  status: string;
-
-  @Column({
-    name: 'estimated_cost',
-    type: 'decimal',
-    precision: 10,
-    scale: 3,
-    default: 0,
-    transformer: new ColumnNumericTransformer(),
-  })
-  estimatedCost: number;
-
   @UpdateDateColumn({
     name: 'last_reconcile_datetime',
   })
   lastReconcileDatetime: string;
 
   @Column({
-    default: -1,
-  })
-  duration: number;
-
-  @Column({
+    name: 'is_deleted',
     default: null,
-    nullable: true,
+    type: 'boolean'
   })
-  lastWorkflowRunId: string;
+  isDeleted: boolean;
 
-  @Column({
-    default: false,
-    type: 'boolean',
+  @OneToOne(() => ComponentReconcile, (compRecon) => compRecon.component, {
+    eager: false
   })
-  isDestroyed?: boolean;
-
-  @Column({
-    name: 'cost_resources',
-    default: null,
-    type: 'json',
+  @JoinColumn({
+    referencedColumnName: 'reconcileId',
+    name: 'latest_comp_recon_id'
   })
-  costResources: CostResource[];
+  latestCompRecon: ComponentReconcile
 
   @ManyToOne(() => Organization, (org) => org.id, {
     onDelete: 'CASCADE',

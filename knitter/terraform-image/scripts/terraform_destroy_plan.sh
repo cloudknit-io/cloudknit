@@ -24,8 +24,7 @@ echo "   workspace=${workspace}"
 echo $show_output_start
 echo "Executing plan..." 2>&1 | appendLogs /tmp/plan_output.txt
 echo $show_output_end
-UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "running_destroy_plan"
-UpdateComponentDestroyed "${env_name}" "${team_name}" "${config_name}" true
+UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "status" : "running_destroy_plan", "isDestroyed" : true }'
 
 echo $show_output_start
 
@@ -43,4 +42,4 @@ echo $show_output_end
 aws s3 cp /tmp/plan_output.txt s3://zlifecycle-$zl_env-tfplan-$customer_id/$team_name/$env_name/$config_name/$config_reconcile_id/plan_output --profile compuzest-shared
 aws s3 cp terraform-plan s3://zlifecycle-$zl_env-tfplan-$customer_id/$team_name/$env_name/$config_name/tfplans/$config_reconcile_id --profile compuzest-shared
 
-UpdateComponentCost "${env_name}" "${team_name}" "${config_name}" "-1" "[]"
+UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "estimatedCost" : -1, "costResources" : [] }'

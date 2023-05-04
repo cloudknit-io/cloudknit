@@ -24,7 +24,7 @@ echo "   workspace=${workspace}"
 echo $show_output_start
 echo "Executing plan..." 2>&1 | appendLogs /tmp/plan_output.txt
 echo $show_output_end
-UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "running_plan"
+UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "status" : "running_plan" }' 
 
 echo $show_output_start
 
@@ -51,11 +51,11 @@ echo "   config_reconcile_id=${config_reconcile_id}"
 aws s3 cp /tmp/plan_output.txt s3://zlifecycle-$zl_env-tfplan-$customer_id/$team_name/$env_name/$config_name/$config_reconcile_id/plan_output --profile compuzest-shared
 aws s3 cp terraform-plan s3://zlifecycle-$zl_env-tfplan-$customer_id/$team_name/$env_name/$config_name/tfplans/$config_reconcile_id --profile compuzest-shared
 
-UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "calculating_cost"
+UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "status" : "calculating_cost" }' 
 
 infracost breakdown --path terraform-plan --format json --log-level=warn >>output.json
 
 estimated_cost=$(cat output.json | jq -r ".projects[0].breakdown.totalMonthlyCost")
 costResources=$(cat output.json | jq -r ".projects[0].breakdown.resources")
 
-UpdateComponentCost "${env_name}" "${team_name}" "${config_name}" "${estimated_cost}" "${costResources}"
+UpdateComponentReconcileCost "${team_name}" "${env_name}" "${config_name}" "${estimated_cost}" "${costResources}"

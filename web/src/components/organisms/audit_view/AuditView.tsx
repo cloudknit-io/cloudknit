@@ -27,33 +27,6 @@ export const AuditView: FC<Props> = ({ auditData, auditColumns, fetchLogs, reset
 	const [logs, setLogs] = useState<ZAccordionItem[] | null>();
 	const nodeOrder = ['plan', 'apply'];
 	const [latestReconcileId, setLatestReconcileId] = useState(-1);
-	const getOperation = (status: AuditStatus) => {
-		switch (status) {
-			case AuditStatus.Provisioned:
-			case AuditStatus.Provisioning:
-			case AuditStatus.ProvisionApplyFailed:
-			case AuditStatus.ProvisionPlanFailed:
-			case AuditStatus.Env_Provisioning:
-			case AuditStatus.Env_Provision_Ended:
-				return 'Provision';
-			case AuditStatus.Destroyed:
-			case AuditStatus.Destroying:
-			case AuditStatus.DestroyApplyFailed:
-			case AuditStatus.DestroyPlanFailed:
-				return 'Destroy';
-			case AuditStatus.Env_Destroying:
-			case AuditStatus.Env_Destroy_Ended:
-				return 'Teardown';
-			case AuditStatus.Skipped:
-			case AuditStatus.SkippedDestroy:
-				return 'Skipped Destroy';
-			case AuditStatus.SkippedProvision:
-				return 'Skipped Provision';
-			case AuditStatus.SkippedReconcile:
-				return 'Skipped Reconcile';
-		}
-		return '--';
-	};
 
 	useEffect(() => {
 		if (!auditData) return;
@@ -273,7 +246,7 @@ export const AuditView: FC<Props> = ({ auditData, auditColumns, fetchLogs, reset
 								AuditStatus.Destroyed,
 								AuditStatus.Skipped,
 								AuditStatus.SkippedReconcile,
-							].includes(data?.status)
+							].includes(data?.status?.toLowerCase())
 						) {
 							return 'zlifecycle-audit-table-row zlifecycle-audit-table-row-success';
 						}
@@ -284,7 +257,7 @@ export const AuditView: FC<Props> = ({ auditData, auditColumns, fetchLogs, reset
 								AuditStatus.DestroyPlanFailed,
 								AuditStatus.ProvisionPlanFailed,
 								AuditStatus.ProvisionApplyFailed,
-							].includes(data?.status)
+							].includes(data?.status?.toLowerCase())
 						) {
 							return 'zlifecycle-audit-table-row zlifecycle-audit-table-row-failed';
 						}
