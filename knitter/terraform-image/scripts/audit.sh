@@ -60,8 +60,6 @@ fi
 
 if [[ $config_name != 0 && $config_reconcile_id = null ]]; then
     echo "running validate environment component script: team $team_name, environment $env_name, component $config_name"
-    
-    UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "startDateTime" : "'"$start_date"'" }'
     comp_status=0
     lastWorkflowRunId=null
 
@@ -69,10 +67,8 @@ if [[ $config_name != 0 && $config_reconcile_id = null ]]; then
         comp_status="initializing"
         lastWorkflowRunId="initiailizing"
     fi
-    
-    if [[ $comp_status != 0 ]]; then
-        UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "status" : "'${comp_status}'", "isDestroy" : "'${is_destroy}'", "isSkipped" : '${is_skipped}', "lastWorkflowRunId" : "'${lastWorkflowRunId}'"  }'
-    fi
+    echo "Updating component reconcile entry: "
+    UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "status" : "'${comp_status}'", "isDestroy" : "'${is_destroy}'", "isSkipped" : '${is_skipped}', "lastWorkflowRunId" : "'${lastWorkflowRunId}'", "startDateTime" : "'"$start_date"'"  }'
 fi
 
 echo "write 0 to /tmp/error_code.txt"
