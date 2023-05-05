@@ -11,7 +11,7 @@ import { Component } from 'src/typeorm/component.entity';
 import { EnvironmentReconcile } from 'src/typeorm/environment-reconcile.entity';
 import { Environment } from 'src/typeorm/environment.entity';
 import { S3Handler } from 'src/utilities/s3Handler';
-import { And, Equal, In, IsNull, Like, Not } from 'typeorm';
+import { And, Any, Equal, In, IsNull, Like, Not, Raw } from 'typeorm';
 import { Repository } from 'typeorm/repository/Repository';
 import { ComponentReconcileWrap } from './dtos/componentAudit.dto';
 import { EnvironmentReconcileWrap } from './dtos/environmentAudit.dto';
@@ -425,7 +425,7 @@ export class ReconciliationService {
           id: comp.id,
         },
         status: And(Not(Like('skipped%')), Not('waiting_for_parent')),
-        isSkipped: In([false, IsNull()]),
+        isSkipped: Raw((col) => `${col} is NULL OR ${col} = false`),
         organization: {
           id: org.id,
         },
