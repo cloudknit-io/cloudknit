@@ -9,6 +9,11 @@
 			border: 3px solid $label-color-light-green;
 			border-radius: 10px;
 		}
+		&-success-skipped {
+			background-image: linear-gradient(to right, transparent, lightgray);
+			border: 3px solid lightgray;
+			border-radius: 10px;
+		}
 		&-failed {
 			background-image: linear-gradient(to right, transparent, $label-color-pink);
 			border: 3px solid $label-color-pink;

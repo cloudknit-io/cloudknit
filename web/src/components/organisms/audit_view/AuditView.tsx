@@ -8,7 +8,7 @@ import { ZEditor } from 'components/molecules/editor/Editor';
 import React, { FC, useEffect, useState } from 'react';
 import { AuditService } from 'services/audit/audit.service';
 
-import { AuditStatus } from 'models/argo.models';
+import { AuditStatus, ZSyncStatus } from 'models/argo.models';
 import { CompAuditData, Component, EnvAuditData } from 'models/entity.type';
 import { ZAccordion, ZAccordionItem } from '../accordion/ZAccordion';
 import { SmallText } from '../workflow-diagram/WorkflowDiagram';
@@ -164,6 +164,7 @@ export const AuditView: FC<Props> = ({ auditData, auditColumns, fetchLogs, reset
 								AuditStatus.SkippedDestroy,
 								AuditStatus.Skipped,
 								AuditStatus.SkippedProvision,
+								ZSyncStatus.WaitingForParent
 							].includes(rowData.status.toLowerCase() as AuditStatus)
 							|| (rowData as CompAuditData)?.isSkipped
 						) {
@@ -245,12 +246,15 @@ export const AuditView: FC<Props> = ({ auditData, auditColumns, fetchLogs, reset
 							[
 								AuditStatus.Provisioned,
 								AuditStatus.Destroyed,
-								AuditStatus.Skipped,
-								AuditStatus.SkippedReconcile,
 							].includes(data?.status?.toLowerCase())
 						) {
 							return 'zlifecycle-audit-table-row zlifecycle-audit-table-row-success';
 						}
+
+						if ((data as CompAuditData)?.isSkipped) {
+							return 'zlifecycle-audit-table-row zlifecycle-audit-table-row-success-skipped';
+						}
+
 						if (
 							[
 								AuditStatus.Failed,
