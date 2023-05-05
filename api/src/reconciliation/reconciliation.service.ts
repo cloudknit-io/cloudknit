@@ -220,7 +220,8 @@ export class ReconciliationService {
   async findCompReconById(
     org: Organization,
     reconcileId: number,
-    withEnvRecon: boolean = false
+    withEnvRecon: boolean = false,
+    withComponent: boolean = false
   ): Promise<ComponentReconcile> {
     return this.compReconRepo.findOne({
       where: {
@@ -231,6 +232,7 @@ export class ReconciliationService {
       },
       relations: {
         environmentReconcile: withEnvRecon,
+        component: withComponent
       },
     });
   }
