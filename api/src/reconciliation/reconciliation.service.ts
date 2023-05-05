@@ -11,7 +11,17 @@ import { Component } from 'src/typeorm/component.entity';
 import { EnvironmentReconcile } from 'src/typeorm/environment-reconcile.entity';
 import { Environment } from 'src/typeorm/environment.entity';
 import { S3Handler } from 'src/utilities/s3Handler';
-import { And, Any, Equal, In, IsNull, Like, Not, Raw } from 'typeorm';
+import {
+  And,
+  Any,
+  Equal,
+  FindOperator,
+  In,
+  IsNull,
+  Like,
+  Not,
+  Raw,
+} from 'typeorm';
 import { Repository } from 'typeorm/repository/Repository';
 import { ComponentReconcileWrap } from './dtos/componentAudit.dto';
 import { EnvironmentReconcileWrap } from './dtos/environmentAudit.dto';
@@ -232,7 +242,7 @@ export class ReconciliationService {
       },
       relations: {
         environmentReconcile: withEnvRecon,
-        component: withComponent
+        component: withComponent,
       },
     });
   }
@@ -421,17 +431,26 @@ export class ReconciliationService {
     org: Organization,
     comp: Component
   ): Promise<ComponentReconcile> {
-    return await this.compReconRepo.findOne({
-      where: {
-        component: {
-          id: comp.id,
-        },
-        status: And(Not(Like('skipped%')), Not('waiting_for_parent')),
-        isSkipped: Raw((col) => `${col} is NULL OR ${col} = false`),
-        organization: {
-          id: org.id,
-        },
+    const whereClause = {
+      component: {
+        id: comp.id,
       },
+      status: And(Not(Like('skipped%')), Not('waiting_for_parent')),
+      organization: {
+        id: org.id,
+      },
+    };
+    return this.compReconRepo.findOne({
+      where: [
+        {
+          ...whereClause,
+          isSkipped: IsNull(),
+        },
+        {
+          ...whereClause,
+          isSkipped: false,
+        },
+      ],
       order: {
         startDateTime: -1,
       },
