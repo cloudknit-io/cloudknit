@@ -56,32 +56,19 @@ fi
 is_skipped="false"
 if [ "$skip_component" != "noSkip" ]; then
     is_skipped="true"
-    config_status='skipped_destroy'
-    if [ "$skip_component" = 'selectiveReconcile' ]; then
-        config_status='skipped_provision'
-    fi
 fi
 
 if [[ $config_name != 0 && $config_reconcile_id = null ]]; then
     echo "running validate environment component script: team $team_name, environment $env_name, component $config_name"
-    
-    UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "startDateTime" : "'"$start_date"'" }'
-    
     comp_status=0
-    if [[ $config_status == *"skipped"* ]]; then
-        echo "getting environment component previous status"
-        # config_previous_status=$(curl "http://zlifecycle-api.zlifecycle-system.svc.cluster.local/v1/orgs/${customer_id}/teams/${team_name}/environments/${env_name}/components/${config_name}" | jq -r ".status") || null
-        # echo "config_prev_status: $config_previous_status"
-        # if [[ $config_previous_status == null ]]; then
-        #     comp_status="not_provisioned"
-        # fi
-    else
+    lastWorkflowRunId=null
+
+    if [[ $is_skipped == false ]]; then
         comp_status="initializing"
-        UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "lastWorkflowRunId" : "'${comp_status}'" }'
+        lastWorkflowRunId="initiailizing"
     fi
-    if [[ $comp_status != 0 ]]; then
-        UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "status" : "'${comp_status}'", "isDestroy" : "'${is_destroy}'" }'
-    fi
+    echo "Updating component reconcile entry: "
+    UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "status" : "'${comp_status}'", "isDestroy" : "'${is_destroy}'", "isSkipped" : '${is_skipped}', "lastWorkflowRunId" : "'${lastWorkflowRunId}'", "startDateTime" : "'"$start_date"'"  }'
 fi
 
 echo "write 0 to /tmp/error_code.txt"

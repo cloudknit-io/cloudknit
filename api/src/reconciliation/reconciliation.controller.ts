@@ -28,17 +28,16 @@ import {
   Environment,
   EnvironmentReconcile,
   Organization,
-  Team,
 } from 'src/typeorm';
-import { ApiHttpException, APIRequest, OrgApiParam } from 'src/types';
+import { APIRequest, ApiHttpException, OrgApiParam } from 'src/types';
 import { handleSqlErrors } from 'src/utilities/errorHandler';
 import { ApprovedByDto } from './dtos/componentAudit.dto';
 import { GetEnvReconStatusQueryParams } from './dtos/environmentAudit.dto';
 import {
   CreateComponentReconciliationDto,
+  CreateEnvironmentReconciliationDto,
   CreatedComponentReconcile,
   CreatedEnvironmentReconcile,
-  CreateEnvironmentReconciliationDto,
   RespGetEnvReconStatus,
   UpdateComponentReconciliationDto,
   UpdateEnvironmentReconciliationDto,
@@ -249,7 +248,8 @@ export class ReconciliationController {
     const compRecon: ComponentReconcile = await this.reconSvc.findCompReconById(
       org,
       compReconcileId,
-      true
+      true,
+      body.isSkipped
     );
     if (!compRecon) {
       this.logger.error({
@@ -260,10 +260,28 @@ export class ReconciliationController {
       throw new BadRequestException('could not find component-reconcile');
     }
 
+    if (body.isSkipped) {
+      const prevCompRecon: ComponentReconcile =
+        await this.reconSvc.getLatestCompReconcile(org, compRecon.component);
+      if (prevCompRecon) {
+        body = {
+          ...body,
+          approvedBy: prevCompRecon.approvedBy,
+          costResources: prevCompRecon.costResources,
+          estimatedCost: prevCompRecon.estimatedCost,
+          lastWorkflowRunId: prevCompRecon.lastWorkflowRunId,
+          status: prevCompRecon.status,
+        };
+      } else {
+        body.status = 'not_provisioned';
+      }
+    }
+
     const updatedCompRecon = await this.reconSvc.updateCompRecon(
       compRecon,
       body
     );
+
     delete updatedCompRecon.environmentReconcile;
     this.logger.log({
       message: 'updated component reconcile entry',
@@ -287,7 +305,11 @@ export class ReconciliationController {
   ) {
     const { org } = req;
 
-    const compRecon = await this.reconSvc.findCompReconById(org, compReconId, true);
+    const compRecon = await this.reconSvc.findCompReconById(
+      org,
+      compReconId,
+      true
+    );
     if (!compRecon) {
       throw new BadRequestException('could not find component reconcile');
     }
@@ -316,7 +338,8 @@ export class ReconciliationController {
       handleSqlErrors(err);
 
       this.logger.error({
-        message: 'could not update component reconcile status in approveWorkflow',
+        message:
+          'could not update component reconcile status in approveWorkflow',
         compRecon,
         err,
       });
@@ -505,7 +528,7 @@ export class ReconciliationController {
 
     try {
       const team = await this.teamSvc.findByName(org, queryParams.teamName);
-      if (!team) throw `Team ${queryParams.teamName} not found`
+      if (!team) throw `Team ${queryParams.teamName} not found`;
       env = await this.envSvc.findByName(org, team, queryParams.envName);
     } catch (err) {
       this.logger.error({

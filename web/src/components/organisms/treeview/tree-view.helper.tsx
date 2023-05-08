@@ -52,7 +52,6 @@ export const generateComponentNode = (component: Component) => {
 	const data = {
 		...component,
 		icon: <ComputeIcon />,
-		isSkipped: [AuditStatus.SkippedProvision, AuditStatus.SkippedDestroy].includes(component.lastAuditStatus),
 	};
 
 	return (
@@ -236,10 +235,6 @@ export const getClassName = (status: string): string => {
 		case ZSyncStatus.Destroyed:
 		case ZSyncStatus.NotProvisioned:
 			return '--destroyed';
-		case ZSyncStatus.Skipped:
-			return '--skipped';
-		case ZSyncStatus.SkippedReconcile:
-			return '--skipped-reconcile';
 		case ZSyncStatus.PlanFailed:
 		case ZSyncStatus.ValidationFailed:
 		case ZSyncStatus.ApplyFailed:

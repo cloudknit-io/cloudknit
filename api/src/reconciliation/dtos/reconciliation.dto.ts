@@ -123,6 +123,11 @@ export class UpdateComponentReconciliationDto {
   endDateTime?: string;
 
   @ApiProperty()
+  @IsDateString()
+  @IsOptional()
+  startDateTime?: string;
+
+  @ApiProperty()
   @IsString()
   @IsOptional()
   approvedBy?: string;
@@ -156,6 +161,11 @@ export class UpdateComponentReconciliationDto {
   @IsOptional()
   @IsBoolean()
   isDestroyed?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  isSkipped?: boolean;
 }
 
 export class CreatedEnvironmentReconcile {

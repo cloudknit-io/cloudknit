@@ -196,11 +196,12 @@ export const renderEnvSyncedStatus = (
 			return (
 				<StatusDisplay text={'Destroyed'} icon={<DeleteIcon height={16} width={16} />} time={syncFinishedAt} />
 			);
+		case ZSyncStatus.ProvisionFailed:
+			return <StatusDisplay text={'Provision Failed'} icon={<OutOfSyncIcon />} time={syncFinishedAt} />;
 		case ZSyncStatus.PlanFailed:
 			return <StatusDisplay text={'Plan Failed'} icon={<OutOfSyncIcon />} time={syncFinishedAt} />;
 		case ZSyncStatus.ApplyFailed:
 			return <StatusDisplay text={'Apply Failed'} icon={<OutOfSyncIcon />} time={syncFinishedAt} />;
-		case ZSyncStatus.ProvisionFailed:
 		case ZSyncStatus.ValidationFailed:
 			return <StatusDisplay text={'Validation Failed'} icon={<OutOfSyncIcon />} time={syncFinishedAt} />;
 		case ZSyncStatus.DestroyFailed:
@@ -419,9 +420,11 @@ export const getSyncStatusIcon = (syncStatus: any, operation?: 'Destroy' | 'Prov
 		case ZSyncStatus.ApplyFailed:
 		case ZSyncStatus.ProvisionFailed:
 		case ZSyncStatus.DestroyFailed:
-		case ZSyncStatus.ValidationFailed:
 		case AuditStatus.DestroyPlanFailed:
 		case AuditStatus.ProvisionPlanFailed:
+		case ZSyncStatus.ApplyFailed:
+			return <OutOfSyncIcon title="Failed" />;
+		case ZSyncStatus.ValidationFailed:
 			return <OutOfSyncIcon title="Validation Failed" />;
 		case ZSyncStatus.OutOfSync:
 		case ESyncStatus.OutOfSync:
