@@ -96,7 +96,9 @@ export class ReconciliationService {
   }
 
   async getEnvReconByReconcileId(
-    org: Organization,
+    org: {
+      id: number;
+    },
     reconcileId: number,
     withEnv: boolean = false
   ) {
