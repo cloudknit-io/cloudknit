@@ -310,14 +310,22 @@ export class EnvironmentController {
     const compRecon = evt.payload;
     let env = null;
 
-    if (compRecon.environmentReconcile) {
-      env = await this.envSvc.findById(
-        compRecon.environmentReconcile.organization,
-        compRecon.environmentReconcile.envId,
-        false,
-        true
+    let envRecon = compRecon.environmentReconcile;
+    if (!envRecon) {
+      envRecon = await this.reconSvc.getEnvReconByReconcileId(
+        {
+          id: compRecon.orgId,
+        },
+        compRecon.envReconId
       );
     }
+
+    env = await this.envSvc.findById(
+      envRecon.organization,
+      envRecon.envId,
+      false,
+      true
+    );
 
     await this.reconSvc.updateCost(env);
   }
