@@ -4,11 +4,19 @@ import * as cookieParser from "cookie-parser";
 import * as cors from "cors";
 import * as express from "express";
 import * as correlator from "express-correlation-id";
-import { apiAuthMw, getUser, organizationMW, setUpAuth } from "./auth/auth";
+import {
+  apiAuthMw,
+  getUser,
+  organizationMW,
+  setUpAuth
+} from "./auth/auth";
 import zlConfig from "./config";
 import AuthRoutes from "./controllers/auth.controller";
 import {
-  externalApiRoutes, handlePublicRoutes, noOrgRoutes, orgRoutes
+  externalApiRoutes,
+  getOrgRoutes,
+  handlePublicRoutes,
+  noOrgRoutes
 } from "./proxy/proxy";
 import helper, { oidcUser } from "./utils/helper";
 import logger, { AuthRequestLogger, ErrorLogger } from "./utils/logger";
@@ -70,7 +78,7 @@ authRouter.use(AuthRequestLogger);
 authRouter.use(organizationMW); // checks for selectedOrg cookie, throws 401 if not present
 
 app.use("/auth", AuthRoutes(authRouter));
-app.use("/", orgRoutes(authRouter));
+app.use("/", getOrgRoutes(authRouter))
 
 // replaces expresses default error handler
 app.use(ErrorLogger);

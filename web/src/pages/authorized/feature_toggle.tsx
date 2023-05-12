@@ -1,4 +1,5 @@
 import AuthStore from "auth/AuthStore";
+import { ENVIRONMENT_VARIABLES } from "utils/environmentVariables";
 
 const showFeatures = (process.env.REACT_APP_ENABLED_FEATURE_FLAGS || '')
 	.toString()
@@ -52,6 +53,9 @@ export const featureToggled = (featureKey: string, userBased: boolean = false) =
 }
 
 export function BradAdarshFeatureVisible() : boolean {
+	if (ENVIRONMENT_VARIABLES.PLAYGROUND_APP) {
+		return false;
+	}
 	const user = AuthStore.getUser();
 
 	// sometimes life hands you lemons...

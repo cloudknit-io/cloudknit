@@ -13,13 +13,55 @@ import * as express from "express";
 import { auth, requiresAuth } from "express-openid-connect";
 import * as session from "express-session";
 import { ExpressOIDC } from "@okta/oidc-middleware";
-import * as crypto from 'crypto';
+import * as crypto from "crypto";
 
 export async function getUser(username: string): Promise<User> {
   try {
     const user = await axios.get(
       `${process.env.ZLIFECYCLE_API_URL}/v1/users/${username}`
     );
+
+    return user.data;
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      // @ts-ignore
+      logger.error("get user error", { error: err.toJSON().message });
+    } else {
+      logger.error("get user error", { error: { message: err.message } });
+    }
+
+    return null;
+  }
+}
+
+export async function getPlaygroundUser(username: string): Promise<User> {
+  try {
+    const user = await axios.get(
+      `${process.env.ZLIFECYCLE_API_URL}/v1/orgs/1/auth/users/${username}`
+    );
+
+    return user.data;
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      // @ts-ignore
+      logger.error("get user error", { error: err.toJSON().message });
+    } else {
+      logger.error("get user error", { error: { message: err.message } });
+    }
+
+    return null;
+  }
+}
+
+export async function createPlaygroundUser(ipv4: string): Promise<User> {
+  const url = `${process.env.ZLIFECYCLE_API_URL}/v1/orgs/1/auth/playground/users`;
+  console.log(url);
+  try {
+    const user = await axios.post(url, {
+      ipv4,
+    });
+
+    console.log(user);
 
     return user.data;
   } catch (err) {
@@ -252,8 +294,57 @@ function getOktaAuthMW() {
   return oidc.router;
 }
 
+export async function guestAuthMW(req, res, next) {
+  const ipv4 = getClientIP(req);
+  logger.info("GUEST AUTH MW", {
+    ipv4,
+  });
+  if (!ipv4) {
+    res.status(500).send();
+    return;
+  }
+  logger.info("Getting user for: ", {
+    ipv4,
+  });
+  let user = await getPlaygroundUser(ipv4);
+  if (!user) {
+    logger.info("User not found for: ", {
+      ipv4,
+    });
+    logger.info("Creating user for", {
+      ipv4,
+    });
+    user = await createPlaygroundUser(ipv4);
+  }
+  if (user) {
+    // Setting the appsession
+    req.session.appSession = {
+      user,
+      organizations: user.organizations,
+    };
+  }
+  logger.info("Current user info", {
+    user,
+  });
+  next();
+}
+
 export function setUpAuth(app: express.Express, authRouter: express.Router) {
-  if (helper.isOktaAuth()) {
+  if (helper.isGuestAuth()) {
+    const MemoryStore = require("memorystore")(session);
+    app.use(
+      session({
+        secret: crypto.randomUUID(),
+        resave: false,
+        saveUninitialized: false,
+        cookie: { maxAge: 86400000 },
+        store: new MemoryStore({
+          checkPeriod: 86400000,
+        }),
+      })
+    );
+    app.use(guestAuthMW);
+  } else if (helper.isOktaAuth()) {
     const MemoryStore = require("memorystore")(session);
     app.use(
       session({
@@ -283,4 +374,17 @@ export function setUpAuth(app: express.Express, authRouter: express.Router) {
 
     authRouter.use(requiresAuth());
   }
+}
+
+function getClientIP(req) {
+  if (!req.headers["x-forwarded-for"]) {
+    return null;
+  }
+
+  // x-forwarded-for header returns the list of ips that our request has been forwarded by,
+  // first being clients and then it depends on the no. of proxies that have forwarded it.
+  const addresses = req.headers["x-forwarded-for"];
+
+  // Getting the first ip since that is where the request has originated from.
+  return addresses.split(",")[0];
 }

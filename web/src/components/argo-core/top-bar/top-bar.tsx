@@ -7,6 +7,7 @@ import { NavItem } from 'models/nav-item.models';
 import { TopNav } from 'components/organisms/top-nav/TopNav';
 import { BradAdarshFeatureVisible, FeatureKeys, FeatureRoutes } from 'pages/authorized/feature_toggle';
 import { useHistory } from 'react-router-dom';
+import { ENVIRONMENT_VARIABLES } from 'utils/environmentVariables';
 
 require('./top-bar.scss');
 
@@ -56,12 +57,16 @@ const navItems: NavItem[] = [
 			},
 		],
 	},
-	{ title: 'Infra Components', path: '/all/all' },
-	{ title: 'Overview', path: '/overview', visible: () => BradAdarshFeatureVisible()},
+	{ title: 'Infra Components', path: '/all/all', visible: () => !ENVIRONMENT_VARIABLES.PLAYGROUND_APP },
+	{ title: 'Overview', path: '/overview', visible: () => BradAdarshFeatureVisible() },
 	{ title: 'Dashboard', path: '/demo-dashboard', visible: () => BradAdarshFeatureVisible() },
 	{ title: 'Builder', path: '/builder', visible: () => BradAdarshFeatureVisible() },
-	{ title: 'Settings', path: '/settings', visible: () => AuthStore.getUser()?.role === 'Admin' },
-	{ title: 'Quick Start', path: '/quick-start'},
+	{
+		title: 'Settings',
+		path: '/settings',
+		visible: () => !ENVIRONMENT_VARIABLES.PLAYGROUND_APP && AuthStore.getUser()?.role === 'Admin',
+	},
+	{ title: 'Quick Start', path: '/quick-start', visible: () => !ENVIRONMENT_VARIABLES.PLAYGROUND_APP },
 ];
 
 export const TopBar = ({ title }: TopBarProps) => {
@@ -73,9 +78,13 @@ export const TopBar = ({ title }: TopBarProps) => {
 		<div className="top-bar" key="top-bar">
 			<div className="top-bar__flex">
 				<div className="top-bar__logo-container">
-					<Logo onClick={() => {
-						history.push('/');
-					}} style={{ width: '80px', marginRight: '30px', cursor: 'pointer' }} className="top-bar__logo" />
+					<Logo
+						onClick={() => {
+							history.push('/');
+						}}
+						style={{ width: '80px', marginRight: '30px', cursor: 'pointer' }}
+						className="top-bar__logo"
+					/>
 				</div>
 			</div>
 			<div className="top-bar__flex">
@@ -84,28 +93,30 @@ export const TopBar = ({ title }: TopBarProps) => {
 						<TopNav items={navItems} />
 					</nav>
 				</div>
-				<div className="top-bar__avatar">
-					<img
-						src={currentUser?.picture}
-						height="36"
-						width="36"
-						onClick={() => setShowDropDown(!showDropdown)}
-					/>
-					<ZDropdownMenuJSX
-						className="top-bar__avatar__dropdown"
-						isOpened={showDropdown}
-						items={[
-							...(AuthStore.getUser()?.organizations || []).map(org => ({
-								text: org.name || '',
-								action: async () => {
-									await AuthStore.selectOrganization(org.name);
-								},
-								selected: AuthStore.getUser()?.selectedOrg.name === org.name
-							})),
-							{ text: '', jsx: <a href={AuthStore.logoutUrl()}>Log&nbsp;Out</a>, action: () => true },
-						]}
-					/>
-				</div>
+				{!ENVIRONMENT_VARIABLES.PLAYGROUND_APP && (
+					<div className="top-bar__avatar">
+						<img
+							src={currentUser?.picture}
+							height="36"
+							width="36"
+							onClick={() => setShowDropDown(!showDropdown)}
+						/>
+						<ZDropdownMenuJSX
+							className="top-bar__avatar__dropdown"
+							isOpened={showDropdown}
+							items={[
+								...(AuthStore.getUser()?.organizations || []).map(org => ({
+									text: org.name || '',
+									action: async () => {
+										await AuthStore.selectOrganization(org.name);
+									},
+									selected: AuthStore.getUser()?.selectedOrg.name === org.name,
+								})),
+								{ text: '', jsx: <a href={AuthStore.logoutUrl()}>Log&nbsp;Out</a>, action: () => true },
+							]}
+						/>
+					</div>
+				)}
 			</div>
 		</div>
 	);

@@ -6,6 +6,7 @@ import { QuickStart } from 'pages/authorized/quick-start/QuickStart';
 import { TermsAndConditions } from 'pages/authorized/terms-and-conditions/TermsAndConditons';
 import React, { ElementType, FC, ReactNode, useEffect } from 'react';
 import { Redirect, Route, RouteComponentProps, RouteProps } from 'react-router-dom';
+import { ENVIRONMENT_VARIABLES } from 'utils/environmentVariables';
 
 interface PrivateRouteProps extends Omit<RouteProps, 'component'> {
 	component: ElementType;
@@ -20,21 +21,25 @@ const PrivateRoute: FC<PrivateRouteProps> = ({ component: Component, ...rest }: 
 			render={(props: RouteComponentProps<ReactNode>): ReactNode => {
 				const user = AuthStore.getUser();
 				if (user) {
-					if (user.role !== 'Admin' && rest.location?.pathname?.includes('settings')) {
-						return <NotFound />
+					if (!ENVIRONMENT_VARIABLES.PLAYGROUND_APP) {
+						if (user.role !== 'Admin' && rest.location?.pathname?.includes('settings')) {
+							return <NotFound />;
+						}
+
+						if (
+							(user.selectedOrg && !user.selectedOrg.githubRepo) ||
+							rest.location?.pathname === QUICK_START_URL
+						) {
+							return <QuickStart />;
+						}
+
+						if (user.organizations.length === 0 || user.selectedOrg?.provisioned !== true) {
+							return <TermsAndConditions />;
+						}
 					}
 
-					if ((user.selectedOrg && !user.selectedOrg.githubRepo) || rest.location?.pathname === QUICK_START_URL) {
-						return <QuickStart/>;
-					}
-
-					if (user.organizations.length === 0 || user.selectedOrg?.provisioned !== true) {
-						return <TermsAndConditions />;
-					}
-					
 					return <Component {...props} />;
 				}
-
 				return <Redirect to={LOGIN_URL} />;
 			}}
 		/>

@@ -152,8 +152,10 @@ const isOktaAuth = () =>
   ckConfig.AUTH0_ISSUER_BASE_URL.includes("oktapreview.com") ||
   ckConfig.AUTH0_ISSUER_BASE_URL.includes("okta.com");
 
+const isGuestAuth = () => true; //ckConfig.PLAYGROUND_APP === "true";
+
 export const appSession = (req: BFFRequest): any => {
-  if (isOktaAuth()) {
+  if (isOktaAuth() || isGuestAuth()) {
     return req.session.appSession;
   }
   return req.appSession;
@@ -162,6 +164,9 @@ export const appSession = (req: BFFRequest): any => {
 export const oidcUser = (req: BFFRequest) => {
   if (isOktaAuth()) {
     return req.session.passport.user;
+  }
+  if (isGuestAuth()) {
+    return req.session.appSession.user;
   }
   return req.oidc.user;
 };
@@ -175,5 +180,6 @@ export default {
   getOrg,
   syncWatcher,
   appSessionFromReq,
-  isOktaAuth
+  isOktaAuth,
+  isGuestAuth
 };

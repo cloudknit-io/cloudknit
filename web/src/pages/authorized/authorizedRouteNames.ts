@@ -11,6 +11,7 @@ import { Overview } from './overview/Overview';
 import { Profile } from './profile/Profile';
 import { Teams } from './teams/Teams';
 import { TermsAndConditions } from './terms-and-conditions/TermsAndConditons';
+import { ENVIRONMENT_VARIABLES } from 'utils/environmentVariables';
 
 export const PROJECTS_URL = '/dashboard';
 const DASHBOARD_URL = '/demo-dashboard';
@@ -37,6 +38,12 @@ const urls = [
 	{ key: 'INFRA_URL', value: INFRA_URL },
 	{ key: 'RESOURCE_VIEW_URL', value: RESOURCE_VIEW_URL },
 ];
+
+if (ENVIRONMENT_VARIABLES.PLAYGROUND_APP) {
+    ['ORG_REGISTRATION', 'OVERVIEW_URL', 'QUICK_START_URL', 'ENVIRONMENT_BUILDER_URL', 'PROFILE_URL', 'RESOURCE_VIEW_URL'].forEach(e => {
+        urls.splice(urls.findIndex(u => e === u.key), 1);
+    })
+}
 
 Reflect.ownKeys(FeatureRoutes).forEach(key => {
 	if (Reflect.get(FeatureRoutes, key) === false) {
