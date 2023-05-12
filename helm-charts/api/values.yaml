@@ -3,6 +3,10 @@ image:
   tag: latest
   repository:
 replicas: 1
+github:
+  personalAccessToken: "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"
+  owner:
+  repo:
 database:
   host:
   username:

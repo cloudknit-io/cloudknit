@@ -68,9 +68,9 @@ export function init() {
     },
     port: parseInt(process.env.APP_PORT) || 3000,
     github: {
-      personalAccessToken: getEnvVarOrDefault('PERSONAL_ACCESS_TOKEN','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'),
-      owner: getEnvVarOrDefault('OWNER', 'zlab-tech'),
-      repo: getEnvVarOrDefault('REPO', 'checkout-config'),
+      personalAccessToken: getEnvVarOrDefault('GIT_PERSONAL_ACCESS_TOKEN','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'),
+      owner: getEnvVarOrDefault('GIT_OWNER', 'zlab-tech'),
+      repo: getEnvVarOrDefault('GIT_REPO', 'checkout-config'),
     },
     AWS: {
       accessKeyId: getEnvVarOrFail('AWS_ACCESS_KEY_ID'),

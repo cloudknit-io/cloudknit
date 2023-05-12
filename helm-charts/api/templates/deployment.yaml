@@ -46,6 +46,12 @@ spec:
               value: {{ .Values.awsCredentials.sessionToken}}
             - name: AWS_REGION
               value: {{ .Values.awsCredentials.region}}
+            - name: GIT_PERSONAL_ACCESS_TOKEN
+              value: {{ .Values.github.personalAccessToken}}
+            - name: GIT_OWNER
+              value: {{ .Values.github.owner}}
+            - name: GIT_REPO
+              value: {{ .Values.github.repo}}
           image: {{ .Values.image.repository }}/{{ .Values.image.name }}:{{ .Values.image.tag }}
           ports:
             - containerPort: 3000
