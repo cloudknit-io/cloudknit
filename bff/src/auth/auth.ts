@@ -270,7 +270,7 @@ export function setUpAuth(app: express.Express, authRouter: express.Router) {
     app.use(getOktaAuthMW());
 
     authRouter.get("/auth/logout", (req: any, res: any, next: any) => {
-      console.log('ip->test-->', req.ip, req.socket.remoteAddress);
+      console.log('ip->test-->', req.ip, req.socket.remoteAddress, req.headers['x-forwarded-for'], req.connection.remoteAddress);
       req.logout(function (err) {
         if (err) {
           return next(err);
