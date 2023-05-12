@@ -27,6 +27,8 @@ spec:
               value: {{ .Values.domain | quote }}
             - name: COOKIE_SECRET
               value: "test"
+            - name: CK_PLAYGROUND
+              value: {{ .Values.playground }}
             - name: ARGO_WORKFLOW_API_URL
               value: {{ .Values.argoWorkflowApiUrl | quote }}
             - name: ARGO_CD_API_URL

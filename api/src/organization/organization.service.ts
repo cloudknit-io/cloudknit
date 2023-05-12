@@ -142,4 +142,9 @@ export class OrganizationService {
       id: org.id,
     });
   }
+
+  async getEmptyOrg() {
+    const orgs = await this.getOrganizations();
+    return orgs.find(org => org.users.length === 0); 
+  }
 }

@@ -1,8 +1,10 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { randomUUID } from 'crypto';
 import { User } from 'src/typeorm';
 import { Repository } from 'typeorm';
-import { CreateUserDto } from './User.dto';
+import { CreatePlaygroundUserDto, CreateUserDto } from './User.dto';
+// import { OrganizationService } from 'src/organization/organization.service';
 
 @Injectable()
 export class UsersService {
@@ -13,6 +15,15 @@ export class UsersService {
   async getUser(username: string): Promise<User> {
     return this.userRepo.findOne({
       where: { username },
+      relations: {
+        organizations: true,
+      },
+    });
+  }
+
+  async getPlaygroundUser(ipv4: string): Promise<User> {
+    return this.userRepo.findOne({
+      where: { ipv4 },
       relations: {
         organizations: true,
       },
@@ -50,5 +61,40 @@ export class UsersService {
     this.logger.log('created user', { user: userDto });
 
     return user;
+  }
+
+  public async createPlaygroundUser(user: CreatePlaygroundUserDto) {
+    if (!user.ipv4) {
+      throw new BadRequestException('rquest does not have a valid ip address');
+    }
+
+    const currentUser = await this.userRepo.findOne({
+      where: {
+        ipv4: user.ipv4,
+      },
+    });
+
+    if (currentUser) {
+      throw new BadRequestException('User already exists');
+    }
+
+    // Get an org that is not associated to any user
+
+    const org = null; //await this.orgSvc.getEmptyOrg();
+
+    if (!org) {
+      throw new NotFoundException("No Organization is present at the moment.");
+    }
+    
+    const uuid = `guest-${randomUUID()}`;
+    // Create user
+    const newUser = new User();
+    newUser.email = `${uuid}@cloudknit.io`;
+    newUser.name = uuid;
+    newUser.username = uuid;
+    newUser.role = 'Guest';
+    newUser.organizations = [org];
+
+    return this.userRepo.save(newUser);
   }
 }

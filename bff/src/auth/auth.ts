@@ -37,7 +37,7 @@ export async function getUser(username: string): Promise<User> {
 export async function getPlaygroundUser(username: string): Promise<User> {
   try {
     const user = await axios.get(
-      `${process.env.ZLIFECYCLE_API_URL}/v1/orgs/1/auth/users/${username}`
+      `${process.env.ZLIFECYCLE_API_URL}/v1/users/playground/${username}`
     );
 
     return user.data;
@@ -54,8 +54,7 @@ export async function getPlaygroundUser(username: string): Promise<User> {
 }
 
 export async function createPlaygroundUser(ipv4: string): Promise<User> {
-  const url = `${process.env.ZLIFECYCLE_API_URL}/v1/orgs/1/auth/playground/users`;
-  console.log(url);
+  const url = `${process.env.ZLIFECYCLE_API_URL}/v1/users/playground`;
   try {
     const user = await axios.post(url, {
       ipv4,

@@ -16,6 +16,11 @@ export class CreateUserDto {
   name: string;
 }
 
+export class CreatePlaygroundUserDto {
+  @ApiProperty()
+  ipv4: string;
+}
+
 export class PatchUserDto {
   @ApiProperty({
     default: null,

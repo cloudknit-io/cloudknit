@@ -42,6 +42,12 @@ export class User {
   })
   archived: boolean;
 
+  @Column({
+    default: null,
+    unique: true
+  })
+  ipv4: string;
+
   @ManyToMany(() => Organization, (org) => org.users)
   organizations: Organization[];
 
