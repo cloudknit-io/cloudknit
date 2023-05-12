@@ -1,7 +1,9 @@
 import { DiffEditor } from '@monaco-editor/react';
-import { NotificationType } from 'components/argo-core';
+import { NotificationType, NotificationsApi } from 'components/argo-core';
 import { ZLoaderCover } from 'components/atoms/loader/LoaderCover';
 import { EnvironmentCards } from 'components/molecules/cards/EnvironmentCards';
+import { ZModalPopup } from 'components/molecules/modal/ZModalPopup';
+import { SmallText } from 'components/organisms/workflow-diagram/WorkflowDiagram';
 import { Context } from 'context/argo/ArgoUi';
 import { ZEnvSyncStatus } from 'models/argo.models';
 import { EntityStore } from 'models/entity.store';
@@ -12,11 +14,12 @@ import {
 	getCheckBoxFilters,
 	mockModifiedYaml,
 	mockOriginalYaml,
-	renderSyncStatusItems
+	renderSyncStatusItems,
 } from 'pages/authorized/environments/helpers';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Subscription } from 'rxjs';
+import { EntityService } from 'services/entity/entity.service';
 import { usePageHeader } from '../contexts/EnvironmentHeaderContext';
 
 type CompareEnv = {
@@ -37,6 +40,7 @@ export const Environments: React.FC = () => {
 	const [loading, setLoading] = useState<boolean>(true);
 	const [environments, setEnvironments] = useState<Environment[]>([]);
 	const [viewType, setViewType] = useState<string>('');
+	const [pushingCommit, setPushingCommit] = useState<boolean | null>(null);
 	const [checkBoxFilters, setCheckBoxFilters] = useState<JSX.Element>(<></>);
 	const [filterItems, setFilterItems] = useState<Array<() => JSX.Element>>([]);
 	const { pageHeaderObservable, breadcrumbObservable } = usePageHeader();
@@ -46,6 +50,7 @@ export const Environments: React.FC = () => {
 		a: null,
 		b: null,
 	});
+	const nm = React.useContext(Context)?.notifications as NotificationsApi;
 
 	const breadcrumbItems = [
 		{
@@ -205,7 +210,7 @@ export const Environments: React.FC = () => {
 
 	return (
 		<div className="zlifecycle-page">
-			<ZLoaderCover loading={loading}>
+			<ZLoaderCover loading={loading || pushingCommit === true}>
 				<section className="dashboard-content">
 					{viewType === 'list' ? (
 						<div className="zlifecycle-table">
@@ -222,6 +227,46 @@ export const Environments: React.FC = () => {
 					)}
 					{compareEnvs.a?.env && compareEnvs.b?.env ? compareMode && renderDiffEditor() : null}
 				</section>
+				<ZModalPopup
+					header={<div className="d-flex align-center">Provison an Environment</div>}
+					isShown={
+						!loading &&
+						environments?.length > 0 &&
+						environments[0].status === ZEnvSyncStatus.Destroyed &&
+						pushingCommit === null
+					}
+					onClose={() => {}}>
+					<div className="d-flex align-center justify-center">
+						<button
+							onClick={() => {
+								setPushingCommit(true);
+								EntityService.getInstance()
+									.gitCommit(environments[0].teamId, environments[0].id)
+									.then(({ status }: any) => {
+										if (status === 'error') {
+											nm.show({
+												content: 'There was an error provisioning the environment',
+												type: NotificationType.Error,
+											});
+										} else {
+											nm.show({
+												content: 'Well Done! Provisioning you environment...',
+												type: NotificationType.Error,
+											});
+										}
+										setPushingCommit(false);
+									});
+							}}
+							className="btn shadowy-input btn__update">
+							Start
+						</button>
+					</div>
+					<SmallText
+						data={
+							'Clicking on this button would push a commit to our repository and cloudknit would start provisioning your environment.'
+						}
+					/>
+				</ZModalPopup>
 			</ZLoaderCover>
 		</div>
 	);
