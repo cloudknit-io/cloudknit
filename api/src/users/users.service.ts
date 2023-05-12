@@ -1,16 +1,23 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomUUID } from 'crypto';
-import { User } from 'src/typeorm';
+import { Organization, User } from 'src/typeorm';
 import { Repository } from 'typeorm';
 import { CreatePlaygroundUserDto, CreateUserDto } from './User.dto';
-// import { OrganizationService } from 'src/organization/organization.service';
 
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
 
-  constructor(@InjectRepository(User) private userRepo: Repository<User>) {}
+  constructor(
+    @InjectRepository(User) private userRepo: Repository<User>,
+    @InjectRepository(Organization) private orgRepo: Repository<Organization>
+  ) {}
 
   async getUser(username: string): Promise<User> {
     return this.userRepo.findOne({
@@ -65,14 +72,10 @@ export class UsersService {
 
   public async createPlaygroundUser(user: CreatePlaygroundUserDto) {
     if (!user.ipv4) {
-      throw new BadRequestException('rquest does not have a valid ip address');
+      throw new BadRequestException('request does not have a valid ip address');
     }
 
-    const currentUser = await this.userRepo.findOne({
-      where: {
-        ipv4: user.ipv4,
-      },
-    });
+    const currentUser = await this.getPlaygroundUser(user.ipv4);
 
     if (currentUser) {
       throw new BadRequestException('User already exists');
@@ -80,12 +83,18 @@ export class UsersService {
 
     // Get an org that is not associated to any user
 
-    const org = null; //await this.orgSvc.getEmptyOrg();
+    const orgs = await this.orgRepo.find({
+      relations: {
+        users: true
+      },
+    });
 
-    if (!org) {
-      throw new NotFoundException("No Organization is present at the moment.");
-    }
+    const org = orgs.find((org) => org.users.length === 0);
     
+    if (!org) {
+      throw new NotFoundException('No Organization is present at the moment.');
+    }
+
     const uuid = `guest-${randomUUID()}`;
     // Create user
     const newUser = new User();

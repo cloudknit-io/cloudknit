@@ -6,6 +6,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthController } from 'src/auth/auth.controller';
@@ -33,9 +34,9 @@ export class UsersController {
     return user;
   }
 
-  @Get('/playground/:username')
-  public async getPlaygroundUser(@Param('username') username: string): Promise<User> {
-    const user = await this.userService.getPlaygroundUser(username);
+  @Get('/playground')
+  public async getPlaygroundUser(@Query('ipv4') ipv4: string): Promise<User> {
+    const user = await this.userService.getPlaygroundUser(ipv4);
 
     if (!user) {
       throw new NotFoundException();
