@@ -9,6 +9,11 @@ export type ApiConfig = {
     database: string;
   };
   port: number;
+  github: {
+    personalAccessToken: string,
+    owner: string,
+    repo: string,
+  }
   AWS: {
     accessKeyId: string;
     secretAccessKey: string;
@@ -62,6 +67,11 @@ export function init() {
       database: getEnvVarOrFail('TYPEORM_DATABASE'),
     },
     port: parseInt(process.env.APP_PORT) || 3000,
+    github: {
+      personalAccessToken: getEnvVarOrDefault('PERSONAL_ACCESS_TOKEN','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'),
+      owner: getEnvVarOrDefault('OWNER', 'zlab-tech'),
+      repo: getEnvVarOrDefault('REPO', 'checkout-config'),
+    },
     AWS: {
       accessKeyId: getEnvVarOrFail('AWS_ACCESS_KEY_ID'),
       secretAccessKey: getEnvVarOrFail('AWS_SECRET_ACCESS_KEY'),

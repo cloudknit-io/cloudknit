@@ -11,6 +11,7 @@ import { EnvironmentModule } from './environment/environment.module';
 import { ComponentModule } from './component/component.module';
 import { StreamModule } from './stream/stream.module';
 import { ErrorsModule } from './errors/errors.module';
+import { GithubApiModule } from './github-api/github-api.module';
 
 export const appRoutes: Routes = [
   {
@@ -58,10 +59,15 @@ export const appRoutes: Routes = [
                 module: ComponentModule,
               },
             ],
-          }, {
+          },
+          {
+            path: '/:teamId/github',
+            module: GithubApiModule,
+          },
+          {
             path: '/:teamId/errors',
-            module: ErrorsModule
-          }
+            module: ErrorsModule,
+          },
         ],
       },
     ],
