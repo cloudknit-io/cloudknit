@@ -63,7 +63,7 @@ export class AppModule implements NestModule {
       return;
     }
     const logger = new Logger('Synchronize');
-    logger.error(`Synchronize Error`, '0 tables found, synchronzing...');
+    logger.error(`Synchronize Error`, '0 tables found, synchronizing...');
     connection.synchronize(false);
   }
 }
