@@ -68,7 +68,7 @@ export function init() {
     },
     port: parseInt(process.env.APP_PORT) || 3000,
     github: {
-      personalAccessToken: getEnvVarOrDefault('GIT_PERSONAL_ACCESS_TOKEN','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'),
+      personalAccessToken: getEnvVarOrFail('GIT_PERSONAL_ACCESS_TOKEN'),
       owner: getEnvVarOrDefault('GIT_OWNER', 'zlab-tech'),
       repo: getEnvVarOrDefault('GIT_REPO', 'checkout-config'),
     },
