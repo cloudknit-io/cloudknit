@@ -422,6 +422,8 @@ export const getSyncStatusIcon = (syncStatus: any, operation?: 'Destroy' | 'Prov
 		case ZSyncStatus.DestroyFailed:
 		case AuditStatus.DestroyPlanFailed:
 		case AuditStatus.ProvisionPlanFailed:
+		case AuditStatus.ProvisionApplyFailed:
+		case AuditStatus.DestroyApplyFailed:
 		case ZSyncStatus.ApplyFailed:
 			return <OutOfSyncIcon title="Failed" />;
 		case ZSyncStatus.ValidationFailed:
