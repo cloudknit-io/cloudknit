@@ -7,7 +7,6 @@ export type ApiConfig = {
     username: string;
     password: string;
     database: string;
-    sync: boolean;
   };
   port: number;
   AWS: {
@@ -60,8 +59,7 @@ export function init() {
       port: parseInt(getEnvVarOrFail('TYPEORM_PORT')),
       username: getEnvVarOrFail('TYPEORM_USERNAME'),
       password: getEnvVarOrFail('TYPEORM_PASSWORD'),
-      database: getEnvVarOrFail('TYPEORM_DATABASE'),
-      sync: Boolean(getEnvVarOrFail('TYPEORM_SYNC'))
+      database: getEnvVarOrFail('TYPEORM_DATABASE')
     },
     port: parseInt(process.env.APP_PORT) || 3000,
     AWS: {
