@@ -1,25 +1,26 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { Logger, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { RouterModule } from '@nestjs/core';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { Connection } from 'typeorm';
 import { AuthModule } from './auth/auth.module';
+import { CachingModule } from './caching/caching.module';
+import { CachingService } from './caching/caching.service';
+import { ComponentModule } from './component/component.module';
+import { EnvironmentModule } from './environment/environment.module';
+import { ErrorsModule } from './errors/errors.module';
+import { AppLoggerMiddleware } from './middleware/logger.middle';
+import { OperationsModule } from './operations/operations.module';
 import { OrganizationModule } from './organization/organization.module';
 import { ReconciliationModule } from './reconciliation/reconciliation.module';
 import { appRoutes } from './routes';
 import { SecretsModule } from './secrets/secrets.module';
-import { UsersModule } from './users/users.module';
-import { SystemModule } from './system/system.module';
-import { OperationsModule } from './operations/operations.module';
-import { AppLoggerMiddleware } from './middleware/logger.middle';
-import { TeamModule } from './team/team.module';
-import { EnvironmentModule } from './environment/environment.module';
-import { ComponentModule } from './component/component.module';
 import { StreamModule } from './stream/stream.module';
-import { CachingService } from './caching/caching.service';
-import { CachingModule } from './caching/caching.module';
+import { SystemModule } from './system/system.module';
+import { TeamModule } from './team/team.module';
 import { dbConfig } from './typeorm';
-import { EventEmitterModule } from '@nestjs/event-emitter';
-import { ErrorsModule } from './errors/errors.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -49,7 +50,20 @@ import { ErrorsModule } from './errors/errors.module';
   providers: [CachingService],
 })
 export class AppModule implements NestModule {
+  constructor(connection: Connection) {
+    this.synchronize(connection);
+  }
+
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(AppLoggerMiddleware).forRoutes('*');
+  }
+
+  synchronize(connection: Connection) {
+    if (connection.entityMetadatas.length > 0) {
+      return;
+    }
+    const logger = new Logger('Synchronize');
+    logger.error(`Synchronize Error`, '0 tables found, synchronizing...');
+    connection.synchronize(false);
   }
 }
