@@ -84,6 +84,7 @@ export class EntityStore {
 						this.compMap.set(c.id, {
 							...(this.compMap.has(c.id) ? this.compMap.get(c.id) : {}),
 							...c,
+							...this.mergeCompReconToComp(c, c.latestCompRecon),
 							argoId: `${e.name}-${env.name}-${c.name}`,
 							dependsOn: compDag?.dependsOn || [],
 							teamId: e.id,
@@ -152,9 +153,13 @@ export class EntityStore {
 			this.compMap.set(component.id, {
 				...currComp,
 				...component,
+				...this.mergeCompReconToComp(component, component.latestCompRecon),
 			});
 		} else {
-			this.compMap.set(component.id, this.mapComponent(component));
+			this.compMap.set(component.id, {
+				...this.mapComponent(component),
+				...this.mergeCompReconToComp(component, component.latestCompRecon),
+			});
 		}
 		this.emitterComp.next(this.getComponentsByEnvId(component.envId));
 	}
@@ -189,6 +194,17 @@ export class EntityStore {
 		env.lastReconcileDatetime = envRecon.startDateTime;
 		env.status = envRecon.status;
 		return env;
+	}
+
+	private mergeCompReconToComp(comp: Component, compRecon: CompAuditData): Component {
+		if (!compRecon) return comp;
+		comp.estimatedCost = compRecon.estimatedCost;
+		comp.status = compRecon.status;
+		comp.costResources = compRecon.costResources;
+		comp.isDestroyed = compRecon.isDestroyed;
+		comp.lastWorkflowRunId = compRecon.lastWorkflowRunId;
+		comp.isSkipped = compRecon.isSkipped;
+		return comp;
 	}
 
 	public getTeam(id: number) {
@@ -230,7 +246,10 @@ export class EntityStore {
 		if (components.length > 0 && currEnv) {
 			components.forEach((c: Component) => {
 				const component = this.mapComponent(c);
-				this.compMap.set(component.id, component);
+				this.compMap.set(component.id, {
+					...component,
+					...this.mergeCompReconToComp(component, component.latestCompRecon),
+				});
 			});
 		}
 

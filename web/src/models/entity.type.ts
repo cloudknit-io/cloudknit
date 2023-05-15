@@ -44,7 +44,9 @@ export type Component = {
 	costResources: any;
 	dependsOn: string[];
 	envId: number;
+	isSkipped: boolean;
 	lastWorkflowRunId: string;
+	latestCompRecon: CompAuditData;
 	lastAuditStatus: AuditStatus;
 };
 
@@ -62,16 +64,20 @@ export type AuditData = {
 	operation?: string;
 	approvedBy?: string;
 	estimatedCost: number;
-	dag: DAG[];
-	errorMessage: [],
 };
 
 export type EnvAuditData = {
 	envId: number;
+	dag: DAG[];
+	errorMessage: [],
 } & AuditData;
 
 export type CompAuditData = {
 	compId: number;
+	isDestroyed: boolean;
+	costResources: any;
+	lastWorkflowRunId: string;
+	isSkipped: boolean;
 } & AuditData;
 
 export type StreamDataWrapper = {

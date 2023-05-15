@@ -26,7 +26,9 @@ import { ErrorsModule } from './errors/errors.module';
     ConfigModule.forRoot({
       envFilePath: '.env.dev',
     }),
-    EventEmitterModule.forRoot(),
+    EventEmitterModule.forRoot({
+      verboseMemoryLeak: true
+    }),
     RouterModule.register(appRoutes),
     TypeOrmModule.forRoot(dbConfig as TypeOrmModuleOptions),
     UsersModule,

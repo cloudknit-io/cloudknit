@@ -52,7 +52,6 @@ export const generateComponentNode = (component: Component) => {
 	const data = {
 		...component,
 		icon: <ComputeIcon />,
-		isSkipped: [AuditStatus.SkippedProvision, AuditStatus.SkippedDestroy].includes(component.lastAuditStatus),
 	};
 
 	return (
@@ -236,15 +235,15 @@ export const getClassName = (status: string): string => {
 		case ZSyncStatus.Destroyed:
 		case ZSyncStatus.NotProvisioned:
 			return '--destroyed';
-		case ZSyncStatus.Skipped:
-			return '--skipped';
-		case ZSyncStatus.SkippedReconcile:
-			return '--skipped-reconcile';
 		case ZSyncStatus.PlanFailed:
 		case ZSyncStatus.ValidationFailed:
 		case ZSyncStatus.ApplyFailed:
 		case ZSyncStatus.ProvisionFailed:
 		case ZSyncStatus.DestroyFailed:
+		case AuditStatus.DestroyApplyFailed:
+		case AuditStatus.DestroyPlanFailed:
+		case AuditStatus.ProvisionApplyFailed:
+		case AuditStatus.ProvisionPlanFailed:
 		case ZSyncStatus.OutOfSync:
 		case ESyncStatus.OutOfSync:
 			return '--failed';
@@ -365,7 +364,15 @@ export function FloatingEdge({ id, source, target, markerEnd, style }: any) {
 
 	const { sx, sy, tx, ty, sourcePos, targetPos } = getEdgeParams(sourceNode, targetNode);
 
-	const gB = ({ sourceX, sourceY, sourcePosition = Position.Bottom, targetX, targetY, targetPosition = Position.Top, curvature = 0.25, }: any) =>{
+	const gB = ({
+		sourceX,
+		sourceY,
+		sourcePosition = Position.Bottom,
+		targetX,
+		targetY,
+		targetPosition = Position.Top,
+		curvature = 0.25,
+	}: any) => {
 		const [sourceControlX, sourceControlY]: any = getControlWithCurvature({
 			pos: sourcePosition,
 			x1: sourceX,
@@ -375,11 +382,8 @@ export function FloatingEdge({ id, source, target, markerEnd, style }: any) {
 			c: curvature,
 		});
 
-		return [
-			`M${sourceX},${sourceY} Q${sourceControlX},${sourceControlY} ${targetX},${targetY}`,
-		];
-	}
-    
+		return [`M${sourceX},${sourceY} Q${sourceControlX},${sourceControlY} ${targetX},${targetY}`];
+	};
 
 	const [edgePath] = gB({
 		sourceX: sx,
@@ -388,28 +392,28 @@ export function FloatingEdge({ id, source, target, markerEnd, style }: any) {
 		targetPosition: targetPos,
 		targetX: tx,
 		targetY: ty,
-		curvature: 0
+		curvature: 0,
 	});
 
 	return <path id={id} className="react-flow__edge-path" d={edgePath} markerEnd={markerEnd} style={style} />;
 }
 
 function getControlWithCurvature({ pos, x1, y1, x2, y2, c }: any) {
-    switch (pos) {
-        case Position.Left:
-            return [x1 - calculateControlOffset(x1 - x2, c), y1];
-        case Position.Right:
-            return [x1 + calculateControlOffset(x2 - x1, c), y1];
-        case Position.Top:
-            return [x1, y1 - calculateControlOffset(y1 - y2, c)];
-        case Position.Bottom:
-            return [x2, y1 + calculateControlOffset(y2 - y1, c)];
-    }
+	switch (pos) {
+		case Position.Left:
+			return [x1 - calculateControlOffset(x1 - x2, c), y1];
+		case Position.Right:
+			return [x1 + calculateControlOffset(x2 - x1, c), y1];
+		case Position.Top:
+			return [x1, y1 - calculateControlOffset(y1 - y2, c)];
+		case Position.Bottom:
+			return [x2, y1 + calculateControlOffset(y2 - y1, c)];
+	}
 }
 
 function calculateControlOffset(distance: any, curvature: any) {
-    if (distance >= 0) {
-        return 0.5 * distance;
-    }
-    return curvature * 25 * Math.sqrt(-distance);
+	if (distance >= 0) {
+		return 0.5 * distance;
+	}
+	return curvature * 25 * Math.sqrt(-distance);
 }

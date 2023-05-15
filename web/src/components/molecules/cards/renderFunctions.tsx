@@ -196,11 +196,12 @@ export const renderEnvSyncedStatus = (
 			return (
 				<StatusDisplay text={'Destroyed'} icon={<DeleteIcon height={16} width={16} />} time={syncFinishedAt} />
 			);
+		case ZSyncStatus.ProvisionFailed:
+			return <StatusDisplay text={'Provision Failed'} icon={<OutOfSyncIcon />} time={syncFinishedAt} />;
 		case ZSyncStatus.PlanFailed:
 			return <StatusDisplay text={'Plan Failed'} icon={<OutOfSyncIcon />} time={syncFinishedAt} />;
 		case ZSyncStatus.ApplyFailed:
 			return <StatusDisplay text={'Apply Failed'} icon={<OutOfSyncIcon />} time={syncFinishedAt} />;
-		case ZSyncStatus.ProvisionFailed:
 		case ZSyncStatus.ValidationFailed:
 			return <StatusDisplay text={'Validation Failed'} icon={<OutOfSyncIcon />} time={syncFinishedAt} />;
 		case ZSyncStatus.DestroyFailed:
@@ -217,25 +218,12 @@ export const renderEnvSyncedStatus = (
 					time={syncFinishedAt}
 				/>
 			);
+		case ZSyncStatus.WaitingForParent:
+			return <StatusDisplay text={'Waiting'} icon={<Hourglass />} time={syncFinishedAt} />;
 		default:
-			const dependsOn = data?.dependsOn?.filter((d: any) => d !== 'root');
-			if (dependsOn?.length > 0 && !data.isDestroy) {
-				return (
-					<StatusDisplay
-						title={`${dependsOn.join(', ')}`}
-						text={'Waiting for Parent'}
-						icon={<Hourglass height={20} width={20} />}
-					/>
-				);
-			} else {
-				return (
-					<StatusDisplay
-						text={'Initializing'}
-						icon={<Loader height={20} width={20} />}
-						time={syncFinishedAt}
-					/>
-				);
-			}
+			return (
+				<StatusDisplay text={'Initializing'} icon={<Loader height={20} width={20} />} time={syncFinishedAt} />
+			);
 	}
 };
 
@@ -371,25 +359,12 @@ export const renderSyncedStatus = (
 					time={syncFinishedAt}
 				/>
 			);
+		case ZSyncStatus.WaitingForParent:
+			return <StatusDisplay text={'Waiting'} icon={<Hourglass />} time={syncFinishedAt} />;
 		default:
-			const dependsOn = data?.dependsOn?.filter((d: any) => d !== 'root');
-			if (dependsOn?.length > 0 && !data.isDestroy) {
-				return (
-					<StatusDisplay
-						title={`${dependsOn.join(', ')}`}
-						text={'Waiting for Parent'}
-						icon={<Hourglass height={20} width={20} />}
-					/>
-				);
-			} else {
-				return (
-					<StatusDisplay
-						text={'Initializing'}
-						icon={<Loader height={20} width={20} />}
-						time={syncFinishedAt}
-					/>
-				);
-			}
+			return (
+				<StatusDisplay text={'Initializing'} icon={<Loader height={20} width={20} />} time={syncFinishedAt} />
+			);
 	}
 };
 
@@ -445,6 +420,10 @@ export const getSyncStatusIcon = (syncStatus: any, operation?: 'Destroy' | 'Prov
 		case ZSyncStatus.ApplyFailed:
 		case ZSyncStatus.ProvisionFailed:
 		case ZSyncStatus.DestroyFailed:
+		case AuditStatus.DestroyPlanFailed:
+		case AuditStatus.ProvisionPlanFailed:
+		case ZSyncStatus.ApplyFailed:
+			return <OutOfSyncIcon title="Failed" />;
 		case ZSyncStatus.ValidationFailed:
 			return <OutOfSyncIcon title="Validation Failed" />;
 		case ZSyncStatus.OutOfSync:
@@ -453,7 +432,9 @@ export const getSyncStatusIcon = (syncStatus: any, operation?: 'Destroy' | 'Prov
 		case ZSyncStatus.InSync:
 		case ESyncStatus.Synced:
 			return <SyncedIcon height={16} width={16} />;
+		case ZSyncStatus.WaitingForParent:
+			return <Hourglass height={16} width={16} title="Waiting" />;
 		default:
-			return <Hourglass height={16} width={16} title="Waiting For Parent" />;
+			return <Hourglass height={16} width={16} title="Waiting" />;
 	}
 };

@@ -29,7 +29,8 @@ echo "   customer_id=${customer_id}"
 echo ""
 
 function PatchProcessPlanError() {
-    UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "plan_failed"
+    UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "status" : "plan_failed" }' 
+    
 
     sh ../audit.sh $team_name $env_name $config_name "" "plan_failed" $reconcile_id $config_reconcile_id $is_destroy 0 "noSkip" ${customer_id}
     if [ $is_destroy = true ]
@@ -62,7 +63,7 @@ then
     else
         compStatus="provisioned"
     fi
-    UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "${compStatus}"
+    UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "status" : "'${compStatus}'" }' 
 
 elif [ $result -eq 2 ]
 then
@@ -76,9 +77,8 @@ then
 	--status waiting_for_approval \
 	-u http://zlifecycle-state-manager."${customer_id}"-system.svc.cluster.local:8080 \
 	-v
-
-	UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "waiting_for_approval"
+        UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "status" : "waiting_for_approval" }' 
     else
-	UpdateComponentStatus "${env_name}" "${team_name}" "${config_name}" "initializing_apply"
+        UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "status" : "initializing_apply" }' 
     fi
 fi

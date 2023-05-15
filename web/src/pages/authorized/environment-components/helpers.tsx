@@ -137,7 +137,7 @@ export const auditColumns = [
 	{
 		id: 'startDateTime',
 		name: 'Started',
-		render: (data: any) => getTime(new Date(data).toISOString()),
+		render: (data: any) => data ? getTime(new Date(data).toISOString()) : '--',
 	},
 	{
 		id: 'duration',

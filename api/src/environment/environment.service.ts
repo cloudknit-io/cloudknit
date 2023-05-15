@@ -9,7 +9,7 @@ import { UpdateEnvironmentDto } from './dto/update-environment.dto';
 export class EnvironmentService {
   constructor(
     @InjectRepository(Environment)
-    private readonly envRepo: Repository<Environment>,
+    private readonly envRepo: Repository<Environment>
   ) {}
 
   async create(
@@ -21,7 +21,7 @@ export class EnvironmentService {
       organization: org,
       team,
       lastReconcileDatetime: new Date().toISOString(),
-      ...createEnvDto
+      ...createEnvDto,
     });
   }
 
@@ -72,7 +72,11 @@ export class EnvironmentService {
       },
       relations: {
         team: withTeam,
-        components: withComps,
+        components: withComps
+          ? {
+              latestCompRecon: true,
+            }
+          : false,
       },
     });
   }
