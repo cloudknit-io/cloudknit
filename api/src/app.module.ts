@@ -19,7 +19,7 @@ import { SecretsModule } from './secrets/secrets.module';
 import { StreamModule } from './stream/stream.module';
 import { SystemModule } from './system/system.module';
 import { TeamModule } from './team/team.module';
-import { dbConfig } from './typeorm';
+import { Organization, User, dbConfig } from './typeorm';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -28,7 +28,7 @@ import { UsersModule } from './users/users.module';
       envFilePath: '.env.dev',
     }),
     EventEmitterModule.forRoot({
-      verboseMemoryLeak: true
+      verboseMemoryLeak: true,
     }),
     RouterModule.register(appRoutes),
     TypeOrmModule.forRoot(dbConfig as TypeOrmModuleOptions),
@@ -59,11 +59,19 @@ export class AppModule implements NestModule {
   }
 
   synchronize(connection: Connection) {
-    if (connection.entityMetadatas.length > 3) {
-      return;
-    }
     const logger = new Logger('Synchronize');
-    logger.error(`Synchronize Error`, '0 tables found, synchronizing...');
-    connection.synchronize(false);
+    logger.log('Checking sync status for schema...');
+    const userRepo = connection.getRepository(User);
+    const orgRepo = connection.getRepository(Organization);
+    Promise.all([userRepo.find({
+      take: 1,
+    }), orgRepo.find({
+      take: 1,
+    })]).then((res) => {
+      logger.log('User and Organization table exist, no need for synchronization.')
+    }).catch((err) => {
+      logger.warn(`User/Organization table not found. Synchronizing the schema now.`);
+      connection.synchronize(false);
+    })
   }
 }
