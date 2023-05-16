@@ -376,7 +376,6 @@ export function setUpAuth(app: express.Express, authRouter: express.Router) {
 }
 
 function getClientIP(req) {
-  return '127.0.0.1';
   if (!req.headers["x-forwarded-for"]) {
     return null;
   }
