@@ -19,7 +19,7 @@ import { SecretsModule } from './secrets/secrets.module';
 import { StreamModule } from './stream/stream.module';
 import { SystemModule } from './system/system.module';
 import { TeamModule } from './team/team.module';
-import { dbConfig } from './typeorm';
+import { User, dbConfig } from './typeorm';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -28,7 +28,7 @@ import { UsersModule } from './users/users.module';
       envFilePath: '.env.dev',
     }),
     EventEmitterModule.forRoot({
-      verboseMemoryLeak: true
+      verboseMemoryLeak: true,
     }),
     RouterModule.register(appRoutes),
     TypeOrmModule.forRoot(dbConfig as TypeOrmModuleOptions),
@@ -59,11 +59,15 @@ export class AppModule implements NestModule {
   }
 
   synchronize(connection: Connection) {
-    if (connection.entityMetadatas.length > 0) {
-      return;
-    }
     const logger = new Logger('Synchronize');
-    logger.error(`Synchronize Error`, '0 tables found, synchronzing...');
-    connection.synchronize(false);
+    const repo = connection.getRepository(User);
+    Promise.resolve(
+      repo.find({
+        take: 1,
+      })
+    ).catch((err) => {
+      logger.error(`Synchronize Error: `, err);
+      connection.synchronize(false);
+    });
   }
 }
