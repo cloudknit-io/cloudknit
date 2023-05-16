@@ -59,7 +59,7 @@ export class AppModule implements NestModule {
   }
 
   synchronize(connection: Connection) {
-    if (connection.entityMetadatas.length > 0) {
+    if (connection.entityMetadatas.length > 3) {
       return;
     }
     const logger = new Logger('Synchronize');
