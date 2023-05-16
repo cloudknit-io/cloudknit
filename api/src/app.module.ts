@@ -68,7 +68,7 @@ export class AppModule implements NestModule {
     }), orgRepo.find({
       take: 1,
     })]).then((res) => {
-      logger.log('User and Organization table exist, no need for synchronnization.')
+      logger.log('User and Organization table exist, no need for synchronization.')
     }).catch((err) => {
       logger.warn(`User/Organization table not found. Synchronizing the schema now.`);
       connection.synchronize(false);
