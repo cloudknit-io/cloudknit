@@ -114,7 +114,17 @@ export class ComponentController {
   async compReconEnvUpdateListener(evt: ComponentReconcileEntityUpdateEvent) {
     const compRecon = evt.payload;
 
-    await this.compSvc.updateById(compRecon.environmentReconcile.organization, compRecon.compId, {
+    let envRecon = compRecon.environmentReconcile;
+    if (!envRecon) {
+      envRecon = await this.reconSvc.getEnvReconByReconcileId(
+        {
+          id: compRecon.orgId,
+        },
+        compRecon.envReconId
+      );
+    }
+
+    await this.compSvc.updateById(envRecon.organization, compRecon.compId, {
       lastReconcileDatetime: new Date().toISOString(),
     });
   }

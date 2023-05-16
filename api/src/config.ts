@@ -64,7 +64,7 @@ export function init() {
       port: parseInt(getEnvVarOrFail('TYPEORM_PORT')),
       username: getEnvVarOrFail('TYPEORM_USERNAME'),
       password: getEnvVarOrFail('TYPEORM_PASSWORD'),
-      database: getEnvVarOrFail('TYPEORM_DATABASE'),
+      database: getEnvVarOrFail('TYPEORM_DATABASE')
     },
     port: parseInt(process.env.APP_PORT) || 3000,
     github: {

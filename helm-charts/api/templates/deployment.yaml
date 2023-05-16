@@ -38,6 +38,8 @@ spec:
               value: {{ .Values.database.password }}
             - name: TYPEORM_PORT
               value: "{{ .Values.database.port }}"
+            - name: TYPEORM_SYNC
+              value: "{{ .Values.database.sync }}"
             - name: AWS_ACCESS_KEY_ID
               value: {{ .Values.awsCredentials.accessKeyId}}
             - name: AWS_SECRET_ACCESS_KEY
