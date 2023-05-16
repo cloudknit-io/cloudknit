@@ -19,7 +19,7 @@ import { SecretsModule } from './secrets/secrets.module';
 import { StreamModule } from './stream/stream.module';
 import { SystemModule } from './system/system.module';
 import { TeamModule } from './team/team.module';
-import { User, dbConfig } from './typeorm';
+import { Organization, User, dbConfig } from './typeorm';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -60,14 +60,18 @@ export class AppModule implements NestModule {
 
   synchronize(connection: Connection) {
     const logger = new Logger('Synchronize');
-    const repo = connection.getRepository(User);
-    Promise.resolve(
-      repo.find({
-        take: 1,
-      })
-    ).catch((err) => {
-      logger.error(`Synchronize Error: `, err);
+    logger.log('Checking sync status for schema...');
+    const userRepo = connection.getRepository(User);
+    const orgRepo = connection.getRepository(Organization);
+    Promise.all([userRepo.find({
+      take: 1,
+    }), orgRepo.find({
+      take: 1,
+    })]).then((res) => {
+      logger.log('User and Organization table exist, no need for synchronnization.')
+    }).catch((err) => {
+      logger.warn(`User/Organization table not found. Synchronizing the schema now.`);
       connection.synchronize(false);
-    });
+    })
   }
 }
