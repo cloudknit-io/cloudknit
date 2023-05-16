@@ -3,4 +3,4 @@ name: zlifecycle-web-bff
 description: A Helm chart for Kubernetes
 type: application
 version: 0.35.0
-appVersion: "1.16.0"
+appVersion: "1.17.0"
