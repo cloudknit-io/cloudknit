@@ -9,6 +9,7 @@ database:
   password:
   name:
   port:
+  sync: false
 awsCredentials:
   accessKeyId:
   secretAccessKey:
