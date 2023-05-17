@@ -34,20 +34,19 @@ export class UsersController {
     return user;
   }
 
-  @Get('/playground')
-  public async getPlaygroundUser(@Query('ipv4') ipv4: string): Promise<User> {
-    const user = await this.userService.getPlaygroundUser(ipv4);
-
-    if (!user) {
-      throw new NotFoundException();
-    }
+  @Post()
+  public async createUser(@Body() body: CreateUserDto): Promise<User> {
+    const user = await this.userService.create(body);
 
     return user;
   }
 
-  @Post()
-  public async createUser(@Body() body: CreateUserDto): Promise<User> {
-    const user = await this.userService.create(body);
+  @Get('/playground/:ipv4')
+  public async getPlaygroundUser(@Param('ipv4') ipv4: string): Promise<User> {
+    const user = await this.userService.getPlaygroundUser(ipv4);
+    if (!user) {
+      throw new NotFoundException();
+    }
 
     return user;
   }
