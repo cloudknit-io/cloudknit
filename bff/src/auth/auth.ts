@@ -37,7 +37,7 @@ export async function getUser(username: string): Promise<User> {
 export async function getPlaygroundUser(username: string): Promise<User> {
   try {
     const user = await axios.get(
-      `${process.env.ZLIFECYCLE_API_URL}/v1/users/playground?ipv4=${username}`
+      `${process.env.ZLIFECYCLE_API_URL}/v1/users/playground/${username}`
     );
 
     return user.data;
