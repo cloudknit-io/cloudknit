@@ -102,6 +102,7 @@ export class UsersService {
     newUser.name = uuid;
     newUser.username = uuid;
     newUser.role = 'Guest';
+    newUser.ipv4 = user.ipv4;
     newUser.organizations = [org];
 
     return this.userRepo.save(newUser);
