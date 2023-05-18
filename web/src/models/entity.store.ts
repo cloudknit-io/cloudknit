@@ -39,7 +39,6 @@ export class EntityStore {
 	}
 
 	private constructor() {
-		ErrorStateService.getInstance();
 		this.generateEmitterMap();
 		Promise.resolve(this.getTeams());
 		this.startStreaming();
