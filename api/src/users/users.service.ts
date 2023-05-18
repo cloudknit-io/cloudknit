@@ -29,12 +29,22 @@ export class UsersService {
   }
 
   async getPlaygroundUser(ipv4: string): Promise<User> {
-    return this.userRepo.findOne({
+    let user = await this.userRepo.findOne({
       where: { ipv4 },
       relations: {
         organizations: true,
       },
     });
+
+    if (user.organizations.length === 0) {
+      const org = await this.getOrganizationWithoutUserAssociation();
+      const updatedUser = this.userRepo.merge(user, {
+        organizations: [org]
+      });
+      user = await this.userRepo.save(updatedUser);
+    }
+
+    return user;
   }
 
   async getUserById(userId: number): Promise<User> {
@@ -83,17 +93,8 @@ export class UsersService {
 
     // Get an org that is not associated to any user
 
-    const orgs = await this.orgRepo.find({
-      relations: {
-        users: true
-      },
-    });
-
-    const org = orgs.find((org) => org.users.length === 0);
+    const org = await this.getOrganizationWithoutUserAssociation();
     
-    if (!org) {
-      throw new NotFoundException('No Organization is present at the moment.');
-    }
 
     const uuid = `guest-${randomUUID()}`;
     // Create user
@@ -106,5 +107,21 @@ export class UsersService {
     newUser.organizations = [org];
 
     return this.userRepo.save(newUser);
+  }
+
+  private async getOrganizationWithoutUserAssociation() {
+    const orgs = await this.orgRepo.find({
+      relations: {
+        users: true,
+      },
+    });
+
+    const org = orgs.find((org) => org.users.length === 0);
+
+    if (!org) {
+      throw new NotFoundException('No Organization is present at the moment.');
+    }
+
+    return org;
   }
 }
