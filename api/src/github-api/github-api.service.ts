@@ -7,7 +7,7 @@ export class GithubApiService {
   private readonly baseUri: string = 'https://api.github.com/repos';
   private readonly headers = {
     Accept: 'application/vnd.github+json',
-    Authorization: `Bearer ${get().github.personalAccessToken}`,
+    Authorization: `Bearer ${Buffer.from(get().github.personalAccessToken, 'base64').toString()}`,
     'X-GitHub-Api-Version': '2022-11-28',
   };
 

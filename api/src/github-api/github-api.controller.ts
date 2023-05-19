@@ -21,7 +21,7 @@ export class GithubApiController {
     const { org, team, env } = req;
     const environment = await this.envSvc.findById(org, env.id);
     if (environment) {
-      return this.gitSvc.gitCommit(get().github.owner, get().github.repo, `${env.name}/env.yaml`);
+      return this.gitSvc.gitCommit(get().github.owner, get().github.repo, `environments/dev/env.yaml`);
     }
   }
 }
