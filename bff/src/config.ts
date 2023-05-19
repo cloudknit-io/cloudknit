@@ -10,7 +10,7 @@ const config = {
   WEB_URL: process.env.SITE_URL,
   API_URL: `${process.env.ZLIFECYCLE_API_URL}/v1`,
   ARGOCD_URL: process.env.ARGO_CD_API_URL,
-  PLAYGROUND_APP: false, //process.env.CK_PLAYGROUND == 'true',
+  PLAYGROUND_APP: true, //process.env.CK_PLAYGROUND == 'true',
   argoWFUrl: (orgName: string) =>
     process.env.ARGO_WORKFLOW_API_URL.replaceAll(":org", orgName),
   stateMgrUrl: (orgName: string) =>
