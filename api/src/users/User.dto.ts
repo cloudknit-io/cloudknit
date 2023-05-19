@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { UserRole } from 'src/types';
 
 export class CreateUserDto {
   @ApiProperty()
@@ -8,9 +9,9 @@ export class CreateUserDto {
   email: string;
 
   @ApiProperty({
-    default: 'User',
+    default: UserRole.USER,
   })
-  role: string;
+  role: UserRole;
 
   @ApiProperty()
   name: string;

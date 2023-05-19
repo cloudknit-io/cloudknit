@@ -1,11 +1,10 @@
-import AuthStore from 'auth/AuthStore';
 import Anonymous from 'pages/anonymous';
 import { LOGIN_URL } from 'pages/anonymous/anonymousRouteNames';
 import { Login } from 'pages/anonymous/login/Login';
 import { NotFound } from 'pages/anonymous/not-found/NotFound';
 import Authorized from 'pages/authorized';
-import { privateRouteMap, PROJECTS_URL, routes } from 'pages/authorized/authorizedRouteNames';
-import React, { FC } from 'react';
+import { PROJECTS_URL, privateRouteMap, routes } from 'pages/authorized/authorizedRouteNames';
+import { FC } from 'react';
 import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom';
 import PrivateRoute from 'router/PrivateRoute';
 import PublicRoute from 'router/PublicRoute';

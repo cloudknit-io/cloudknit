@@ -1,13 +1,11 @@
 import { ReactComponent as Logo } from 'assets/images/icons/logo.svg';
-import { ZText } from 'components/atoms/text/Text';
-import React, { useState } from 'react';
 import AuthStore from 'auth/AuthStore';
 import { ZDropdownMenuJSX } from 'components/molecules/dropdown-menu/DropdownMenu';
-import { NavItem } from 'models/nav-item.models';
 import { TopNav } from 'components/organisms/top-nav/TopNav';
-import { BradAdarshFeatureVisible, FeatureKeys, FeatureRoutes } from 'pages/authorized/feature_toggle';
+import { NavItem } from 'models/nav-item.models';
+import { BradAdarshFeatureVisible, FeatureKeys, FeatureRoutes, playgroundFeatureVisible } from 'pages/authorized/feature_toggle';
+import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { ENVIRONMENT_VARIABLES } from 'utils/environmentVariables';
 
 require('./top-bar.scss');
 
@@ -57,16 +55,20 @@ const navItems: NavItem[] = [
 			},
 		],
 	},
-	{ title: 'Infra Components', path: '/all/all', visible: () => !ENVIRONMENT_VARIABLES.PLAYGROUND_APP },
+	{
+		title: 'Infra Components',
+		path: '/all/all',
+		visible: () => playgroundFeatureVisible(),
+	},
 	{ title: 'Overview', path: '/overview', visible: () => BradAdarshFeatureVisible() },
 	{ title: 'Dashboard', path: '/demo-dashboard', visible: () => BradAdarshFeatureVisible() },
 	{ title: 'Builder', path: '/builder', visible: () => BradAdarshFeatureVisible() },
 	{
 		title: 'Settings',
 		path: '/settings',
-		visible: () => !ENVIRONMENT_VARIABLES.PLAYGROUND_APP && AuthStore.getUser()?.role === 'Admin',
+		visible: () => BradAdarshFeatureVisible(),
 	},
-	{ title: 'Quick Start', path: '/quick-start', visible: () => !ENVIRONMENT_VARIABLES.PLAYGROUND_APP },
+	{ title: 'Quick Start', path: '/quick-start', visible: () => playgroundFeatureVisible() },
 ];
 
 export const TopBar = ({ title }: TopBarProps) => {
@@ -93,7 +95,7 @@ export const TopBar = ({ title }: TopBarProps) => {
 						<TopNav items={navItems} />
 					</nav>
 				</div>
-				{!ENVIRONMENT_VARIABLES.PLAYGROUND_APP && (
+				{playgroundFeatureVisible() && (
 					<div className="top-bar__avatar">
 						<img
 							src={currentUser?.picture}

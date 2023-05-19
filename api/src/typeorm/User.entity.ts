@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Organization } from './Organization.entity';
+import { UserRole } from 'src/types';
 
 @Entity({ name: 'users' })
 export class User {
@@ -35,7 +36,7 @@ export class User {
   @Column({
     default: 'User',
   })
-  role: string;
+  role: UserRole;
 
   @Column({
     default: false,

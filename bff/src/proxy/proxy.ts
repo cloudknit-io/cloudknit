@@ -350,126 +350,9 @@ export function noOrgRoutes(router: express.Router) {
   return router;
 }
 
-export function playgroundOrgRoutes(router: express.Router) {
-
-  router.use("/wf", async (req: BFFRequest, res, next) => {
-    const org = await helper.orgFromReq(req);
-
-    if (!org) {
-      helper.handleNoOrg(res);
-      return;
-    }
-
-    return (
-      createProxy(org, "/wf", {
-        target: config.argoWFUrl(org.name),
-        pathRewrite: pathRewrite("/wf", WF_MAPPINGS, { orgName: org.name }),
-        cookieDomainRewrite: "",
-        onProxyRes: enableCors,
-        changeOrigin: true,
-      }) as any
-    )(req, res, next);
-  });
-
-  router.use("/cd",
-    async (req: BFFRequest, res, next) => {
-      /* 
-    Since http-proxy-middleware's are cached we need a way to inject ArgoCD tokens
-    into the cached request headers. Otherwise, the cached jwt, which has a 24h TTL, 
-    would expire.
-
-    Here, we set the `authorization` header and get a valid ArgoCD token on each call.
-    */
-      const org = await helper.orgFromReq(req);
-
-      if (!org) {
-        helper.handleNoOrg(res);
-        return;
-      }
-      const { authorization } = await getArgoCDAuthHeader(org.name);
-
-      req.headers["authorization"] = authorization;
-
-      next();
-    },
-    async (req: BFFRequest, res, next) => {
-      const org = await helper.orgFromReq(req);
-
-      if (!org) {
-        helper.handleNoOrg(res);
-        return;
-      }
-
-      return (
-        createProxy(org, "/cd", {
-          target: config.ARGOCD_URL,
-          changeOrigin: true,
-          secure: true,
-          cookieDomainRewrite: "",
-          onProxyRes: enableCors,
-          pathRewrite: pathRewrite("/cd", CD_MAPPINGS, {
-            orgId: org.id,
-            orgName: org.name,
-          }),
-        }) as any
-      )(req, res, next);
-    }
-  );
-
-  router.use("/reconciliation", async (req: BFFRequest, res, next) => {
-    const org = await helper.orgFromReq(req);
-
-    if (!org) {
-      helper.handleNoOrg(res);
-      return;
-    }
-    const user = helper.userFromReq(req);
-
-    return (
-      createProxy(org, "/reconciliation", {
-        target: process.env.ZLIFECYCLE_API_URL,
-        changeOrigin: true,
-        secure: true,
-        cookieDomainRewrite: "",
-        onProxyRes: enableCors,
-        pathRewrite: pathRewrite("/", AUDIT_MAPPINGS, {
-          orgId: org.id,
-          email: user.email,
-        }),
-      }) as any
-    )(req, res, next);
-  });
-
-  router.use("/api", async (req: BFFRequest, res, next) => {
-    const org = await helper.orgFromReq(req);
-
-    if (!org) {
-      helper.handleNoOrg(res);
-      return;
-    }
-
-    const { authorization } = await getArgoCDAuthHeader(org.name);
-    console.log(authorization);
-    req.headers["argo_cd_auth_header"] = authorization;
-
-    return (
-      createProxy(org, "/api", {
-        target: process.env.ZLIFECYCLE_API_URL,
-        changeOrigin: true,
-        secure: true,
-        cookieDomainRewrite: "",
-        onProxyRes: enableCors,
-        pathRewrite: pathRewrite("/", API_MAPPINGS, { orgId: org.id }),
-      }) as any
-    )(req, res, next);
-  });
-
-  return router;
-}
-
 export function orgRoutes(router: express.Router) {
   router.use("/wf", async (req: BFFRequest, res, next) => {
-    const org = await helper.orgFromReq(req);
+    const org = await helper.orgFromReq(req, true);
 
     if (!org) {
       helper.handleNoOrg(res);
@@ -496,7 +379,7 @@ export function orgRoutes(router: express.Router) {
 
     Here, we set the `authorization` header and get a valid ArgoCD token on each call.
     */
-      const org = await helper.orgFromReq(req);
+      const org = await helper.orgFromReq(req, true);
 
       if (!org) {
         helper.handleNoOrg(res);
@@ -533,7 +416,7 @@ export function orgRoutes(router: express.Router) {
   );
 
   router.use("/reconciliation", async (req: BFFRequest, res, next) => {
-    const org = await helper.orgFromReq(req);
+    const org = await helper.orgFromReq(req, true);
 
     if (!org) {
       helper.handleNoOrg(res);
@@ -577,7 +460,7 @@ export function orgRoutes(router: express.Router) {
   });
 
   router.use("/api", async (req: BFFRequest, res, next) => {
-    const org = await helper.orgFromReq(req);
+    const org = await helper.orgFromReq(req, true);
 
     if (!org) {
       helper.handleNoOrg(res);
@@ -741,11 +624,4 @@ export function orgRoutes(router: express.Router) {
   });
 
   return router;
-}
-
-export function getOrgRoutes(router) {
-  if (config.PLAYGROUND_APP) {
-    return playgroundOrgRoutes(router);
-  }
-  return orgRoutes(router);
 }

@@ -5,10 +5,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { randomUUID } from 'crypto';
 import { Organization, User } from 'src/typeorm';
+import { UserRole } from 'src/types';
 import { Repository } from 'typeorm';
-import { CreatePlaygroundUserDto, CreateUserDto } from './User.dto';
+import { CreateUserDto } from './User.dto';
 
 @Injectable()
 export class UsersService {
@@ -20,30 +20,20 @@ export class UsersService {
   ) {}
 
   async getUser(username: string): Promise<User> {
-    return this.userRepo.findOne({
+    const user = await this.userRepo.findOne({
       where: { username },
       relations: {
         organizations: true,
       },
     });
-  }
 
-  async getPlaygroundUser(ipv4: string): Promise<User> {
-    let user = await this.userRepo.findOne({
-      where: { ipv4 },
-      relations: {
-        organizations: true,
-      },
-    });
-
-    if (user.organizations.length === 0) {
-      const org = await this.getOrganizationWithoutUserAssociation();
-      const updatedUser = this.userRepo.merge(user, {
-        organizations: [org]
-      });
-      user = await this.userRepo.save(updatedUser);
+    if (!user) {
+      return null;
     }
 
+    if (user.role === UserRole.GUEST) {
+      return this.associateOrganization(user);
+    }
     return user;
   }
 
@@ -75,38 +65,26 @@ export class UsersService {
 
     const user = await this.userRepo.save(newUser);
 
+    console.log(user);
+
+    if (user.role === UserRole.GUEST) {
+      return this.associateOrganization(user);
+    }
+
     this.logger.log('created user', { user: userDto });
 
     return user;
   }
 
-  public async createPlaygroundUser(user: CreatePlaygroundUserDto) {
-    if (!user.ipv4) {
-      throw new BadRequestException('request does not have a valid ip address');
+  private async associateOrganization(user: User) {
+    if (user.organizations.length === 0) {
+      const org = await this.getOrganizationWithoutUserAssociation();
+      const updatedUser = this.userRepo.merge(user, {
+        organizations: [org]
+      });
+      user = await this.userRepo.save(updatedUser);
     }
-
-    const currentUser = await this.getPlaygroundUser(user.ipv4);
-
-    if (currentUser) {
-      throw new BadRequestException('User already exists');
-    }
-
-    // Get an org that is not associated to any user
-
-    const org = await this.getOrganizationWithoutUserAssociation();
-    
-
-    const uuid = `guest-${randomUUID()}`;
-    // Create user
-    const newUser = new User();
-    newUser.email = `${uuid}@cloudknit.io`;
-    newUser.name = uuid;
-    newUser.username = uuid;
-    newUser.role = 'Guest';
-    newUser.ipv4 = user.ipv4;
-    newUser.organizations = [org];
-
-    return this.userRepo.save(newUser);
+    return user;
   }
 
   private async getOrganizationWithoutUserAssociation() {
@@ -116,7 +94,7 @@ export class UsersService {
       },
     });
 
-    const org = orgs.find((org) => org.users.length === 0);
+    const org = orgs.find((org) => !org.users.some(user => user.role === UserRole.GUEST));
 
     if (!org) {
       throw new NotFoundException('No Organization is present at the moment.');

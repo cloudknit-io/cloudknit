@@ -8,9 +8,13 @@ import logger from "../utils/logger";
 import { getArgoCDAuthHeader } from "../auth/argo";
 import ckConfig from "../config";
 
-const orgFromReq = async (req: BFFRequest): Promise<Organization> => {
+const orgFromReq = async (req: BFFRequest, forGuestUser = false): Promise<Organization> => {
   if (!req.cookies[config.SELECTED_ORG_HEADER]) {
     return;
+  }
+
+  if (!forGuestUser) {
+    return null;
   }
 
   const orgName = req.cookies[config.SELECTED_ORG_HEADER];
@@ -152,10 +156,10 @@ const isOktaAuth = () =>
   ckConfig.AUTH0_ISSUER_BASE_URL.includes("oktapreview.com") ||
   ckConfig.AUTH0_ISSUER_BASE_URL.includes("okta.com");
 
-const isGuestAuth = () => true; //ckConfig.PLAYGROUND_APP === "true";
+const isGuestAuth = () => config.PLAYGROUND_APP; //ckConfig.PLAYGROUND_APP === "true";
 
 export const appSession = (req: BFFRequest): any => {
-  if (isOktaAuth() || isGuestAuth()) {
+  if (isOktaAuth()) {
     return req.session.appSession;
   }
   return req.appSession;
@@ -164,9 +168,6 @@ export const appSession = (req: BFFRequest): any => {
 export const oidcUser = (req: BFFRequest) => {
   if (isOktaAuth()) {
     return req.session.passport.user;
-  }
-  if (isGuestAuth()) {
-    return req.session.appSession.user;
   }
   return req.oidc.user;
 };

@@ -14,9 +14,9 @@ import zlConfig from "./config";
 import AuthRoutes from "./controllers/auth.controller";
 import {
   externalApiRoutes,
-  getOrgRoutes,
   handlePublicRoutes,
-  noOrgRoutes
+  noOrgRoutes,
+  orgRoutes
 } from "./proxy/proxy";
 import helper, { oidcUser } from "./utils/helper";
 import logger, { AuthRequestLogger, ErrorLogger } from "./utils/logger";
@@ -78,7 +78,7 @@ authRouter.use(AuthRequestLogger);
 authRouter.use(organizationMW); // checks for selectedOrg cookie, throws 401 if not present
 
 app.use("/auth", AuthRoutes(authRouter));
-app.use("/", getOrgRoutes(authRouter))
+app.use("/", orgRoutes(authRouter))
 
 // replaces expresses default error handler
 app.use(ErrorLogger);
