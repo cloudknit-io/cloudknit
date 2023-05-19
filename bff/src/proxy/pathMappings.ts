@@ -198,7 +198,7 @@ const API_PATH_MAPPINGS = [
   },
   {
     path: "/api/teams/:teamId/gitCommit/:envId",
-    newPath: (params: any) => `v1/orgs/${params.orgId}/teams/${params.teamId}/github-api/${params.envId}`,
+    newPath: (params: any) => `v1/orgs/${params.orgId}/teams/${params.teamId}/github/${params.envId}`,
   },
   {
     path: "/api/teams/:teamId/environments/:envId/components",
