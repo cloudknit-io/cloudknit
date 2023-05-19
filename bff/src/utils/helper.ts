@@ -13,7 +13,9 @@ const orgFromReq = async (req: BFFRequest, forGuestUser = false): Promise<Organi
     return;
   }
 
-  if (!forGuestUser) {
+  const currentUser = userFromReq(req);
+
+  if (currentUser?.role === 'Guest' && !forGuestUser) {
     return null;
   }
 
