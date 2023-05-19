@@ -21,6 +21,7 @@ import { useParams } from 'react-router-dom';
 import { Subscription } from 'rxjs';
 import { EntityService } from 'services/entity/entity.service';
 import { usePageHeader } from '../contexts/EnvironmentHeaderContext';
+import { playgroundFeatureVisible } from '../feature_toggle';
 
 type CompareEnv = {
 	env: EnvironmentItem | null;
@@ -227,7 +228,7 @@ export const Environments: React.FC = () => {
 					)}
 					{compareEnvs.a?.env && compareEnvs.b?.env ? compareMode && renderDiffEditor() : null}
 				</section>
-				<ZModalPopup
+				{!playgroundFeatureVisible() && <ZModalPopup
 					header={<div className="d-flex align-center">Provison an Environment</div>}
 					isShown={
 						!loading &&
@@ -266,7 +267,7 @@ export const Environments: React.FC = () => {
 							'Clicking on this button would push a commit to our repository and cloudknit would start provisioning your environment.'
 						}
 					/>
-				</ZModalPopup>
+				</ZModalPopup>}
 			</ZLoaderCover>
 		</div>
 	);
