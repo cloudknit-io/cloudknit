@@ -10,7 +10,6 @@ export type ApiConfig = {
   };
   port: number;
   github: {
-    personalAccessToken: string,
     owner: string,
     repo: string,
   }
@@ -68,7 +67,6 @@ export function init() {
     },
     port: parseInt(process.env.APP_PORT) || 3000,
     github: {
-      personalAccessToken: getEnvVarOrDefault('GIT_PERSONAL_ACCESS_TOKEN', ''), //getEnvVarOrFail('GIT_PERSONAL_ACCESS_TOKEN'),
       owner: getEnvVarOrDefault('GIT_OWNER', 'zlab-tech'),
       repo: getEnvVarOrDefault('GIT_REPO', 'hooli-config'),
     },
