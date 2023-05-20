@@ -251,8 +251,8 @@ export const Environments: React.FC = () => {
 											});
 										} else {
 											nm.show({
-												content: 'Well Done! Provisioning you environment...',
-												type: NotificationType.Error,
+												content: 'Well Done! Provisioning your environment...',
+												type: NotificationType.Success,
 											});
 										}
 										setPushingCommit(false);
