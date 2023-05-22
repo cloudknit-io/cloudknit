@@ -235,7 +235,7 @@ export const Environments: React.FC = () => {
 							!loading &&
 							environments?.length > 0 &&
 							environments[0].status === ZEnvSyncStatus.Destroyed &&
-							pushingCommit === null
+							pushingCommit !== false
 						}
 						onClose={() => {}}>
 						<div className="d-flex flex-dir-column">
@@ -272,13 +272,13 @@ export const Environments: React.FC = () => {
 														content: 'There was an error provisioning the environment',
 														type: NotificationType.Error,
 													});
-													setCommitInfo(html_url);
+													setCommitInfo(null);
 												} else {
 													nm.show({
 														content: 'Well Done! Provisioning your environment...',
 														type: NotificationType.Success,
 													});
-													setCommitInfo(null);
+													setCommitInfo(html_url);
 												}
 												setPushingCommit(false);
 											});
