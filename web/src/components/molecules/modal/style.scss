@@ -16,8 +16,8 @@
 		position: fixed;
 		height: fit-content;
 		top: -75vh;
-		width: 50vw;
-		left: 25vw;
+		width: 500px;
+		left: calc((100vw - 500px)/2);
 		z-index: 2;
 		box-shadow: 0 0 10px #aaa;
 		background-color: white;
