@@ -5,6 +5,12 @@ import { AppModule } from './app.module';
 import { get, init } from './config';
 import { WinstonLogger } from './logger';
 
+process.on('warning', (e) => {
+  if (e.name === 'MaxListenersExceededWarning') {
+    console.error(e);
+  }
+});
+
 async function bootstrap() {
   init(); // init api config
 
