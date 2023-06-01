@@ -38,7 +38,7 @@ export class StreamComponentService
 
   async afterUpdate(event: UpdateEvent<Component>): Promise<void> {
     const comp = event.entity as Component;
-
+    if (event.updatedColumns.some(col => col.propertyName === 'lastReconcileDateTime'))
     this.validateAndSend(comp, 'afterUpdate');
   }
 

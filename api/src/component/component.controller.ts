@@ -110,7 +110,7 @@ export class ComponentController {
     return this.reconSvc.getLatestCompReconcile(org, comp);
   }
 
-  @OnEvent(InternalEventType.ComponentReconcileEntityUpdate, { async: true })
+  @OnEvent(InternalEventType.ComponentReconcileEntityUpdate, { async: true, nextTick: true })
   async compReconEnvUpdateListener(evt: ComponentReconcileEntityUpdateEvent) {
     const compRecon = evt.payload;
 

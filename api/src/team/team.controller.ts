@@ -131,7 +131,7 @@ export class TeamController {
     return this.teamSvc.remove(org, team.id);
   }
 
-  @OnEvent(InternalEventType.EnvironmentReconCostUpdate, { async: true })
+  @OnEvent(InternalEventType.EnvironmentReconCostUpdate, { async: true, nextTick: true })
   async environmentCostUpdateListener(evt: EnvironmentReconCostUpdateEvent) {
     const envRecon = evt.payload;
 
