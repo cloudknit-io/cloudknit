@@ -352,7 +352,7 @@ export function noOrgRoutes(router: express.Router) {
 
 export function orgRoutes(router: express.Router) {
   router.use("/wf", async (req: BFFRequest, res, next) => {
-    const org = await helper.orgFromReq(req);
+    const org = await helper.orgFromReq(req, true);
 
     if (!org) {
       helper.handleNoOrg(res);
@@ -370,8 +370,7 @@ export function orgRoutes(router: express.Router) {
     )(req, res, next);
   });
 
-  router.use(
-    "/cd",
+  router.use("/cd",
     async (req: BFFRequest, res, next) => {
       /* 
     Since http-proxy-middleware's are cached we need a way to inject ArgoCD tokens
@@ -380,7 +379,7 @@ export function orgRoutes(router: express.Router) {
 
     Here, we set the `authorization` header and get a valid ArgoCD token on each call.
     */
-      const org = await helper.orgFromReq(req);
+      const org = await helper.orgFromReq(req, true);
 
       if (!org) {
         helper.handleNoOrg(res);
@@ -417,7 +416,7 @@ export function orgRoutes(router: express.Router) {
   );
 
   router.use("/reconciliation", async (req: BFFRequest, res, next) => {
-    const org = await helper.orgFromReq(req);
+    const org = await helper.orgFromReq(req, true);
 
     if (!org) {
       helper.handleNoOrg(res);
@@ -461,7 +460,7 @@ export function orgRoutes(router: express.Router) {
   });
 
   router.use("/api", async (req: BFFRequest, res, next) => {
-    const org = await helper.orgFromReq(req);
+    const org = await helper.orgFromReq(req, true);
 
     if (!org) {
       helper.handleNoOrg(res);

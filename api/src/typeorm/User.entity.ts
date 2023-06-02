@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Organization } from './Organization.entity';
+import { UserRole } from 'src/types';
 
 @Entity({ name: 'users' })
 export class User {
@@ -35,12 +36,18 @@ export class User {
   @Column({
     default: 'User',
   })
-  role: string;
+  role: UserRole;
 
   @Column({
     default: false,
   })
   archived: boolean;
+
+  @Column({
+    default: null,
+    unique: true
+  })
+  ipv4: string;
 
   @ManyToMany(() => Organization, (org) => org.users)
   organizations: Organization[];

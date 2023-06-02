@@ -9,6 +9,10 @@ export type ApiConfig = {
     database: string;
   };
   port: number;
+  github: {
+    owner: string,
+    repo: string,
+  }
   AWS: {
     accessKeyId: string;
     secretAccessKey: string;
@@ -62,6 +66,10 @@ export function init() {
       database: getEnvVarOrFail('TYPEORM_DATABASE')
     },
     port: parseInt(process.env.APP_PORT) || 3000,
+    github: {
+      owner: getEnvVarOrDefault('GIT_OWNER', 'zlab-tech'),
+      repo: getEnvVarOrDefault('GIT_REPO', 'hooli-config'),
+    },
     AWS: {
       accessKeyId: getEnvVarOrFail('AWS_ACCESS_KEY_ID'),
       secretAccessKey: getEnvVarOrFail('AWS_SECRET_ACCESS_KEY'),

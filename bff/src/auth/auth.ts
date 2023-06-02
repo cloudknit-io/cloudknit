@@ -13,7 +13,7 @@ import * as express from "express";
 import { auth, requiresAuth } from "express-openid-connect";
 import * as session from "express-session";
 import { ExpressOIDC } from "@okta/oidc-middleware";
-import * as crypto from 'crypto';
+import * as crypto from "crypto";
 
 export async function getUser(username: string): Promise<User> {
   try {
@@ -41,8 +41,9 @@ async function createUser(
   name: string
 ): Promise<User> {
   try {
+    console.log(role);
     const user = await axios.post(
-      `${process.env.ZLIFECYCLE_API_URL}/v1/users/`,
+      `${process.env.ZLIFECYCLE_API_URL}/v1/users`,
       {
         username,
         email,
@@ -118,7 +119,7 @@ export function getAuth0Config() {
             // @ts-ignore
             claims.nickname,
             claims.email,
-            "Admin",
+            getNewUserRole(),
             claims.name
           );
 
@@ -131,7 +132,7 @@ export function getAuth0Config() {
           return {
             ...session,
             user,
-            organizations: [],
+            organizations: user.organizations || [],
           };
         } catch (err) {
           logger.error(`could not create user ${claims.nickname}`, {
@@ -210,7 +211,7 @@ function getOktaAuthMW() {
                 // @ts-ignore
                 userInfo.preferred_username,
                 userInfo.email,
-                "Admin",
+                getNewUserRole(),
                 userInfo.name
               );
 
@@ -283,4 +284,21 @@ export function setUpAuth(app: express.Express, authRouter: express.Router) {
 
     authRouter.use(requiresAuth());
   }
+}
+
+function getClientIP(req) {
+  if (!req.headers["x-forwarded-for"]) {
+    return null;
+  }
+
+  // x-forwarded-for header returns the list of ips that our request has been forwarded by,
+  // first being clients and then it depends on the no. of proxies that have forwarded it.
+  const addresses = req.headers["x-forwarded-for"];
+
+  // Getting the first ip since that is where the request has originated from.
+  return addresses.split(",")[0];
+}
+
+function getNewUserRole() {
+  return helper.isGuestAuth() ? 'Guest' : 'Admin'
 }

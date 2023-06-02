@@ -8,9 +8,15 @@ import logger from "../utils/logger";
 import { getArgoCDAuthHeader } from "../auth/argo";
 import ckConfig from "../config";
 
-const orgFromReq = async (req: BFFRequest): Promise<Organization> => {
+const orgFromReq = async (req: BFFRequest, forGuestUser = false): Promise<Organization> => {
   if (!req.cookies[config.SELECTED_ORG_HEADER]) {
     return;
+  }
+
+  const currentUser = userFromReq(req);
+
+  if (currentUser?.role === 'Guest' && !forGuestUser) {
+    return null;
   }
 
   const orgName = req.cookies[config.SELECTED_ORG_HEADER];
@@ -152,6 +158,8 @@ const isOktaAuth = () =>
   ckConfig.AUTH0_ISSUER_BASE_URL.includes("oktapreview.com") ||
   ckConfig.AUTH0_ISSUER_BASE_URL.includes("okta.com");
 
+const isGuestAuth = () => config.PLAYGROUND_APP; //ckConfig.PLAYGROUND_APP === "true";
+
 export const appSession = (req: BFFRequest): any => {
   if (isOktaAuth()) {
     return req.session.appSession;
@@ -175,5 +183,6 @@ export default {
   getOrg,
   syncWatcher,
   appSessionFromReq,
-  isOktaAuth
+  isOktaAuth,
+  isGuestAuth
 };

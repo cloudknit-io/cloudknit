@@ -21,6 +21,8 @@ spec:
               value: "3000"
             - name: HOST
               value: {{ .Values.domain }}
+            - name: PLAYGROUND_APP
+              value: {{ .Values.playground }}
             - name: REACT_APP_STREAM_URL
               value: {{ .Values.bff.urlWithProtocol }}
             - name: REACT_APP_BASE_URL

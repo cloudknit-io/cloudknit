@@ -44,7 +44,7 @@ export class EntityService extends BaseService {
 		const url = this.constructUri(EntitytUriType.environment(teamId, envId));
 		try {
 			const { data } = await ApiClient.patch<Environment[]>(url, {
-				isReconcile: true
+				isReconcile: true,
 			});
 			return data;
 		} catch (err) {
@@ -64,6 +64,19 @@ export class EntityService extends BaseService {
 		}
 	}
 
+	async gitCommit(teamId: number, envId: number) {
+		const url = this.constructUri(EntitytUriType.gitCommit(teamId, envId));
+		try {
+			const { data } = await ApiClient.post(url);
+			return data;
+		} catch (err) {
+			console.error(err);
+			return {
+				status: 'error',
+			};
+		}
+	}
+
 	stream(eventList: string[]) {
 		const ec = new EventClient<StreamDataWrapper>(this.constructUri(EntitytUriType.stream()), eventList);
 		return ec.listen();
@@ -74,6 +87,7 @@ class EntitytUriType {
 	static teams = (withComps: boolean) => `teams?withCost=true&withEnvironments=true&withComponents=${withComps}`;
 	static environments = (teamId: number) => `teams/${teamId}/environments`;
 	static environment = (teamId: number, envId: number) => `teams/${teamId}/environments/${envId}`;
+	static gitCommit = (teamId: number, envId: number) => `teams/${teamId}/gitCommit/${envId}`;
 	static components = (teamId: number, envId: number, withLastAuditStatus: boolean) =>
 		`teams/${teamId}/environments/${envId}/components?withLastAuditStatus=${withLastAuditStatus}`;
 	static stream = () => `stream`;

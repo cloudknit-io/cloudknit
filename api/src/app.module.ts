@@ -10,6 +10,7 @@ import { CachingService } from './caching/caching.service';
 import { ComponentModule } from './component/component.module';
 import { EnvironmentModule } from './environment/environment.module';
 import { ErrorsModule } from './errors/errors.module';
+import { GithubApiModule } from './github-api/github-api.module';
 import { AppLoggerMiddleware } from './middleware/logger.middle';
 import { OperationsModule } from './operations/operations.module';
 import { OrganizationModule } from './organization/organization.module';
@@ -45,6 +46,7 @@ import { UsersModule } from './users/users.module';
     StreamModule,
     CachingModule,
     ErrorsModule,
+    GithubApiModule,
   ],
   controllers: [],
   providers: [CachingService],

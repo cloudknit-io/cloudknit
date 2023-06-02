@@ -5,6 +5,12 @@ import { Request } from 'express';
 import { ComponentReconcile, Environment, EnvironmentReconcile, Team } from './typeorm';
 import { Organization } from './typeorm/Organization.entity';
 
+export enum UserRole {
+  ADMIN = 'Admin',
+  USER = 'User',
+  GUEST = 'Guest'
+}
+
 export type APIRequest = Request & {
   org: Organization;
   team: Team;

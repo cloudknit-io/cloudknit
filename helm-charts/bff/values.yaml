@@ -29,6 +29,7 @@ ingressPaths:
   - "/api"
   - "/ext"
 protocol:
+playground: true
 auth0:
   issuerBaseUrl:
   web:

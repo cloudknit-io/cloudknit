@@ -1,6 +1,5 @@
 import { BehaviorSubject, Subject, Subscription } from 'rxjs';
 import { EntityService } from 'services/entity/entity.service';
-import { ErrorStateService } from 'services/error/error-state.service';
 import { CompAuditData, Component, EnvAuditData, Environment, StreamTypeEnum, Team, Update } from './entity.type';
 
 export class EntityStore {
@@ -39,7 +38,6 @@ export class EntityStore {
 	}
 
 	private constructor() {
-		ErrorStateService.getInstance();
 		this.generateEmitterMap();
 		Promise.resolve(this.getTeams());
 		this.startStreaming();

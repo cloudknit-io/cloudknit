@@ -36,8 +36,9 @@ import { SystemService } from 'src/system/system.service';
     EnvironmentService,
     TeamService,
     ReconciliationService,
-    SystemService
+    SystemService,
   ],
+  exports: [EnvironmentService],
 })
 export class EnvironmentModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

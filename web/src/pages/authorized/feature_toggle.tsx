@@ -1,4 +1,5 @@
-import AuthStore from "auth/AuthStore";
+import AuthStore from 'auth/AuthStore';
+import { ENVIRONMENT_VARIABLES } from 'utils/environmentVariables';
 
 const showFeatures = (process.env.REACT_APP_ENABLED_FEATURE_FLAGS || '')
 	.toString()
@@ -49,11 +50,15 @@ export const featureToggled = (featureKey: string, userBased: boolean = false) =
 		return BradAdarshFeatureVisible() && VisibleFeatures[featureKey];
 	}
 	return VisibleFeatures[featureKey];
-}
+};
 
-export function BradAdarshFeatureVisible() : boolean {
+export function BradAdarshFeatureVisible(): boolean {
 	const user = AuthStore.getUser();
 
 	// sometimes life hands you lemons...
-	return ['shahadarsh', 'bradj', 'shashank-cloudknit-io'].includes(user?.username || '');
+	return ['shahadarsh', 'bradj', 'shashank-cloudknit-io', 'shashank-compuzest'].includes(user?.username || '');
+}
+
+export function playgroundFeatureVisible() {
+	return ENVIRONMENT_VARIABLES.PLAYGROUND_APP ? BradAdarshFeatureVisible() : true;
 }

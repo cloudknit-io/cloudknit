@@ -15,6 +15,7 @@ import { OrganizationService } from './organization.service';
   imports: [TypeOrmModule.forFeature([Organization, User])],
   controllers: [OrganizationController],
   providers: [OrganizationService, UsersService],
+  exports: [OrganizationService],
 })
 export class OrganizationModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
