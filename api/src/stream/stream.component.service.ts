@@ -38,6 +38,7 @@ export class StreamComponentService
 
   async afterUpdate(event: UpdateEvent<Component>): Promise<void> {
     const comp = event.entity as Component;
+    console.log('update columns for component: ', event.updatedColumns.join(', '));
     this.validateAndSend(comp, 'afterUpdate');
   }
 

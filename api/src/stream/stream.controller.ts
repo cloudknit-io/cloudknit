@@ -26,6 +26,13 @@ export class StreamController {
           };
         }
 
+        if (item.type === StreamTypeEnum.Component) {
+          console.log(`${new Date().toISOString()}: stream svc: component: `, item.data);
+        }
+        if (item.type === StreamTypeEnum.ComponentReconcile) {
+          console.log(`${new Date().toISOString()}: stream svc: component reconcile: `, item.data);
+        }
+
         return {
           data: item.data,
           type: item.type,
