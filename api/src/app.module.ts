@@ -29,6 +29,7 @@ import { UsersModule } from './users/users.module';
     }),
     EventEmitterModule.forRoot({
       verboseMemoryLeak: true,
+      maxListeners: 25
     }),
     RouterModule.register(appRoutes),
     TypeOrmModule.forRoot(dbConfig as TypeOrmModuleOptions),
