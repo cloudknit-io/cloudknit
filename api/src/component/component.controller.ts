@@ -124,11 +124,11 @@ export class ComponentController {
       );
     }
 
-    const date = new Date().getMilliseconds().toString();
+    const date = new Date().getTime().toString();
     this.logger.log(`${date} comp recon: `, compRecon);
 
     await this.compSvc.updateById(envRecon.organization, compRecon.compId, {
-      lastReconcileDatetime: new Date().getMilliseconds().toString()
+      lastReconcileDatetime: date
     });
   }
 }
