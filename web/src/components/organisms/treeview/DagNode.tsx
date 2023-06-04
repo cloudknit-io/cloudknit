@@ -27,7 +27,9 @@ export const DagNode: React.FC<DagProps> = ({ data }) => {
 				<div className="dag-node__info--cost"><CostRenderer data={cost} /></div>
 				<div className="dag-node__info--status">
 					<div className="dag-node__info--status--icon">{getSyncStatusIcon(status, operation)}</div>
-					<div className="dag-node__info--status--timestamp">&nbsp;|&nbsp;{getTime(timestamp.toString())}</div>
+					<div className="dag-node__info--status--timestamp">&nbsp;|&nbsp;
+					{/* {getTime(timestamp.toString())} */}
+					</div>
 				</div>
 			</div>
 			<div className='dag-node__tooltip'>
