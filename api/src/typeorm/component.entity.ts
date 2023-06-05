@@ -45,7 +45,7 @@ export class Component {
   isDeleted: boolean;
 
   @OneToOne(() => ComponentReconcile, (compRecon) => compRecon.component, {
-    eager: false
+    eager: true
   })
   @JoinColumn({
     referencedColumnName: 'reconcileId',

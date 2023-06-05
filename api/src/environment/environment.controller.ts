@@ -305,7 +305,7 @@ export class EnvironmentController {
     return this.reconSvc.getEnvironmentAuditList(org, env);
   }
 
-  @OnEvent(InternalEventType.ComponentReconcileCostUpdate, { async: true, nextTick: true })
+  @OnEvent(InternalEventType.ComponentReconcileCostUpdate, { async: true })
   async compCostUpdateListener(evt: ComponentReconcileCostUpdateEvent) {
     const compRecon = evt.payload;
     let env = null;
@@ -330,7 +330,7 @@ export class EnvironmentController {
     await this.reconSvc.updateCost(env);
   }
 
-  @OnEvent(InternalEventType.EnvironmentReconCostUpdate, { async: true, nextTick: true })
+  @OnEvent(InternalEventType.EnvironmentReconCostUpdate, { async: true })
   async envReconCostUpdateListener(evt: EnvironmentReconCostUpdateEvent) {
     const envRecon = evt.payload;
 
@@ -347,7 +347,7 @@ export class EnvironmentController {
     });
   }
 
-  @OnEvent(InternalEventType.EnvironmentReconEnvUpdate, { async: true, nextTick: true })
+  @OnEvent(InternalEventType.EnvironmentReconEnvUpdate, { async: true })
   async envReconEnvUpdateListener(evt: EnvironmentReconEnvUpdateEvent) {
     const envRecon = evt.payload;
 

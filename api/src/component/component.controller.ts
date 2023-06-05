@@ -110,7 +110,7 @@ export class ComponentController {
     return this.reconSvc.getLatestCompReconcile(org, comp);
   }
 
-  @OnEvent(InternalEventType.ComponentReconcileEntityUpdate, { async: true, nextTick: true })
+  @OnEvent(InternalEventType.ComponentReconcileEntityUpdate, { async: true })
   async compReconEnvUpdateListener(evt: ComponentReconcileEntityUpdateEvent) {
     const compRecon = evt.payload;
     
@@ -125,7 +125,6 @@ export class ComponentController {
     }
 
     const date = new Date().toISOString();
-    this.logger.log(`${date} comp recon: `, compRecon);
 
     await this.compSvc.updateById(envRecon.organization, compRecon.compId, {
       lastReconcileDatetime: date

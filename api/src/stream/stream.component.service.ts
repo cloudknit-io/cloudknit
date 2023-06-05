@@ -19,7 +19,7 @@ export class StreamComponentService
   private readonly logger = new Logger(StreamComponentService.name);
 
   constructor(
-    @Inject(Connection) private conn: Connection,
+    @Inject(Connection) conn: Connection,
     private readonly sseSvc: StreamService,
     private evtEmitter: EventEmitter2
   ) {
@@ -38,19 +38,6 @@ export class StreamComponentService
 
   async afterUpdate(event: UpdateEvent<Component>): Promise<void> {
     const comp = event.entity as Component;
-    const lc = await this.conn.getRepository<Component>(Component).findOne({
-      where: {
-        id: comp.id,
-      },
-      relations: {
-        latestCompRecon: true,
-      },
-    });
-    console.log('Latest comp using conn: ', lc);
-    console.log(
-      'update columns for component: ',
-      event.updatedColumns.map((e) => e.propertyName).join(', ')
-    );
     this.validateAndSend(comp, 'afterUpdate');
   }
 
