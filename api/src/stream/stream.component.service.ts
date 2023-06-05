@@ -39,16 +39,20 @@ export class StreamComponentService
   async afterUpdate(event: UpdateEvent<Component>): Promise<void> {
     const comp = event.entity as Component;
     // TODO: Find an alternate solution, to the below fix.
-    const repo = await this.conn.getRepository<Component>(Component);
-    const compWithLatestRecon = await repo.findOne({
-      where: {
-        id: comp.id,
-      },
-      relations: {
-        latestCompRecon: true,
-      },
-    });
-    this.validateAndSend(compWithLatestRecon, 'afterUpdate');
+    if (event.updatedRelations.map(e => e.propertyName ===  'latestCompRecon')) {
+      this.validateAndSend(comp, 'afterUpdate');
+    } else {
+      const repo = await this.conn.getRepository<Component>(Component);
+      const compWithLatestRecon = await repo.findOne({
+        where: {
+          id: comp.id,
+        },
+        relations: {
+          latestCompRecon: true,
+        },
+      });
+      this.validateAndSend(compWithLatestRecon, 'afterUpdate');
+    }
   }
 
   afterRemove(event: RemoveEvent<Component>): void | Promise<any> {

@@ -1,4 +1,4 @@
-UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "status" : "running_destroy_plan", "isDestroyed" : true }'
+UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "status" : "destroying", "isDestroyed" : true }'
 
 echo $show_output_start
 echo "Executing terraform destroy..." 2>&1 | appendLogs "/tmp/apply_output.txt"
