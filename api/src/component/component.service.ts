@@ -220,7 +220,7 @@ export class ComponentService {
     this.compRepo.merge(comp, mergeComp);
     comp.organization = org;
 
-    const savedComp = this.compRepo.save(comp);
+    const savedComp = await this.compRepo.save(comp);
     console.log(`${mergeComp.lastReconcileDatetime} comp: `, savedComp);
     return savedComp;
   }

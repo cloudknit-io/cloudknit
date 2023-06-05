@@ -124,7 +124,7 @@ export class ComponentController {
       );
     }
 
-    const date = new Date().getTime().toString();
+    const date = new Date().toISOString();
     this.logger.log(`${date} comp recon: `, compRecon);
 
     await this.compSvc.updateById(envRecon.organization, compRecon.compId, {
