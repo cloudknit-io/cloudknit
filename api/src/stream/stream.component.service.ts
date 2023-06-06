@@ -39,7 +39,7 @@ export class StreamComponentService
   async afterUpdate(event: UpdateEvent<Component>): Promise<void> {
     const comp = event.entity as Component;
     // TODO: Find an alternate solution, to the below fix.
-    if (event.updatedRelations.map(e => e.propertyName ===  'latestCompRecon')) {
+    if (event.updatedRelations.some(e => e.propertyName ===  'latestCompRecon')) {
       this.validateAndSend(comp, 'afterUpdate');
     } else {
       const repo = await this.conn.getRepository<Component>(Component);
