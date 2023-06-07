@@ -19,7 +19,7 @@ export class StreamComponentService
   private readonly logger = new Logger(StreamComponentService.name);
 
   constructor(
-    @Inject(Connection) conn: Connection,
+    @Inject(Connection) private conn: Connection,
     private readonly sseSvc: StreamService,
     private evtEmitter: EventEmitter2
   ) {
@@ -38,8 +38,21 @@ export class StreamComponentService
 
   async afterUpdate(event: UpdateEvent<Component>): Promise<void> {
     const comp = event.entity as Component;
-
-    this.validateAndSend(comp, 'afterUpdate');
+    // TODO: Find an alternate solution, to the below fix.
+    if (event.updatedRelations.some(e => e.propertyName ===  'latestCompRecon')) {
+      this.validateAndSend(comp, 'afterUpdate');
+    } else {
+      const repo = await this.conn.getRepository<Component>(Component);
+      const compWithLatestRecon = await repo.findOne({
+        where: {
+          id: comp.id,
+        },
+        relations: {
+          latestCompRecon: true,
+        },
+      });
+      this.validateAndSend(compWithLatestRecon, 'afterUpdate');
+    }
   }
 
   afterRemove(event: RemoveEvent<Component>): void | Promise<any> {
