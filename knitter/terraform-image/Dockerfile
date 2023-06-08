@@ -18,7 +18,7 @@ ARG GITHUB_TOKEN
 RUN apk add --update --no-cache curl jq bash openssl python3 py3-pip py3-setuptools libc6-compat unzip
 RUN python3 -m pip --no-cache-dir install --upgrade awscli
 
-RUN curl -sL https://github.com/infracost/infracost/releases/download/v0.10.10/infracost-linux-amd64.tar.gz | tar xz -C /tmp && \
+RUN curl -sL https://github.com/infracost/infracost/releases/download/v0.10.22/infracost-linux-amd64.tar.gz | tar xz -C /tmp && \
     mv /tmp/infracost-linux-amd64 /usr/local/bin/infracost && \
     mkdir ~/.config && \
     mkdir ~/.config/infracost/
