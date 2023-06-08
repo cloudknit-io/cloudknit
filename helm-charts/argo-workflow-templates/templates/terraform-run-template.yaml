@@ -80,6 +80,7 @@ spec:
               secretKeyRef:
                 name: aws-creds
                 key: aws_session_token
+                optional: true
           - name: SHARED_AWS_ACCESS_KEY_ID
             valueFrom:
               secretKeyRef:
