@@ -42,17 +42,23 @@ const TopNavItem: FC<TopNavItemProps> = ({ item, isActive }: TopNavItemProps) =>
 	const children = item.children?.filter(child => child.visible?.call(null) !== false) || [];
 	return (
 		<li className={`Ztop-nav__menu-item Ztop-nav__menu-item--${isActive ? 'active' : ''}`}>
-			<a
-				onClick={() => {
-					history.push(item.path);
-				}}>
-				<span>{item.title}</span>
-				{children.length > 0 ? (
-					<span className="Ztop-nav__menu-item--icon-container">
-						<Chevron className="arrow" />
-					</span>
-				) : null}
-			</a>
+			{item.path.startsWith('https://') ? (
+				<a target="_blank" href={item.path}>
+					{item.title}
+				</a>
+			) : (
+				<a
+					onClick={() => {
+						history.push(item.path);
+					}}>
+					<span>{item.title}</span>
+					{children.length > 0 ? (
+						<span className="Ztop-nav__menu-item--icon-container">
+							<Chevron className="arrow" />
+						</span>
+					) : null}
+				</a>
+			)}
 			{children.length > 0 && <TopNav items={children} className="sub-nav" />}
 		</li>
 	);
