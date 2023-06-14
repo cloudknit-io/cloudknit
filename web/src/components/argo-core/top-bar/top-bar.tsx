@@ -61,6 +61,7 @@ const navItems: NavItem[] = [
 	{ title: 'Dashboard', path: '/demo-dashboard', visible: () => BradAdarshFeatureVisible() },
 	{ title: 'Builder', path: '/builder', visible: () => BradAdarshFeatureVisible() },
 	{ title: 'Settings', path: '/settings', visible: () => AuthStore.getUser()?.role === 'Admin' },
+	{ title: 'Docs', path: 'https://docs.cloudknit.io/', visible: () => true },
 	{ title: 'Quick Start', path: '/quick-start'},
 ];
 
