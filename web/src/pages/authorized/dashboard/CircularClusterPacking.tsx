@@ -52,7 +52,7 @@ export const CircularClusterPacking: FC<any> = (props: Cluster) => {
 
 		const svg = d3
 			.create('svg')
-			.attr('viewBox', `-${width / 2} -${height / 4} ${width} ${height}`)
+			.attr('viewBox', `-${width / 2} -${height / 2} ${width} ${height}`)
 			.style('display', 'block')
 			.style('margin', '0 -14px')
 			.style('background', 'transparent')
