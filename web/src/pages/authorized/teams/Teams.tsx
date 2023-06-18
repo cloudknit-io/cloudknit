@@ -11,6 +11,7 @@ import { useMemo } from 'react';
 import { usePageHeader } from '../contexts/EnvironmentHeaderContext';
 import { getCheckBoxFilters } from '../environments/helpers';
 import { teamTableColumns } from './helpers';
+import { renderTeamLabel } from '../dashboard/helpers';
 
 export const Teams: React.FC = () => {
 	const entityStore = useMemo(() => EntityStore.getInstance(), []);
@@ -86,7 +87,7 @@ export const Teams: React.FC = () => {
 		pageHeaderObservable.next({
 			breadcrumbs: [],
 			headerTabs: [],
-			pageName: 'Teams',
+			pageName: renderTeamLabel(true),
 			filterTitle: '',
 			onSearch: setQueryValue,
 			onViewChange: setViewType,

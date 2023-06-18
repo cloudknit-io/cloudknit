@@ -3,6 +3,7 @@ import { ZSyncStatus } from 'models/argo.models';
 import { Component } from 'models/entity.type';
 import React, { useEffect, useState } from 'react';
 import { getSeparatedConfigId } from '../helpers';
+import { renderTeamLabel } from 'pages/authorized/dashboard/helpers';
 
 export type Props = {
 	config: Component;
@@ -26,7 +27,7 @@ export const ConfigWorkflowLeftView: React.FC<Props> = ({ config }: Props) => {
 		<div className="labels">
 			<div className="config-info">
 				<div>
-					{<span>Team:</span>} {teamName}
+					{<span>{renderTeamLabel()}:</span>} {teamName}
 				</div>
 				<div>
 					{<span>Environment:</span>} {envName}
