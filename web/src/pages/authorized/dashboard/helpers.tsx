@@ -13,7 +13,7 @@ import { SunburstD3 } from './SunburstD3';
 import { TagBarchartD3 } from './TagBarchartD3';
 
 export const renderTeamLabel = (plural: boolean = false) => {
-	return plural ? 'Teams' : 'Team';
+	return plural ? 'Groups' : 'Group';
 }
 
 const renderSync = (data: any) => (
