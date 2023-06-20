@@ -7,6 +7,7 @@ import { NavItem } from 'models/nav-item.models';
 import { TopNav } from 'components/organisms/top-nav/TopNav';
 import { BradAdarshFeatureVisible, FeatureKeys, FeatureRoutes } from 'pages/authorized/feature_toggle';
 import { useHistory } from 'react-router-dom';
+import { renderTeamLabel } from 'pages/authorized/dashboard/helpers';
 
 require('./top-bar.scss');
 
@@ -44,7 +45,7 @@ export interface TopBarProps {
 }
 
 const navItems: NavItem[] = [
-	{ title: 'Teams', path: '/Teams' },
+	{ title: renderTeamLabel(true), path: '/Teams' },
 	{
 		title: 'Environments',
 		path: '/dashboard',

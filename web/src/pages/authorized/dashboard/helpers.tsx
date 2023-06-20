@@ -12,6 +12,10 @@ import { StatusDoughnut } from './StatusDoughnut';
 import { SunburstD3 } from './SunburstD3';
 import { TagBarchartD3 } from './TagBarchartD3';
 
+export const renderTeamLabel = (plural: boolean = false) => {
+	return plural ? 'Groups' : 'Group';
+}
+
 const renderSync = (data: any) => (
 	<>
 		{renderHealthStatus(data.healthStatus)}
@@ -31,12 +35,12 @@ export const projectTableColumns: TableColumn[] = [
 	},
 	{
 		id: 'team',
-		name: 'Team',
+		name: renderTeamLabel(),
 		width: 100,
 	},
 	{
 		id: 'teamEmail',
-		name: 'Team email',
+		name: `${renderTeamLabel()} email`,
 		width: 100,
 	},
 	{
@@ -76,12 +80,12 @@ export const d3Charts = (
 ): { id: string; label: string; jsx: JSX.Element }[] => [
 	{
 		id: 'cluster',
-		label: 'Team/Env/Comp Pack',
+		label: `${renderTeamLabel()}/Env/Comp Pack`,
 		jsx: <CircularClusterPacking data={hierarchicalData} />,
 	},
 	{
 		id: 'sunburst',
-		label: 'Team/Env/Comp Sunburst',
+		label: `${renderTeamLabel()}/Env/Comp Sunburst`,
 		jsx: <SunburstD3 data={hierarchicalData} />,
 	},
 	{
@@ -130,7 +134,7 @@ export const d3Charts = (
 	},
 	{
 		id: 'calender',
-		label: 'Team History',
+		label: `${renderTeamLabel()} History`,
 		jsx: <HistoryCalender data={(hierarchicalData || []).map((e: any) => e.history)} />,
 	},
 ];

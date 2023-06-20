@@ -2,6 +2,7 @@ import './style.scss';
 
 import { ReactComponent as AWSIcon } from 'assets/images/icons/AWS.svg';
 import { ZText } from 'components/atoms/text/Text';
+import { renderTeamLabel } from 'pages/authorized/dashboard/helpers';
 import React, { FC } from 'react';
 
 type Props = {
@@ -36,7 +37,7 @@ export const ZModelCard: FC<Props> = ({
 						<div className="com-card__component-descriptors">
 							<div>
 								<ZText.Body className="color-gray" size="14" lineHeight="18" weight="bold">
-									Team
+									{ renderTeamLabel() }
 								</ZText.Body>
 								<h5 className="color-gray">{teamName}</h5>
 							</div>
