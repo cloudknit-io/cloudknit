@@ -12,7 +12,7 @@ export default async function startMigration() {
     if (environment === 'local') {
       command = executionScript('');
     } else {
-      command = executionScript(environment);
+      command = executionScript(`:${environment}`);
     }
     if (command) {
       logger.log('migration command: ', {
