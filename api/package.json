@@ -17,7 +17,7 @@
     "test:step": "STEPCI_DISABLE_ANALYTICS=true stepci run stepci.yml --env startTime=$(node --eval=\"console.log(new Date(Date.now()))\") --env endTime=$(node --eval=\"console.log(new Date(Date.now() + 86400))\")",
     "test:step-one": "STEPCI_DISABLE_ANALYTICS=true stepci run step-1org.yml --env startTime=$(node --eval=\"console.log(new Date(Date.now()))\") --env endTime=$(node --eval=\"console.log(new Date(Date.now() + 86400))\")",
     "typeorm": "ts-node-dev -r tsconfig-paths/register -r dotenv/config ./node_modules/typeorm/cli.js -d ./src/typeorm/data-source.ts",
-    "typeorm:dev": "DOTENV_CONFIG_PATH=.env.dev ts-node-dev -r tsconfig-paths/register -r dotenv/config ./node_modules/typeorm/cli.js -d ./src/typeorm/data-source.ts",
+    "typeorm:dev": "DOTENV_CONFIG_PATH=.env.dev npx ts-node-dev -r tsconfig-paths/register -r dotenv/config ./node_modules/typeorm/cli.js -d ./dist/typeorm/data-source.js",
     "typeorm:prod": "DOTENV_CONFIG_PATH=.env.prod ts-node-dev -r tsconfig-paths/register -r dotenv/config ./node_modules/typeorm/cli.js -d ./src/typeorm/data-source.ts",
     "typeorm:bootstrap": "DOTENV_CONFIG_PATH=.env.bootstrap ts-node-dev -r tsconfig-paths/register -r dotenv/config ./node_modules/typeorm/cli.js -d ./src/typeorm/data-source.ts"
   },
