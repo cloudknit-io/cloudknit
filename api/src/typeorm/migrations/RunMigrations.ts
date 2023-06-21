@@ -6,13 +6,12 @@ export default async function startMigration() {
   const childProcess = util.promisify(exec);
   const logger = new Logger('Starting Migration...');
   const environment = process.env['CK_ENVIRONMENT'];
-  const executionScript = (env) => `npm run typeorm${env} migration:run`;
   let command: string | null = null;
   try {
     if (environment === 'local') {
-      command = executionScript('');
+      command = "npm run typeorm migration:run"
     } else {
-      command = executionScript(`:${environment}`);
+      command = "npm run typeorm:dynamic migration:run"
     }
     if (command) {
       logger.log('migration command: ', {
