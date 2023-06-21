@@ -6,25 +6,14 @@ export default async function startMigration() {
   const childProcess = util.promisify(exec);
   const logger = new Logger('Starting Migration...');
   const environment = process.env['CK_ENVIRONMENT'];
-  let command: string | null = null;
+  let command: string = "npm run typeorm:dynamic migration:run";
   try {
-    if (environment === 'local') {
-      command = "npm run typeorm migration:run"
-    } else {
-      command = "npm run typeorm:dynamic migration:run"
-    }
-    if (command) {
       logger.log('migration command: ', {
         command,
       });
       const { stdout, stderr } = await childProcess(command);
       logger.log(`stdout: ${stdout}`);
       logger.log(`stderr: ${stderr}`);
-    } else {
-      logger.error('No valid command created', {
-        environment,
-      });
-    }
   } catch (err) {
     logger.error('There was an error while performing migrations', err);
   }

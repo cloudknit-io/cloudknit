@@ -21,7 +21,7 @@ import { SystemModule } from './system/system.module';
 import { TeamModule } from './team/team.module';
 import { Organization, User, dbConfig } from './typeorm';
 import { UsersModule } from './users/users.module';
-import startMigration from './typeorm/migrations/RunMigrations';
+import startMigration from './typeorm/RunMigrations';
 
 @Module({
   imports: [
