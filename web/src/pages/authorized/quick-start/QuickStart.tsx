@@ -19,7 +19,7 @@ export interface QuickStartContext {
 const getCalMeet = () => {
 	const meet = LocalStorage.getItem<any>(LocalStorageKey.CAL_MEET) || null;
 	if (meet) {
-		const ms = new Date(meet.data).getTime();
+		const ms = new Date(meet.date).getTime();
 		const nowMs = Date.now();
 		if (nowMs < ms) {
 			return meet;
@@ -74,9 +74,7 @@ export const QuickStart: React.FC = () => {
 			<h1 className="quick-start-guide_heading-main">
 				<span className="quick-start-guide_heading-main_z">Cloud</span>Knit Setup Wizard
 			</h1>
-			<h5 className="meet-badge">
-				{meetData ? `${meetData.booking.title} is confirmed at ${meetData.date}` : ''}
-			</h5>
+			{meetData && <h5 className="meet-badge">{`${meetData.booking.title} is confirmed at ${meetData.date}`}</h5>}
 			{scheduleMeet ? (
 				<div className="schedule-meeting">
 					<CalMeet />
