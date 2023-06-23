@@ -65,7 +65,7 @@ if [[ $config_name != 0 && $config_reconcile_id = null ]]; then
 
     if [[ $is_skipped == false ]]; then
         comp_status="initializing"
-        lastWorkflowRunId="initiailizing"
+        lastWorkflowRunId="initializing"
     fi
     echo "Updating component reconcile entry: "
     UpdateComponentReconcile "${team_name}" "${env_name}" "${config_name}" '{ "status" : "'${comp_status}'", "isDestroy" : "'${is_destroy}'", "isSkipped" : '${is_skipped}', "lastWorkflowRunId" : "'${lastWorkflowRunId}'", "startDateTime" : "'"$start_date"'"  }'
