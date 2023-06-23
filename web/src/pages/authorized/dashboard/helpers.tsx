@@ -3,7 +3,8 @@ import { ReactComponent as MoreOptionsIcon } from 'assets/images/icons/more-opti
 import { TableColumn } from 'components/atoms/table/Table';
 import { renderHealthStatus, renderLabels, renderSyncedStatus } from 'components/molecules/cards/renderFunctions';
 import { ESyncStatus, HealthStatuses, ZSyncStatus } from 'models/argo.models';
-import React from 'react';
+import React, { useEffect } from 'react';
+import Cal, { getCalApi } from '@calcom/embed-react';
 
 import { CircularClusterPacking } from './CircularClusterPacking';
 import { CloudBarchartD3 } from './CloudBarchartD3';
@@ -14,7 +15,7 @@ import { TagBarchartD3 } from './TagBarchartD3';
 
 export const renderTeamLabel = (plural: boolean = false) => {
 	return plural ? 'Groups' : 'Group';
-}
+};
 
 const renderSync = (data: any) => (
 	<>
@@ -22,6 +23,23 @@ const renderSync = (data: any) => (
 		{renderSyncedStatus(data.syncStatus, data.operationPhase, data.runningStatus)}
 	</>
 );
+
+export const calLink = () => 'shashank-sharma-4rk4qt/secret';
+
+export function CalMeet() {
+	useEffect(() => {
+		(async function () {
+			const cal = await getCalApi();
+			cal('ui', {
+				styles: { branding: { brandColor: '#000000' } },
+				hideEventTypeDetails: false,
+				//@ts-ignore
+				layout: 'month_view',
+			});
+		})();
+	}, []);
+	return <></>;
+}
 
 const renderServices = () => <AWSIcon />;
 

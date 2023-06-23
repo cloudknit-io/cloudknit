@@ -4,4 +4,5 @@ export enum LocalStorageKey {
 	ENVIRONMENTS = 'environments',
 	SELECTED_ORG = 'selectedOrg',
 	QUICK_START_STEP = 'quickStartStep',
+	CAL_MEET = 'calMeet',
 }
