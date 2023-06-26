@@ -1,5 +1,38 @@
 @import '../../../assets/styles/colors.scss';
 
+.schedule-meeting {
+	/*TODO: remove this once this view if finalized */
+	margin-top: 0px !important;
+	/*****/
+	display: flex;
+	flex-direction: column;
+	background-color: white;
+	align-items: center;
+	button {
+		box-shadow: 3px 3px 10px #ccc;
+		cursor: pointer;
+		border: 0px;
+		height: 30px;
+		&.manual-setup {
+			margin-top: 30px;
+			background-color: teal;
+			color: white;
+		}
+	}
+}
+
+.meet-badge {
+	background-color: #000;
+	color: white;
+	padding: 10px;
+	border-radius: 10px;
+	display: flex;
+	text-align: center;
+	width: 56%;
+	margin: 10px auto;
+	box-shadow: 5px 5px 10px #ccc;
+}
+
 .quick-start-guide {
 	h1,
 	h2,
@@ -159,7 +192,7 @@
 					display: flex;
 				}
 
-				&_form-group {	
+				&_form-group {
 					padding: 10px;
 					flex-direction: column;
 					margin-bottom: 10px;
@@ -281,7 +314,6 @@
 		width: 20px;
 	}
 }
-
 
 .break {
 	word-wrap: break-word;

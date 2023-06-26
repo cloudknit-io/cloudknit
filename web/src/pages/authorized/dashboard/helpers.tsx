@@ -3,7 +3,8 @@ import { ReactComponent as MoreOptionsIcon } from 'assets/images/icons/more-opti
 import { TableColumn } from 'components/atoms/table/Table';
 import { renderHealthStatus, renderLabels, renderSyncedStatus } from 'components/molecules/cards/renderFunctions';
 import { ESyncStatus, HealthStatuses, ZSyncStatus } from 'models/argo.models';
-import React from 'react';
+import React, { useEffect } from 'react';
+import Cal, { getCalApi } from '@calcom/embed-react';
 
 import { CircularClusterPacking } from './CircularClusterPacking';
 import { CloudBarchartD3 } from './CloudBarchartD3';
@@ -11,10 +12,11 @@ import { HistoryCalender } from './HistoryCalender';
 import { StatusDoughnut } from './StatusDoughnut';
 import { SunburstD3 } from './SunburstD3';
 import { TagBarchartD3 } from './TagBarchartD3';
+import { ENVIRONMENT_VARIABLES } from 'utils/environmentVariables';
 
 export const renderTeamLabel = (plural: boolean = false) => {
 	return plural ? 'Groups' : 'Group';
-}
+};
 
 const renderSync = (data: any) => (
 	<>
@@ -22,6 +24,23 @@ const renderSync = (data: any) => (
 		{renderSyncedStatus(data.syncStatus, data.operationPhase, data.runningStatus)}
 	</>
 );
+
+export const calLink = () => ENVIRONMENT_VARIABLES.REACT_APP_CAL_LINK;
+
+export function CalMeet() {
+	useEffect(() => {
+		(async function () {
+			const cal = await getCalApi();
+			cal('ui', {
+				styles: { branding: { brandColor: '#000000' } },
+				hideEventTypeDetails: false,
+				//@ts-ignore
+				layout: 'month_view',
+			});
+		})();
+	}, []);
+	return <Cal calLink={calLink()} style={{ width: '100%', height: '100%', overflow: 'scroll' }} />;
+}
 
 const renderServices = () => <AWSIcon />;
 

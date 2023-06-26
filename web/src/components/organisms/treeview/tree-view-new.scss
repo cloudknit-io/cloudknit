@@ -9,7 +9,7 @@
 	transition: all 0.3s;
 }
 
-iframe {
+iframe:not(.cal-embed) {
 	display: none !important;
 }
 

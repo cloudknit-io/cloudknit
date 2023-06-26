@@ -17,6 +17,8 @@ spec:
           env:
             - name: __DOCKER_REACT_APP_CUSTOMER_NAME__
               value: {{ .Values.customerName }}
+            - name: __DOCKER_REACT_APP_CAL_LINK__
+              value: {{ .Values.calLink }}
             - name: PORT
               value: "3000"
             - name: HOST
