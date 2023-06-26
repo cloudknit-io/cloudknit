@@ -6,6 +6,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Subject } from 'rxjs';
 import { AddUser } from '../addUser/AddUser';
 import { AccessToken } from './access-token';
+import { renderTeamLabel } from '../dashboard/helpers';
 
 export type Hierarchy = {
 	id: string;
@@ -60,7 +61,7 @@ export const HierachicalLeftView: React.FC<Props> = ({ hierarchyChanged, refresh
 	const teamEnvHierarchy = useCallback(() => {
 		if (!org) return null;
 		return getHierarchy(
-			'Teams',
+			renderTeamLabel(true),
 			[...environmentsMap.keys()].map(e => {
 				const team = getHierarchy(`${org.name || ''}:${e}`, [], e, true, () => {});
 				team.children = [
@@ -89,7 +90,7 @@ export const HierachicalLeftView: React.FC<Props> = ({ hierarchyChanged, refresh
 				];
 				return team;
 			}),
-			'Teams',
+			renderTeamLabel(true),
 			false,
 			() => {},
 			undefined,

@@ -19,6 +19,7 @@ import { FeatureKeys, featureToggled } from 'pages/authorized/feature_toggle';
 import React, { FC, useEffect, useMemo, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { ZSidePanel } from '../side-panel/SidePanel';
+import { renderTeamLabel } from 'pages/authorized/dashboard/helpers';
 
 type Props = {
 	environments: Environment[];
@@ -88,7 +89,7 @@ export const EnvironmentCard: FC<PropsEnvironmentItem> = ({
 	const mapGridItems = (environment: Environment): ListItem[] => {
 		const gridItems = [
 			{
-				label: 'Team',
+				label: renderTeamLabel(),
 				value: entityStore.getTeam(env.teamId)?.name,
 			},
 			{
@@ -206,7 +207,7 @@ export const FailedEnvironmentCard: FC<PropsEnvironmentItem> = ({ environment }:
 	const mapGridItems = (environment: Environment): ListItem[] => {
 		const gridItems = [
 			{
-				label: 'Team',
+				label: renderTeamLabel(),
 				value: EntityStore.getInstance().getTeam(env.teamId)?.name,
 			},
 			{

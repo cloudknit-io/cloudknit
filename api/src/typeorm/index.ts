@@ -25,7 +25,7 @@ const dbConfig = {
   password: get().TypeORM.password,
   database: get().TypeORM.database,
   entities,
-  migrations: ['src/typeorm/migrations/*.js'],
+  migrations: [__dirname + '/migrations/*.js'],
   migrationsRun: true,
   synchronize: false,
   logging: ['error', 'schema'],

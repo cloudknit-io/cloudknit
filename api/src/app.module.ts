@@ -21,6 +21,7 @@ import { SystemModule } from './system/system.module';
 import { TeamModule } from './team/team.module';
 import { Organization, User, dbConfig } from './typeorm';
 import { UsersModule } from './users/users.module';
+import startMigration from './typeorm/RunMigrations';
 
 @Module({
   imports: [
@@ -52,7 +53,11 @@ import { UsersModule } from './users/users.module';
 })
 export class AppModule implements NestModule {
   constructor(connection: Connection) {
-    this.synchronize(connection);
+    this.synchronize(connection).then(() => {
+      startMigration().then(() => {
+        Logger.log("Migration process ended.");
+      });
+    });
   }
 
   configure(consumer: MiddlewareConsumer) {
@@ -64,7 +69,7 @@ export class AppModule implements NestModule {
     logger.log('Checking sync status for schema...');
     const userRepo = connection.getRepository(User);
     const orgRepo = connection.getRepository(Organization);
-    Promise.all([userRepo.find({
+    return Promise.all([userRepo.find({
       take: 1,
     }), orgRepo.find({
       take: 1,

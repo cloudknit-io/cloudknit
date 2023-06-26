@@ -19,7 +19,8 @@
     "typeorm": "ts-node-dev -r tsconfig-paths/register -r dotenv/config ./node_modules/typeorm/cli.js -d ./src/typeorm/data-source.ts",
     "typeorm:dev": "DOTENV_CONFIG_PATH=.env.dev ts-node-dev -r tsconfig-paths/register -r dotenv/config ./node_modules/typeorm/cli.js -d ./src/typeorm/data-source.ts",
     "typeorm:prod": "DOTENV_CONFIG_PATH=.env.prod ts-node-dev -r tsconfig-paths/register -r dotenv/config ./node_modules/typeorm/cli.js -d ./src/typeorm/data-source.ts",
-    "typeorm:bootstrap": "DOTENV_CONFIG_PATH=.env.bootstrap ts-node-dev -r tsconfig-paths/register -r dotenv/config ./node_modules/typeorm/cli.js -d ./src/typeorm/data-source.ts"
+    "typeorm:bootstrap": "DOTENV_CONFIG_PATH=.env.bootstrap ts-node-dev -r tsconfig-paths/register -r dotenv/config ./node_modules/typeorm/cli.js -d ./src/typeorm/data-source.ts",
+    "typeorm:dynamic": "./node_modules/typeorm/cli.js -d ./dist/typeorm/data-source.js"
   },
   "dependencies": {
     "@kubernetes/client-node": "^0.18.0",

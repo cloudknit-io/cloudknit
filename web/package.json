@@ -15,7 +15,7 @@
     "build": "react-scripts build",
     "build:dev": "env-cmd -f .env.development react-scripts build",
     "build:production": "env-cmd -f .env.production react-scripts build",
-    "test": "react-scripts test",
+    "test": "react-scripts test --transformIgnorePatterns \"node_modules(d3)\"",
     "test:coverage": "react-scripts test --coverage --watchAll=false",
     "test:watch": "react-scripts test --watch",
     "eject": "react-scripts eject",
