@@ -12,6 +12,7 @@ import { HistoryCalender } from './HistoryCalender';
 import { StatusDoughnut } from './StatusDoughnut';
 import { SunburstD3 } from './SunburstD3';
 import { TagBarchartD3 } from './TagBarchartD3';
+import { ENVIRONMENT_VARIABLES } from 'utils/environmentVariables';
 
 export const renderTeamLabel = (plural: boolean = false) => {
 	return plural ? 'Groups' : 'Group';
@@ -24,7 +25,7 @@ const renderSync = (data: any) => (
 	</>
 );
 
-export const calLink = () => 'shashank-sharma-4rk4qt/secret';
+export const calLink = () => ENVIRONMENT_VARIABLES.REACT_APP_CAL_LINK;
 
 export function CalMeet() {
 	useEffect(() => {
@@ -38,7 +39,7 @@ export function CalMeet() {
 			});
 		})();
 	}, []);
-	return <></>;
+	return <Cal calLink={calLink()} style={{ width: '100%', height: '100%', overflow: 'scroll' }} />;
 }
 
 const renderServices = () => <AWSIcon />;

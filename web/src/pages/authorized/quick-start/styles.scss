@@ -3,12 +3,9 @@
 .schedule-meeting {
 	/*TODO: remove this once this view if finalized */
 	margin-top: 0px !important;
-	height: 80vh;
 	/*****/
-
-	line-height: initial;
 	display: flex;
-	justify-content: center;
+	flex-direction: column;
 	background-color: white;
 	align-items: center;
 	button {
@@ -16,27 +13,24 @@
 		cursor: pointer;
 		border: 0px;
 		height: 30px;
-		margin-left: 10px;
 		&.manual-setup {
+			margin-top: 30px;
 			background-color: teal;
-			color: white;
-		}
-		&.schedule-meet {
-			background-color: #333;
 			color: white;
 		}
 	}
 }
 
 .meet-badge {
-	background-color: #333;
+	background-color: #000;
 	color: white;
 	padding: 10px;
 	border-radius: 10px;
 	display: flex;
 	text-align: center;
-	width: 60%;
-	margin: 0 auto;
+	width: 56%;
+	margin: 10px auto;
+	box-shadow: 5px 5px 10px #ccc;
 }
 
 .quick-start-guide {
