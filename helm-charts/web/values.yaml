@@ -4,6 +4,7 @@ image:
   repository:
 # replace zcustomer with the customer name
 customerName: zcustomer
+calLink: cal-link
 domain: zcustomer.zlifecycle.com
 environment:
 enabledFeatureFlags:
