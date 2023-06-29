@@ -16,26 +16,11 @@ export interface QuickStartContext {
 	ctx: any;
 	step: number;
 }
-
-const getCalMeet = () => {
-	const meet = LocalStorage.getItem<any>(LocalStorageKey.CAL_MEET) || null;
-	if (meet) {
-		const ms = new Date(meet.date).getTime();
-		const nowMs = Date.now();
-		if (nowMs < ms) {
-			return meet;
-		} else {
-			LocalStorage.setItem(LocalStorageKey.CAL_MEET, null);
-		}
-	}
-};
-
 export const QuickStart: React.FC = () => {
 	const [activeStepIndex, updateActiveStepIndex] = useState<number>(0);
 	const [next, nextInProgress] = useState<boolean>(false);
 	const [scheduleMeet, setScheduleMeet] = useState<boolean>(true);
 	const [calLoading, setCalLoading] = useState<boolean>(true);
-	const [meetData, setMeetData] = useState<any>(getCalMeet());
 	const [ctx, updateCtx] = useState<any>(
 		LocalStorage.getItem<QuickStartContext>(LocalStorageKey.QUICK_START_STEP)?.ctx
 	);
@@ -54,13 +39,6 @@ export const QuickStart: React.FC = () => {
 			onViewChange: () => {},
 		});
 
-		window.Cal('on', {
-			action: 'bookingSuccessful',
-			callback: e => {
-				LocalStorage.setItem(LocalStorageKey.CAL_MEET, e.detail.data);
-				setMeetData(e.detail.data);
-			},
-		});
 		window.Cal('on', {
 			action: '__windowLoadComplete',
 			callback: e => {
@@ -89,9 +67,6 @@ export const QuickStart: React.FC = () => {
 						</>
 					)}
 				</h1>
-				{scheduleMeet && meetData && (
-					<h5 className="meet-badge">{`${meetData.booking.title} is confirmed at ${meetData.date}`}</h5>
-				)}
 				{scheduleMeet ? (
 					<div className="schedule-meeting">
 						<CalMeet />
