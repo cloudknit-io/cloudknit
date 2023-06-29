@@ -34,7 +34,7 @@ export class SetupCalMeet extends BaseGuide implements IGuide {
 
 	static getInstance() {
 		if (!SetupCalMeet.instance) {
-			SetupCalMeet.instance = new SetupCalMeet('Schedule Meet');
+			SetupCalMeet.instance = new SetupCalMeet('Schedule Meeting');
 		}
 		return SetupCalMeet.instance;
 	}
