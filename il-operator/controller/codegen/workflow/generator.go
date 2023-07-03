@@ -398,7 +398,7 @@ func buildInverseDependencies(components []*stablev1.EnvironmentComponent, compo
 func isTeardownProtectionEnabled(environment *stablev1.Environment, list *stablev1.TeamList) bool {
 	for _, t := range list.Items {
 		if t.Spec.TeamName == environment.Spec.TeamName {
-			return t.Spec.teardownProtection
+			return t.Spec.TeardownProtection
 		}
 	}
 	return false
