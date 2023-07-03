@@ -183,7 +183,7 @@ func generateWorkflowParams(
 		},
 		{
 			Name:  "skip_component",
-			Value: AnyStringPointer(skipComponent(ec.DestroyProtection, destroyFlag, environment.Spec.SelectiveReconcile, ec.Tags)),
+			Value: AnyStringPointer(skipComponent(environment, ec.DestroyProtection, destroyFlag, environment.Spec.SelectiveReconcile, ec.Tags)),
 		},
 		{
 			Name:  "git_auth_mode",
@@ -271,12 +271,12 @@ func exitHandler(e *stablev1.Environment) workflow.Template {
 	}
 }
 
-func skipComponent(destroyProtection bool, destroyFlag bool, selectiveReconcile *stablev1.SelectiveReconcile, tags []*stablev1.Tag) string {
+func skipComponent(environment *stablev1.Environment, destroyProtection bool, destroyFlag bool, selectiveReconcile *stablev1.SelectiveReconcile, tags []*stablev1.Tag) string {
 	noSkipStatus := "noSkip"
 	selectiveReconcileStatus := "selectiveReconcile"
 	destroyProtectionStatus := "destroyProtection"
 
-	if destroyProtection && destroyFlag {
+	if (destroyProtection || isTeardownProtectionEnabled(environment, &stablev1.TeamList{})) && destroyFlag {
 		return destroyProtectionStatus
 	}
 
@@ -393,4 +393,13 @@ func buildInverseDependencies(components []*stablev1.EnvironmentComponent, compo
 	}
 
 	return dependencies
+}
+
+func isTeardownProtectionEnabled(environment *stablev1.Environment, list *stablev1.TeamList) bool {
+	for _, t := range list.Items {
+		if t.Spec.TeamName == environment.Spec.TeamName {
+			return t.Spec.teardownProtection
+		}
+	}
+	return false
 }
