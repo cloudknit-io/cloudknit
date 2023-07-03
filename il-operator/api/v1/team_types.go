@@ -25,6 +25,7 @@ type Team struct {
 type TeamSpec struct {
 	TeamName    string   `json:"teamName"`
 	ConfigRepo  *Repo    `json:"configRepo"`
+	TeardownProtection bool     `json:"teardownProtection,omitempty"`
 	Permissions []string `json:"permissions,omitempty"`
 }
 

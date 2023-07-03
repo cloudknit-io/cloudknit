@@ -12,7 +12,7 @@ type Repo struct {
 // TeamSpec defines the desired state of Team
 type TeamSpec struct {
 	TeamName           string `json:"teamName"`
-	teardownProtection bool   `default:false`
+	TeardownProtection bool     `json:"teardownProtection,omitempty"`
 	ConfigRepo         *Repo  `json:"configRepo"`
 }
 
