@@ -52,6 +52,8 @@ spec:
                 type: array
               teamName:
                 type: string
+              teardownProtection:
+                type: boolean
             required:
             - configRepo
             - teamName

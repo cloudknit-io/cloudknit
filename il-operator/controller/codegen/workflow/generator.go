@@ -401,7 +401,7 @@ func isTeardownProtectionEnabled(environment *stablev1.Environment, list *stable
 		fmt.Println("Teardown Protection team spec name ", t.Spec.teamName)
 		fmt.Println("Teardown Protection team spec TP ", t.Spec.teardownProtection)
 		if t.Spec.TeamName == environment.Spec.TeamName {
-			return t.Spec.teardownProtection
+			return t.Spec.TeardownProtection
 		}
 	}
 	return false
