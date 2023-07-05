@@ -58,7 +58,7 @@ func TestGenerateWorkflowOfWorkflowsDeletedEnvironment(t *testing.T) {
 
 	env := mocks.GetMockEnv1(true)
 
-	wow := workflow.GenerateWorkflowOfWorkflows(ctx.Background(), &env, nil, logrus.NewEntry(logrus.New())
+	wow := workflow.GenerateWorkflowOfWorkflows(ctx.Background(), &env, nil, logrus.NewEntry(logrus.New()))
 
 	assert.Equal(t, wow.DeletionTimestamp.IsZero(), true)
 

@@ -78,17 +78,17 @@ func (s *Service) GetTeam(ctx context.Context, organizationName string,
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
-		return errors.Wrap(err, "error creating GET Team request")
+		return nil, errors.Wrap(err, "error creating GET Team request")
 	}
 	req.Header.Add("Content-Type", runtime.ContentTypeJSON)
 	resp, err := s.httpClient.Do(req)
 	if err != nil {
-		return errors.Wrap(err, "error executing GET Team request")
+		return nil, errors.Wrap(err, "error executing GET Team request")
 	}
 	defer util.CloseBody(resp.Body)
 
 	if resp.StatusCode != 200 && resp.StatusCode != 201 {
-		return errors.Errorf("POST team returned a non-OK status code: [%d]", resp.StatusCode)
+		return nil, errors.Errorf("POST team returned a non-OK status code: [%d]", resp.StatusCode)
 	}
 
 	log.
@@ -114,6 +114,4 @@ func (s *Service) GetTeam(ctx context.Context, organizationName string,
 		)
 
 	return &r, nil
-
-	return nil
 }
