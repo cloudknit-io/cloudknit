@@ -67,14 +67,16 @@ func generateAndSaveConfigWatchers(fileAPI file.API, team *stablev1.Team, filena
 // ENVIRONMENT
 
 func generateAndSaveWorkflowOfWorkflows(
+	ctx context.Context,
 	fileAPI file.API,
 	ilService *il.Service,
 	environment *stablev1.Environment,
 	tfcfg *secret.TerraformStateConfig,
+	log *logrus.Entry,
 ) error {
 	ilEnvComponentDirectory := il.EnvironmentComponentsDirectoryAbsolutePath(ilService.ZLILTempDir, environment.Spec.TeamName, environment.Spec.EnvName)
 
-	wrkflw := workflow.GenerateWorkflowOfWorkflows(environment, tfcfg)
+	wrkflw := workflow.GenerateWorkflowOfWorkflows(ctx, environment, tfcfg, log)
 	return fileAPI.SaveYamlFile(*wrkflw, ilEnvComponentDirectory, "/wofw.yaml")
 }
 

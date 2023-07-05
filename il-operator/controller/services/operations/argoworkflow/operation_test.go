@@ -1,9 +1,10 @@
 package argoworkflow_test
 
 import (
-	"testing"
-
+	"context"
 	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/workflow"
+	"github.com/sirupsen/logrus"
+	"testing"
 
 	"github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	"github.com/compuzest/zlifecycle-il-operator/mocks"
@@ -15,7 +16,7 @@ func TestGenerateWorkflowOfWorkflows(t *testing.T) {
 
 	env := mocks.GetMockEnv1(false)
 
-	wow := workflow.GenerateWorkflowOfWorkflows(&env, nil)
+	wow := workflow.GenerateWorkflowOfWorkflows(context.Background(), &env, nil, logrus.NewEntry(logrus.New()))
 
 	assert.Equal(t, wow.DeletionTimestamp.IsZero(), true)
 
@@ -57,7 +58,7 @@ func TestGenerateWorkflowOfWorkflowsDeletedEnvironment(t *testing.T) {
 
 	env := mocks.GetMockEnv1(true)
 
-	wow := workflow.GenerateWorkflowOfWorkflows(&env, nil)
+	wow := workflow.GenerateWorkflowOfWorkflows(ctx.Background(), &env, nil, logrus.NewEntry(logrus.New())
 
 	assert.Equal(t, wow.DeletionTimestamp.IsZero(), true)
 

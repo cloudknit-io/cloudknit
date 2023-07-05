@@ -275,7 +275,7 @@ func (r *EnvironmentReconciler) doReconcile(
 		event = "delete"
 	}
 	r.LogV2.WithField("isDeleteEvent", isDeleteEvent).Infof("Generating %s workflow of workflows", event)
-	if err := generateAndSaveWorkflowOfWorkflows(fileService, ilService, interpolated, tfcfg); err != nil {
+	if err := generateAndSaveWorkflowOfWorkflows(ctx, fileService, ilService, interpolated, tfcfg, r.LogV2); err != nil {
 		return errors.Wrap(err, "error generating and saving workflow of workflows")
 	}
 

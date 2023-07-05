@@ -1,24 +1,33 @@
 package workflow
 
 import (
+	"context"
 	"fmt"
 	"time"
 
+	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/il"
+	"github.com/compuzest/zlifecycle-il-operator/controller/common/cloudknitservice"
 	"github.com/compuzest/zlifecycle-il-operator/controller/common/secret"
 	"github.com/compuzest/zlifecycle-il-operator/controller/services/operations/zli"
-
-	"github.com/compuzest/zlifecycle-il-operator/controller/codegen/il"
 
 	"github.com/compuzest/zlifecycle-il-operator/controller/env"
 	"github.com/compuzest/zlifecycle-il-operator/controller/util"
 
 	workflow "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	stablev1 "github.com/compuzest/zlifecycle-il-operator/api/v1"
+	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func GenerateWorkflowOfWorkflows(environment *stablev1.Environment, tfcfg *secret.TerraformStateConfig) *workflow.Workflow {
+func GenerateWorkflowOfWorkflows(
+	ctx context.Context,
+	environment *stablev1.Environment,
+	tfcfg *secret.TerraformStateConfig,
+	log *logrus.Entry,
+) *workflow.Workflow {
 	workflowTemplate := "terraform-sync-template"
+
+	isTeardownProtection := isTeardownProtection(ctx, environment.Spec.TeamName, log)
 
 	var tasks []workflow.DAGTask
 
@@ -52,7 +61,7 @@ func GenerateWorkflowOfWorkflows(environment *stablev1.Environment, tfcfg *secre
 		}
 
 		dependencies = append(dependencies, "trigger-audit")
-		parameters := generateWorkflowParams(environment, ec, workflowTemplate, tfPath, destroyFlag, autoApproveFlag, tfcfg)
+		parameters := generateWorkflowParams(environment, ec, workflowTemplate, tfPath, destroyFlag, autoApproveFlag, tfcfg, isTeardownProtection)
 
 		tasks = append(tasks, generateWorkflowTriggerDAGTask(ec.Name, dependencies, parameters))
 	}
@@ -119,6 +128,7 @@ func generateWorkflowParams(
 	destroyFlag bool,
 	autoApproveFlag bool,
 	tfcfg *secret.TerraformStateConfig,
+	isTeardownProtection bool,
 ) []workflow.Parameter {
 	ilRepo := util.RewriteGitURLToSSH(env.Config.ILTerraformRepositoryURL)
 
@@ -183,7 +193,7 @@ func generateWorkflowParams(
 		},
 		{
 			Name:  "skip_component",
-			Value: AnyStringPointer(skipComponent(environment, ec.DestroyProtection, destroyFlag, environment.Spec.SelectiveReconcile, ec.Tags)),
+			Value: AnyStringPointer(skipComponent(environment, ec.DestroyProtection, destroyFlag, environment.Spec.SelectiveReconcile, ec.Tags, isTeardownProtection)),
 		},
 		{
 			Name:  "git_auth_mode",
@@ -271,12 +281,12 @@ func exitHandler(e *stablev1.Environment) workflow.Template {
 	}
 }
 
-func skipComponent(environment *stablev1.Environment, destroyProtection bool, destroyFlag bool, selectiveReconcile *stablev1.SelectiveReconcile, tags []*stablev1.Tag) string {
+func skipComponent(environment *stablev1.Environment, destroyProtection bool, destroyFlag bool, selectiveReconcile *stablev1.SelectiveReconcile, tags []*stablev1.Tag, isTeardownProtection bool) string {
 	noSkipStatus := "noSkip"
 	selectiveReconcileStatus := "selectiveReconcile"
 	destroyProtectionStatus := "destroyProtection"
 
-	if (destroyProtection || isTeardownProtectionEnabled(environment, &stablev1.TeamList{})) && destroyFlag {
+	if (destroyProtection || isTeardownProtection) && destroyFlag {
 		return destroyProtectionStatus
 	}
 
@@ -395,14 +405,11 @@ func buildInverseDependencies(components []*stablev1.EnvironmentComponent, compo
 	return dependencies
 }
 
-func isTeardownProtectionEnabled(environment *stablev1.Environment, list *stablev1.TeamList) bool {
-	fmt.Println("Teardown Protection environment team name ", environment.Spec.TeamName)
-	for _, t := range list.Items {
-		fmt.Println("Teardown Protection team spec name ", t.Spec.TeamName)
-		fmt.Println("Teardown Protection team spec TP ", t.Spec.TeardownProtection)
-		if t.Spec.TeamName == environment.Spec.TeamName {
-			return t.Spec.TeardownProtection
-		}
+func isTeardownProtection(ctx context.Context, teamName string, log *logrus.Entry) bool {
+	cloudKnitServiceClient := cloudknitservice.NewService(env.Config.ZLifecycleAPIURL)
+	team, err = cloudKnitServiceClient.GetTeam(ctx, env.Config.CompanyName, teamName, log)
+	if err != nil {
+		return false
 	}
-	return false
+	return team.teardownProtection
 }
