@@ -36,6 +36,12 @@ func (s *Service) PostTeam(ctx context.Context, organizationName string,
 		return errors.Wrap(err, "error marshaling Team Spec body")
 	}
 
+	log.
+		Infof(
+			"Team Post Call via CloudKnitService body: %s",
+			jsonBody,
+		)
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return errors.Wrap(err, "error creating POST Team request")
