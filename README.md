@@ -22,23 +22,16 @@ Environment as Code (EaC) is an abstraction over cloud-native tools that provide
 
 ## Why we built CloudKnit
 
-There are tools today that allow us to manage cloud environments but as the environments become more complex and teams look for advanced use cases, existing tools fall short. This causes some teams to build and maintain in-house solutions.
+Existing automation tools like Terraform, Pulumi, and Helm allow us to automate the provisioning of cloud environments, but as those environments become more complex and teams look for advanced use cases, existing tools fall short. These tools are great at managing individual components within an environment (like networking or rds), but engineering teams need an entire environment with various components like the one shown below [See diagram 2] to run their business applications.
 
-CloudKnit makes it easy for DevOps and Platform Engineering teams to manage complex environments and enables advanced usecases like environment blueprints, cloning environments, promoting changes across environments and more. Existing cloud-native tools like Terraform, Pulumi, Helm, ArgoCD, etc. on their own can be great at managing individual components within an environment or automating simple environments.
-However an environment like the one below (Diagram 2) with Infrastructure resources and cloud-native applications requires a lot of work using existing tools. Currently there are two main approaches:
+This causes teams to do one of the following: 
 
-### Option 1: Monolith Infrastructure as Code & Application Deployment
+* **Hand-roll complex pipelines:** Pipeline code is imperative & needs to manage the logic to provision the various components in the correct order, handle failures and tear down unused resources. We have seen teams write hundreds of lines of unmaintainable pipeline code. This causes a maintenance nightmare.
+* **Build in-house solution on top of automation tools:** Companies spend a lot of time and money managing in-house solutions instead of building business features.
 
-Monolith IaC & Application deployments work well when environments are simple, but as things get complex, it becomes a nightmare to maintain. It creates tight coupling and causes issues like slow provisioning.
+CloudKnit makes it easy for Engineering teams to manage complex environments and provides out-of-the-box solution for use cases like ephemeral environments, environment blueprints, cloning environments, promoting changes across environments, and more.
 
-### Option 2: Use loosely coupled IaC & Application Deployment & hand-roll pipelines to run them
-
-Creating loosely-coupled components like networking, eks, rds, backend-apps, frontend-apps, etc. makes the individual components easier to manage, but the pipelines that run those components become complex.
-Pipeline code needs to manage the logic to run the various components in the correct order, handle failures and tear down unused resources.
-
-Pipeline code is imperative, and users have to write logic on “HOW” to get an entire environment. This causes a maintenance nightmare. We have seen teams write hundreds of lines of unmaintainable pipeline code.
-
-![Where does CloudKnit fit in with existing tools](/assets/images/environment.jpeg)
+![Example Environment](/assets/images/environment.jpeg)
 *<center>Diagram 2: Example Environment</center>*
 
 ## Other Challenges
