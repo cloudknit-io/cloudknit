@@ -411,5 +411,10 @@ func isTeardownProtection(ctx context.Context, teamName string, log *logrus.Entr
 	if err != nil {
 		return false
 	}
+	log.
+		Infof(
+			"Received TeardownProtection Info: %s",
+			team.TeardownProtection,
+		)
 	return team.TeardownProtection
 }
