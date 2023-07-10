@@ -21,11 +21,17 @@ Environment as Code (EaC) is an abstraction over cloud-native tools that provide
 * [Conclusion](#conclusion)
 
 ## Why we built CloudKnit
-Existing automation tools like Terraform, Pulumi and Helm, allow us to automate provisioning of cloud environments, but as those environments become more complex and teams look for advanced use cases, existing tools fall short. These tools are great at managing individual components within an environment (like networking, eks, rds, backend-apps & frontend-apps) but engineering teams need an entire environment with various components like the one below [See diagram 2] to run their business applications.
+Existing automation tools like Terraform, Pulumi and Helm, allow us to automate provisioning of cloud environments, but as those environments become more complex and teams look for advanced use cases, existing tools fall short. These tools are great at managing individual components within an environment (like networking or rds) but engineering teams need an entire environment with various components like the one shown below [See diagram 2] to run their business applications.
 
-This causes teams to hand-roll complex pipelines that provisions various components of their environment or build and maintain in-house solutions on top of automation tools. Neither of those solutions are ideal. Pipeline code is imperative & needs to manage the logic to run the various components in the correct order, handle failures and tear down unused resources. We have seen teams write hundreds of lines of unmaintainable pipeline code. This causes a maintenance nightmare.
+This causes teams to follow one of the 2 approaches below:
 
-CloudKnit makes it easy for Engineering teams to manage complex environments and provides out-of-the-box solution for use cases like ephemeral environments, environment blueprints, cloning environments, promoting changes across environments, and more.
+### Option 1: Hand-roll complex pipelines
+
+They hand-roll complex pipelines that provisions various components of their environment. Pipeline code is imperative & needs to manage the logic to run the various components in the correct order, handle failures and tear down unused resources. We have seen teams write hundreds of lines of unmaintainable pipeline code. This causes a maintenance nightmare.
+
+### Option 2: Build and maintain in-house solutions on top of automation tools
+
+Neither of those solutions are ideal. CloudKnit makes it easy for Engineering teams to manage complex environments and provides out-of-the-box solution for use cases like ephemeral environments, environment blueprints, cloning environments, promoting changes across environments, and more.
 
 ![Example Environment](/assets/images/environment.jpeg)
 *<center>Diagram 2: Example Environment</center>*
