@@ -21,11 +21,11 @@ Environment as Code (EaC) is an abstraction over cloud-native tools that provide
 * [Conclusion](#conclusion)
 
 ## Why we built CloudKnit
+Existing automation tools like Terraform, Pulumi and Helm, allow us to automate provisioning of cloud environments, but as those environments become more complex and teams look for advanced use cases, existing tools fall short. These tools are great at managing individual components within an environment (like networking or database) but engineering teams need an entire environment with various components like the one below [See diagram 2] to run their business applications. This causes teams to hand-roll complex pipelines that provisions various components of their environment in the correct order or build and maintain in-house solutions on top of automation tools. Neither of those solutions are ideal.
 
-There are tools today that allow us to manage cloud environments but as the environments become more complex and teams look for advanced use cases, existing tools fall short. This causes some teams to build and maintain in-house solutions.
+CloudKnit makes it easy for Engineering teams to manage complex environments and provides out-of-the-box solution for use cases like ephemeral environments, environment blueprints, cloning environments, promoting changes across environments, and more. 
 
-CloudKnit makes it easy for DevOps and Platform Engineering teams to manage complex environments and enables advanced usecases like environment blueprints, cloning environments, promoting changes across environments and more. Existing cloud-native tools like Terraform, Pulumi, Helm, ArgoCD, etc. on their own can be great at managing individual components within an environment or automating simple environments.
-However an environment like the one below (Diagram 2) with Infrastructure resources and cloud-native applications requires a lot of work using existing tools. Currently there are two main approaches:
+Currently, there are two main approaches:
 
 ### Option 1: Monolith Infrastructure as Code & Application Deployment
 
