@@ -407,9 +407,9 @@ func buildInverseDependencies(components []*stablev1.EnvironmentComponent, compo
 
 func isTeardownProtection(ctx context.Context, teamName string, log *logrus.Entry) bool {
 	cloudKnitServiceClient := cloudknitservice.NewService(env.Config.ZLifecycleAPIURL)
-	team, err = cloudKnitServiceClient.GetTeam(ctx, env.Config.CompanyName, teamName, log)
+	team, err := cloudKnitServiceClient.GetTeam(ctx, env.Config.CompanyName, teamName, log)
 	if err != nil {
 		return false
 	}
-	return team.teardownProtection
+	return team.TeardownProtection
 }
