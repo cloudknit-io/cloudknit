@@ -26,8 +26,8 @@ Existing automation tools like Terraform, Pulumi, and Helm allow us to automate 
 
 This causes teams to do one of the following: 
 
-* Hand-roll complex pipelines: Pipeline code is imperative & needs to manage the logic to run the various components in the correct order, handle failures and tear down unused resources. We have seen teams write hundreds of lines of unmaintainable pipeline code. This causes a maintenance nightmare.
-* Build and maintain in-house solutions on top of automation tools: Companies spend a lot of time and effort instead of building business features.
+* **Hand-roll complex pipelines:** Pipeline code is imperative & needs to manage the logic to run the various components in the correct order, handle failures and tear down unused resources. We have seen teams write hundreds of lines of unmaintainable pipeline code. This causes a maintenance nightmare.
+* **Build and maintain in-house solutions on top of automation tools:** Companies spend a lot of time and effort instead of building business features.
 
 CloudKnit makes it easy for Engineering teams to manage complex environments and provides out-of-the-box solution for use cases like ephemeral environments, environment blueprints, cloning environments, promoting changes across environments, and more.
 
