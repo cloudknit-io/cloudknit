@@ -57,6 +57,7 @@ spec:
             required:
             - configRepo
             - teamName
+            - teardownProtection
             type: object
           status:
             description: TeamStatus defines the observed state of Team.
