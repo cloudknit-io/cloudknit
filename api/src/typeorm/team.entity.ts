@@ -35,6 +35,11 @@ export class Team {
   isDeleted: boolean;
 
   @Column({
+    default: false,
+  })
+  teardownProtection: boolean;
+
+  @Column({
     name: 'estimated_cost',
     type: 'decimal',
     precision: 10,

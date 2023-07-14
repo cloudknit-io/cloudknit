@@ -23,9 +23,10 @@ type Team struct {
 
 // TeamSpec defines the desired state of Team.
 type TeamSpec struct {
-	TeamName    string   `json:"teamName"`
-	ConfigRepo  *Repo    `json:"configRepo"`
-	Permissions []string `json:"permissions,omitempty"`
+	TeamName           string   `json:"teamName"`
+	ConfigRepo         *Repo    `json:"configRepo"`
+	TeardownProtection bool     `json:"teardownProtection,omitempty"`
+	Permissions        []string `json:"permissions,omitempty"`
 }
 
 // TeamStatus defines the observed state of Team.

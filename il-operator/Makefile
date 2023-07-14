@@ -69,12 +69,12 @@ generate: controller-gen
 manifests: controller-gen
 	# Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 	controller-gen crd rbac:roleName=zlifecycle-il-operator-manager-role webhook \
-		paths="./..." output:crd:artifacts:config=charts/zlifecycle-il-operator/crds output:rbac:artifacts:config=charts/zlifecycle-il-operator/templates
+		paths="./..." output:crd:artifacts:config=charts/il-operator/crds output:rbac:artifacts:config=charts/il-operator/templates
 
 manifests-local: controller-gen
 	# Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 	controller-gen crd rbac:roleName=zlifecycle-il-operator-manager-role webhook \
-		paths="./..." output:crd:artifacts:config=charts/zlifecycle-il-operator/crds output:rbac:artifacts:config=charts/zlifecycle-il-operator/templates
+		paths="./..." output:crd:artifacts:config=charts/il-operator/crds output:rbac:artifacts:config=charts/il-operator/templates
 
 fmt: ## Run go fmt against code.
 	go fmt ./...

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsString, ValidateNested } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
 
 export class TeamConfigRepoDto {
   @ApiProperty({ required: true })
@@ -19,6 +19,9 @@ export class TeamSpecDto {
   @IsNotEmpty()
   @IsString()
   teamName: string;
+
+  @ApiProperty({ required: false, type: 'boolean' })
+  teardownProtection?: boolean;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()

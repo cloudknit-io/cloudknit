@@ -12,4 +12,7 @@ export class CreateTeamDto {
 
   @ApiProperty({ required: false })
   repo_path: string;
+
+  @ApiProperty({ required: false })
+  teardownProtection: boolean;
 }

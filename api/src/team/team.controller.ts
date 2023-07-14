@@ -41,12 +41,14 @@ export class TeamController {
         organization: org,
         repo: spec.configRepo.source,
         repo_path: spec.configRepo.path,
+        teardownProtection: spec.teardownProtection
       });
     } else {
       return this.teamSvc.update(org, team.id, {
         name: spec.teamName,
         repo: spec.configRepo.source,
         repo_path: spec.configRepo.path,
+        teardownProtection: spec.teardownProtection
       });
     }
   }

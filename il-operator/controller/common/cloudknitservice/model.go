@@ -11,3 +11,8 @@ type Organization struct {
 	GitHubOrgName string `json:"githubOrgName"`
 	Provisioned   bool   `json:"provisioned"`
 }
+
+type Team struct {
+	Name               string `json:"name"`
+	TeardownProtection bool   `json:"teardownProtection"`
+}
