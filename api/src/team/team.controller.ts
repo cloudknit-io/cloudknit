@@ -32,9 +32,8 @@ export class TeamController {
   @OrgApiParam()
   async spec(@Request() req: APIRequest, @Body() spec: TeamSpecDto) {
     const { org } = req;
-
+    console.log(spec);
     let team = await this.teamSvc.findByName(org, spec.teamName);
-
     if (!team) {
       return await this.createTeam(req, {
         name: spec.teamName,
