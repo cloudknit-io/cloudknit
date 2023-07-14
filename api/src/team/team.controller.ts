@@ -32,9 +32,7 @@ export class TeamController {
   @OrgApiParam()
   async spec(@Request() req: APIRequest, @Body() spec: TeamSpecDto) {
     const { org } = req;
-
     let team = await this.teamSvc.findByName(org, spec.teamName);
-
     if (!team) {
       return await this.createTeam(req, {
         name: spec.teamName,
@@ -48,7 +46,7 @@ export class TeamController {
         name: spec.teamName,
         repo: spec.configRepo.source,
         repo_path: spec.configRepo.path,
-        teardownProtection: spec.teardownProtection
+        teardownProtection: Boolean(spec.teardownProtection)
       });
     }
   }
