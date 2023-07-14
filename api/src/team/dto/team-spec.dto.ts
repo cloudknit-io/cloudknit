@@ -20,10 +20,8 @@ export class TeamSpecDto {
   @IsString()
   teamName: string;
 
-  @ApiProperty({ required: true })
-  @IsNotEmpty()
-  @IsBoolean()
-  teardownProtection: boolean;
+  @ApiProperty({ required: false, type: 'boolean' })
+  teardownProtection?: boolean;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
