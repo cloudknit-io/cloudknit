@@ -47,7 +47,7 @@ export class TeamController {
         name: spec.teamName,
         repo: spec.configRepo.source,
         repo_path: spec.configRepo.path,
-        teardownProtection: spec.teardownProtection
+        teardownProtection: Boolean(spec.teardownProtection)
       });
     }
   }
