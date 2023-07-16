@@ -49,7 +49,7 @@ func TestTerraformTemplates_ExecuteVersions(t *testing.T) {
 
 	vars := terraform.VersionsConfig{
 		TerraformVersion: "1.2.3",
-		AWSVersion:       "4.1",
+		AWSVersion:       "5.8.0",
 	}
 	output, err := tpl.Execute(vars, tftmpl.TmplTFVersions)
 	assert.Nil(t, err)

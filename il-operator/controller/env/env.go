@@ -133,8 +133,8 @@ var Config = config{
 	AWSSharedProfile:     getOr("AWS_SHARED_PROFILE", "compuzest-shared"),
 
 	// terraform config
-	TerraformDefaultVersion:            getOr("TERRAFORM_DEFAULT_VERSION", "1.0.9"),
-	TerraformDefaultAWSProviderVersion: getOr("TERRAFORM_DEFAULT_AWS_VERSION", "4.0"),
+	TerraformDefaultVersion:            getOr("TERRAFORM_DEFAULT_VERSION", "1.4.5"),
+	TerraformDefaultAWSProviderVersion: getOr("TERRAFORM_DEFAULT_AWS_VERSION", "5.8.0"),
 	TerraformDefaultAWSRegion:          getOr("TERRAFORM_DEFAULT_REGION", "us-east-1"),
 	TerraformDefaultSharedAWSRegion:    getOr("TERRAFORM_DEFAULT_SHARED_REGION", "us-east-1"),
 	TerraformCustomerStateAWSProfile:   getOr("TERRAFORM_DEFAULT_CLIENT_STATE_PROFILE", "customer-state"),
