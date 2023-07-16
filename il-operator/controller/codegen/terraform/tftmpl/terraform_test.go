@@ -58,7 +58,7 @@ func TestTerraformTemplates_ExecuteVersions(t *testing.T) {
 terraform {
 	required_providers {
 		aws = {
-			version = "~> 4.1"
+			version = ">= 5.8.0"
 		}
 	}
 }
