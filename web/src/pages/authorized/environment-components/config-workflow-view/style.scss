@@ -146,6 +146,19 @@
 	border: 3px solid lightgray;
 	padding: 10px 0;
 	border-radius: 10px;
+	position: relative;
+
+	&__confirmation-popup {
+		position: absolute;
+		background: white;
+		box-shadow: 0 0 10px #ccc;
+		padding: 20px 10px;
+		border-radius: 5px;
+		display: flex;
+		flex-direction: column;
+		height: 120px;
+		justify-content: space-between;
+	}
 
 	&__content {
 		flex: 1;
