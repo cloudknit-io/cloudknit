@@ -12,20 +12,33 @@ type Props = {
 
 export const ZFeedbackModal: FC<Props> = ({ onApprove, onDecline }: Props) => {
 	const [showLoader, setShowLoader] = useState<boolean>(false);
+	const [showConfirmation, setConfirmation] = useState<boolean>(false);
 
 	return (
 		<>
 			{!showLoader && (
 				<div className="zlifecycle-feedback-modal__actions">
-					<Button
-						color="primary"
-
-						onClick={() => {
-							setShowLoader(true);
-							onApprove();
-						}}>
-						Approve
-					</Button>
+					{showConfirmation ? (
+						<div className="zlifecycle-feedback-modal__confirmation-popup">
+							Do you want to Proceed?
+							<Button
+								color="primary"
+								onClick={() => {
+									setShowLoader(true);
+									onApprove();
+								}}>
+								OK
+							</Button>
+						</div>
+					) : (
+						<Button
+							color="primary"
+							onClick={() => {
+								setConfirmation(true);
+							}}>
+							Approve
+						</Button>
+					)}
 				</div>
 			)}
 			{showLoader && <Loader height={20} width={20} />}
