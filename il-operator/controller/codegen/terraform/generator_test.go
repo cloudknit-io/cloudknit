@@ -144,7 +144,7 @@ func TestGenerateTerraform(t *testing.T) {
 	expectedVersions := `terraform {
 	required_providers {
 		aws = {
-			version = "~> 4.0"
+			version = ">= 5.8.0"
 		}
 	}
 }
