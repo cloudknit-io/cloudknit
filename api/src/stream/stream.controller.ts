@@ -13,7 +13,7 @@ import { createClient } from 'redis';
 export class StreamController {
   constructor(private readonly sseSvc: StreamService) {
     const redis = createClient({
-      url: "http://cloudknit-redis-master.zlifecycle-system.svc.cluster.local:6379"
+      url: "redis://cloudknit-redis-master.zlifecycle-system.svc.cluster.local:6379"
     });
     redis.connect().then(() => {
       this.sseSvc.webStream.subscribe((item: StreamItem) => {
