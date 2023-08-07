@@ -8,7 +8,7 @@ const event = new EventEmitter();
 async function startRedis() {
   console.log('Starting Redis');
   const client = createClient({
-    url: "http://cloudknit-redis-master.zlifecycle-system.svc.cluster.local:6379"
+    url: "redis://cloudknit-redis-master.zlifecycle-system.svc.cluster.local:6379"
   });
 
   client.on("error", (err) => console.log("Redis Client Error", err));
