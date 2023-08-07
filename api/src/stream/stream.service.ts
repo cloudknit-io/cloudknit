@@ -126,4 +126,8 @@ export class StreamService {
 
     this.webStream.next(payload);
   }
+
+  publishToRedis(msg: any, redis: any) {
+    redis.PUBLISH('test-channel', JSON.stringify(msg));
+  }
 }
