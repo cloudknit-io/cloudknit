@@ -63,7 +63,7 @@ authRouter.get("/session", async (req: any, res) => {
 
   res.json(user);
 });
-
+setUpSSE(authRouter);
 app.use(noOrgRoutes(authRouter));
 
 authRouter.use(AuthRequestLogger);
@@ -71,7 +71,6 @@ authRouter.use(organizationMW); // checks for selectedOrg cookie, throws 401 if 
 
 app.use("/auth", AuthRoutes(authRouter));
 app.use("/", orgRoutes(authRouter));
-setUpSSE(app);
 
 // replaces expresses default error handler
 app.use(ErrorLogger);
