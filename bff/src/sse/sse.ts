@@ -4,23 +4,23 @@ import { createClient } from "redis";
 import EventEmitter = require("events");
 
 const event = new EventEmitter();
+let redisClient = null;
 
 async function startRedis() {
-  console.log('Starting Redis');
-  const client = createClient({
+  console.log("Starting Redis");
+  redisClient = createClient({
     url: "redis://172.16.244.62:6379"
   });
 
-  client.on("error", (err) => console.log("Redis Client Error", err));
+  redisClient.on("error", (err) => console.log("Redis Client Error", err));
 
-  await client.connect();
-  client.SUBSCRIBE("test-channel", (message: any, channel: any) => {
-    console.log(JSON.parse(message), channel);
+  await redisClient.connect();
+  redisClient.SUBSCRIBE("test-channel", (message: any, channel: any) => {
     event.emit("stream", JSON.parse(message));
   });
 }
 
-function eventsHandler(request: any, response: any, next) {
+async function eventsHandler(request: any, response: any, next) {
   const reqUser = helper.userFromReq(request);
   if (!reqUser) {
     response.status(400).send({
@@ -28,6 +28,11 @@ function eventsHandler(request: any, response: any, next) {
     });
     return;
   }
+
+  if (!redisClient) {
+    await startRedis();
+  }
+
   const headers = {
     "Content-Type": "text/event-stream",
     Connection: "keep-alive",
@@ -36,10 +41,10 @@ function eventsHandler(request: any, response: any, next) {
 
   response.writeHead(200, headers);
 
-  response.write(`data: ${JSON.stringify({ d: new Date() })}\n\n`);
-
-  event.on("stream", (data: string) => {
-    response.write(`data: ${data}\n\n`);
+  event.on("stream", (stream: { data: any; type: string }) => {
+    if (reqUser.organizations.some((org) => org.id === stream.data.orgId)) {
+      response.write(`event: ${stream.type}\ndata: ${JSON.stringify(stream.data)}\n\n`);
+    }
   });
 
   request.on("close", () => {
@@ -47,7 +52,6 @@ function eventsHandler(request: any, response: any, next) {
   });
 }
 
-export function setUpSSE(app: express.Express) {
-  startRedis().then(() => {});
-  app.get("/stream", eventsHandler);
+export function setUpSSE(router: express.Router) {
+  router.get("/stream", eventsHandler);
 }

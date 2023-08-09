@@ -65,7 +65,7 @@ export class EntityService extends BaseService {
 	}
 
 	stream(eventList: string[]) {
-		const ec = new EventClient<StreamDataWrapper>(this.constructUri(EntitytUriType.stream()), eventList);
+		const ec = new EventClient<StreamDataWrapper>(EntitytUriType.stream(), eventList);
 		return ec.listen();
 	}
 }
@@ -76,5 +76,5 @@ class EntitytUriType {
 	static environment = (teamId: number, envId: number) => `teams/${teamId}/environments/${envId}`;
 	static components = (teamId: number, envId: number, withLastAuditStatus: boolean) =>
 		`teams/${teamId}/environments/${envId}/components?withLastAuditStatus=${withLastAuditStatus}`;
-	static stream = () => `stream`;
+	static stream = () => `/stream`;
 }
