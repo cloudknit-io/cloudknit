@@ -76,5 +76,5 @@ class EntitytUriType {
 	static environment = (teamId: number, envId: number) => `teams/${teamId}/environments/${envId}`;
 	static components = (teamId: number, envId: number, withLastAuditStatus: boolean) =>
 		`teams/${teamId}/environments/${envId}/components?withLastAuditStatus=${withLastAuditStatus}`;
-	static stream = () => `/stream`;
+	static stream = () => `/session/stream`;
 }

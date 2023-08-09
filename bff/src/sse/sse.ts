@@ -53,5 +53,5 @@ async function eventsHandler(request: any, response: any, next) {
 }
 
 export function setUpSSE(router: express.Router) {
-  router.get("/stream", eventsHandler);
+  router.get("/session/stream", eventsHandler);
 }
