@@ -1,11 +1,6 @@
-import { Controller, Sse, Request } from '@nestjs/common';
-import { StreamService } from './stream.service';
-import { from, map, Observable } from 'rxjs';
-import { OrgApiParam } from 'src/types';
+import { Controller } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { StreamItem, StreamTypeEnum } from './dto/stream-item.dto';
-import { createClient } from 'redis';
-import { RedisClient } from 'ioredis/built/connectors/SentinelConnector/types';
+import { StreamService } from './stream.service';
 
 @Controller({
   version: '1',
