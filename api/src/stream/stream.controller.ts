@@ -13,28 +13,6 @@ import { RedisClient } from 'ioredis/built/connectors/SentinelConnector/types';
 @ApiTags('stream')
 export class StreamController {
   constructor(private readonly sseSvc: StreamService) {}
-
-  @Sse()
-  @OrgApiParam()
-  orgStream(@Request() req): Observable<MessageEvent> {
-    const { org } = req;
-
-    return from(this.sseSvc.webStream).pipe(
-      map((item: StreamItem) => {
-        // if (!item || !item.data || item.data.orgId !== org.id) {
-        return {
-          data: {},
-          type: StreamTypeEnum.Empty,
-        };
-        // }
-
-        return {
-          data: item.data,
-          type: item.type,
-        };
-      })
-    );
-  }
 }
 
 interface MessageEvent {
