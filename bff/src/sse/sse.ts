@@ -9,7 +9,8 @@ let redisClient = null;
 async function startRedis() {
   console.log("Starting Redis");
   redisClient = createClient({
-    url: "redis://172.16.244.62:6379"
+    url: "redis://cloudknit-redis-master.zlifecycle-system.svc.cluster.local:6379",
+    password: 'hTQAHRKmhF'
   });
 
   redisClient.on("error", (err) => console.log("Redis Client Error", err));
