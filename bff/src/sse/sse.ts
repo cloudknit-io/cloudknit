@@ -2,23 +2,33 @@ import helper from "../utils/helper";
 import * as express from "express";
 import { createClient } from "redis";
 import EventEmitter = require("events");
+import logger from "../utils/logger";
+import config from "../config";
 
 const event = new EventEmitter();
 let redisClient = null;
+const apiStreamChannel = 'api-stream-channel';
 
 async function startRedis() {
-  console.log("Starting Redis");
-  redisClient = createClient({
-    url: "redis://cloudknit-redis-master.zlifecycle-system.svc.cluster.local:6379",
-    password: 'hTQAHRKmhF'
-  });
+  try {
+    redisClient = createClient({
+      url: config.redis.url,
+      password: config.redis.password,
+    });
 
-  redisClient.on("error", (err) => console.log("Redis Client Error", err));
+    redisClient.on("error", (err) => console.log("Redis Client Error", err));
 
-  await redisClient.connect();
-  redisClient.SUBSCRIBE("test-channel", (message: any, channel: any) => {
-    event.emit("stream", JSON.parse(message));
-  });
+    await redisClient.connect();
+
+    if (redisClient.isReady) {
+      redisClient.SUBSCRIBE(apiStreamChannel, (message: any, channel: any) => {
+        event.emit("stream", JSON.parse(message));
+      });
+    }
+  } catch (err) {
+    redisClient = null;
+    logger.error('Redis failed to connect', err);
+  }
 }
 
 async function eventsHandler(request: any, response: any, next) {
@@ -44,7 +54,9 @@ async function eventsHandler(request: any, response: any, next) {
 
   event.on("stream", (stream: { data: any; type: string }) => {
     if (reqUser.organizations.some((org) => org.id === stream.data.orgId)) {
-      response.write(`event: ${stream.type}\ndata: ${JSON.stringify(stream.data)}\n\n`);
+      response.write(
+        `event: ${stream.type}\ndata: ${JSON.stringify(stream.data)}\n\n`
+      );
     }
   });
 

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Subject } from 'rxjs';
 import { Mapper } from 'src/reconciliation/mapper';
 import {
@@ -9,10 +9,21 @@ import {
   Team,
 } from 'src/typeorm';
 import { StreamItem, StreamTypeEnum } from './dto/stream-item.dto';
+import { RedisClientType, createClient } from 'redis';
+import { get } from 'src/config';
 
 @Injectable()
 export class StreamService {
   readonly webStream: Subject<StreamItem> = new Subject<StreamItem>();
+  readonly logger = new Logger('StreamService');
+  redisClient: any;
+  apiStreamChannel = 'api-stream-channel';
+
+  constructor() {
+    this.connectToRedis().then(() => {
+      this.startPublishingToRedis();
+    });
+  }
 
   normalizeOrg(
     obj:
@@ -127,7 +138,44 @@ export class StreamService {
     this.webStream.next(payload);
   }
 
-  publishToRedis(msg: any, redis: any) {
-    redis.PUBLISH('test-channel', JSON.stringify(msg));
+  async connectToRedis() {
+    try {
+      const { url, password } = get().redis;
+      const client = createClient({
+        url,
+        password,
+      });
+      client.on('error', (err) => this.logger.error('Redis Client Error', err));
+      await client.connect();
+      if (client.isReady) {
+        this.redisClient = client;
+      }
+    } catch (err) {
+      this.logger.error('Could not connect to redis server');
+    }
+  }
+
+  startPublishingToRedis() {
+    if (!this.redisClient) return;
+    this.webStream.subscribe((item: StreamItem) => {
+      let msg = null;
+      if (!item || !item.data) {
+        msg = {
+          data: {},
+          type: StreamTypeEnum.Empty,
+        };
+      }
+
+      msg = {
+        data: item.data,
+        type: item.type,
+      };
+
+      this.publishToRedis(msg);
+    });
+  }
+
+  publishToRedis(msg: any) {
+    this.redisClient.PUBLISH(this.apiStreamChannel, JSON.stringify(msg));
   }
 }

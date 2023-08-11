@@ -16,6 +16,10 @@ export type ApiConfig = {
   };
   environment: string;
   isLocal: boolean;
+  redis: {
+    url: string,
+    password: string
+  },
   argo: {
     wf: {
       skipProvision: boolean;
@@ -66,6 +70,10 @@ export function init() {
       accessKeyId: getEnvVarOrFail('AWS_ACCESS_KEY_ID'),
       secretAccessKey: getEnvVarOrFail('AWS_SECRET_ACCESS_KEY'),
       sessionToken: getEnvVarOrDefault('AWS_SESSION_TOKEN', null)
+    },
+    redis: {
+      url: getEnvVarOrFail('REDIS_URL'),
+      password: getEnvVarOrFail('REDIS_PASSWORD'),
     },
     argo: {
       wf: {

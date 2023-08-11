@@ -10,6 +10,10 @@ const config = {
   WEB_URL: process.env.SITE_URL,
   API_URL: `${process.env.ZLIFECYCLE_API_URL}/v1`,
   ARGOCD_URL: process.env.ARGO_CD_API_URL,
+  redis: {
+    url: process.env.REDIS_URL,
+    password: process.env.REDIS_PASSWORD,
+  },
   argoWFUrl: (orgName: string) =>
     process.env.ARGO_WORKFLOW_API_URL.replaceAll(":org", orgName),
   stateMgrUrl: (orgName: string) =>

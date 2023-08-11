@@ -48,6 +48,10 @@ spec:
               value: {{ .Values.awsCredentials.sessionToken}}
             - name: AWS_REGION
               value: {{ .Values.awsCredentials.region}}
+            - name: REDIS_URL
+              value: {{ .Values.redis.url }}
+            - name: REDIS_PASSWORD
+              value: {{ .Values.redis.password }}
           image: {{ .Values.image.repository }}/{{ .Values.image.name }}:{{ .Values.image.tag }}
           ports:
             - containerPort: 3000

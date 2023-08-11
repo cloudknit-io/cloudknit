@@ -5,36 +5,14 @@ import { OrgApiParam } from 'src/types';
 import { ApiTags } from '@nestjs/swagger';
 import { StreamItem, StreamTypeEnum } from './dto/stream-item.dto';
 import { createClient } from 'redis';
+import { RedisClient } from 'ioredis/built/connectors/SentinelConnector/types';
 
 @Controller({
   version: '1',
 })
 @ApiTags('stream')
 export class StreamController {
-  constructor(private readonly sseSvc: StreamService) {
-    const redis = createClient({
-      url: 'redis://cloudknit-redis-master.zlifecycle-system.svc.cluster.local:6379',
-      password: 'hTQAHRKmhF'
-    });
-    redis.connect().then(() => {
-      this.sseSvc.webStream.subscribe((item: StreamItem) => {
-        let msg = null;
-        if (!item || !item.data) {
-          msg = {
-            data: {},
-            type: StreamTypeEnum.Empty,
-          };
-        }
-
-        msg = {
-          data: item.data,
-          type: item.type,
-        };
-
-        this.sseSvc.publishToRedis(msg, redis);
-      });
-    });
-  }
+  constructor(private readonly sseSvc: StreamService) {}
 
   @Sse()
   @OrgApiParam()
