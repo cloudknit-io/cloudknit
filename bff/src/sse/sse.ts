@@ -56,7 +56,7 @@ async function eventsHandler(request: BFFRequest, response: any, next) {
   response.writeHead(200, headers);
 
   event.on("stream", (stream: { data: any; type: string }) => {
-    if (selectedOrg.id !== stream.data.orgId) return;
+    if (selectedOrg?.id !== stream.data.orgId) return;
     response.write(
       `event: ${stream.type}\ndata: ${JSON.stringify(stream.data)}\n\n`
     );
