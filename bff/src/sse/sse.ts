@@ -4,10 +4,11 @@ import { createClient } from "redis";
 import EventEmitter = require("events");
 import logger from "../utils/logger";
 import config from "../config";
+import { BFFRequest } from "../types";
 
 const event = new EventEmitter();
 let redisClient = null;
-const apiStreamChannel = 'api-stream-channel';
+const apiStreamChannel = "api-stream-channel";
 
 async function startRedis() {
   try {
@@ -27,11 +28,11 @@ async function startRedis() {
     }
   } catch (err) {
     redisClient = null;
-    logger.error('Redis failed to connect', err);
+    logger.error("Redis failed to connect", err);
   }
 }
 
-async function eventsHandler(request: any, response: any, next) {
+async function eventsHandler(request: BFFRequest, response: any, next) {
   const reqUser = helper.userFromReq(request);
   if (!reqUser) {
     response.status(400).send({
@@ -44,6 +45,8 @@ async function eventsHandler(request: any, response: any, next) {
     await startRedis();
   }
 
+  const selectedOrg = await helper.orgFromReq(request);
+
   const headers = {
     "Content-Type": "text/event-stream",
     Connection: "keep-alive",
@@ -53,11 +56,10 @@ async function eventsHandler(request: any, response: any, next) {
   response.writeHead(200, headers);
 
   event.on("stream", (stream: { data: any; type: string }) => {
-    if (reqUser.organizations.some((org) => org.id === stream.data.orgId)) {
-      response.write(
-        `event: ${stream.type}\ndata: ${JSON.stringify(stream.data)}\n\n`
-      );
-    }
+    if (selectedOrg?.id !== stream.data.orgId) return;
+    response.write(
+      `event: ${stream.type}\ndata: ${JSON.stringify(stream.data)}\n\n`
+    );
   });
 
   request.on("close", () => {
