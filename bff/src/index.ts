@@ -8,10 +8,14 @@ import { apiAuthMw, getUser, organizationMW, setUpAuth } from "./auth/auth";
 import zlConfig from "./config";
 import AuthRoutes from "./controllers/auth.controller";
 import {
-  externalApiRoutes, handlePublicRoutes, noOrgRoutes, orgRoutes
+  externalApiRoutes,
+  handlePublicRoutes,
+  noOrgRoutes,
+  orgRoutes,
 } from "./proxy/proxy";
 import helper, { oidcUser } from "./utils/helper";
 import logger, { AuthRequestLogger, ErrorLogger } from "./utils/logger";
+import { setUpSSE } from "./sse/sse";
 
 const app = express();
 const publicRouter = express.Router();
@@ -42,11 +46,7 @@ app.use("/public", handlePublicRoutes(publicRouter));
 externalRouter.use(AuthRequestLogger);
 app.use("/ext/api", apiAuthMw(), externalApiRoutes(externalRouter));
 
-
-
 setUpAuth(app, authRouter);
-
-
 
 authRouter.get("/session", async (req: any, res) => {
   const reqUser = helper.userFromReq(req);
@@ -63,7 +63,7 @@ authRouter.get("/session", async (req: any, res) => {
 
   res.json(user);
 });
-
+setUpSSE(authRouter);
 app.use(noOrgRoutes(authRouter));
 
 authRouter.use(AuthRequestLogger);

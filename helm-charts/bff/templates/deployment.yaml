@@ -51,6 +51,10 @@ spec:
               value: {{ .Values.auth0.api.audience | quote }}
             - name: AUTH0_ISSUER_BASE_URL
               value: {{ .Values.auth0.issuerBaseUrl | quote }}
+            - name: REDIS_URL
+              value: {{ .Values.redis.url | quote }}
+            - name: REDIS_PASSWORD
+              value: {{ .Values.redis.password | quote }}
           image: "{{ .Values.image.repository }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
           ports:
             - containerPort: 8080

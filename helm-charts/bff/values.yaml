@@ -41,6 +41,9 @@ auth0:
     audience:
 argocd:
   urlWithProtocol: http://argocd-server.argocd.svc.cluster.local
+redis:
+  url:
+  password:
 argoWorkflowApiUrl: http://argo-workflow-server.argocd.svc.cluster.local:2746
 zlifecycleApiUrl: http://zlifecycle-api.zlifecycle-ui.svc.cluster.local
 zlifecycleStateManagerUrl: http://zlifecycle-state-manager.zlifecycle-il-operator-system.svc.cluster.local
