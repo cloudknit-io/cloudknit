@@ -83,6 +83,54 @@ export async function ApproveWorkflow(
   }
 }
 
+export async function TerminateWorkflow(
+  org: Organization,
+  teamName: string,
+  environmentName: string,
+) {
+  const config = get();
+
+  if (config.isLocal === true) {
+    logger.log({ message: 'Running in local mode. Skipping TerminateWorkflow' });
+    return;
+  }
+
+  const url = `${config.argo.wf.orgUrl(org.name)}/api/v1/workflows/${
+    org.name
+  }-executor/${org.name}-${teamName}-${environmentName}/terminate`;
+
+  const httpsAgent = new https.Agent({
+    requestCert: true,
+    rejectUnauthorized: false,
+  });
+
+  const data = null;
+
+  logger.debug({ message: 'terminating workflow', url, data });
+
+  try {
+    const resp = await axios.put(url, data, {
+      httpsAgent: url.startsWith('https') ? httpsAgent : null,
+    });
+
+    logger.log({
+      message: `terminated workflow which generated ${resp.data.metadata.name}`,
+      resp: resp.data,
+    });
+  } catch (error) {
+    if (error.response) {
+      logger.error({
+        message: 'error terminating workflow',
+        error: error.response.data,
+        data,
+        url,
+      });
+    }
+
+    throw error;
+  }
+}
+
 async function SubmitWorkflow(
   resourceName: string,
   entryPoint: string,
