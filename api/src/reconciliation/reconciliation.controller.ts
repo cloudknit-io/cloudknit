@@ -18,7 +18,10 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { ApproveWorkflow as ResumeWorkflow } from 'src/argowf/api';
+import {
+  ApproveWorkflow as ResumeWorkflow,
+  TerminateWorkflow,
+} from 'src/argowf/api';
 import { ComponentService } from 'src/component/component.service';
 import { EnvironmentService } from 'src/environment/environment.service';
 import { TeamService } from 'src/team/team.service';
@@ -345,6 +348,47 @@ export class ReconciliationController {
       });
       throw new InternalServerErrorException('could not approve workflow');
     }
+  }
+
+  /**
+   * Terminates Argo Workflow run
+   * @param req APIRequest
+   * @param envReconId Environment reconcile ID to terminate
+   */
+  @Post('environment/:envReconId/terminate')
+  @OrgApiParam()
+  async terminateWorkflow(
+    @Req() req: APIRequest,
+    @Param('envReconId') envReconId: number
+  ) {
+    const { org } = req;
+
+    const envRecon = await this.reconSvc.getEnvReconByReconcileId(
+      org,
+      envReconId,
+      true
+    );
+    if (!envRecon) {
+      throw new BadRequestException('could not find environment reconcile');
+    }
+
+    const team = await this.teamSvc.findById(org, envRecon.environment.teamId);
+
+    try {
+      // Resume Argo Workflow run
+      await TerminateWorkflow(org, team.name, envRecon.environment.name);
+    } catch (err) {
+      this.logger.error({
+        message: 'could not approve workflow',
+        envRecon,
+        err,
+      });
+      throw new InternalServerErrorException('could not approve workflow');
+    }
+
+    return {
+      terminated: true,
+    };
   }
 
   @Get('component/logs/:team/:environment/:component/:id')

@@ -150,7 +150,6 @@ iframe:not(.cal-embed) {
 		display: flex;
 		position: relative;
 		button {
-			background-color: $argo-color-teal-7;
 			&:hover {
 				.tooltip {
 					display: block;
@@ -196,6 +195,25 @@ iframe:not(.cal-embed) {
 			border-radius: 20px;
 			position: relative;
 			color: white;
+			background-color: $argo-color-teal-7;
+			path {
+				fill: white !important;
+			}
+		}
+
+		&-terminate {
+			font-family: 'DM Sans';
+			display: flex;
+			align-items: center;
+			height: 30px;
+			padding: 0 10px 0 5px;
+			cursor: pointer;
+			box-shadow: 0 0 10px #ccc;
+			margin-right: 15px;
+			border-radius: 20px;
+			position: relative;
+			color: white;
+			background-color: red;
 			path {
 				fill: white !important;
 			}
