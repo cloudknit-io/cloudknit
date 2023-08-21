@@ -48,6 +48,12 @@ spec:
               value: {{ .Values.awsCredentials.sessionToken}}
             - name: AWS_REGION
               value: {{ .Values.awsCredentials.region}}
+            - name: DEFAULT_AWS_ACCESS_KEY_ID
+              value: {{ .Values.defaultAwsCredentials.accessKeyId}}
+            - name: DEFAULT_AWS_SECRET_ACCESS_KEY
+              value: {{ .Values.defaultAwsCredentials.secretAccessKey}}
+            - name: DEFAULT_AWS_SESSION_TOKEN
+              value: {{ .Values.defaultAwsCredentials.sessionToken}}
             - name: REDIS_URL
               value: {{ .Values.redis.url }}
             - name: REDIS_PASSWORD

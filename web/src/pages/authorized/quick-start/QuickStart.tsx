@@ -19,8 +19,8 @@ export interface QuickStartContext {
 export const QuickStart: React.FC = () => {
 	const [activeStepIndex, updateActiveStepIndex] = useState<number>(0);
 	const [next, nextInProgress] = useState<boolean>(false);
-	const [scheduleMeet, setScheduleMeet] = useState<boolean>(true);
-	const [calLoading, setCalLoading] = useState<boolean>(true);
+	const [scheduleMeet, setScheduleMeet] = useState<boolean>(false);
+	const [calLoading, setCalLoading] = useState<boolean>(false);
 	const [ctx, updateCtx] = useState<any>(
 		LocalStorage.getItem<QuickStartContext>(LocalStorageKey.QUICK_START_STEP)?.ctx
 	);
@@ -39,12 +39,12 @@ export const QuickStart: React.FC = () => {
 			onViewChange: () => {},
 		});
 
-		window.Cal('on', {
-			action: '__windowLoadComplete',
-			callback: e => {
-				setCalLoading(false);
-			},
-		});
+		// window.Cal('on', {
+		// 	action: '__windowLoadComplete',
+		// 	callback: e => {
+		// 		setCalLoading(false);
+		// 	},
+		// });
 	}, []);
 
 	useEffect(() => {
@@ -69,10 +69,10 @@ export const QuickStart: React.FC = () => {
 				</h1>
 				{scheduleMeet ? (
 					<div className="schedule-meeting">
-						<CalMeet />
+						{/* <CalMeet />
 						<button className="btn manual-setup" onClick={() => setScheduleMeet(false)}>
 							Skip & Setup Yourself
-						</button>
+						</button> */}
 					</div>
 				) : (
 					<div className="quick-start-guide_container">

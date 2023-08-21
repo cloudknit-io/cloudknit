@@ -8,6 +8,7 @@ import {
 import { Organization } from 'src/typeorm';
 import { AwsSecretDto } from './dtos/aws-secret.dto';
 import { AWSSSMHandler } from './utilities/awsSsmHandler';
+import { get } from 'src/config';
 @Injectable()
 export class SecretsService {
   private readonly logger = new Logger(SecretsService.name);
@@ -232,5 +233,20 @@ export class SecretsService {
         throw err;
       }
     }
+  }
+
+  public async setupDefaultSecrets(org: Organization) {
+    const { accessKeyId, secretAccessKey, sessionToken } = get().DEFAULT_AWS;
+    const entry: AwsSecretDto[] = [
+      {
+        path: `${org.name}/aws_access_key_id`,
+        value: accessKeyId,
+      },
+      {
+        path: `${org.name}/aws_secret_access_key`,
+        value: secretAccessKey,
+      },
+    ];
+    return this.putSsmSecrets(org, entry);
   }
 }
