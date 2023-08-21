@@ -5,6 +5,7 @@ import { AWSSecret } from 'pages/authorized/secrets/aws-secrets';
 import AuthStore from 'auth/AuthStore';
 import { Subject } from 'rxjs';
 import '../../profile/styles.scss';
+import { SecretsService } from 'services/secrets/secrets.service';
 
 type Props = {
 	baseClassName: string;
@@ -17,6 +18,10 @@ export class ConfigureAWSCreds extends BaseGuide implements IGuide {
 	private promiseResolver: any = null;
 	private credType: 0 | 1 = 0;
 	private saveSecret = async () => {
+		if (this.credType === 0) {
+			const resp = await SecretsService.getInstance().setDefaultSsmSecret();
+			return resp.data == true;
+		}
 		const promise = new Promise<boolean>((r, e) => {
 			this.promiseResolver = r;
 		});
@@ -53,7 +58,7 @@ export class ConfigureAWSCreds extends BaseGuide implements IGuide {
 								<button
 									onClick={() => {
 										this.credType = 0;
-										setCred(0)
+										setCred(0);
 									}}
 									type="button"
 									className={`options-container__option-box ${
@@ -105,11 +110,7 @@ export class ConfigureAWSCreds extends BaseGuide implements IGuide {
 
 	async onNext(): Promise<any> {
 		if (!this.awsSecretUpdated) {
-			if (this.credType === 1) {
-				this.awsSecretUpdated = await this.saveSecret();
-			} else {
-
-			}
+			this.awsSecretUpdated = await this.saveSecret();
 		}
 		if (!this.awsSecretUpdated) {
 			return null;
