@@ -368,6 +368,11 @@ export class ReconciliationController {
       envReconId,
       true
     );
+
+    const waitingWorkflows = envRecon.componentReconciles.filter(
+      (compRecon) => compRecon.status === 'waiting_for_approval'
+    );
+
     if (!envRecon) {
       throw new BadRequestException('could not find environment reconcile');
     }
@@ -375,8 +380,27 @@ export class ReconciliationController {
     const team = await this.teamSvc.findById(org, envRecon.environment.teamId);
 
     try {
-      // Resume Argo Workflow run
-      await TerminateWorkflow(org, team.name, envRecon.environment.name);
+      // Terminate Argo Workflow run
+      await TerminateWorkflow(
+        org,
+        `${org.name}-${team.name}-${envRecon.environment.name}`
+      );
+
+      if (waitingWorkflows.length > 0) {
+        const terminationRequests = waitingWorkflows.map((w) =>
+          TerminateWorkflow(org, w.lastWorkflowRunId)
+        );
+        const resp = await Promise.allSettled(terminationRequests);
+        const failedResps = resp.filter((r) => r.status === 'rejected');
+        if (failedResps.length > 0) {
+          this.logger.error({
+            message: 'could not approve following workflows',
+            waitingWorkflows,
+            failedResps,
+          });
+          throw new InternalServerErrorException('could not approve workflow');
+        }
+      }
     } catch (err) {
       this.logger.error({
         message: 'could not approve workflow',
