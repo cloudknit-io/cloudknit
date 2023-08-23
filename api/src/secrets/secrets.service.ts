@@ -208,6 +208,7 @@ export class SecretsService {
         Overwrite: true,
         Type: type,
       });
+      console.log(awsRes);
       return true;
     } catch (err) {
       const e = err as AWSError;
@@ -239,11 +240,11 @@ export class SecretsService {
     const { accessKeyId, secretAccessKey, sessionToken } = get().DEFAULT_AWS;
     const entry: AwsSecretDto[] = [
       {
-        path: `${org.name}/aws_access_key_id`,
+        path: `aws_access_key_id`,
         value: accessKeyId,
       },
       {
-        path: `${org.name}/aws_secret_access_key`,
+        path: `aws_secret_access_key`,
         value: secretAccessKey,
       },
     ];
