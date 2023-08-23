@@ -98,7 +98,7 @@ const AUDIT_PATH_MAPPINGS = [
 
 const SECRET_PATH_MAPPINGS = [
   {
-    path: "/secrets/add/default",
+    path: "/secrets/default",
     newPath: (params: any) => `/v1/orgs/${params.orgId}/secrets/default`,
   },
   {
