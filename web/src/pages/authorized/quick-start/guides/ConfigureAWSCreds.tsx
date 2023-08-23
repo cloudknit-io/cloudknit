@@ -55,28 +55,31 @@ export class ConfigureAWSCreds extends BaseGuide implements IGuide {
 								article to find out how to get following keys.
 							</div>
 							<div className="options-container">
-								<button
-									onClick={() => {
-										this.credType = 0;
-										setCred(0);
-									}}
-									type="button"
-									className={`options-container__option-box ${
-										cred === 0 ? 'options-container__option-box--selected' : ''
-									}`}>
-									Use Cloudknit Credentials
-								</button>
-								<button
-									onClick={() => {
-										this.credType = 1;
-										setCred(1);
-									}}
-									type="button"
-									className={`options-container__option-box ${
-										cred === 1 ? 'options-container__option-box--selected' : ''
-									}`}>
-									Use your own Credentials
-								</button>
+								<div className="options-container__option">
+									<input
+										checked={this.credType === 0}
+										id="cred-type-0"
+										name="cred-type"
+										type="radio"
+										onChange={() => {
+											this.credType = 0;
+											setCred(0);
+										}}
+									/>
+									<label htmlFor="cred-type-0">Use Cloudknit Credentials</label>
+								</div>
+								<div className="options-container__option">
+									<input
+										id="cred-type-1"
+										name="cred-type"
+										type="radio"
+										onChange={() => {
+											this.credType = 1;
+											setCred(1);
+										}}
+									/>
+									<label htmlFor="cred-type-1">Use your own Credentials</label>
+								</div>
 							</div>
 							{cred === 1 && (
 								<div className="secrets-container">
@@ -92,6 +95,12 @@ export class ConfigureAWSCreds extends BaseGuide implements IGuide {
 											/>
 										</div>
 									</div>
+								</div>
+							)}
+							{cred === 0 && (
+								<div className='cred-type-0-info'>
+									* Use CloudKnit AWS credentials to try out the product. These credentials will be
+									disabled after 5 days.
 								</div>
 							)}
 						</section>
