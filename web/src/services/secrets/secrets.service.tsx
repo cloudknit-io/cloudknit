@@ -62,6 +62,11 @@ export class SecretsService {
 		const url = this.constructUri(SecretsUriType.deleteSSMSecrets(this.sanitizeScope(path)));
 		return ApiClient.delete(url);
 	}
+
+	setDefaultSsmSecret() {
+		const url = this.constructUri(SecretsUriType.setDefault());
+		return ApiClient.post(url);
+	}
 }
 
 class SecretsUriType {
@@ -70,4 +75,5 @@ class SecretsUriType {
 	static getSSMSecrets = `get/ssm-secrets`;
 	static getEnvironments = `get/environments`;
 	static deleteSSMSecrets = (path: string) => `delete/ssm-secret?path=${path}`;
+	static setDefault = () => `default`;
 }

@@ -15,6 +15,11 @@ awsCredentials:
   secretAccessKey:
   sessionToken:
   region:
+defaultAwsCredentials:
+  accessKeyId:
+  secretAccessKey:
+  sessionToken:
+  region:
 argowf:
   url:
   namespace:
