@@ -9,6 +9,7 @@ import { BFFRequest } from "../types";
 const event = new EventEmitter();
 let redisClient = null;
 const apiStreamChannel = "api-stream-channel";
+let interval = null;
 
 async function startRedis() {
   try {
@@ -63,6 +64,7 @@ async function eventsHandler(request: BFFRequest, response: any, next) {
   });
 
   request.on("close", () => {
+    if (interval) clearInterval(interval);
     console.log(`Connection closed`);
   });
 }
@@ -70,7 +72,7 @@ async function eventsHandler(request: BFFRequest, response: any, next) {
 export function setUpSSE(router: express.Router) {
   router.get("/session/stream", eventsHandler);
   // This is done keep the event source alive
-  setInterval(() => {
+  interval = setInterval(() => {
     event.emit("stream", {
       data: {},
       type: "Empty",
