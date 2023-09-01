@@ -65,4 +65,11 @@ export class SecretsController {
     this.logger.debug('Deleting secret', { orgName: req.org.name, path });
     return await this.secretsService.deleteSSMSecret(req.org, path);
   }
+
+  @Post('default')
+  @OrgApiParam()
+  public async setDefaultCreds(@Request() req) {
+    this.logger.debug('setting default secret', { orgName: req.org.name });
+    return await this.secretsService.setupDefaultSecrets(req.org);
+  }
 }

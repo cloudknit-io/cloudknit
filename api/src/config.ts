@@ -14,6 +14,11 @@ export type ApiConfig = {
     secretAccessKey: string;
     sessionToken: string;
   };
+  DEFAULT_AWS: {
+    accessKeyId: string;
+    secretAccessKey: string;
+    sessionToken: string;
+  };
   environment: string;
   isLocal: boolean;
   redis: {
@@ -70,6 +75,11 @@ export function init() {
       accessKeyId: getEnvVarOrFail('AWS_ACCESS_KEY_ID'),
       secretAccessKey: getEnvVarOrFail('AWS_SECRET_ACCESS_KEY'),
       sessionToken: getEnvVarOrDefault('AWS_SESSION_TOKEN', null)
+    },
+    DEFAULT_AWS: {
+      accessKeyId: getEnvVarOrFail('DEFAULT_AWS_ACCESS_KEY_ID'),
+      secretAccessKey: getEnvVarOrFail('DEFAULT_AWS_SECRET_ACCESS_KEY'),
+      sessionToken: getEnvVarOrDefault('DEFAULT_AWS_SESSION_TOKEN', null)
     },
     redis: {
       url: getEnvVarOrFail('REDIS_URL'),

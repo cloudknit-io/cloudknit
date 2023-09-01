@@ -83,6 +83,55 @@ export async function ApproveWorkflow(
   }
 }
 
+export async function TerminateWorkflow(
+  org: Organization,
+  workflowName: string
+) {
+  const config = get();
+
+  if (config.isLocal === true) {
+    logger.log({
+      message: 'Running in local mode. Skipping TerminateWorkflow',
+    });
+    return;
+  }
+
+  const url = `${config.argo.wf.orgUrl(org.name)}/api/v1/workflows/${
+    org.name
+  }-executor/${workflowName}/terminate`;
+
+  const httpsAgent = new https.Agent({
+    requestCert: true,
+    rejectUnauthorized: false,
+  });
+
+  const data = null;
+
+  logger.debug({ message: 'terminating workflow', url, data });
+
+  try {
+    const resp = await axios.put(url, data, {
+      httpsAgent: url.startsWith('https') ? httpsAgent : null,
+    });
+
+    logger.log({
+      message: `terminated workflow which generated ${resp.data.metadata.name}`,
+      resp: resp.data,
+    });
+  } catch (error) {
+    if (error.response) {
+      logger.error({
+        message: 'error terminating workflow',
+        error: error.response.data,
+        data,
+        url,
+      });
+    }
+
+    throw error;
+  }
+}
+
 async function SubmitWorkflow(
   resourceName: string,
   entryPoint: string,
@@ -176,18 +225,21 @@ async function deleteEnvironment(
   });
 }
 
-export async function argoCdLogin(username: string, password: string): Promise<any> {
+export async function argoCdLogin(
+  username: string,
+  password: string
+): Promise<any> {
   const config = get();
   const url = `${config.argo.cd.url}/api/v1/session`;
 
   try {
     const resp = await axios.post(url, {
       username,
-      password
+      password,
     });
-  
+
     const { token } = resp.data;
-  
+
     return token;
   } catch (err) {
     this.logger.error('could not login to argocd', { error: err.message });

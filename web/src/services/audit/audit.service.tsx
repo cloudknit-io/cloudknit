@@ -115,6 +115,12 @@ export class AuditService extends BaseService {
 		});
 	}
 
+	async terminate(environmentReconcileId: number) {
+		return ApiClient.post(this.constructUri(AuditUriType.terminate(environmentReconcileId)), {
+			email: AuthStore.getUser()?.email
+		});
+	}
+
 	async getVisualizationSVGDemo({ team, environment, component }: any) {
 		if (component.includes('eks')) {
 			return { data: ReactDOMServer.renderToString(<EKS />) };
@@ -137,6 +143,7 @@ class AuditUriType {
 	static component = (componentId: number, envId: number, teamId: number) =>
 		`component/${teamId}/${envId}/${componentId}`;
 	static approve = (componentReconcileId: number) => `component/approve/${componentReconcileId}`;
+	static terminate = (environmentReconcileId: number) => `environment/terminate/${environmentReconcileId}`;
 	static componentLogs = (teamId: string, environmentId: string, componentId: string, id: number) =>
 		`getLogs/${teamId}/${environmentId}/${componentId}/${id}`;
 	static planLogs = (teamId: string, environmentId: string, componentId: string, id: number, latest: boolean) =>

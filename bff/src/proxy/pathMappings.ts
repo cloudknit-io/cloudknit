@@ -60,6 +60,11 @@ const AUDIT_PATH_MAPPINGS = [
       `/v1/orgs/${params.orgId}/teams/${params.teamId}/environments/${params.environmentId}/components/${params.componentId}/audit`,
   },
   {
+    path: "/reconciliation/api/v1/environment/terminate/:envReconId",
+    newPath: (params: any) =>
+      `/v1/orgs/${params.orgId}/reconciliation/environment/${params.envReconId}/terminate`,
+  },
+  {
     path: "/reconciliation/api/v1/environment/:teamId/:environmentId",
     newPath: (params: any) =>
     `/v1/orgs/${params.orgId}/teams/${params.teamId}/environments/${params.environmentId}/audit`,
@@ -97,6 +102,10 @@ const AUDIT_PATH_MAPPINGS = [
 ];
 
 const SECRET_PATH_MAPPINGS = [
+  {
+    path: "/secrets/default",
+    newPath: (params: any) => `/v1/orgs/${params.orgId}/secrets/default`,
+  },
   {
     path: "/secrets/exists/aws-secret",
     newPath: (params: any) => `/v1/orgs/${params.orgId}/secrets/exists/aws-secret`,
