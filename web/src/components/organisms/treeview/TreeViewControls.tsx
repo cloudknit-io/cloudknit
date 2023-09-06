@@ -5,6 +5,7 @@ import React from 'react';
 import { SmallText } from '../workflow-diagram/WorkflowDiagram';
 import { colorLegend } from './tree-view.helper';
 import { TerminateReconcile } from './TerminateReconcile';
+import { ZEnvSyncStatus, ZSyncStatus } from 'models/argo.models';
 
 export type TreeViewControlProps = {
 	environment?: Environment;
@@ -16,7 +17,10 @@ export const TreeViewControls: React.FC<TreeViewControlProps> = ({ environment }
 			<div></div>
 			<div className="dag-controls">
 				{environment && <Reconciler environment={environment} template={TreeReconcile} />}
-				{environment && <TerminateReconcile environment={environment} />}
+				{environment &&
+					[ZEnvSyncStatus.Provisioning, ZSyncStatus.Destroying].includes(environment.status as any) && (
+						<TerminateReconcile environment={environment} />
+					)}
 			</div>
 			<div className="color-legend-control">
 				<div className="color-legend-control_status">
