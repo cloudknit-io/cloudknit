@@ -248,6 +248,13 @@ export class ReconciliationController {
   ) {
     const { org } = req;
 
+    if ('estimatedCost' in body) {
+      this.logger.log({
+        message: 'received cost update call for: ' + compReconcileId,
+        body,
+      });
+    }
+
     const compRecon: ComponentReconcile = await this.reconSvc.findCompReconById(
       org,
       compReconcileId,
