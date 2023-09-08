@@ -248,8 +248,6 @@ export class ReconciliationController {
   ) {
     const { org } = req;
 
-    console.log('***********', body);
-
     if (body.estimatedCost !== undefined) {
       this.logger.log({
         message: 'received cost update call for: ' + compReconcileId,
