@@ -50,7 +50,7 @@ export class StreamComponentReconcileService
 
     this.logger.log({
       message: `********* After Update in DB, recon ${compRecon.reconcileId}`,
-      columns: event.updatedColumns,
+      columns: event.updatedColumns.map((c) => c.propertyName),
     });
 
     if (
