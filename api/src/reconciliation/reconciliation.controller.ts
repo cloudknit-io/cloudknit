@@ -248,13 +248,6 @@ export class ReconciliationController {
   ) {
     const { org } = req;
 
-    if (body.estimatedCost !== undefined) {
-      this.logger.log({
-        message: 'received cost update call for: ' + compReconcileId,
-        body,
-      });
-    }
-
     const compRecon: ComponentReconcile = await this.reconSvc.findCompReconById(
       org,
       compReconcileId,
@@ -286,6 +279,11 @@ export class ReconciliationController {
         body.status = 'not_provisioned';
       }
     }
+
+    this.logger.log({
+      message: `*********** -> before recon update for ${compRecon.reconcileId}`,
+      body,
+    });
 
     const updatedCompRecon = await this.reconSvc.updateCompRecon(
       compRecon,
