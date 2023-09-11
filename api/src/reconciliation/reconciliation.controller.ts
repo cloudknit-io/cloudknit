@@ -290,6 +290,11 @@ export class ReconciliationController {
       body
     );
 
+    this.logger.log({
+      message: `*********** -> after recon update for ${compRecon.reconcileId}`,
+      compRecon,
+    });
+
     delete updatedCompRecon.environmentReconcile;
     this.logger.log({
       message: 'updated component reconcile entry',
