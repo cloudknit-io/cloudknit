@@ -66,12 +66,12 @@ export class StreamComponentReconcileService
         //   new ComponentReconcileCostUpdateEvent({ ...compRecon })
         // );
       }
-      // this.evtEmitter.emit(
-      //   InternalEventType.ComponentReconcileEntityUpdate,
-      //   new ComponentReconcileEntityUpdateEvent({
-      //     ...compRecon,
-      //   })
-      // );
+      this.evtEmitter.emit(
+        InternalEventType.ComponentReconcileEntityUpdate,
+        new ComponentReconcileEntityUpdateEvent({
+          ...compRecon,
+        })
+      );
     }
     this.validateAndSend(event.entity as ComponentReconcile, 'afterUpdate');
   }
