@@ -61,17 +61,17 @@ export class StreamComponentReconcileService
       if (
         event.updatedColumns.find((col) => col.propertyName === 'estimatedCost')
       ) {
-        this.evtEmitter.emit(
-          InternalEventType.ComponentReconcileCostUpdate,
-          new ComponentReconcileCostUpdateEvent({ ...compRecon })
-        );
+        // this.evtEmitter.emit(
+        //   InternalEventType.ComponentReconcileCostUpdate,
+        //   new ComponentReconcileCostUpdateEvent({ ...compRecon })
+        // );
       }
-      this.evtEmitter.emit(
-        InternalEventType.ComponentReconcileEntityUpdate,
-        new ComponentReconcileEntityUpdateEvent({
-          ...compRecon,
-        })
-      );
+      // this.evtEmitter.emit(
+      //   InternalEventType.ComponentReconcileEntityUpdate,
+      //   new ComponentReconcileEntityUpdateEvent({
+      //     ...compRecon,
+      //   })
+      // );
     }
     this.validateAndSend(event.entity as ComponentReconcile, 'afterUpdate');
   }

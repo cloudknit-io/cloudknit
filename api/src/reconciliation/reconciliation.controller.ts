@@ -292,7 +292,9 @@ export class ReconciliationController {
 
     this.logger.log({
       message: `*********** -> after recon update for ${compRecon.reconcileId}`,
-      compRecon,
+      compRecon: {
+        estimatedCost: compRecon.estimatedCost,
+      },
     });
 
     delete updatedCompRecon.environmentReconcile;
