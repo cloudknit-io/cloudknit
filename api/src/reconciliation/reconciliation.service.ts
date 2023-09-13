@@ -485,10 +485,10 @@ export class ReconciliationService {
 
     const envRecon = env.latestEnvRecon;
 
-    await this.envReconRepo.merge(envRecon, {
-      estimatedCost,
-    });
+    // await this.envReconRepo.merge(envRecon, {
+    //   estimatedCost,
+    // });
 
-    await this.envReconRepo.save(envRecon);
+    // await this.envReconRepo.save(envRecon);
   }
 }

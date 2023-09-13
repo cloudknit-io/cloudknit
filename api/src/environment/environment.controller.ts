@@ -327,7 +327,7 @@ export class EnvironmentController {
       true
     );
 
-    // await this.reconSvc.updateCost(env);
+    await this.reconSvc.updateCost(env);
   }
 
   @OnEvent(InternalEventType.EnvironmentReconCostUpdate, { async: true })
