@@ -485,6 +485,8 @@ export class ReconciliationService {
 
     const envRecon = env.latestEnvRecon;
 
+    delete envRecon.componentReconciles;
+
     await this.envReconRepo.merge(envRecon, {
       estimatedCost,
     });
