@@ -280,22 +280,10 @@ export class ReconciliationController {
       }
     }
 
-    this.logger.log({
-      message: `*********** -> before recon update for ${compRecon.reconcileId}`,
-      body,
-    });
-
     const updatedCompRecon = await this.reconSvc.updateCompRecon(
       compRecon,
       body
     );
-
-    this.logger.log({
-      message: `*********** -> after recon update for ${compRecon.reconcileId}`,
-      compRecon: {
-        estimatedCost: compRecon.estimatedCost,
-      },
-    });
 
     delete updatedCompRecon.environmentReconcile;
     this.logger.log({
