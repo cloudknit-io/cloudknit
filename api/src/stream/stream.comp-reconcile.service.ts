@@ -48,11 +48,6 @@ export class StreamComponentReconcileService
   ): void | Promise<ComponentReconcile> {
     const compRecon = event.entity as ComponentReconcile;
 
-    this.logger.log({
-      message: `********* After Update in DB, recon ${compRecon.reconcileId}`,
-      columns: event.updatedColumns.map((c) => c.propertyName),
-    });
-
     if (
       event.updatedColumns.find((col) =>
         this.eventColumns.has(col.propertyName)
