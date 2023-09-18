@@ -410,6 +410,25 @@ export class ReconciliationController {
       throw new InternalServerErrorException('could not approve workflow');
     }
 
+    try {
+      const compReconUpdates = envRecon.componentReconciles.map((compRecon) =>
+        this.reconSvc.updateCompRecon(compRecon, {
+          status: 'cancelled',
+        })
+      );
+
+      await Promise.allSettled(compReconUpdates);
+      delete envRecon.componentReconciles;
+      await this.reconSvc.updateEnvRecon(envRecon, {
+        status: 'cancelled',
+      });
+    } catch (err) {
+      this.logger.error('failed to updated status to cancelled', {
+        error: err,
+        envRecon,
+      });
+    }
+
     return {
       terminated: true,
     };
