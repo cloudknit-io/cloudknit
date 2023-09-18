@@ -217,7 +217,7 @@ iframe:not(.cal-embed) {
 			path {
 				fill: white !important;
 			}
-			:disabled {
+			&:disabled {
 				filter: grayscale(1);
 				cursor: not-allowed;
 			}

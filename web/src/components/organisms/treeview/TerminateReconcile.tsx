@@ -11,15 +11,15 @@ export type TerminateReconcileProps = {
 };
 export const TerminateReconcile: React.FC<TerminateReconcileProps> = ({ environment }) => {
 	const notifications = useContext(Context)?.notifications;
+	const inProgress = [ZSyncStatus.Initializing, ZSyncStatus.Destroying, ZSyncStatus.Provisioning].includes(
+		environment.status as ZSyncStatus
+	);
 	return (
 		<button
-			disabled={![
-				ZSyncStatus.Initializing,
-				ZSyncStatus.Destroying,
-				ZSyncStatus.Provisioning,
-			].includes(environment.status as ZSyncStatus)}
+			disabled={!inProgress}
 			className="dag-controls-terminate"
 			onClick={async (e: any) => {
+				if (!inProgress) return;
 				e.stopPropagation();
 				if (!window.confirm('Are you sure you want to cancel the reconcile?')) return;
 				const response = await AuditService.getInstance().terminate(environment.latestEnvRecon.reconcileId);
