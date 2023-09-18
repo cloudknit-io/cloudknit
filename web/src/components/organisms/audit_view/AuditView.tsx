@@ -257,6 +257,7 @@ export const AuditView: FC<Props> = ({ auditData, auditColumns, fetchLogs, reset
 
 						if (
 							[
+								AuditStatus.Cancelled,
 								AuditStatus.Failed,
 								AuditStatus.DestroyApplyFailed,
 								AuditStatus.DestroyPlanFailed,
