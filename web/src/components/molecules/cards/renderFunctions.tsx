@@ -196,6 +196,8 @@ export const renderEnvSyncedStatus = (
 			return (
 				<StatusDisplay text={'Destroyed'} icon={<DeleteIcon height={16} width={16} />} time={syncFinishedAt} />
 			);
+		case ZSyncStatus.Cancelled:
+			return <StatusDisplay text={'Cancelled'} icon={<OutOfSyncIcon />} time={syncFinishedAt} />;
 		case ZSyncStatus.ProvisionFailed:
 			return <StatusDisplay text={'Provision Failed'} icon={<OutOfSyncIcon />} time={syncFinishedAt} />;
 		case ZSyncStatus.PlanFailed:
