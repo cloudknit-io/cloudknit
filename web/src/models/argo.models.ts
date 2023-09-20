@@ -283,6 +283,7 @@ export enum ZSyncStatus {
 	Skipped = 'skipped',
 	SkippedReconcile = 'skipped_reconcile',
 	WaitingForParent = 'waiting_for_parent',
+	Cancelled = 'cancelled',
 }
 
 export enum ZComponentSyncStatus {
@@ -338,6 +339,7 @@ export enum AuditStatus {
 	DestroyPlanFailed = 'destroy_plan_failed',
 	DestroyApplyFailed = 'destroy_apply_failed',
 	Failed = 'failed',
+	Cancelled = 'cancelled',
 	Skipped = 'skipped',
 	SkippedDestroy = 'skipped_destroy',
 	SkippedProvision = 'skipped_provision',

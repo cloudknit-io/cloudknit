@@ -4,33 +4,39 @@ import { AuditService } from 'services/audit/audit.service';
 import { useContext } from 'react';
 import { Context } from 'context/argo/ArgoUi';
 import { NotificationType } from 'components/argo-core';
+import { ZSyncStatus } from 'models/argo.models';
 
 export type TerminateReconcileProps = {
 	environment: Environment;
 };
 export const TerminateReconcile: React.FC<TerminateReconcileProps> = ({ environment }) => {
 	const notifications = useContext(Context)?.notifications;
+	const inProgress = [ZSyncStatus.Initializing, ZSyncStatus.Destroying, ZSyncStatus.Provisioning].includes(
+		environment.status as ZSyncStatus
+	);
 	return (
 		<button
+			disabled={!inProgress}
 			className="dag-controls-terminate"
 			onClick={async (e: any) => {
+				if (!inProgress) return;
 				e.stopPropagation();
-				if (!window.confirm('Are you sure you want to terminate the reconcile?')) return;
+				if (!window.confirm('Are you sure you want to cancel the reconcile?')) return;
 				const response = await AuditService.getInstance().terminate(environment.latestEnvRecon.reconcileId);
 				if (response.status === 201) {
-                    notifications?.show({
-                        content: 'Reconcile Terminated',
-                        type: NotificationType.Success
-                    });
+					notifications?.show({
+						content: 'Reconcile Cancelled',
+						type: NotificationType.Success,
+					});
 				} else {
-                    notifications?.show({
-                        content: 'Reconcile Termination Failed',
-                        type: NotificationType.Error
-                    });
-                }
+					notifications?.show({
+						content: 'Reconcile Cancellation Failed',
+						type: NotificationType.Error,
+					});
+				}
 			}}>
-			<TerminateIcon title="Terminate Reconcile" />
-			Terminate
+			<TerminateIcon title="Cancel Reconcile" />
+			Cancel
 		</button>
 	);
 };

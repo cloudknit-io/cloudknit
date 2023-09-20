@@ -217,6 +217,10 @@ iframe:not(.cal-embed) {
 			path {
 				fill: white !important;
 			}
+			&:disabled {
+				filter: grayscale(1);
+				cursor: not-allowed;
+			}
 		}
 
 		.large-health-icon-container {
