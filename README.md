@@ -74,7 +74,10 @@ metadata:
 spec:
   teamName: payment
   envName: prod-blue
+  teardown: false
+  autoApprove: false
   components:
+
     - name: networking
       type: terraform
       autoApprove: true
@@ -84,6 +87,7 @@ spec:
         path: "prod-blue/vars/networking.tfvars"
       outputs:
         - name: vpc_id
+
     - name: platform-eks
       type: terraform
       dependsOn: [networking]
@@ -94,6 +98,7 @@ spec:
           valueFrom: networking.vpc_id
       variablesFile:
         path: "prod-blue/vars/platform-eks.tfvars"
+
     - name: website
       type: helm #Native support for helm chart coming soon
       dependsOn: [platform-eks]
