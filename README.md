@@ -6,7 +6,7 @@ CloudKnit is based on a concept called [Environment as Code](https://www.cloudkn
 
 > *Note: We are not a big fan of using Pipeline and Declarative together as Pipeline to us means a sequence of steps which conflicts with what Declarative means.*
 
-Environment as Code (EaC) is an abstraction over cloud-native tools that provides a declarative way of defining an entire environments. It has a Control Plane that manages the state of the environment, including resource dependencies, and drift detection and reconciliation.
+Environment as Code (EaC) is an abstraction over cloud-native tools that provides a declarative way of defining entire environments. It has a Control Plane that manages the state of the environment, including resource dependencies, and drift detection and reconciliation.
 
 ![Where CloudKnit connects with existing tools](/assets/images/existing-tools.png)
 *<center>Diagram 1: Where does CloudKnit fit in with existing tools</center>*
@@ -22,9 +22,9 @@ Environment as Code (EaC) is an abstraction over cloud-native tools that provide
 
 ## Why we built CloudKnit
 
-Existing automation tools like Terraform, Pulumi, and Helm allow us to automate the provisioning of cloud environments, but as those environments become more complex and teams look for advanced use cases, existing tools fall short. These tools are great at managing individual components within an environment (like networking or rds), but engineering teams need an entire environment with various components like the one shown below [See diagram 2] to run their business applications.
+Existing automation tools like Terraform, Pulumi, and Helm allow us to automate the provisioning of cloud environments, but as those environments become more complex and teams look for advanced use cases, existing tools fall short. These tools are great at managing individual components within an environment (like networking or RDS), but engineering teams need an entire environment with various components like the one shown below [See diagram 2] to run their business applications.
 
-This causes teams to do one of the following: 
+This causes teams to do one of the following:
 
 * **Hand-roll complex pipelines:** Pipeline code is imperative & needs to manage the logic to provision the various components in the correct order, handle failures and tear down unused resources. We have seen teams write hundreds of lines of unmaintainable pipeline code. This causes a maintenance nightmare.
 * **Build in-house solution on top of automation tools:** Companies spend a lot of time and money managing in-house solutions instead of building business features.
@@ -60,7 +60,7 @@ Environment management with CloudKnit is divided into 4 stages:
 
 This stage allows you to define an entire environment. We currently support easy to use YAML format for the environment definition.
 
-See example below: 
+See example below:
 
 <details>
   <summary>Environment Definition</summary>
@@ -100,7 +100,7 @@ spec:
         path: "prod-blue/vars/platform-eks.tfvars"
 
     - name: website
-      type: helm #Native support for helm chart coming soon
+      type: helm #Native support for helm charts coming soon
       dependsOn: [platform-eks]
       source:
         repo: git@github.com:helm/examples.git
@@ -117,9 +117,9 @@ CloudKnit Control Plane running in Kubernetes uses the Environment definition & 
 
 ### 3. Detect Drift + Reconciliation
 
-Like Kubernetes does drift detection for k8s apps & reconciles them to match the desired state in source control, CloudKnit does drift detection for the entire environment (infra + apps) & reconciles them. 
+Like Kubernetes does drift detection for k8s apps & reconciles them to match the desired state in source control, CloudKnit does drift detection for the entire environment (infra + apps) & reconciles them.
 
-Note: In case of Infrastructure as Code CloudKnit provides an ability to see the plan & get manual approval before running the IaC to make sure it doesn't destroy any resources you don't want to, especially in Production environments.
+Note: In case of Infrastructure as Code (IaC), CloudKnit provides an ability to see the plan & get manual approval before running the IaC to make sure it doesn't destroy any resources you don't want to, especially in Production environments.
 
 ### 4. Teardown
 
