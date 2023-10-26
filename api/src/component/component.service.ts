@@ -61,6 +61,12 @@ export class ComponentService {
     });
   }
 
+  async bulkUpdate(
+    components: Component[]
+  ): Promise<Component[]> {
+    return this.compRepo.save(components);
+  }
+
   async getAllForEnvironmentById(
     org: Organization,
     env: Environment,
