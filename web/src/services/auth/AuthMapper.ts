@@ -7,7 +7,7 @@ export class AuthMapper {
 			...response,
 			data: {
 				...response.data,
-				name: response.data.name,
+				name: response.data?.name,
 			},
 		};
 	}

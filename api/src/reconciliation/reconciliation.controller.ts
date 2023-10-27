@@ -390,7 +390,7 @@ export class ReconciliationController {
         const terminationRequests = waitingWorkflows.map((w) =>
           TerminateWorkflow(org, w.lastWorkflowRunId)
         );
-        const resp = await Promise.allSettled(terminationRequests);
+        const resp = await Promise.allSettled(terminationRequests); 
         const failedResps = resp.filter((r) => r.status === 'rejected');
         if (failedResps.length > 0) {
           this.logger.error({
@@ -417,6 +417,17 @@ export class ReconciliationController {
       }));
 
       await this.reconSvc.bulkUpdateCompRecon(compReconUpdates);
+      
+      
+      const components = await this.compSvc.getAllForEnvironmentById(org, envRecon.environment);
+      const updateComponents = components.map(comp => {
+        delete comp.latestCompRecon;
+        const date = new Date().toISOString();
+        comp.lastReconcileDatetime = date;
+        return comp;
+      });
+      await this.compSvc.bulkUpdate(updateComponents);
+
       delete envRecon.componentReconciles;
       await this.reconSvc.updateEnvRecon(envRecon, {
         status: 'cancelled',

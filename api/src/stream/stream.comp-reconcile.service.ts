@@ -54,6 +54,12 @@ export class StreamComponentReconcileService
       )
     ) {
       if (
+        event.updatedColumns.find((col) => col.propertyName === 'status') &&
+        ['waiting_for_parent', 'cancelled'].includes(compRecon.status)
+      ) {
+        return;
+      }
+      if (
         event.updatedColumns.find((col) => col.propertyName === 'estimatedCost')
       ) {
         this.evtEmitter.emit(

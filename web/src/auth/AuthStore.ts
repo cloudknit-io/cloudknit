@@ -89,7 +89,9 @@ class AuthStore {
 			};
 		}
 		// Updating user and selected org.
-		LocalStorage.setItem(LocalStorageKey.SELECTED_ORG, this.user?.selectedOrg);
+		if (this.user?.selectedOrg) {
+			LocalStorage.setItem(LocalStorageKey.SELECTED_ORG, this.user?.selectedOrg);
+		}
 		LocalStorage.setItem(LocalStorageKey.USER, this.user);
 	}
 }
