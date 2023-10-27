@@ -153,26 +153,29 @@ export class EnvironmentController {
 
     const envWithComps = await this.envSvc.findById(org, env.id, false, true);
 
-    await Promise.allSettled(
-      envWithComps.components
-        .filter((c) => !c.isDeleted)
-        .map(async (c) => {
-          const compRecon = await this.reconSvc.createCompRecon(
-            org,
-            envRecon,
-            c,
-            {
-              status: 'waiting_for_parent',
-              name: c.name,
-              envReconcileId: envRecon.reconcileId,
-            }
-          );
-          compRecon.component = null;
-          return this.compSvc.update(org, c, {
-            latestCompRecon: compRecon,
-          });
-        })
+    const newCompRecons = envWithComps.components
+      .filter((comp) => !comp.isDeleted)
+      .map((comp) => ({
+        component: comp,
+        status: 'waiting_for_parent',
+        organization: org,
+        environmentReconcile: envRecon,
+      }));
+
+    const createdCompRecons = await this.reconSvc.bulkCreateCompRecon(
+      newCompRecons
     );
+    const compUpdates: Component[] = createdCompRecons.map((recon) => {
+      const component = recon.component;
+      delete recon.component;
+      return {
+        ...component,
+        latestCompRecon: recon,
+        organization: org,
+      };
+    });
+
+    const createdComps = await this.compSvc.bulkUpdate(compUpdates);
 
     return envRecon;
   }

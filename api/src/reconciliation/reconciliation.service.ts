@@ -220,6 +220,12 @@ export class ReconciliationService {
     });
   }
 
+  async bulkCreateCompRecon(
+    createCompRecons: any[]
+  ): Promise<ComponentReconcile[]> {
+    return this.compReconRepo.save(createCompRecons);
+  }
+
   async updateCompRecon(
     compRecon: ComponentReconcile,
     mergeRecon: UpdateComponentReconciliationDto
@@ -227,6 +233,12 @@ export class ReconciliationService {
     this.compReconRepo.merge(compRecon, mergeRecon);
 
     return this.compReconRepo.save(compRecon);
+  }
+
+  async bulkUpdateCompRecon(
+    compRecons: ComponentReconcile[],
+  ): Promise<ComponentReconcile[]> {
+    return this.compReconRepo.save(compRecons);
   }
 
   async findCompReconById(

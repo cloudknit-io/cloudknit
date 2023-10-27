@@ -411,13 +411,12 @@ export class ReconciliationController {
     }
 
     try {
-      const compReconUpdates = envRecon.componentReconciles.map((compRecon) =>
-        this.reconSvc.updateCompRecon(compRecon, {
-          status: 'cancelled',
-        })
-      );
+      const compReconUpdates = envRecon.componentReconciles.map((compRecon) => ({
+        ...compRecon,
+        status: 'cancelled',
+      }));
 
-      await Promise.allSettled(compReconUpdates);
+      await this.reconSvc.bulkUpdateCompRecon(compReconUpdates);
       delete envRecon.componentReconciles;
       await this.reconSvc.updateEnvRecon(envRecon, {
         status: 'cancelled',
